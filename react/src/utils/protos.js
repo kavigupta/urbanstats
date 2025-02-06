@@ -6736,4 +6736,807 @@ export const QuizQuestionTronche = $root.QuizQuestionTronche = (() => {
     return QuizQuestionTronche;
 })();
 
+export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => {
+
+    /**
+     * Properties of a CountsByColumnCompressed.
+     * @exports ICountsByColumnCompressed
+     * @interface ICountsByColumnCompressed
+     * @property {Array.<number>|null} [counts] CountsByColumnCompressed counts
+     * @property {Array.<number>|null} [countRepeat] CountsByColumnCompressed countRepeat
+     */
+
+    /**
+     * Constructs a new CountsByColumnCompressed.
+     * @exports CountsByColumnCompressed
+     * @classdesc Represents a CountsByColumnCompressed.
+     * @implements ICountsByColumnCompressed
+     * @constructor
+     * @param {ICountsByColumnCompressed=} [properties] Properties to set
+     */
+    function CountsByColumnCompressed(properties) {
+        this.counts = [];
+        this.countRepeat = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CountsByColumnCompressed counts.
+     * @member {Array.<number>} counts
+     * @memberof CountsByColumnCompressed
+     * @instance
+     */
+    CountsByColumnCompressed.prototype.counts = $util.emptyArray;
+
+    /**
+     * CountsByColumnCompressed countRepeat.
+     * @member {Array.<number>} countRepeat
+     * @memberof CountsByColumnCompressed
+     * @instance
+     */
+    CountsByColumnCompressed.prototype.countRepeat = $util.emptyArray;
+
+    /**
+     * Creates a new CountsByColumnCompressed instance using the specified properties.
+     * @function create
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {ICountsByColumnCompressed=} [properties] Properties to set
+     * @returns {CountsByColumnCompressed} CountsByColumnCompressed instance
+     */
+    CountsByColumnCompressed.create = function create(properties) {
+        return new CountsByColumnCompressed(properties);
+    };
+
+    /**
+     * Encodes the specified CountsByColumnCompressed message. Does not implicitly {@link CountsByColumnCompressed.verify|verify} messages.
+     * @function encode
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {ICountsByColumnCompressed} message CountsByColumnCompressed message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByColumnCompressed.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.counts != null && message.counts.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.counts.length; ++i)
+                writer.int32(message.counts[i]);
+            writer.ldelim();
+        }
+        if (message.countRepeat != null && message.countRepeat.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (let i = 0; i < message.countRepeat.length; ++i)
+                writer.int32(message.countRepeat[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CountsByColumnCompressed message, length delimited. Does not implicitly {@link CountsByColumnCompressed.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {ICountsByColumnCompressed} message CountsByColumnCompressed message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByColumnCompressed.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CountsByColumnCompressed message from the specified reader or buffer.
+     * @function decode
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CountsByColumnCompressed} CountsByColumnCompressed
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByColumnCompressed.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CountsByColumnCompressed();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.counts && message.counts.length))
+                        message.counts = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.counts.push(reader.int32());
+                    } else
+                        message.counts.push(reader.int32());
+                    break;
+                }
+            case 2: {
+                    if (!(message.countRepeat && message.countRepeat.length))
+                        message.countRepeat = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.countRepeat.push(reader.int32());
+                    } else
+                        message.countRepeat.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CountsByColumnCompressed message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CountsByColumnCompressed} CountsByColumnCompressed
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByColumnCompressed.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CountsByColumnCompressed message.
+     * @function verify
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CountsByColumnCompressed.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.counts != null && message.hasOwnProperty("counts")) {
+            if (!Array.isArray(message.counts))
+                return "counts: array expected";
+            for (let i = 0; i < message.counts.length; ++i)
+                if (!$util.isInteger(message.counts[i]))
+                    return "counts: integer[] expected";
+        }
+        if (message.countRepeat != null && message.hasOwnProperty("countRepeat")) {
+            if (!Array.isArray(message.countRepeat))
+                return "countRepeat: array expected";
+            for (let i = 0; i < message.countRepeat.length; ++i)
+                if (!$util.isInteger(message.countRepeat[i]))
+                    return "countRepeat: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CountsByColumnCompressed message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CountsByColumnCompressed} CountsByColumnCompressed
+     */
+    CountsByColumnCompressed.fromObject = function fromObject(object) {
+        if (object instanceof $root.CountsByColumnCompressed)
+            return object;
+        let message = new $root.CountsByColumnCompressed();
+        if (object.counts) {
+            if (!Array.isArray(object.counts))
+                throw TypeError(".CountsByColumnCompressed.counts: array expected");
+            message.counts = [];
+            for (let i = 0; i < object.counts.length; ++i)
+                message.counts[i] = object.counts[i] | 0;
+        }
+        if (object.countRepeat) {
+            if (!Array.isArray(object.countRepeat))
+                throw TypeError(".CountsByColumnCompressed.countRepeat: array expected");
+            message.countRepeat = [];
+            for (let i = 0; i < object.countRepeat.length; ++i)
+                message.countRepeat[i] = object.countRepeat[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CountsByColumnCompressed message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {CountsByColumnCompressed} message CountsByColumnCompressed
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CountsByColumnCompressed.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.counts = [];
+            object.countRepeat = [];
+        }
+        if (message.counts && message.counts.length) {
+            object.counts = [];
+            for (let j = 0; j < message.counts.length; ++j)
+                object.counts[j] = message.counts[j];
+        }
+        if (message.countRepeat && message.countRepeat.length) {
+            object.countRepeat = [];
+            for (let j = 0; j < message.countRepeat.length; ++j)
+                object.countRepeat[j] = message.countRepeat[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CountsByColumnCompressed to JSON.
+     * @function toJSON
+     * @memberof CountsByColumnCompressed
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CountsByColumnCompressed.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CountsByColumnCompressed
+     * @function getTypeUrl
+     * @memberof CountsByColumnCompressed
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CountsByColumnCompressed.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CountsByColumnCompressed";
+    };
+
+    return CountsByColumnCompressed;
+})();
+
+export const CountsByArticleType = $root.CountsByArticleType = (() => {
+
+    /**
+     * Properties of a CountsByArticleType.
+     * @exports ICountsByArticleType
+     * @interface ICountsByArticleType
+     * @property {Array.<string>|null} [articleType] CountsByArticleType articleType
+     * @property {Array.<ICountsByColumnCompressed>|null} [counts] CountsByArticleType counts
+     */
+
+    /**
+     * Constructs a new CountsByArticleType.
+     * @exports CountsByArticleType
+     * @classdesc Represents a CountsByArticleType.
+     * @implements ICountsByArticleType
+     * @constructor
+     * @param {ICountsByArticleType=} [properties] Properties to set
+     */
+    function CountsByArticleType(properties) {
+        this.articleType = [];
+        this.counts = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CountsByArticleType articleType.
+     * @member {Array.<string>} articleType
+     * @memberof CountsByArticleType
+     * @instance
+     */
+    CountsByArticleType.prototype.articleType = $util.emptyArray;
+
+    /**
+     * CountsByArticleType counts.
+     * @member {Array.<ICountsByColumnCompressed>} counts
+     * @memberof CountsByArticleType
+     * @instance
+     */
+    CountsByArticleType.prototype.counts = $util.emptyArray;
+
+    /**
+     * Creates a new CountsByArticleType instance using the specified properties.
+     * @function create
+     * @memberof CountsByArticleType
+     * @static
+     * @param {ICountsByArticleType=} [properties] Properties to set
+     * @returns {CountsByArticleType} CountsByArticleType instance
+     */
+    CountsByArticleType.create = function create(properties) {
+        return new CountsByArticleType(properties);
+    };
+
+    /**
+     * Encodes the specified CountsByArticleType message. Does not implicitly {@link CountsByArticleType.verify|verify} messages.
+     * @function encode
+     * @memberof CountsByArticleType
+     * @static
+     * @param {ICountsByArticleType} message CountsByArticleType message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByArticleType.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.articleType != null && message.articleType.length)
+            for (let i = 0; i < message.articleType.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.articleType[i]);
+        if (message.counts != null && message.counts.length)
+            for (let i = 0; i < message.counts.length; ++i)
+                $root.CountsByColumnCompressed.encode(message.counts[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CountsByArticleType message, length delimited. Does not implicitly {@link CountsByArticleType.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CountsByArticleType
+     * @static
+     * @param {ICountsByArticleType} message CountsByArticleType message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByArticleType.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CountsByArticleType message from the specified reader or buffer.
+     * @function decode
+     * @memberof CountsByArticleType
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CountsByArticleType} CountsByArticleType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByArticleType.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CountsByArticleType();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.articleType && message.articleType.length))
+                        message.articleType = [];
+                    message.articleType.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.counts && message.counts.length))
+                        message.counts = [];
+                    message.counts.push($root.CountsByColumnCompressed.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CountsByArticleType message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CountsByArticleType
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CountsByArticleType} CountsByArticleType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByArticleType.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CountsByArticleType message.
+     * @function verify
+     * @memberof CountsByArticleType
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CountsByArticleType.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.articleType != null && message.hasOwnProperty("articleType")) {
+            if (!Array.isArray(message.articleType))
+                return "articleType: array expected";
+            for (let i = 0; i < message.articleType.length; ++i)
+                if (!$util.isString(message.articleType[i]))
+                    return "articleType: string[] expected";
+        }
+        if (message.counts != null && message.hasOwnProperty("counts")) {
+            if (!Array.isArray(message.counts))
+                return "counts: array expected";
+            for (let i = 0; i < message.counts.length; ++i) {
+                let error = $root.CountsByColumnCompressed.verify(message.counts[i]);
+                if (error)
+                    return "counts." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CountsByArticleType message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CountsByArticleType
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CountsByArticleType} CountsByArticleType
+     */
+    CountsByArticleType.fromObject = function fromObject(object) {
+        if (object instanceof $root.CountsByArticleType)
+            return object;
+        let message = new $root.CountsByArticleType();
+        if (object.articleType) {
+            if (!Array.isArray(object.articleType))
+                throw TypeError(".CountsByArticleType.articleType: array expected");
+            message.articleType = [];
+            for (let i = 0; i < object.articleType.length; ++i)
+                message.articleType[i] = String(object.articleType[i]);
+        }
+        if (object.counts) {
+            if (!Array.isArray(object.counts))
+                throw TypeError(".CountsByArticleType.counts: array expected");
+            message.counts = [];
+            for (let i = 0; i < object.counts.length; ++i) {
+                if (typeof object.counts[i] !== "object")
+                    throw TypeError(".CountsByArticleType.counts: object expected");
+                message.counts[i] = $root.CountsByColumnCompressed.fromObject(object.counts[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CountsByArticleType message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CountsByArticleType
+     * @static
+     * @param {CountsByArticleType} message CountsByArticleType
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CountsByArticleType.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.articleType = [];
+            object.counts = [];
+        }
+        if (message.articleType && message.articleType.length) {
+            object.articleType = [];
+            for (let j = 0; j < message.articleType.length; ++j)
+                object.articleType[j] = message.articleType[j];
+        }
+        if (message.counts && message.counts.length) {
+            object.counts = [];
+            for (let j = 0; j < message.counts.length; ++j)
+                object.counts[j] = $root.CountsByColumnCompressed.toObject(message.counts[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CountsByArticleType to JSON.
+     * @function toJSON
+     * @memberof CountsByArticleType
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CountsByArticleType.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CountsByArticleType
+     * @function getTypeUrl
+     * @memberof CountsByArticleType
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CountsByArticleType.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CountsByArticleType";
+    };
+
+    return CountsByArticleType;
+})();
+
+export const CountsByArticleUniverseAndType = $root.CountsByArticleUniverseAndType = (() => {
+
+    /**
+     * Properties of a CountsByArticleUniverseAndType.
+     * @exports ICountsByArticleUniverseAndType
+     * @interface ICountsByArticleUniverseAndType
+     * @property {Array.<string>|null} [universe] CountsByArticleUniverseAndType universe
+     * @property {Array.<ICountsByArticleType>|null} [countsByType] CountsByArticleUniverseAndType countsByType
+     */
+
+    /**
+     * Constructs a new CountsByArticleUniverseAndType.
+     * @exports CountsByArticleUniverseAndType
+     * @classdesc Represents a CountsByArticleUniverseAndType.
+     * @implements ICountsByArticleUniverseAndType
+     * @constructor
+     * @param {ICountsByArticleUniverseAndType=} [properties] Properties to set
+     */
+    function CountsByArticleUniverseAndType(properties) {
+        this.universe = [];
+        this.countsByType = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CountsByArticleUniverseAndType universe.
+     * @member {Array.<string>} universe
+     * @memberof CountsByArticleUniverseAndType
+     * @instance
+     */
+    CountsByArticleUniverseAndType.prototype.universe = $util.emptyArray;
+
+    /**
+     * CountsByArticleUniverseAndType countsByType.
+     * @member {Array.<ICountsByArticleType>} countsByType
+     * @memberof CountsByArticleUniverseAndType
+     * @instance
+     */
+    CountsByArticleUniverseAndType.prototype.countsByType = $util.emptyArray;
+
+    /**
+     * Creates a new CountsByArticleUniverseAndType instance using the specified properties.
+     * @function create
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {ICountsByArticleUniverseAndType=} [properties] Properties to set
+     * @returns {CountsByArticleUniverseAndType} CountsByArticleUniverseAndType instance
+     */
+    CountsByArticleUniverseAndType.create = function create(properties) {
+        return new CountsByArticleUniverseAndType(properties);
+    };
+
+    /**
+     * Encodes the specified CountsByArticleUniverseAndType message. Does not implicitly {@link CountsByArticleUniverseAndType.verify|verify} messages.
+     * @function encode
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {ICountsByArticleUniverseAndType} message CountsByArticleUniverseAndType message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByArticleUniverseAndType.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.universe != null && message.universe.length)
+            for (let i = 0; i < message.universe.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.universe[i]);
+        if (message.countsByType != null && message.countsByType.length)
+            for (let i = 0; i < message.countsByType.length; ++i)
+                $root.CountsByArticleType.encode(message.countsByType[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CountsByArticleUniverseAndType message, length delimited. Does not implicitly {@link CountsByArticleUniverseAndType.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {ICountsByArticleUniverseAndType} message CountsByArticleUniverseAndType message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CountsByArticleUniverseAndType.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CountsByArticleUniverseAndType message from the specified reader or buffer.
+     * @function decode
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CountsByArticleUniverseAndType} CountsByArticleUniverseAndType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByArticleUniverseAndType.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CountsByArticleUniverseAndType();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.universe && message.universe.length))
+                        message.universe = [];
+                    message.universe.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.countsByType && message.countsByType.length))
+                        message.countsByType = [];
+                    message.countsByType.push($root.CountsByArticleType.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CountsByArticleUniverseAndType message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CountsByArticleUniverseAndType} CountsByArticleUniverseAndType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CountsByArticleUniverseAndType.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CountsByArticleUniverseAndType message.
+     * @function verify
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CountsByArticleUniverseAndType.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.universe != null && message.hasOwnProperty("universe")) {
+            if (!Array.isArray(message.universe))
+                return "universe: array expected";
+            for (let i = 0; i < message.universe.length; ++i)
+                if (!$util.isString(message.universe[i]))
+                    return "universe: string[] expected";
+        }
+        if (message.countsByType != null && message.hasOwnProperty("countsByType")) {
+            if (!Array.isArray(message.countsByType))
+                return "countsByType: array expected";
+            for (let i = 0; i < message.countsByType.length; ++i) {
+                let error = $root.CountsByArticleType.verify(message.countsByType[i]);
+                if (error)
+                    return "countsByType." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CountsByArticleUniverseAndType message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CountsByArticleUniverseAndType} CountsByArticleUniverseAndType
+     */
+    CountsByArticleUniverseAndType.fromObject = function fromObject(object) {
+        if (object instanceof $root.CountsByArticleUniverseAndType)
+            return object;
+        let message = new $root.CountsByArticleUniverseAndType();
+        if (object.universe) {
+            if (!Array.isArray(object.universe))
+                throw TypeError(".CountsByArticleUniverseAndType.universe: array expected");
+            message.universe = [];
+            for (let i = 0; i < object.universe.length; ++i)
+                message.universe[i] = String(object.universe[i]);
+        }
+        if (object.countsByType) {
+            if (!Array.isArray(object.countsByType))
+                throw TypeError(".CountsByArticleUniverseAndType.countsByType: array expected");
+            message.countsByType = [];
+            for (let i = 0; i < object.countsByType.length; ++i) {
+                if (typeof object.countsByType[i] !== "object")
+                    throw TypeError(".CountsByArticleUniverseAndType.countsByType: object expected");
+                message.countsByType[i] = $root.CountsByArticleType.fromObject(object.countsByType[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CountsByArticleUniverseAndType message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {CountsByArticleUniverseAndType} message CountsByArticleUniverseAndType
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CountsByArticleUniverseAndType.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.universe = [];
+            object.countsByType = [];
+        }
+        if (message.universe && message.universe.length) {
+            object.universe = [];
+            for (let j = 0; j < message.universe.length; ++j)
+                object.universe[j] = message.universe[j];
+        }
+        if (message.countsByType && message.countsByType.length) {
+            object.countsByType = [];
+            for (let j = 0; j < message.countsByType.length; ++j)
+                object.countsByType[j] = $root.CountsByArticleType.toObject(message.countsByType[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CountsByArticleUniverseAndType to JSON.
+     * @function toJSON
+     * @memberof CountsByArticleUniverseAndType
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CountsByArticleUniverseAndType.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CountsByArticleUniverseAndType
+     * @function getTypeUrl
+     * @memberof CountsByArticleUniverseAndType
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CountsByArticleUniverseAndType.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CountsByArticleUniverseAndType";
+    };
+
+    return CountsByArticleUniverseAndType;
+})();
+
 export { $root as default };

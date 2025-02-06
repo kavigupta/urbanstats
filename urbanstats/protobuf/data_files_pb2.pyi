@@ -339,3 +339,41 @@ class QuizQuestionTronche(_message.Message):
         neg_log_prob_x10_basis: _Optional[int] = ...,
         neg_log_prob_x10_minus_basis: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
+
+class CountsByColumnCompressed(_message.Message):
+    __slots__ = ("counts", "countRepeat")
+    COUNTS_FIELD_NUMBER: _ClassVar[int]
+    COUNTREPEAT_FIELD_NUMBER: _ClassVar[int]
+    counts: _containers.RepeatedScalarFieldContainer[int]
+    countRepeat: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(
+        self,
+        counts: _Optional[_Iterable[int]] = ...,
+        countRepeat: _Optional[_Iterable[int]] = ...,
+    ) -> None: ...
+
+class CountsByArticleType(_message.Message):
+    __slots__ = ("article_type", "counts")
+    ARTICLE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    COUNTS_FIELD_NUMBER: _ClassVar[int]
+    article_type: _containers.RepeatedScalarFieldContainer[str]
+    counts: _containers.RepeatedCompositeFieldContainer[CountsByColumnCompressed]
+    def __init__(
+        self,
+        article_type: _Optional[_Iterable[str]] = ...,
+        counts: _Optional[_Iterable[_Union[CountsByColumnCompressed, _Mapping]]] = ...,
+    ) -> None: ...
+
+class CountsByArticleUniverseAndType(_message.Message):
+    __slots__ = ("universe", "counts_by_type")
+    UNIVERSE_FIELD_NUMBER: _ClassVar[int]
+    COUNTS_BY_TYPE_FIELD_NUMBER: _ClassVar[int]
+    universe: _containers.RepeatedScalarFieldContainer[str]
+    counts_by_type: _containers.RepeatedCompositeFieldContainer[CountsByArticleType]
+    def __init__(
+        self,
+        universe: _Optional[_Iterable[str]] = ...,
+        counts_by_type: _Optional[
+            _Iterable[_Union[CountsByArticleType, _Mapping]]
+        ] = ...,
+    ) -> None: ...

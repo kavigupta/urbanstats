@@ -2637,3 +2637,312 @@ export class QuizQuestionTronche implements IQuizQuestionTronche {
      */
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
+
+/** Properties of a CountsByColumnCompressed. */
+export interface ICountsByColumnCompressed {
+
+    /** CountsByColumnCompressed counts */
+    counts?: (number[]|null);
+
+    /** CountsByColumnCompressed countRepeat */
+    countRepeat?: (number[]|null);
+}
+
+/** Represents a CountsByColumnCompressed. */
+export class CountsByColumnCompressed implements ICountsByColumnCompressed {
+
+    /**
+     * Constructs a new CountsByColumnCompressed.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICountsByColumnCompressed);
+
+    /** CountsByColumnCompressed counts. */
+    public counts: number[];
+
+    /** CountsByColumnCompressed countRepeat. */
+    public countRepeat: number[];
+
+    /**
+     * Creates a new CountsByColumnCompressed instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CountsByColumnCompressed instance
+     */
+    public static create(properties?: ICountsByColumnCompressed): CountsByColumnCompressed;
+
+    /**
+     * Encodes the specified CountsByColumnCompressed message. Does not implicitly {@link CountsByColumnCompressed.verify|verify} messages.
+     * @param message CountsByColumnCompressed message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICountsByColumnCompressed, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CountsByColumnCompressed message, length delimited. Does not implicitly {@link CountsByColumnCompressed.verify|verify} messages.
+     * @param message CountsByColumnCompressed message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICountsByColumnCompressed, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CountsByColumnCompressed message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CountsByColumnCompressed
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CountsByColumnCompressed;
+
+    /**
+     * Decodes a CountsByColumnCompressed message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CountsByColumnCompressed
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CountsByColumnCompressed;
+
+    /**
+     * Verifies a CountsByColumnCompressed message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CountsByColumnCompressed message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CountsByColumnCompressed
+     */
+    public static fromObject(object: { [k: string]: any }): CountsByColumnCompressed;
+
+    /**
+     * Creates a plain object from a CountsByColumnCompressed message. Also converts values to other types if specified.
+     * @param message CountsByColumnCompressed
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CountsByColumnCompressed, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CountsByColumnCompressed to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CountsByColumnCompressed
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CountsByArticleType. */
+export interface ICountsByArticleType {
+
+    /** CountsByArticleType articleType */
+    articleType?: (string[]|null);
+
+    /** CountsByArticleType counts */
+    counts?: (ICountsByColumnCompressed[]|null);
+}
+
+/** Represents a CountsByArticleType. */
+export class CountsByArticleType implements ICountsByArticleType {
+
+    /**
+     * Constructs a new CountsByArticleType.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICountsByArticleType);
+
+    /** CountsByArticleType articleType. */
+    public articleType: string[];
+
+    /** CountsByArticleType counts. */
+    public counts: ICountsByColumnCompressed[];
+
+    /**
+     * Creates a new CountsByArticleType instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CountsByArticleType instance
+     */
+    public static create(properties?: ICountsByArticleType): CountsByArticleType;
+
+    /**
+     * Encodes the specified CountsByArticleType message. Does not implicitly {@link CountsByArticleType.verify|verify} messages.
+     * @param message CountsByArticleType message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICountsByArticleType, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CountsByArticleType message, length delimited. Does not implicitly {@link CountsByArticleType.verify|verify} messages.
+     * @param message CountsByArticleType message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICountsByArticleType, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CountsByArticleType message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CountsByArticleType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CountsByArticleType;
+
+    /**
+     * Decodes a CountsByArticleType message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CountsByArticleType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CountsByArticleType;
+
+    /**
+     * Verifies a CountsByArticleType message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CountsByArticleType message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CountsByArticleType
+     */
+    public static fromObject(object: { [k: string]: any }): CountsByArticleType;
+
+    /**
+     * Creates a plain object from a CountsByArticleType message. Also converts values to other types if specified.
+     * @param message CountsByArticleType
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CountsByArticleType, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CountsByArticleType to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CountsByArticleType
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CountsByArticleUniverseAndType. */
+export interface ICountsByArticleUniverseAndType {
+
+    /** CountsByArticleUniverseAndType universe */
+    universe?: (string[]|null);
+
+    /** CountsByArticleUniverseAndType countsByType */
+    countsByType?: (ICountsByArticleType[]|null);
+}
+
+/** Represents a CountsByArticleUniverseAndType. */
+export class CountsByArticleUniverseAndType implements ICountsByArticleUniverseAndType {
+
+    /**
+     * Constructs a new CountsByArticleUniverseAndType.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICountsByArticleUniverseAndType);
+
+    /** CountsByArticleUniverseAndType universe. */
+    public universe: string[];
+
+    /** CountsByArticleUniverseAndType countsByType. */
+    public countsByType: ICountsByArticleType[];
+
+    /**
+     * Creates a new CountsByArticleUniverseAndType instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CountsByArticleUniverseAndType instance
+     */
+    public static create(properties?: ICountsByArticleUniverseAndType): CountsByArticleUniverseAndType;
+
+    /**
+     * Encodes the specified CountsByArticleUniverseAndType message. Does not implicitly {@link CountsByArticleUniverseAndType.verify|verify} messages.
+     * @param message CountsByArticleUniverseAndType message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICountsByArticleUniverseAndType, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CountsByArticleUniverseAndType message, length delimited. Does not implicitly {@link CountsByArticleUniverseAndType.verify|verify} messages.
+     * @param message CountsByArticleUniverseAndType message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICountsByArticleUniverseAndType, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CountsByArticleUniverseAndType message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CountsByArticleUniverseAndType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CountsByArticleUniverseAndType;
+
+    /**
+     * Decodes a CountsByArticleUniverseAndType message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CountsByArticleUniverseAndType
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CountsByArticleUniverseAndType;
+
+    /**
+     * Verifies a CountsByArticleUniverseAndType message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CountsByArticleUniverseAndType message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CountsByArticleUniverseAndType
+     */
+    public static fromObject(object: { [k: string]: any }): CountsByArticleUniverseAndType;
+
+    /**
+     * Creates a plain object from a CountsByArticleUniverseAndType message. Also converts values to other types if specified.
+     * @param message CountsByArticleUniverseAndType
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CountsByArticleUniverseAndType, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CountsByArticleUniverseAndType to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CountsByArticleUniverseAndType
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
