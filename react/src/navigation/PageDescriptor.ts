@@ -31,6 +31,7 @@ import { base64Gunzip } from '../utils/urlParamShort'
 
 import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
+import { getCountsByArticleType } from '../components/countsByArticleType'
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
@@ -298,6 +299,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
+    const counts = () => getCountsByArticleType()
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
@@ -308,7 +310,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await counts(), articleUniverse)
 
             return {
                 pageData: {
@@ -347,7 +349,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await counts(), comparisonUniverse)
 
             return {
                 pageData: {
@@ -395,7 +397,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(statUniverse, statcol, newDescriptor.article_type),
+                    count: forType(await counts(), statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
@@ -407,6 +409,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     data: await data,
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
+                    counts: await counts(),
 
                 },
                 newPageDescriptor: {

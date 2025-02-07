@@ -3,7 +3,16 @@ import { CountsByArticleUniverseAndType, ICountsByArticleType, ICountsByColumnCo
 
 export type CountsByUT = Record<string, Record<string, [number, number][]>>
 
+let countsByArticleType: Promise<CountsByUT> | null = null
+
 export async function getCountsByArticleType(): Promise<CountsByUT> {
+    if (countsByArticleType === null) {
+        countsByArticleType = getCountsByArticleTypeDirect()
+    }
+    return countsByArticleType
+}
+
+async function getCountsByArticleTypeDirect(): Promise<CountsByUT> {
     const countsByUT: CountsByArticleUniverseAndType = await loadProtobuf(
         '/counts.gz', 'CountsByArticleUniverseAndType',
     )
