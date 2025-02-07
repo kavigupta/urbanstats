@@ -31,7 +31,7 @@ import { base64Gunzip } from '../utils/urlParamShort'
 
 import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
-import { getCountsByArticleType } from '../components/countsByArticleType'
+import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
@@ -299,7 +299,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
-    const counts = () => getCountsByArticleType()
+    const counts = (): Promise<CountsByUT> => getCountsByArticleType()
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
