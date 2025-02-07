@@ -3,6 +3,7 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
+import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -31,7 +32,6 @@ import { base64Gunzip } from '../utils/urlParamShort'
 
 import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
-import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 
 const articleSchema = z.object({
     longname: z.string().transform(followSymlink),
