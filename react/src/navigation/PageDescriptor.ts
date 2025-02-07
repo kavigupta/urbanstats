@@ -299,7 +299,6 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
-    const counts = (): Promise<CountsByUT> => getCountsByArticleType()
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
@@ -310,7 +309,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await counts(), articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await getCountsByArticleType(), articleUniverse)
 
             return {
                 pageData: {
@@ -349,7 +348,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await counts(), comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await getCountsByArticleType(), comparisonUniverse)
 
             return {
                 pageData: {
@@ -397,7 +396,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(await counts(), statUniverse, statcol, newDescriptor.article_type),
+                    count: forType(await getCountsByArticleType(), statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
@@ -409,7 +408,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     data: await data,
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
-                    counts: await counts(),
+                    // StatisticPanel needs this to compute the set of universes to display
+                    counts: await getCountsByArticleType(),
 
                 },
                 newPageDescriptor: {
