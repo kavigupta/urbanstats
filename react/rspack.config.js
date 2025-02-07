@@ -52,6 +52,6 @@ export default env => ({
     performance: {
         hints: isProduction ? 'error': false,
         maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.5 * Math.pow(2, 20)
+        maxEntrypointSize: 2.4 * Math.pow(2, 20)
     }
 })
