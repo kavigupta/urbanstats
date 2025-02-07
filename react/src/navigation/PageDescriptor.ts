@@ -3,6 +3,7 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
+import { getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -308,7 +309,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await getCountsByArticleType(), articleUniverse)
 
             return {
                 pageData: {
@@ -347,7 +348,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await getCountsByArticleType(), comparisonUniverse)
 
             return {
                 pageData: {
@@ -395,7 +396,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(statUniverse, statcol, newDescriptor.article_type),
+                    count: forType(await getCountsByArticleType(), statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
@@ -407,6 +408,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     data: await data,
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
+                    // StatisticPanel needs this to compute the set of universes to display
+                    counts: await getCountsByArticleType(),
 
                 },
                 newPageDescriptor: {

@@ -150,3 +150,18 @@ message QuizQuestionTronche {
     int32 neg_log_prob_x10_basis = 4;
     repeated int32 neg_log_prob_x10_minus_basis = 5;
 }
+
+message CountsByColumnCompressed {
+    repeated int32 count = 1;
+    repeated int32 count_repeat = 2;
+}
+
+message CountsByArticleType {
+    repeated string article_type = 1;
+    repeated CountsByColumnCompressed counts = 2;
+}
+
+message CountsByArticleUniverseAndType {
+    repeated string universe = 1;
+    repeated CountsByArticleType counts_by_type = 2;
+}
