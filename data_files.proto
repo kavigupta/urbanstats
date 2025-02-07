@@ -152,8 +152,8 @@ message QuizQuestionTronche {
 }
 
 message CountsByColumnCompressed {
-    repeated int32 counts = 1;
-    repeated int32 countRepeat = 2;
+    repeated int32 count = 1;
+    repeated int32 count_repeat = 2;
 }
 
 message CountsByArticleType {

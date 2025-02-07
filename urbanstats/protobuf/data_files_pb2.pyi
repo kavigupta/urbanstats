@@ -341,15 +341,15 @@ class QuizQuestionTronche(_message.Message):
     ) -> None: ...
 
 class CountsByColumnCompressed(_message.Message):
-    __slots__ = ("counts", "countRepeat")
-    COUNTS_FIELD_NUMBER: _ClassVar[int]
-    COUNTREPEAT_FIELD_NUMBER: _ClassVar[int]
-    counts: _containers.RepeatedScalarFieldContainer[int]
-    countRepeat: _containers.RepeatedScalarFieldContainer[int]
+    __slots__ = ("count", "count_repeat")
+    COUNT_FIELD_NUMBER: _ClassVar[int]
+    COUNT_REPEAT_FIELD_NUMBER: _ClassVar[int]
+    count: _containers.RepeatedScalarFieldContainer[int]
+    count_repeat: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
-        counts: _Optional[_Iterable[int]] = ...,
-        countRepeat: _Optional[_Iterable[int]] = ...,
+        count: _Optional[_Iterable[int]] = ...,
+        count_repeat: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class CountsByArticleType(_message.Message):

@@ -150,16 +150,26 @@ def reorganize_counts(ordinal_info, counts):
     }
 
 
-def output_order(ordinal_info):
-    counts = ordinal_info.counts_by_type_universe_col()
-    res_uncompressed = reorganize_counts(ordinal_info, counts)
+def output_order(ordinal_info, output_folder):
+    counts_by_ut = ordinal_info.counts_by_type_universe_col()
+    res_uncompressed = reorganize_counts(ordinal_info, counts_by_ut)
     res = compress_counts(res_uncompressed)
-    with open("react/src/data/counts_by_article_type.ts", "w") as f:
-        output_typescript(
-            res,
-            f,
-            data_type="Record<string, Record<string, [number, number][]>>",
-        )
+    res = create_counts_protobuf(res)
+    write_gzip(res, f"{output_folder}/counts.gz")
+
+
+def create_counts_protobuf(res):
+    counts_by_ut = data_files_pb2.CountsByArticleUniverseAndType()
+    for universe, by_u in res.items():
+        counts_by_ut.universe.append(universe)
+        counts_by_t = counts_by_ut.counts_by_type.add()
+        for typ, by_ut in by_u.items():
+            counts_by_t.article_type.append(typ)
+            counts = counts_by_t.counts.add()
+            for count, count_repeats in by_ut:
+                counts.count.append(count)
+                counts.count_repeat.append(count_repeats)
+    return counts_by_ut
 
 
 def output_ordering(site_folder, ordinal_info):
@@ -171,7 +181,7 @@ def output_ordering(site_folder, ordinal_info):
         )
         order_map_all.update(order_map)
         data_map_all.update(data_map)
-    output_order(ordinal_info)
+    output_order(ordinal_info, site_folder)
     with open("react/src/data/order_links.ts", "w") as f:
         output_typescript(
             mapify(order_map_all), f, data_type="Record<string, number[]>"

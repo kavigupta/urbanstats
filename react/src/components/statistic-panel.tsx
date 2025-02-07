@@ -13,6 +13,7 @@ import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
+import { CountsByUT } from './countsByArticleType'
 import { forType, StatCol } from './load-article'
 import { Percentile, PointerArrow, Statistic } from './table'
 
@@ -44,6 +45,7 @@ export interface StatisticPanelProps {
         populationPercentile: number[]
     }
     explanationPage: string
+    counts: CountsByUT
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
@@ -115,7 +117,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const textHeaderClass = useHeaderTextClass()
 
     const universesFiltered = universes_ordered.filter(
-        universe => forType(universe, props.statcol, props.articleType) > 0,
+        universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
     )
 
     return (

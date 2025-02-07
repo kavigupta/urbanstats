@@ -5,7 +5,7 @@ import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import {
-    Article, ConsolidatedShapes, ConsolidatedStatistics, DataLists,
+    Article, ConsolidatedShapes, ConsolidatedStatistics, CountsByArticleUniverseAndType, DataLists,
     Feature, IDataList, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
@@ -36,7 +36,8 @@ export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatisti
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
-export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData> {
+export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
+export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
@@ -73,6 +74,9 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
     else if (name === 'QuizFullData') {
         return QuizFullData.decode(arr)
+    }
+    else if (name === 'CountsByArticleUniverseAndType') {
+        return CountsByArticleUniverseAndType.decode(arr)
     }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')

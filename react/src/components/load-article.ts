@@ -1,4 +1,3 @@
-import counts_by_article_type from '../data/counts_by_article_type'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import stats from '../data/statistic_list'
@@ -7,6 +6,8 @@ import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article, IFirstOrLast } from '../utils/protos'
+
+import { CountsByUT } from './countsByArticleType'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -60,15 +61,15 @@ function lookupInCompressedSequence(seq: [number, number][], idx: number): numbe
     throw new Error('Index out of bounds')
 }
 
-export function forType(universe: string, statcol: StatCol, typ: string): number {
+export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
     const idx = stats.indexOf(statcol) // Works because `require` is global
-    if (!(universe in counts_by_article_type)) {
+    if (!(universe in counts)) {
         return 0
     }
-    if (!(typ in counts_by_article_type[universe])) {
+    if (!(typ in counts[universe])) {
         return 0
     }
-    const countsByType = counts_by_article_type[universe][typ]
+    const countsByType = counts[universe][typ]
 
     return lookupInCompressedSequence(countsByType, idx)
 }
@@ -86,7 +87,7 @@ function unpackBytes(bytes: Uint8Array): number[] {
     return result
 }
 
-export function loadSingleArticle(data: Article, universe: string): ArticleRow[] {
+export function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleRow[] {
     // index of universe in data.universes
     const universeIndex = data.universes.indexOf(universe)
     const articleType = data.articleType
@@ -127,8 +128,8 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
-            totalCountInClass: forType(universe, stats[i], articleType),
-            totalCountOverall: forType(universe, stats[i], 'overall'),
+            totalCountInClass: forType(counts, universe, stats[i], articleType),
+            totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
             renderedStatname: names[i],
             extraStat,
@@ -140,11 +141,11 @@ export function loadSingleArticle(data: Article, universe: string): ArticleRow[]
     })
 }
 
-export function loadArticles(datas: Article[], universe: string): {
+export function loadArticles(datas: Article[], counts: CountsByUT, universe: string): {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
 } {
-    const availableRowsAll = datas.map(data => loadSingleArticle(data, universe))
+    const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
     const statPathsEach = availableRowsAll.map((availableRows) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {

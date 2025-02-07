@@ -2641,8 +2641,8 @@ export class QuizQuestionTronche implements IQuizQuestionTronche {
 /** Properties of a CountsByColumnCompressed. */
 export interface ICountsByColumnCompressed {
 
-    /** CountsByColumnCompressed counts */
-    counts?: (number[]|null);
+    /** CountsByColumnCompressed count */
+    count?: (number[]|null);
 
     /** CountsByColumnCompressed countRepeat */
     countRepeat?: (number[]|null);
@@ -2657,8 +2657,8 @@ export class CountsByColumnCompressed implements ICountsByColumnCompressed {
      */
     constructor(properties?: ICountsByColumnCompressed);
 
-    /** CountsByColumnCompressed counts. */
-    public counts: number[];
+    /** CountsByColumnCompressed count. */
+    public count: number[];
 
     /** CountsByColumnCompressed countRepeat. */
     public countRepeat: number[];

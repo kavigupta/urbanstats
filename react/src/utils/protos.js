@@ -6742,7 +6742,7 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
      * Properties of a CountsByColumnCompressed.
      * @exports ICountsByColumnCompressed
      * @interface ICountsByColumnCompressed
-     * @property {Array.<number>|null} [counts] CountsByColumnCompressed counts
+     * @property {Array.<number>|null} [count] CountsByColumnCompressed count
      * @property {Array.<number>|null} [countRepeat] CountsByColumnCompressed countRepeat
      */
 
@@ -6755,7 +6755,7 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
      * @param {ICountsByColumnCompressed=} [properties] Properties to set
      */
     function CountsByColumnCompressed(properties) {
-        this.counts = [];
+        this.count = [];
         this.countRepeat = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -6764,12 +6764,12 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
     }
 
     /**
-     * CountsByColumnCompressed counts.
-     * @member {Array.<number>} counts
+     * CountsByColumnCompressed count.
+     * @member {Array.<number>} count
      * @memberof CountsByColumnCompressed
      * @instance
      */
-    CountsByColumnCompressed.prototype.counts = $util.emptyArray;
+    CountsByColumnCompressed.prototype.count = $util.emptyArray;
 
     /**
      * CountsByColumnCompressed countRepeat.
@@ -6803,10 +6803,10 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
     CountsByColumnCompressed.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.counts != null && message.counts.length) {
+        if (message.count != null && message.count.length) {
             writer.uint32(/* id 1, wireType 2 =*/10).fork();
-            for (let i = 0; i < message.counts.length; ++i)
-                writer.int32(message.counts[i]);
+            for (let i = 0; i < message.count.length; ++i)
+                writer.int32(message.count[i]);
             writer.ldelim();
         }
         if (message.countRepeat != null && message.countRepeat.length) {
@@ -6850,14 +6850,14 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
             let tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    if (!(message.counts && message.counts.length))
-                        message.counts = [];
+                    if (!(message.count && message.count.length))
+                        message.count = [];
                     if ((tag & 7) === 2) {
                         let end2 = reader.uint32() + reader.pos;
                         while (reader.pos < end2)
-                            message.counts.push(reader.int32());
+                            message.count.push(reader.int32());
                     } else
-                        message.counts.push(reader.int32());
+                        message.count.push(reader.int32());
                     break;
                 }
             case 2: {
@@ -6906,12 +6906,12 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
     CountsByColumnCompressed.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.counts != null && message.hasOwnProperty("counts")) {
-            if (!Array.isArray(message.counts))
-                return "counts: array expected";
-            for (let i = 0; i < message.counts.length; ++i)
-                if (!$util.isInteger(message.counts[i]))
-                    return "counts: integer[] expected";
+        if (message.count != null && message.hasOwnProperty("count")) {
+            if (!Array.isArray(message.count))
+                return "count: array expected";
+            for (let i = 0; i < message.count.length; ++i)
+                if (!$util.isInteger(message.count[i]))
+                    return "count: integer[] expected";
         }
         if (message.countRepeat != null && message.hasOwnProperty("countRepeat")) {
             if (!Array.isArray(message.countRepeat))
@@ -6935,12 +6935,12 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
         if (object instanceof $root.CountsByColumnCompressed)
             return object;
         let message = new $root.CountsByColumnCompressed();
-        if (object.counts) {
-            if (!Array.isArray(object.counts))
-                throw TypeError(".CountsByColumnCompressed.counts: array expected");
-            message.counts = [];
-            for (let i = 0; i < object.counts.length; ++i)
-                message.counts[i] = object.counts[i] | 0;
+        if (object.count) {
+            if (!Array.isArray(object.count))
+                throw TypeError(".CountsByColumnCompressed.count: array expected");
+            message.count = [];
+            for (let i = 0; i < object.count.length; ++i)
+                message.count[i] = object.count[i] | 0;
         }
         if (object.countRepeat) {
             if (!Array.isArray(object.countRepeat))
@@ -6966,13 +6966,13 @@ export const CountsByColumnCompressed = $root.CountsByColumnCompressed = (() => 
             options = {};
         let object = {};
         if (options.arrays || options.defaults) {
-            object.counts = [];
+            object.count = [];
             object.countRepeat = [];
         }
-        if (message.counts && message.counts.length) {
-            object.counts = [];
-            for (let j = 0; j < message.counts.length; ++j)
-                object.counts[j] = message.counts[j];
+        if (message.count && message.count.length) {
+            object.count = [];
+            for (let j = 0; j < message.count.length; ++j)
+                object.count[j] = message.count[j];
         }
         if (message.countRepeat && message.countRepeat.length) {
             object.countRepeat = [];
