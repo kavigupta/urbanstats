@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import tempfile
 from functools import lru_cache
 from urllib.error import HTTPError
@@ -160,42 +161,40 @@ def create_full_image(function, chunk_reduction):
     return full_image
 
 
-def look_up(full_image, lat, lon):
-    chunk_size = full_image.shape[0] // 180
-    assert full_image.shape == (180 * chunk_size, 360 * chunk_size)
-    y = (90 - lat) * chunk_size
-    x = (lon + 180) * chunk_size
-    # bilinear interpolation. Lat and lon are arrays.
-
-    y0 = np.floor(y).astype(int)
-    y1 = y0 + 1
-    x0 = np.floor(x).astype(int)
-    x1 = x0 + 1
-
-    y0 = np.clip(y0, 0, full_image.shape[0] - 1)
-    y1 = np.clip(y1, 0, full_image.shape[0] - 1)
-    x0 = np.clip(x0, 0, full_image.shape[1] - 1)
-    x1 = np.clip(x1, 0, full_image.shape[1] - 1)
-
-    y_frac = y - y0
-    x_frac = x - x0
-
-    top = full_image[y0, x0] * (1 - x_frac) + full_image[y0, x1] * x_frac
-    bottom = full_image[y1, x0] * (1 - x_frac) + full_image[y1, x1] * x_frac
-    return top * (1 - y_frac) + bottom * y_frac
+from .aggregate_gridded_data import GriddedDataSource
 
 
-def disaggregate_to_blocks(function, coordinates):
-    lat, lon = coordinates.T
-    full_img = create_full_image(function, 1)
-    by_block = look_up(full_img, lat, lon)
-    return by_block
+@dataclass
+class ElevationGriddedData(GriddedDataSource):
+    @lru_cache(maxsize=None)
+    def load_gridded_data(self, resolution: int | str = "most_detailed"):
+        if resolution == "most_detailed":
+            return create_full_image(aggregated_elevation, 1)
+        assert resolution == 60 * 2
+        return create_full_image(aggregated_elevation, 2)
 
 
-def disaggregate_both_to_blocks(coordinates):
-    elevation = disaggregate_to_blocks(aggregated_elevation, coordinates)
-    hilliness = disaggregate_to_blocks(aggregated_hilliness, coordinates)
-    return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
+@dataclass
+class HillinessGriddedData(GriddedDataSource):
+    @lru_cache(maxsize=None)
+    def load_gridded_data(self, resolution: int | str = "most_detailed"):
+        if resolution == "most_detailed":
+            return create_full_image(aggregated_hilliness, 1)
+        assert resolution == 60 * 2
+        return create_full_image(aggregated_hilliness, 2)
+
+
+# def disaggregate_to_blocks(function, coordinates):
+#     lat, lon = coordinates.T
+#     full_img = create_full_image(function, 1)
+#     by_block = look_up(full_img, lat, lon)
+#     return by_block
+
+
+# def disaggregate_both_to_blocks(coordinates):
+#     elevation = disaggregate_to_blocks(aggregated_elevation, coordinates)
+#     hilliness = disaggregate_to_blocks(aggregated_hilliness, coordinates)
+#     return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
 
 
 @lru_cache(maxsize=1)
@@ -208,10 +207,10 @@ def full_hilliness():
     return create_full_image(aggregated_hilliness, 2)
 
 
-@permacache("urbanstats/data/elevation/stats_by_blocks")
-def stats_by_blocks(year):
-    _, _, _, _, coordinates = load_raw_census(year)
-    return disaggregate_both_to_blocks(coordinates)
+# @permacache("urbanstats/data/elevation/stats_by_blocks")
+# def stats_by_blocks(year):
+#     _, _, _, _, coordinates = load_raw_census(year)
+#     return disaggregate_both_to_blocks(coordinates)
 
 
 @permacache("urbanstats/data/elevation/stats_by_canada_blocks_2")
@@ -221,19 +220,19 @@ def stats_by_canada_blocks(year):
     return disaggregate_both_to_blocks(coordinates)
 
 
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_american_shapefile_2",
-    key_function=dict(sf=lambda x: x.hash_key),
-)
-def elevation_statistics_for_american_shapefile(sf):
-    _, population_2020, *_ = load_raw_census(2020)
-    stats_times_population = stats_by_blocks(2020) * population_2020
-    stats_times_population["population"] = population_2020[:, 0]
-    result = aggregate_by_census_block(2020, sf, stats_times_population)
-    for k in result.columns[:-1]:
-        result[k] = result[k] / result.population
-    del result["population"]
-    return result
+# @permacache(
+#     "urbanstats/data/elevation/elevation_statistics_for_american_shapefile_2",
+#     key_function=dict(sf=lambda x: x.hash_key),
+# )
+# def elevation_statistics_for_american_shapefile(sf):
+#     _, population_2020, *_ = load_raw_census(2020)
+#     stats_times_population = stats_by_blocks(2020) * population_2020
+#     stats_times_population["population"] = population_2020[:, 0]
+#     result = aggregate_by_census_block(2020, sf, stats_times_population)
+#     for k in result.columns[:-1]:
+#         result[k] = result[k] / result.population
+#     del result["population"]
+#     return result
 
 
 @permacache(
