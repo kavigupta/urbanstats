@@ -1,9 +1,12 @@
 import numpy as np
 
+from urbanstats.data.aggregate_gridded_data import (
+    statistics_for_american_shapefile,
+    statistics_for_canada_shapefile,
+    statistics_for_shapefile,
+)
 from urbanstats.data.elevation import (
-    elevation_statistics_for_american_shapefile,
-    elevation_statistics_for_canada_shapefile,
-    elevation_statistics_for_shapefile,
+    elevation_gds,
 )
 from urbanstats.games.quiz_question_metadata import (
     ELEVATION,
@@ -85,24 +88,17 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def compute_intl(self, shapefile):
         if "international_gridded_data" not in shapefile.special_data_sources:
             return {}
-        result = elevation_statistics_for_shapefile(shapefile)
-        return {
-            "gridded_hilliness": result["hilliness"],
-            "gridded_elevation": result["elevation"],
-        }
+        result = statistics_for_shapefile(elevation_gds, shapefile)
+        return result
 
     def compute_usa(self, *, shapefile, existing_statistics, shapefile_table):
         del existing_statistics, shapefile_table
-        table = elevation_statistics_for_american_shapefile(shapefile)
-        return {
-            "gridded_hilliness": table["hilliness"],
-            "gridded_elevation": table["elevation"],
-        }
+        table = statistics_for_american_shapefile(elevation_gds, shapefile)
+        return table
 
     def compute_canada(self, *, shapefile, existing_statistics, shapefile_table):
         del existing_statistics, shapefile_table
-        table = elevation_statistics_for_canada_shapefile(shapefile)
-        return {
-            "gridded_hilliness": table["hilliness"],
-            "gridded_elevation": table["elevation"],
-        }
+        table = statistics_for_canada_shapefile(elevation_gds, shapefile)
+        print(elevation_gds.keys())
+        print(table.keys())
+        return table

@@ -164,7 +164,7 @@ def create_full_image(function, chunk_reduction):
 from .aggregate_gridded_data import GriddedDataSource
 
 
-@dataclass
+@dataclass(frozen=True)
 class ElevationGriddedData(GriddedDataSource):
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
@@ -174,7 +174,7 @@ class ElevationGriddedData(GriddedDataSource):
         return create_full_image(aggregated_elevation, 2)
 
 
-@dataclass
+@dataclass(frozen=True)
 class HillinessGriddedData(GriddedDataSource):
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
@@ -184,17 +184,10 @@ class HillinessGriddedData(GriddedDataSource):
         return create_full_image(aggregated_hilliness, 2)
 
 
-# def disaggregate_to_blocks(function, coordinates):
-#     lat, lon = coordinates.T
-#     full_img = create_full_image(function, 1)
-#     by_block = look_up(full_img, lat, lon)
-#     return by_block
-
-
-# def disaggregate_both_to_blocks(coordinates):
-#     elevation = disaggregate_to_blocks(aggregated_elevation, coordinates)
-#     hilliness = disaggregate_to_blocks(aggregated_hilliness, coordinates)
-#     return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
+elevation_gds = {
+    "gridded_hilliness": HillinessGriddedData(),
+    "gridded_elevation": ElevationGriddedData(),
+}
 
 
 @lru_cache(maxsize=1)
@@ -205,81 +198,3 @@ def full_elevation():
 @lru_cache(maxsize=1)
 def full_hilliness():
     return create_full_image(aggregated_hilliness, 2)
-
-
-# @permacache("urbanstats/data/elevation/stats_by_blocks")
-# def stats_by_blocks(year):
-#     _, _, _, _, coordinates = load_raw_census(year)
-#     return disaggregate_both_to_blocks(coordinates)
-
-
-@permacache("urbanstats/data/elevation/stats_by_canada_blocks_2")
-def stats_by_canada_blocks(year):
-    geos = load_canada_db_shapefile(year).geometry
-    coordinates = np.array([geos.y, geos.x]).T
-    return disaggregate_both_to_blocks(coordinates)
-
-
-# @permacache(
-#     "urbanstats/data/elevation/elevation_statistics_for_american_shapefile_2",
-#     key_function=dict(sf=lambda x: x.hash_key),
-# )
-# def elevation_statistics_for_american_shapefile(sf):
-#     _, population_2020, *_ = load_raw_census(2020)
-#     stats_times_population = stats_by_blocks(2020) * population_2020
-#     stats_times_population["population"] = population_2020[:, 0]
-#     result = aggregate_by_census_block(2020, sf, stats_times_population)
-#     for k in result.columns[:-1]:
-#         result[k] = result[k] / result.population
-#     del result["population"]
-#     return result
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_canada_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key),
-)
-def elevation_statistics_for_canada_shapefile(sf, year=2021):
-    canada_db = load_canada_db_shapefile(year)
-    stats_times_population = (
-        stats_by_canada_blocks(year) * np.array(canada_db.population)[:, None]
-    )
-    stats_times_population["population"] = canada_db.population
-    agg = aggregate_by_census_block_canada(
-        year,
-        sf,
-        stats_times_population,
-    )
-    for k in agg.columns[:-1]:
-        agg[k] = agg[k] / agg.population
-    del agg["population"]
-    return agg
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_shape_2",
-    key_function=dict(
-        shape=lambda x: stable_hash(shapely.to_geojson(x)),
-    ),
-)
-def elevation_statistics_for_shape(shape):
-    return compute_gpw_weighted_for_shape(
-        shape,
-        load_full_ghs(),
-        {"elevation": (full_elevation(), True), "hilliness": (full_hilliness(), True)},
-        do_histograms=False,
-    )
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_shapefile_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def elevation_statistics_for_shapefile(shapefile):
-    sf = shapefile.load_file()
-    result = {"elevation": [], "hilliness": []}
-    for shape in tqdm.tqdm(sf.geometry):
-        stats, _ = elevation_statistics_for_shape(shape)
-        result["elevation"].append(stats["elevation"])
-        result["hilliness"].append(stats["hilliness"])
-    return result

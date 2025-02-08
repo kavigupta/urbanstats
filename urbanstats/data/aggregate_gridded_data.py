@@ -1,10 +1,17 @@
 from abc import ABC, abstractmethod
-from permacache import permacache
+from permacache import permacache, stable_hash
 import numpy as np
 import pandas as pd
+import shapely
+import tqdm.auto as tqdm
 
+from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
-from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
+from urbanstats.geometry.census_aggregation import (
+    aggregate_by_census_block,
+    aggregate_by_census_block_canada,
+)
 
 
 class GriddedDataSource(ABC):
@@ -20,7 +27,39 @@ class GriddedDataSource(ABC):
 
 
 @permacache(
-    "urbanstats/data/aggregated_gridded_data/elevation_statistics_for_american_shapefile",
+    "urbanstats/data/aggregate_gridded_data/statistics_for_shape",
+    key_function=dict(
+        shape=lambda x: stable_hash(shapely.to_geojson(x)),
+    ),
+)
+def statistics_for_shape(gridded_data_sources, shape):
+    return compute_gpw_weighted_for_shape(
+        shape,
+        load_full_ghs(),
+        {
+            k: (v.load_gridded_data(60 * 2), True)
+            for k, v in gridded_data_sources.items()
+        },
+        do_histograms=False,
+    )
+
+
+@permacache(
+    "urbanstats/data/aggregate_gridded_data/statistics_for_shapefile",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def statistics_for_shapefile(gridded_data_sources, shapefile):
+    sf = shapefile.load_file()
+    result = {k: [] for k in gridded_data_sources}
+    for shape in tqdm.tqdm(sf.geometry):
+        stats, _ = statistics_for_shape(gridded_data_sources, shape)
+        for k, v in stats.items():
+            result[k].append(v)
+    return result
+
+
+@permacache(
+    "urbanstats/data/aggregate_gridded_data/statistics_for_american_shapefile",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def statistics_for_american_shapefile(gridded_data_sources, sf):
@@ -36,9 +75,38 @@ def statistics_for_american_shapefile(gridded_data_sources, sf):
     return result
 
 
+@permacache(
+    "urbanstats/data/aggregate_gridded_data/statistics_for_canada_shapefile",
+    key_function=dict(sf=lambda x: x.hash_key),
+)
+def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
+    canada_db = load_canada_db_shapefile(year)
+    stats_times_population = (
+        stats_by_canada_blocks(gridded_data_sources, year)
+        * np.array(canada_db.population)[:, None]
+    )
+    stats_times_population["population"] = canada_db.population
+    agg = aggregate_by_census_block_canada(
+        year,
+        sf,
+        stats_times_population,
+    )
+    for k in agg.columns[:-1]:
+        agg[k] = agg[k] / agg.population
+    del agg["population"]
+    return agg
+
+
 @permacache("urbanstats/data/aggregate_gridded_data/stats_by_blocks")
 def stats_by_blocks(gridded_data_sources, year):
     _, _, _, _, coordinates = load_raw_census(year)
+    return disaggregate_both_to_blocks(gridded_data_sources, coordinates)
+
+
+@permacache("urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks")
+def stats_by_canada_blocks(gridded_data_sources, year):
+    geos = load_canada_db_shapefile(year).geometry
+    coordinates = np.array([geos.y, geos.x]).T
     return disaggregate_both_to_blocks(gridded_data_sources, coordinates)
 
 
