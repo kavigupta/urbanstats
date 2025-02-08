@@ -221,10 +221,28 @@ export function Tooltip(props: { content: ReactNode }): ReactNode {
     const [show, setShow] = React.useState(false)
     return (
         <span>
-            <span style={{ cursor: 'pointer' }} onClick={() => { setShow(!show) }}><sup>ℹ️</sup></span>
+            <sup>
+                <div
+                    style={{
+                        cursor: 'pointer',
+                        fontSize: 'smaller',
+                        margin: '5px',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        display: 'unset',
+                        height: 'unset',
+                        padding: '0px 5px',
+                    }}
+                    onClick={() => { setShow(!show) }}
+                    className="quiz_clickable"
+                    role="button"
+                >
+                    {'ⓘ\ufe0e'}
+                </div>
+            </sup>
             {show
                 ? (
-                        <div style={{ fontSize: 'smaller' }}>
+                        <div style={{ fontSize: '20px' }}>
                             (
                             {props.content}
                             )
