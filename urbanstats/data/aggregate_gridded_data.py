@@ -12,6 +12,7 @@ from urbanstats.geometry.census_aggregation import (
     aggregate_by_census_block,
     aggregate_by_census_block_canada,
 )
+from urbanstats.statistics.statistic_collection import compute_subset_statistics
 
 
 class GriddedDataSource(ABC):
@@ -24,6 +25,52 @@ class GriddedDataSource(ABC):
             If it is an integer, it is the number of grid cells per degree. If it is a string, it
             is 'most_detailed'; the most detailed resolution available.
         """
+
+
+def disaggregate_gridded_data(
+    *,
+    gridded_data_sources,
+    shapefile,
+    existing_statistics,
+    shapefile_table,
+):
+    subsets = []
+    for subset_name, subset_fn in [
+        ("USA", statistics_for_american_shapefile),
+        ("Canada", statistics_for_canada_shapefile),
+    ]:
+        just_subset, subset_stats = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset=subset_name,
+            compute_function=lambda shapefile, existing_statistics, shapefile_table: subset_fn(
+                gridded_data_sources, shapefile
+            ),
+        )
+        if just_subset:
+            return subset_stats
+        if subset_stats:
+            subsets.append(subset_stats)
+
+    intl_stats = (
+        statistics_for_shapefile(gridded_data_sources, shapefile)
+        if "international_gridded_data" in shapefile.special_data_sources
+        else {}
+    )
+    if not subsets:
+        return intl_stats
+
+    for subset_stats in subsets:
+        assert set(subset_stats.keys()) == set(intl_stats.keys())
+
+    intl_stats = {k: np.array(v) for k, v in intl_stats.items()}
+
+    for subset_stats in subsets:
+        for k, v in subset_stats.items():
+            intl_stats[k][~np.isnan(v)] = v[~np.isnan(v)]
+
+    return intl_stats
 
 
 @permacache(
