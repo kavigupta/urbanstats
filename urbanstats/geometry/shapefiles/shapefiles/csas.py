@@ -7,9 +7,13 @@ CSAs = Shapefile(
     hash_key="census_csas_4",
     path="named_region_shapefiles/cb_2018_us_csa_500k.zip",
     shortname_extractor=lambda x: name_components("CSA", x)[0],
-    longname_extractor=lambda x: ", ".join(name_components("CSA", x, abbreviate=True)),
+    longname_extractor=lambda x: ", ".join(
+        name_components("Combined Statistical Area", x, abbreviate=True)
+    ),
     filter=lambda x: True,
-    meta=dict(type="CSA", source="Census", type_category="Census"),
+    meta=dict(
+        type="Combined Statistical Area", source="Census", type_category="Census"
+    ),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
 )

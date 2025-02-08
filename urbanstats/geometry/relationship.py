@@ -156,8 +156,8 @@ tiers = [
         "50M Person Circle",
     ],
     [
-        "CSA",
-        "MSA",
+        "Combined Statistical Area",
+        "Metropolitan Statistical Area",
         "County",
         "Historical Congressional District",
         "State House District",
@@ -166,7 +166,7 @@ tiers = [
         "Native Subdivision",
         "Urban Area",
         "Judicial District",
-        "County Cross CD",
+        "Cross County Congressional District",
         "Hospital Service Area",
         "Urban Center",
         "Urban Center",
@@ -178,7 +178,7 @@ tiers = [
         "CA Riding",
         "CA Population Center",
     ],
-    ["CCD", "City", "School District", "CA Census Subdivision"],
+    ["Census County Division", "City", "School District", "CA Census Subdivision"],
     ["Neighborhood", "ZIP"],
 ]
 

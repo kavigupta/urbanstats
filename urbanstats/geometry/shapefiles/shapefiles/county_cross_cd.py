@@ -49,7 +49,11 @@ COUNTY_CROSS_CD = Shapefile(
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
     filter=lambda x: True,
-    meta=dict(type="County Cross CD", source="Census", type_category="Political"),
+    meta=dict(
+        type="Cross County Congressional District",
+        source="Census",
+        type_category="Political",
+    ),
     chunk_size=100,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},

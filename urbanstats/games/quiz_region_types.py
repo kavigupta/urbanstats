@@ -12,7 +12,7 @@ quiz_weights = {}
 QUIZ_REGION_TYPES_USA = [
     "City",
     "County",
-    "MSA",
+    "Metropolitan Statistical Area",
     "State",
     "Urban Area",
     "Congressional District",

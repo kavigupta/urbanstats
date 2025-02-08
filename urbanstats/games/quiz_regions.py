@@ -54,7 +54,7 @@ class QuizRegion:
 region_map = {
     "city": QuizRegion(["City", "CA Census Subdivision"]),
     "county": QuizRegion(["County", "CA Census Division"]),
-    "msa_equiv": QuizRegion(["MSA", "CA CMA"]),
+    "msa_equiv": QuizRegion(["Metropolitan Statistical Area", "CA CMA"]),
     "uc": QuizRegion(["Urban Center"]),
     "state": QuizRegion(["Subnational Region"], lambda x: x.local_region_mask * 6 + 1),
     "ua": QuizRegion(["Urban Area", "CA Population Center"]),

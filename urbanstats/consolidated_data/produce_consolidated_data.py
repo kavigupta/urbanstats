@@ -17,8 +17,8 @@ from ..utils import output_typescript
 use = [
     "State",
     "County",
-    "MSA",
-    "CSA",
+    "Metroplitan Statistical Area",
+    "Combined Statistical Area",
     "Urban Area",
     "Congressional District",
     "Media Market",
@@ -26,7 +26,7 @@ use = [
 ]
 dont_use = [
     "ZIP",
-    "CCD",
+    "Census County Division",
     "City",
     "Neighborhood",
     "State House District",
@@ -41,7 +41,7 @@ dont_use = [
     "Continent",
     "Country",
     "Subnational Region",
-    "County Cross CD",
+    "Cross County Congressional District",
     "USDA County Type",
     "Hospital Service Area",
 ]
