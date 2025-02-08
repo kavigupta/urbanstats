@@ -99,6 +99,4 @@ class ElevationHillinessStatistics(GeographicStatistics):
     def compute_canada(self, *, shapefile, existing_statistics, shapefile_table):
         del existing_statistics, shapefile_table
         table = statistics_for_canada_shapefile(elevation_gds, shapefile)
-        print(elevation_gds.keys())
-        print(table.keys())
         return table
