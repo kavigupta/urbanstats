@@ -26,6 +26,6 @@ RUN apt-get -y install fluxbox
 RUN apt-get -y install xdg-user-dirs
 
 # needed for emoji display in tests
-RUN apt-get -y install fonts-noto-color-emoji fonts-noto-ui-core
+RUN apt-get -y install fonts-noto-color-emoji fonts-noto-ui-extra
 
 ENTRYPOINT [ "/bin/bash" ] 
