@@ -221,7 +221,14 @@ export function Tooltip(props: { content: ReactNode }): ReactNode {
     const [show, setShow] = React.useState(false)
     return (
         <span>
-            <span style={{ cursor: 'pointer' }} onClick={() => { setShow(!show) }}><sup>ℹ️</sup></span>
+            <sup>
+                <button
+                    style={{ fontSize: '24px', marginLeft: '10px' }}
+                    onClick={() => { setShow(!show) }}
+                >
+                    {'ℹ\ufe0e'}
+                </button>
+            </sup>
             {show
                 ? (
                         <div style={{ fontSize: 'smaller' }}>
