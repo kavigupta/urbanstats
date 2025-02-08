@@ -18,7 +18,7 @@ test('statistics-page', async (t) => {
     await t.expect(count.count).gte(1, 'Need highlighting')
     // click link "Data Explanation and Credit"
     await t
-        .click(Selector('a').withText(/^Data Explanation and Credit$/))
+        .click(Selector('a').withText(/^ⓘ\ufe0e Data Explanation and Credit$/))
     await t.expect(getLocation())
         .eql(`${target}/data-credit.html#explanation_population`)
 })

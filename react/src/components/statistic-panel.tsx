@@ -318,6 +318,10 @@ function Pagination(props: {
                             { scroll: { kind: 'none' } },
                         )}
                     >
+                        <b>
+                            {'ⓘ\ufe0e'}
+                        </b>
+                        {' '}
                         Data Explanation and Credit
                     </a>
                 </div>
