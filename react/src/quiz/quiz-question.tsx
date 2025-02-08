@@ -222,17 +222,23 @@ export function Tooltip(props: { content: ReactNode }): ReactNode {
     return (
         <span>
             <sup>
-                <button
+                <div
                     style={{
-                        fontSize: '15px',
-                        marginLeft: '10px',
-                        padding: '0px 5px',
+                        cursor: 'pointer',
+                        fontSize: 'smaller',
+                        margin: '5px',
                         fontWeight: 'bold',
+                        border: 'none',
+                        display: 'unset',
+                        height: 'unset',
+                        padding: '0px 5px',
                     }}
                     onClick={() => { setShow(!show) }}
+                    className="quiz_clickable"
+                    role="button"
                 >
                     {'ⓘ\ufe0e'}
-                </button>
+                </div>
             </sup>
             {show
                 ? (
