@@ -19,7 +19,7 @@ urbanstatsFixture('settings regression test', testLocation,
             localStorage.setItem('settings', egSettings)
             // Delete settings param so old settings don't persist after navigation
             // eslint-disable-next-line no-restricted-syntax -- Test file
-            window.location.href = testLocation
+            setTimeout(() => { window.location.href = testLocation }, 0)
         }, { dependencies: { egSettings, testLocation } })
     })
 
