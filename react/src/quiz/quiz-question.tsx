@@ -223,15 +223,20 @@ export function Tooltip(props: { content: ReactNode }): ReactNode {
         <span>
             <sup>
                 <button
-                    style={{ fontSize: '24px', marginLeft: '10px' }}
+                    style={{
+                        fontSize: '15px',
+                        marginLeft: '10px',
+                        padding: '0px 5px',
+                        fontWeight: 'bold',
+                    }}
                     onClick={() => { setShow(!show) }}
                 >
-                    {'ℹ\ufe0e'}
+                    {'ⓘ\ufe0e'}
                 </button>
             </sup>
             {show
                 ? (
-                        <div style={{ fontSize: 'smaller' }}>
+                        <div style={{ fontSize: '20px' }}>
                             (
                             {props.content}
                             )

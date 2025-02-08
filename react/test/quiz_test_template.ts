@@ -785,7 +785,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('custom-quiz', async (t) => {
         const checkFirstQuestionPage = async (): Promise<void> => {
-            await t.expect(Selector('[class*=quiztext]').innerText).eql('Which has a higher % increase in population-weighted density (r=1km) from 2010 to 2020?ℹ️')
+            await t.expect(Selector('[class*=quiztext]').innerText).eql('Which has a higher % increase in population-weighted density (r=1km) from 2010 to 2020?ℹ\ufe0e')
         }
 
         await checkFirstQuestionPage()
