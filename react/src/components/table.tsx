@@ -751,7 +751,12 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
             }
             else if (name.includes('Pollution')) {
                 if (isUnit) {
-                    return <span>&mu;g/m<sup>3</sup></span>
+                    return (
+                        <span>
+                            &mu;g/m
+                            <sup>3</sup>
+                        </span>
+                    )
                 }
                 return <span>{value.toFixed(2)}</span>
             }
