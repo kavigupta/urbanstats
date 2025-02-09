@@ -243,6 +243,7 @@ export default [
     'Other / Mixed % (2000)',
     'Other / Mixed % (2010)',
     'PW Mean % of parkland within 1km',
+    'PW Mean PM2.5 Pollution',
     'Population',
     'Population (2000)',
     'Population (2010)',

@@ -38,14 +38,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 244,
+                                        column: 245,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 247,
+                                        column: 248,
                                     },
                                     {
                                         source: {
@@ -66,7 +66,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 246,
+                                        column: 247,
                                     },
                                 ],
                             },
@@ -75,7 +75,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 249,
+                                        column: 250,
                                     },
                                 ],
                             },
@@ -89,7 +89,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 245,
+                                        column: 246,
                                     },
                                 ],
                             },
@@ -98,7 +98,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 248,
+                                        column: 249,
                                     },
                                 ],
                             },
@@ -204,14 +204,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 262,
+                                        column: 263,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 265,
+                                        column: 266,
                                     },
                                     {
                                         source: {
@@ -232,7 +232,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 264,
+                                        column: 265,
                                     },
                                 ],
                             },
@@ -246,7 +246,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 263,
+                                        column: 264,
                                     },
                                 ],
                             },
@@ -358,7 +358,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 305,
+                                        column: 306,
                                     },
                                 ],
                             },
@@ -372,7 +372,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 307,
+                                        column: 308,
                                     },
                                 ],
                             },
@@ -386,7 +386,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 306,
+                                        column: 307,
                                     },
                                 ],
                             },
@@ -760,7 +760,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 271,
+                                        column: 272,
                                     },
                                 ],
                             },
@@ -769,7 +769,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 274,
+                                        column: 275,
                                     },
                                 ],
                             },
@@ -783,7 +783,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 272,
+                                        column: 273,
                                     },
                                 ],
                             },
@@ -792,7 +792,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 275,
+                                        column: 276,
                                     },
                                 ],
                             },
@@ -806,7 +806,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 273,
+                                        column: 274,
                                     },
                                 ],
                             },
@@ -826,7 +826,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 266,
+                                        column: 267,
                                     },
                                 ],
                             },
@@ -835,7 +835,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 269,
+                                        column: 270,
                                     },
                                 ],
                             },
@@ -849,7 +849,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 267,
+                                        column: 268,
                                     },
                                 ],
                             },
@@ -858,7 +858,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 270,
+                                        column: 271,
                                     },
                                 ],
                             },
@@ -872,7 +872,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 268,
+                                        column: 269,
                                     },
                                 ],
                             },
@@ -1516,7 +1516,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 250,
+                                        column: 251,
                                     },
                                 ],
                             },
@@ -1850,7 +1850,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 299,
+                                        column: 300,
                                     },
                                 ],
                             },
@@ -1864,7 +1864,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 301,
+                                        column: 302,
                                     },
                                 ],
                             },
@@ -1878,7 +1878,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 300,
+                                        column: 301,
                                     },
                                 ],
                             },
@@ -1898,7 +1898,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 260,
+                                        column: 261,
                                     },
                                 ],
                             },
@@ -1918,7 +1918,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 258,
+                                        column: 259,
                                     },
                                 ],
                             },
@@ -1938,7 +1938,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 259,
+                                        column: 260,
                                     },
                                 ],
                             },
@@ -1958,7 +1958,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 254,
+                                        column: 255,
                                     },
                                 ],
                             },
@@ -1978,7 +1978,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 252,
+                                        column: 253,
                                     },
                                 ],
                             },
@@ -1998,7 +1998,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 253,
+                                        column: 254,
                                     },
                                 ],
                             },
@@ -2018,7 +2018,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 257,
+                                        column: 258,
                                     },
                                 ],
                             },
@@ -2038,7 +2038,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 255,
+                                        column: 256,
                                     },
                                 ],
                             },
@@ -2058,7 +2058,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 256,
+                                        column: 257,
                                     },
                                 ],
                             },
@@ -2078,7 +2078,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 313,
+                                        column: 314,
                                     },
                                 ],
                             },
@@ -2098,7 +2098,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 314,
+                                        column: 315,
                                     },
                                 ],
                             },
@@ -2118,7 +2118,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 315,
+                                        column: 316,
                                     },
                                 ],
                             },
@@ -2138,7 +2138,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 316,
+                                        column: 317,
                                     },
                                 ],
                             },
@@ -2158,7 +2158,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 317,
+                                        column: 318,
                                     },
                                 ],
                             },
@@ -2178,7 +2178,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 318,
+                                        column: 319,
                                     },
                                 ],
                             },
@@ -2198,7 +2198,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 261,
+                                        column: 262,
                                     },
                                 ],
                             },
@@ -2224,7 +2224,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 295,
+                                        column: 296,
                                     },
                                 ],
                             },
@@ -2244,7 +2244,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 294,
+                                        column: 295,
                                     },
                                 ],
                             },
@@ -2264,7 +2264,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 297,
+                                        column: 298,
                                     },
                                 ],
                             },
@@ -2284,7 +2284,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 296,
+                                        column: 297,
                                     },
                                 ],
                             },
@@ -2304,7 +2304,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 298,
+                                        column: 299,
                                     },
                                 ],
                             },
@@ -2327,14 +2327,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 292,
+                                        column: 293,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 293,
+                                        column: 294,
                                     },
                                 ],
                             },
@@ -2357,14 +2357,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 286,
+                                        column: 287,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 287,
+                                        column: 288,
                                     },
                                 ],
                             },
@@ -2387,14 +2387,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 288,
+                                        column: 289,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 289,
+                                        column: 290,
                                     },
                                 ],
                             },
@@ -2417,14 +2417,14 @@ export const rawStatsTree = [
                                             category: 'Population',
                                             name: 'US Census',
                                         },
-                                        column: 290,
+                                        column: 291,
                                     },
                                     {
                                         source: {
                                             category: 'Population',
                                             name: 'Canadian Census',
                                         },
-                                        column: 291,
+                                        column: 292,
                                     },
                                 ],
                             },
@@ -2444,7 +2444,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 304,
+                                        column: 305,
                                     },
                                 ],
                             },
@@ -2464,7 +2464,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 302,
+                                        column: 303,
                                     },
                                 ],
                             },
@@ -2484,7 +2484,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 303,
+                                        column: 304,
                                     },
                                 ],
                             },
@@ -2504,7 +2504,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 283,
+                                        column: 284,
                                     },
                                 ],
                             },
@@ -2524,7 +2524,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 285,
+                                        column: 286,
                                     },
                                 ],
                             },
@@ -2544,7 +2544,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 282,
+                                        column: 283,
                                     },
                                 ],
                             },
@@ -2564,7 +2564,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 284,
+                                        column: 285,
                                     },
                                 ],
                             },
@@ -3102,8 +3102,28 @@ export const rawStatsTree = [
     },
     {
         id: 'climate_change',
-        name: 'Climate Change',
+        name: 'Environment',
         contents: [
+            {
+                id: 'pm_25_2018_2022',
+                name: 'PW Mean PM2.5 Pollution',
+                contents: [
+                    {
+                        year: 2020,
+                        stats_by_source: [
+                            {
+                                name: 'PW Mean PM2.5 Pollution',
+                                stats: [
+                                    {
+                                        source: null,
+                                        column: 244,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
             {
                 id: 'heating_utility_gas',
                 name: 'Utility gas heating %',
@@ -4354,7 +4374,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 281,
+                                        column: 282,
                                     },
                                 ],
                             },
@@ -4374,7 +4394,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 278,
+                                        column: 279,
                                     },
                                 ],
                             },
@@ -4394,7 +4414,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 279,
+                                        column: 280,
                                     },
                                 ],
                             },
@@ -4414,7 +4434,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 277,
+                                        column: 278,
                                     },
                                 ],
                             },
@@ -4434,7 +4454,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 280,
+                                        column: 281,
                                     },
                                 ],
                             },
@@ -4636,7 +4656,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 311,
+                                        column: 312,
                                     },
                                 ],
                             },
@@ -4676,7 +4696,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 312,
+                                        column: 313,
                                     },
                                 ],
                             },
@@ -4716,7 +4736,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 310,
+                                        column: 311,
                                     },
                                 ],
                             },
@@ -4756,7 +4776,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 309,
+                                        column: 310,
                                     },
                                 ],
                             },
@@ -5082,7 +5102,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 251,
+                                        column: 252,
                                     },
                                 ],
                             },
@@ -5102,7 +5122,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 276,
+                                        column: 277,
                                     },
                                 ],
                             },
@@ -5122,7 +5142,7 @@ export const rawStatsTree = [
                                 stats: [
                                     {
                                         source: null,
-                                        column: 308,
+                                        column: 309,
                                     },
                                 ],
                             },

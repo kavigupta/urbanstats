@@ -252,6 +252,7 @@ export default [
     'other / mixed_2000',
     'other / mixed_2010',
     'park_percent_1km_v2',
+    'pm_25_2018_2022',
     'population',
     'population_2000',
     'population_2010',

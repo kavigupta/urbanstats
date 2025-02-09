@@ -243,6 +243,7 @@ export default [
     '2000',
     '2010',
     'park',
+    'pollution',
     'population',
     '2000',
     '2010',

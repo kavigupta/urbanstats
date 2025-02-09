@@ -504,7 +504,8 @@ statistics_tree = StatisticTree(
         ),
         **just_2020_category(
             "climate_change",
-            "Climate Change",
+            "Environment",
+            "pm_25_2018_2022",
             "heating_utility_gas",
             "heating_electricity",
             "heating_bottled_tank_lp_gas",

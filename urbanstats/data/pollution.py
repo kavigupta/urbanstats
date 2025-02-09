@@ -1,19 +1,35 @@
+from dataclasses import dataclass
+from functools import lru_cache
 import numpy as np
-import shapely
-import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import permacache
+from urbanstats.data.aggregate_gridded_data import GriddedDataSource
 from urbanstats.data.gpw import (
-    compute_gpw_weighted_for_shape,
     lat_from_row_idx,
-    load_full_ghs,
     lon_from_col_idx,
 )
 
 deg_2_ghs_index = 60 * 2  # 30 arcseconds
 
+@dataclass(frozen=True)
+class HillinessGriddedData(GriddedDataSource):
+    # pylint: disable=method-cache-max-size-none
+    @lru_cache(maxsize=None)
+    def load_gridded_data(self, resolution: int | str = "most_detailed"):
+        assert resolution in {"most_detailed", 60 * 2}
+        return pollution_in_ghs_coordinates()
+
+
+pollution_gds = {
+    "pm_25_2018_2022": HillinessGriddedData(),
+}
+
 
 @permacache("urbanstats/data/pollution/pollution_in_ghs_coordinates")
-def pollution_in_ghs_coordinates(pollution_data, latitudes, longitudes):
+def pollution_in_ghs_coordinates():
+    with np.load("named_region_shapefiles/pollution/annual_mean.npz") as f:
+        latitudes = f["latitudes"]
+        longitudes = f["longitudes"]
+        pollution_data = f["mean_pollution"]
     ghs_lat_deg = lat_from_row_idx(np.arange(180 * deg_2_ghs_index))
     ghs_lon_deg = lon_from_col_idx(np.arange(360 * deg_2_ghs_index))
 
@@ -60,32 +76,4 @@ def pollution_in_ghs_coordinates(pollution_data, latitudes, longitudes):
 
             result[min_y : max_y + 1, min_x : max_x + 1] += pollution_pulled
 
-    return result
-
-
-@permacache(
-    "urbanstats/data/pollution/pollution_statistics_for_shape",
-    key_function=dict(
-        shape=lambda x: stable_hash(shapely.to_geojson(x)),
-    ),
-)
-def pollution_statistics_for_shape(shape):
-    return compute_gpw_weighted_for_shape(
-        shape,
-        load_full_ghs(),
-        {"pm_2point5_2018_2022": (pollution_in_ghs_coordinates(), True)},
-        do_histograms=False,
-    )
-
-
-@permacache(
-    "urbanstats/data/pollution/pollution_statistics_for_shapefile",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def pollution_statistics_for_shapefile(shapefile):
-    sf = shapefile.load_file()
-    result = {"pm_2point5_2018_2022": []}
-    for shape in tqdm.tqdm(sf.geometry):
-        stats, _ = pollution_statistics_for_shape(shape)
-        result["pm_2point5_2018_2022"].append(stats["pm_2point5_2018_2022"])
     return result

@@ -243,6 +243,7 @@ export default [
     null,
     null,
     '!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?',
+    'higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.',
     'higher population',
     null,
     null,

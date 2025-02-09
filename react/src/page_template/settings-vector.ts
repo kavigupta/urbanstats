@@ -380,6 +380,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_education_high_school_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_education_ugrad_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_education_grad_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_pm_25_2018_2022', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
