@@ -1,22 +1,14 @@
 import tempfile
+from dataclasses import dataclass
 from functools import lru_cache
 from urllib.error import HTTPError
 
 import netCDF4
 import numpy as np
-import pandas as pd
-import shapely
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import permacache
 
-from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
-from urbanstats.data.census_blocks import load_raw_census
-from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
 from urbanstats.data.nasa import get_nasa_data
-from urbanstats.geometry.census_aggregation import (
-    aggregate_by_census_block,
-    aggregate_by_census_block_canada,
-)
 
 PER_CELL = 3600
 CHUNK = 15  # double GPW's 30 arcsecond resolution
@@ -160,42 +152,35 @@ def create_full_image(function, chunk_reduction):
     return full_image
 
 
-def look_up(full_image, lat, lon):
-    chunk_size = full_image.shape[0] // 180
-    assert full_image.shape == (180 * chunk_size, 360 * chunk_size)
-    y = (90 - lat) * chunk_size
-    x = (lon + 180) * chunk_size
-    # bilinear interpolation. Lat and lon are arrays.
-
-    y0 = np.floor(y).astype(int)
-    y1 = y0 + 1
-    x0 = np.floor(x).astype(int)
-    x1 = x0 + 1
-
-    y0 = np.clip(y0, 0, full_image.shape[0] - 1)
-    y1 = np.clip(y1, 0, full_image.shape[0] - 1)
-    x0 = np.clip(x0, 0, full_image.shape[1] - 1)
-    x1 = np.clip(x1, 0, full_image.shape[1] - 1)
-
-    y_frac = y - y0
-    x_frac = x - x0
-
-    top = full_image[y0, x0] * (1 - x_frac) + full_image[y0, x1] * x_frac
-    bottom = full_image[y1, x0] * (1 - x_frac) + full_image[y1, x1] * x_frac
-    return top * (1 - y_frac) + bottom * y_frac
+from .aggregate_gridded_data import GriddedDataSource
 
 
-def disaggregate_to_blocks(function, coordinates):
-    lat, lon = coordinates.T
-    full_img = create_full_image(function, 1)
-    by_block = look_up(full_img, lat, lon)
-    return by_block
+@dataclass(frozen=True)
+class ElevationGriddedData(GriddedDataSource):
+    # pylint: disable=method-cache-max-size-none
+    @lru_cache(maxsize=None)
+    def load_gridded_data(self, resolution: int | str = "most_detailed"):
+        if resolution == "most_detailed":
+            return create_full_image(aggregated_elevation, 1)
+        assert resolution == 60 * 2
+        return create_full_image(aggregated_elevation, 2)
 
 
-def disaggregate_both_to_blocks(coordinates):
-    elevation = disaggregate_to_blocks(aggregated_elevation, coordinates)
-    hilliness = disaggregate_to_blocks(aggregated_hilliness, coordinates)
-    return pd.DataFrame(dict(elevation=elevation, hilliness=hilliness))
+@dataclass(frozen=True)
+class HillinessGriddedData(GriddedDataSource):
+    # pylint: disable=method-cache-max-size-none
+    @lru_cache(maxsize=None)
+    def load_gridded_data(self, resolution: int | str = "most_detailed"):
+        if resolution == "most_detailed":
+            return create_full_image(aggregated_hilliness, 1)
+        assert resolution == 60 * 2
+        return create_full_image(aggregated_hilliness, 2)
+
+
+elevation_gds = {
+    "gridded_hilliness": HillinessGriddedData(),
+    "gridded_elevation": ElevationGriddedData(),
+}
 
 
 @lru_cache(maxsize=1)
@@ -206,81 +191,3 @@ def full_elevation():
 @lru_cache(maxsize=1)
 def full_hilliness():
     return create_full_image(aggregated_hilliness, 2)
-
-
-@permacache("urbanstats/data/elevation/stats_by_blocks")
-def stats_by_blocks(year):
-    _, _, _, _, coordinates = load_raw_census(year)
-    return disaggregate_both_to_blocks(coordinates)
-
-
-@permacache("urbanstats/data/elevation/stats_by_canada_blocks_2")
-def stats_by_canada_blocks(year):
-    geos = load_canada_db_shapefile(year).geometry
-    coordinates = np.array([geos.y, geos.x]).T
-    return disaggregate_both_to_blocks(coordinates)
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_american_shapefile_2",
-    key_function=dict(sf=lambda x: x.hash_key),
-)
-def elevation_statistics_for_american_shapefile(sf):
-    _, population_2020, *_ = load_raw_census(2020)
-    stats_times_population = stats_by_blocks(2020) * population_2020
-    stats_times_population["population"] = population_2020[:, 0]
-    result = aggregate_by_census_block(2020, sf, stats_times_population)
-    for k in result.columns[:-1]:
-        result[k] = result[k] / result.population
-    del result["population"]
-    return result
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_canada_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key),
-)
-def elevation_statistics_for_canada_shapefile(sf, year=2021):
-    canada_db = load_canada_db_shapefile(year)
-    stats_times_population = (
-        stats_by_canada_blocks(year) * np.array(canada_db.population)[:, None]
-    )
-    stats_times_population["population"] = canada_db.population
-    agg = aggregate_by_census_block_canada(
-        year,
-        sf,
-        stats_times_population,
-    )
-    for k in agg.columns[:-1]:
-        agg[k] = agg[k] / agg.population
-    del agg["population"]
-    return agg
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_shape_2",
-    key_function=dict(
-        shape=lambda x: stable_hash(shapely.to_geojson(x)),
-    ),
-)
-def elevation_statistics_for_shape(shape):
-    return compute_gpw_weighted_for_shape(
-        shape,
-        load_full_ghs(),
-        {"elevation": (full_elevation(), True), "hilliness": (full_hilliness(), True)},
-        do_histograms=False,
-    )
-
-
-@permacache(
-    "urbanstats/data/elevation/elevation_statistics_for_shapefile_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def elevation_statistics_for_shapefile(shapefile):
-    sf = shapefile.load_file()
-    result = {"elevation": [], "hilliness": []}
-    for shape in tqdm.tqdm(sf.geometry):
-        stats, _ = elevation_statistics_for_shape(shape)
-        result["elevation"].append(stats["elevation"])
-        result["hilliness"].append(stats["hilliness"])
-    return result
