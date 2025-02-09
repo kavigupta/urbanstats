@@ -2,7 +2,7 @@ import { saveAs } from 'file-saver'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
-import { StatPath } from '../page_template/statistic-tree'
+import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
@@ -18,7 +18,7 @@ export const endpoint = 'https://persistent.urbanstats.org'
 
 /* eslint-disable no-restricted-syntax -- Data from server */
 // stat_path is optional for backwards compatibility
-export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: string, stat_path?: StatPath };
+export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: StatName | '%', stat_path?: StatPath };
 export interface JuxtaQuestion extends JuxtaQuestionJSON { kind: 'juxtastat' }
 export interface RetroQuestionJSON { a_ease: number, b_ease: number, a: JuxtaQuestionJSON, b: JuxtaQuestionJSON };
 export interface RetroQuestion { kind: 'retrostat', a_ease: number, b_ease: number, a: JuxtaQuestion, b: JuxtaQuestion }

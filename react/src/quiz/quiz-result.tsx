@@ -10,6 +10,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath } from '../page_template/statistic-tree'
+import { StatName } from '../page_template/statistic-tree'
 
 import { msRemaining, renderTimeRemaining } from './dates'
 import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
@@ -539,7 +540,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
     )
 }
 
-function Value({ stat, statColumn }: { stat: number, statColumn: string }): ReactNode {
+function Value({ stat, statColumn }: { stat: number, statColumn: StatName | '%' }): ReactNode {
     return (
         <span>
             <Statistic
