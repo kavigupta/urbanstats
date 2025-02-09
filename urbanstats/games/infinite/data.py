@@ -14,7 +14,9 @@ from urbanstats.games.quiz_sampling import (
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
-from urbanstats.statistics.output_statistics_metadata import internal_statistic_names, statistic_internal_to_display_name
+from urbanstats.statistics.output_statistics_metadata import (
+    statistic_internal_to_display_name,
+)
 from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.utils import output_typescript
 
@@ -128,7 +130,9 @@ def output_quiz_sampling_probabilities_locally():
         json.dump(
             dict(
                 allGeographies=qqp.all_geographies,
-                allStatNames=[statistic_internal_to_display_name()[s] for s in qqp.all_stats],
+                allStatNames=[
+                    statistic_internal_to_display_name()[s] for s in qqp.all_stats
+                ],
                 statPaths=[get_statistic_column_path(s) for s in qqp.all_stats],
                 statQuestionNames=[stat_to_quiz_name()[s] for s in qqp.all_stats],
                 questionDistribution=descriptors,
