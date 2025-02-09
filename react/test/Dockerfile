@@ -12,7 +12,7 @@ RUN pip3 cache purge
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
 
-RUN apt-get -y install chromium=132.*
+RUN apt-get -y install chromium=133.*
 RUN apt-get -y install xvfb
 
 RUN apt-get -y install sqlite3
@@ -26,6 +26,6 @@ RUN apt-get -y install fluxbox
 RUN apt-get -y install xdg-user-dirs
 
 # needed for emoji display in tests
-RUN apt-get -y install fonts-noto-color-emoji
+RUN apt-get -y install fonts-noto-color-emoji fonts-noto-core
 
 ENTRYPOINT [ "/bin/bash" ] 
