@@ -1,23 +1,14 @@
-from dataclasses import dataclass
 import tempfile
+from dataclasses import dataclass
 from functools import lru_cache
 from urllib.error import HTTPError
 
 import netCDF4
 import numpy as np
-import pandas as pd
-import shapely
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import permacache
 
-from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
-from urbanstats.data.census_blocks import load_raw_census
-from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
 from urbanstats.data.nasa import get_nasa_data
-from urbanstats.geometry.census_aggregation import (
-    aggregate_by_census_block,
-    aggregate_by_census_block_canada,
-)
 
 PER_CELL = 3600
 CHUNK = 15  # double GPW's 30 arcsecond resolution
@@ -166,6 +157,7 @@ from .aggregate_gridded_data import GriddedDataSource
 
 @dataclass(frozen=True)
 class ElevationGriddedData(GriddedDataSource):
+    # pylint: disable=method-cache-max-size-none
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
         if resolution == "most_detailed":
@@ -176,6 +168,7 @@ class ElevationGriddedData(GriddedDataSource):
 
 @dataclass(frozen=True)
 class HillinessGriddedData(GriddedDataSource):
+    # pylint: disable=method-cache-max-size-none
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
         if resolution == "most_detailed":

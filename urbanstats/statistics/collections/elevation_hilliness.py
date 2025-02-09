@@ -1,17 +1,11 @@
-import numpy as np
-
 from urbanstats.data.aggregate_gridded_data import disaggregate_gridded_data
-from urbanstats.data.elevation import (
-    elevation_gds,
-)
+from urbanstats.data.elevation import elevation_gds
 from urbanstats.games.quiz_question_metadata import (
     ELEVATION,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import (
-    GeographicStatistics,
-)
+from urbanstats.statistics.statistic_collection import GeographicStatistics
 
 POPULATION_WEIGHTED_EXPLANATION = (
     "Population weighted elevation/hilliness"

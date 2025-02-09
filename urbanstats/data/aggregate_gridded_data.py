@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from permacache import permacache, stable_hash
+
 import numpy as np
 import pandas as pd
 import shapely
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
@@ -44,7 +45,7 @@ def disaggregate_gridded_data(
             existing_statistics,
             shapefile_table,
             subset=subset_name,
-            compute_function=lambda shapefile, existing_statistics, shapefile_table: subset_fn(
+            compute_function=lambda shapefile, existing_statistics, shapefile_table, subset_fn=subset_fn: subset_fn(
                 gridded_data_sources, shapefile
             ),
         )
