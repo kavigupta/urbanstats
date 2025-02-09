@@ -2,9 +2,6 @@ import React from 'react'
 import seedrandom from 'seedrandom'
 
 import quiz_infinite from '../data/quiz_infinite'
-import quiz_names from '../data/quiz_names'
-import statistic_name_list from '../data/statistic_name_list'
-import statistic_path_list from '../data/statistic_path_list'
 import { loadProtobuf } from '../load_json'
 import { useJuxtastatColors } from '../page_template/colors'
 import { QuizFullData } from '../utils/protos'
@@ -78,9 +75,9 @@ export async function sampleRandomQuestion(seed: string, version: number, index:
         [geoA, geoB] = [geoB, geoA]
     }
     const stat = tronche.stat[troncheIdx]
-    const statName = statistic_name_list[quizInfiniteV.allStats[stat]]
-    const statPath = statistic_path_list[quizInfiniteV.allStats[stat]]
-    const question: string = quiz_names[quizInfiniteV.allStats[stat]]
+    const statName = quizInfiniteV.allStatNames[stat]
+    const statPath = quizInfiniteV.statPaths[stat]
+    const question: string = quizInfiniteV.statQuestionNames[stat]
     const sA = data.stats[stat].stats![geoA]
     const sB = data.stats[stat].stats![geoB]
     return {

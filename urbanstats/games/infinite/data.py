@@ -6,6 +6,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
+from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
 from urbanstats.games.quiz_sampling import (
     compute_geographies_by_type,
@@ -13,7 +14,8 @@ from urbanstats.games.quiz_sampling import (
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
-from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.statistics.output_statistics_metadata import internal_statistic_names, statistic_internal_to_display_name
+from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.utils import output_typescript
 
 tronche_size = 100_000
@@ -121,11 +123,14 @@ def output_quiz_sampling_probabilities_locally():
             )
         )
 
+    # internal_indices = [internal_statistic_names().index(s) for s in qqp.all_stats]
     with open(f"stored_quizzes/quiz_sampling_info/{juxta_version}.json", "w") as f:
         json.dump(
             dict(
                 allGeographies=qqp.all_geographies,
-                allStats=[internal_statistic_names().index(s) for s in qqp.all_stats],
+                allStatNames=[statistic_internal_to_display_name()[s] for s in qqp.all_stats],
+                statPaths=[get_statistic_column_path(s) for s in qqp.all_stats],
+                statQuestionNames=[stat_to_quiz_name()[s] for s in qqp.all_stats],
                 questionDistribution=descriptors,
                 juxtaVersion=juxta_version,
             ),
