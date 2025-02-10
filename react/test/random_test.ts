@@ -12,7 +12,7 @@ async function assertNoSetUniverse(t: TestController): Promise<void> {
 
 async function assertNoSpecials(t: TestController): Promise<void> {
     const location = await getLocation()
-    await t.expect(location).notMatch(/.*Historical Congressional.*/)
+    await t.expect(location).notMatch(/.*Historical+Congressional.*/)
 }
 
 async function assertCorrect(t: TestController): Promise<void> {
@@ -35,7 +35,7 @@ for (let count = 0; count < repeats; count++) {
 urbanstatsFixture('random-uniformly', `${target}/random.html?sampleby=uniform`)
 
 for (let count = 0; count < repeats; count++) {
-    test(`random-usa-by-population-${count}`, async (t) => {
+    test(`random-uniformly-${count}`, async (t) => {
         await assertCorrect(t)
     })
 }
