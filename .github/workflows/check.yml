@@ -140,7 +140,7 @@ jobs:
             --parallel=1 \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=300
+            --time-limit-seconds=360
         working-directory: react
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

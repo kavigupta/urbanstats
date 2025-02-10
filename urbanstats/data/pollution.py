@@ -26,10 +26,10 @@ pollution_gds = {
 
 @permacache("urbanstats/data/pollution/pollution_in_ghs_coordinates")
 def pollution_in_ghs_coordinates():
-    with np.load("named_region_shapefiles/pollution/annual_mean.npz") as f:
-        latitudes = f["latitudes"]
-        longitudes = f["longitudes"]
-        pollution_data = f["mean_pollution"]
+    f = np.load("named_region_shapefiles/pollution/annual_mean.npz")
+    latitudes = f["latitudes"]
+    longitudes = f["longitudes"]
+    pollution_data = f["mean_pollution"]
     ghs_lat_deg = lat_from_row_idx(np.arange(180 * deg_2_ghs_index))
     ghs_lon_deg = lon_from_col_idx(np.arange(360 * deg_2_ghs_index))
 
@@ -53,27 +53,34 @@ def pollution_in_ghs_coordinates():
     result = np.zeros((180 * deg_2_ghs_index, 360 * deg_2_ghs_index), dtype=np.float32)
 
     for di in range(2):
-        lat_frac_specific = lat_frac if di == 0 else 1 - lat_frac
         for dj in range(2):
-            lon_frac_specific = lon_frac if dj == 0 else 1 - lon_frac
-            y = top_left_lat + di
-            x = top_left_lon + dj
-            mask_y = (y >= 0) & (y < pollution_data.shape[0])
-            mask_x = (x >= 0) & (x < pollution_data.shape[1])
-            [yidxs] = np.where(mask_y)
-            min_y, max_y = yidxs[0], yidxs[-1]
-            [xidxs] = np.where(mask_x)
-            min_x, max_x = xidxs[0], xidxs[-1]
-
-            pollution_pulled = (
-                pollution_data[
-                    y[mask_y][:, None],
-                    x[mask_x][None, :],
-                ]
-                * lat_frac_specific[mask_y][:, None]
-                * lon_frac_specific[mask_x][None, :]
+            _modify_values(
+                pollution_data,
+                result,
+                frac_y=lat_frac if di == 0 else 1 - lat_frac,
+                frac_x=lon_frac if dj == 0 else 1 - lon_frac,
+                y_idx=top_left_lat + di,
+                x_idx=top_left_lon + dj,
             )
 
-            result[min_y : max_y + 1, min_x : max_x + 1] += pollution_pulled
-
     return result
+
+
+def _modify_values(inp_data, out_data, *, frac_y, frac_x, y_idx, x_idx):
+    mask_y = (y_idx >= 0) & (y_idx < inp_data.shape[0])
+    mask_x = (x_idx >= 0) & (x_idx < inp_data.shape[1])
+    [yidxs] = np.where(mask_y)
+    min_y, max_y = yidxs[0], yidxs[-1]
+    [xidxs] = np.where(mask_x)
+    min_x, max_x = xidxs[0], xidxs[-1]
+
+    pollution_pulled = (
+        inp_data[
+            y_idx[mask_y][:, None],
+            x_idx[mask_x][None, :],
+        ]
+        * frac_y[mask_y][:, None]
+        * frac_x[mask_x][None, :]
+    )
+
+    out_data[min_y : max_y + 1, min_x : max_x + 1] += pollution_pulled
