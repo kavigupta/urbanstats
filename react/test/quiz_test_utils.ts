@@ -169,7 +169,7 @@ export const friendsText = ClientFunction<string[], []>(() => {
 
 const correctAnswerSequences = new Map<string, string[]>()
 
-async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: string[], version: number): Promise<void> {
+async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: string[], version: number, cas: Map<string, string[]>): Promise<void> {
     for (const seed of seeds) {
         // set localStorage such that I_{seedStr}_{version} has had 30 questions answered
         await t.eval(() => {
@@ -201,11 +201,11 @@ async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: stri
                 throw new Error(`unexpected text ${text} in ${await symbol.textContent}`)
             }
         }
-        correctAnswerSequences.set(seed, correctAnswers)
+        cas.set(seed, correctAnswers)
     }
 }
 
-export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number): void {
+export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number, cas: Map<string, string[]> | undefined = undefined): void {
     quizFixture(
         'collect correct answers',
         `${target}/quiz.html`,
@@ -215,16 +215,16 @@ export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], versi
     )
 
     test('collect correct answers', async (t) => {
-        await collectCorrectJuxtaInfiniteAnswers(t, seeds, version)
+        await collectCorrectJuxtaInfiniteAnswers(t, seeds, version, cas ?? correctAnswerSequences)
     })
 }
 
-export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string): Promise<void> {
+export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string, cas: Map<string, string[]> | undefined = undefined): Promise<void> {
     // check if isCorrect is a string, then interpret as 0s and 1s
     if (typeof isCorrect === 'string') {
         isCorrect = isCorrect.split('').map(c => c === '1')
     }
-    const correctAnswerSequence = correctAnswerSequences.get(seed)!
+    const correctAnswerSequence = (cas ?? correctAnswerSequences).get(seed)!
     for (let i = start; i < start + isCorrect.length; i++) {
         await clickButton(t, isCorrect[i - start] === (correctAnswerSequence[i] === 'a') ? 'a' : 'b')
         await t.wait(500)

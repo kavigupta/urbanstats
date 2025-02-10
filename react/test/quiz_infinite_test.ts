@@ -1,3 +1,4 @@
+import { globSync } from 'glob'
 import { Selector } from 'testcafe'
 
 import { runQuery } from './quiz_test_template'
@@ -34,10 +35,38 @@ async function correctIncorrect(t: TestController): Promise<boolean[]> {
 
 const localStorageDefault = { persistent_id: '000000000000007', secure_id: '00000003' }
 
-const seeds = ['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04', 'deadbeef05', 'deadbeef06']
 const version = 1
 
-collectCorrectJuxtaInfiniteAnswersFixture(seeds, version)
+function regressionTestForVersion(v: number): void {
+    const cas = new Map<string, string[]>()
+    collectCorrectJuxtaInfiniteAnswersFixture(['hi'], v, cas)
+
+    quizFixture(`version-${v}-test`, `${target}/quiz.html#mode=infinite&seed=hi&v=${v}`, localStorageDefault, '', 'desktop')
+
+    test(`version-${v}-test`, async (t) => {
+        const correctPattern = [...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)]
+        await provideAnswers(t, 0, correctPattern, 'hi', cas)
+        await t.expect(await correctIncorrect(t)).eql(correctPattern)
+        await quizScreencap(t)
+    })
+}
+
+function regressionTestForAllVersions(): void {
+    // Get all numbers such that stored_quizzes/quiz_sampling_info/${version}.json exists
+    // first list the files
+    const files = globSync('../stored_quizzes/quiz_sampling_info/*.json')
+    if (files.length === 0) {
+        throw new Error('no files found. Check your cwd')
+    }
+    const vs = files.map(f => parseInt(/(\d+).json$/.exec(f)![0]))
+    for (const v of vs) {
+        regressionTestForVersion(v)
+    }
+}
+
+regressionTestForAllVersions()
+
+collectCorrectJuxtaInfiniteAnswersFixture(['deadbeef00', 'deadbeef01', 'deadbeef02', 'deadbeef03', 'deadbeef04', 'deadbeef05', 'deadbeef06'], version)
 
 const seedStr = 'deadbeef00'
 
