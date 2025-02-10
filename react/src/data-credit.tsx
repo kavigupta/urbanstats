@@ -639,6 +639,36 @@ export function DataCreditPanel(): ReactNode {
                             block as a weight.
                         </div>
 
+                        <NRef name="pollution" h="h1">Pollution</NRef>
+                        <div>
+                            We compute PM2.5 pollution using the Satellite-derived PM2.5 dataset from the
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Shen, S. Li, C. van Donkelaar, A. Jacobs, N. Wang, C. Martin, R. V.:
+                                        {' '}
+                                        <i>
+                                            Enhancing Global Estimation of Fine Particulate Matter Concentrations by
+                                            Including Geophysical a Priori Information in Deep Learning.
+                                        </i>
+                                        {' '}
+                                        (2024) ACS ES&T Air. DOI:
+                                        {' '}
+                                        <a href="https://doi.org/10.1021/acsestair.3c00054">https://doi.org/10.1021/acsestair.3c00054</a>
+                                        {'. '}
+                                        Accessed 2025.
+                                    </span>
+                                )}
+                            >
+                                Atmospheric Composition Analysis group.
+                            </FootnoteRef>
+                            {'. '}
+                            This data is provided at 0.01 degree resolution (36 arc-seconds). We disaggregate to 30 arc-second blocks,
+                            and then use the same method as for elevation and hilliness to compute population weighted pollution
+                            for each geography.
+                        </div>
+
                         <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
                         <div>
                             Election Data is from

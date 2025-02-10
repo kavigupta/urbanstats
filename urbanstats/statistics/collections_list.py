@@ -46,6 +46,7 @@ from urbanstats.statistics.collections.national_origin_language import (
     NationalOriginLanguageStatistics,
 )
 from urbanstats.statistics.collections.occupation import OccupationStatistics
+from urbanstats.statistics.collections.pollution import PollutionStatistics
 from urbanstats.statistics.collections.segregation import SegregationStatistics
 from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
     SexualOrientationRelationshipStatusStatistics,
@@ -106,4 +107,5 @@ statistic_collections = (
     ElevationHillinessStatistics(),
     *census_canada_same_as_us,
     *census_canada_simple,
+    PollutionStatistics(),
 )

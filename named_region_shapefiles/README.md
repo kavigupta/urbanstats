@@ -125,3 +125,11 @@ Source: https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r20
 Source: https://chronicdata.cdc.gov/500-Cities-Places/PLACES-Local-Data-for-Better-Health-Census-Tract-D/cwsq-ngmh/about_data
 
     - `PLACES__Local_Data_for_Better_Health__Census_Tract_Data_2023_release_20240531.csv`
+
+# Pollution data
+
+Direct Source: https://wustl.app.box.com/s/iwvi2avusnz3fpabl6v5ouyobavbt70a/folder/274011040200
+Linked from: https://sites.wustl.edu/acag/datasets/surface-pm2-5/
+
+    - `named_region_shapefiles/pollution/Annual-selected`
+
