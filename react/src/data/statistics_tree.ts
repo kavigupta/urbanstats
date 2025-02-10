@@ -3102,7 +3102,7 @@ export const rawStatsTree = [
     },
     {
         id: 'climate_change',
-        name: 'Climate Change',
+        name: 'Environmment',
         contents: [
             {
                 id: 'heating_utility_gas',
