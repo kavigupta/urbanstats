@@ -1,10 +1,7 @@
 from urbanstats.data.aggregate_gridded_data import disaggregate_gridded_data
-from urbanstats.games.quiz_question_metadata import (
-    POLLUTION,
-    QuizQuestionDescriptor,
-)
-from urbanstats.statistics.statistic_collection import GeographicStatistics
 from urbanstats.data.pollution import pollution_gds
+from urbanstats.games.quiz_question_metadata import POLLUTION, QuizQuestionDescriptor
+from urbanstats.statistics.statistic_collection import GeographicStatistics
 
 POPULATION_WEIGHTED_EXPLANATION = (
     "Population weighted pollution"

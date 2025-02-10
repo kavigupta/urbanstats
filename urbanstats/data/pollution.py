@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from functools import lru_cache
+
 import numpy as np
 from permacache import permacache
+
 from urbanstats.data.aggregate_gridded_data import GriddedDataSource
-from urbanstats.data.gpw import (
-    lat_from_row_idx,
-    lon_from_col_idx,
-)
+from urbanstats.data.gpw import lat_from_row_idx, lon_from_col_idx
 
 deg_2_ghs_index = 60 * 2  # 30 arcseconds
+
 
 @dataclass(frozen=True)
 class HillinessGriddedData(GriddedDataSource):
