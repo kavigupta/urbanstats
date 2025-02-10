@@ -88,16 +88,9 @@ class StatisticGroup:
 
     def name_to_category(self, category_id):
         result = {}
-        for year, stats in self.by_year.items():
+        for _, stats in self.by_year.items():
             for stat_by_source in stats:
-                category_id_to_use = {
-                    "distance_from_features": "feature",
-                    "climate_change": "climate",
-                }.get(category_id, category_id)
-                category_id_to_use = (
-                    category_id_to_use if year in {2020, None} else str(year)
-                )
-                result.update(stat_by_source.name_to_category(category_id_to_use))
+                result.update(stat_by_source.name_to_category(category_id))
         return result
 
     @staticmethod
