@@ -13,6 +13,7 @@ async function assertNoSetUniverse(t: TestController): Promise<void> {
 async function assertNoSpecials(t: TestController): Promise<void> {
     const location = await getLocation()
     await t.expect(location).notMatch(/.*Historical Congressional.*/)
+    await t.expect(location).notMatch(/.*PC, $/)
 }
 
 async function assertCorrect(t: TestController): Promise<void> {
