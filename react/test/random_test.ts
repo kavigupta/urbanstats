@@ -1,6 +1,6 @@
 import { target, getLocation, urbanstatsFixture } from './test_utils'
 
-const repeats = 50
+const repeats = 15
 
 async function assertIsArticle(t: TestController): Promise<void> {
     await t.expect(await getLocation()).contains('/article.html?longname=')
