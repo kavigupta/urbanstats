@@ -30,6 +30,9 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
         if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x!)) {
             continue
         }
+        if (isPopulationCircle(x!)) {
+            continue
+        }
 
         // this is specifically looking for stuff that's only in the US.
         // so it makes sense.
@@ -51,4 +54,13 @@ export async function uniform(): Promise<string> {
         }
         return x
     }
+}
+
+function isPopulationCircle(x: string): boolean {
+    for (const mpcOrBPC of ['5MPC', '10MPC', '20MPC', '50MPC', '100MPC', '200MPC', '500MPC', '1BPC']) {
+        if (x.includes(`${mpcOrBPC}, `)) {
+            return true
+        }
+    }
+    return false
 }
