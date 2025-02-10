@@ -27,10 +27,7 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
             }
         }
 
-        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x!)) {
-            continue
-        }
-        if (isPopulationCircle(x!)) {
+        if (!valid(x!)) {
             continue
         }
 
@@ -49,11 +46,21 @@ export async function uniform(): Promise<string> {
     while (true) {
         const randomIndex = Math.floor(Math.random() * values.length)
         const x = values[randomIndex]
-        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
+        if (!valid(x)) {
             continue
         }
         return x
     }
+}
+
+function valid(x: string): boolean {
+    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
+        return false
+    }
+    if (isPopulationCircle(x)) {
+        return false
+    }
+    return true
 }
 
 function isPopulationCircle(x: string): boolean {
