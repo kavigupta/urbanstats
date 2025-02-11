@@ -69,7 +69,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
             }
         }, { dependencies: { newLocalstorage } })
         await t.eval(() => {
-            localStorage.setItem('testHostname', 'urbanstats.org')
+            localStorage.setItem('testHostname', 'testproxy.nonexistent')
         })
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)

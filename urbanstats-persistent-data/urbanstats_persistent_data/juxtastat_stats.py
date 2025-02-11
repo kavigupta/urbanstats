@@ -208,7 +208,7 @@ def get_per_question_stats_from_table(day, table_name, column):
         INNER JOIN JuxtastatUserDomain
         ON {table_name}.user = JuxtastatUserDomain.user
         WHERE {column} = ?
-        AND domain = 'urbanstats.org'
+        AND (domain = 'urbanstats.org' OR domain = 'testproxy.nonexistent')
         """,
         (day,),
     )
