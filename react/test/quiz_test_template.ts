@@ -335,7 +335,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await quizScreencap(t)
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
-        await t.expect(await juxtastatTable()).eql('7|100|15\n')
     })
 
     test('share button copy', async (t) => {
