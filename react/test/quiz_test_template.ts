@@ -195,11 +195,11 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
     CREATE TABLE IF NOT EXISTS JuxtaStatUserDomain (user integer PRIMARY KEY, domain text);
 
-    INSERT INTO JuxtastatUserDomain VALUES (7, 'urbanstats.org');
-    INSERT INTO JuxtastatUserDomain VALUES (8, 'urbanstats.org');
+    INSERT INTO JuxtastatUserDomain VALUES (7, 'testproxy.nonexistent');
+    INSERT INTO JuxtastatUserDomain VALUES (8, 'testproxy.nonexistent');
     
     ${Array.from(Array(30).keys()).map(
-        i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'urbanstats.org');`,
+        i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'testproxy.nonexistent');`,
     ).join('\n')}`,
         platform,
     )
@@ -217,7 +217,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.eval(() => {
             localStorage.clear()
             localStorage.setItem('persistent_id', '000000000000008')
-            localStorage.setItem('testHostname', 'urbanstats.org')
+            localStorage.setItem('testHostname', 'testproxy.nonexistent')
         })
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
