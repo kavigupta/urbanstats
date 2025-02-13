@@ -1,6 +1,3 @@
-import '../style.css'
-import '../common.css'
-
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
@@ -41,15 +38,17 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
     }
 }
 
-export async function uniform(): Promise<string> {
+export async function uniform(): Promise<() => string> {
     const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
-    while (true) {
-        const randomIndex = Math.floor(Math.random() * values.length)
-        const x = values[randomIndex]
-        if (!valid(x)) {
-            continue
+    return () => {
+        while (true) {
+            const randomIndex = Math.floor(Math.random() * values.length)
+            const x = values[randomIndex]
+            if (!valid(x)) {
+                continue
+            }
+            return x
         }
-        return x
     }
 }
 
