@@ -1,10 +1,9 @@
 import json
 import re
 import unicodedata
-from collections import defaultdict
 
 from urbanstats.geometry.relationship import type_to_type_category
-from urbanstats.protobuf.utils import save_search_index, save_string_list
+from urbanstats.protobuf.utils import save_search_index
 
 # maps types to their search priority scores, which must fit into an uint32. Higher=less important
 type_category_to_priority = {
@@ -21,19 +20,13 @@ type_category_to_priority = {
 
 
 def export_index(full, site_folder):
-    save_string_list(list(full.longname), f"{site_folder}/index/pages.gz")
-    by_first_letter = defaultdict(list)
-    for name, typ in zip(full.longname, full.type):
-        priority = type_category_to_priority[type_to_type_category[typ]]
-        normed = normalize(name[0])
-        if not normed.isascii() or normed == "/":
-            continue
-        entry = (name, priority)
-        by_first_letter[normed].append(entry)
-        by_first_letter["all"].append(entry)
-
-    for letter, names in by_first_letter.items():
-        save_search_index(names, f"{site_folder}/index/pages_{letter}.gz")
+    save_search_index(
+        [
+            (longname, type_category_to_priority[type_to_type_category[typ]])
+            for longname, typ in zip(full.longname, full.type)
+        ],
+        f"{site_folder}/index/pages_all.gz",
+    )
 
     with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
         json.dump(list(full.best_population_estimate), f)
