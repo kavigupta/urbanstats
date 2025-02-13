@@ -423,7 +423,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             let longname: string
             switch (newDescriptor.sampleby) {
                 case 'uniform':
-                    longname = await uniform()
+                    longname = (await uniform())()
                     break
                 case 'population':
                     longname = await byPopulation(newDescriptor.us_only)
