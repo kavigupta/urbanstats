@@ -3,7 +3,7 @@ import { Settings } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 
 export async function byPopulation(domesticOnly: boolean): Promise<string> {
-    const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
+    const values = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex')).elements
     const populations = await loadJSON('/index/best_population_estimate.json') as number[]
     const totalWeight = populations.reduce((sum, x) => sum + x)
 
@@ -39,7 +39,7 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
 }
 
 export async function uniform(): Promise<() => string> {
-    const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
+    const values = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex')).elements
     return () => {
         while (true) {
             const randomIndex = Math.floor(Math.random() * values.length)
