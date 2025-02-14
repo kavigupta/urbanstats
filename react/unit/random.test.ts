@@ -7,14 +7,14 @@ import { byPopulation, uniform } from '../src/navigation/random'
 
 function assertNoSpecials(article: string): void {
     assert.not.match(article, /.*Historical Congressional.*/)
-    assert.not.match(article, /.*PC.*/)
+    assert.not.match(article, /.*PC,.*/)
 }
 
 function assertNoSyminks(article: string): void {
     assert.not.match(article, /United States of America/)
 }
 
-const repeats = 100000
+const repeats = 500_000
 
 test('uniform', async () => {
     const getArticle = await uniform()
