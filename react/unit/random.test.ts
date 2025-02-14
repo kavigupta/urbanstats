@@ -10,7 +10,7 @@ function assertNoSpecials(article: string): void {
     assert.not.match(article, /.*PC,.*/)
 }
 
-const repeats = 100000
+const repeats = 500_000
 
 test('uniform', async () => {
     const getArticle = await uniform()
