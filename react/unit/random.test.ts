@@ -19,25 +19,28 @@ const repeats = 500_000
 test('uniform', async () => {
     const getArticle = await uniform()
     for (let count = 0; count < repeats; count++) {
-        assertNoSpecials(getArticle())
-        assertNoSyminks(getArticle())
+        const article = getArticle()
+        assertNoSpecials(article)
+        assertNoSyminks(article)
     }
 })
 
 test('by-pop', async () => {
     const getArticle = await byPopulation(false)
     for (let count = 0; count < repeats; count++) {
-        assertNoSpecials(getArticle())
-        assertNoSyminks(getArticle())
+        const article = getArticle()
+        assertNoSpecials(article)
+        assertNoSyminks(article)
     }
 })
 
 test('by-pop-usa-only', async () => {
     const getArticle = await byPopulation(true)
     for (let count = 0; count < repeats; count++) {
-        assertNoSpecials(getArticle())
-        assert.match(getArticle(), /.*USA.*/)
-        assertNoSyminks(getArticle())
+        const article = getArticle()
+        assertNoSpecials(article)
+        assertNoSyminks(article)
+        assert.match(article, /.*USA.*/)
     }
 })
 
