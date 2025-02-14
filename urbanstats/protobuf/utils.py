@@ -15,11 +15,11 @@ def save_string_list(slist, path):
 
 def save_search_index(longnames, types, is_usas, path):
     res = data_files_pb2.SearchIndex()
-    for name, type, is_usa in zip(longnames, types, is_usas):
+    for name, typ, is_usa in zip(longnames, types, is_usas):
         res.elements.append(name)
         res.metadata.append(
             data_files_pb2.SearchIndexMetadata(
-                type=type_ordering_idx[type], is_usa=is_usa
+                type=type_ordering_idx[typ], is_usa=is_usa
             )
         )
     write_gzip(res, path)
