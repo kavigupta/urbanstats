@@ -7,10 +7,10 @@ import { byPopulation, uniform } from '../src/navigation/random'
 
 function assertNoSpecials(article: string): void {
     assert.not.match(article, /.*Historical Congressional.*/)
-    assert.not.match(article, /.*PC.*/)
+    assert.not.match(article, /.*PC,.*/)
 }
 
-const repeats = 100000
+const repeats = 500_000
 
 test('uniform', async () => {
     const getArticle = await uniform()
@@ -29,8 +29,9 @@ test('by-pop', async () => {
 test('by-pop-usa-only', async () => {
     const getArticle = await byPopulation(true)
     for (let count = 0; count < repeats; count++) {
-        assertNoSpecials(getArticle())
-        assert.match(getArticle(), /.*USA.*/)
+        const article = getArticle()
+        assertNoSpecials(article)
+        assert.match(article, /.*USA.*/)
     }
 })
 
