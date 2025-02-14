@@ -426,7 +426,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     longname = (await uniform())()
                     break
                 case 'population':
-                    longname = await byPopulation(newDescriptor.us_only)
+                    longname = (await byPopulation(newDescriptor.us_only))()
                     break
             }
 
