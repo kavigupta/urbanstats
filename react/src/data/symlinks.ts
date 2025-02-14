@@ -358,7 +358,7 @@ const value: Record<string, string> = {
     'Ciudad Bolivia Urban Center, Venezuela, Bolivarian Republic of': 'Ciudad Bolivia Urban Center, Venezuela',
     'Ciudad Bol\u00edvar Urban Center, Venezuela, Bolivarian Republic of': 'Ciudad Bol\u00edvar Urban Center, Venezuela',
     'Ciudad Guayana Urban Center, Venezuela, Bolivarian Republic of': 'Ciudad Guayana Urban Center, Venezuela',
-    'Ciudad Ojeda 5MPC, Venezuela, Bolivarian Republic of-USA-France': 'Ciudad Ojeda 5MPC, Venezuela-USA-France',
+    'Ciudad Ojeda 5MPC, Venezuela, Bolivarian Republic of-USA-France': 'Ciudad Ojeda 5MPC, Venezuela-France-USA',
     'Ciudad Ojeda Urban Center, Venezuela, Bolivarian Republic of': 'Ciudad Ojeda Urban Center, Venezuela',
     'Cobija Urban Center, Bolivia, Plurinational State of-Brazil': 'Cobija Urban Center, Bolivia-Brazil',
     'Cochabamba Urban Center, Bolivia, Plurinational State of': 'Cochabamba Urban Center, Bolivia',
