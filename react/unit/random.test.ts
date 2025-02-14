@@ -29,8 +29,9 @@ test('by-pop', async () => {
 test('by-pop-usa-only', async () => {
     const getArticle = await byPopulation(true)
     for (let count = 0; count < repeats; count++) {
-        assertNoSpecials(getArticle())
-        assert.match(getArticle(), /.*USA.*/)
+        const article = getArticle()
+        assertNoSpecials(article)
+        assert.match(article, /.*USA.*/)
     }
 })
 
