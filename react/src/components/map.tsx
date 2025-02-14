@@ -10,7 +10,7 @@ import { shapeLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
-import { isHistoricalCD } from '../utils/is_historical'
+import { historicalCongressional } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
@@ -464,7 +464,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
     relatedPolygons(related: NormalizeProto<IRelatedButton>[]): Polygon[] {
         const result: Polygon[] = []
         for (let i = related.length - 1; i >= 0; i--) {
-            if (!this.props.showHistoricalCDs && isHistoricalCD(related[i].rowType)) {
+            if (!this.props.showHistoricalCDs && historicalCongressional === related[i].rowType) {
                 continue
             }
             const key = relationshipKey(this.props.articleType, related[i].rowType)

@@ -1,8 +1,9 @@
+import type_ordering_idx from './data/type_ordering_idx'
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
-import { isHistoricalCD } from './utils/is_historical'
+import { historicalCongressional } from './utils/is_historical'
 import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
 
 const debugSearch: boolean = false
@@ -24,6 +25,7 @@ interface NormalizedSearchIndex {
         tokens: Haystack[]
         priority: number
         signature: number
+        typeIndex: number
     }[]
     lengthOfLongestToken: number
     maxPriority: number
@@ -110,8 +112,8 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
-        if (!showHistoricalCDs && isHistoricalCD(element)) {
+    entries: for (const [populationRank, { tokens, element, priority, signature, typeIndex }] of searchIndex.entries.entries()) {
+        if (!showHistoricalCDs && typeIndex === type_ordering_idx[historicalCongressional]) {
             continue
         }
 
@@ -265,6 +267,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
             tokens,
             priority: priorities[index],
             signature: toSignature(normalizedElement),
+            typeIndex: searchIndex.metadata[index].type!,
         }
     })
     debug(`Took ${performance.now() - start}ms to process search index`)

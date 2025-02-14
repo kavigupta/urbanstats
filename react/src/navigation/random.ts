@@ -1,6 +1,7 @@
+import type_ordering_idx from '../data/type_ordering_idx'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { isHistoricalCD } from '../utils/is_historical'
+import { historicalCongressional } from '../utils/is_historical'
 import { SearchIndex } from '../utils/protos'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
@@ -62,7 +63,7 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (metadata.isSymlink) {
         return false
     }
-    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
+    if (!Settings.shared.get('show_historical_cds') && metadata.type === type_ordering_idx[historicalCongressional]) {
         return false
     }
     if (isPopulationCircle(x)) {
