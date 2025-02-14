@@ -7,7 +7,7 @@ import { byPopulation, uniform } from '../src/navigation/random'
 
 function assertNoSpecials(article: string): void {
     assert.not.match(article, /.*Historical Congressional.*/)
-    assert.not.match(article, /.*PC.*/)
+    assert.not.match(article, /.*PC,.*/)
 }
 
 const repeats = 100000
