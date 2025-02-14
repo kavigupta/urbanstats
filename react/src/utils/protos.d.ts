@@ -1513,6 +1513,9 @@ export interface ISearchIndexMetadata {
 
     /** SearchIndexMetadata isUsa */
     isUsa?: (number|null);
+
+    /** SearchIndexMetadata isSymlink */
+    isSymlink?: (number|null);
 }
 
 /** Represents a SearchIndexMetadata. */
@@ -1529,6 +1532,9 @@ export class SearchIndexMetadata implements ISearchIndexMetadata {
 
     /** SearchIndexMetadata isUsa. */
     public isUsa: number;
+
+    /** SearchIndexMetadata isSymlink. */
+    public isSymlink: number;
 
     /**
      * Creates a new SearchIndexMetadata instance using the specified properties.

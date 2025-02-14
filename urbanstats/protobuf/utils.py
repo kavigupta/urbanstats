@@ -13,13 +13,24 @@ def save_string_list(slist, path):
     write_gzip(res, path)
 
 
-def save_search_index(longnames, types, is_usas, path):
+def save_search_index(longnames, types, is_usas, path, *, symlinks):
+    longname_to_index = {x: i for i, x in enumerate(longnames)}
+    types, is_usas = list(types), list(is_usas)
+    orders = [type_ordering_idx[typ] for typ in types]
     res = data_files_pb2.SearchIndex()
-    for name, typ, is_usa in zip(longnames, types, is_usas):
+    for name, order, is_usa in zip(longnames, orders, is_usas):
         res.elements.append(name)
         res.metadata.append(
             data_files_pb2.SearchIndexMetadata(
-                type=type_ordering_idx[typ], is_usa=is_usa
+                type=order, is_usa=is_usa, is_symlink=False
+            )
+        )
+    for name, target in symlinks.items():
+        res.elements.append(name)
+        idx = longname_to_index[target]
+        res.metadata.append(
+            data_files_pb2.SearchIndexMetadata(
+                type=orders[idx], is_usa=is_usas[idx], is_symlink=True
             )
         )
     write_gzip(res, path)

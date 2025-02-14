@@ -5,6 +5,7 @@ import unicodedata
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
+from urbanstats.special_cases.symlinks import symlinks
 
 # maps types to their search priority scores, which must fit into an uint32. Higher=less important
 type_category_to_priority = {
@@ -37,6 +38,7 @@ def export_index(full, site_folder):
         # pylint: disable=singleton-comparison
         full.subset_mask_USA == True,
         f"{site_folder}/index/pages_all.gz",
+        symlinks=symlinks,
     )
 
     with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:

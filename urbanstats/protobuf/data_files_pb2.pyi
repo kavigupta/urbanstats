@@ -213,13 +213,18 @@ class StringList(_message.Message):
     def __init__(self, elements: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class SearchIndexMetadata(_message.Message):
-    __slots__ = ("type", "is_usa")
+    __slots__ = ("type", "is_usa", "is_symlink")
     TYPE_FIELD_NUMBER: _ClassVar[int]
     IS_USA_FIELD_NUMBER: _ClassVar[int]
+    IS_SYMLINK_FIELD_NUMBER: _ClassVar[int]
     type: int
     is_usa: int
+    is_symlink: int
     def __init__(
-        self, type: _Optional[int] = ..., is_usa: _Optional[int] = ...
+        self,
+        type: _Optional[int] = ...,
+        is_usa: _Optional[int] = ...,
+        is_symlink: _Optional[int] = ...,
     ) -> None: ...
 
 class SearchIndex(_message.Message):
