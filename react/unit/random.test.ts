@@ -28,6 +28,7 @@ test('by-pop', async () => {
     const getArticle = await byPopulation(false)
     for (let count = 0; count < repeats; count++) {
         assertNoSpecials(getArticle())
+        assertNoSyminks(getArticle())
     }
 })
 
@@ -36,6 +37,7 @@ test('by-pop-usa-only', async () => {
     for (let count = 0; count < repeats; count++) {
         assertNoSpecials(getArticle())
         assert.match(getArticle(), /.*USA.*/)
+        assertNoSyminks(getArticle())
     }
 })
 
