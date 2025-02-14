@@ -45,7 +45,7 @@ export default tseslint.config(
                 'newlines-between': 'always',
             }],
             'import/no-unassigned-import': ['error', {
-                allow: ['**/*.css', './unit/util/fetch'],
+                allow: ['**/*.css', './unit/util/*'],
             }],
             'import/no-named-as-default-member': 'off',
             'import/namespace': 'off',

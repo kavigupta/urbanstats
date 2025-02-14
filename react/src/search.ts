@@ -1,8 +1,9 @@
+import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
-import { SearchIndex } from './utils/protos'
+import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
 
 const debugSearch: boolean = false
 
@@ -237,11 +238,12 @@ export async function createIndex(): Promise<(params: SearchParams) => string[]>
     return params => search(index, params)
 }
 
-function processRawSearchIndex(searchIndex: { elements: string[], priorities: number[] }): NormalizedSearchIndex {
+function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {
     const start = performance.now()
     let lengthOfLongestToken = 0
     let maxPriority = 0
     let mostTokens = 0
+    const priorities = searchIndex.metadata.map(({ type }) => type_to_priority[type!])
     const haystackCache = new DefaultMap<string, Haystack>((token) => {
         if (token.length > lengthOfLongestToken) {
             lengthOfLongestToken = token.length
@@ -252,8 +254,8 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
         const normalizedElement = normalize(element)
         const entryTokens = tokenize(normalizedElement)
         const tokens = entryTokens.map(token => haystackCache.get(token))
-        if (searchIndex.priorities[index] > maxPriority) {
-            maxPriority = searchIndex.priorities[index]
+        if (priorities[index] > maxPriority) {
+            maxPriority = priorities[index]
         }
         if (tokens.length > mostTokens) {
             mostTokens = tokens.length
@@ -261,7 +263,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], priorities: nu
         return {
             element,
             tokens,
-            priority: searchIndex.priorities[index],
+            priority: priorities[index],
             signature: toSignature(normalizedElement),
         }
     })

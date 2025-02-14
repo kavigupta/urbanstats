@@ -1505,14 +1505,117 @@ export class StringList implements IStringList {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a SearchIndexMetadata. */
+export interface ISearchIndexMetadata {
+
+    /** SearchIndexMetadata type */
+    type?: (number|null);
+
+    /** SearchIndexMetadata isUsa */
+    isUsa?: (number|null);
+}
+
+/** Represents a SearchIndexMetadata. */
+export class SearchIndexMetadata implements ISearchIndexMetadata {
+
+    /**
+     * Constructs a new SearchIndexMetadata.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ISearchIndexMetadata);
+
+    /** SearchIndexMetadata type. */
+    public type: number;
+
+    /** SearchIndexMetadata isUsa. */
+    public isUsa: number;
+
+    /**
+     * Creates a new SearchIndexMetadata instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns SearchIndexMetadata instance
+     */
+    public static create(properties?: ISearchIndexMetadata): SearchIndexMetadata;
+
+    /**
+     * Encodes the specified SearchIndexMetadata message. Does not implicitly {@link SearchIndexMetadata.verify|verify} messages.
+     * @param message SearchIndexMetadata message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ISearchIndexMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified SearchIndexMetadata message, length delimited. Does not implicitly {@link SearchIndexMetadata.verify|verify} messages.
+     * @param message SearchIndexMetadata message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ISearchIndexMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a SearchIndexMetadata message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns SearchIndexMetadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): SearchIndexMetadata;
+
+    /**
+     * Decodes a SearchIndexMetadata message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns SearchIndexMetadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): SearchIndexMetadata;
+
+    /**
+     * Verifies a SearchIndexMetadata message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a SearchIndexMetadata message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns SearchIndexMetadata
+     */
+    public static fromObject(object: { [k: string]: any }): SearchIndexMetadata;
+
+    /**
+     * Creates a plain object from a SearchIndexMetadata message. Also converts values to other types if specified.
+     * @param message SearchIndexMetadata
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: SearchIndexMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this SearchIndexMetadata to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SearchIndexMetadata
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a SearchIndex. */
 export interface ISearchIndex {
 
     /** SearchIndex elements */
     elements?: (string[]|null);
 
-    /** SearchIndex priorities */
-    priorities?: (number[]|null);
+    /** SearchIndex metadata */
+    metadata?: (ISearchIndexMetadata[]|null);
 }
 
 /** Represents a SearchIndex. */
@@ -1527,8 +1630,8 @@ export class SearchIndex implements ISearchIndex {
     /** SearchIndex elements. */
     public elements: string[];
 
-    /** SearchIndex priorities. */
-    public priorities: number[];
+    /** SearchIndex metadata. */
+    public metadata: ISearchIndexMetadata[];
 
     /**
      * Creates a new SearchIndex instance using the specified properties.

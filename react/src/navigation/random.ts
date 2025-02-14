@@ -1,12 +1,9 @@
-import '../style.css'
-import '../common.css'
-
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
 
 export async function byPopulation(domesticOnly: boolean): Promise<string> {
-    const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
+    const values = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex')).elements
     const populations = await loadJSON('/index/best_population_estimate.json') as number[]
     const totalWeight = populations.reduce((sum, x) => sum + x)
 
@@ -27,7 +24,7 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
             }
         }
 
-        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x!)) {
+        if (!valid(x!)) {
             continue
         }
 
@@ -41,14 +38,35 @@ export async function byPopulation(domesticOnly: boolean): Promise<string> {
     }
 }
 
-export async function uniform(): Promise<string> {
-    const values = (await loadProtobuf('/index/pages.gz', 'StringList')).elements
-    while (true) {
-        const randomIndex = Math.floor(Math.random() * values.length)
-        const x = values[randomIndex]
-        if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
-            continue
+export async function uniform(): Promise<() => string> {
+    const values = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex')).elements
+    return () => {
+        while (true) {
+            const randomIndex = Math.floor(Math.random() * values.length)
+            const x = values[randomIndex]
+            if (!valid(x)) {
+                continue
+            }
+            return x
         }
-        return x
     }
+}
+
+function valid(x: string): boolean {
+    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
+        return false
+    }
+    if (isPopulationCircle(x)) {
+        return false
+    }
+    return true
+}
+
+function isPopulationCircle(x: string): boolean {
+    for (const mpcOrBPC of ['5MPC', '10MPC', '20MPC', '50MPC', '100MPC', '200MPC', '500MPC', '1BPC']) {
+        if (x.includes(`${mpcOrBPC}, `)) {
+            return true
+        }
+    }
+    return false
 }

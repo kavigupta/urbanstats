@@ -212,16 +212,26 @@ class StringList(_message.Message):
     elements: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, elements: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class SearchIndexMetadata(_message.Message):
+    __slots__ = ("type", "is_usa")
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    IS_USA_FIELD_NUMBER: _ClassVar[int]
+    type: int
+    is_usa: int
+    def __init__(
+        self, type: _Optional[int] = ..., is_usa: _Optional[int] = ...
+    ) -> None: ...
+
 class SearchIndex(_message.Message):
-    __slots__ = ("elements", "priorities")
+    __slots__ = ("elements", "metadata")
     ELEMENTS_FIELD_NUMBER: _ClassVar[int]
-    PRIORITIES_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
     elements: _containers.RepeatedScalarFieldContainer[str]
-    priorities: _containers.RepeatedScalarFieldContainer[int]
+    metadata: _containers.RepeatedCompositeFieldContainer[SearchIndexMetadata]
     def __init__(
         self,
         elements: _Optional[_Iterable[str]] = ...,
-        priorities: _Optional[_Iterable[int]] = ...,
+        metadata: _Optional[_Iterable[_Union[SearchIndexMetadata, _Mapping]]] = ...,
     ) -> None: ...
 
 class OrderList(_message.Message):
