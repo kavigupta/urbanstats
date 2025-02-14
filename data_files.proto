@@ -94,6 +94,7 @@ message StringList {
 message SearchIndexMetadata {
     int32 type = 1; // as in type_ordering_idx.ts
     int32 is_usa = 2; // boolean
+    int32 is_symlink = 3; // boolean
 }
 
 message SearchIndex {
