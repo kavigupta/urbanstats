@@ -20,3 +20,11 @@ symlinks.update(
 
 symlinks.update(symlinks_from_country_rename)
 symlinks.update(symlinks_from_subnational_usa_fixes)
+
+done = False
+while not done:
+    done = True
+    for k, v in symlinks.items():
+        if v in symlinks:
+            symlinks[k] = symlinks[v]
+            done = False
