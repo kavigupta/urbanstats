@@ -2,6 +2,7 @@ import json
 import re
 import unicodedata
 
+from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
 
@@ -19,12 +20,19 @@ type_category_to_priority = {
 }
 
 
+def type_to_priority_list():
+    result = [None] * len(type_ordering_idx)
+    for type, idx in type_ordering_idx.items():
+        result[idx] = type_category_to_priority[type_to_type_category[type]]
+    assert None not in result
+    return result
+
+
 def export_index(full, site_folder):
     save_search_index(
-        [
-            (longname, type_category_to_priority[type_to_type_category[typ]])
-            for longname, typ in zip(full.longname, full.type)
-        ],
+        full.longname,
+        full.type,
+        full.subset_mask_USA == True,
         f"{site_folder}/index/pages_all.gz",
     )
 

@@ -3801,6 +3801,233 @@ export const StringList = $root.StringList = (() => {
     return StringList;
 })();
 
+export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
+
+    /**
+     * Properties of a SearchIndexMetadata.
+     * @exports ISearchIndexMetadata
+     * @interface ISearchIndexMetadata
+     * @property {number|null} [type] SearchIndexMetadata type
+     * @property {number|null} [isUsa] SearchIndexMetadata isUsa
+     */
+
+    /**
+     * Constructs a new SearchIndexMetadata.
+     * @exports SearchIndexMetadata
+     * @classdesc Represents a SearchIndexMetadata.
+     * @implements ISearchIndexMetadata
+     * @constructor
+     * @param {ISearchIndexMetadata=} [properties] Properties to set
+     */
+    function SearchIndexMetadata(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * SearchIndexMetadata type.
+     * @member {number} type
+     * @memberof SearchIndexMetadata
+     * @instance
+     */
+    SearchIndexMetadata.prototype.type = 0;
+
+    /**
+     * SearchIndexMetadata isUsa.
+     * @member {number} isUsa
+     * @memberof SearchIndexMetadata
+     * @instance
+     */
+    SearchIndexMetadata.prototype.isUsa = 0;
+
+    /**
+     * Creates a new SearchIndexMetadata instance using the specified properties.
+     * @function create
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {ISearchIndexMetadata=} [properties] Properties to set
+     * @returns {SearchIndexMetadata} SearchIndexMetadata instance
+     */
+    SearchIndexMetadata.create = function create(properties) {
+        return new SearchIndexMetadata(properties);
+    };
+
+    /**
+     * Encodes the specified SearchIndexMetadata message. Does not implicitly {@link SearchIndexMetadata.verify|verify} messages.
+     * @function encode
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {ISearchIndexMetadata} message SearchIndexMetadata message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    SearchIndexMetadata.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
+        if (message.isUsa != null && Object.hasOwnProperty.call(message, "isUsa"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.isUsa);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified SearchIndexMetadata message, length delimited. Does not implicitly {@link SearchIndexMetadata.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {ISearchIndexMetadata} message SearchIndexMetadata message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    SearchIndexMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a SearchIndexMetadata message from the specified reader or buffer.
+     * @function decode
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {SearchIndexMetadata} SearchIndexMetadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    SearchIndexMetadata.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.SearchIndexMetadata();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.type = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.isUsa = reader.int32();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a SearchIndexMetadata message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {SearchIndexMetadata} SearchIndexMetadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    SearchIndexMetadata.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a SearchIndexMetadata message.
+     * @function verify
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    SearchIndexMetadata.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.type != null && message.hasOwnProperty("type"))
+            if (!$util.isInteger(message.type))
+                return "type: integer expected";
+        if (message.isUsa != null && message.hasOwnProperty("isUsa"))
+            if (!$util.isInteger(message.isUsa))
+                return "isUsa: integer expected";
+        return null;
+    };
+
+    /**
+     * Creates a SearchIndexMetadata message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {SearchIndexMetadata} SearchIndexMetadata
+     */
+    SearchIndexMetadata.fromObject = function fromObject(object) {
+        if (object instanceof $root.SearchIndexMetadata)
+            return object;
+        let message = new $root.SearchIndexMetadata();
+        if (object.type != null)
+            message.type = object.type | 0;
+        if (object.isUsa != null)
+            message.isUsa = object.isUsa | 0;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a SearchIndexMetadata message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {SearchIndexMetadata} message SearchIndexMetadata
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    SearchIndexMetadata.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.type = 0;
+            object.isUsa = 0;
+        }
+        if (message.type != null && message.hasOwnProperty("type"))
+            object.type = message.type;
+        if (message.isUsa != null && message.hasOwnProperty("isUsa"))
+            object.isUsa = message.isUsa;
+        return object;
+    };
+
+    /**
+     * Converts this SearchIndexMetadata to JSON.
+     * @function toJSON
+     * @memberof SearchIndexMetadata
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    SearchIndexMetadata.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for SearchIndexMetadata
+     * @function getTypeUrl
+     * @memberof SearchIndexMetadata
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    SearchIndexMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/SearchIndexMetadata";
+    };
+
+    return SearchIndexMetadata;
+})();
+
 export const SearchIndex = $root.SearchIndex = (() => {
 
     /**
@@ -3808,7 +4035,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      * @exports ISearchIndex
      * @interface ISearchIndex
      * @property {Array.<string>|null} [elements] SearchIndex elements
-     * @property {Array.<number>|null} [priorities] SearchIndex priorities
+     * @property {Array.<ISearchIndexMetadata>|null} [metadata] SearchIndex metadata
      */
 
     /**
@@ -3821,7 +4048,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      */
     function SearchIndex(properties) {
         this.elements = [];
-        this.priorities = [];
+        this.metadata = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -3837,12 +4064,12 @@ export const SearchIndex = $root.SearchIndex = (() => {
     SearchIndex.prototype.elements = $util.emptyArray;
 
     /**
-     * SearchIndex priorities.
-     * @member {Array.<number>} priorities
+     * SearchIndex metadata.
+     * @member {Array.<ISearchIndexMetadata>} metadata
      * @memberof SearchIndex
      * @instance
      */
-    SearchIndex.prototype.priorities = $util.emptyArray;
+    SearchIndex.prototype.metadata = $util.emptyArray;
 
     /**
      * Creates a new SearchIndex instance using the specified properties.
@@ -3871,12 +4098,9 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (message.elements != null && message.elements.length)
             for (let i = 0; i < message.elements.length; ++i)
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
-        if (message.priorities != null && message.priorities.length) {
-            writer.uint32(/* id 2, wireType 2 =*/18).fork();
-            for (let i = 0; i < message.priorities.length; ++i)
-                writer.uint32(message.priorities[i]);
-            writer.ldelim();
-        }
+        if (message.metadata != null && message.metadata.length)
+            for (let i = 0; i < message.metadata.length; ++i)
+                $root.SearchIndexMetadata.encode(message.metadata[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
         return writer;
     };
 
@@ -3918,14 +4142,9 @@ export const SearchIndex = $root.SearchIndex = (() => {
                     break;
                 }
             case 2: {
-                    if (!(message.priorities && message.priorities.length))
-                        message.priorities = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.priorities.push(reader.uint32());
-                    } else
-                        message.priorities.push(reader.uint32());
+                    if (!(message.metadata && message.metadata.length))
+                        message.metadata = [];
+                    message.metadata.push($root.SearchIndexMetadata.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -3970,12 +4189,14 @@ export const SearchIndex = $root.SearchIndex = (() => {
                 if (!$util.isString(message.elements[i]))
                     return "elements: string[] expected";
         }
-        if (message.priorities != null && message.hasOwnProperty("priorities")) {
-            if (!Array.isArray(message.priorities))
-                return "priorities: array expected";
-            for (let i = 0; i < message.priorities.length; ++i)
-                if (!$util.isInteger(message.priorities[i]))
-                    return "priorities: integer[] expected";
+        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (!Array.isArray(message.metadata))
+                return "metadata: array expected";
+            for (let i = 0; i < message.metadata.length; ++i) {
+                let error = $root.SearchIndexMetadata.verify(message.metadata[i]);
+                if (error)
+                    return "metadata." + error;
+            }
         }
         return null;
     };
@@ -3999,12 +4220,15 @@ export const SearchIndex = $root.SearchIndex = (() => {
             for (let i = 0; i < object.elements.length; ++i)
                 message.elements[i] = String(object.elements[i]);
         }
-        if (object.priorities) {
-            if (!Array.isArray(object.priorities))
-                throw TypeError(".SearchIndex.priorities: array expected");
-            message.priorities = [];
-            for (let i = 0; i < object.priorities.length; ++i)
-                message.priorities[i] = object.priorities[i] >>> 0;
+        if (object.metadata) {
+            if (!Array.isArray(object.metadata))
+                throw TypeError(".SearchIndex.metadata: array expected");
+            message.metadata = [];
+            for (let i = 0; i < object.metadata.length; ++i) {
+                if (typeof object.metadata[i] !== "object")
+                    throw TypeError(".SearchIndex.metadata: object expected");
+                message.metadata[i] = $root.SearchIndexMetadata.fromObject(object.metadata[i]);
+            }
         }
         return message;
     };
@@ -4024,17 +4248,17 @@ export const SearchIndex = $root.SearchIndex = (() => {
         let object = {};
         if (options.arrays || options.defaults) {
             object.elements = [];
-            object.priorities = [];
+            object.metadata = [];
         }
         if (message.elements && message.elements.length) {
             object.elements = [];
             for (let j = 0; j < message.elements.length; ++j)
                 object.elements[j] = message.elements[j];
         }
-        if (message.priorities && message.priorities.length) {
-            object.priorities = [];
-            for (let j = 0; j < message.priorities.length; ++j)
-                object.priorities[j] = message.priorities[j];
+        if (message.metadata && message.metadata.length) {
+            object.metadata = [];
+            for (let j = 0; j < message.metadata.length; ++j)
+                object.metadata[j] = $root.SearchIndexMetadata.toObject(message.metadata[j], options);
         }
         return object;
     };
