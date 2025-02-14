@@ -1,6 +1,8 @@
 import gzip
 import os
 
+from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
+
 from . import data_files_pb2
 
 
@@ -11,11 +13,15 @@ def save_string_list(slist, path):
     write_gzip(res, path)
 
 
-def save_search_index(elements_list, path):
+def save_search_index(longnames, types, is_usas, path):
     res = data_files_pb2.SearchIndex()
-    for name, priority in elements_list:
+    for name, typ, is_usa in zip(longnames, types, is_usas):
         res.elements.append(name)
-        res.priorities.append(priority)
+        res.metadata.append(
+            data_files_pb2.SearchIndexMetadata(
+                type=type_ordering_idx[typ], is_usa=is_usa
+            )
+        )
     write_gzip(res, path)
 
 

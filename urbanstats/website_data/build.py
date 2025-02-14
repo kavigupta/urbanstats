@@ -33,7 +33,7 @@ from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     extra_stats,
 )
-from urbanstats.website_data.index import export_index
+from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.sitemap import output_sitemap
@@ -77,6 +77,9 @@ def create_react_jsons():
 
     with open("react/src/data/type_ordering_idx.ts", "w") as f:
         output_typescript(type_ordering_idx, f, data_type="Record<string, number>")
+
+    with open("react/src/data/type_to_priority.ts", "w") as f:
+        output_typescript(type_to_priority_list(), f, data_type="number[]")
 
     output_statistics_metadata()
 
