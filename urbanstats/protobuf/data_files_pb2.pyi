@@ -398,3 +398,15 @@ class CountsByArticleUniverseAndType(_message.Message):
             _Iterable[_Union[CountsByArticleType, _Mapping]]
         ] = ...,
     ) -> None: ...
+
+class Symlinks(_message.Message):
+    __slots__ = ("link_name", "target_name")
+    LINK_NAME_FIELD_NUMBER: _ClassVar[int]
+    TARGET_NAME_FIELD_NUMBER: _ClassVar[int]
+    link_name: _containers.RepeatedScalarFieldContainer[str]
+    target_name: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(
+        self,
+        link_name: _Optional[_Iterable[str]] = ...,
+        target_name: _Optional[_Iterable[str]] = ...,
+    ) -> None: ...

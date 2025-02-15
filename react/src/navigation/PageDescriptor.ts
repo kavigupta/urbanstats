@@ -10,7 +10,7 @@ import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
-import { loadOrdering, loadOrderingProtobuf, loadJSON, loadProtobuf } from '../load_json'
+import { loadOrdering, loadOrderingProtobuf, loadJSON } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -26,22 +26,21 @@ import { getInfiniteQuizzes } from '../quiz/statistics'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article, IDataList } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
-import { followSymlink, followSymlinks } from '../utils/symlinks'
+import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { base64Gunzip } from '../utils/urlParamShort'
 
-import { dataLink } from './links'
 import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
-    longname: z.string().transform(followSymlink),
+    longname: z.string(),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
     category: z.optional(z.string()) as z.ZodOptional<z.ZodType<CategoryIdentifier, z.ZodTypeDef, CategoryIdentifier>>,
 })
 
 const articleSchemaFromParams = z.object({
-    longname: z.string().transform(followSymlink),
+    longname: z.string(),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
     category: z.optional(z.string().transform((s) => {
@@ -59,7 +58,7 @@ const comparisonSchema = z.object({
 })
 
 const comparisonSchemaFromParams = z.object({
-    longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))).transform(followSymlinks),
+    longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))),
     universe: z.optional(z.string()),
     s: z.optional(z.string()),
 })
@@ -301,7 +300,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article':
-            const article = await loadProtobuf(dataLink(newDescriptor.longname), 'Article')
+            const article = await loadArticleFromPossibleSymlink(newDescriptor.longname)
 
             const defaultUniverse = defaultArticleUniverse(article.universes)
 
@@ -323,6 +322,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     ...newDescriptor,
                     universe: displayUniverse,
                     s: getVector(settings),
+                    longname: article.longname,
                 },
                 effects() {
                     if (newDescriptor.s !== undefined || newDescriptor.category !== undefined) {
@@ -337,7 +337,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
             }
         case 'comparison':
-            const articles = await Promise.all(newDescriptor.longnames.map(name => loadProtobuf(dataLink(name), 'Article')))
+            const articles = await loadArticlesFromPossibleSymlinks(newDescriptor.longnames)
             // intersection of all the data.universes
             const articleUniverses = articles.map(x => x.universes)
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
@@ -363,6 +363,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     ...newDescriptor,
                     universe: displayComparisonUniverse,
                     s: getVector(settings),
+                    longnames: articles.map(x => x.longname),
                 },
                 effects() {
                     if (newDescriptor.s !== undefined) {
