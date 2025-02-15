@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
+import type_ordering_idx from '../data/type_ordering_idx'
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
@@ -999,8 +1000,9 @@ function PointerButtonIndex(props: {
         console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
             const name = data.longnames[pos]
+            const type = data.typeIndices[pos]
             console.log(`name=${name}`)
-            if (!showHistoricalCDs && isHistoricalCD(name)) {
+            if (!showHistoricalCDs && isHistoricalCD(type)) {
                 pos += props.direction
                 continue
             }

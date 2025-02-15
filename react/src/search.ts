@@ -3,7 +3,7 @@ import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
-import { historicalCongressional } from './utils/is_historical'
+import { isHistoricalCD } from './utils/is_historical'
 import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
 
 const debugSearch: boolean = false
@@ -113,7 +113,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternChecks = 0
 
     entries: for (const [populationRank, { tokens, element, priority, signature, typeIndex }] of searchIndex.entries.entries()) {
-        if (!showHistoricalCDs && typeIndex === type_ordering_idx[historicalCongressional]) {
+        if (!showHistoricalCDs && isHistoricalCD(typeIndex)) {
             continue
         }
 
