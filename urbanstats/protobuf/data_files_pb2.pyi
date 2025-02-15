@@ -206,11 +206,17 @@ class Feature(_message.Message):
         center_lon: _Optional[float] = ...,
     ) -> None: ...
 
-class StringList(_message.Message):
-    __slots__ = ("elements",)
-    ELEMENTS_FIELD_NUMBER: _ClassVar[int]
-    elements: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, elements: _Optional[_Iterable[str]] = ...) -> None: ...
+class ArticleOrderingList(_message.Message):
+    __slots__ = ("longnames", "types")
+    LONGNAMES_FIELD_NUMBER: _ClassVar[int]
+    TYPES_FIELD_NUMBER: _ClassVar[int]
+    longnames: _containers.RepeatedScalarFieldContainer[str]
+    types: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(
+        self,
+        longnames: _Optional[_Iterable[str]] = ...,
+        types: _Optional[_Iterable[int]] = ...,
+    ) -> None: ...
 
 class SearchIndexMetadata(_message.Message):
     __slots__ = ("type", "is_usa", "is_symlink")

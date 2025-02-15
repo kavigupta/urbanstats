@@ -2,7 +2,7 @@ import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import save_string_list, write_gzip
+from urbanstats.protobuf.utils import save_article_ordering_list, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import all_universes
@@ -87,7 +87,7 @@ def output_data_files(order_info, site_folder, universe, typ):
     return outputter.fields
 
 
-def output_indices(ordinal_info, site_folder, universe):
+def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
     order_backmap = {}
     for typ in sorted(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
@@ -95,18 +95,22 @@ def output_indices(ordinal_info, site_folder, universe):
         # output a string list to /index/universe/typ.gz
         path = f"{site_folder}/index/{universe}/{typ}.gz"
         ordered = ordinal_info.ordered_names(universe, typ)
-        save_string_list(ordered, path)
+        save_article_ordering_list(ordered, path, longname_to_type)
         order_backmap[typ] = {name: i for i, name in enumerate(ordered)}
     path = f"{site_folder}/index/{universe}/overall.gz"
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
         ordered = ordinal_info.ordered_names(universe, "overall")
-        save_string_list(ordered, path)
+        save_article_ordering_list(ordered, path, longname_to_type)
         order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
     return order_backmap
 
 
-def output_ordering_for_universe(ordinal_info, site_folder, universe):
-    output_indices(ordinal_info, site_folder, universe)
+def output_ordering_for_universe(
+    ordinal_info, site_folder, universe, *, longname_to_type
+):
+    output_indices(
+        ordinal_info, site_folder, universe, longname_to_type=longname_to_type
+    )
     order_map = {}
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
         order_map[universe, "overall"] = output_order_files(
@@ -172,12 +176,15 @@ def create_counts_protobuf(res):
     return counts_by_ut
 
 
-def output_ordering(site_folder, ordinal_info):
+def output_ordering(site_folder, ordinal_info, *, longname_to_type):
     order_map_all = {}
     data_map_all = {}
     for universe in all_universes():
         order_map, data_map = output_ordering_for_universe(
-            ordinal_info, site_folder, universe
+            ordinal_info,
+            site_folder,
+            universe,
+            longname_to_type=longname_to_type,
         )
         order_map_all.update(order_map)
         data_map_all.update(data_map)
