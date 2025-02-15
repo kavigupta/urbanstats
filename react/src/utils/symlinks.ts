@@ -17,6 +17,5 @@ export function loadArticleFromPossibleSymlink(longname: string): Promise<Articl
 }
 
 export function loadArticlesFromPossibleSymlink(longnames: string[]): Promise<Article[]> {
-    longnames = longnames.map(followSymlink)
     return Promise.all(longnames.map(loadArticleFromPossibleSymlink))
 }
