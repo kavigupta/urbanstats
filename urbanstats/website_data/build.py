@@ -215,7 +215,12 @@ def build_urbanstats(
             export_index(shapefile_without_ordinals(), site_folder)
 
         if not no_ordering:
-            output_ordering(site_folder, all_ordinals())
+            table = shapefile_without_ordinals()
+            output_ordering(
+                site_folder,
+                all_ordinals(),
+                longname_to_type=dict(zip(table.longname, table.type)),
+            )
 
         full_consolidated_data(site_folder)
 

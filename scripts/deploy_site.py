@@ -113,6 +113,21 @@ def push_to_new_branch(new_branch):
         subprocess.run(["git", "push", "-f", "origin", new_branch], cwd=PATH)
 
 
+def merge(new_branch):
+    current_branch = get_current_branch()
+    assert current_branch == new_branch != "master", (current_branch, new_branch)
+    # switch to master
+    subprocess.run(["git", "checkout", "master"], cwd=PATH)
+    # merge in the branch we were on
+    subprocess.run(["git", "merge", new_branch], cwd=PATH)
+    # push to master (no need to force push)
+    subprocess.run(["git", "push", "origin", "master"], cwd=PATH)
+    # remove temp branch
+    subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH)
+    # push removal of temp branch
+    subprocess.run(["git", "push", "origin", "--delete", new_branch], cwd=PATH)
+
+
 def main():
     import argparse
 
@@ -128,6 +143,8 @@ def main():
     # command push to master
     p_push_m = s.add_parser("push-to-master")
     p_push_m.add_argument("branch", type=str)
+    p_merge = s.add_parser("merge")
+    p_merge.add_argument("branch", type=str)
     args = p.parse_args()
     if args.command == "update":
         if args.target == "scripts":
@@ -139,6 +156,8 @@ def main():
         push_to_new_branch(args.branch)
     elif args.command == "push-to-master":
         push_to_master(args.branch)
+    elif args.command == "merge":
+        merge(args.branch)
 
 
 if __name__ == "__main__":

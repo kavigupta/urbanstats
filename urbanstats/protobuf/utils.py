@@ -6,10 +6,13 @@ from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from . import data_files_pb2
 
 
-def save_string_list(slist, path):
-    res = data_files_pb2.StringList()
-    for x in slist:
-        res.elements.append(x)
+def save_article_ordering_list(longnames, path, longname_to_type):
+    types = [longname_to_type[x] for x in longnames]
+    res = data_files_pb2.ArticleOrderingList()
+    for x in longnames:
+        res.longnames.append(x)
+    for x in types:
+        res.types.append(type_ordering_idx[x])
     write_gzip(res, path)
 
 

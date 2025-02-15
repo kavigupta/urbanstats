@@ -3582,25 +3582,27 @@ export const Feature = $root.Feature = (() => {
     return Feature;
 })();
 
-export const StringList = $root.StringList = (() => {
+export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
 
     /**
-     * Properties of a StringList.
-     * @exports IStringList
-     * @interface IStringList
-     * @property {Array.<string>|null} [elements] StringList elements
+     * Properties of an ArticleOrderingList.
+     * @exports IArticleOrderingList
+     * @interface IArticleOrderingList
+     * @property {Array.<string>|null} [longnames] ArticleOrderingList longnames
+     * @property {Array.<number>|null} [types] ArticleOrderingList types
      */
 
     /**
-     * Constructs a new StringList.
-     * @exports StringList
-     * @classdesc Represents a StringList.
-     * @implements IStringList
+     * Constructs a new ArticleOrderingList.
+     * @exports ArticleOrderingList
+     * @classdesc Represents an ArticleOrderingList.
+     * @implements IArticleOrderingList
      * @constructor
-     * @param {IStringList=} [properties] Properties to set
+     * @param {IArticleOrderingList=} [properties] Properties to set
      */
-    function StringList(properties) {
-        this.elements = [];
+    function ArticleOrderingList(properties) {
+        this.longnames = [];
+        this.types = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -3608,78 +3610,103 @@ export const StringList = $root.StringList = (() => {
     }
 
     /**
-     * StringList elements.
-     * @member {Array.<string>} elements
-     * @memberof StringList
+     * ArticleOrderingList longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ArticleOrderingList
      * @instance
      */
-    StringList.prototype.elements = $util.emptyArray;
+    ArticleOrderingList.prototype.longnames = $util.emptyArray;
 
     /**
-     * Creates a new StringList instance using the specified properties.
-     * @function create
-     * @memberof StringList
-     * @static
-     * @param {IStringList=} [properties] Properties to set
-     * @returns {StringList} StringList instance
+     * ArticleOrderingList types.
+     * @member {Array.<number>} types
+     * @memberof ArticleOrderingList
+     * @instance
      */
-    StringList.create = function create(properties) {
-        return new StringList(properties);
+    ArticleOrderingList.prototype.types = $util.emptyArray;
+
+    /**
+     * Creates a new ArticleOrderingList instance using the specified properties.
+     * @function create
+     * @memberof ArticleOrderingList
+     * @static
+     * @param {IArticleOrderingList=} [properties] Properties to set
+     * @returns {ArticleOrderingList} ArticleOrderingList instance
+     */
+    ArticleOrderingList.create = function create(properties) {
+        return new ArticleOrderingList(properties);
     };
 
     /**
-     * Encodes the specified StringList message. Does not implicitly {@link StringList.verify|verify} messages.
+     * Encodes the specified ArticleOrderingList message. Does not implicitly {@link ArticleOrderingList.verify|verify} messages.
      * @function encode
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
-     * @param {IStringList} message StringList message or plain object to encode
+     * @param {IArticleOrderingList} message ArticleOrderingList message or plain object to encode
      * @param {$protobuf.Writer} [writer] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    StringList.encode = function encode(message, writer) {
+    ArticleOrderingList.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        if (message.elements != null && message.elements.length)
-            for (let i = 0; i < message.elements.length; ++i)
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.elements[i]);
+        if (message.longnames != null && message.longnames.length)
+            for (let i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.types != null && message.types.length) {
+            writer.uint32(/* id 2, wireType 2 =*/18).fork();
+            for (let i = 0; i < message.types.length; ++i)
+                writer.int32(message.types[i]);
+            writer.ldelim();
+        }
         return writer;
     };
 
     /**
-     * Encodes the specified StringList message, length delimited. Does not implicitly {@link StringList.verify|verify} messages.
+     * Encodes the specified ArticleOrderingList message, length delimited. Does not implicitly {@link ArticleOrderingList.verify|verify} messages.
      * @function encodeDelimited
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
-     * @param {IStringList} message StringList message or plain object to encode
+     * @param {IArticleOrderingList} message ArticleOrderingList message or plain object to encode
      * @param {$protobuf.Writer} [writer] Writer to encode to
      * @returns {$protobuf.Writer} Writer
      */
-    StringList.encodeDelimited = function encodeDelimited(message, writer) {
+    ArticleOrderingList.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
 
     /**
-     * Decodes a StringList message from the specified reader or buffer.
+     * Decodes an ArticleOrderingList message from the specified reader or buffer.
      * @function decode
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
      * @param {number} [length] Message length if known beforehand
-     * @returns {StringList} StringList
+     * @returns {ArticleOrderingList} ArticleOrderingList
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    StringList.decode = function decode(reader, length) {
+    ArticleOrderingList.decode = function decode(reader, length) {
         if (!(reader instanceof $Reader))
             reader = $Reader.create(reader);
-        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.StringList();
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ArticleOrderingList();
         while (reader.pos < end) {
             let tag = reader.uint32();
             switch (tag >>> 3) {
             case 1: {
-                    if (!(message.elements && message.elements.length))
-                        message.elements = [];
-                    message.elements.push(reader.string());
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.types && message.types.length))
+                        message.types = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.types.push(reader.int32());
+                    } else
+                        message.types.push(reader.int32());
                     break;
                 }
             default:
@@ -3691,114 +3718,135 @@ export const StringList = $root.StringList = (() => {
     };
 
     /**
-     * Decodes a StringList message from the specified reader or buffer, length delimited.
+     * Decodes an ArticleOrderingList message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-     * @returns {StringList} StringList
+     * @returns {ArticleOrderingList} ArticleOrderingList
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    StringList.decodeDelimited = function decodeDelimited(reader) {
+    ArticleOrderingList.decodeDelimited = function decodeDelimited(reader) {
         if (!(reader instanceof $Reader))
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
 
     /**
-     * Verifies a StringList message.
+     * Verifies an ArticleOrderingList message.
      * @function verify
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
      * @param {Object.<string,*>} message Plain object to verify
      * @returns {string|null} `null` if valid, otherwise the reason why it is not
      */
-    StringList.verify = function verify(message) {
+    ArticleOrderingList.verify = function verify(message) {
         if (typeof message !== "object" || message === null)
             return "object expected";
-        if (message.elements != null && message.hasOwnProperty("elements")) {
-            if (!Array.isArray(message.elements))
-                return "elements: array expected";
-            for (let i = 0; i < message.elements.length; ++i)
-                if (!$util.isString(message.elements[i]))
-                    return "elements: string[] expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (let i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.types != null && message.hasOwnProperty("types")) {
+            if (!Array.isArray(message.types))
+                return "types: array expected";
+            for (let i = 0; i < message.types.length; ++i)
+                if (!$util.isInteger(message.types[i]))
+                    return "types: integer[] expected";
         }
         return null;
     };
 
     /**
-     * Creates a StringList message from a plain object. Also converts values to their respective internal types.
+     * Creates an ArticleOrderingList message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
      * @param {Object.<string,*>} object Plain object
-     * @returns {StringList} StringList
+     * @returns {ArticleOrderingList} ArticleOrderingList
      */
-    StringList.fromObject = function fromObject(object) {
-        if (object instanceof $root.StringList)
+    ArticleOrderingList.fromObject = function fromObject(object) {
+        if (object instanceof $root.ArticleOrderingList)
             return object;
-        let message = new $root.StringList();
-        if (object.elements) {
-            if (!Array.isArray(object.elements))
-                throw TypeError(".StringList.elements: array expected");
-            message.elements = [];
-            for (let i = 0; i < object.elements.length; ++i)
-                message.elements[i] = String(object.elements[i]);
+        let message = new $root.ArticleOrderingList();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ArticleOrderingList.longnames: array expected");
+            message.longnames = [];
+            for (let i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.types) {
+            if (!Array.isArray(object.types))
+                throw TypeError(".ArticleOrderingList.types: array expected");
+            message.types = [];
+            for (let i = 0; i < object.types.length; ++i)
+                message.types[i] = object.types[i] | 0;
         }
         return message;
     };
 
     /**
-     * Creates a plain object from a StringList message. Also converts values to other types if specified.
+     * Creates a plain object from an ArticleOrderingList message. Also converts values to other types if specified.
      * @function toObject
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
-     * @param {StringList} message StringList
+     * @param {ArticleOrderingList} message ArticleOrderingList
      * @param {$protobuf.IConversionOptions} [options] Conversion options
      * @returns {Object.<string,*>} Plain object
      */
-    StringList.toObject = function toObject(message, options) {
+    ArticleOrderingList.toObject = function toObject(message, options) {
         if (!options)
             options = {};
         let object = {};
-        if (options.arrays || options.defaults)
-            object.elements = [];
-        if (message.elements && message.elements.length) {
-            object.elements = [];
-            for (let j = 0; j < message.elements.length; ++j)
-                object.elements[j] = message.elements[j];
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.types = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (let j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.types && message.types.length) {
+            object.types = [];
+            for (let j = 0; j < message.types.length; ++j)
+                object.types[j] = message.types[j];
         }
         return object;
     };
 
     /**
-     * Converts this StringList to JSON.
+     * Converts this ArticleOrderingList to JSON.
      * @function toJSON
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @instance
      * @returns {Object.<string,*>} JSON object
      */
-    StringList.prototype.toJSON = function toJSON() {
+    ArticleOrderingList.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
     /**
-     * Gets the default type url for StringList
+     * Gets the default type url for ArticleOrderingList
      * @function getTypeUrl
-     * @memberof StringList
+     * @memberof ArticleOrderingList
      * @static
      * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns {string} The default type url
      */
-    StringList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+    ArticleOrderingList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
         if (typeUrlPrefix === undefined) {
             typeUrlPrefix = "type.googleapis.com";
         }
-        return typeUrlPrefix + "/StringList";
+        return typeUrlPrefix + "/ArticleOrderingList";
     };
 
-    return StringList;
+    return ArticleOrderingList;
 })();
 
 export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
