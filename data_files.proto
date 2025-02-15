@@ -87,8 +87,9 @@ message Feature {
 
 // string lists
 
-message StringList {
-    repeated string elements = 1;
+message ArticleOrderingList {
+    repeated string longnames = 1;
+    repeated int32 types = 2; // as in type_ordering_idx.ts
 }
 
 message SearchIndexMetadata {

@@ -11,7 +11,7 @@ import {
     QuizFullData,
     QuizQuestionTronche,
     SearchIndex,
-    StringList,
+    ArticleOrderingList,
 } from './utils/protos'
 
 // from https://stackoverflow.com/a/4117299/1549476
@@ -28,7 +28,7 @@ export async function loadJSON(filePath: string): Promise<unknown> {
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article'): Promise<Article>
 export async function loadProtobuf(filePath: string, name: 'Feature'): Promise<Feature>
-export async function loadProtobuf(filePath: string, name: 'StringList'): Promise<StringList>
+export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
@@ -37,7 +37,7 @@ export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promi
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
-export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | StringList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType> {
+export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
@@ -51,8 +51,8 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     else if (name === 'Feature') {
         return Feature.decode(arr)
     }
-    else if (name === 'StringList') {
-        return StringList.decode(arr)
+    else if (name === 'ArticleOrderingList') {
+        return ArticleOrderingList.decode(arr)
     }
     else if (name === 'OrderLists') {
         return OrderLists.decode(arr)
@@ -119,9 +119,9 @@ export async function loadOrderingProtobuf(universe: string, statpath: string, t
 
 export async function loadOrdering(universe: string, statpath: string, type: string): Promise<string[]> {
     const idxLink = indexLink(universe, type)
-    const dataPromise = loadProtobuf(idxLink, 'StringList')
+    const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
     const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
-    const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.elements[i])
+    const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     return namesInOrder
 }
