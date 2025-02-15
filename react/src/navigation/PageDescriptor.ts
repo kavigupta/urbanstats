@@ -322,7 +322,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     ...newDescriptor,
                     universe: displayUniverse,
                     s: getVector(settings),
-                    // longname: article.longname,
+                    longname: article.longname,
                 },
                 effects() {
                     if (newDescriptor.s !== undefined || newDescriptor.category !== undefined) {
@@ -363,7 +363,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     ...newDescriptor,
                     universe: displayComparisonUniverse,
                     s: getVector(settings),
-                    // longnames: articles.map(x => x.longname),
+                    longnames: articles.map(x => x.longname),
                 },
                 effects() {
                     if (newDescriptor.s !== undefined) {
