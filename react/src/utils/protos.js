@@ -7834,4 +7834,263 @@ export const CountsByArticleUniverseAndType = $root.CountsByArticleUniverseAndTy
     return CountsByArticleUniverseAndType;
 })();
 
+export const Symlinks = $root.Symlinks = (() => {
+
+    /**
+     * Properties of a Symlinks.
+     * @exports ISymlinks
+     * @interface ISymlinks
+     * @property {Array.<string>|null} [linkName] Symlinks linkName
+     * @property {Array.<string>|null} [targetName] Symlinks targetName
+     */
+
+    /**
+     * Constructs a new Symlinks.
+     * @exports Symlinks
+     * @classdesc Represents a Symlinks.
+     * @implements ISymlinks
+     * @constructor
+     * @param {ISymlinks=} [properties] Properties to set
+     */
+    function Symlinks(properties) {
+        this.linkName = [];
+        this.targetName = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * Symlinks linkName.
+     * @member {Array.<string>} linkName
+     * @memberof Symlinks
+     * @instance
+     */
+    Symlinks.prototype.linkName = $util.emptyArray;
+
+    /**
+     * Symlinks targetName.
+     * @member {Array.<string>} targetName
+     * @memberof Symlinks
+     * @instance
+     */
+    Symlinks.prototype.targetName = $util.emptyArray;
+
+    /**
+     * Creates a new Symlinks instance using the specified properties.
+     * @function create
+     * @memberof Symlinks
+     * @static
+     * @param {ISymlinks=} [properties] Properties to set
+     * @returns {Symlinks} Symlinks instance
+     */
+    Symlinks.create = function create(properties) {
+        return new Symlinks(properties);
+    };
+
+    /**
+     * Encodes the specified Symlinks message. Does not implicitly {@link Symlinks.verify|verify} messages.
+     * @function encode
+     * @memberof Symlinks
+     * @static
+     * @param {ISymlinks} message Symlinks message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Symlinks.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.linkName != null && message.linkName.length)
+            for (let i = 0; i < message.linkName.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.linkName[i]);
+        if (message.targetName != null && message.targetName.length)
+            for (let i = 0; i < message.targetName.length; ++i)
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.targetName[i]);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified Symlinks message, length delimited. Does not implicitly {@link Symlinks.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof Symlinks
+     * @static
+     * @param {ISymlinks} message Symlinks message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Symlinks.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a Symlinks message from the specified reader or buffer.
+     * @function decode
+     * @memberof Symlinks
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {Symlinks} Symlinks
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Symlinks.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.Symlinks();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.linkName && message.linkName.length))
+                        message.linkName = [];
+                    message.linkName.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.targetName && message.targetName.length))
+                        message.targetName = [];
+                    message.targetName.push(reader.string());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a Symlinks message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof Symlinks
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {Symlinks} Symlinks
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Symlinks.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a Symlinks message.
+     * @function verify
+     * @memberof Symlinks
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    Symlinks.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.linkName != null && message.hasOwnProperty("linkName")) {
+            if (!Array.isArray(message.linkName))
+                return "linkName: array expected";
+            for (let i = 0; i < message.linkName.length; ++i)
+                if (!$util.isString(message.linkName[i]))
+                    return "linkName: string[] expected";
+        }
+        if (message.targetName != null && message.hasOwnProperty("targetName")) {
+            if (!Array.isArray(message.targetName))
+                return "targetName: array expected";
+            for (let i = 0; i < message.targetName.length; ++i)
+                if (!$util.isString(message.targetName[i]))
+                    return "targetName: string[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a Symlinks message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof Symlinks
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {Symlinks} Symlinks
+     */
+    Symlinks.fromObject = function fromObject(object) {
+        if (object instanceof $root.Symlinks)
+            return object;
+        let message = new $root.Symlinks();
+        if (object.linkName) {
+            if (!Array.isArray(object.linkName))
+                throw TypeError(".Symlinks.linkName: array expected");
+            message.linkName = [];
+            for (let i = 0; i < object.linkName.length; ++i)
+                message.linkName[i] = String(object.linkName[i]);
+        }
+        if (object.targetName) {
+            if (!Array.isArray(object.targetName))
+                throw TypeError(".Symlinks.targetName: array expected");
+            message.targetName = [];
+            for (let i = 0; i < object.targetName.length; ++i)
+                message.targetName[i] = String(object.targetName[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a Symlinks message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof Symlinks
+     * @static
+     * @param {Symlinks} message Symlinks
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    Symlinks.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.linkName = [];
+            object.targetName = [];
+        }
+        if (message.linkName && message.linkName.length) {
+            object.linkName = [];
+            for (let j = 0; j < message.linkName.length; ++j)
+                object.linkName[j] = message.linkName[j];
+        }
+        if (message.targetName && message.targetName.length) {
+            object.targetName = [];
+            for (let j = 0; j < message.targetName.length; ++j)
+                object.targetName[j] = message.targetName[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this Symlinks to JSON.
+     * @function toJSON
+     * @memberof Symlinks
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    Symlinks.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Symlinks
+     * @function getTypeUrl
+     * @memberof Symlinks
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Symlinks.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/Symlinks";
+    };
+
+    return Symlinks;
+})();
+
 export { $root as default };
