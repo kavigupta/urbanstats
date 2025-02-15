@@ -999,8 +999,9 @@ function PointerButtonIndex(props: {
         console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
             const name = data.longnames[pos]
+            const type = data.typeIndices[pos]
             console.log(`name=${name}`)
-            if (!showHistoricalCDs && isHistoricalCD(name)) {
+            if (!showHistoricalCDs && isHistoricalCD(type)) {
                 pos += props.direction
                 continue
             }

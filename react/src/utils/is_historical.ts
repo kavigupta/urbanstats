@@ -1,4 +1,10 @@
-export function isHistoricalCD(name: string): boolean {
-    // if name starts with "Historical Congressional District"
-    return name.startsWith('Historical Congressional District')
+import type_ordering_idx from '../data/type_ordering_idx'
+
+const historicalCongressional = 'Historical Congressional District'
+
+export function isHistoricalCD(typeOrTypeIndex: number | string): boolean {
+    if (typeof typeOrTypeIndex === 'string') {
+        return typeOrTypeIndex === historicalCongressional
+    }
+    return type_ordering_idx[historicalCongressional] === typeOrTypeIndex
 }

@@ -1,3 +1,4 @@
+import type_ordering_idx from '../data/type_ordering_idx'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
 import { isHistoricalCD } from '../utils/is_historical'
@@ -30,15 +31,13 @@ export async function byPopulation(domesticOnly: boolean): Promise<() => string>
                 continue
             }
 
-            const x = index.elements[idx!]
-
             // this is specifically looking for stuff that's only in the US.
             // so it makes sense.
-            if (domesticOnly && (!(x.endsWith(', USA') || (x) === 'USA'))) {
+            if (domesticOnly && !index.metadata[idx!].isUsa) {
                 continue
             }
 
-            return x
+            return index.elements[idx!]
         }
     }
 }
@@ -57,25 +56,21 @@ export async function uniform(): Promise<() => string> {
 }
 
 function valid(index: SearchIndex, idx: number): boolean {
-    const x = index.elements[idx]
     const metadata = index.metadata[idx]
     if (metadata.isSymlink) {
         return false
     }
-    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(x)) {
+    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
         return false
     }
-    if (isPopulationCircle(x)) {
+    if (isPopulationCircle(metadata.type!)) {
         return false
     }
     return true
 }
 
-function isPopulationCircle(x: string): boolean {
-    for (const mpcOrBPC of ['5MPC', '10MPC', '20MPC', '50MPC', '100MPC', '200MPC', '500MPC', '1BPC']) {
-        if (x.includes(`${mpcOrBPC}, `)) {
-            return true
-        }
-    }
-    return false
+const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => name.endsWith('Person Circle')).map(([,index]) => index)
+
+function isPopulationCircle(x: number): boolean {
+    return populationCircles.includes(x)
 }

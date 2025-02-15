@@ -6,10 +6,12 @@ import { createIndex } from '../src/search'
 
 const search = await createIndex()
 
+const computeFirstResult = (query: string): string => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
+
 // We curry based on testFn so we can use test.only, test.skip, etc
 const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
     testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.is(search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0], result)
+        assert.is(computeFirstResult(query), result)
     })
 }
 
@@ -36,5 +38,9 @@ firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspellin
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
+
+test('search', () => {
+    assert.not.match(computeFirstResult('historical'), /Historical Congressional/)
+})
 
 test.run()

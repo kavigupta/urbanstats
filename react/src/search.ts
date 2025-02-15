@@ -24,6 +24,7 @@ interface NormalizedSearchIndex {
         tokens: Haystack[]
         priority: number
         signature: number
+        typeIndex: number
     }[]
     lengthOfLongestToken: number
     maxPriority: number
@@ -110,8 +111,8 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, { tokens, element, priority, signature }] of searchIndex.entries.entries()) {
-        if (!showHistoricalCDs && isHistoricalCD(element)) {
+    entries: for (const [populationRank, { tokens, element, priority, signature, typeIndex }] of searchIndex.entries.entries()) {
+        if (!showHistoricalCDs && isHistoricalCD(typeIndex)) {
             continue
         }
 
@@ -265,6 +266,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
             tokens,
             priority: priorities[index],
             signature: toSignature(normalizedElement),
+            typeIndex: searchIndex.metadata[index].type!,
         }
     })
     debug(`Took ${performance.now() - start}ms to process search index`)
