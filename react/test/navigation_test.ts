@@ -180,7 +180,8 @@ test('quick load', async (t) => {
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
-    await t.expect(delayRequests.removeFilter()).eql(1)
+    // one request for the article, one for the symlinks
+    await t.expect(delayRequests.removeFilter()).eql(2)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
 })
 
