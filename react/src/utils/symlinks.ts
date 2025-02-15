@@ -1,4 +1,3 @@
-import SYMLINKS from '../data/symlinks'
 import { loadProtobuf } from '../load_json'
 import { dataLink, symlinksLink } from '../navigation/links'
 
@@ -6,7 +5,6 @@ import { Article } from './protos'
 
 async function loadWithSymlink(longname: string): Promise<Article | undefined> {
     const symlinks = await loadProtobuf(symlinksLink(longname), 'Symlinks', false)
-    console.log('symlinks', symlinks)
     if (symlinks === undefined) {
         return undefined
     }
@@ -21,7 +19,7 @@ export async function loadArticleFromPossibleSymlink(longname: string): Promise<
     const originalNamePromise = loadProtobuf(dataLink(longname), 'Article', false)
     const symlinkPromise = loadWithSymlink(longname)
     const [original, symlink] = await Promise.all([originalNamePromise, symlinkPromise])
-    const selected = original || symlink
+    const selected = original ?? symlink
     if (selected === undefined) {
         throw new Error(`Could not find article ${longname}`)
     }
