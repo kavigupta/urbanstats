@@ -12,7 +12,6 @@ import {
     QuizQuestionTronche,
     SearchIndex,
     ArticleOrderingList,
-    IArticleOrderingList,
 } from './utils/protos'
 
 // from https://stackoverflow.com/a/4117299/1549476
