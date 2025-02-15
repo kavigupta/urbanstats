@@ -381,7 +381,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const explanationPage = explanation_pages[statIndex]
 
             const data = loadOrderingProtobuf(statUniverse, statpath, newDescriptor.article_type, true).then(result => result as NormalizeProto<IDataList>)
-            const articleNames = await loadOrdering(statUniverse, statpath, newDescriptor.article_type)
+            const articleNames = (await loadOrdering(statUniverse, statpath, newDescriptor.article_type)).longnames
 
             let parsedAmount: number
             if (newDescriptor.amount === 'All') {
