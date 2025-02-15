@@ -105,8 +105,12 @@ def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
     return order_backmap
 
 
-def output_ordering_for_universe(ordinal_info, site_folder, universe, *, longname_to_type):
-    output_indices(ordinal_info, site_folder, universe, longname_to_type=longname_to_type)
+def output_ordering_for_universe(
+    ordinal_info, site_folder, universe, *, longname_to_type
+):
+    output_indices(
+        ordinal_info, site_folder, universe, longname_to_type=longname_to_type
+    )
     order_map = {}
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
         order_map[universe, "overall"] = output_order_files(
@@ -177,7 +181,10 @@ def output_ordering(site_folder, ordinal_info, *, longname_to_type):
     data_map_all = {}
     for universe in all_universes():
         order_map, data_map = output_ordering_for_universe(
-            ordinal_info, site_folder, universe, longname_to_type=longname_to_type,
+            ordinal_info,
+            site_folder,
+            universe,
+            longname_to_type=longname_to_type,
         )
         order_map_all.update(order_map)
         data_map_all.update(data_map)
