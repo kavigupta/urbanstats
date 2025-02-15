@@ -26,13 +26,6 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
-export class MissingFileError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'MissingFileError'
-    }
-}
-
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
 export async function loadProtobuf(filePath: string, name: 'Feature'): Promise<Feature>
