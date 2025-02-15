@@ -42,7 +42,7 @@ export function dataLink(longname: string): string {
 }
 
 export function symlinksLink(longname: string): string {
-    return `/symlinks/${shardedFolderName(longname)}.symlinks.gz`
+    return `/data/${shardedFolderName(longname)}.symlinks.gz`
 }
 
 export function indexLink(universe: string, typ: string): string {
