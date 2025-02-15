@@ -124,9 +124,6 @@ def create_react_jsons():
             data_type="[string, Record<string, string>][]",
         )
 
-    with open("react/src/data/symlinks.ts", "w") as f:
-        output_typescript(symlinks.symlinks, f, data_type="Record<string, string>")
-
 
 def build_react_site(site_folder, mode):
     if mode != "ci":
