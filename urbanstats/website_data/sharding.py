@@ -24,3 +24,8 @@ def create_foldername(x):
 def create_filename(x, ext):
     x = sanitize(x)
     return f"{create_foldername(x)}/{x}." + ext
+
+
+def all_foldernames():
+    hexes = "0123456789abcdef"
+    return [f"{a0}{a1}/{b}" for a0 in hexes for a1 in hexes for b in hexes]

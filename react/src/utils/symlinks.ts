@@ -4,10 +4,7 @@ import { dataLink, symlinksLink } from '../navigation/links'
 import { Article } from './protos'
 
 async function loadWithSymlink(longname: string): Promise<Article | undefined> {
-    const symlinks = await loadProtobuf(symlinksLink(longname), 'Symlinks', false)
-    if (symlinks === undefined) {
-        return undefined
-    }
+    const symlinks = await loadProtobuf(symlinksLink(longname), 'Symlinks')
     const idx = symlinks.linkName.indexOf(longname)
     if (idx === -1) {
         return undefined

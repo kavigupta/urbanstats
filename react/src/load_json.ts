@@ -38,7 +38,7 @@ export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promi
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
-export async function loadProtobuf(filePath: string, name: 'Symlinks', errorOnMissing: boolean): Promise<Symlinks | undefined>
+export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | undefined> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
