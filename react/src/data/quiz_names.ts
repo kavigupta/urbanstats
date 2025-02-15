@@ -299,7 +299,7 @@ export default [
     'higher % of people who commute by transit',
     'higher % of people who commute by walking',
     'higher % of people who work from home',
-    'higher % of units that are vacant',
+    'higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.',
     null,
     null,
     'higher % of households with at least 1 vehicle',
