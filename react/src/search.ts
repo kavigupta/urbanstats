@@ -1,4 +1,3 @@
-import type_ordering_idx from './data/type_ordering_idx'
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'

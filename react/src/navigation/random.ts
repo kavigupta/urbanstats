@@ -63,20 +63,17 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (metadata.isSymlink) {
         return false
     }
-    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type)) {
+    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
         return false
     }
-    if (isPopulationCircle(x)) {
+    if (isPopulationCircle(metadata.type!)) {
         return false
     }
     return true
 }
 
-function isPopulationCircle(x: string): boolean {
-    for (const mpcOrBPC of ['5MPC', '10MPC', '20MPC', '50MPC', '100MPC', '200MPC', '500MPC', '1BPC']) {
-        if (x.includes(`${mpcOrBPC}, `)) {
-            return true
-        }
-    }
-    return false
+const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => name.endsWith('Person Circle')).map(([,index]) => index)
+
+function isPopulationCircle(x: number): boolean {
+    return populationCircles.includes(x)
 }

@@ -1,7 +1,6 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
-import type_ordering_idx from '../data/type_ordering_idx'
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
