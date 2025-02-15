@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
-import { loadOrdering } from '../load_json'
+import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { statisticDescriptor } from '../navigation/links'
@@ -818,7 +818,7 @@ function Ordinal(props: {
             num = 1
         }
         const data = await loadOrdering(currentUniverse, props.statpath, props.type)
-        props.onNavigate?.(data[num - 1])
+        props.onNavigate?.(data.longnames[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
@@ -956,7 +956,7 @@ export function Percentile(props: {
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
     const currentUniverse = useUniverse()
-    const getData = async (): Promise<string[]> => await loadOrdering(currentUniverse, props.statpath, props.type)
+    const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
             <PointerButtonIndex
@@ -980,7 +980,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
 }
 
 function PointerButtonIndex(props: {
-    getData: () => Promise<string[]>
+    getData: () => Promise<ArticleOrderingListInternal>
     originalPos?: number // 1-indexed
     direction: -1 | 1
     total: number
@@ -995,10 +995,10 @@ function PointerButtonIndex(props: {
         /* eslint-disable no-console -- Debugging test failure */
         console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
         const data = await props.getData()
-        let pos = data.indexOf(props.longname) + props.direction
+        let pos = data.longnames.indexOf(props.longname) + props.direction
         console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
-            const name = data[pos]
+            const name = data.longnames[pos]
             console.log(`name=${name}`)
             if (!showHistoricalCDs && isHistoricalCD(name)) {
                 pos += props.direction

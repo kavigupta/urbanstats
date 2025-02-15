@@ -12,6 +12,7 @@ import {
     QuizQuestionTronche,
     SearchIndex,
     ArticleOrderingList,
+    IArticleOrderingList,
 } from './utils/protos'
 
 // from https://stackoverflow.com/a/4117299/1549476
@@ -117,11 +118,17 @@ export async function loadOrderingProtobuf(universe: string, statpath: string, t
     }
 }
 
-export async function loadOrdering(universe: string, statpath: string, type: string): Promise<string[]> {
+export interface ArticleOrderingListInternal {
+    longnames: string[]
+    typeIndices: number[]
+}
+
+export async function loadOrdering(universe: string, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
     const idxLink = indexLink(universe, type)
     const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
     const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
-    return namesInOrder
+    const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
+    return { longnames: namesInOrder, typeIndices: typesInOrder }
 }
