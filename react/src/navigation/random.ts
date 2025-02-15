@@ -31,15 +31,13 @@ export async function byPopulation(domesticOnly: boolean): Promise<() => string>
                 continue
             }
 
-            const x = index.elements[idx!]
-
             // this is specifically looking for stuff that's only in the US.
             // so it makes sense.
-            if (domesticOnly && (!(x.endsWith(', USA') || (x) === 'USA'))) {
+            if (domesticOnly && !index.metadata[idx!].isUsa) {
                 continue
             }
 
-            return x
+            return index.elements[idx!]
         }
     }
 }
@@ -58,7 +56,6 @@ export async function uniform(): Promise<() => string> {
 }
 
 function valid(index: SearchIndex, idx: number): boolean {
-    const x = index.elements[idx]
     const metadata = index.metadata[idx]
     if (metadata.isSymlink) {
         return false
