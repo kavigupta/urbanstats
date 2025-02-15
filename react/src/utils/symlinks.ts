@@ -1,6 +1,6 @@
 import SYMLINKS from '../data/symlinks'
 import { loadProtobuf } from '../load_json'
-import { dataLink } from '../navigation/links'
+import { dataLink, symlinksLink } from '../navigation/links'
 
 import { Article } from './protos'
 
@@ -11,9 +11,10 @@ function followSymlink(name: string): string {
     return name
 }
 
-export function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
+export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
+    const symlinks = await loadProtobuf(symlinksLink(longname), 'Symlinks')
     longname = followSymlink(longname)
-    return loadProtobuf(dataLink(longname), 'Article')
+    return await loadProtobuf(dataLink(longname), 'Article')
 }
 
 export function loadArticlesFromPossibleSymlink(longnames: string[]): Promise<Article[]> {

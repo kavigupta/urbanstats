@@ -12,6 +12,7 @@ import {
     QuizQuestionTronche,
     SearchIndex,
     ArticleOrderingList,
+    Symlinks,
 } from './utils/protos'
 
 // from https://stackoverflow.com/a/4117299/1549476
@@ -23,6 +24,13 @@ export async function loadJSON(filePath: string): Promise<unknown> {
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
     return response.json()
+}
+
+export class MissingFileError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'MissingFileError'
+    }
 }
 
 // Load a protobuf file from the server
@@ -37,10 +45,11 @@ export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promi
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
-export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType> {
+export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
+export async function loadProtobuf(filePath: string, name: string): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
-        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+        throw new MissingFileError(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
     const compressedBuffer = await response.arrayBuffer()
     const buffer = gunzipSync(Buffer.from(compressedBuffer))
@@ -77,6 +86,9 @@ export async function loadProtobuf(filePath: string, name: string): Promise<Arti
     }
     else if (name === 'CountsByArticleUniverseAndType') {
         return CountsByArticleUniverseAndType.decode(arr)
+    }
+    else if (name === 'Symlinks') {
+        return Symlinks.decode(arr)
     }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')

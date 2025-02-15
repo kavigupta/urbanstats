@@ -22,10 +22,15 @@ function shardBytes(longname: string): [string, string] {
     ]
 }
 
-export function shardedName(longname: string): string {
+function shardedFolderName(longname: string): string {
     const sanitizedName = sanitize(longname)
     const [a, b] = shardBytes(sanitizedName)
-    return `${a}/${b}/${sanitizedName}`
+    return `${a}/${b}`
+}
+
+export function shardedName(longname: string): string {
+    const sanitizedName = sanitize(longname)
+    return `${shardedFolderName(longname)}/${sanitizedName}`
 }
 
 export function shapeLink(longname: string): string {
@@ -34,6 +39,10 @@ export function shapeLink(longname: string): string {
 
 export function dataLink(longname: string): string {
     return `/data/${encodeURIComponent(shardedName(longname))}.gz`
+}
+
+export function symlinksLink(longname: string): string {
+    return `/symlinks/${shardedFolderName(longname)}.symlinks.gz`
 }
 
 export function indexLink(universe: string, typ: string): string {

@@ -31,6 +31,7 @@ from urbanstats.universe.icons import (
 from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
+    create_symlink_gzips,
     extra_stats,
 )
 from urbanstats.website_data.index import export_index, type_to_priority_list
@@ -210,6 +211,7 @@ def build_urbanstats(
             create_article_gzips(
                 site_folder, shapefile_without_ordinals(), all_ordinals()
             )
+            create_symlink_gzips(site_folder, symlinks.symlinks)
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
