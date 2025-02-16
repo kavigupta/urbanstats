@@ -84,3 +84,14 @@ test('can visit Umm Siado', async (t) => {
     await waitForPageLoaded(t)
     await t.expect(pageDescriptorKind()).eql('article')
 })
+
+test('on mobile, closes the sidebar when you search', async (t) => {
+    await t.resizeWindow(400, 800)
+    await t.navigateTo('/article.html?longname=San+Jose+Urban+Center%2C+USA') // Need to navigate to an article first, otherwise the page change closes the sidebar
+    await t.click('.hamburgermenu')
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Santa Rosa, CA')
+    await t.click(Selector('div').withExactText('Santa Rosa city, California, USA'))
+    await t.expect(Selector('.sidebar_mobile').exists).notOk()
+})
