@@ -186,67 +186,61 @@ interface ShareButtonProps {
     medal?: Medal
 }
 
-function ShareButton(props: ShareButtonProps): ReactNode {
-    const [compactRepr] = useSetting('juxtastatCompactEmoji')
-    const asb = <ActualShareButton {...props} compactRepr={compactRepr} />
-    if (props.correctPattern.length <= maxPerLine) {
-        return asb
-    }
-    return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <CheckboxSetting
-                    name="Compact emoji representation"
-                    settingKey="juxtastatCompactEmoji"
-                    testId="juxtastatCompactEmoji"
-                />
-            </div>
-            <div className="gap_small"></div>
-            {asb}
-        </div>
-    )
-}
-
-function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, medal, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
+function ShareButton({ buttonRef, todayName, correctPattern, quizKind, medal }: ShareButtonProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const canShare = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const isShare = isMobile && canShare && !isFirefox
+    const [compactRepr] = useSetting('juxtastatCompactEmoji')
 
     return (
-        <button
-            className="serif"
-            style={buttonStyle(colors.hueColors.green)}
-            ref={buttonRef}
-            onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
+        <div>
+            {(correctPattern.length <= maxPerLine) && (
+                <>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CheckboxSetting
+                            name="Compact emoji representation"
+                            settingKey="juxtastatCompactEmoji"
+                            testId="juxtastatCompactEmoji"
+                        />
+                    </div>
+                    <div className="gap_small"></div>
+                </>
+            )}
+            <button
+                className="serif"
+                style={buttonStyle(colors.hueColors.green)}
+                ref={buttonRef}
+                onClick={async () => {
+                    const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
 
-                async function copyToClipboard(): Promise<void> {
-                    await navigator.clipboard.writeText(`${text}\n${url}`)
-                    buttonRef.current!.textContent = 'Copied!'
-                }
-
-                if (isShare) {
-                    try {
-                        await navigator.share({
-                            url,
-                            text: `${text}\n`,
-                        })
+                    async function copyToClipboard(): Promise<void> {
+                        await navigator.clipboard.writeText(`${text}\n${url}`)
+                        buttonRef.current!.textContent = 'Copied!'
                     }
-                    catch {
+
+                    if (isShare) {
+                        try {
+                            await navigator.share({
+                                url,
+                                text: `${text}\n`,
+                            })
+                        }
+                        catch {
+                            await copyToClipboard()
+                        }
+                    }
+                    else {
                         await copyToClipboard()
                     }
-                }
-                else {
-                    await copyToClipboard()
-                }
-            }}
-        >
-            <div>{isShare ? 'Share' : 'Copy'}</div>
-            <div style={{ marginInline: '0.25em' }}></div>
-            <img src="/share.png" className="icon" style={{ width: '1em', height: '1em' }} />
-        </button>
+                }}
+            >
+                <div>{isShare ? 'Share' : 'Copy'}</div>
+                <div style={{ marginInline: '0.25em' }}></div>
+                <img src="/share.png" className="icon" style={{ width: '1em', height: '1em' }} />
+            </button>
+        </div>
     )
 }
 
