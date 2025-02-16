@@ -65,7 +65,10 @@ export function Header(props: {
                                     kind: 'article',
                                     universe: currentUniverse,
                                     longname: newLocation,
-                                }, { scroll: { kind: 'position', top: 0 } })
+                                }, {
+                                    scroll: { kind: 'position', top: 0 },
+                                    postNavigationCallback: () => { props.setHamburgerOpen(false) },
+                                })
                             }
                             placeholder="Search Urban Stats"
                             style={{
