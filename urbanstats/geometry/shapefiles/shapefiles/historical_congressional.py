@@ -1,6 +1,12 @@
+from functools import lru_cache
+import functools
+import pickle
+import numpy as np
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
+
+decades = range(1780, 2010 + 1, 10)
 
 
 def to_year(congress_number):
@@ -9,22 +15,60 @@ def to_year(congress_number):
     return congress_number_zero_indexed * 2 + year_congress_start
 
 
+def start_of_decade(decade):
+    # 1st congress started in 1789; so 1787 is the 0th,
+    # 1785 is the -1st, and 1783 (the "first" congress of the decade) is the -2nd
+    return (decade - 1780) // 2 - 2
+
+
+def end_of_decade(decade):
+    return start_of_decade(decade) + 4
+
+
+@lru_cache(maxsize=None)
+def all_districts():
+    with open(
+        "named_region_shapefiles/congressional_districts/combo/historical.pkl", "rb"
+    ) as f:
+        return pickle.load(f)
+
+
+def filter_for_decade(decade):
+    table = all_districts()
+    start = start_of_decade(decade)
+    end = end_of_decade(decade)
+    filt = table[(table.start <= end) & (table.end >= start)]
+    filt = filt.copy()
+    filt.start = np.maximum(filt.start, start)
+    filt.end = np.minimum(filt.end, end)
+    return filt
+
+
 def historical_shortname(x):
-    return f'{x["state"]}-{int(x["district"]):02d} ({to_year(x.start)})'
+    district = int(x["district"])
+    if district == -1:
+        district = "NA"
+    else:
+        district = f"{district:02d}"
+    return f'{x["state"]}-{district} ({to_year(x.start)})'
 
 
-HISTORICAL_CONGRESSIONAL = Shapefile(
-    hash_key="historical_congressional_5",
-    path="named_region_shapefiles/congressional_districts/combo/historical.pkl",
-    shortname_extractor=historical_shortname,
-    longname_extractor=lambda x: historical_shortname(x) + ", USA",
-    filter=lambda x: True,
-    meta=dict(
-        type="Historical Congressional District",
-        source="Census",
-        type_category="Political",
-    ),
-    chunk_size=100,
-    universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
-)
+version_for_decade = {}
+
+HISTORICAL_CONGRESSIONALs = {
+    f"historical_congressional_{decade}": Shapefile(
+        hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, 1)}",
+        path=functools.partial(filter_for_decade, decade),
+        shortname_extractor=historical_shortname,
+        longname_extractor=lambda x: historical_shortname(x) + ", USA",
+        filter=lambda x: True,
+        meta=dict(
+            type=f"Congressional District ({decade}s)",
+            source="UCLA",
+            type_category="Political",
+        ),
+        universe_provider=us_domestic_provider(),
+        subset_masks={"USA": SelfSubset()},
+    )
+    for decade in decades
+}
