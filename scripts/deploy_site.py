@@ -128,6 +128,14 @@ def merge(new_branch):
     subprocess.run(["git", "push", "origin", "--delete", new_branch], cwd=PATH)
 
 
+def rm_branch(branch):
+    current_branch = get_current_branch()
+    assert current_branch == branch != "master", (current_branch, branch)
+    subprocess.run(["git", "checkout", "master"], cwd=PATH)
+    subprocess.run(["git", "branch", "-D", branch], cwd=PATH)
+    subprocess.run(["git", "push", "origin", "--delete", branch], cwd=PATH)
+
+
 def main():
     import argparse
 
@@ -145,6 +153,8 @@ def main():
     p_push_m.add_argument("branch", type=str)
     p_merge = s.add_parser("merge")
     p_merge.add_argument("branch", type=str)
+    p_rm = s.add_parser("rm-branch")
+    p_rm.add_argument("branch", type=str)
     args = p.parse_args()
     if args.command == "update":
         if args.target == "scripts":
@@ -158,6 +168,8 @@ def main():
         push_to_master(args.branch)
     elif args.command == "merge":
         merge(args.branch)
+    elif args.command == "rm-branch":
+        rm_branch(args.branch)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import itertools
 import re
-from collections import defaultdict
 from functools import lru_cache
 
 import numpy as np
@@ -13,7 +12,11 @@ from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
-from urbanstats.website_data.sharding import create_filename, create_foldername
+from urbanstats.website_data.sharding import (
+    all_foldernames,
+    create_filename,
+    create_foldername,
+)
 
 
 def isnan(x):
@@ -107,7 +110,7 @@ def create_article_gzip(
 
 
 def create_symlink_gzips(site_folder, symlinks):
-    results_by_folder = defaultdict(list)
+    results_by_folder = {k: [] for k in all_foldernames()}
     for link_name, target_name in symlinks.items():
         folder = create_foldername(link_name)
         results_by_folder[folder].append((link_name, target_name))
