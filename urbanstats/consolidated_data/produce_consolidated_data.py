@@ -31,7 +31,6 @@ dont_use = [
     "Neighborhood",
     "State House District",
     "State Senate District",
-    "Historical Congressional District",
     "Native Area",
     "Native Statistical Area",
     "Native Subdivision",

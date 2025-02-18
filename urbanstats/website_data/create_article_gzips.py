@@ -169,10 +169,6 @@ def universe_to_idx():
 
 def order_key_for_relatioships(longname, typ):
     processed_longname = longname
-    if typ == "Historical Congressional District":
-        parsed = re.match(r".*[^\d](\d+)[^\d]*Congress", longname)
-        end_congress = int(parsed.group(1))
-        processed_longname = -end_congress, longname
     return ordering_idx[typ], processed_longname
 
 

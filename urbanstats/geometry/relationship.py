@@ -113,27 +113,6 @@ def create_relationships_countries_subnationals(a, b):
     return a_contains_b, set(), set(), set()
 
 
-@permacache(
-    "population_density/relationship/create_relationships_historical_cd_3",
-    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
-)
-def create_relationships_historical_cd(x, y):
-    a = x.load_file()
-    b = y.load_file()
-    related = gpd.sjoin(a, b)
-    intersects = set()
-    borders = set()
-    for i in tqdm.trange(len(related)):
-        row = related.iloc[i]
-        left_cong = re.match(r".*\[(.*)\]", row.shortname_left).group(1)
-        right_cong = re.match(r".*\[(.*)\]", row.shortname_right).group(1)
-        if left_cong == right_cong:
-            borders.add((row.longname_left, row.longname_right))
-        else:
-            intersects.add((row.longname_left, row.longname_right))
-    return set(), set(), intersects, borders
-
-
 tiers = [
     [
         "Continent",
@@ -386,21 +365,25 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
 
 
 def create_relationships_dispatch(shapefiles_to_use, k1, k2):
-    fn = {
-        (
-            "historical_congressional",
-            "historical_congressional",
-        ): create_relationships_historical_cd,
-        ("countries", "countries"): create_overlays_only_borders,
-        (
-            "countries",
-            "subnational_regions",
-        ): create_relationships_countries_subnationals,
-        (
-            "subnational_regions",
-            "countries",
-        ): lambda x, y: create_relationships_countries_subnationals(y, x),
-    }.get((k1, k2), create_relationships)
+    if k1.startswith("historical_congressional") and k2.startswith(
+        "historical_congressional"
+    ):
+        if k1 == k2:
+            fn = create_relationships
+        else:
+            fn = lambda _1, _2: ({}, {}, {}, {})
+    else:
+        fn = {
+            ("countries", "countries"): create_overlays_only_borders,
+            (
+                "countries",
+                "subnational_regions",
+            ): create_relationships_countries_subnationals,
+            (
+                "subnational_regions",
+                "countries",
+            ): lambda x, y: create_relationships_countries_subnationals(y, x),
+        }.get((k1, k2), create_relationships)
     (
         a_contains_b,
         b_contains_a,

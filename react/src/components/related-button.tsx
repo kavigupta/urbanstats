@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { relationshipKey, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
+import { isHistoricalCD } from '../utils/is_historical'
 import { useMobileLayout } from '../utils/responsive'
 
 import { CheckboxSetting } from './sidebar'
@@ -144,7 +145,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     const elements = []
     for (const key of buttonKeys) {
         if (!showHistoricalCds) {
-            if (key === 'Historical Congressional District') {
+            if (isHistoricalCD(key)) {
                 continue
             }
         }
