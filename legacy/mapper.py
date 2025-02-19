@@ -4,7 +4,6 @@ import tempfile
 import xml.etree.cElementTree as et
 
 import plotly.graph_objects as go
-
 from load_data import load_county_geojson
 
 BACKGROUND = "#222"

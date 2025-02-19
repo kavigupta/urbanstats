@@ -1,12 +1,12 @@
 import os
 import pickle
-import requests
-import tqdm
-import us
 import subprocess
 
 import geopandas as gpd
 import pandas as pd
+import requests
+import tqdm
+import us
 
 metadata = [
     ("CD", "cd118", "STATEFP20", "CD118FP"),

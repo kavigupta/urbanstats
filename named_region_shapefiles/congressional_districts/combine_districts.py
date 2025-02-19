@@ -1,10 +1,10 @@
 import pickle
 import re
-import pandas as pd
-import us
 
-import tqdm
 import geopandas as gpd
+import pandas as pd
+import tqdm
+import us
 from permacache import permacache
 
 
