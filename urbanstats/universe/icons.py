@@ -8,15 +8,18 @@ import requests
 import us
 from PIL import Image
 
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.universe.universe_list import (
     all_universes,
     get_universe_name_for_state,
     universe_by_universe_type,
 )
+from urbanstats.website_data.colors import compute_search_flag
 
 from .universe_constants import CONTINENTS, COUNTRIES
 
 flags_folder = "icons/flags/"
+search_icons_folder = "icons/search_icons/"
 
 
 internal_country_to_wikipedia = {
@@ -120,17 +123,26 @@ def download_all_flags():
     assert not missing, missing
 
 
+def download_all_search_icons():
+    os.makedirs(search_icons_folder, exist_ok=True)
+    for s in shapefiles.values():
+        typ = s.meta["type"]
+        path = os.path.join(search_icons_folder, f"{typ}.png")
+        if os.path.exists(path):
+            continue
+        compute_search_flag(s).save(path)
+
+
 def place_icons_in_site_folder(site_folder):
     download_all_flags()
-    for folder in [flags_folder]:
+    download_all_search_icons()
+    for folder in [flags_folder, search_icons_folder]:
         try:
             os.makedirs(os.path.join(site_folder, folder))
         except FileExistsError:
             pass
         for f in os.listdir(folder):
-            shutil.copy(
-                os.path.join(folder, f), os.path.join(site_folder, folder)
-            )
+            shutil.copy(os.path.join(folder, f), os.path.join(site_folder, folder))
 
 
 def get_image_dimensions(image_path):
