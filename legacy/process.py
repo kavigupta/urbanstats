@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 
 import numpy as np
+from load_data import load_blocks
 from permacache import permacache
 
 from urbanstats.geometry.ellipse import locate_blocks
-from load_data import load_blocks
 
 
 def load_and_process_data(*, year, radius):

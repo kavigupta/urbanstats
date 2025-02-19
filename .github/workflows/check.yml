@@ -66,8 +66,8 @@ jobs:
         run: python -m pylint --prefer-stubs=true urbanstats tests
       - name: Check black
         run: |
-          python -m isort urbanstats tests *.py scripts
-          python -m black urbanstats tests *.py scripts
+          python -m isort urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
+          python -m black urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
            # allow all directories. This is needed because git complains about git repositories outside the user directory
           git config --global --add safe.directory '*'
           # check if there are any changes
