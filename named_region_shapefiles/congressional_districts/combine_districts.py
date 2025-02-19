@@ -1,20 +1,16 @@
 import pickle
 import re
-import pandas as pd
-import us
 
-import tqdm
 import geopandas as gpd
+import pandas as pd
+import tqdm
+import us
 from permacache import permacache
 
 
 @permacache("population_density/combine_districts/pre_114_2")
 def compute_114():
-    all_shapes = {}
-    for i in tqdm.trange(1, 1 + 114):
-        all_shapes[i] = gpd.read_file(
-            f"../../../historical-congressional-unclipped/unclipped_congresses/{i:03d}.shp.zip"
-        )
+    all_shapes = load_all()
     seen = set()
     rows = []
     for i in tqdm.trange(1, 1 + 114):
@@ -54,6 +50,16 @@ def compute_114():
         (pre_114.end == 117) & pre_114.state.apply(lambda x: x in {"PA"}), "end"
     ] = 115
     return pre_114
+
+
+def load_all():
+    all_shapes = {}
+    for i in tqdm.trange(1, 1 + 114):
+        all_shapes[i] = gpd.read_file(
+            f"../../../historical-congressional-unclipped/unclipped_congresses/{i:03d}.shp.zip"
+        )
+
+    return all_shapes
 
 
 def compute_from_data_gov_tiger(path, states):
