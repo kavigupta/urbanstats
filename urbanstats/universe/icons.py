@@ -67,7 +67,7 @@ def state_flag_name(state):
     return f"File:Flag_of_{state.name.replace(' ', '_')}.svg"
 
 
-def download_all_us_state_icons():
+def download_all_us_state_flags():
     # download_and_convert_flag("File:Flag_of_Alabama.svg", "Alabama, USA")
     for state in us.states.STATES_AND_TERRITORIES:
         download_and_convert_flag(
@@ -82,7 +82,7 @@ def province_flag_name(province):
     return f"File:Flag_of_{province.replace(', Canada', '').replace(' ', '_')}.svg"
 
 
-def download_all_canadian_province_icons():
+def download_all_canadian_province_flags():
     for province in universe_by_universe_type()["province"]:
         download_and_convert_flag(
             province_flag_name(province),
@@ -90,13 +90,13 @@ def download_all_canadian_province_icons():
         )
 
 
-def download_all_country_icons():
+def download_all_country_flags():
     for name in COUNTRIES:
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
         download_and_convert_flag(f"File:Flag_of_{wikiname}.svg", name)
 
 
-def convert_continent_icons():
+def convert_continent_flags():
     for continent in CONTINENTS:
         out = f"{flags_folder}{continent}.png"
         if os.path.exists(out):
@@ -104,32 +104,31 @@ def convert_continent_icons():
         run_conversion(out, f"icons/continent-flags/{continent}.svg")
 
 
-def download_all_icons():
-    download_all_country_icons()
-    download_all_us_state_icons()
-    download_all_canadian_province_icons()
+def download_all_flags():
+    download_all_country_flags()
+    download_all_us_state_flags()
+    download_all_canadian_province_flags()
     download_and_convert_flag("File:Flag_of_the_United_States.svg", "USA")
     download_and_convert_flag("File:Flag_of_the_United_Nations.svg", "world")
     download_and_convert_flag(
         "File:Flag_of_Washington,_D.C..svg", "District of Columbia, USA"
     )
 
-    convert_continent_icons()
+    convert_continent_flags()
 
     missing = {x + ".png" for x in all_universes()} - set(os.listdir(flags_folder))
     assert not missing, missing
 
 
 def place_icons_in_site_folder(site_folder):
-    download_all_icons()
-    try:
-        os.makedirs(os.path.join(site_folder, flags_folder))
-    except FileExistsError:
-        pass
-    for f in os.listdir(flags_folder):
-        shutil.copy(
-            os.path.join(flags_folder, f), os.path.join(site_folder, flags_folder)
-        )
+    download_all_flags()
+    for folder in [flags_folder]:
+        try:
+            os.makedirs(os.path.join(site_folder, folder))
+        except FileExistsError:
+            pass
+        for f in os.listdir(folder):
+            shutil.copy(os.path.join(folder, f), os.path.join(site_folder, folder))
 
 
 def get_image_dimensions(image_path):
@@ -150,4 +149,4 @@ def all_image_aspect_ratios():
 
 
 if __name__ == "__main__":
-    download_all_icons()
+    download_all_flags()
