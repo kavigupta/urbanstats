@@ -290,7 +290,11 @@ def infinite_results(requestee, requesters, seed, version):
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
-    return _compute_friend_results(requestee, requesters, compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version))
+    return _compute_friend_results(
+        requestee,
+        requesters,
+        compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version),
+    )
 
 
 def _compute_friend_results(requestee, requesters, compute_fn):
@@ -336,6 +340,7 @@ def _compute_daily_score(date, quiz_kind, c, for_user):
     else:
         return dict(corrects=bitvector_to_corrects(res[0]))
 
+
 def _infinite_results(c, for_user, seed, version):
     """
     Returns the result for the given user for the given seed and version, as well
@@ -362,5 +367,5 @@ def _infinite_results(c, for_user, seed, version):
         forThisSeed=for_this_seed,
         maxScore=max_score,
         maxScoreSeed=max_score_seed,
-        maxScoreVersion=max_score_version
+        maxScoreVersion=max_score_version,
     )

@@ -1,13 +1,14 @@
 import functools
-import json
-import flask
 import hashlib
+import json
 
+import flask
 from flask_cors import CORS
 
 from .juxtastat_stats import (
     check_secureid,
     friend_request,
+    get_full_database,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     has_infinite_stats,
@@ -16,13 +17,12 @@ from .juxtastat_stats import (
     latest_week_retrostat,
     register_user,
     store_user_stats,
-    get_full_database,
     store_user_stats_infinite,
     store_user_stats_retrostat,
     todays_score_for,
     unfriend,
 )
-from .shorten import shorten_and_save, retreive_and_lengthen
+from .shorten import retreive_and_lengthen, shorten_and_save
 
 app = flask.Flask("urbanstats-persistent-data")
 cors = CORS(app)
@@ -159,9 +159,7 @@ def juxtastat_infinite_has_infinite_stats_request():
     print("HAS INFINITE STATS", form)
     res = dict(has=has_infinite_stats(form["user"], form["seedVersions"]))
     print("HAS INFINITE STATS", res)
-    return flask.jsonify(
-        res
-    )
+    return flask.jsonify(res)
 
 
 @app.route("/juxtastat_infinite/store_user_stats", methods=["POST"])

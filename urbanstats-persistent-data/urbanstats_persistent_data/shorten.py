@@ -1,6 +1,6 @@
-import string
-import sqlite3
 import hashlib
+import sqlite3
+import string
 
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits + "-_"
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
