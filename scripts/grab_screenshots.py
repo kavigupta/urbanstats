@@ -64,7 +64,7 @@ def get_action(pr):
     if len(runs) == 0:
         raise Exception("No actions found for PR: " + pr["html_url"])
     run = runs[0]
-    if run['status'] != 'completed':
+    if run["status"] != "completed":
         raise Exception("Action is not completed")
     return run
 
