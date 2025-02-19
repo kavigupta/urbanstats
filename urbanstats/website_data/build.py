@@ -41,6 +41,7 @@ from urbanstats.website_data.sitemap import output_sitemap
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
+from .colors import hue_colors, related_button_colors
 
 
 def check_proto_hash():
@@ -107,6 +108,12 @@ def create_react_jsons():
             ],
             f,
         )
+
+    with open("react/src/data/hueColors.ts", "w") as f:
+        output_typescript(hue_colors, f)
+
+    with open("react/src/data/relatedButtonColors.ts", "w") as f:
+        output_typescript(list(related_button_colors.items()), f)
 
     mapper_folder = "react/src/data/mapper"
     try:

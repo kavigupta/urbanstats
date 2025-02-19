@@ -1,6 +1,7 @@
 import React, { ReactNode, useContext, useId } from 'react'
 
 import './related.css'
+import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
 import type_to_type_category from '../data/type_to_type_category'
 import { Navigator } from '../navigation/Navigator'
@@ -17,17 +18,10 @@ import { CheckboxSetting } from './sidebar'
 interface Region { rowType: string, longname: string, shortname: string }
 
 function colorsEach(colors: HueColors): Record<string, string> {
-    return {
-        'International': colors.red,
-        'US Subdivision': colors.blue,
-        'Census': colors.cyan,
-        'Political': colors.purple,
-        'Oddball': colors.darkGrey,
-        'Kavi': colors.darkOrange,
-        'School': colors.yellow,
-        'Small': colors.pink,
-        'Native': colors.green,
-    }
+    const keys: [string, string][] = relatedButtonColors.map(
+        ([typ, color]) => [typ, colors[color]],
+    )
+    return Object.fromEntries(keys)
 }
 
 function RelatedButton(props: { region: Region }): ReactNode {
