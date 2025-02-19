@@ -2,16 +2,16 @@ import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
 import './util/fetch'
-import { createIndex } from '../src/search'
+import { createIndex, SearchElement } from '../src/search'
 
 const search = await createIndex()
 
-const computeFirstResult = (query: string): string => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
+const computeFirstResult = (query: string): SearchElement => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
 const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
     testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.is(computeFirstResult(query), result)
+        assert.is(computeFirstResult(query).longname, result)
     })
 }
 
@@ -40,7 +40,7 @@ firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') /
 firstResult(test)('united states of america', 'United States of America') // symlink
 
 test('search', () => {
-    assert.not.match(computeFirstResult('historical'), /Historical Congressional/)
+    assert.not.match(computeFirstResult('historical').longname, /Historical Congressional/)
 })
 
 test.run()
