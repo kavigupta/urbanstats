@@ -7,6 +7,11 @@ import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
 
 const debugSearch: boolean = false
 
+export interface SearchElement {
+    longname: string
+    typeIndex: number
+}
+
 function debug(arg: unknown): void {
     if (debugSearch) {
         // eslint-disable-next-line no-console -- Debug logging
@@ -20,7 +25,7 @@ function normalize(a: string): string {
 
 interface NormalizedSearchIndex {
     entries: {
-        element: string
+        element: SearchElement
         tokens: Haystack[]
         priority: number
         signature: number
@@ -32,7 +37,7 @@ interface NormalizedSearchIndex {
 }
 
 interface SearchResult {
-    element: string
+    element: SearchElement
     normalizedMatchScore: number // Lower is better ([0,1], where 0 is perfect match, and 1 is no matches)
     normalizedPopulationRank: number // Lower is higher population (better) ([0,1], where 0 is highest population and 1 is lowest population)
     normalizedPriority: number // Lower is better ([0,1] where 1 is least prioritized)
@@ -80,7 +85,7 @@ export interface SearchParams {
     showHistoricalCDs: boolean
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs }: SearchParams): string[] {
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs }: SearchParams): SearchElement[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -230,7 +235,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     return results.map(result => result.element)
 }
 
-export async function createIndex(): Promise<(params: SearchParams) => string[]> {
+export async function createIndex(): Promise<(params: SearchParams) => SearchElement[]> {
     const start = performance.now()
     let rawIndex: SearchIndex | undefined = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
     const index = processRawSearchIndex(rawIndex)
@@ -262,7 +267,10 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
             mostTokens = tokens.length
         }
         return {
-            element,
+            element: {
+                longname: element,
+                typeIndex: searchIndex.metadata[index].type!,
+            },
             tokens,
             priority: priorities[index],
             signature: toSignature(normalizedElement),

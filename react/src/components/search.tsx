@@ -4,7 +4,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { SearchParams } from '../search'
+import { SearchElement, SearchParams } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -16,7 +16,7 @@ export function SearchBox(props: {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
 
-    const [matches, setMatches] = useState<string[]>([])
+    const [matches, setMatches] = useState<SearchElement[]>([])
 
     // Keep these in sync
     const [query, setQuery] = useState('')
@@ -47,8 +47,8 @@ export function SearchBox(props: {
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused]).onClick()
-            props.onChange?.(terms[focused])
+            void props.link(terms[focused].longname).onClick()
+            props.onChange?.(terms[focused].longname)
             reset()
         }
         return false
@@ -135,8 +135,8 @@ export function SearchBox(props: {
                     matches.map((location, idx) =>
                         (
                             <a
-                                key={location}
-                                {...props.link(matches[idx])}
+                                key={location.longname}
+                                {...props.link(matches[idx].longname)}
                                 style={{
                                     textDecoration: 'none',
                                     color: colors.textMain,
@@ -147,15 +147,14 @@ export function SearchBox(props: {
                                     className="serif searchbox-dropdown-item"
                                     style={searchboxDropdownItemStyle(idx)}
                                     onClick={() => {
-                                        props.onChange?.(matches[idx])
+                                        props.onChange?.(matches[idx].longname)
                                         reset()
                                     }}
                                     onMouseOver={() => { setFocused(idx) }}
                                 >
                                     {' '}
-                                    {location}
+                                    {location.longname}
                                     {' '}
-
                                 </div>
                             </a>
                         ),
@@ -168,12 +167,12 @@ export function SearchBox(props: {
 
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
 
-type SearchWorker = (params: SearchParams) => Promise<string[]>
+type SearchWorker = (params: SearchParams) => Promise<SearchElement[]>
 
 function createSearchWorker(): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
-    const messageQueue: ((results: string[]) => void)[] = []
-    worker.addEventListener('message', (message: MessageEvent<string[]>) => {
+    const messageQueue: ((results: SearchElement[]) => void)[] = []
+    worker.addEventListener('message', (message: MessageEvent<SearchElement[]>) => {
         messageQueue.shift()!(message.data)
     })
     const result: SearchWorker = (params) => {
