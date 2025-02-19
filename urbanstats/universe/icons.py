@@ -128,9 +128,7 @@ def place_icons_in_site_folder(site_folder):
         except FileExistsError:
             pass
         for f in os.listdir(folder):
-            shutil.copy(
-                os.path.join(folder, f), os.path.join(site_folder, folder)
-            )
+            shutil.copy(os.path.join(folder, f), os.path.join(site_folder, folder))
 
 
 def get_image_dimensions(image_path):
