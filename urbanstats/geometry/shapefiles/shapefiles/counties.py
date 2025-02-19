@@ -29,4 +29,5 @@ COUNTIES = Shapefile(
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="CNTY",
 )

@@ -21,6 +21,7 @@ HRRs = Shapefile(
     ),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="HRR",
 )
 HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
@@ -38,6 +39,7 @@ HSAs = Shapefile(
     ),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="HSA",
 )
 hospital_shapefiles = dict(
     hospital_referral_regions=HRRs,

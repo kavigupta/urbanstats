@@ -14,4 +14,5 @@ CITIES = Shapefile(
     drop_dup="counties",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="CITY",
 )

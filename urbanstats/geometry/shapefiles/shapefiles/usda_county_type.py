@@ -36,4 +36,5 @@ USDA_COUNTY_TYPE = Shapefile(
     meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="USDA",
 )

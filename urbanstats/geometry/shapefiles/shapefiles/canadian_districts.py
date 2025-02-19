@@ -29,4 +29,5 @@ CANADIAN_DISTRICTS = Shapefile(
     ),
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
+    abbreviation="RDNG",
 )

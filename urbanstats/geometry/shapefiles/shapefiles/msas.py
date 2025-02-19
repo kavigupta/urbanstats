@@ -12,4 +12,5 @@ MSAs = Shapefile(
     meta=dict(type="MSA", source="Census", type_category="Census"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="MSA",
 )

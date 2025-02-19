@@ -65,4 +65,5 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     ),
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
+    abbreviation="PC",
 )
