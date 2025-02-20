@@ -70,7 +70,9 @@ def search_flag(abbrev, color, multiplier=1):
     x = (img_width - text_width) / 2
     y = (img_height - text_height) / 2
     if x < 0 or y < 0:
-        print(f"Warning: {abbrev} is too long for the flag; reducing size to {multiplier * 0.9}")
+        print(
+            f"Warning: {abbrev} is too long for the flag; reducing size to {multiplier * 0.9}"
+        )
         return search_flag(abbrev, color, multiplier * 0.9)
     draw.text((x, y), abbrev, font=font, fill="white")
     return flag
