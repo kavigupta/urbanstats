@@ -51,7 +51,7 @@ def compute_text_size(text, font):
     return max_col + min_col, max_row + min_row
 
 
-def search_flag(abbrev, color):
+def search_flag(abbrev, color, multiplier=1):
     """
     Make a "search flag", which is a square with a series of letters in it.
 
@@ -60,7 +60,7 @@ def search_flag(abbrev, color):
     img_width = 200
     img_height = 100
     ttf_path = "icons/fonts/Jost/static/Jost-SemiBold.ttf"
-    font = ImageFont.truetype(ttf_path, 60)
+    font = ImageFont.truetype(ttf_path, int(60 * multiplier))
     # Create a blank image
     flag = Image.new("RGB", (img_width, img_height), color)
     draw = ImageDraw.Draw(flag)
@@ -69,7 +69,9 @@ def search_flag(abbrev, color):
     _, text_height = compute_text_size(abbrev.replace("J", "I"), font)
     x = (img_width - text_width) / 2
     y = (img_height - text_height) / 2
-    assert x >= 0 and y >= 0, f"Text too big: {text_width}, {text_height}"
+    if x < 0 or y < 0:
+        print(f"Warning: {abbrev} is too long for the flag; reducing size to {multiplier * 0.9}")
+        return search_flag(abbrev, color, multiplier * 0.9)
     draw.text((x, y), abbrev, font=font, fill="white")
     return flag
 
