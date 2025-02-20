@@ -2,11 +2,11 @@ import { test } from 'uvu'
 import * as assert from 'uvu/assert'
 
 import './util/fetch'
-import { createIndex, SearchElement } from '../src/search'
+import { createIndex, SearchResult } from '../src/search'
 
 const search = await createIndex()
 
-const computeFirstResult = (query: string): SearchElement => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
+const computeFirstResult = (query: string): SearchResult => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
 const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
