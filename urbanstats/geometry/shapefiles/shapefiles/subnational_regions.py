@@ -44,4 +44,5 @@ SUBNATIONAL_REGIONS = Shapefile(
             "Province", lambda x: extract_country_longname(x) == "Canada"
         ),
     },
+    abbreviation="SUBN",
 )

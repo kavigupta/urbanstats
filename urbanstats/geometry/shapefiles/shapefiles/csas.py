@@ -12,4 +12,5 @@ CSAs = Shapefile(
     meta=dict(type="CSA", source="Census", type_category="Census"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="CSA",
 )

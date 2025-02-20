@@ -53,4 +53,5 @@ COUNTY_CROSS_CD = Shapefile(
     chunk_size=100,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="CXCD",
 )

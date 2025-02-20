@@ -41,4 +41,5 @@ COUNTRIES = Shapefile(
             "Canada", lambda x: extract_country_longname(x) == "Canada"
         ),
     },
+    abbreviation="CTRY",
 )

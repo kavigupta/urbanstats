@@ -1,6 +1,9 @@
+import type_ordering_idx from '../data/type_ordering_idx'
 import { StatName } from '../page_template/statistic-tree'
 
 import { PageDescriptor } from './PageDescriptor'
+
+const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
 function shardBytes(longname: string): [string, string] {
     // as bytes, in utf-8
@@ -63,6 +66,10 @@ export function consolidatedShapeLink(typ: string): string {
 
 export function consolidatedStatsLink(typ: string): string {
     return `/consolidated/stats__${encodeURIComponent(sanitize(typ))}.gz`
+}
+
+export function searchIconLink(typeIdx: number): string {
+    return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
 }
 
 export function statisticDescriptor(props: {

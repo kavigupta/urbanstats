@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
+import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
@@ -152,9 +153,7 @@ export function SearchBox(props: {
                                     }}
                                     onMouseOver={() => { setFocused(idx) }}
                                 >
-                                    {' '}
-                                    {location.longname}
-                                    {' '}
+                                    <SingleSearchResult {...location} />
                                 </div>
                             </a>
                         ),
@@ -162,6 +161,15 @@ export function SearchBox(props: {
                 }
             </div>
         </form>
+    )
+}
+
+function SingleSearchResult(props: SearchElement): ReactNode {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '80%' }}>{props.longname}</div>
+            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={searchIconLink(props.typeIndex)} /></div>
+        </div>
     )
 }
 

@@ -17,5 +17,6 @@ HISTORICAL_CONGRESSIONAL = Shapefile(
     ),
     chunk_size=100,
     universe_provider=us_domestic_provider(),
+    abbreviation="CONG",
     subset_masks={"USA": SelfSubset()},
 )
