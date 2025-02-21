@@ -64,4 +64,5 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     ),
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
+    abbreviation="CMA",
 )

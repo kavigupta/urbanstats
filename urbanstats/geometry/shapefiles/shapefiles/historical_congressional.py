@@ -67,6 +67,7 @@ HISTORICAL_CONGRESSIONALs = {
             source="UCLA",
             type_category="Political",
         ),
+        abbreviation="CONG",
         universe_provider=us_domestic_provider(),
         subset_masks={"USA": SelfSubset()},
     )

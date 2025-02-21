@@ -20,4 +20,5 @@ CONTINENTS = Shapefile(
     universe_provider=CombinedUniverseProvider(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),
+    abbreviation="CONT",
 )

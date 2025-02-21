@@ -22,6 +22,7 @@ class Shapefile:
     tolerate_no_state = attr.ib(default=False)
     universe_provider = attr.ib(kw_only=True)
     subset_masks = attr.ib(default=attr.Factory(dict))
+    abbreviation = attr.ib(kw_only=True)
 
     def load_file(self):
         """

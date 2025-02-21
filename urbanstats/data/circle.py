@@ -805,4 +805,5 @@ def circle_shapefile_object(country_shapefile, population):
                 "CA " + name, lambda x: x.longname.endswith(", Canada")
             ),
         },
+        abbreviation=named_populations[population],
     )

@@ -20,6 +20,7 @@ NATIVE_AREAS = Shapefile(
     meta=dict(type="Native Area", source="Census", type_category="Native"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="NAAR",
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
     hash_key="native_statistical_areas",
@@ -30,6 +31,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="NASA",
 )
 NATIVE_SUBDIVISIONS = Shapefile(
     hash_key="native_subdivisions_2",
@@ -40,6 +42,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
     meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="NASD",
 )
 
 

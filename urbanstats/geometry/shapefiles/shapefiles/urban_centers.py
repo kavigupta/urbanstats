@@ -54,4 +54,5 @@ URBAN_CENTERS = Shapefile(
         "USA": FilteringSubset("US Urban Center", lambda x: "USA" == x.suffix),
         "Canada": FilteringSubset("CA Urban Center", lambda x: "Canada" == x.suffix),
     },
+    abbreviation="URBC",
 )

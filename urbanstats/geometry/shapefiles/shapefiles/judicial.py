@@ -24,6 +24,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="JDIS",
 )
 
 
@@ -56,6 +57,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="JCIR",
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,

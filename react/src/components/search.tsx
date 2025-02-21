@@ -1,10 +1,11 @@
 import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
+import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { SearchParams } from '../search'
+import { SearchResult, SearchParams } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -16,7 +17,7 @@ export function SearchBox(props: {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
 
-    const [matches, setMatches] = useState<string[]>([])
+    const [matches, setMatches] = useState<SearchResult[]>([])
 
     // Keep these in sync
     const [query, setQuery] = useState('')
@@ -47,8 +48,8 @@ export function SearchBox(props: {
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused]).onClick()
-            props.onChange?.(terms[focused])
+            void props.link(terms[focused].longname).onClick()
+            props.onChange?.(terms[focused].longname)
             reset()
         }
         return false
@@ -135,8 +136,8 @@ export function SearchBox(props: {
                     matches.map((location, idx) =>
                         (
                             <a
-                                key={location}
-                                {...props.link(matches[idx])}
+                                key={location.longname}
+                                {...props.link(matches[idx].longname)}
                                 style={{
                                     textDecoration: 'none',
                                     color: colors.textMain,
@@ -147,15 +148,12 @@ export function SearchBox(props: {
                                     className="serif searchbox-dropdown-item"
                                     style={searchboxDropdownItemStyle(idx)}
                                     onClick={() => {
-                                        props.onChange?.(matches[idx])
+                                        props.onChange?.(matches[idx].longname)
                                         reset()
                                     }}
                                     onMouseOver={() => { setFocused(idx) }}
                                 >
-                                    {' '}
-                                    {location}
-                                    {' '}
-
+                                    <SingleSearchResult {...location} />
                                 </div>
                             </a>
                         ),
@@ -166,14 +164,23 @@ export function SearchBox(props: {
     )
 }
 
+function SingleSearchResult(props: SearchResult): ReactNode {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '80%' }}>{props.longname}</div>
+            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={searchIconLink(props.typeIndex)} /></div>
+        </div>
+    )
+}
+
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
 
-type SearchWorker = (params: SearchParams) => Promise<string[]>
+type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
 function createSearchWorker(): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
-    const messageQueue: ((results: string[]) => void)[] = []
-    worker.addEventListener('message', (message: MessageEvent<string[]>) => {
+    const messageQueue: ((results: SearchResult[]) => void)[] = []
+    worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {
         messageQueue.shift()!(message.data)
     })
     const result: SearchWorker = (params) => {

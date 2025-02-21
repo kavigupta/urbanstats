@@ -36,4 +36,5 @@ NEIGHBORHOODS = Shapefile(
         }
     ),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="NBHD",
 )

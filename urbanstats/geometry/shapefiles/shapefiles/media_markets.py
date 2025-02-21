@@ -15,4 +15,5 @@ MEDIA_MARKETS = Shapefile(
     ),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="MMAR",
 )

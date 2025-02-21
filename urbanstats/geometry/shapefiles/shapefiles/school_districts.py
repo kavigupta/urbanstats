@@ -46,4 +46,5 @@ SCHOOL_DISTRICTS = Shapefile(
     meta=dict(type="School District", source="Census", type_category="School"),
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    abbreviation="SCLD",
 )
