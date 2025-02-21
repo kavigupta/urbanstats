@@ -1,4 +1,3 @@
-import re
 from collections import defaultdict
 
 import geopandas as gpd
@@ -371,6 +370,7 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2):
         if k1 == k2:
             fn = create_relationships
         else:
+            # pylint: disable=unnecessary-lambda-assignment
             fn = lambda _1, _2: ({}, {}, {}, {})
     else:
         fn = {

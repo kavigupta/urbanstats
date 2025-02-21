@@ -1,5 +1,4 @@
 import itertools
-import re
 from functools import lru_cache
 
 import numpy as np

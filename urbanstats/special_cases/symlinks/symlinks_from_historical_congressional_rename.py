@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 symlinks_from_historical_congressional_rename = {
     "Historical Congressional District GA-1, 1st Congress, USA": "GA-01 (1789), USA",
     "Historical Congressional District GA-2, 1st Congress, USA": "GA-02 (1789), USA",
