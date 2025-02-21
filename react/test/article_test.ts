@@ -339,7 +339,7 @@ test('can navigate back to original navigated shape in map', async (t) => {
 
 urbanstatsFixture('historical congressional', '/article.html?longname=CA-46+%282003%29%2C+USA')
 
-test.only('historical congressional', async (t) => {
+test('historical congressional', async (t) => {
     await checkTextboxes(t, ['Include Historical Districts'])
     await screencap(t)
 })
