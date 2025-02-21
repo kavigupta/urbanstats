@@ -8069,7 +8069,6 @@ symlinks_from_historical_congressional_rename = {
     "Historical Congressional District WV-1, 103rd-107th Congress, USA": "WV-01 (1993), USA",
     "Historical Congressional District WV-2, 103rd-107th Congress, USA": "WV-02 (1993), USA",
     "Historical Congressional District WV-3, 103rd-107th Congress, USA": "WV-03 (1993), USA",
-    "Historical Congressional District DC-98, 103rd-117th Congress, USA": "DC-98 (1993), USA",
     "Historical Congressional District GA-1, 104th Congress, USA": "GA-01 (1995), USA",
     "Historical Congressional District GA-10, 104th Congress, USA": "GA-10 (1995), USA",
     "Historical Congressional District GA-11, 104th Congress, USA": "GA-11 (1995), USA",

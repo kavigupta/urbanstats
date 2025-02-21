@@ -8,7 +8,7 @@ import us
 from permacache import permacache
 
 
-@permacache("population_density/combine_districts/pre_114_2")
+@permacache("population_density/combine_districts/pre_114_4")
 def compute_114():
     all_shapes = load_all()
     seen = set()
@@ -115,7 +115,7 @@ def compute_merged_table():
 
     full_table = full_table.sort_values(["start", "end", "state", "district"])
     full_table = full_table[full_table.state != "DC"]
-    full_table = full_table[full_table.geometry != None]
+    assert (full_table.geometry != None).all()
     full_table = full_table.reset_index(drop=True)
 
     print("tables sorted")

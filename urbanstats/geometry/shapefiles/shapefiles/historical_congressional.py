@@ -53,11 +53,11 @@ def historical_shortname(x):
     return f'{x["state"]}-{district} ({to_year(x.start)})'
 
 
-version_for_decade = {}
+version_for_decade = {"default": 0.1}
 
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": Shapefile(
-        hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, 1)}",
+        hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
         path=functools.partial(filter_for_decade, decade),
         shortname_extractor=historical_shortname,
         longname_extractor=lambda x: historical_shortname(x) + ", USA",
