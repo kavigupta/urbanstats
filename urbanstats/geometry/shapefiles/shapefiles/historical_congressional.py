@@ -1,7 +1,9 @@
-from functools import lru_cache
 import functools
 import pickle
+from functools import lru_cache
+
 import numpy as np
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
