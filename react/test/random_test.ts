@@ -12,7 +12,7 @@ async function assertNoSetUniverse(t: TestController): Promise<void> {
 
 async function assertNoSpecials(t: TestController): Promise<void> {
     const location = await getLocation()
-    await t.expect(location).notMatch(/.*Historical\+Congressional.*/)
+    await t.expect(location).notMatch(/.*\(19\d\d|201\d|2021\)$/)
     await t.expect(location).notMatch(/.*PC%2C.*/)
 }
 
