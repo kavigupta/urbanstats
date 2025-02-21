@@ -336,3 +336,10 @@ test('can navigate back to original navigated shape in map', async (t) => {
     await t.click(Selector('path').withAttribute('class', /Charlotte_NC_Media_Market,_USA/))
     await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
 })
+
+urbanstatsFixture('historical congressional', '/article.html?longname=CA-46+%282003%29%2C+USA')
+
+test.only('historical congressional', async (t) => {
+    await checkTextboxes(t, ['Include Historical Districts'])
+    await screencap(t)
+})
