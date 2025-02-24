@@ -29,6 +29,16 @@ named_users = dict(
 
 
 def get_full_statistics_table():
+    c = open_connection()
+    c = c.execute(
+        """SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
+            FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
+            WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user"""
+    )
+    return c.fetchall()
+
+
+def open_connection():
     tf = tempfile.mktemp(suffix=".sqlite3")
     subprocess.check_call(
         [
@@ -39,12 +49,14 @@ def get_full_statistics_table():
     )
     conn = sqlite3.connect(tf)
     c = conn.cursor()
-    c = c.execute(
-        """SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
-            FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
-            WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user"""
-    )
-    return c.fetchall()
+    return c
+
+
+def get_secure_id_for_user(user):
+    assert isinstance(user, int), user
+    c = open_connection()
+    c = c.execute(f"SELECT secure_id from JuxtaStatUserSecureID where user={user}")
+    return int(c.fetchone()[0])
 
 
 def get_full_statistics(*, after_problem, debug=False):
