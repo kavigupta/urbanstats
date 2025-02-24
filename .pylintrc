@@ -451,6 +451,8 @@ disable=raw-checker-failed,
         unsubscriptable-object,
         ## incompatible with black
         wrong-import-position,
+        ## this one sucks
+        unnecessary-lambda-assignment,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

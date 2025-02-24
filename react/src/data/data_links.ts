@@ -126,6 +126,18 @@ const value: Record<string, number[]> = {
         7,
         5,
     ],
+    'world__Congressional District (1910s)': [
+        296,
+        24,
+    ],
+    'world__Congressional District (1960s)': [
+        195,
+        125,
+    ],
+    'world__Congressional District (1990s)': [
+        292,
+        28,
+    ],
     'world__County': [
         63,
         63,
@@ -141,23 +153,6 @@ const value: Record<string, number[]> = {
         54,
         54,
         50,
-    ],
-    'world__Historical Congressional District': [
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        12,
     ],
     'world__Hospital Service Area': [
         59,
@@ -472,6 +467,18 @@ const value: Record<string, number[]> = {
         7,
         5,
     ],
+    'North America__Congressional District (1910s)': [
+        296,
+        24,
+    ],
+    'North America__Congressional District (1960s)': [
+        195,
+        125,
+    ],
+    'North America__Congressional District (1990s)': [
+        293,
+        27,
+    ],
     'North America__County': [
         63,
         63,
@@ -487,23 +494,6 @@ const value: Record<string, number[]> = {
         54,
         54,
         50,
-    ],
-    'North America__Historical Congressional District': [
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        12,
     ],
     'North America__Hospital Service Area': [
         59,
@@ -773,6 +763,18 @@ const value: Record<string, number[]> = {
         7,
         5,
     ],
+    'USA__Congressional District (1910s)': [
+        296,
+        24,
+    ],
+    'USA__Congressional District (1960s)': [
+        195,
+        125,
+    ],
+    'USA__Congressional District (1990s)': [
+        292,
+        28,
+    ],
     'USA__County': [
         63,
         63,
@@ -788,23 +790,6 @@ const value: Record<string, number[]> = {
         54,
         54,
         50,
-    ],
-    'USA__Historical Congressional District': [
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        22,
-        12,
     ],
     'USA__Hospital Service Area': [
         59,
@@ -1114,10 +1099,6 @@ const value: Record<string, number[]> = {
         155,
         10,
     ],
-    'New York, USA__Historical Congressional District': [
-        166,
-        154,
-    ],
     'New York, USA__School District': [
         293,
         27,
@@ -1154,10 +1135,6 @@ const value: Record<string, number[]> = {
         158,
         4,
     ],
-    'Ohio, USA__Historical Congressional District': [
-        313,
-        7,
-    ],
     'Ohio, USA__ZIP': [
         168,
         152,
@@ -1182,10 +1159,6 @@ const value: Record<string, number[]> = {
         106,
         106,
         2,
-    ],
-    'Pennsylvania, USA__Historical Congressional District': [
-        230,
-        90,
     ],
     'Pennsylvania, USA__ZIP': [
         112,
@@ -1213,10 +1186,6 @@ const value: Record<string, number[]> = {
         108,
         108,
         104,
-    ],
-    'Texas, USA__Historical Congressional District': [
-        313,
-        7,
     ],
     'Texas, USA__Neighborhood': [
         151,
