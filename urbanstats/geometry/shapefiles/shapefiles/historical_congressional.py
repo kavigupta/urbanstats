@@ -6,6 +6,7 @@ import numpy as np
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 decades = range(1780, 2010 + 1, 10)
@@ -47,12 +48,16 @@ def filter_for_decade(decade):
 
 
 def historical_shortname(x):
+    if "start" in x:
+        year = to_year(x.start)
+    else:
+        year = x.start_date
     district = int(x["district"])
     if district == -1:
         district = "NA"
     else:
         district = f"{district:02d}"
-    return f'{x["state"]}-{district} ({to_year(x.start)})'
+    return f'{x["state"]}-{district} ({year})'
 
 
 version_for_decade = {"default": 0.1}
@@ -75,3 +80,19 @@ HISTORICAL_CONGRESSIONALs = {
     )
     for decade in decades
 }
+
+HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
+    hash_key=f"historical_congressional_2020_1",
+    path=lambda: load_shapefile("cd118", only_keep="past"),
+    shortname_extractor=historical_shortname,
+    longname_extractor=lambda x: historical_shortname(x) + ", USA",
+    filter=lambda x: True,
+    meta=dict(
+        type=f"Congressional District (2020s)",
+        source="Census",
+        type_category="Political",
+    ),
+    abbreviation="CONG",
+    universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
+)

@@ -66,6 +66,61 @@ Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-nation-u-s-11
 Source: https://www.ncleg.gov/Redistricting/C2022C
   - 117th Congressional Districts for 117th Congress in NC
 
+# Redistricting in the 2020s
+
+## NY
+
+119th district shapefiles: https://www.nyirc.gov/congressional-plan-2024
+Saved at `congressional_districts/ny119.zip`
+
+## GA
+
+119th district shapefile: https://www.legis.ga.gov/joint-office/reapportionment, specifically "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".
+Saved at `ga119.zip`
+
+## AL
+
+119th district shapefile: https://www.sos.alabama.gov/alabama-votes/state-district-maps, specifically "Shape files" under "Court ordered Congressional Districts".
+Saved at `al119.zip`
+
+## NC
+
+119th district shapefile: https://www.ncleg.gov/redistricting; "Current District Plans (used for 2022 election): Congressional.
+Same for the house and senate maps
+
+## LA
+
+https://redist.legis.la.gov/ "Enacted Plans From the 2024 1st Extraordinary Session"
+
+## MT
+
+https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission/. 
+
+## WA
+
+https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59
+
+## OH
+
+State senate: https://www.ohiosos.gov/elections/ohio-candidates/district-maps/
+
+## SC
+
+DRA
+
+## MI
+
+https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-house-plan
+https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-senate-plan
+
+## WI
+
+DRA
+
+## ND
+
+DRA
+
 # From Kenneth C Black
 
 Source: https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/
