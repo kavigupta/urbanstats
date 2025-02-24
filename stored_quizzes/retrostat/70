@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Shreveport [Urban Area], LA, USA",
+      "longname_b": "Louisville/Jefferson County [Urban Area], KY-IN, USA",
+      "stat_a": 0.014866039983747425,
+      "stat_b": 0.04203183490700631
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity %",
+      "stat_path": "homogeneity_250_2020",
+      "question": "lower racial diversity!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Winston-Salem [Urban Area], NC, USA",
+      "longname_b": "Las Vegas-Henderson-Paradise [Urban Area], NV, USA",
+      "stat_a": 0.5462128978686204,
+      "stat_b": 0.3704674903004937
+    },
+    "a_ease": 0.3392539964476021,
+    "b_ease": 0.7477797513321492
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Capitol Planning Region, Connecticut, USA",
+      "longname_b": "Douglas County, Colorado, USA",
+      "stat_a": 0.03467038119660494,
+      "stat_b": 0.1816645160316633
+    },
+    "b": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "MD-07, USA",
+      "longname_b": "KY-02, USA",
+      "stat_a": -0.06258040947283153,
+      "stat_b": 0.20413880020973
+    },
+    "a_ease": 0.7814710042432814,
+    "b_ease": 0.3771462403789224
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "Missouri, USA",
+      "longname_b": "Massachusetts, USA",
+      "stat_a": 0.3365827536289244,
+      "stat_b": 0.31203435180954076
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Winter Haven [Urban Area], FL, USA",
+      "longname_b": "Antioch [Urban Area], CA, USA",
+      "stat_a": 0.1339987448227117,
+      "stat_b": 0.052783317263452215
+    },
+    "a_ease": 0.2371069182389937,
+    "b_ease": 0.7019041365725541
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "St. Louis [Urban Area], MO-IL, USA",
+      "longname_b": "Fresno [Urban Area], CA, USA",
+      "stat_a": 0.05896052719539681,
+      "stat_b": 0.023859071995513625
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Anchorage MSA, AK, USA",
+      "longname_b": "New Haven-Milford MSA, CT, USA",
+      "stat_a": 0.2638926311621342,
+      "stat_b": 0.3415360482478251
+    },
+    "a_ease": 0.6169811320754717,
+    "b_ease": 0.1789250353606789
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kunming Urban Center, China",
+      "longname_b": "Khartoum Urban Center, Sudan",
+      "stat_a": 15640.2744140625,
+      "stat_b": 7192.3056640625
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Duluth MN-Superior WI Media Market, USA",
+      "longname_b": "Chicago IL Media Market, USA",
+      "stat_a": 0.6987417419520507,
+      "stat_b": 0.5272477127348327
+    },
+    "a_ease": 0.8415300546448088,
+    "b_ease": 0.4379391100702576
+  }
+]

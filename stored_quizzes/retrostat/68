@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Life, physical, and social science occupations %",
+      "stat_path": "occupation_life,_physical,_and_social_science_occupations",
+      "question": "higher % of workers employed in life, physical, and social science occupations!TOOLTIP biological scientists, chemists, physicists, geologists, food scientists, economists, phychologists, urban planners, sociologists, scientific technicians, etc.",
+      "longname_a": "Yuma AZ-El Centro CA Media Market, USA",
+      "longname_b": "Jackson MS Media Market, USA",
+      "stat_a": 0.003920248382149394,
+      "stat_b": 0.007322932573416123
+    },
+    "b": {
+      "stat_column": "Individual Income < $50k %",
+      "stat_path": "individual_income_under_50k",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "Las Vegas city, Nevada, USA",
+      "longname_b": "Irvine city, California, USA",
+      "stat_a": 0.6906562149521618,
+      "stat_b": 0.46570695234350595
+    },
+    "a_ease": 0.35385612443292286,
+    "b_ease": 0.7567298105682951
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Current asthma %",
+      "stat_path": "CASTHMA_cdc_2",
+      "question": "higher % of adults with asthma",
+      "longname_a": "Worcester [Urban Area], MA-CT, USA",
+      "longname_b": "Montgomery [Urban Area], AL, USA",
+      "stat_a": 0.1192281327590264,
+      "stat_b": 0.11077449093519098
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Genesee County, Michigan, USA",
+      "longname_b": "Douglas County, Nebraska, USA",
+      "stat_a": 0.08778146309305537,
+      "stat_b": 0.15802886957413564
+    },
+    "a_ease": 0.20218579234972678,
+    "b_ease": 0.6027219701879456
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utilities %",
+      "stat_path": "industry_utilities",
+      "question": "higher % of workers employed in the utilities industry!TOOLTIP electrical power generation, transmission, and distribution; natural gas distribution; water, sewage, and other systems",
+      "longname_a": "Hamilton CMA, ON, Canada",
+      "longname_b": "Port St. Lucie MSA, FL, USA",
+      "stat_a": 0.003053778224313892,
+      "stat_b": 0.014804611034582766
+    },
+    "b": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "Richmond-Petersburg VA Media Market, USA",
+      "longname_b": "Corpus Christi TX Media Market, USA",
+      "stat_a": 0.5639943776797428,
+      "stat_b": 0.3098207758257826
+    },
+    "a_ease": 0.36025998142989785,
+    "b_ease": 0.7855153203342619
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Ventura County, California, USA",
+      "longname_b": "Arapahoe County, Colorado, USA",
+      "stat_a": 0.008385191075679262,
+      "stat_b": 0.0336331265812843
+    },
+    "b": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "Asheville [Urban Area], NC, USA",
+      "longname_b": "Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA",
+      "stat_a": 0.30058424594997846,
+      "stat_b": 0.32861915356268917
+    },
+    "a_ease": 0.4711596842744384,
+    "b_ease": 0.8732590529247911
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Lubbock TX Media Market, USA",
+      "longname_b": "Springfield MO Media Market, USA",
+      "stat_a": 0.4683441417067776,
+      "stat_b": 0.26668453129401865
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Lafayette LA Media Market, USA",
+      "longname_b": "Denver CO Media Market, USA",
+      "stat_a": 0.10531547965174155,
+      "stat_b": 0.46869375532671653
+    },
+    "a_ease": 0.47662416514875533,
+    "b_ease": 0.8789144050104384
+  }
+]
