@@ -111,7 +111,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
         })
     }
 
-    const rhsParams: { variableName: string, setVariableName: (newValue: string) => void, name: string, dependent?: ColorStatDescriptor, setDependent: (newValue: ColorStatDescriptor) => void, descriptor?: string }[] = props.regression.dependents.map((dependent, i) => {
+    const rhsParams: { variableName: string, setVariableName: (newValue: string) => void, name: string, dependent: ColorStatDescriptor | undefined | null, setDependent: (newValue: ColorStatDescriptor) => void, descriptor?: string }[] = props.regression.dependents.map((dependent, i) => {
         return {
             variableName: props.regression.var_coefficients[i],
             setVariableName: (value: string) => { setCoefficientVar(i, value) },
@@ -126,6 +126,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
         setVariableName: (value) => { setInterceptVar(value) },
         name: `b`,
         descriptor: `[intercept]`,
+        dependent: undefined,
         setDependent: () => { throw new Error('Intercept should not have a dependent') },
     })
     rhsParams.push({
@@ -133,6 +134,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
         setVariableName: (value) => { setResidueVar(value) },
         name: `e`,
         descriptor: `[residue]`,
+        dependent: undefined,
         setDependent: () => { throw new Error('Residue should not have a dependent') },
     })
 
@@ -150,26 +152,18 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
                 />
             </div>
             <div style={operatorStyle}>
-                {param.dependent === undefined ? '' : <span>&times;</span>}
+                <span>&times;</span>
             </div>
-            {
-                param.dependent === undefined
-                    ? undefined
-                    : (
-                            <>
-                                <StatisticSelector
-                                    statistic={param.dependent}
-                                    overallName={undefined}
-                                    setStatistic={param.setDependent}
-                                    names={props.names}
-                                    simple={true}
-                                />
-                                <button onClick={() => { removeDependentExpr(i) }}>
-                                    -
-                                </button>
-                            </>
-                        )
-            }
+            <StatisticSelector
+                statistic={param.dependent ?? undefined}
+                overallName={undefined}
+                setStatistic={param.setDependent}
+                names={props.names}
+                simple={true}
+            />
+            <button onClick={() => { removeDependentExpr(i) }}>
+                -
+            </button>
             {
                 param.descriptor === undefined
                     ? undefined
@@ -204,7 +198,7 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
 
     const lhs = (
         <StatisticSelector
-            statistic={props.regression.independent}
+            statistic={props.regression.independent ?? undefined}
             overallName={undefined}
             setStatistic={(stat) => {
                 props.setRegression({
