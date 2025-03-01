@@ -21,11 +21,11 @@ export interface ColorStat {
 export interface RegressionDescriptor {
     var_coefficients: string[]
     var_intercept: string
-    independent: ColorStatDescriptor | undefined
+    independent: ColorStatDescriptor | undefined | null
     residual_name?: string
     var_residue: string
     weight_by_population: boolean
-    dependents: (ColorStatDescriptor | undefined)[]
+    dependents: (ColorStatDescriptor | undefined | null)[]
 }
 /* eslint-enable no-restricted-syntax */
 
@@ -105,8 +105,8 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
 }
 
 function parseRegression(nameToIndex: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
-    const independentFn = parseColorStat(nameToIndex, regr.independent)
-    const dependentFns = regr.dependents.map(dependent => parseColorStat(nameToIndex, dependent))
+    const independentFn = parseColorStat(nameToIndex, regr.independent ?? undefined)
+    const dependentFns = regr.dependents.map(dependent => parseColorStat(nameToIndex, dependent ?? undefined))
     const dependentNames = regr.var_coefficients
     const interceptName = regr.var_intercept
     const residualName = regr.var_residue
