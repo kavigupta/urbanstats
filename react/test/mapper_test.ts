@@ -27,3 +27,11 @@ test('mapping-more-complex', async (t) => {
     await screencap(t)
     await checkGeojson(t, 'mapping-more-complex-geojson')
 })
+
+urbanstatsFixture('mapping-with-regression', `${target}/mapper.html?settings=H4sIAAAAAAAAA52TwW7CMAyGX6XyLiCxCSa4VNqFoe067bLDhKK0dUtEmkRJOlZVvPucttCCdhjrLf7tz3byt4ECdWG52dVsL1QGMTzrSvkaZpAL6dFC3AAqnkgkMefSISmVSr3QKmi%2BNkhV59AMvrisQuhlCOG3sehcWwJtihUB6SD%2B3B6PM0i11JY5z%2F2fmWNGA4qXQd8s%2B24jjBOqkDiCvH1EG1RO%2BDqa2KflvpwCzTAwHlfzmylU02K2V8uicVTTk9%2Bx6JUIrdU20nlEqj2Hu10yNKgyVL473nwb1zNIXUzCUtNhEgiDUg2jLJG1sG7SEBOK3j1F48%2BPxVKNeS5S0Q8FJVsAEQ4oip1nSc2MNpXknSl6l5CdTov861F%2FXWN5scRxS96xvDSjBildo%2BfUs3dVycdq4KEfGGu7fgWCSH1AyxLyfvgH7heUURkzCi3aLKGQXFqTEQjZ4km6m7cfnO4D4vnDirIT7vCyu3YlDf0DcHWWOnUDAAA%3D`)
+
+test('mapping-with-regression', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await screencap(t)
+    await checkGeojson(t, 'mapping-with-regression-geojson')
+})
