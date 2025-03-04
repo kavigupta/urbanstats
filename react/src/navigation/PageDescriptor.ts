@@ -134,6 +134,19 @@ const mapperSchemaForParams = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
+const loginSchema = z.union([
+    z.object({
+        code: z.undefined(),
+        callbackUrl: z.string().optional(),
+    }),
+    z.object({
+        code: z.string(),
+        state: z.string(),
+        scope: z.string(),
+        prompt: z.string(),
+    }),
+])
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -144,6 +157,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+    z.object({ kind: z.literal('login') }).and(loginSchema),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -167,6 +181,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad' }
+    | { kind: 'login', callbackUrl?: string, code?: string, state?: string, scope?: string, prompt?: string }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
@@ -191,6 +206,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
+        case '/login.html':
+            return { kind: 'login', ...loginSchema.parse(params) }
         case '/about.html':
             return { kind: 'about' }
         case '/data-credit.html':
@@ -278,6 +295,22 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
+            }
+            break
+        case 'login':
+            pathname = '/login.html'
+            if (pageDescriptor.code === undefined) {
+                searchParams = {
+                    callbackUrl: pageDescriptor.callbackUrl,
+                }
+            }
+            else {
+                searchParams = {
+                    code: pageDescriptor.code,
+                    state: pageDescriptor.state,
+                    scope: pageDescriptor.scope,
+                    prompt: pageDescriptor.prompt,
+                }
             }
             break
         case 'initialLoad':
@@ -439,6 +472,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'index':
         case 'about':
         case 'dataCredit':
+        case 'login':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
         case 'quiz':
             let quiz: QuizQuestionsModel
@@ -559,6 +593,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.statname
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'login':
+            return 'Login'
         case 'error':
             return 'Error'
     }
