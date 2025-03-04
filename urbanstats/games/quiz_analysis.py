@@ -25,6 +25,8 @@ named_users = dict(
     april=0x1D2EFE90871F22B,
     violetncs=0x523FF09C66F52F4,
     # violetncs_mother=0xEEA892F929650B4,
+    twotwofourtysix=0xfd1e9a8efd1bd33,
+    bethany=0x97815dc19aff5d4,
 )
 
 
