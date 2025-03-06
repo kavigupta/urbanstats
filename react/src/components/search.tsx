@@ -5,7 +5,7 @@ import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { SearchResult, SearchParams } from '../search'
+import { SearchResult, SearchParams, debugPerformance } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -179,6 +179,7 @@ type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
 function createSearchWorker(): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
     worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {
         messageQueue.shift()!(message.data)

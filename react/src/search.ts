@@ -5,15 +5,24 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { isHistoricalCD } from './utils/is_historical'
 import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
 
-const debugSearch: boolean = false
-
 export interface SearchResult {
     longname: string
     typeIndex: number
 }
 
+const debugSearch: boolean = false
+
 function debug(arg: unknown): void {
     if (debugSearch) {
+        // eslint-disable-next-line no-console -- Debug logging
+        console.log(arg)
+    }
+}
+
+const debugSearchPerformance: boolean = true
+
+export function debugPerformance(arg: unknown): void {
+    if (debugSearchPerformance) {
         // eslint-disable-next-line no-console -- Debug logging
         console.log(arg)
     }
@@ -230,16 +239,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         combinedScore: combinedScore(result),
     })))
 
-    debug(`Took ${performance.now() - start} ms to execute search`)
+    debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
     return results.map(result => result.entry)
 }
 
 export async function createIndex(): Promise<(params: SearchParams) => SearchResult[]> {
-    const start = performance.now()
     let rawIndex: SearchIndex | undefined = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
     const index = processRawSearchIndex(rawIndex)
-    debug(`Took ${performance.now() - start}ms to load search index`)
     rawIndex = undefined // so it doesn't stay in memory
     return params => search(index, params)
 }
@@ -274,6 +281,6 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
             typeIndex: searchIndex.metadata[index].type!,
         }
     })
-    debug(`Took ${performance.now() - start}ms to process search index`)
+    debugPerformance(`Took ${performance.now() - start}ms to process search index`)
     return { entries, lengthOfLongestToken, maxPriority, mostTokens }
 }
