@@ -1,4 +1,6 @@
-import { createIndex, SearchParams } from './search'
+import { createIndex, debugPerformance, SearchParams } from './search'
+
+debugPerformance(`Search worker starting at timestamp ${Date.now()}`)
 
 const searchIndex = createIndex()
 
