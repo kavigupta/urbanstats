@@ -51,12 +51,13 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
 
+    const compressedBuffer = await response.arrayBuffer()
+
     if (name === 'SearchIndex') {
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms networking to load search index`)
     }
     perfCheckpoint = performance.now()
 
-    const compressedBuffer = await response.arrayBuffer()
     const buffer = gunzipSync(Buffer.from(compressedBuffer))
     const arr = new Uint8Array(buffer)
 
