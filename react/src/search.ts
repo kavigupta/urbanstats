@@ -1,9 +1,11 @@
+import Idbkv from 'idb-kv'
+
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
-import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
+import { ISearchIndexMetadata } from './utils/protos'
 
 export interface SearchResult {
     longname: string
@@ -244,11 +246,42 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     return results.map(result => result.entry)
 }
 
+// Potentially cached
 export async function createIndex(): Promise<(params: SearchParams) => SearchResult[]> {
-    let rawIndex: SearchIndex | undefined = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    const index = processRawSearchIndex(rawIndex)
-    rawIndex = undefined // so it doesn't stay in memory
+    let index: NormalizedSearchIndex | undefined
+    try {
+        let checkpoint = performance.now()
+
+        const key = await getIndexCacheKey()
+
+        debugPerformance(`Took ${performance.now() - checkpoint}ms to get cache key`)
+        checkpoint = performance.now()
+
+        const db = new Idbkv('SearchIndex')
+        index = (await db.get(key)) as NormalizedSearchIndex | undefined
+
+        debugPerformance(`Took ${performance.now() - checkpoint}ms to get index from cache`)
+        checkpoint = performance.now()
+
+        if (index === undefined) {
+            debugPerformance('Cache miss')
+            index = await createIndexNoCache()
+
+            void (async () => {
+                await db.set(key, index)
+            })()
+        }
+    }
+    catch (error) {
+        console.warn('Getting cached search index failed', error)
+        index = await createIndexNoCache()
+    }
     return params => search(index, params)
+}
+
+async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
+    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    return processRawSearchIndex(rawIndex)
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {
@@ -283,4 +316,21 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
     })
     debugPerformance(`Took ${performance.now() - start}ms to process search index`)
     return { entries, lengthOfLongestToken, maxPriority, mostTokens }
+}
+
+async function getIndexCacheKey(): Promise<string> {
+    // location is sometimes a worker
+    const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
+    const etags = await Promise.all(resources.map(async (resource) => {
+        const response = await fetch(resource, { method: 'HEAD' })
+        if (!response.ok) {
+            throw new Error(`${resource} is not OK`)
+        }
+        const etag = response.headers.get('etag')
+        if (etag === null) {
+            throw new Error(`${resource} does not have etag`)
+        }
+        return etag
+    }))
+    return etags.join(',')
 }
