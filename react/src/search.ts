@@ -1,4 +1,4 @@
-import Idbkv from 'idb-kv'
+import * as idb from 'idb'
 
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
@@ -257,8 +257,18 @@ export async function createIndex(): Promise<(params: SearchParams) => SearchRes
         debugPerformance(`Took ${performance.now() - checkpoint}ms to get cache key`)
         checkpoint = performance.now()
 
-        const db = new Idbkv('SearchIndex')
-        index = (await db.get(key)) as NormalizedSearchIndex | undefined
+        const db = await idb.openDB('SearchCache', 1, {
+            upgrade(database) {
+                database.createObjectStore('indexes')
+            },
+        })
+
+        const store = db.transaction('indexes', 'readonly').objectStore('indexes')
+
+        debugPerformance(`Took ${performance.now() - checkpoint}ms to open database`)
+        checkpoint = performance.now()
+
+        index = (await store.get(key)) as NormalizedSearchIndex | undefined
 
         debugPerformance(`Took ${performance.now() - checkpoint}ms to get index from cache`)
         checkpoint = performance.now()
@@ -268,11 +278,18 @@ export async function createIndex(): Promise<(params: SearchParams) => SearchRes
             index = await createIndexNoCache()
 
             void (async () => {
-                await db.set(key, index)
+                const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
+                const keys = await writeStore.getAllKeys()
+                await Promise.all(keys.map(k => writeStore.delete(k)))
+                await writeStore.put(index, key)
             })()
+        }
+        else {
+            debugPerformance('Cache hit')
         }
     }
     catch (error) {
+        // This is going to fail during unit testing since we don't mock stuff
         console.warn('Getting cached search index failed', error)
         index = await createIndexNoCache()
     }
