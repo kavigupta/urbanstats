@@ -1,11 +1,11 @@
-import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import '../common.css'
-import { SearchResult, SearchParams, debugPerformance } from '../search'
+import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -25,9 +25,11 @@ export function SearchBox(props: {
 
     const [focused, setFocused] = React.useState(0)
 
+    const cacheKey = useMemo(() => getIndexCacheKey(), [])
+
     const searchQuery = queryRef.current
 
-    const searchWorker = useRef<SearchWorker | undefined>()
+    const searchWorker = useRef<Promise<SearchWorker> | undefined>()
 
     const reset = (): void => {
         setQuery('')
@@ -76,9 +78,9 @@ export function SearchBox(props: {
                 return
             }
             if (searchWorker.current === undefined) {
-                searchWorker.current = createSearchWorker()
+                searchWorker.current = cacheKey.then(createSearchWorker)
             }
-            const result = await searchWorker.current({ unnormalizedPattern: searchQuery, maxResults: 10, showHistoricalCDs })
+            const result = await (await searchWorker.current)({ unnormalizedPattern: searchQuery, maxResults: 10, showHistoricalCDs })
             // we should throw away the result if the query has changed since we submitted the search
             if (queryRef.current !== searchQuery) {
                 return
@@ -86,7 +88,7 @@ export function SearchBox(props: {
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, showHistoricalCDs, searchWorker])
+    }, [searchQuery, showHistoricalCDs, searchWorker, cacheKey])
 
     return (
         <form
@@ -111,7 +113,7 @@ export function SearchBox(props: {
                 value={query}
                 onFocus={() => {
                     if (searchWorker.current === undefined) {
-                        searchWorker.current = createSearchWorker()
+                        searchWorker.current = cacheKey.then(createSearchWorker)
                     }
                 }}
                 onBlur={() => {
@@ -177,8 +179,8 @@ const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { 
 
 type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
-function createSearchWorker(): SearchWorker {
-    const worker = new Worker(new URL('../searchWorker', import.meta.url))
+function createSearchWorker(cacheKey: string | undefined): SearchWorker {
+    const worker = new Worker(new URL('../searchWorker', import.meta.url), { name: cacheKey })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
     worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {

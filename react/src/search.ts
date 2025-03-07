@@ -247,15 +247,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 }
 
 // Potentially cached
-export async function createIndex(): Promise<(params: SearchParams) => SearchResult[]> {
+export async function createIndex(cacheKey: string | undefined): Promise<(params: SearchParams) => SearchResult[]> {
     let index: NormalizedSearchIndex | undefined
     try {
+        if (cacheKey === undefined) {
+            throw new Error('No cache key specified')
+        }
+
         let checkpoint = performance.now()
-
-        const key = await getIndexCacheKey()
-
-        debugPerformance(`Took ${performance.now() - checkpoint}ms to get cache key`)
-        checkpoint = performance.now()
 
         const db = await idb.openDB('SearchCache', 1, {
             upgrade(database) {
@@ -268,7 +267,7 @@ export async function createIndex(): Promise<(params: SearchParams) => SearchRes
         debugPerformance(`Took ${performance.now() - checkpoint}ms to open database`)
         checkpoint = performance.now()
 
-        index = (await store.get(key)) as NormalizedSearchIndex | undefined
+        index = (await store.get(cacheKey)) as NormalizedSearchIndex | undefined
 
         debugPerformance(`Took ${performance.now() - checkpoint}ms to get index from cache`)
         checkpoint = performance.now()
@@ -281,7 +280,7 @@ export async function createIndex(): Promise<(params: SearchParams) => SearchRes
                 const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
                 const keys = await writeStore.getAllKeys()
                 await Promise.all(keys.map(k => writeStore.delete(k)))
-                await writeStore.put(index, key)
+                await writeStore.put(index, cacheKey)
             })()
         }
         else {
@@ -335,19 +334,28 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
     return { entries, lengthOfLongestToken, maxPriority, mostTokens }
 }
 
-async function getIndexCacheKey(): Promise<string> {
-    // location is sometimes a worker
-    const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
-    const etags = await Promise.all(resources.map(async (resource) => {
-        const response = await fetch(resource, { method: 'HEAD' })
-        if (!response.ok) {
-            throw new Error(`${resource} is not OK`)
-        }
-        const etag = response.headers.get('etag')
-        if (etag === null) {
-            throw new Error(`${resource} does not have etag`)
-        }
-        return etag
-    }))
-    return etags.join(',')
+export async function getIndexCacheKey(): Promise<string | undefined> {
+    try {
+        const start = performance.now()
+        // location is sometimes a worker
+        const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
+        const etags = await Promise.all(resources.map(async (resource) => {
+            const response = await fetch(resource, { method: 'HEAD' })
+            if (!response.ok) {
+                throw new Error(`${resource} is not OK`)
+            }
+            const etag = response.headers.get('etag')
+            if (etag === null) {
+                throw new Error(`${resource} does not have etag`)
+            }
+            return etag
+        }))
+
+        debugPerformance(`Took ${performance.now() - start} to get search cache key`)
+        return etags.join(',')
+    }
+    catch (error) {
+        console.warn('Getting search cache key failed', error)
+        return undefined
+    }
 }
