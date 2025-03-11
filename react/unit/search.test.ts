@@ -4,7 +4,7 @@ import * as assert from 'uvu/assert'
 import './util/fetch'
 import { createIndex, SearchResult } from '../src/search'
 
-const search = await createIndex()
+const search = await createIndex(undefined)
 
 const computeFirstResult = (query: string): SearchResult => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
 

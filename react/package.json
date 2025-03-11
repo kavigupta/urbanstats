@@ -74,6 +74,7 @@
     "file-saver": "^2.0.5",
     "geojson2svg": "^2.0.1",
     "google-protobuf": "^3.21.2",
+    "idb": "^8.0.2",
     "json5": "^2.2.0",
     "leaflet": "^1.9.4",
     "mathjs": "^12.1.0",
