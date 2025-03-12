@@ -29,9 +29,9 @@ mid_district_redistricting_for_2025 = {
 }
 
 version_tag_by_file_name = {
-    "cd118": "_3",
-    "sldl": "_1",
-    "sldu": "_1",
+    "cd118": "_4",
+    "sldl": "_4",
+    "sldu": "_4",
 }
 
 
@@ -150,10 +150,9 @@ def districts(
     *,
     abbreviation,
     overrides=None,
-    version_info="_3",
 ):
     return Shapefile(
-        hash_key=f"current_districts_{file_name}{version_info}"
+        hash_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(file_name, only_keep="up-to-date"),
         shortname_extractor=lambda x: x["state"]
