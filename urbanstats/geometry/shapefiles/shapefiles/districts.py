@@ -7,8 +7,10 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 mid_district_redistricting_for_2025 = {
@@ -69,18 +71,14 @@ def read_shapefile(path):
         return gpd.read_file(all_filenames[0])
 
 
-def load_shapefile_direct(file_name, *, only_keep):
+def load_districts_all_2020s(file_name):
     with open(
         f"named_region_shapefiles/current_district_shapefiles/shapefiles/{file_name}.pkl",
         "rb",
     ) as f:
         result = pickle.load(f)
 
-    result = result[["state", "district", "geometry"]]
-
-    if file_name in ("sldl", "sldu"):
-        # TODO fill in updated districts
-        return result
+    result = result[["state", "district", "geometry"]].reset_index(drop=True)
 
     result["start_date"] = 2023
     result["end_date"] = 2032
@@ -95,18 +93,25 @@ def load_shapefile_direct(file_name, *, only_keep):
         for_state["state"] = state
         for_state["start_date"] = 2025
         for_state["end_date"] = 2032
-        print(state)
         [state_idxs] = np.where(result["state"] == state)
-        for_state, sub_idxs = deduplicate(for_state, result.iloc[state_idxs])
-        for_state = for_state[
-            ["state", "district", "geometry", "start_date", "end_date"]
-        ]
-        result.loc[state_idxs[sub_idxs], "end_date"] = 2024
-        result = result.append(for_state, ignore_index=True)
+        result.loc[state_idxs, "end_date"] = 2024
+        result = result.copy()
+        for_state = for_state[list(result)]
+        result = pd.concat([result, for_state]).reset_index(drop=True)
+    result.district = consistent_district_padding(
+        result.state, result.district.apply(str)
+    )
+    result = collapse_unchanged(result, identity_columns=("state", "district"))
+    return result
+
+
+def load_shapefile(file_name, *, only_keep):
+    result = load_districts_all_2020s(file_name)
+
     if only_keep == "up-to-date":
-        return result[result["end_date"] == 2032]
+        return result[result["end_date"] == 2032].reset_index(drop=True)
     elif only_keep == "past":
-        return result[result["end_date"] < 2032]
+        return result[result["end_date"] < 2032].reset_index(drop=True)
     else:
         raise ValueError(f"Unknown value for only_keep: {only_keep}")
 
@@ -137,15 +142,18 @@ def deduplicate(for_state, existing):
     for_state = for_state[keep_mask]
     return for_state, existing_changed_idxs
 
-def load_shapefile(file_name, *, only_keep):
-    return load_shapefile_direct(file_name, only_keep=only_keep).reset_index(drop=True)
-
 
 def districts(
-    file_name, district_type, district_abbrev, *, abbreviation, overrides=None
+    file_name,
+    district_type,
+    district_abbrev,
+    *,
+    abbreviation,
+    overrides=None,
+    version_info="_3",
 ):
     return Shapefile(
-        hash_key=f"current_districts_{file_name}"
+        hash_key=f"current_districts_{file_name}{version_info}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(file_name, only_keep="up-to-date"),
         shortname_extractor=lambda x: x["state"]
