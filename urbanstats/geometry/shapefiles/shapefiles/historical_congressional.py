@@ -55,12 +55,14 @@ def historical_shortname(x):
     district = int(x["district"])
     if district == -1:
         district = "NA"
+    elif district == 0:
+        district = "AL"
     else:
         district = f"{district:02d}"
     return f'{x["state"]}-{district} ({year})'
 
 
-version_for_decade = {"default": 0.1}
+version_for_decade = {"default": 0.2}
 
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": Shapefile(

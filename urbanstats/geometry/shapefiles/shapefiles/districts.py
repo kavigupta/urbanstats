@@ -29,9 +29,9 @@ mid_district_redistricting_for_2025 = {
 }
 
 version_tag_by_file_name = {
-    "cd118": "_4",
-    "sldl": "_4",
-    "sldu": "_4",
+    "cd118": "_6",
+    "sldl": "_6",
+    "sldu": "_6",
 }
 
 
@@ -99,7 +99,7 @@ def load_districts_all_2020s(file_name):
         for_state = for_state[list(result)]
         result = pd.concat([result, for_state]).reset_index(drop=True)
     result.district = consistent_district_padding(
-        result.state, result.district.apply(str)
+        result.state, result.district.apply(str), minimum_length=2
     )
     result = collapse_unchanged(result, identity_columns=("state", "district"))
     return result
@@ -143,6 +143,13 @@ def deduplicate(for_state, existing):
     return for_state, existing_changed_idxs
 
 
+def get_shortname(district_abbrev, x):
+    district = x["district"]
+    if district == "" or district.isnumeric() and int(district) == 0:
+        district = "AL"
+    return f'{x["state"]}-{district_abbrev}{district} ({x["start_date"]})'
+
+
 def districts(
     file_name,
     district_type,
@@ -155,15 +162,8 @@ def districts(
         hash_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(file_name, only_keep="up-to-date"),
-        shortname_extractor=lambda x: x["state"]
-        + "-"
-        + district_abbrev
-        + x["district"],
-        longname_extractor=lambda x: x["state"]
-        + "-"
-        + district_abbrev
-        + x["district"]
-        + ", USA",
+        shortname_extractor=lambda x: get_shortname(district_abbrev, x),
+        longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
         meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
         universe_provider=us_domestic_provider(overrides),
@@ -184,10 +184,10 @@ district_shapefiles = dict(
         "HD",
         abbreviation="STHD",
         overrides={
-            "HI-HD051, USA": ["Hawaii, USA"],
-            "OH-HD013, USA": ["Ohio, USA"],
-            "PA-HD001, USA": ["Pennsylvania, USA"],
-            "RI-HD075, USA": ["Rhode Island, USA"],
+            "HI-HD51 (2023), USA": ["Hawaii, USA"],
+            "OH-HD13 (2025), USA": ["Ohio, USA"],
+            "PA-HD001 (2023), USA": ["Pennsylvania, USA"],
+            "RI-HD75 (2023), USA": ["Rhode Island, USA"],
         },
     ),
     state_senate=districts(
@@ -195,6 +195,6 @@ district_shapefiles = dict(
         "State Senate District",
         "SD",
         abbreviation="STSD",
-        overrides={"HI-SD025, USA": ["Hawaii, USA"]},
+        overrides={"HI-SD25 (2023), USA": ["Hawaii, USA"]},
     ),
 )

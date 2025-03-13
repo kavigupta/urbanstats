@@ -34,7 +34,7 @@ def mergable(current_row, prev_row, overlap_threshold):
     assert current_row.start_date > prev_row.end_date
     if current_row.start_date > 1 + prev_row.end_date:
         return False
-    delta = 1 - prev_row.geometry.intersection(current_row.geometry).area / min(
+    delta = 1 - prev_row.geometry.intersection(current_row.geometry).area / max(
         prev_row.geometry.area, current_row.geometry.area
     )
     return delta < overlap_threshold

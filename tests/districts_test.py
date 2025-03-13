@@ -55,3 +55,15 @@ class TestDistricts(unittest.TestCase):
             ),
             ["01", "02", "30", "1"],
         )
+
+    def test_at_large(self):
+        self.assertEqual(
+            consistent_district_padding(["AK", "CA", "CA"], ["0", "1", "2"]),
+            ["", "1", "2"],
+        )
+
+    def test_at_large(self):
+        self.assertEqual(
+            consistent_district_padding(["AK", "CA", "CA"], ["0", "1", "2"], minimum_length=2),
+            ["00", "01", "02"],
+        )

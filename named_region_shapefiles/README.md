@@ -70,18 +70,15 @@ Source: https://www.ncleg.gov/Redistricting/C2022C
 
 ## NY
 
-119th district shapefiles: https://www.nyirc.gov/congressional-plan-2024
-Saved at `congressional_districts/ny119.zip`
+DRA
 
 ## GA
 
 119th district shapefile: https://www.legis.ga.gov/joint-office/reapportionment, specifically "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".
-Saved at `ga119.zip`
 
 ## AL
 
 119th district shapefile: https://www.sos.alabama.gov/alabama-votes/state-district-maps, specifically "Shape files" under "Court ordered Congressional Districts".
-Saved at `al119.zip`
 
 ## NC
 
