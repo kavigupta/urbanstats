@@ -136,20 +136,23 @@ def create_react_jsons():
 
     with open("react/src/data/shapefile_data_credit.ts", "w") as f:
         output_typescript(
-            [
-                dict(
-                    name=x.meta["type"],
-                    dataCredit=[
-                        {"text": None, **u}
-                        for u in (
-                            x.data_credit
-                            if isinstance(x.data_credit, list)
-                            else [x.data_credit]
-                        )
-                    ],
-                )
-                for x in shapefiles.values()
-            ],
+            sorted(
+                [
+                    dict(
+                        name=x.meta["type"],
+                        dataCredit=[
+                            {"text": None, **u}
+                            for u in (
+                                x.data_credit
+                                if isinstance(x.data_credit, list)
+                                else [x.data_credit]
+                            )
+                        ],
+                    )
+                    for x in shapefiles.values()
+                ],
+                key=lambda x: type_ordering_idx[x["name"]],
+            ),
             f,
             data_type="{name: string, dataCredit: {text: string | null, linkText: string, link: string}[]}[]",
         )
