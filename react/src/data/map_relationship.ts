@@ -188,6 +188,10 @@ export default [
         'Congressional District (2010s)',
     ],
     [
+        'Congressional District (2020s)',
+        'Congressional District (2020s)',
+    ],
+    [
         'Native Area',
         'Native Area',
     ],

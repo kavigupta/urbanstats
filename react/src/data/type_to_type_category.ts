@@ -34,6 +34,7 @@ const value: Record<string, string> = {
     'Congressional District (1990s)': 'Political',
     'Congressional District (2000s)': 'Political',
     'Congressional District (2010s)': 'Political',
+    'Congressional District (2020s)': 'Political',
     'Native Area': 'Native',
     'Native Statistical Area': 'Native',
     'Native Subdivision': 'Native',
