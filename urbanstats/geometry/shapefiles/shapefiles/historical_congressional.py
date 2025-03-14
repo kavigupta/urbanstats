@@ -64,6 +64,13 @@ def historical_shortname(x):
 
 version_for_decade = {"default": 0.2}
 
+data_credit = dict(
+    text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
+    " to unclip the coastlines.",
+    linkText="Explanation of unclipping, and changes",
+    link="https://github.com/kavigupta/historical-congressional-unclipped",
+)
+
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": Shapefile(
         hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
@@ -79,6 +86,7 @@ HISTORICAL_CONGRESSIONALs = {
         abbreviation="CONG",
         universe_provider=us_domestic_provider(),
         subset_masks={"USA": SelfSubset()},
+        data_credit=data_credit,
     )
     for decade in decades
 }
@@ -97,10 +105,5 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
-    data_credit=dict(
-        text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
-        " to unclip the coastlines.",
-        linkText="Explanation of unclipping, and changes",
-        link="https://github.com/kavigupta/historical-congressional-unclipped",
-    ),
+    data_credit=data_credit,
 )
