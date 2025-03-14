@@ -3,6 +3,7 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
         names: [
             'Continent',
             'Country',
+            'Subnational Region',
         ],
         dataCredits: [
             {
@@ -10,13 +11,6 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
                 linkText: 'ESRI',
                 link: 'https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69',
             },
-        ],
-    },
-    {
-        names: [
-            'Subnational Region',
-        ],
-        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
