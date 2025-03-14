@@ -52,16 +52,17 @@ SUBNATIONAL_REGIONS = Shapefile(
     abbreviation="SUBN",
     data_credit=[
         dict(
+            text="Countries and continents are created by merging subnational regions.",
+            linkText="ESRI",
+            link="https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69",
+        ),
+        dict(
             linkText="US Census",
             link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
         ),
         dict(
             linkText="Canadian Census",
             link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip",
-        ),
-        dict(
-            linkText="ESRI",
-            link="https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69",
         ),
     ],
 )

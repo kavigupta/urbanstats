@@ -1,47 +1,16 @@
-const value: { name: string, dataCredit: { text: string | null, linkText: string, link: string }[] }[] = [
+const value: { names: string[], dataCredits: { text: string | null, linkText: string, link: string }[] }[] = [
     {
-        name: 'Continent',
-        dataCredit: [
+        names: [
+            'Continent',
+            'Country',
+            'Subnational Region',
+        ],
+        dataCredits: [
             {
-                text: 'Aggregated from subnational regions',
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-            {
-                text: 'Aggregated from subnational regions',
-                linkText: 'Canadian Census',
-                link: 'https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip',
-            },
-            {
-                text: 'Aggregated from subnational regions',
+                text: 'Countries and continents are created by merging subnational regions.',
                 linkText: 'ESRI',
                 link: 'https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69',
             },
-        ],
-    },
-    {
-        name: 'Country',
-        dataCredit: [
-            {
-                text: 'Aggregated from subnational regions',
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-            {
-                text: 'Aggregated from subnational regions',
-                linkText: 'Canadian Census',
-                link: 'https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip',
-            },
-            {
-                text: 'Aggregated from subnational regions',
-                linkText: 'ESRI',
-                link: 'https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69',
-            },
-        ],
-    },
-    {
-        name: 'Subnational Region',
-        dataCredit: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -52,16 +21,15 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
                 linkText: 'Canadian Census',
                 link: 'https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip',
             },
-            {
-                text: null,
-                linkText: 'ESRI',
-                link: 'https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69',
-            },
         ],
     },
     {
-        name: 'County',
-        dataCredit: [
+        names: [
+            'County',
+            'City',
+            'CCD',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -70,8 +38,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Urban Center',
-        dataCredit: [
+        names: [
+            'Urban Center',
+        ],
+        dataCredits: [
             {
                 text: 'We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true positive, and which are named.',
                 linkText: 'GHSL',
@@ -80,8 +50,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'CA Census Division',
-        dataCredit: [
+        names: [
+            'CA Census Division',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Canadian Census',
@@ -90,8 +62,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'CA Population Center',
-        dataCredit: [
+        names: [
+            'CA Population Center',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Canadian Census',
@@ -100,28 +74,17 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'City',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html',
-            },
+        names: [
+            'CSA',
+            'MSA',
+            'Urban Area',
+            'ZIP',
+            'Native Area',
+            'Native Statistical Area',
+            'Native Subdivision',
+            'School District',
         ],
-    },
-    {
-        name: 'CSA',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-        ],
-    },
-    {
-        name: 'MSA',
-        dataCredit: [
+        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -130,18 +93,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Urban Area',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
+        names: [
+            'CA CMA',
         ],
-    },
-    {
-        name: 'CA CMA',
-        dataCredit: [
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Canadian Census',
@@ -150,18 +105,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'CCD',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html',
-            },
+        names: [
+            'CA Census Subdivision',
         ],
-    },
-    {
-        name: 'CA Census Subdivision',
-        dataCredit: [
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Canadian Census',
@@ -170,8 +117,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Neighborhood',
-        dataCredit: [
+        names: [
+            'Neighborhood',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Zillow',
@@ -180,18 +129,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'ZIP',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
+        names: [
+            'Historical Congressional District',
         ],
-    },
-    {
-        name: 'Historical Congressional District',
-        dataCredit: [
+        dataCredits: [
             {
                 text: 'We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis to unclip the coastlines.',
                 linkText: 'Explanation of unclipping, and changes',
@@ -200,8 +141,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'State House District',
-        dataCredit: [
+        names: [
+            'State House District',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -210,8 +153,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'State Senate District',
-        dataCredit: [
+        names: [
+            'State Senate District',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -220,8 +165,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Congressional District',
-        dataCredit: [
+        names: [
+            'Congressional District',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'US Census',
@@ -230,8 +177,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'County Cross CD',
-        dataCredit: [
+        names: [
+            'County Cross CD',
+        ],
+        dataCredits: [
             {
                 text: 'We take the intersection of the county and congressional district shapefiles.',
                 linkText: 'US Census',
@@ -240,8 +189,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'CA Riding',
-        dataCredit: [
+        names: [
+            'CA Riding',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Canadian Census',
@@ -250,48 +201,11 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Native Area',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
+        names: [
+            'Judicial Circuit',
+            'Judicial District',
         ],
-    },
-    {
-        name: 'Native Statistical Area',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-        ],
-    },
-    {
-        name: 'Native Subdivision',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-        ],
-    },
-    {
-        name: 'School District',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'US Census',
-                link: 'https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html',
-            },
-        ],
-    },
-    {
-        name: 'Judicial Circuit',
-        dataCredit: [
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Homeland Infrastructure Foundation-Level Data (HIFLD)',
@@ -300,8 +214,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Media Market',
-        dataCredit: [
+        names: [
+            'Media Market',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'Kenneth C Black',
@@ -310,8 +226,10 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'USDA County Type',
-        dataCredit: [
+        names: [
+            'USDA County Type',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'USDA',
@@ -320,8 +238,11 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Hospital Referral Region',
-        dataCredit: [
+        names: [
+            'Hospital Referral Region',
+            'Hospital Service Area',
+        ],
+        dataCredits: [
             {
                 text: null,
                 linkText: 'the Dartmouth Atlas (minor errors fixed by us)',
@@ -330,98 +251,17 @@ const value: { name: string, dataCredit: { text: string | null, linkText: string
         ],
     },
     {
-        name: 'Judicial District',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'Homeland Infrastructure Foundation-Level Data (HIFLD)',
-                link: 'https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::us-district-court-jurisdictions/explore?location=31.251558%2C-88.409995%2C4.92&showTable=true',
-            },
+        names: [
+            '1B Person Circle',
+            '500M Person Circle',
+            '200M Person Circle',
+            '100M Person Circle',
+            '50M Person Circle',
+            '20M Person Circle',
+            '10M Person Circle',
+            '5M Person Circle',
         ],
-    },
-    {
-        name: 'Hospital Service Area',
-        dataCredit: [
-            {
-                text: null,
-                linkText: 'the Dartmouth Atlas (minor errors fixed by us)',
-                link: 'https://data.dartmouthatlas.org/supplemental/#boundaries',
-            },
-        ],
-    },
-    {
-        name: '1B Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '500M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '200M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '100M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '50M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '20M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '10M Person Circle',
-        dataCredit: [
-            {
-                text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
-                linkText: 'Detailed maps and JSON files',
-                link: 'https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles',
-            },
-        ],
-    },
-    {
-        name: '5M Person Circle',
-        dataCredit: [
+        dataCredits: [
             {
                 text: 'The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website',
                 linkText: 'Detailed maps and JSON files',
