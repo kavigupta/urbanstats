@@ -66,4 +66,8 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="PC",
+    data_credit=dict(
+        linkText="Canadian Census",
+        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpc_000a21a_e.zip",
+    ),
 )

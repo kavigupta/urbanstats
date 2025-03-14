@@ -5,6 +5,7 @@ import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 import './style.css'
 import './common.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
+import shapefile_data_credit from './data/shapefile_data_credit'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
@@ -58,6 +59,42 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
     )
 }
 
+export function Shapefiles(): ReactNode {
+    // {name: string, dataCredit: {text: string | undefined, linkText: string, link: string}[]}[]
+    // make a table of this data, with the link in the second column and the text in the third, if it exists. Put multiple rows on the right 2 columns if there are multiple data credits.
+    const colors = useColors()
+    return (
+        <div style={{ marginLeft: '1em', marginTop: '1em', marginBottom: '1em', border: `1px solid ${colors.textMain}` }}>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <div style={{ width: '30%', padding: '1em', border: `1px solid ${colors.textMain}` }}>Shapefile</div>
+                <div style={{ width: '70%', padding: '1em', border: `1px solid ${colors.textMain}` }}>Data Credits</div>
+            </div>
+            {shapefile_data_credit.map(({ name, dataCredit }, i) => (
+                <div key={i}>
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <div style={{ width: '30%', border: `1px solid ${colors.textMain}`, padding: '1em', display: 'flex', flexDirection: 'row', verticalAlign: 'middle' }}>
+                            <div style={{ width: '100%', margin: 'auto' }}>
+                                {name}
+                            </div>
+                        </div>
+                        <div style={{ width: '70%', border: `1px solid ${colors.textMain}`, height: '100%' }}>
+                            {dataCredit.map(({ text, linkText, link }, j) => (
+                                <div key={j} style={{ display: 'flex', flexDirection: 'row', borderTop: `1px solid ${colors.textMain}` }}>
+                                    <div style={{ width: '25%', borderRight: `1px solid ${colors.textMain}`, padding: '1em' }}>
+                                        <a href={link}>{linkText}</a>
+                                    </div>
+                                    <div style={{ width: '75%', padding: '1em' }}>
+                                        {text}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
 /*
  * Known issue: Lots of MathJax errors when this unloads.
  * Doesn't appear to affect functionality.
@@ -83,63 +120,11 @@ export function DataCreditPanel(): ReactNode {
                             &nbsp;
                             for identifying and correcting a bug in the code.
                         </p>
+                        <h1> Shapefiles </h1>
+                        <Shapefiles />
 
                         <h1>Geography</h1>
                         <div>
-                            <h2>Shapefiles</h2>
-                            <div>
-                                <p>
-                                    Shapefiles on States, MSAs, CSAs, Counties, County subdivisions, Cities (CDPs),
-                                    Zip Codes (ZCTAs), Native Reservations, Native Reservation Subdivisions,
-                                    School Districts, Congressional Districts, and State Legislative Districts
-                                    are from the 2020 Census. USDA County Type shapefiles are aggregated from
-                                    county shapefiles, using the definitions from
-                                    {' '}
-                                    <a href="https://www.ers.usda.gov/data-products/county-typology-codes/">the USDA</a>
-                                    .
-                                </p>
-                                <p>
-                                    Shapefiles on Judicial Districts are from the HIFLD Open Data Portal.
-                                    Neighborhood shapefiles are from the 2017 Zillow Neighborhood Boundaries.
-                                    Shapefiles on Census Tracts, Census Block Groups, and Census Blocks are from the 2010 Census.
-                                    Shapefiles on historical congressional districts are mostly from UCLA with some
-                                    additions from thee Data Gov portal and the NC legislature. Media market
-                                    shapefiles are from
-                                    {' '}
-                                    <a href="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/">Kenneth C Black</a>
-                                    .
-                                </p>
-                                <p>
-                                    Shapefiles on Medicare regions (Hospital Referral Regions and Hospital Service Areas) come from
-                                    {' '}
-                                    <a href="https://data.dartmouthatlas.org/supplemental/#boundaries">the Dartmouth Atlas</a>
-                                    .
-                                </p>
-                                <p>
-                                    Subnational shapefiles are from
-                                    {' '}
-                                    <a href=" https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69">ESRI</a>
-                                    .
-                                    National shapefiles are aggregated from subnational shapefiles.
-                                </p>
-                                <p>
-                                    Urban center shapefiles are sourced from the Global Human Settlement Layer&apos;s&nbsp;
-                                    <a href="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php">
-                                        Urban Centre Database v1.2
-                                    </a>
-                                    .&nbsp;
-                                    We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true
-                                    positive, and which are named.
-                                </p>
-                                <p>
-                                    The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded
-                                    for the purpose of this website. Detailed maps and JSON files are available at&nbsp;
-                                    <a href="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles">
-                                        the GitHub repository
-                                    </a>
-                                    .
-                                </p>
-                            </div>
                             <NRef name="geography">Geography Metrics</NRef>
                             <div>
                                 <p>

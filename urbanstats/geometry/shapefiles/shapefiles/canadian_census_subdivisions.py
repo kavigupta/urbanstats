@@ -122,4 +122,8 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="CSUB",
+    data_credit=dict(
+        linkText="Canadian Census",
+        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip",
+    ),
 )

@@ -29,42 +29,10 @@ Source: https://www.ers.usda.gov/data-products/county-typology-codes/
 
  - 2015CountyTypologyCodes.csv
 
-# From HIFLD
-
-Source https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::us-district-court-jurisdictions/explore?location=31.251558%2C-88.409995%2C4.92&showTable=true
-
-  - US_District_Court_Jurisdictions.zip
-
-# From Zillow
-
-Source: https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs
- - Zillow_Neighborhoods
- Download, unzip, then
- ```
- gpd.read_file("named_region_shapefiles/Zillow_Neighborhoods/ZillowNeighborhoods.gdb/", driver='FileGDB', layer=0).to_file("named_region_shapefiles/Zillow_Neighborhoods/zillow.shp")
- ```
-
 # From FCC
 
 Source: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
   - county_map.txt
-
-# From UCLA
-
-Source: https://cdmaps.polisci.ucla.edu/; Version 1.5 (April 22, 2020)
-  - 1-114th Congressional Districts, 115th-117th for districts that were not changed
-
-# From Data Catalog
-
-Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2016-nation-u-s-115th-congressional-district-national
-  - 115th Congressional Districts for 115th Congress in VA, FL, NC
-Source: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-nation-u-s-116th-congressional-district-national
-  - 116th Congressional Districts for 116th Congress in PA
-
-# From NC Legislature
-
-Source: https://www.ncleg.gov/Redistricting/C2022C
-  - 117th Congressional Districts for 117th Congress in NC
 
 # Redistricting in the 2020s
 
@@ -147,25 +115,12 @@ Source: https://catalog.data.gov/dataset/u-s-epa-national-priorities-list-npl-si
 Source: https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::public-schools/about
 
     - features/Public_Schools.zip
-  
-# Countries
-
-Source: https://public.opendatasoft.com/explore/dataset/world-administrative-boundaries/export/?flg=en-us&location=2,38.87069,0.00845&basemap=jawg.light
-
-     - World_Countries_Generalized.zip
 
 # Subnational regions
 
 Source: https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69
 
       - World_Administrative_Divisions.zip
-
-# Dartmouth Atlas
-
-Source: https://data.dartmouthatlas.org/supplemental/#boundaries
-
-  - HRR_Bdry__AK_HI_unmodified_original.geojson [hrr.geojson is derived from this, some small errors fixed]
-  - HSA_Bdry__AK_HI_unmodified.geojson
 
 # from GHSL
 

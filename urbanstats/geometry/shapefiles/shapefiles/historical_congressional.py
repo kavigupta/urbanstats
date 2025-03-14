@@ -97,4 +97,10 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    data_credit=dict(
+        text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
+        " to unclip the coastlines.",
+        linkText="Explanation of unclipping, and changes",
+        link="https://github.com/kavigupta/historical-congressional-unclipped",
+    ),
 )

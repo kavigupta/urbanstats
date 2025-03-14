@@ -1,5 +1,9 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+    SUBNATIONAL_REGIONS,
+    extract_country_longname,
+)
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -12,12 +16,6 @@ from urbanstats.universe.universe_provider.contained_within import (
     ContainedWithinUniverseProvider,
 )
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
-
-
-def extract_country_longname(x):
-    # print(x)
-    return iso_to_country(x.ISO_CC)
-
 
 COUNTRIES = Shapefile(
     hash_key="countries_12",
@@ -42,4 +40,8 @@ COUNTRIES = Shapefile(
         ),
     },
     abbreviation="CTRY",
+    data_credit=[
+        dict(text="Aggregated from subnational regions", **x)
+        for x in SUBNATIONAL_REGIONS.data_credit
+    ],
 )
