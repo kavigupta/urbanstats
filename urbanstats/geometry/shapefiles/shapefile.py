@@ -120,3 +120,27 @@ def multiple_localized_type_names(shapefiles):
         for subset_name, subset_localized in sf.localized_type_names().items():
             localized[subset_name].update(subset_localized)
     return localized
+
+
+def compute_data_credits(ordered_shapefiles):
+    # type_to_data_credit = {
+    #     x.meta["type"]: (
+    #         x.data_credit if isinstance(x.data_credit, list) else [x.data_credit]
+    #     )
+    #     for x in ordered_shapefiles.values()
+    # }
+    types = []
+    all_credits = []
+    for sf in ordered_shapefiles:
+        name = sf.meta["type"]
+        cs = sf.data_credit if isinstance(sf.data_credit, list) else [sf.data_credit]
+        cs = [{"text": None, **u} for u in cs]
+        if cs in all_credits:
+            types[all_credits.index(cs)].append(name)
+            continue
+        types.append([name])
+        all_credits.append(cs)
+
+    return [
+        dict(names=name, dataCredits=credit) for name, credit in zip(types, all_credits)
+    ]
