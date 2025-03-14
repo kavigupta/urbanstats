@@ -806,4 +806,10 @@ def circle_shapefile_object(country_shapefile, population):
             ),
         },
         abbreviation=named_populations[population],
+        data_credit=dict(
+            text="The population circles were defined using the GHS-POP dataset,"
+            " using an algorithm hand-coded for the purpose of this website",
+            linkText="Detailed maps and JSON files",
+            link="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles",
+        ),
     )

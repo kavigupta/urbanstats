@@ -37,4 +37,8 @@ USDA_COUNTY_TYPE = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="USDA",
+    data_credit=dict(
+        linkText="USDA",
+        link="https://www.ers.usda.gov/data-products/county-typology-codes/",
+    ),
 )
