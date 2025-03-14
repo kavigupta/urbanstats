@@ -13,7 +13,11 @@ from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
-from urbanstats.geometry.shapefiles.shapefiles_list import localized_type_names
+from urbanstats.geometry.shapefiles.shapefile import compute_data_credits
+from urbanstats.geometry.shapefiles.shapefiles_list import (
+    localized_type_names,
+    shapefiles,
+)
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
@@ -129,6 +133,17 @@ def create_react_jsons():
             list(localized_type_names.items()),
             f,
             data_type="[string, Record<string, string>][]",
+        )
+
+    with open("react/src/data/shapefile_data_credit.ts", "w") as f:
+        output_typescript(
+            compute_data_credits(
+                sorted(
+                    shapefiles.values(), key=lambda x: type_ordering_idx[x.meta["type"]]
+                )
+            ),
+            f,
+            data_type="{names: string[], dataCredits: {text: string | null, linkText: string, link: string}[]}[]",
         )
 
 

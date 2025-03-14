@@ -55,4 +55,10 @@ URBAN_CENTERS = Shapefile(
         "Canada": FilteringSubset("CA Urban Center", lambda x: "Canada" == x.suffix),
     },
     abbreviation="URBC",
+    data_credit=dict(
+        text="We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true"
+        " positive, and which are named.",
+        linkText="GHSL",
+        link="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php",
+    ),
 )

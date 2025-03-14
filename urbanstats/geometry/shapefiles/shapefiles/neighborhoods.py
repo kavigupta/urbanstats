@@ -37,4 +37,8 @@ NEIGHBORHOODS = Shapefile(
     ),
     subset_masks={"USA": SelfSubset()},
     abbreviation="NBHD",
+    data_credit=dict(
+        linkText="Zillow",
+        link="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs",
+    ),
 )

@@ -30,4 +30,8 @@ CANADIAN_DISTRICTS = Shapefile(
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="RDNG",
+    data_credit=dict(
+        linkText="Canadian Census",
+        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lfed000a21a_e.zip",
+    ),
 )

@@ -8,6 +8,11 @@ def hrr_shortname(x, suffix="HRR"):
     return f"{city.title()} {state} {suffix}"
 
 
+data_credit = dict(
+    linkText="the Dartmouth Atlas (minor errors fixed by us)",
+    link="https://data.dartmouthatlas.org/supplemental/#boundaries",
+)
+
 HRRs = Shapefile(
     hash_key="hospital_referral_regions_3",
     path="named_region_shapefiles/hrr.geojson",
@@ -22,6 +27,7 @@ HRRs = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="HRR",
+    data_credit=data_credit,
 )
 HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
@@ -40,6 +46,7 @@ HSAs = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="HSA",
+    data_credit=data_credit,
 )
 hospital_shapefiles = dict(
     hospital_referral_regions=HRRs,

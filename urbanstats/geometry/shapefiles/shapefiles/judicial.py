@@ -12,6 +12,13 @@ def judicial_districts():
     return data
 
 
+data_credit = dict(
+    linkText="Homeland Infrastructure Foundation-Level Data (HIFLD)",
+    # pylint: disable=line-too-long
+    link="https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::us-district-court-jurisdictions/explore?location=31.251558%2C-88.409995%2C4.92&showTable=true",
+)
+
+
 JUDICIAL_DISTRICTS = Shapefile(
     hash_key="judicial_districts",
     path=judicial_districts,
@@ -25,6 +32,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="JDIS",
+    data_credit=data_credit,
 )
 
 
@@ -58,6 +66,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="JCIR",
+    data_credit=data_credit,
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,
