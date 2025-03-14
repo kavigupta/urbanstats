@@ -69,17 +69,19 @@ export function Shapefiles(): ReactNode {
                 <div style={{ width: '30%', padding: '1em', border: `1px solid ${colors.textMain}` }}>Shapefile</div>
                 <div style={{ width: '70%', padding: '1em', border: `1px solid ${colors.textMain}` }}>Data Credits</div>
             </div>
-            {shapefile_data_credit.map(({ name, dataCredit }, i) => (
+            {shapefile_data_credit.map(({ names, dataCredits }, i) => (
                 <div key={i}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <div style={{ width: '30%', border: `1px solid ${colors.textMain}`, padding: '1em', display: 'flex', flexDirection: 'row', verticalAlign: 'middle' }}>
                             <div style={{ width: '100%', margin: 'auto' }}>
-                                {name}
+                                {names.map((name, j) => (
+                                    <div key={j}>{name}</div>
+                                ))}
                             </div>
                         </div>
-                        <div style={{ width: '70%', border: `1px solid ${colors.textMain}`, height: '100%' }}>
-                            {dataCredit.map(({ text, linkText, link }, j) => (
-                                <div key={j} style={{ display: 'flex', flexDirection: 'row', borderTop: `1px solid ${colors.textMain}` }}>
+                        <div style={{ width: '70%', border: `1px solid ${colors.textMain}`, display: 'flex', flexDirection: 'column' }}>
+                            {dataCredits.map(({ text, linkText, link }, j) => (
+                                <div key={j} style={{ display: 'flex', flexDirection: 'row', borderTop: `1px solid ${colors.textMain}`, flexGrow: 1 }}>
                                     <div style={{ width: '25%', borderRight: `1px solid ${colors.textMain}`, padding: '1em' }}>
                                         <a href={link}>{linkText}</a>
                                     </div>

@@ -13,6 +13,7 @@ from urbanstats.games.retrostat import generate_retrostats
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
+from urbanstats.geometry.shapefiles.shapefile import compute_data_credits
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     localized_type_names,
     shapefiles,
@@ -136,25 +137,13 @@ def create_react_jsons():
 
     with open("react/src/data/shapefile_data_credit.ts", "w") as f:
         output_typescript(
-            sorted(
-                [
-                    dict(
-                        name=x.meta["type"],
-                        dataCredit=[
-                            {"text": None, **u}
-                            for u in (
-                                x.data_credit
-                                if isinstance(x.data_credit, list)
-                                else [x.data_credit]
-                            )
-                        ],
-                    )
-                    for x in shapefiles.values()
-                ],
-                key=lambda x: type_ordering_idx[x["name"]],
+            compute_data_credits(
+                sorted(
+                    shapefiles.values(), key=lambda x: type_ordering_idx[x.meta["type"]]
+                )
             ),
             f,
-            data_type="{name: string, dataCredit: {text: string | null, linkText: string, link: string}[]}[]",
+            data_type="{names: string[], dataCredits: {text: string | null, linkText: string, link: string}[]}[]",
         )
 
 

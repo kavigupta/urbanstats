@@ -40,8 +40,5 @@ COUNTRIES = Shapefile(
         ),
     },
     abbreviation="CTRY",
-    data_credit=[
-        dict(text="Aggregated from subnational regions", **x)
-        for x in SUBNATIONAL_REGIONS.data_credit
-    ],
+    data_credit=SUBNATIONAL_REGIONS.data_credit,
 )
