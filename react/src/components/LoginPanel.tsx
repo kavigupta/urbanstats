@@ -4,8 +4,6 @@ import '../common.css'
 
 import { PageTemplate } from '../page_template/template'
 
-import { log } from 'console'
-
 const authUrls = {
     google: 'https://accounts.google.com/',
 }
