@@ -2,8 +2,8 @@ import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
-from urbanstats.geometry.shapefiles.shapefiles.countries import extract_country_longname
 from urbanstats.special_cases.country import subnational_regions
+from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
@@ -12,6 +12,11 @@ from urbanstats.universe.universe_provider.contained_within import (
     PROVINCE_PROVIDER,
     STATE_PROVIDER,
 )
+
+
+def extract_country_longname(x):
+    # print(x)
+    return iso_to_country(x.ISO_CC)
 
 
 def valid_state(x):
@@ -45,4 +50,19 @@ SUBNATIONAL_REGIONS = Shapefile(
         ),
     },
     abbreviation="SUBN",
+    data_credit=[
+        dict(
+            text="Countries and continents are created by merging subnational regions.",
+            linkText="ESRI",
+            link="https://hub.arcgis.com/datasets/esri::world-administrative-divisions/explore?location=41.502196%2C25.823236%2C6.69",
+        ),
+        dict(
+            linkText="US Census",
+            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+        ),
+        dict(
+            linkText="Canadian Census",
+            link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpr_000a21a_e.zip",
+        ),
+    ],
 )

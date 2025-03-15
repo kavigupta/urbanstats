@@ -4,7 +4,13 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def districts(
-    file_name, district_type, district_abbrev, *, abbreviation, overrides=None
+    file_name,
+    district_type,
+    district_abbrev,
+    *,
+    abbreviation,
+    overrides=None,
+    data_credit,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}",
@@ -23,11 +29,19 @@ def districts(
         universe_provider=us_domestic_provider(overrides),
         subset_masks={"USA": SelfSubset()},
         abbreviation=abbreviation,
+        data_credit=data_credit,
     )
 
 
 CONGRESSIONAL_DISTRICTS = districts(
-    "cd118", "Congressional District", "", abbreviation="CONG"
+    "cd118",
+    "Congressional District",
+    "",
+    abbreviation="CONG",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/CD",
+    ),
 )
 
 district_shapefiles = dict(
@@ -43,6 +57,10 @@ district_shapefiles = dict(
             "PA-HD001, USA": ["Pennsylvania, USA"],
             "RI-HD075, USA": ["Rhode Island, USA"],
         },
+        data_credit=dict(
+            linkText="US Census",
+            link="https://www2.census.gov/geo/tiger/TIGER2018/SLDL/",
+        ),
     ),
     state_senate=districts(
         "sldu",
@@ -50,5 +68,9 @@ district_shapefiles = dict(
         "SD",
         abbreviation="STSD",
         overrides={"HI-SD025, USA": ["Hawaii, USA"]},
+        data_credit=dict(
+            linkText="US Census",
+            link="https://www2.census.gov/geo/tiger/TIGER2018/SLDU/",
+        ),
     ),
 )

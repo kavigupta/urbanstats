@@ -1,19 +1,30 @@
+import * as idb from 'idb'
+
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { isHistoricalCD } from './utils/is_historical'
-import { ISearchIndexMetadata, SearchIndex } from './utils/protos'
-
-const debugSearch: boolean = false
+import { ISearchIndexMetadata } from './utils/protos'
 
 export interface SearchResult {
     longname: string
     typeIndex: number
 }
 
+const debugSearch: boolean = false
+
 function debug(arg: unknown): void {
     if (debugSearch) {
+        // eslint-disable-next-line no-console -- Debug logging
+        console.log(arg)
+    }
+}
+
+const debugSearchPerformance: boolean = true
+
+export function debugPerformance(arg: unknown): void {
+    if (debugSearchPerformance) {
         // eslint-disable-next-line no-console -- Debug logging
         console.log(arg)
     }
@@ -230,18 +241,63 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         combinedScore: combinedScore(result),
     })))
 
-    debug(`Took ${performance.now() - start} ms to execute search`)
+    debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
     return results.map(result => result.entry)
 }
 
-export async function createIndex(): Promise<(params: SearchParams) => SearchResult[]> {
-    const start = performance.now()
-    let rawIndex: SearchIndex | undefined = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
-    const index = processRawSearchIndex(rawIndex)
-    debug(`Took ${performance.now() - start}ms to load search index`)
-    rawIndex = undefined // so it doesn't stay in memory
+// Potentially cached
+export async function createIndex(cacheKey: string | undefined): Promise<(params: SearchParams) => SearchResult[]> {
+    let index: NormalizedSearchIndex | undefined
+    try {
+        if (cacheKey === undefined) {
+            throw new Error('No cache key specified')
+        }
+
+        let checkpoint = performance.now()
+
+        const db = await idb.openDB('SearchCache', 1, {
+            upgrade(database) {
+                database.createObjectStore('indexes')
+            },
+        })
+
+        const store = db.transaction('indexes', 'readonly').objectStore('indexes')
+
+        debugPerformance(`Took ${performance.now() - checkpoint}ms to open database`)
+        checkpoint = performance.now()
+
+        index = (await store.get(cacheKey)) as NormalizedSearchIndex | undefined
+
+        debugPerformance(`Took ${performance.now() - checkpoint}ms to get index from cache`)
+        checkpoint = performance.now()
+
+        if (index === undefined) {
+            debugPerformance('Cache miss')
+            index = await createIndexNoCache()
+
+            void (async () => {
+                const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
+                const keys = await writeStore.getAllKeys()
+                await Promise.all(keys.map(k => writeStore.delete(k)))
+                await writeStore.put(index, cacheKey)
+            })()
+        }
+        else {
+            debugPerformance('Cache hit')
+        }
+    }
+    catch (error) {
+        // This is going to fail during unit testing since we don't mock stuff
+        console.warn('Getting cached search index failed', error)
+        index = await createIndexNoCache()
+    }
     return params => search(index, params)
+}
+
+async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
+    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    return processRawSearchIndex(rawIndex)
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {
@@ -274,6 +330,32 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
             typeIndex: searchIndex.metadata[index].type!,
         }
     })
-    debug(`Took ${performance.now() - start}ms to process search index`)
+    debugPerformance(`Took ${performance.now() - start}ms to process search index`)
     return { entries, lengthOfLongestToken, maxPriority, mostTokens }
+}
+
+export async function getIndexCacheKey(): Promise<string | undefined> {
+    try {
+        const start = performance.now()
+        // location is sometimes a worker
+        const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
+        const etags = await Promise.all(resources.map(async (resource) => {
+            const response = await fetch(resource, { method: 'HEAD' })
+            if (!response.ok) {
+                throw new Error(`${resource} is not OK`)
+            }
+            const etag = response.headers.get('etag')
+            if (etag === null) {
+                throw new Error(`${resource} does not have etag`)
+            }
+            return etag
+        }))
+
+        debugPerformance(`Took ${performance.now() - start} to get search cache key`)
+        return etags.join(',')
+    }
+    catch (error) {
+        console.warn('Getting search cache key failed', error)
+        return undefined
+    }
 }

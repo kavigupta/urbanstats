@@ -54,4 +54,9 @@ COUNTY_CROSS_CD = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="CXCD",
+    data_credit=dict(
+        text="We take the intersection of the county and congressional district shapefiles.",
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
+    ),
 )

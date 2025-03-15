@@ -21,6 +21,10 @@ NATIVE_AREAS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="NAAR",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
     hash_key="native_statistical_areas",
@@ -32,6 +36,10 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="NASA",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
 )
 NATIVE_SUBDIVISIONS = Shapefile(
     hash_key="native_subdivisions_2",
@@ -43,6 +51,10 @@ NATIVE_SUBDIVISIONS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="NASD",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
 )
 
 

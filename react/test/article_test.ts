@@ -336,3 +336,23 @@ test('can navigate back to original navigated shape in map', async (t) => {
     await t.click(Selector('path').withAttribute('class', /Charlotte_NC_Media_Market,_USA/))
     await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
 })
+
+urbanstatsFixture('historical congressional', '/article.html?longname=Historical+Congressional+District+CA-46%2C+108th-112th+Congress%2C+USA')
+
+test('historical congressional', async (t) => {
+    await checkTextboxes(t, ['Include Historical Districts'])
+    await screencap(t)
+})
+
+function screenshotOfPage(name: string, url: string): void {
+    urbanstatsFixture(name, url)
+    test(name, async (t) => {
+        await screencap(t)
+    })
+}
+
+screenshotOfPage('congressional district', '/article.html?longname=CA-46%2C+USA')
+screenshotOfPage('congressional district at large', '/article.html?longname=VT-00%2C+USA')
+screenshotOfPage('legislative district complicated name', '/article.html?longname=VT-HDB-1%2C+USA')
+screenshotOfPage('legislative district short name', '/article.html?longname=CA-SD023%2C+USA')
+screenshotOfPage('county cross district', '/article.html?longname=WY-00+in+Natrona+County%2C+USA')

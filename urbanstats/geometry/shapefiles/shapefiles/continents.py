@@ -1,4 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
@@ -21,4 +22,5 @@ CONTINENTS = Shapefile(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),
     abbreviation="CONT",
+    data_credit=COUNTRIES.data_credit,
 )

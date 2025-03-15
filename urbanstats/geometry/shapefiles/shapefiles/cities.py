@@ -15,4 +15,8 @@ CITIES = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="CITY",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
+    ),
 )

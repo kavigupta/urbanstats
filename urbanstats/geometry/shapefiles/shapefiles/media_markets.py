@@ -16,4 +16,8 @@ MEDIA_MARKETS = Shapefile(
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="MMAR",
+    data_credit=dict(
+        linkText="Kenneth C Black",
+        link="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/",
+    ),
 )

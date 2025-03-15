@@ -4,6 +4,7 @@ import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
+import { debugPerformance } from './search'
 import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, CountsByArticleUniverseAndType, DataLists,
     Feature, IDataList, IOrderList, OrderList,
@@ -40,6 +41,8 @@ export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Prom
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | undefined> {
+    let perfCheckpoint = performance.now()
+
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         if (!errorOnMissing) {
@@ -47,9 +50,22 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
         }
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
+
     const compressedBuffer = await response.arrayBuffer()
+
+    if (name === 'SearchIndex') {
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms networking to load search index`)
+    }
+    perfCheckpoint = performance.now()
+
     const buffer = gunzipSync(Buffer.from(compressedBuffer))
     const arr = new Uint8Array(buffer)
+
+    if (name === 'SearchIndex') {
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decompress search index`)
+    }
+    perfCheckpoint = performance.now()
+
     if (name === 'Article') {
         return Article.decode(arr)
     }
@@ -72,7 +88,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
         return ConsolidatedStatistics.decode(arr)
     }
     else if (name === 'SearchIndex') {
-        return SearchIndex.decode(arr)
+        const result = SearchIndex.decode(arr)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decode search index`)
+        return result
     }
     else if (name === 'QuizQuestionTronche') {
         return QuizQuestionTronche.decode(arr)
