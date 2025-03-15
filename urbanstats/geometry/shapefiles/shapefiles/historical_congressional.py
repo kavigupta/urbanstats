@@ -90,7 +90,7 @@ HISTORICAL_CONGRESSIONALs = {
 }
 
 HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
-    hash_key=f"historical_congressional_2020_1",
+    hash_key=f"historical_congressional_2020_2",
     path=lambda: load_shapefile("cd118", only_keep="past"),
     shortname_extractor=historical_shortname,
     longname_extractor=lambda x: historical_shortname(x) + ", USA",
