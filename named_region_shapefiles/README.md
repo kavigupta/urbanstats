@@ -34,13 +34,6 @@ Source: https://www.ers.usda.gov/data-products/county-typology-codes/
 Source: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
   - county_map.txt
 
-
-# From Kenneth C Black
-
-Source: https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/
-
-  - NatDMA.zip
-
 # Hospital locations
 
 Source: https://www.kaggle.com/datasets/carlosaguayo/usa-hospitals
