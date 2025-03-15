@@ -183,7 +183,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <ErrorScreen data={pageData} />
         case 'login':
             if (pageData.code !== undefined) {
-                handleLoginCallback(pageData.code, pageData.state!)
+                void handleLoginCallback(pageData.code, pageData.state)
             }
             return <LoginPanel callbackUrl={pageData.callbackUrl} />
         case 'initialLoad':

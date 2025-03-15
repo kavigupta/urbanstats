@@ -1,5 +1,6 @@
 import base64
 import json
+import time
 
 import requests
 
@@ -8,6 +9,10 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
+
+valid_roots = [
+    "https://accounts.google.com",
+]
 
 
 def info(endpt):
@@ -43,58 +48,73 @@ def verify_content(keys, signature, data):
     return False
 
 
-def decode_jwt_with_no_verification(jwt_token):
+def decode_jwt(root, jwt_token):
+    if root.rstrip("/") not in valid_roots:
+        return None, "Invalid root"
+
     # from https://spapas.github.io/2023/11/29/openid-connect-tutorial/
-    header, payload, _ = jwt_token.split(".")
+    header, payload, signature = jwt_token.split(".")
 
     decoded_header = base64.urlsafe_b64decode(header + "=" * (-len(header) % 4))
     decoded_payload = base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4))
 
-    # decoded_signature = base64.urlsafe_b64decode(
-    #     signature + "=" * (-len(signature) % 4)
-    # )
-
-    # if not verify_content(
-    #     compute_keys(root), decoded_signature, (header + "." + payload).encode("utf-8")
-    # ):
-    #     return None
-
-    return json.loads(decoded_header), json.loads(decoded_payload)
-
-
-def get_jwt_from_refresh(endpt, client_id, client_secret, refresh_token):
-    token_endpoint = info(endpt)["token_endpoint"]
-    result = requests.post(
-        token_endpoint,
-        data={
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "grant_type": "refresh_token",
-            # "code": code,
-            "refresh_token": refresh_token,
-            "redirect_uri": "http://local.urbanstats.org:8000/login.html",
-            "access_type": "offline",
-        },
-        timeout=10,
+    decoded_signature = base64.urlsafe_b64decode(
+        signature + "=" * (-len(signature) % 4)
     )
-    return result.json()
+
+    if not verify_content(
+        compute_keys(root), decoded_signature, (header + "." + payload).encode("utf-8")
+    ):
+        return None, "Invalid signature"
+
+    decoded_header, decoded_payload = json.loads(decoded_header), json.loads(
+        decoded_payload
+    )
+
+    if "error" in decoded_payload:
+        return None, decoded_payload["error"]
+
+    if decoded_payload["iss"] != info(root)["issuer"]:
+        return None, "Invalid issuer"
+
+    if decoded_payload["exp"] < time.time():
+        return None, "Token expired"
+
+    return decoded_header, decoded_payload
 
 
-def decode_user_with_no_verification(jwt_token):
+# def get_jwt_from_refresh(endpt, client_id, client_secret, refresh_token):
+#     token_endpoint = info(endpt)["token_endpoint"]
+#     result = requests.post(
+#         token_endpoint,
+#         data={
+#             "client_id": client_id,
+#             "client_secret": client_secret,
+#             "grant_type": "refresh_token",
+#             # "code": code,
+#             "refresh_token": refresh_token,
+#             "redirect_uri": "http://local.urbanstats.org:8000/login.html",
+#             "access_type": "offline",
+#         },
+#         timeout=10,
+#     )
+#     return result.json()
+
+
+def decode_user(root, jwt_token):
     """
-    Verifies a user, returinng basic metadata. Returns None if the user is not verified.
+    Verifies a user, returning basic metadata. Returns None if the JWT token is invalid.
 
     :param root: The root URL of the OpenID server.
     :param jwt_token: The JWT token to verify.
 
     :return: A dictionary with the user metadata (name and email) if the user is verified, None otherwise.
     """
-    decoded_token = decode_jwt_with_no_verification(jwt_token)
-    if decoded_token is None:
+    header, payload = decode_jwt(root, jwt_token)
+    if header is None:
         return None
-    _, payload = decoded_token
     return {
-        "name": payload["name"],
+        # "name": payload["name"],
         "email": payload["email"],
         "email_verified": payload["email_verified"],
         "stable_id": payload["sub"],
