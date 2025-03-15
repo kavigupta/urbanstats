@@ -39,8 +39,4 @@ firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, 
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
 
-test('search', () => {
-    assert.not.match(computeFirstResult('historical').longname, /Historical Congressional/)
-})
-
 test.run()

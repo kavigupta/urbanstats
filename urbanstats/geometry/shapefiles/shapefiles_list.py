@@ -26,7 +26,7 @@ from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CRO
 from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import (
-    HISTORICAL_CONGRESSIONAL,
+    HISTORICAL_CONGRESSIONALs,
 )
 from urbanstats.geometry.shapefiles.shapefiles.hospital import hospital_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.judicial import judicial_shapefiles
@@ -57,7 +57,7 @@ shapefiles = dict(
     cities=CITIES,
     neighborhoods=NEIGHBORHOODS,
     **district_shapefiles,
-    historical_congressional=HISTORICAL_CONGRESSIONAL,
+    **HISTORICAL_CONGRESSIONALs,
     **native_shapefiles,
     school_districts=SCHOOL_DISTRICTS,
     **judicial_shapefiles,

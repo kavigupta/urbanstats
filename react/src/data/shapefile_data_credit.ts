@@ -130,13 +130,48 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
     },
     {
         names: [
-            'Historical Congressional District',
+            'Congressional District (1780s)',
+            'Congressional District (1790s)',
+            'Congressional District (1800s)',
+            'Congressional District (1810s)',
+            'Congressional District (1820s)',
+            'Congressional District (1830s)',
+            'Congressional District (1840s)',
+            'Congressional District (1850s)',
+            'Congressional District (1860s)',
+            'Congressional District (1870s)',
+            'Congressional District (1880s)',
+            'Congressional District (1890s)',
+            'Congressional District (1900s)',
+            'Congressional District (1910s)',
+            'Congressional District (1920s)',
+            'Congressional District (1930s)',
+            'Congressional District (1940s)',
+            'Congressional District (1950s)',
+            'Congressional District (1960s)',
+            'Congressional District (1970s)',
+            'Congressional District (1980s)',
+            'Congressional District (1990s)',
+            'Congressional District (2000s)',
+            'Congressional District (2010s)',
         ],
         dataCredits: [
             {
                 text: 'We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis to unclip the coastlines.',
                 linkText: 'Explanation of unclipping, and changes',
                 link: 'https://github.com/kavigupta/historical-congressional-unclipped',
+            },
+        ],
+    },
+    {
+        names: [
+            'Congressional District (2020s)',
+        ],
+        dataCredits: [
+            {
+                text: '2020s data is from the US Census Bureau.',
+                linkText: 'US Census',
+                link: 'https://www2.census.gov/geo/tiger/TIGER2020/CD/',
             },
         ],
     },
@@ -150,6 +185,51 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
                 linkText: 'US Census',
                 link: 'https://www2.census.gov/geo/tiger/TIGER2018/SLDL/',
             },
+            {
+                text: 'Under "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".',
+                linkText: 'GA redistricting: GA Legislature',
+                link: 'https://www.legis.ga.gov/joint-office/reapportionment',
+            },
+            {
+                text: null,
+                linkText: 'MI redistricting: MI CRC',
+                link: 'https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-house-plan',
+            },
+            {
+                text: null,
+                linkText: 'MT redistricting: MT Legislature',
+                link: 'https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission',
+            },
+            {
+                text: 'Using "Current District Plans (used for 2022 election)."',
+                linkText: 'NC redistricting: NC Legislature',
+                link: 'https://www.ncleg.gov/redistricting',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'ND redistricting: DRA',
+                link: 'https://davesredistricting.org/',
+            },
+            {
+                text: null,
+                linkText: 'OH redistricting: OH Secretary of State',
+                link: 'https://www.ohiosos.gov/elections/ohio-candidates/district-maps/',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'SC redistricting: DRA',
+                link: 'https://davesredistricting.org/',
+            },
+            {
+                text: null,
+                linkText: 'WA redistricting: WA Government',
+                link: 'https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'WI redistricting: DRA',
+                link: 'https://davesredistricting.org/',
+            },
         ],
     },
     {
@@ -162,6 +242,46 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
                 linkText: 'US Census',
                 link: 'https://www2.census.gov/geo/tiger/TIGER2018/SLDU/',
             },
+            {
+                text: 'Under "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".',
+                linkText: 'GA redistricting: GA Legislature',
+                link: 'https://www.legis.ga.gov/joint-office/reapportionment',
+            },
+            {
+                text: null,
+                linkText: 'MI redistricting: MI CRC',
+                link: 'https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-senate-plan',
+            },
+            {
+                text: null,
+                linkText: 'MT redistricting: MT Legislature',
+                link: 'https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission',
+            },
+            {
+                text: 'Using "Current District Plans (used for 2022 election)."',
+                linkText: 'NC redistricting: NC Legislature',
+                link: 'https://www.ncleg.gov/redistricting',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'ND redistricting: DRA',
+                link: 'https://davesredistricting.org/',
+            },
+            {
+                text: null,
+                linkText: 'OH redistricting: OH Secretary of State',
+                link: 'https://www.ohiosos.gov/elections/ohio-candidates/district-maps/',
+            },
+            {
+                text: null,
+                linkText: 'WA redistricting: WA Government',
+                link: 'https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'WI redistricting: DRA',
+                link: 'https://davesredistricting.org/',
+            },
         ],
     },
     {
@@ -173,6 +293,31 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
                 text: null,
                 linkText: 'US Census',
                 link: 'https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/CD',
+            },
+            {
+                text: 'Under "Shape files" under "Court ordered Congressional Districts".',
+                linkText: 'AL redistricting: AL Secretary of State',
+                link: 'https://www.sos.alabama.gov/alabama-votes/state-district-maps',
+            },
+            {
+                text: 'Under "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".',
+                linkText: 'GA redistricting: GA Legislature',
+                link: 'https://www.legis.ga.gov/joint-office/reapportionment',
+            },
+            {
+                text: 'Under "Enacted Plans From the 2024 1st Extraordinary Session"',
+                linkText: 'LA redistricting: LA Legislature',
+                link: 'https://redist.legis.la.gov/',
+            },
+            {
+                text: 'Using "Current District Plans (used for 2022 election)."',
+                linkText: 'NC redistricting: NC Legislature',
+                link: 'https://www.ncleg.gov/redistricting',
+            },
+            {
+                text: 'Shapefiles are not directly linked, but can be found by searching for the specific state.',
+                linkText: 'NY redistricting: DRA',
+                link: 'https://davesredistricting.org/',
             },
         ],
     },
