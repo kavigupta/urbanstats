@@ -34,57 +34,6 @@ Source: https://www.ers.usda.gov/data-products/county-typology-codes/
 Source: https://transition.fcc.gov/oet/info/maps/census/fips/fips.txt
   - county_map.txt
 
-# Redistricting in the 2020s
-
-## NY
-
-DRA
-
-## GA
-
-119th district shapefile: https://www.legis.ga.gov/joint-office/reapportionment, specifically "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".
-
-## AL
-
-119th district shapefile: https://www.sos.alabama.gov/alabama-votes/state-district-maps, specifically "Shape files" under "Court ordered Congressional Districts".
-
-## NC
-
-119th district shapefile: https://www.ncleg.gov/redistricting; "Current District Plans (used for 2022 election): Congressional.
-Same for the house and senate maps
-
-## LA
-
-https://redist.legis.la.gov/ "Enacted Plans From the 2024 1st Extraordinary Session"
-
-## MT
-
-https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission/. 
-
-## WA
-
-https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59
-
-## OH
-
-State senate: https://www.ohiosos.gov/elections/ohio-candidates/district-maps/
-
-## SC
-
-DRA
-
-## MI
-
-https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-house-plan
-https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-senate-plan
-
-## WI
-
-DRA
-
-## ND
-
-DRA
 
 # From Kenneth C Black
 

@@ -1,6 +1,5 @@
 import os
 import pickle
-import string
 import geopandas as gpd
 import tempfile
 import zipfile
@@ -13,17 +12,93 @@ from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
+nc_leg = dict(
+    linkText="NC Legislature",
+    link="https://www.ncleg.gov/redistricting",
+    text='Using "Current District Plans (used for 2022 election)."',
+)
+
+ga_leg = dict(
+    linkText="GA Legislature",
+    link="https://www.legis.ga.gov/joint-office/reapportionment",
+    text='Under "House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX".',
+)
+
+al_sos = dict(
+    linkText="AL Secretary of State",
+    link="https://www.sos.alabama.gov/alabama-votes/state-district-maps",
+    text='Under "Shape files" under "Court ordered Congressional Districts".',
+)
+
+la_leg = dict(
+    linkText="LA Legislature",
+    link="https://redist.legis.la.gov/",
+    text='Under "Enacted Plans From the 2024 1st Extraordinary Session"',
+)
+
+mt_leg = dict(
+    linkText="MT Legislature",
+    link="https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission",
+)
+
+oh_sos = dict(
+    linkText="OH Secretary of State",
+    link="https://www.ohiosos.gov/elections/ohio-candidates/district-maps/",
+)
+
+wa_leg = dict(
+    linkText="WA Government",
+    link="https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59",
+)
+
+dra = dict(
+    linkText="DRA",
+    link="https://davesredistricting.org/",
+    text="Shapefiles are not directly linked, but can be found by searching for the specific state.",
+)
+
 mid_district_redistricting_for_2025 = {
     "cd118": dict(
-        states=["NY", "NC", "GA", "AL", "LA"],
+        states_and_sources={
+            "NY": dra,
+            "NC": nc_leg,
+            "GA": ga_leg,
+            "AL": al_sos,
+            "LA": la_leg,
+        },
         prefix="named_region_shapefiles/redistricting/CD-",
     ),
     "sldl": dict(
-        states=["GA", "MI", "MT", "NC", "ND", "OH", "SC", "WA", "WI"],
+        states_and_sources={
+            "GA": ga_leg,
+            "MI": dict(
+                linkText="MI CRC",
+                link="https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-house-plan",
+            ),
+            "MT": mt_leg,
+            "NC": nc_leg,
+            "ND": dra,
+            "OH": oh_sos,
+            "SC": dra,
+            "WA": wa_leg,
+            "WI": dra,
+        },
         prefix="named_region_shapefiles/redistricting/HD-",
     ),
     "sldu": dict(
-        states=["GA", "MI", "MT", "NC", "ND", "OH", "WA", "WI"],
+        states_and_sources={
+            "GA": ga_leg,
+            "MI": dict(
+                linkText="MI CRC",
+                link="https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-senate-plan",
+            ),
+            "MT": mt_leg,
+            "NC": nc_leg,
+            "ND": dra,
+            "OH": oh_sos,
+            "WA": wa_leg,
+            "WI": dra,
+        },
         prefix="named_region_shapefiles/redistricting/SD-",
     ),
 }
@@ -85,7 +160,7 @@ def load_districts_all_2020s(file_name):
 
     redistricted = mid_district_redistricting_for_2025[file_name]
 
-    for state in redistricted["states"]:
+    for state in redistricted["states_and_sources"]:
         for_state = read_shapefile(f"{redistricted['prefix']}{state}.zip").to_crs(
             "epsg:4326"
         )
@@ -170,7 +245,15 @@ def districts(
         universe_provider=us_domestic_provider(overrides),
         subset_masks={"USA": SelfSubset()},
         abbreviation=abbreviation,
-        data_credit=data_credit,
+        data_credit=[data_credit]
+        + [
+            {**dc, "linkText": f"{state} redistricting: {dc['linkText']}"}
+            for state, dc in sorted(
+                mid_district_redistricting_for_2025[file_name][
+                    "states_and_sources"
+                ].items()
+            )
+        ],
     )
 
 

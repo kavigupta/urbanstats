@@ -64,13 +64,6 @@ def historical_shortname(x):
 
 version_for_decade = {"default": 0.2}
 
-data_credit = dict(
-    text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
-    " to unclip the coastlines.",
-    linkText="Explanation of unclipping, and changes",
-    link="https://github.com/kavigupta/historical-congressional-unclipped",
-)
-
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": Shapefile(
         hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
@@ -86,7 +79,12 @@ HISTORICAL_CONGRESSIONALs = {
         abbreviation="CONG",
         universe_provider=us_domestic_provider(),
         subset_masks={"USA": SelfSubset()},
-        data_credit=data_credit,
+        data_credit=dict(
+            text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
+            " to unclip the coastlines.",
+            linkText="Explanation of unclipping, and changes",
+            link="https://github.com/kavigupta/historical-congressional-unclipped",
+        ),
     )
     for decade in decades
 }
@@ -98,12 +96,16 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     longname_extractor=lambda x: historical_shortname(x) + ", USA",
     filter=lambda x: True,
     meta=dict(
-        type=f"Congressional District (2020s)",
+        type="Congressional District (2020s)",
         source="Census",
         type_category="Political",
     ),
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
-    data_credit=data_credit,
+    data_credit=dict(
+        text="2020s data is from the US Census Bureau.",
+        linkText="US Census",
+        link="https://www2.census.gov/geo/tiger/TIGER2020/CD/",
+    ),
 )
