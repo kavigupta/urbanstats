@@ -1,6 +1,7 @@
+from collections import defaultdict
+
 import pandas as pd
 from permacache import stable_hash
-from collections import defaultdict
 
 
 def collapse_unchanged(table, identity_columns, *, overlap_threshold=1e-4):

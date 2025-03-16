@@ -24,6 +24,10 @@ class Shapefile:
     subset_masks = attr.ib(default=attr.Factory(dict))
     abbreviation = attr.ib(kw_only=True)
     data_credit = attr.ib(kw_only=True)
+    start_date = attr.ib(kw_only=True, default=None)
+    start_date_overall = attr.ib(kw_only=True, default=-float("inf"))
+    end_date = attr.ib(kw_only=True, default=None)
+    end_date_overall = attr.ib(kw_only=True, default=float("inf"))
 
     def load_file(self):
         """
@@ -56,6 +60,25 @@ class Shapefile:
             subset.mutate_table(subset_name, s)
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
+
+        if self.start_date is not None:
+            s["start_date"] = s.apply(lambda x: self.start_date(x), axis=1)
+        else:
+            s["start_date"] = -float("inf")
+
+        if self.end_date is not None:
+            s["end_date"] = s.apply(lambda x: self.end_date(x), axis=1)
+        else:
+            s["end_date"] = float("inf")
+
+        assert self.start_date_overall == min(
+            s.start_date
+        ), f"{self.start_date_overall} != {min(s.start_date)}"
+
+        assert self.end_date_overall == max(
+            s.end_date
+        ), f"{self.end_date_overall} != {max(s.end_date)}"
+
         s = gpd.GeoDataFrame(
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
@@ -100,6 +123,8 @@ class Shapefile:
     @property
     def available_columns(self):
         return [
+            "start_date",
+            "end_date",
             *self.additional_columns_computer,
             *self.additional_columns_to_keep,
             *self.subset_mask_keys,

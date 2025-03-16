@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import geopandas as gpd
+import numpy as np
 import tqdm
 from permacache import permacache, stable_hash
 
@@ -9,14 +10,14 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 @permacache(
-    "population_density/relationship/create_relationships_7",
+    "population_density/relationship/create_relationships_8",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
 def create_relationships(x, y):
     """
     Get the relationships between the two shapefiles x and y
     """
-    over = compute_overlays_with_areas(x, y)
+    table_a, table_b, over = compute_overlays_with_areas(x, y)
 
     a_contains_b = set()
     b_contains_a = set()
@@ -40,12 +41,10 @@ def create_relationships(x, y):
         else:
             borders.add((row.longname_1, row.longname_2))
 
-    a_contains_b = sorted(a_contains_b)
-    b_contains_a = sorted(b_contains_a)
-    intersects = sorted(intersects)
-    borders = sorted(borders)
-
-    return a_contains_b, b_contains_a, intersects, borders
+    return [
+        sorted(filter_temporal_overlaps(table_a, table_b, items))
+        for items in [a_contains_b, b_contains_a, intersects, borders]
+    ]
 
 
 def compute_overlays_with_areas(x, y):
@@ -56,7 +55,34 @@ def compute_overlays_with_areas(x, y):
     b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
     over["a_area"] = over.longname_1.map(lambda x: a_area[x])
     over["b_area"] = over.longname_2.map(lambda x: b_area[x])
-    return over
+    return a, b, over
+
+
+def temporal_ranges_overlap(start_a, end_a, start_b, end_b):
+    start_a, end_a, start_b, end_b = (
+        np.min(start_a),
+        np.max(end_a),
+        np.min(start_b),
+        np.max(end_b),
+    )
+    if start_a <= end_a < start_b <= end_b:
+        return False
+    if start_b <= end_b < start_a <= end_a:
+        return False
+    return True
+
+
+def filter_temporal_overlaps(a, b, items):
+    assert isinstance(items, set)
+    a = a.set_index("longname")
+    b = b.set_index("longname")
+    results = set()
+    for x, y in items:
+        start_a, end_a = a.loc[x].start_date, a.loc[x].end_date
+        start_b, end_b = b.loc[y].start_date, b.loc[y].end_date
+        if temporal_ranges_overlap(start_a, end_a, start_b, end_b):
+            results.add((x, y))
+    return results
 
 
 @permacache(
@@ -80,7 +106,7 @@ def create_overlays_only_borders(a, b):
         right = row.longname_right
         if left != right:
             borders.add((left, right))
-    return set(), set(), set(), borders
+    return set(), set(), set(), filter_temporal_overlaps(a, b, borders)
 
 
 @permacache(
@@ -109,7 +135,7 @@ def create_relationships_countries_subnationals(a, b):
             la, lb = long_a[i], long_b[j]
             if lb.endswith(", " + la):
                 a_contains_b.add((la, lb))
-    return a_contains_b, set(), set(), set()
+    return filter_temporal_overlaps(a_contains_b), set(), set(), set()
 
 
 tiers = [
@@ -365,25 +391,24 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
 
 
 def create_relationships_dispatch(shapefiles_to_use, k1, k2):
-    if k1.startswith("historical_congressional") and k2.startswith(
-        "historical_congressional"
+    if not temporal_ranges_overlap(
+        shapefiles_to_use[k1].start_date_overall,
+        shapefiles_to_use[k1].end_date_overall,
+        shapefiles_to_use[k2].start_date_overall,
+        shapefiles_to_use[k2].end_date_overall,
     ):
-        if k1 == k2:
-            fn = create_relationships
-        else:
-            fn = lambda _1, _2: ({}, {}, {}, {})
-    else:
-        fn = {
-            ("countries", "countries"): create_overlays_only_borders,
-            (
-                "countries",
-                "subnational_regions",
-            ): create_relationships_countries_subnationals,
-            (
-                "subnational_regions",
-                "countries",
-            ): lambda x, y: create_relationships_countries_subnationals(y, x),
-        }.get((k1, k2), create_relationships)
+        return set(), set(), set(), set()
+    fn = {
+        ("countries", "countries"): create_overlays_only_borders,
+        (
+            "countries",
+            "subnational_regions",
+        ): create_relationships_countries_subnationals,
+        (
+            "subnational_regions",
+            "countries",
+        ): lambda x, y: create_relationships_countries_subnationals(y, x),
+    }.get((k1, k2), create_relationships)
     (
         a_contains_b,
         b_contains_a,

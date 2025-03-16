@@ -1,11 +1,12 @@
 import os
 import pickle
-import geopandas as gpd
 import tempfile
 import zipfile
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
+
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -254,6 +255,10 @@ def districts(
                 ].items()
             )
         ],
+        start_date=lambda x: x["start_date"],
+        end_date=lambda x: x["end_date"],
+        start_date_overall=2023,
+        end_date_overall=2032,
     )
 
 

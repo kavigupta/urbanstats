@@ -85,6 +85,10 @@ HISTORICAL_CONGRESSIONALs = {
             linkText="Explanation of unclipping, and changes",
             link="https://github.com/kavigupta/historical-congressional-unclipped",
         ),
+        start_date=lambda x: to_year(x.start),
+        end_date=lambda x: to_year(x.end) + 1,
+        start_date_overall=decade + 3 if decade != 1780 else 1789,
+        end_date_overall=decade + 12,
     )
     for decade in decades
 }
@@ -108,4 +112,8 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
         linkText="US Census",
         link="https://www2.census.gov/geo/tiger/TIGER2020/CD/",
     ),
+    start_date=lambda x: x["start_date"],
+    end_date=lambda x: x["end_date"],
+    start_date_overall=2023,
+    end_date_overall=2024,
 )
