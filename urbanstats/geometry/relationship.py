@@ -417,3 +417,15 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2):
     ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
 
     return a_contains_b, b_contains_a, a_intersects_b, a_borders_b
+
+
+def populate_caches():
+    from urbanstats.website_data.table import shapefile_without_ordinals
+
+    table = shapefile_without_ordinals()
+    long_to_type = dict(zip(table.longname, table.type))
+    full_relationships(long_to_type)
+
+
+if __name__ == "__main__":
+    populate_caches()
