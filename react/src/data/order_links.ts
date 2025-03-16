@@ -1014,8 +1014,8 @@ const value: Record<string, number[]> = {
         149,
     ],
     'Louisiana, USA__overall': [
-        209,
-        111,
+        208,
+        112,
     ],
     'Maine, USA__overall': [
         283,
@@ -1083,9 +1083,9 @@ const value: Record<string, number[]> = {
         27,
     ],
     'North Carolina, USA__overall': [
-        116,
-        116,
-        88,
+        115,
+        115,
+        90,
     ],
     'North Dakota, USA__overall': [
         166,
