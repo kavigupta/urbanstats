@@ -40,7 +40,7 @@ class Shapefile:
 
         This should be the only circular dependency related to shapefiles.
         """
-        # pylint: disable=import-outside-toplevel,cyclic-import
+        # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
         from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
 
         if isinstance(self.path, list):
@@ -64,13 +64,13 @@ class Shapefile:
 
         if self.start_date is not None:
             assert self.longname_sans_date_extractor is not None
-            s["start_date"] = s.apply(lambda x: self.start_date(x), axis=1)
+            s["start_date"] = s.apply(self.start_date, axis=1)
         else:
             s["start_date"] = -float("inf")
 
         if self.end_date is not None:
             assert self.longname_sans_date_extractor is not None
-            s["end_date"] = s.apply(lambda x: self.end_date(x), axis=1)
+            s["end_date"] = s.apply(self.end_date, axis=1)
         else:
             s["end_date"] = float("inf")
 
