@@ -47,7 +47,7 @@ def filter_for_decade(decade):
     return filt
 
 
-def historical_shortname(x):
+def historical_shortname(x, include_date=True):
     if "start" in x:
         year = to_year(x.start)
     else:
@@ -59,7 +59,10 @@ def historical_shortname(x):
         district = "AL"
     else:
         district = f"{district:02d}"
-    return f'{x["state"]}-{district} ({year})'
+    name = f'{x["state"]}-{district}'
+    if include_date:
+        return f"{name} ({year})"
+    return name
 
 
 version_for_decade = {"default": 0.2}
@@ -70,6 +73,10 @@ HISTORICAL_CONGRESSIONALs = {
         path=functools.partial(filter_for_decade, decade),
         shortname_extractor=historical_shortname,
         longname_extractor=lambda x: historical_shortname(x) + ", USA",
+        longname_sans_date_extractor=lambda x: historical_shortname(
+            x, include_date=False
+        )
+        + ", USA",
         filter=lambda x: True,
         meta=dict(
             type=f"Congressional District ({decade}s)",
@@ -98,6 +105,8 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     path=lambda: load_shapefile("cd118", only_keep="past"),
     shortname_extractor=historical_shortname,
     longname_extractor=lambda x: historical_shortname(x) + ", USA",
+    longname_sans_date_extractor=lambda x: historical_shortname(x, include_date=False)
+    + ", USA",
     filter=lambda x: True,
     meta=dict(
         type="Congressional District (2020s)",

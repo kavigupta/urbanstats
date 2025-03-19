@@ -219,11 +219,14 @@ def deduplicate(for_state, existing):
     return for_state, existing_changed_idxs
 
 
-def get_shortname(district_abbrev, x):
+def get_shortname(district_abbrev, x, include_date=True):
     district = x["district"]
     if district == "" or district.isnumeric() and int(district) == 0:
         district = "AL"
-    return f'{x["state"]}-{district_abbrev}{district} ({x["start_date"]})'
+    dist_name = f'{x["state"]}-{district_abbrev}{district}'
+    if include_date:
+        return f'{dist_name} ({x["start_date"]})'
+    return dist_name
 
 
 def districts(
@@ -241,6 +244,10 @@ def districts(
         path=lambda: load_shapefile(file_name, only_keep="up-to-date"),
         shortname_extractor=lambda x: get_shortname(district_abbrev, x),
         longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
+        longname_sans_date_extractor=lambda x: get_shortname(
+            district_abbrev, x, include_date=False
+        )
+        + ", USA",
         meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
         universe_provider=us_domestic_provider(overrides),

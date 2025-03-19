@@ -28,6 +28,7 @@ class Shapefile:
     start_date_overall = attr.ib(kw_only=True, default=-float("inf"))
     end_date = attr.ib(kw_only=True, default=None)
     end_date_overall = attr.ib(kw_only=True, default=float("inf"))
+    longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
 
     def load_file(self):
         """
@@ -62,11 +63,13 @@ class Shapefile:
             s[k] = s.apply(v, axis=1)
 
         if self.start_date is not None:
+            assert self.longname_sans_date_extractor is not None
             s["start_date"] = s.apply(lambda x: self.start_date(x), axis=1)
         else:
             s["start_date"] = -float("inf")
 
         if self.end_date is not None:
+            assert self.longname_sans_date_extractor is not None
             s["end_date"] = s.apply(lambda x: self.end_date(x), axis=1)
         else:
             s["end_date"] = float("inf")
@@ -83,11 +86,17 @@ class Shapefile:
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
                 "longname": s.apply(self.longname_extractor, axis=1),
+                "longname_sans_date": (
+                    s.apply(self.longname_sans_date_extractor, axis=1)
+                    if self.longname_sans_date_extractor is not None
+                    else None
+                ),
                 **{col: s[col] for col in self.available_columns},
             },
             geometry=s.geometry,
         )
         if self.drop_dup:
+            assert self.longname_sans_date_extractor is None, "Currently not supported"
             longname_to_indices = (
                 s["longname"]
                 .reset_index(drop=True)
@@ -104,6 +113,7 @@ class Shapefile:
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
+        s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
 
     def subset_shapefile(self, subset_name):
