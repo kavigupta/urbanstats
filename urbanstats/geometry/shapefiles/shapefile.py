@@ -24,6 +24,11 @@ class Shapefile:
     subset_masks = attr.ib(default=attr.Factory(dict))
     abbreviation = attr.ib(kw_only=True)
     data_credit = attr.ib(kw_only=True)
+    start_date = attr.ib(kw_only=True, default=None)
+    start_date_overall = attr.ib(kw_only=True, default=-float("inf"))
+    end_date = attr.ib(kw_only=True, default=None)
+    end_date_overall = attr.ib(kw_only=True, default=float("inf"))
+    longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
 
     def load_file(self):
         """
@@ -35,7 +40,7 @@ class Shapefile:
 
         This should be the only circular dependency related to shapefiles.
         """
-        # pylint: disable=import-outside-toplevel,cyclic-import
+        # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
         from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
 
         if isinstance(self.path, list):
@@ -56,15 +61,42 @@ class Shapefile:
             subset.mutate_table(subset_name, s)
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
+
+        if self.start_date is not None:
+            assert self.longname_sans_date_extractor is not None
+            s["start_date"] = s.apply(self.start_date, axis=1)
+        else:
+            s["start_date"] = -float("inf")
+
+        if self.end_date is not None:
+            assert self.longname_sans_date_extractor is not None
+            s["end_date"] = s.apply(self.end_date, axis=1)
+        else:
+            s["end_date"] = float("inf")
+
+        assert self.start_date_overall == min(
+            s.start_date
+        ), f"{self.start_date_overall} != {min(s.start_date)}"
+
+        assert self.end_date_overall == max(
+            s.end_date
+        ), f"{self.end_date_overall} != {max(s.end_date)}"
+
         s = gpd.GeoDataFrame(
             {
                 "shortname": s.apply(self.shortname_extractor, axis=1),
                 "longname": s.apply(self.longname_extractor, axis=1),
+                "longname_sans_date": (
+                    s.apply(self.longname_sans_date_extractor, axis=1)
+                    if self.longname_sans_date_extractor is not None
+                    else None
+                ),
                 **{col: s[col] for col in self.available_columns},
             },
             geometry=s.geometry,
         )
         if self.drop_dup:
+            assert self.longname_sans_date_extractor is None, "Currently not supported"
             longname_to_indices = (
                 s["longname"]
                 .reset_index(drop=True)
@@ -81,6 +113,7 @@ class Shapefile:
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
+        s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
 
     def subset_shapefile(self, subset_name):
@@ -100,6 +133,8 @@ class Shapefile:
     @property
     def available_columns(self):
         return [
+            "start_date",
+            "end_date",
             *self.additional_columns_computer,
             *self.additional_columns_to_keep,
             *self.subset_mask_keys,
