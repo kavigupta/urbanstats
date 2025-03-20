@@ -7,9 +7,6 @@ from functools import lru_cache
 
 from urbanstats.website_data.table import shapefile_without_ordinals
 from .symlinks_from_country_rename import symlinks_from_country_rename
-from .symlinks_from_historical_congressional_rename import (
-    symlinks_from_historical_congressional_rename,
-)
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
 
 
@@ -33,7 +30,6 @@ def compute_symlinks():
 
     symlinks.update(symlinks_from_country_rename)
     symlinks.update(symlinks_from_subnational_usa_fixes)
-    symlinks.update(symlinks_from_historical_congressional_rename)
     symlinks.update(symlinks_most_recent_year())
 
     for k in symlinks:
