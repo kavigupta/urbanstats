@@ -60,7 +60,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const indexRange = useMemo(() => {
         const start = props.start - 1
         let end = start + props.amount
-        if (end + props.amount >= props.count) {
+        if (end + props.amount > props.count) {
             end = props.count
         }
         const total = props.count
