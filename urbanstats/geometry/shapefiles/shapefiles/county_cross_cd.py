@@ -1,8 +1,9 @@
+import re
 import geopandas as gpd
 import pandas as pd
 import tqdm.auto as tqdm
 import us
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -11,10 +12,16 @@ from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DI
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-@permacache("population_density/shapefiles/county_cross_cd_3")
-def county_cross_cd():
-    cds = CONGRESSIONAL_DISTRICTS.load_file()
-    counties = COUNTIES.load_file()
+@permacache(
+    "population_density/shapefiles/county_cross_cd_3",
+    key_function=dict(
+        cds_sf=lambda cds_sf: cds_sf.hash_key,
+        counties_sf=lambda counties_sf: counties_sf.hash_key,
+    ),
+)
+def county_cross_cd(cds_sf=CONGRESSIONAL_DISTRICTS, counties_sf=COUNTIES):
+    cds = cds_sf.load_file()
+    counties = counties_sf.load_file()
     county_areas = dict(zip(counties.longname, counties.to_crs({"proj": "cea"}).area))
 
     db_all = []
@@ -38,13 +45,24 @@ def county_cross_cd():
         db_all.append(db_state)
     db = pd.concat(db_all)
     db = db.reset_index(drop=True)
-    db["shortname"] = db["shortname_1"] + " in " + db["shortname_2"]
+    db["shortname_sans_date"] = db["shortname_1"] + " in " + db["shortname_2"]
+    # This is kinda a hack but it'll work.
+    db["shortname_sans_date"] = db["shortname_sans_date"].apply(
+        lambda x: re.sub(r" \([0-9]{4}\)", "", x)
+    )
+    db["longname_sans_date"] = db["shortname_sans_date"] + ", USA"
+    db["start_date"] = db.start_date_1
+    db["end_date"] = db.end_date_1
+    db["shortname"] = db.apply(
+        lambda x: f"{x.shortname_sans_date} ({x.start_date})", axis=1
+    )
     db["longname"] = db["shortname"] + ", USA"
     return db
 
 
 COUNTY_CROSS_CD = Shapefile(
-    hash_key="county_cross_cd_3",
+    hash_key="county_cross_cd_3_"
+    + stable_hash((COUNTIES.hash_key, CONGRESSIONAL_DISTRICTS.hash_key))[:6],
     path=county_cross_cd,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],

@@ -106,8 +106,8 @@ mid_district_redistricting_for_2025 = {
 
 version_tag_by_file_name = {
     "cd118": "_6",
-    "sldl": "_6",
-    "sldu": "_6",
+    "sldl": "_6.1",
+    "sldu": "_6.1",
 }
 
 
@@ -147,7 +147,7 @@ def read_shapefile(path):
         return gpd.read_file(all_filenames[0])
 
 
-def load_districts_all_2020s(file_name):
+def load_districts_all_2020s(file_name, *, minimum_district_length):
     with open(
         f"named_region_shapefiles/current_district_shapefiles/shapefiles/{file_name}.pkl",
         "rb",
@@ -175,14 +175,14 @@ def load_districts_all_2020s(file_name):
         for_state = for_state[list(result)]
         result = pd.concat([result, for_state]).reset_index(drop=True)
     result.district = consistent_district_padding(
-        result.state, result.district.apply(str), minimum_length=2
+        result.state, result.district.apply(str), minimum_length=minimum_district_length
     )
     result = collapse_unchanged(result, identity_columns=("state", "district"))
     return result
 
 
-def load_shapefile(file_name, *, only_keep):
-    result = load_districts_all_2020s(file_name)
+def load_shapefile(file_name, *, only_keep, minimum_district_length):
+    result = load_districts_all_2020s(file_name, minimum_district_length=minimum_district_length)
 
     if only_keep == "up-to-date":
         return result[result["end_date"] == 2032].reset_index(drop=True)
@@ -237,11 +237,12 @@ def districts(
     abbreviation,
     overrides=None,
     data_credit,
+    minimum_district_length,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
-        path=lambda: load_shapefile(file_name, only_keep="up-to-date"),
+        path=lambda: load_shapefile(file_name, only_keep="up-to-date", minimum_district_length=minimum_district_length),
         shortname_extractor=lambda x: get_shortname(district_abbrev, x),
         longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
         longname_sans_date_extractor=lambda x: get_shortname(
@@ -278,6 +279,7 @@ CONGRESSIONAL_DISTRICTS = districts(
         linkText="US Census",
         link="https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/CD",
     ),
+    minimum_district_length=2,
 )
 
 district_shapefiles = dict(
@@ -297,6 +299,7 @@ district_shapefiles = dict(
             linkText="US Census",
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDL/",
         ),
+        minimum_district_length=0,
     ),
     state_senate=districts(
         "sldu",
@@ -308,5 +311,6 @@ district_shapefiles = dict(
             linkText="US Census",
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDU/",
         ),
+        minimum_district_length=0,
     ),
 )
