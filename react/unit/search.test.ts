@@ -23,7 +23,7 @@ firstResult(test)('east fiji', 'Eastern, Fiji')
 firstResult(test)('london on', 'London Population Center, ON, Canada') // Something in canada
 firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
 firstResult(test)('ca usa', 'California, USA')
-firstResult(test)('nv usa', 'NV-04, USA') // Nevada, USA or a NV-??
+firstResult(test)('nv usa', 'NV-04 (2023), USA') // Nevada, USA or a NV-??
 firstResult(test)('usa', 'USA')
 firstResult(test)('london', 'London Urban Center, United Kingdom')
 firstResult(test)('berlin', 'Berlin, Germany')
