@@ -182,7 +182,9 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
 
 
 def load_shapefile(file_name, *, only_keep, minimum_district_length):
-    result = load_districts_all_2020s(file_name, minimum_district_length=minimum_district_length)
+    result = load_districts_all_2020s(
+        file_name, minimum_district_length=minimum_district_length
+    )
 
     if only_keep == "up-to-date":
         return result[result["end_date"] == 2032].reset_index(drop=True)
@@ -242,7 +244,11 @@ def districts(
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
-        path=lambda: load_shapefile(file_name, only_keep="up-to-date", minimum_district_length=minimum_district_length),
+        path=lambda: load_shapefile(
+            file_name,
+            only_keep="up-to-date",
+            minimum_district_length=minimum_district_length,
+        ),
         shortname_extractor=lambda x: get_shortname(district_abbrev, x),
         longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
         longname_sans_date_extractor=lambda x: get_shortname(

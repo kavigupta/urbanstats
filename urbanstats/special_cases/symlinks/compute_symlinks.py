@@ -5,10 +5,10 @@ written into a dictionary that map one to the other
 
 from functools import lru_cache
 
-from .symlinks_from_district_rename import symlinks_from_district_rename
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .symlinks_from_country_rename import symlinks_from_country_rename
+from .symlinks_from_district_rename import symlinks_from_district_rename
 from .symlinks_from_historical_congressional_rename import (
     symlinks_from_historical_congressional_rename,
 )
