@@ -61,11 +61,12 @@ def county_cross_cd(cds_sf=CONGRESSIONAL_DISTRICTS, counties_sf=COUNTIES):
 
 
 COUNTY_CROSS_CD = Shapefile(
-    hash_key="county_cross_cd_3_"
+    hash_key="county_cross_cd_4_"
     + stable_hash((COUNTIES.hash_key, CONGRESSIONAL_DISTRICTS.hash_key))[:6],
     path=county_cross_cd,
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
+    longname_sans_date_extractor=lambda x: x["longname_sans_date"],
     filter=lambda x: True,
     meta=dict(type="County Cross CD", source="Census", type_category="Political"),
     chunk_size=100,
