@@ -21,7 +21,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
-from urbanstats.special_cases import symlinks
+from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.output_statistics_metadata import (
@@ -230,7 +230,7 @@ def build_urbanstats(
             create_article_gzips(
                 site_folder, shapefile_without_ordinals(), all_ordinals()
             )
-            create_symlink_gzips(site_folder, symlinks.symlinks)
+            create_symlink_gzips(site_folder, compute_symlinks())
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
