@@ -32,6 +32,7 @@ def compute_symlinks():
     symlinks.update(symlinks_from_subnational_usa_fixes)
     symlinks.update(symlinks_most_recent_year())
 
+    # pylint: disable=consider-using-dict-items
     for k in symlinks:
         assert k not in real_names, k
         while symlinks[k] in symlinks:
