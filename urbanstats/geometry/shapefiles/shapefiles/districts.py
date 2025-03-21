@@ -188,10 +188,9 @@ def load_shapefile(file_name, *, only_keep, minimum_district_length):
 
     if only_keep == "up-to-date":
         return result[result["end_date"] == 2032].reset_index(drop=True)
-    elif only_keep == "past":
+    if only_keep == "past":
         return result[result["end_date"] < 2032].reset_index(drop=True)
-    else:
-        raise ValueError(f"Unknown value for only_keep: {only_keep}")
+    raise ValueError(f"Unknown value for only_keep: {only_keep}")
 
 
 def deduplicate(for_state, existing):

@@ -15,20 +15,28 @@ def collapse_unchanged(table, identity_columns, *, overlap_threshold=1e-4):
     updated = []
     for chunk in duplicate_chunks:
         chunk = table.iloc[chunk].sort_values("start_date").index
-        rows = [table.iloc[chunk[0]].copy()]
-        for new_idx in chunk[1:]:
-            prev_row = rows[-1]
-            current_row = table.iloc[new_idx]
-            if not mergable(current_row, prev_row, overlap_threshold):
-                rows.append(table.iloc[new_idx].copy())
-                continue
-            prev_row.end_date = current_row.end_date
-        updated.append(pd.DataFrame(rows))
+        rows = _collapse_unchanged_chunk(
+            table, chunk, overlap_threshold=overlap_threshold
+        )
+        updated.append(rows)
     remove = {idx for chunk in duplicate_chunks for idx in chunk}
     table_updated = table.loc[[idx for idx in table.index if idx not in remove]]
     table_updated = pd.concat([table_updated] + updated)
     table_updated = table_updated.reset_index(drop=True)
     return table_updated
+
+
+def _collapse_unchanged_chunk(table, indices, *, overlap_threshold):
+    rows = [table.iloc[indices[0]].copy()]
+    for new_idx in indices[1:]:
+        prev_row = rows[-1]
+        current_row = table.iloc[new_idx]
+        if not mergable(current_row, prev_row, overlap_threshold):
+            rows.append(table.iloc[new_idx].copy())
+            continue
+        prev_row.end_date = current_row.end_date
+    rows = pd.DataFrame(rows)
+    return rows
 
 
 def mergable(current_row, prev_row, overlap_threshold):

@@ -7,6 +7,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefile_geometry import overlays
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @permacache(
@@ -135,7 +136,7 @@ def create_relationships_countries_subnationals(a, b):
             la, lb = long_a[i], long_b[j]
             if lb.endswith(", " + la):
                 a_contains_b.add((la, lb))
-    return filter_temporal_overlaps(a_contains_b), set(), set(), set()
+    return filter_temporal_overlaps(a, b, a_contains_b), set(), set(), set()
 
 
 tiers = [
@@ -420,8 +421,6 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2):
 
 
 def populate_caches():
-    from urbanstats.website_data.table import shapefile_without_ordinals
-
     table = shapefile_without_ordinals()
     long_to_type = dict(zip(table.longname, table.type))
     full_relationships(long_to_type)

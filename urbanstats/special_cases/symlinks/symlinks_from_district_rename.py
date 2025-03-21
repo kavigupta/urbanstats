@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 symlinks_from_district_rename = {
     district: district.replace("-00", "-AL")
     for district in [
