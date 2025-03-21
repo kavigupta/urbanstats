@@ -7,6 +7,7 @@ from functools import lru_cache
 
 from .symlinks_from_district_rename import symlinks_from_district_rename
 from urbanstats.website_data.table import shapefile_without_ordinals
+
 from .symlinks_from_country_rename import symlinks_from_country_rename
 from .symlinks_from_historical_congressional_rename import (
     symlinks_from_historical_congressional_rename,
@@ -38,6 +39,7 @@ def compute_symlinks():
     symlinks.update(symlinks_from_district_rename)
     symlinks.update(symlinks_most_recent_year())
 
+    # pylint: disable=consider-using-dict-items
     for k in symlinks:
         assert k not in real_names, k
         while symlinks[k] in symlinks:
