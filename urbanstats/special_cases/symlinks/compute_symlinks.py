@@ -6,6 +6,7 @@ written into a dictionary that map one to the other
 from functools import lru_cache
 
 from urbanstats.website_data.table import shapefile_without_ordinals
+
 from .symlinks_from_country_rename import symlinks_from_country_rename
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
 
