@@ -91,7 +91,7 @@ test('data credit hash from stats page', async (t) => {
 urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CPiCUKKL5WuCCLpM24V')
 
 test('going to related resets scroll', async (t) => {
-    await t.click(Selector('a').withExactText('WI-07 (2023'))
+    await t.click(Selector('a').withExactText('WI-07 (2023)'))
     await t.expect(t.eval(() => window.scrollY)).eql(0)
 })
 
