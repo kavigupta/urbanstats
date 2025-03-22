@@ -3,15 +3,14 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import React, { ReactNode } from 'react'
 
-import { loadProtobuf } from '../load_json'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
-import { shapeLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
+import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
 export interface MapGenericProps {
@@ -82,7 +81,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        return await loadProtobuf(shapeLink(name), 'Feature') as NormalizeProto<Feature>
+        return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
     override async componentDidMount(): Promise<void> {

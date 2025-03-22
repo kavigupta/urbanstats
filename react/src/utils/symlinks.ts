@@ -1,26 +1,34 @@
 import { loadProtobuf } from '../load_json'
-import { dataLink, symlinksLink } from '../navigation/links'
+import { dataLink, shapeLink, symlinksLink } from '../navigation/links'
 
-import { Article } from './protos'
+import { Article, Feature } from './protos'
 
-async function loadWithSymlink(longname: string): Promise<Article | undefined> {
+async function loadWithSymlink<T>(longname: string, doLoad: (link: string) => Promise<T | undefined>): Promise<T | undefined> {
     const symlinks = await loadProtobuf(symlinksLink(longname), 'Symlinks')
     const idx = symlinks.linkName.indexOf(longname)
     if (idx === -1) {
         return undefined
     }
-    return await loadProtobuf(dataLink(symlinks.targetName[idx]), 'Article', false)
+    return await doLoad(symlinks.targetName[idx])
 }
 
-export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
-    const originalNamePromise = loadProtobuf(dataLink(longname), 'Article', false)
-    const symlinkPromise = loadWithSymlink(longname)
+async function loadProtobufFromPossibleSymlink<T>(longname: string, doLoad: (link: string) => Promise<T | undefined>): Promise<T> {
+    const originalNamePromise = doLoad(longname)
+    const symlinkPromise = loadWithSymlink(longname, doLoad)
     const [original, symlink] = await Promise.all([originalNamePromise, symlinkPromise])
     const selected = original ?? symlink
     if (selected === undefined) {
         throw new Error(`Could not find article ${longname}`)
     }
     return selected
+}
+
+export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
+    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(dataLink(link), 'Article', false)))
+}
+
+export async function loadShapeFromPossibleSymlink(longname: string): Promise<Feature> {
+    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(shapeLink(link), 'Feature', false)))
 }
 
 export function loadArticlesFromPossibleSymlink(longnames: string[]): Promise<Article[]> {

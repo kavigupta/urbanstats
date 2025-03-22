@@ -29,7 +29,7 @@ export async function loadJSON(filePath: string): Promise<unknown> {
 
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
-export async function loadProtobuf(filePath: string, name: 'Feature'): Promise<Feature>
+export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
 export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
