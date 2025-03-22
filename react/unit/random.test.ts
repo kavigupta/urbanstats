@@ -6,7 +6,7 @@ import './util/localStorage'
 import { byPopulation, uniform } from '../src/navigation/random'
 
 function assertNoSpecials(article: string): void {
-    assert.not.match(article, /.*Historical Congressional.*/)
+    assert.not.match(article, /.*\s(\(19\d\d|201\d|2021\)), USA$/)
     assert.not.match(article, /.*PC,.*/)
 }
 

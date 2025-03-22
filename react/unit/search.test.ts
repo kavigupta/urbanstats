@@ -23,7 +23,7 @@ firstResult(test)('east fiji', 'Eastern, Fiji')
 firstResult(test)('london on', 'London Population Center, ON, Canada') // Something in canada
 firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
 firstResult(test)('ca usa', 'California, USA')
-firstResult(test)('nv usa', 'NV-04, USA') // Nevada, USA or a NV-??
+firstResult(test)('nv usa', 'NV-04 (2023), USA') // Nevada, USA or a NV-??
 firstResult(test)('usa', 'USA')
 firstResult(test)('london', 'London Urban Center, United Kingdom')
 firstResult(test)('berlin', 'Berlin, Germany')
@@ -38,9 +38,5 @@ firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspellin
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
-
-test('search', () => {
-    assert.not.match(computeFirstResult('historical').longname, /Historical Congressional/)
-})
 
 test.run()

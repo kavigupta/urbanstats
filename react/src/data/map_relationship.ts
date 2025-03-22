@@ -92,8 +92,104 @@ export default [
         'State Senate District',
     ],
     [
-        'Historical Congressional District',
-        'Historical Congressional District',
+        'Congressional District (1780s)',
+        'Congressional District (1780s)',
+    ],
+    [
+        'Congressional District (1790s)',
+        'Congressional District (1790s)',
+    ],
+    [
+        'Congressional District (1800s)',
+        'Congressional District (1800s)',
+    ],
+    [
+        'Congressional District (1810s)',
+        'Congressional District (1810s)',
+    ],
+    [
+        'Congressional District (1820s)',
+        'Congressional District (1820s)',
+    ],
+    [
+        'Congressional District (1830s)',
+        'Congressional District (1830s)',
+    ],
+    [
+        'Congressional District (1840s)',
+        'Congressional District (1840s)',
+    ],
+    [
+        'Congressional District (1850s)',
+        'Congressional District (1850s)',
+    ],
+    [
+        'Congressional District (1860s)',
+        'Congressional District (1860s)',
+    ],
+    [
+        'Congressional District (1870s)',
+        'Congressional District (1870s)',
+    ],
+    [
+        'Congressional District (1880s)',
+        'Congressional District (1880s)',
+    ],
+    [
+        'Congressional District (1890s)',
+        'Congressional District (1890s)',
+    ],
+    [
+        'Congressional District (1900s)',
+        'Congressional District (1900s)',
+    ],
+    [
+        'Congressional District (1910s)',
+        'Congressional District (1910s)',
+    ],
+    [
+        'Congressional District (1920s)',
+        'Congressional District (1920s)',
+    ],
+    [
+        'Congressional District (1930s)',
+        'Congressional District (1930s)',
+    ],
+    [
+        'Congressional District (1940s)',
+        'Congressional District (1940s)',
+    ],
+    [
+        'Congressional District (1950s)',
+        'Congressional District (1950s)',
+    ],
+    [
+        'Congressional District (1960s)',
+        'Congressional District (1960s)',
+    ],
+    [
+        'Congressional District (1970s)',
+        'Congressional District (1970s)',
+    ],
+    [
+        'Congressional District (1980s)',
+        'Congressional District (1980s)',
+    ],
+    [
+        'Congressional District (1990s)',
+        'Congressional District (1990s)',
+    ],
+    [
+        'Congressional District (2000s)',
+        'Congressional District (2000s)',
+    ],
+    [
+        'Congressional District (2010s)',
+        'Congressional District (2010s)',
+    ],
+    [
+        'Congressional District (2020s)',
+        'Congressional District (2020s)',
     ],
     [
         'Native Area',

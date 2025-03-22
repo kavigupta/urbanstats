@@ -8,11 +8,9 @@ import us
 from permacache import permacache
 
 
-@permacache("population_density/combine_districts/pre_114")
+@permacache("population_density/combine_districts/pre_114_4")
 def compute_114():
-    all_shapes = {}
-    for i in tqdm.trange(1, 1 + 114):
-        all_shapes[i] = gpd.read_file(f"districtShapes/districts{i:03d}.shp")
+    all_shapes = load_all()
     seen = set()
     rows = []
     for i in tqdm.trange(1, 1 + 114):
@@ -30,7 +28,6 @@ def compute_114():
     pre_114 = frame[
         ["STATENAME", "DISTRICT", "STARTCONG", "ENDCONG", "geometry"]
     ].copy()
-    pre_114 = pre_114.reset_index(drop=True)
     pre_114 = pre_114.rename(
         columns={
             "STATENAME": "state",
@@ -39,6 +36,8 @@ def compute_114():
             "ENDCONG": "end",
         }
     )
+    pre_114 = pre_114[pre_114.state != "District Of Columbia"]
+    pre_114 = pre_114.reset_index(drop=True)
     pre_114.state = pre_114.state.apply(lambda x: us.states.lookup(x).abbr)
     pre_114.start = pre_114.start.apply(int)
     pre_114.end = pre_114.end.apply(int)
@@ -51,6 +50,16 @@ def compute_114():
         (pre_114.end == 117) & pre_114.state.apply(lambda x: x in {"PA"}), "end"
     ] = 115
     return pre_114
+
+
+def load_all():
+    all_shapes = {}
+    for i in tqdm.trange(1, 1 + 114):
+        all_shapes[i] = gpd.read_file(
+            f"../../../historical-congressional-unclipped/unclipped_congresses/{i:03d}.shp.zip"
+        )
+
+    return all_shapes
 
 
 def compute_from_data_gov_tiger(path, states):
@@ -92,17 +101,33 @@ def compute_117():
     return nc
 
 
-tables = [compute_114(), compute_115(), compute_116(), compute_117()]
-updated_crs = []
-for table in tables:
-    if table.crs is None:
-        table.crs = "EPSG:4326"
-    updated_crs.append(table.to_crs("EPSG:4326"))
+def compute_merged_table():
+    tables = [compute_114(), compute_115(), compute_116(), compute_117()]
+    print("tables loaded")
+    updated_crs = []
+    for table in tables:
+        if table.crs is None:
+            table.crs = "EPSG:4326"
+        updated_crs.append(table.to_crs("EPSG:4326"))
 
-full_table = gpd.GeoDataFrame(pd.concat(updated_crs))
-full_table = full_table.sort_values(["start", "end", "state", "district"])
-full_table = full_table[full_table.district.apply(int) > 0]
-full_table = full_table.reset_index(drop=True)
+    full_table = gpd.GeoDataFrame(pd.concat(updated_crs))
+    print("tables concatenated")
 
-with open("combo/historical.pkl", "wb") as f:
-    pickle.dump(full_table, f)
+    full_table = full_table.sort_values(["start", "end", "state", "district"])
+    full_table = full_table[full_table.state != "DC"]
+    assert (full_table.geometry != None).all()
+    full_table = full_table.reset_index(drop=True)
+
+    print("tables sorted")
+
+    full_table.geometry = full_table.geometry.buffer(0)
+
+    print("tables buffered")
+
+    return full_table
+
+
+if __name__ == "__main__":
+    t = compute_merged_table()
+    with open("combo/historical.pkl", "wb") as f:
+        pickle.dump(t, f)

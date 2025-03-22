@@ -79,6 +79,7 @@ test('comparison-3-replace-second', async (t) => {
     const otherRegion = Selector('input').withAttribute('placeholder', 'Replacement')
     await t
         .typeText(otherRegion, 'East San Gabriel Valley')
+    await t.wait(4000)
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
     await t.expect(getLocationWithoutSettings())
