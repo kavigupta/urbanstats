@@ -32,6 +32,7 @@ def symlinks_most_recent_year():
     assert table.shape[0] == len(sans_date_to_longname)
     return sans_date_to_longname
 
+
 @lru_cache(None)
 def compute_symlinks():
     real_names = set(shapefile_without_ordinals().longname)
