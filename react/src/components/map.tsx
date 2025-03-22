@@ -81,7 +81,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        console.log('HI')
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 

@@ -16,8 +16,6 @@ async function loadProtobufFromPossibleSymlink<T>(longname: string, doLoad: (lin
     const originalNamePromise = doLoad(longname)
     const symlinkPromise = loadWithSymlink(longname, doLoad)
     const [original, symlink] = await Promise.all([originalNamePromise, symlinkPromise])
-    console.log('original', original)
-    console.log('symlink', symlink)
     const selected = original ?? symlink
     if (selected === undefined) {
         throw new Error(`Could not find article ${longname}`)
