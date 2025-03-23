@@ -23,6 +23,7 @@ import {
     loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
 } from '../quiz/quiz'
 import { getInfiniteQuizzes } from '../quiz/statistics'
+import { loadSYAUData, SYAUData } from '../syau/load'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -164,7 +165,7 @@ export type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -313,7 +314,6 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
-    console.log(newDescriptor)
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadArticleFromPossibleSymlink(newDescriptor.longname)
@@ -525,12 +525,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
             }
         case 'syau':
+            const counts = await getCountsByArticleType()
+            const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
             return {
                 pageData: {
                     kind: 'syau',
                     typ: newDescriptor.typ,
                     universe: newDescriptor.universe,
-                    counts: await getCountsByArticleType(),
+                    counts,
+                    syauData,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,

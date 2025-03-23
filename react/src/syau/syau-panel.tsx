@@ -1,19 +1,16 @@
 import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
-import './quiz.css'
+
+import { CountsByUT } from '../components/countsByArticleType'
+import { GenericSearchBox } from '../components/search-generic'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
-import { allGroups, Statistic } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 
-import { CountsByUT } from './countsByArticleType'
-import { forType } from './load-article'
-import { GenericSearchBox } from './search-generic'
-
-const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
+import { populationColumn } from './load'
 
 export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
     const headerClass = useHeaderTextClass()
@@ -33,10 +30,6 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
             </div>
         </PageTemplate>
     )
-}
-
-function populationColumn(counts: CountsByUT, typ: string, universe: string): Statistic | undefined {
-    return populationStatcols.find(stat => forType(counts, universe, stat.statcol, typ) > 0)
 }
 
 function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
