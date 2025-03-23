@@ -2,20 +2,19 @@ import React, { CSSProperties, ReactElement, useState, useRef, useEffect } from 
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { SearchResult } from '../search'
 
-export function GenericSearchResult(
+export function GenericSearchResult<T>(
     props: {
-        matches: SearchResult[]
-        doSearch: (sq: string) => Promise<SearchResult[]>
-        onChange?: (inp: string) => void
-        link: (inp: string) => ReturnType<Navigator['link']>
+        matches: T[]
+        doSearch: (sq: string) => Promise<T[]>
+        onChange?: (inp: T) => void
+        link: (inp: T) => ReturnType<Navigator['link']>
         onFocus: () => void
         onBlur: () => void
         autoFocus: boolean
         placeholder: string
         style: CSSProperties
-        renderMatch: (currentMatch: () => SearchResult, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+        renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
     }): ReactElement {
     const colors = useColors()
 
@@ -23,7 +22,7 @@ export function GenericSearchResult(
     const queryRef = useRef('')
 
     const [focused, setFocused] = React.useState(0)
-    const [matches, setMatches] = useState<SearchResult[]>([])
+    const [matches, setMatches] = useState<T[]>([])
 
     const searchQuery = queryRef.current
 
@@ -46,8 +45,8 @@ export function GenericSearchResult(
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused].longname).onClick()
-            props.onChange?.(terms[focused].longname)
+            void props.link(terms[focused]).onClick()
+            props.onChange?.(terms[focused])
             reset()
         }
         return false
@@ -129,7 +128,7 @@ export function GenericSearchResult(
                         () => matches[idx],
                         () => { setFocused(idx) },
                         () => {
-                            props.onChange?.(matches[idx].longname)
+                            props.onChange?.(matches[idx])
                             reset()
                         },
                         searchboxDropdownItemStyle(idx),

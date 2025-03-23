@@ -62,8 +62,8 @@ export function SearchBox(props: {
         <GenericSearchResult
             matches={[]}
             doSearch={doSearch}
-            onChange={props.onChange}
-            link={props.link}
+            onChange={(result) => { props.onChange?.(result.longname) }}
+            link={result => props.link(result.longname)}
             onFocus={(): void => {
                 if (searchWorker.current === undefined) {
                     searchWorker.current = cacheKey.then(createSearchWorker)
