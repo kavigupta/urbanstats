@@ -8,6 +8,7 @@ export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'pop
 export interface SYAUData {
     longnames: string[]
     populations: number[]
+    longnameToIndex: Record<string, number>
 }
 
 export async function loadSYAUData(
@@ -29,6 +30,7 @@ export async function loadSYAUData(
     return {
         longnames: articleNames,
         populations: data.value,
+        longnameToIndex: Object.fromEntries(articleNames.map((name, i) => [name, i])),
     }
 }
 

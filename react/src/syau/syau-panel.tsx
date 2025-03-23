@@ -8,11 +8,23 @@ import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { PageTemplate } from '../page_template/template'
+import { StoredProperty } from '../quiz/quiz'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 
-import { populationColumn } from './load'
+import { populationColumn, SYAUData } from './load'
 
-export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
+type Universe = string
+type Type = string
+
+type SYAUHistoryKey = `${Type}-${Universe}`
+
+interface SYAUHistoryForGame {
+    guessed: string[]
+}
+
+type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
+
+export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()
     return (
@@ -25,13 +37,103 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
                 in
                 <SelectUniverse typ={props.typ} universe={props.universe} counts={props.counts} />
             </div>
-            <div>
-                HI!
-            </div>
+            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />}
         </PageTemplate>
     )
 }
 
+export class SYAULocalStorage {
+    private constructor() {
+        // Private constructor
+    }
+
+    static shared = new SYAULocalStorage()
+
+    readonly history = new StoredProperty<SYAUHistory>(
+        'syau_history',
+        storedValue => JSON.parse(storedValue ?? '{}') as SYAUHistory,
+        value => JSON.stringify(value),
+    )
+
+    useHistory(typ: Type, universe: Universe): [SYAUHistoryForGame, (newHistory: SYAUHistoryForGame) => void] {
+        const key = `${typ}-${universe}` satisfies SYAUHistoryKey
+        const history = this.history.use()
+        const current: SYAUHistoryForGame = history[key] ?? { guessed: [] }
+        return [current, (newHistory) => {
+            this.history.value = { ...history, [key]: newHistory }
+        }]
+    }
+}
+
+function isApproxMatch(longname: string, query: string): boolean {
+    longname = longname.toLowerCase()
+    query = query.toLowerCase()
+    // split longname by comma and take the first part
+    longname = longname.split(',')[0]
+    // remove portions in parentheses and brackets
+    longname = longname.replace(/\(.*\)/g, '')
+    longname = longname.replace(/\[.*\]/g, '')
+    // split longname by -
+    const longnameParts = longname.split('-').map(s => s.trim())
+    // check if query is equal to any part of the longname
+    return longnameParts.includes(query)
+}
+
+export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+    const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
+    const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
+    const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
+
+    function attemptGuess(query: string): boolean {
+        const approxMatches = props.syauData.longnames.filter(longname => isApproxMatch(longname, query)).filter(name => !history.guessed.includes(name))
+        if (approxMatches.length === 0) {
+            return false
+        }
+        setHistory({ guessed: [...history.guessed, ...approxMatches] })
+        return true
+    }
+
+    // text field for guessing, followed by a description of the % of regions guessed and what % of the population that represents
+    return (
+        <div style={{ margin: 'auto', width: '50%' }}>
+            <div>
+                <input
+                    type="text"
+                    placeholder="Type a region name"
+                    onChange={(e) => {
+                        if (attemptGuess(e.target.value)) {
+                            e.target.value = ''
+                        }
+                    }}
+                />
+                <button
+                    onClick={() => {
+                        // check if they are sure
+                        if (window.confirm('Are you sure you want to reset your progress?')) {
+                            setHistory({ guessed: [] })
+                        }
+                    }}
+                >
+                    Reset
+                </button>
+            </div>
+            <div>
+                <div>
+                    {history.guessed.length}
+                    {' '}
+                    /
+                    {props.syauData.longnames.length}
+                    {' '}
+                    regions guessed
+                </div>
+                <div>
+                    {Math.round(100 * totalPopulationGuessed / totalPopulation)}
+                    % of the population guessed
+                </div>
+            </div>
+        </div>
+    )
+}
 function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
     const types = Object.keys(type_ordering_idx).filter(
         type => props.universe === undefined || populationColumn(props.counts, type, props.universe) !== undefined,
