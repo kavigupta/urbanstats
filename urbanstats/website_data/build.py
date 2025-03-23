@@ -265,7 +265,6 @@ def build_urbanstats(
         "about",
         "data-credit",
         "mapper",
-        "centroids",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f:
             f.write(html_index())
