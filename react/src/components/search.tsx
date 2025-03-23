@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import '../common.css'
 import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
 
-import { GenericSearchResult } from './search-generic'
+import { GenericSearchBox } from './search-generic'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -59,7 +59,7 @@ export function SearchBox(props: {
     )
 
     return (
-        <GenericSearchResult
+        <GenericSearchBox
             matches={[]}
             doSearch={doSearch}
             onChange={(result) => { props.onChange?.(result.longname) }}
