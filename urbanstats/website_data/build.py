@@ -33,6 +33,7 @@ from urbanstats.universe.icons import (
     place_icons_in_site_folder,
 )
 from urbanstats.universe.universe_list import all_universes, default_universes
+from urbanstats.website_data.centroids import export_centroids
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     create_symlink_gzips,
@@ -244,6 +245,7 @@ def build_urbanstats(
             )
 
         full_consolidated_data(site_folder)
+        export_centroids(site_folder, shapefiles, all_ordinals())
 
         if not no_sitemap:
             output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
@@ -263,6 +265,7 @@ def build_urbanstats(
         "about",
         "data-credit",
         "mapper",
+        "centroids",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f:
             f.write(html_index())
