@@ -10,7 +10,7 @@ import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
-import { loadOrdering, loadOrderingProtobuf, loadJSON } from '../load_json'
+import { loadJSON, loadStatisticsPage } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -24,10 +24,9 @@ import {
 } from '../quiz/quiz'
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article, IDataList } from '../utils/protos'
+import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
-import { NormalizeProto } from '../utils/types'
 import { base64Gunzip } from '../utils/urlParamShort'
 
 import { byPopulation, uniform } from './random'
@@ -398,8 +397,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statcol = stats[statIndex]
             const explanationPage = explanation_pages[statIndex]
 
-            const data = loadOrderingProtobuf(statUniverse, statpath, newDescriptor.article_type, true).then(result => result as NormalizeProto<IDataList>)
-            const articleNames = (await loadOrdering(statUniverse, statpath, newDescriptor.article_type)).longnames
+            const [data, articleNames] = await loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type)
 
             let parsedAmount: number
             if (newDescriptor.amount === 'All') {
@@ -423,7 +421,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     start: newDescriptor.start,
                     amount: parsedAmount,
                     articleNames,
-                    data: await data,
+                    data,
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
                     // StatisticPanel needs this to compute the set of universes to display
