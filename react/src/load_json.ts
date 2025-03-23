@@ -15,6 +15,7 @@ import {
     ArticleOrderingList,
     Symlinks,
 } from './utils/protos'
+import { NormalizeProto } from './utils/types'
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -156,4 +157,12 @@ export async function loadOrdering(universe: string, statpath: string, type: str
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
     return { longnames: namesInOrder, typeIndices: typesInOrder }
+}
+
+export async function loadStatisticsPage(
+    statUniverse: string, statpath: string, articleType: string,
+): Promise<[NormalizeProto<IDataList>, string[]]> {
+    const data = loadOrderingProtobuf(statUniverse, statpath, articleType, true).then(result => result as NormalizeProto<IDataList>)
+    const articleNames = loadOrdering(statUniverse, statpath, articleType).then(result => result.longnames)
+    return [await data, await articleNames]
 }
