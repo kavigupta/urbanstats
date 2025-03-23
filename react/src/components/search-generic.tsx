@@ -9,8 +9,8 @@ export function GenericSearchBox<T>(
         doSearch: (sq: string) => Promise<T[]>
         onChange?: (inp: T) => void
         link: (inp: T) => ReturnType<Navigator['link']>
-        onFocus: () => void
-        onBlur: () => void
+        onFocus?: () => void
+        onBlur?: () => void
         autoFocus: boolean
         placeholder: string
         style: CSSProperties
