@@ -17,15 +17,13 @@ export function SearchBox(props: {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
 
-    const [matches, setMatches] = useState<SearchResult[]>([])
-
     // Keep these in sync
     const cacheKey = useMemo(() => getIndexCacheKey(), [])
 
     const searchWorker = useRef<Promise<SearchWorker> | undefined>()
 
     const doSearch = useMemo(() => {
-        return async (sq: string): Promise<SearchResult[] | undefined> => {
+        return async (sq: string): Promise<SearchResult[]> => {
             if (sq === '') {
                 return []
             }
@@ -33,18 +31,74 @@ export function SearchBox(props: {
                 searchWorker.current = cacheKey.then(createSearchWorker)
             }
             const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
-            // we should throw away the result if the query has changed since we submitted the search
-            if (queryRef.current !== sq) {
-                return undefined
-            }
             return result
         }
     }, [searchWorker, cacheKey, showHistoricalCDs])
+
+    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
+        <a
+            key={currentMatch().longname}
+            {...props.link(currentMatch().longname)}
+            style={{
+                textDecoration: 'none',
+                color: colors.textMain,
+            }}
+            data-test-id={dataTestId}
+        >
+            <div
+                className="serif searchbox-dropdown-item"
+                style={style}
+                onClick={onClick}
+                onMouseOver={onMouseOver}
+            >
+                <SingleSearchResult {...currentMatch()} />
+            </div>
+        </a>
+    )
+
+    return (
+        <GenericSearchResult
+            matches={[]}
+            doSearch={doSearch}
+            onChange={props.onChange}
+            link={props.link}
+            onFocus={(): void => {
+                if (searchWorker.current === undefined) {
+                    searchWorker.current = cacheKey.then(createSearchWorker)
+                }
+            }}
+            onBlur={() => {
+                searchWorker.current = undefined
+            }}
+            autoFocus={props.autoFocus}
+            placeholder={props.placeholder}
+            style={props.style}
+            renderMatch={renderMatch}
+        />
+    )
+}
+
+function GenericSearchResult(
+    props: {
+        matches: SearchResult[]
+        doSearch: (sq: string) => Promise<SearchResult[]>
+        onChange?: (inp: string) => void
+        link: (inp: string) => ReturnType<Navigator['link']>
+        onFocus: () => void
+        onBlur: () => void
+        autoFocus: boolean
+        placeholder: string
+        style: CSSProperties
+        renderMatch: (currentMatch: () => SearchResult, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+    },
+): ReactElement {
+    const colors = useColors()
 
     const [query, setQuery] = useState('')
     const queryRef = useRef('')
 
     const [focused, setFocused] = React.useState(0)
+    const [matches, setMatches] = useState<SearchResult[]>([])
 
     const searchQuery = queryRef.current
 
@@ -86,6 +140,8 @@ export function SearchBox(props: {
         }
     }
 
+    const doSearch = props.doSearch
+
     // Do the search
     useEffect(() => {
         void (async () => {
@@ -97,7 +153,8 @@ export function SearchBox(props: {
 
             const result = await doSearch(searchQuery)
 
-            if (result === undefined) {
+            // we should throw away the result if the query has changed since we submitted the search
+            if (queryRef.current !== searchQuery) {
                 return
             }
 
@@ -105,30 +162,6 @@ export function SearchBox(props: {
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
     }, [searchQuery, doSearch])
-
-    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
-        <a
-            key={currentMatch().longname}
-            {...props.link(currentMatch().longname)}
-            style={{
-                textDecoration: 'none',
-                color: colors.textMain,
-            }}
-            data-test-id={dataTestId}
-        >
-            <div
-                className="serif searchbox-dropdown-item"
-                style={style}
-                onClick={() => {
-                    props.onChange?.(currentMatch().longname)
-                    reset()
-                }}
-                onMouseOver={onMouseOver}
-            >
-                <SingleSearchResult {...currentMatch()} />
-            </div>
-        </a>
-    )
 
     return (
         <form
@@ -151,14 +184,8 @@ export function SearchBox(props: {
                     queryRef.current = e.target.value
                 }}
                 value={query}
-                onFocus={() => {
-                    if (searchWorker.current === undefined) {
-                        searchWorker.current = cacheKey.then(createSearchWorker)
-                    }
-                }}
-                onBlur={() => {
-                    searchWorker.current = undefined
-                }}
+                onFocus={props.onFocus}
+                onBlur={props.onBlur}
             />
 
             <div
@@ -177,9 +204,13 @@ export function SearchBox(props: {
                 {
                     matches.map((_, idx) =>
                         (
-                            renderMatch(
+                            props.renderMatch(
                                 () => matches[idx],
                                 () => { setFocused(idx) },
+                                () => {
+                                    props.onChange?.(matches[idx].longname)
+                                    reset()
+                                },
                                 searchboxDropdownItemStyle(idx),
                                 idx === focused ? 'selected-search-result' : undefined,
                             )
@@ -201,7 +232,6 @@ function SingleSearchResult(props: SearchResult): ReactNode {
 }
 
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
-
 type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
 function createSearchWorker(cacheKey: string | undefined): SearchWorker {
