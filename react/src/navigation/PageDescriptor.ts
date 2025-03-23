@@ -3,7 +3,7 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
-import { getCountsByArticleType } from '../components/countsByArticleType'
+import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -165,7 +165,7 @@ export type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -532,6 +532,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'syau',
                     typ: newDescriptor.typ,
                     universe: newDescriptor.universe,
+                    counts: await getCountsByArticleType(),
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
