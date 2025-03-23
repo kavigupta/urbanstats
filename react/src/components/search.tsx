@@ -20,16 +20,33 @@ export function SearchBox(props: {
     const [matches, setMatches] = useState<SearchResult[]>([])
 
     // Keep these in sync
+    const cacheKey = useMemo(() => getIndexCacheKey(), [])
+
+    const searchWorker = useRef<Promise<SearchWorker> | undefined>()
+
+    const doSearch = useMemo(() => {
+        return async (sq: string): Promise<SearchResult[] | undefined> => {
+            if (sq === '') {
+                return []
+            }
+            if (searchWorker.current === undefined) {
+                searchWorker.current = cacheKey.then(createSearchWorker)
+            }
+            const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
+            // we should throw away the result if the query has changed since we submitted the search
+            if (queryRef.current !== sq) {
+                return undefined
+            }
+            return result
+        }
+    }, [searchWorker, cacheKey, showHistoricalCDs])
+
     const [query, setQuery] = useState('')
     const queryRef = useRef('')
 
     const [focused, setFocused] = React.useState(0)
 
-    const cacheKey = useMemo(() => getIndexCacheKey(), [])
-
     const searchQuery = queryRef.current
-
-    const searchWorker = useRef<Promise<SearchWorker> | undefined>()
 
     const reset = (): void => {
         setQuery('')
@@ -68,23 +85,6 @@ export function SearchBox(props: {
             }
         }
     }
-
-    const doSearch = useMemo(() => {
-        return async (sq: string): Promise<SearchResult[] | undefined> => {
-            if (sq === '') {
-                return []
-            }
-            if (searchWorker.current === undefined) {
-                searchWorker.current = cacheKey.then(createSearchWorker)
-            }
-            const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
-            // we should throw away the result if the query has changed since we submitted the search
-            if (queryRef.current !== sq) {
-                return undefined
-            }
-            return result
-        }
-    }, [searchWorker, cacheKey, showHistoricalCDs])
 
     // Do the search
     useEffect(() => {
