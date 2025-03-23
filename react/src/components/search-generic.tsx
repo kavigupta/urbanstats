@@ -13,7 +13,7 @@ export function GenericSearchBox<T>(
         onBlur?: () => void
         autoFocus: boolean
         placeholder: string
-        style: CSSProperties
+        style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
     }): ReactElement {
     const colors = useColors()
@@ -97,9 +97,9 @@ export function GenericSearchBox<T>(
                 autoFocus={props.autoFocus}
                 id="searchbox"
                 type="text"
-                className="serif"
+                className={typeof props.style === 'string' ? props.style : 'serif'}
                 style={{
-                    ...props.style,
+                    ...(typeof props.style === 'string' ? {} : props.style),
                 }}
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
