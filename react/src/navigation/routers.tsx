@@ -8,6 +8,7 @@ import { ComparisonPanel } from '../components/comparison-panel'
 import { MapperPanel } from '../components/mapper-panel'
 import { QuizPanel } from '../components/quiz-panel'
 import { StatisticPanel } from '../components/statistic-panel'
+import { SYAUPanel } from '../components/syau-panel'
 import { DataCreditPanel } from '../data-credit'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -176,6 +177,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     todaysQuiz={pageData.quiz}
                 />
             )
+        case 'syau':
+            return <SYAUPanel typ={pageData.typ} universe={pageData.universe} />
         case 'mapper':
             return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':

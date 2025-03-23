@@ -276,6 +276,16 @@ def build_urbanstats(
             )
         )
 
+    with open(f"{site_folder}/syau.html", "w") as f:
+        f.write(
+            html_index(
+                title="So you're an urbanist?",
+                # TODO change image
+                image="https://urbanstats.org/juxtastat-link-preview.png",
+                description="Name every city 😤",
+            )
+        )
+
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
     shutil.copy("icons/main/banner-dark.png", f"{site_folder}/")

@@ -124,6 +124,11 @@ const quizSchema = z.intersection(
     }),
 )
 
+const syauSchema = z.object({
+    typ: z.optional(z.string()),
+    universe: z.optional(z.string()),
+})
+
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
     view: z.boolean(),
@@ -143,6 +148,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
+    z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
 ])
 
@@ -159,6 +165,7 @@ export type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -189,6 +196,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/quiz.html':
             const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
+        case '/syau.html':
+            return { kind: 'syau', ...syauSchema.parse(params) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
@@ -273,6 +282,13 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizResult.hash = `#${hashParams.toString()}`
             }
             return quizResult
+        case 'syau':
+            pathname = '/syau.html'
+            searchParams = {
+                typ: pageDescriptor.typ,
+                universe: pageDescriptor.universe,
+            }
+            break
         case 'mapper':
             pathname = '/mapper.html'
             searchParams = {
@@ -298,6 +314,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
+    console.log(newDescriptor)
     switch (newDescriptor.kind) {
         case 'article':
             const article = await loadArticleFromPossibleSymlink(newDescriptor.longname)
@@ -509,6 +526,16 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
+        case 'syau':
+            return {
+                pageData: {
+                    kind: 'syau',
+                    typ: newDescriptor.typ,
+                    universe: newDescriptor.universe,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
         case 'mapper':
             return {
                 pageData: {
@@ -553,6 +580,8 @@ export function pageTitle(pageData: PageData): string {
                 case 'infinite':
                     return 'Juxtastat Infinite'
             }
+        case 'syau':
+            return `So you're an urbanist...`
         case 'article':
             return pageData.article.shortname
         case 'statistic':
