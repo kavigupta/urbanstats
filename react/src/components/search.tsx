@@ -69,6 +69,23 @@ export function SearchBox(props: {
         }
     }
 
+    const doSearch = useMemo(() => {
+        return async (sq: string): Promise<SearchResult[] | undefined> => {
+            if (sq === '') {
+                return []
+            }
+            if (searchWorker.current === undefined) {
+                searchWorker.current = cacheKey.then(createSearchWorker)
+            }
+            const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
+            // we should throw away the result if the query has changed since we submitted the search
+            if (queryRef.current !== sq) {
+                return undefined
+            }
+            return result
+        }
+    }, [searchWorker, cacheKey, showHistoricalCDs])
+
     // Do the search
     useEffect(() => {
         void (async () => {
@@ -77,18 +94,17 @@ export function SearchBox(props: {
                 setFocused(0)
                 return
             }
-            if (searchWorker.current === undefined) {
-                searchWorker.current = cacheKey.then(createSearchWorker)
-            }
-            const result = await (await searchWorker.current)({ unnormalizedPattern: searchQuery, maxResults: 10, showHistoricalCDs })
-            // we should throw away the result if the query has changed since we submitted the search
-            if (queryRef.current !== searchQuery) {
+
+            const result = await doSearch(searchQuery)
+
+            if (result === undefined) {
                 return
             }
+
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, showHistoricalCDs, searchWorker, cacheKey])
+    }, [searchQuery, doSearch])
 
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a
