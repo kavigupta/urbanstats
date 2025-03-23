@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactElement, useState, useRef, useEffect } from 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 
-export function GenericSearchResult<T>(
+export function GenericSearchBox<T>(
     props: {
         matches: T[]
         doSearch: (sq: string) => Promise<T[]>
