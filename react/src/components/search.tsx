@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { searchIconLink } from '../navigation/links'
@@ -90,6 +90,30 @@ export function SearchBox(props: {
         })()
     }, [searchQuery, showHistoricalCDs, searchWorker, cacheKey])
 
+    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
+        <a
+            key={currentMatch().longname}
+            {...props.link(currentMatch().longname)}
+            style={{
+                textDecoration: 'none',
+                color: colors.textMain,
+            }}
+            data-test-id={dataTestId}
+        >
+            <div
+                className="serif searchbox-dropdown-item"
+                style={style}
+                onClick={() => {
+                    props.onChange?.(currentMatch().longname)
+                    reset()
+                }}
+                onMouseOver={onMouseOver}
+            >
+                <SingleSearchResult {...currentMatch()} />
+            </div>
+        </a>
+    )
+
     return (
         <form
             autoComplete="off"
@@ -135,29 +159,14 @@ export function SearchBox(props: {
                 }
             >
                 {
-                    matches.map((location, idx) =>
+                    matches.map((_, idx) =>
                         (
-                            <a
-                                key={location.longname}
-                                {...props.link(matches[idx].longname)}
-                                style={{
-                                    textDecoration: 'none',
-                                    color: colors.textMain,
-                                }}
-                                data-test-id={idx === focused ? 'selected-search-result' : undefined}
-                            >
-                                <div
-                                    className="serif searchbox-dropdown-item"
-                                    style={searchboxDropdownItemStyle(idx)}
-                                    onClick={() => {
-                                        props.onChange?.(matches[idx].longname)
-                                        reset()
-                                    }}
-                                    onMouseOver={() => { setFocused(idx) }}
-                                >
-                                    <SingleSearchResult {...location} />
-                                </div>
-                            </a>
+                            renderMatch(
+                                () => matches[idx],
+                                () => { setFocused(idx) },
+                                searchboxDropdownItemStyle(idx),
+                                idx === focused ? 'selected-search-result' : undefined,
+                            )
                         ),
                     )
                 }
