@@ -8,7 +8,7 @@ import { GenericSearchBox } from '../components/search-generic'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
-import { useJuxtastatColors } from '../page_template/colors'
+import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { StoredProperty } from '../quiz/quiz'
 import { Feature, ICoordinate } from '../utils/protos'
@@ -76,6 +76,7 @@ export class SYAULocalStorage {
 }
 
 export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+    const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
@@ -140,6 +141,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 isGuessed={props.syauData.longnames.map(name => history.guessed.includes(name))}
                 guessedColor={jColors.correct}
                 notGuessedColor={jColors.incorrect}
+                voroniHighlightColor={colors.hueColors.blue}
             />
         </div>
     )
@@ -220,15 +222,6 @@ function EditableSelector(props: {
     )
 }
 
-interface SYAUMapProps extends MapGenericProps {
-    longnames: string[]
-    population: number[]
-    centroids: ICoordinate[]
-    isGuessed: boolean[]
-    guessedColor: string
-    notGuessedColor: string
-}
-
 function singleSector(radius: number, startAngle: number, endAngle: number, color2: string): string {
     const startx = radius + radius * Math.cos(startAngle)
     const starty = radius + radius * Math.sin(startAngle)
@@ -237,7 +230,8 @@ function singleSector(radius: number, startAngle: number, endAngle: number, colo
     return `<path d="M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z" fill="${color2}"></path>`
 }
 
-function circleSector(color1: string, color2: string, radius: number, startAngle: number, sizeAngle: number, text: string): string {
+function circleSector(color1: string, color2: string, radius: number, sizeAngle: number, text: string): string {
+    let startAngle = -Math.PI / 2
     const singleSectors = []
     const target = startAngle + sizeAngle
     let endAngle = Math.min(target, startAngle + Math.PI / 2)
@@ -267,6 +261,16 @@ function circleSector(color1: string, color2: string, radius: number, startAngle
 
 type SYAUMarker = L.Marker & { syauIndex: number }
 
+interface SYAUMapProps extends MapGenericProps {
+    longnames: string[]
+    population: number[]
+    centroids: ICoordinate[]
+    isGuessed: boolean[]
+    guessedColor: string
+    notGuessedColor: string
+    voroniHighlightColor: string
+}
+
 class SYAUMap extends MapGeneric<SYAUMapProps> {
     private alreadyFitBounds: boolean = false
     private layer: L.LayerGroup | undefined = undefined
@@ -293,6 +297,10 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                 const indices = cluster.getAllChildMarkers().map(m => (m as SYAUMarker).syauIndex)
                 return self.sector(indices)
             },
+            polygonOptions: {
+                weight: 1.5, color: self.props.voroniHighlightColor,
+            },
+            maxClusterRadius: 2.5 * circleMarkerRadius,
         })
         for (let i = 0; i < this.props.centroids.length; i++) {
             const point = this.props.centroids[i]
@@ -336,13 +344,13 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             this.props.notGuessedColor,
             this.props.guessedColor,
             circleMarkerRadius,
-            0,
             angleGuessed,
             `${idxsGuessed.length}/${idxs.length}`,
         )
         return L.divIcon({
             html,
             iconSize: L.point(circleMarkerRadius * 2, circleMarkerRadius * 2),
+            className: 'syau-marker',
         })
     }
 }
