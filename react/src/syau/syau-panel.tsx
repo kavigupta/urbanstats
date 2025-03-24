@@ -3,19 +3,20 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
-import { MapGeneric, MapGenericProps } from '../components/map'
+import { featureToGeoJSON, MapGeneric, MapGenericProps } from '../components/map'
 import { GenericSearchBox } from '../components/search-generic'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
+import { loadProtobuf } from '../load_json'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { StoredProperty } from '../quiz/quiz'
-import { Feature, ICoordinate } from '../utils/protos'
+import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-import { confirmMatch, populationColumn, SYAUData } from './load'
+import { confirmMatch, populationColumns, SYAUData } from './load'
 
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -148,7 +149,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
 }
 function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
     const types = Object.keys(type_ordering_idx).filter(
-        type => props.universe === undefined || populationColumn(props.counts, type, props.universe) !== undefined,
+        type => props.universe === undefined || populationColumns(props.counts, type, props.universe).length > 0,
     )
     const navContext = useContext(Navigator.Context)
     return (
@@ -170,7 +171,7 @@ function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT
 function SelectUniverse(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const universes = universes_ordered.filter(
-        universe => props.typ === undefined || populationColumn(props.counts, props.typ, universe) !== undefined,
+        universe => props.typ === undefined || populationColumns(props.counts, props.typ, universe).length > 0,
     )
     return (
         <EditableSelector
@@ -235,7 +236,7 @@ function circleSector(color1: string, color2: string, radius: number, sizeAngle:
     const singleSectors = []
     const target = startAngle + sizeAngle
     let endAngle = Math.min(target, startAngle + Math.PI / 2)
-    while (true) {
+    for (let i = 0; i < 4; i++) {
         singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
         if (endAngle === target) {
             break
@@ -274,21 +275,47 @@ interface SYAUMapProps extends MapGenericProps {
 class SYAUMap extends MapGeneric<SYAUMapProps> {
     private alreadyFitBounds: boolean = false
     private layer: L.LayerGroup | undefined = undefined
+    basemap: Promise<GeoJSON.Feature[]>
 
     name_to_index: undefined | Map<string, number>
+
+    constructor(props: SYAUMapProps) {
+        super(props)
+        this.basemap = loadProtobuf('/consolidated/syau_boundaries.gz', 'ConsolidatedShapes').then(
+            (polys: ConsolidatedShapes) => polys.shapes.map(poly => featureToGeoJSON(poly as NormalizeProto<Feature>)),
+        )
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- override
     override loadShape(name: string): Promise<NormalizeProto<Feature>> {
         throw new Error('Not implemented! Instead polygonGeojson is overridden')
     }
 
-    override updateFn(): Promise<void> {
+    override async computeBasemap(): Promise<L.Layer> {
+        const basemap = await this.basemap
+        const layer = L.geoJSON(basemap, {
+            style: {
+                color: 'black',
+                weight: 0.5,
+                fillOpacity: 0,
+            },
+        })
+        return layer
+        // map.addLayer(layer)
+    }
+
+    override async updateFn(): Promise<void> {
         const self = this
         this.setState({ loading: true })
 
-        this.attachBasemap()
+        await this.attachBasemap()
 
         const map = this.map!
+
+        map.setMaxZoom(20)
+
+        // map.addLayer(await this.computeBasemap2())
+
         if (this.layer !== undefined) {
             map.removeLayer(this.layer)
         }
@@ -317,7 +344,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         this.setState({ loading: false })
 
         if (this.alreadyFitBounds) {
-            return Promise.resolve()
+            return
         }
         this.alreadyFitBounds = true
 
@@ -331,7 +358,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
 
         map.fitBounds(bounds, { animate: false })
 
-        return Promise.resolve()
+        return
     }
 
     sector(idxs: number[]): L.DivIcon {

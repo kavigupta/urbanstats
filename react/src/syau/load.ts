@@ -3,7 +3,8 @@ import { forType } from '../components/load-article'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
-import { ICoordinate } from '../utils/protos'
+import { ICoordinate, IDataList } from '../utils/protos'
+import { NormalizeProto } from '../utils/types'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
@@ -84,22 +85,38 @@ export async function loadSYAUData(
         return undefined
     }
 
-    const statPath = populationColumn(counts, typ, universe)?.path
-    if (statPath === undefined) {
+    const statPath = populationColumns(counts, typ, universe).map(stat => stat.path)
+    console.log(statPath)
+    if (statPath.length === 0) {
         return undefined
     }
 
-    const [data, articleNames] = await loadStatisticsPage(universe, statPath, typ)
+    const articleNameToValue = new Map<string, number>()
+
+    for (const path of statPath) {
+        const [data, articleNames] = await loadStatisticsPage(universe, path, typ)
+        for (let i = 0; i < data.value.length; i++) {
+            if (isNaN(data.value[i])) {
+                continue
+            }
+            articleNameToValue.set(articleNames[i], data.value[i])
+        }
+    }
+
+    const articleNames = Array.from(articleNameToValue.keys())
+    const values = articleNames.map(name => articleNameToValue.get(name)!)
 
     const centroids = await loadCentroids(universe, typ, articleNames)
 
     const [commonSuffixes, matchChunks] = computeMatchChunksAll(articleNames)
 
+    console.log(values)
+
     return {
         longnames: articleNames,
         commonSuffixes,
         matchChunks,
-        populations: data.value,
+        populations: values,
         longnameToIndex: Object.fromEntries(articleNames.map((name, i) => [name, i])),
         centroids,
     }
@@ -114,6 +131,6 @@ async function loadCentroids(universe: string, typ: string, namesInOrder: string
     return sortedR
 }
 
-export function populationColumn(counts: CountsByUT, typ: string, universe: string): Statistic | undefined {
-    return populationStatcols.find(stat => forType(counts, universe, stat.statcol, typ) > 0)
+export function populationColumns(counts: CountsByUT, typ: string, universe: string): Statistic[] {
+    return populationStatcols.filter(stat => forType(counts, universe, stat.statcol, typ) > 0)
 }

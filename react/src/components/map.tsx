@@ -38,7 +38,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private delta = 0.25
     private version = 0
     private last_modified = Date.now()
-    private basemap_layer: null | L.TileLayer = null
+    private basemap_layer: null | L.Layer = null
     private basemap_props: null | Basemap = null
     protected map: L.Map | undefined = undefined
     private exist_this_time: string[] = []
@@ -219,7 +219,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const map = this.map!
         this.exist_this_time = []
 
-        this.attachBasemap()
+        await this.attachBasemap()
 
         const { polygons, zoomIndex } = await this.computePolygons()
 
@@ -237,7 +237,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.setState({ loading: false })
     }
 
-    attachBasemap(): void {
+    computeBasemap(): Promise<L.Layer> {
+        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        return Promise.resolve(L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib }))
+    }
+
+    async attachBasemap(): Promise<void> {
         if (JSON.stringify(this.props.basemap) === JSON.stringify(this.basemap_props)) {
             return
         }
@@ -249,9 +255,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (this.props.basemap.type === 'none') {
             return
         }
-        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
+        this.basemap_layer = await this.computeBasemap()
         this.map!.addLayer(this.basemap_layer)
     }
 
@@ -280,38 +284,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async polygonGeojson(name: string): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
-        let geometry: GeoJSON.Geometry
-        if (poly.geometry === 'multipolygon') {
-            const polys = poly.multipolygon.polygons
-            const coords = polys.map(
-                multiPoly => multiPoly.rings.map(
-                    ring => ring.coords.map(
-                        coordinate => [coordinate.lon, coordinate.lat],
-                    ),
-                ),
-            )
-            geometry = {
-                type: 'MultiPolygon',
-                coordinates: coords,
-            }
-        }
-        else {
-            const coords = poly.polygon.rings.map(
-                ring => ring.coords.map(
-                    coordinate => [coordinate.lon, coordinate.lat],
-                ),
-            )
-            geometry = {
-                type: 'Polygon',
-                coordinates: coords,
-            }
-        }
-        const geojson = {
-            type: 'Feature' as const,
-            properties: {},
-            geometry,
-        }
-        return geojson
+        return featureToGeoJSON(poly)
     }
 
     /*
@@ -368,6 +341,41 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     static override contextType = Navigator.Context
 
     declare context: React.ContextType<typeof Navigator.Context>
+}
+
+export function featureToGeoJSON(poly: NormalizeProto<Feature>): GeoJSON.Feature {
+    let geometry: GeoJSON.Geometry
+    if (poly.geometry === 'multipolygon') {
+        const polys = poly.multipolygon.polygons
+        const coords = polys.map(
+            multiPoly => multiPoly.rings.map(
+                ring => ring.coords.map(
+                    coordinate => [coordinate.lon, coordinate.lat],
+                ),
+            ),
+        )
+        geometry = {
+            type: 'MultiPolygon',
+            coordinates: coords,
+        }
+    }
+    else {
+        const coords = poly.polygon.rings.map(
+            ring => ring.coords.map(
+                coordinate => [coordinate.lon, coordinate.lat],
+            ),
+        )
+        geometry = {
+            type: 'Polygon',
+            coordinates: coords,
+        }
+    }
+    const geojson = {
+        type: 'Feature' as const,
+        properties: {},
+        geometry,
+    }
+    return geojson
 }
 
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
