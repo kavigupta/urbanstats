@@ -43,8 +43,8 @@ function suffixes(s: string): string[] {
     return sxs
 }
 
-function removeSuffix(s: string, suffixes: string[]): string {
-    for (const suffix of suffixes) {
+function removeSuffix(s: string, sxs: string[]): string {
+    for (const suffix of sxs) {
         if (s.endsWith(suffix))
             return s.slice(0, s.length - suffix.length)
     }
