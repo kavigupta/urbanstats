@@ -350,23 +350,4 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     colorFor(idx: number): string {
         return this.props.isGuessed[idx] ? this.props.guessedColor : this.props.notGuessedColor
     }
-
-    // override mapDidRender(): Promise <void> {
-    //     if (this.already_fit_bounds) {
-    //         return Promise.resolve()
-    //     }
-    //     this.already_fit_bounds = true
-    //     // zoom map to fit all centroids
-    //     return Promise.resolve()
-    // }
-
-    // override mapDidRender(): Promise<void> {
-    // // zoom map to fit united states
-    // // do so instantly
-    //     this.map!.fitBounds([
-    //         [49.3457868, -124.7844079],
-    //         [24.7433195, -66.9513812],
-    //     ], { animate: false })
-    //     return Promise.resolve()
-    // }
 }
