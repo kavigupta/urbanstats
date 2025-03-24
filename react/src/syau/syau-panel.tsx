@@ -343,7 +343,6 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         )
         return L.divIcon({
             html,
-            className: 'syau-marker',
             iconSize: L.point(circleMarkerRadius * 2, circleMarkerRadius * 2),
         })
     }
