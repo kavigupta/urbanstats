@@ -7,11 +7,70 @@ import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
+const suffixFreqThresholdPct = 0.01
+const suffixFreqThresholdRaw = 3
+
+type MatchChunks = string[]
+
 export interface SYAUData {
     longnames: string[]
+    matchChunks: MatchChunks[]
     populations: number[]
     longnameToIndex: Record<string, number>
     centroids: ICoordinate[]
+}
+
+function computeMatchChunks(longname: string): MatchChunks {
+    longname = longname.toLowerCase()
+    // split longname by comma and take the first part
+    longname = longname.split(',')[0]
+    // remove portions in parentheses and brackets
+    longname = longname.replace(/\(.*\)/g, '')
+    longname = longname.replace(/\[.*\]/g, '')
+    // split longname by -
+    const longnameParts = longname.split('-').map(s => s.trim())
+    // check if query is equal to any part of the longname
+    return longnameParts
+}
+
+function suffixes(s: string): string[] {
+    // all suffixes of a string s; they must all begin with a space
+    const sxs = []
+    for (let i = 0; i < s.length; i++) {
+        if (s[i] === ' ')
+            sxs.push(s.slice(i))
+    }
+    return sxs
+}
+
+function removeSuffix(s: string, suffixes: string[]): string {
+    for (const suffix of suffixes) {
+        if (s.endsWith(suffix))
+            return s.slice(0, s.length - suffix.length)
+    }
+    return s
+}
+
+function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
+    const chunksAll = longnames.map(computeMatchChunks)
+    const chunksFlat = chunksAll.flat()
+    const suffixCount = new Map<string, number>()
+    for (const chunk of chunksFlat) {
+        for (const suffix of suffixes(chunk)) {
+            suffixCount.set(suffix, (suffixCount.get(suffix) ?? 0) + 1)
+        }
+    }
+    // list of suffixes that appear in at least 5% of flat chunks
+    const commonSuffixes = Array.from(suffixCount.entries())
+        .filter(([, count]) => count >= suffixFreqThresholdRaw && count >= suffixFreqThresholdPct * chunksFlat.length)
+        .map(([suffix]) => suffix)
+    // sort them by length, long to short
+    commonSuffixes.sort((a, b) => b.length - a.length)
+    return chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
+}
+
+export function confirmMatch(target: MatchChunks, query: string): boolean {
+    return target.includes(query.toLowerCase())
 }
 
 export async function loadSYAUData(
@@ -34,6 +93,7 @@ export async function loadSYAUData(
 
     return {
         longnames: articleNames,
+        matchChunks: computeMatchChunksAll(articleNames),
         populations: data.value,
         longnameToIndex: Object.fromEntries(articleNames.map((name, i) => [name, i])),
         centroids,

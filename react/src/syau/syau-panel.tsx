@@ -15,7 +15,7 @@ import { Feature, ICoordinate } from '../utils/protos'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-import { populationColumn, SYAUData } from './load'
+import { confirmMatch, populationColumn, SYAUData } from './load'
 
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -75,20 +75,6 @@ export class SYAULocalStorage {
     }
 }
 
-function isApproxMatch(longname: string, query: string): boolean {
-    longname = longname.toLowerCase()
-    query = query.toLowerCase()
-    // split longname by comma and take the first part
-    longname = longname.split(',')[0]
-    // remove portions in parentheses and brackets
-    longname = longname.replace(/\(.*\)/g, '')
-    longname = longname.replace(/\[.*\]/g, '')
-    // split longname by -
-    const longnameParts = longname.split('-').map(s => s.trim())
-    // check if query is equal to any part of the longname
-    return longnameParts.includes(query)
-}
-
 export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
@@ -96,7 +82,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
     const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
 
     function attemptGuess(query: string): boolean {
-        const approxMatches = props.syauData.longnames.filter(longname => isApproxMatch(longname, query)).filter(name => !history.guessed.includes(name))
+        const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query)).filter(name => !history.guessed.includes(name))
         if (approxMatches.length === 0) {
             return false
         }
