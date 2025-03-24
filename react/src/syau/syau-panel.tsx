@@ -8,6 +8,7 @@ import { GenericSearchBox } from '../components/search-generic'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
+import { useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { StoredProperty } from '../quiz/quiz'
 import { Feature, ICoordinate } from '../utils/protos'
@@ -33,7 +34,7 @@ type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 
 const circleMarkerRadius = 20
 
-export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData, coordinates?: ICoordinate[] }): ReactNode {
+export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()
     return (
@@ -46,7 +47,7 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
                 in
                 <SelectUniverse typ={props.typ} universe={props.universe} counts={props.counts} />
             </div>
-            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} coordinates={props.coordinates!} />}
+            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />}
         </PageTemplate>
     )
 }
@@ -88,7 +89,8 @@ function isApproxMatch(longname: string, query: string): boolean {
     return longnameParts.includes(query)
 }
 
-export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData, coordinates: ICoordinate[] }): ReactNode {
+export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+    const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
     const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
@@ -104,50 +106,54 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
 
     // text field for guessing, followed by a description of the % of regions guessed and what % of the population that represents
     return (
-        <div style={{ margin: 'auto', width: '50%' }}>
-            <div>
-                <input
-                    type="text"
-                    placeholder="Type a region name"
-                    onChange={(e) => {
-                        if (attemptGuess(e.target.value)) {
-                            e.target.value = ''
-                        }
-                    }}
-                />
-                <button
-                    onClick={() => {
-                        // check if they are sure
-                        if (window.confirm('Are you sure you want to reset your progress?')) {
-                            setHistory({ guessed: [] })
-                        }
-                    }}
-                >
-                    Reset
-                </button>
-            </div>
-            <div>
-                <div>
-                    {history.guessed.length}
-                    {' '}
-                    /
-                    {props.syauData.longnames.length}
-                    {' '}
-                    regions guessed
+        <div>
+            <div style={{ margin: 'auto', width: '50%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <input
+                        type="text"
+                        style={{ width: '80%' }}
+                        placeholder="Type a region name"
+                        onChange={(e) => {
+                            if (attemptGuess(e.target.value)) {
+                                e.target.value = ''
+                            }
+                        }}
+                    />
+                    <button
+                        style={{ width: '20%' }}
+                        onClick={() => {
+                            // check if they are sure
+                            if (window.confirm('Are you sure you want to reset your progress?')) {
+                                setHistory({ guessed: [] })
+                            }
+                        }}
+                    >
+                        Reset progress
+                    </button>
                 </div>
                 <div>
-                    {Math.round(100 * totalPopulationGuessed / totalPopulation)}
-                    % of the population guessed
+                    <div>
+                        {history.guessed.length}
+                        {' '}
+                        /
+                        {props.syauData.longnames.length}
+                        {' '}
+                        regions guessed
+                    </div>
+                    <div>
+                        {Math.round(100 * totalPopulationGuessed / totalPopulation)}
+                        % of the population guessed
+                    </div>
                 </div>
             </div>
             <SYAUMap
                 basemap={{ type: 'osm' }}
                 longnames={props.syauData.longnames}
                 population={props.syauData.populations}
-                coordinates={props.coordinates}
+                centroids={props.syauData.centroids}
                 isGuessed={props.syauData.longnames.map(name => history.guessed.includes(name))}
-                guessedColor="green"
-                notGuessedColor="red"
+                guessedColor={jColors.correct}
+                notGuessedColor={jColors.incorrect}
             />
         </div>
     )
@@ -231,7 +237,7 @@ function EditableSelector(props: {
 interface SYAUMapProps extends MapGenericProps {
     longnames: string[]
     population: number[]
-    coordinates: ICoordinate[]
+    centroids: ICoordinate[]
     isGuessed: boolean[]
     guessedColor: string
     notGuessedColor: string
@@ -297,8 +303,8 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                 return L.divIcon({ html: self.sector(indices) })
             },
         })
-        for (let i = 0; i < this.props.coordinates.length; i++) {
-            const point = this.props.coordinates[i]
+        for (let i = 0; i < this.props.centroids.length; i++) {
+            const point = this.props.centroids[i]
             // yes I'm monkeypatching
             const marker = L.marker([point.lat!, point.lon!], {
                 icon: L.divIcon({
@@ -319,7 +325,11 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         this.alreadyFitBounds = true
 
         let bounds = markers.getBounds()
-        const padding = (bounds.getNorth() - bounds.getSouth()) * circleMarkerRadius / 500
+        const h = this.mapHeight()
+        if (typeof h !== 'number') {
+            throw new Error(`Map height is not a number; instead it is ${h}`)
+        }
+        const padding = (bounds.getNorth() - bounds.getSouth()) * circleMarkerRadius / h
         bounds = bounds.pad(padding)
 
         map.fitBounds(bounds, { animate: false })
@@ -333,7 +343,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         const populationGuessed = sumpop(idxsGuessed)
         const populationTotal = sumpop(idxs)
         const angleGuessed = 2 * Math.PI * (populationGuessed / populationTotal)
-        return circleSector('red', 'green', circleMarkerRadius, 0, angleGuessed)
+        return circleSector(this.props.notGuessedColor, this.props.guessedColor, circleMarkerRadius, 0, angleGuessed)
     }
 
     colorFor(idx: number): string {
@@ -345,7 +355,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     //         return Promise.resolve()
     //     }
     //     this.already_fit_bounds = true
-    //     // zoom map to fit all coordinates
+    //     // zoom map to fit all centroids
     //     return Promise.resolve()
     // }
 
