@@ -5,6 +5,7 @@ import tqdm.auto as tqdm
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     filter_table_for_type,
     load_file_for_type,
+    shapefiles,
 )
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -70,6 +71,17 @@ def produce_all_results_from_tables(geo_table, data_table):
     return shapes, stats
 
 
+def produce_just_shapes_from_shapefile(geo_table, simplify_amount=0.01):
+    geo_table = geo_table.load_file().set_index("longname")
+    shapes = data_files_pb2.ConsolidatedShapes()
+    for longname in tqdm.tqdm(geo_table.index):
+        row_geo = geo_table.loc[longname]
+        g = convert_to_protobuf(row_geo.geometry.simplify(simplify_amount))
+        shapes.longnames.append(longname)
+        shapes.shapes.append(g)
+    return shapes
+
+
 def produce_results_for_type(folder, typ):
     print(typ)
     folder = f"{folder}/consolidated/"
@@ -98,3 +110,10 @@ def full_consolidated_data(folder):
 def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
         output_typescript(use, f, data_type="string[]")
+
+
+def output_boundaries(folder):
+    write_gzip(
+        produce_just_shapes_from_shapefile(shapefiles["subnational_regions"]),
+        f"{folder}/consolidated/syau_boundaries.gz",
+    )
