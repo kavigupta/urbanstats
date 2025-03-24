@@ -237,7 +237,7 @@ function singleSector(radius: number, startAngle: number, endAngle: number, colo
     return `<path d="M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z" fill="${color2}"></path>`
 }
 
-function circleSector(color1: string, color2: string, radius: number, startAngle: number, sizeAngle: number): string {
+function circleSector(color1: string, color2: string, radius: number, startAngle: number, sizeAngle: number, text: string): string {
     const singleSectors = []
     const target = startAngle + sizeAngle
     let endAngle = Math.min(target, startAngle + Math.PI / 2)
@@ -251,10 +251,16 @@ function circleSector(color1: string, color2: string, radius: number, startAngle
     }
 
     const result = [
+        '<div>',
         `<svg xmlns="http://www.w3.org/2000/svg" width="${radius * 2}" height="${radius * 2}" viewBox="0 0 ${radius * 2} ${radius * 2}">`,
         `<circle cx="${radius}" cy="${radius}" r="${radius}" fill="${color1}"></circle>`,
         ...singleSectors,
         '</svg>',
+        // place the text "ABC" over the circle
+        '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 100%; text-align: center; font-weight: 500" class="serif">',
+        text,
+        '</div>',
+        '</div>',
     ]
 
     return result.join('')
@@ -286,16 +292,14 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         const markers = L.markerClusterGroup({
             iconCreateFunction(cluster) {
                 const indices = cluster.getAllChildMarkers().map(m => (m as SYAUMarker).syauIndex)
-                return L.divIcon({ html: self.sector(indices) })
+                return self.sector(indices)
             },
         })
         for (let i = 0; i < this.props.centroids.length; i++) {
             const point = this.props.centroids[i]
             // yes I'm monkeypatching
             const marker = L.marker([point.lat!, point.lon!], {
-                icon: L.divIcon({
-                    html: self.sector([i]),
-                }),
+                icon: self.sector([i]),
             }) as SYAUMarker
             marker.syauIndex = i
             markers.addLayer(marker)
@@ -323,13 +327,25 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         return Promise.resolve()
     }
 
-    sector(idxs: number[]): string {
+    sector(idxs: number[]): L.DivIcon {
         const sumpop = (is: number[]): number => is.map(idx => this.props.population[idx]).reduce((a, b) => a + b, 0)
         const idxsGuessed = idxs.filter(idx => this.props.isGuessed[idx])
         const populationGuessed = sumpop(idxsGuessed)
         const populationTotal = sumpop(idxs)
         const angleGuessed = 2 * Math.PI * (populationGuessed / populationTotal)
-        return circleSector(this.props.notGuessedColor, this.props.guessedColor, circleMarkerRadius, 0, angleGuessed)
+        const html = circleSector(
+            this.props.notGuessedColor,
+            this.props.guessedColor,
+            circleMarkerRadius,
+            0,
+            angleGuessed,
+            `${idxsGuessed.length}/${idxs.length}`,
+        )
+        return L.divIcon({
+            html,
+            className: 'syau-marker',
+            iconSize: L.point(circleMarkerRadius * 2, circleMarkerRadius * 2),
+        })
     }
 
     colorFor(idx: number): string {

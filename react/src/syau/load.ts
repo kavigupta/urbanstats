@@ -14,6 +14,7 @@ type MatchChunks = string[]
 
 export interface SYAUData {
     longnames: string[]
+    commonSuffixes: string[]
     matchChunks: MatchChunks[]
     populations: number[]
     longnameToIndex: Record<string, number>
@@ -51,7 +52,7 @@ function removeSuffix(s: string, sxs: string[]): string {
     return s
 }
 
-function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
+function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
     const chunksAll = longnames.map(computeMatchChunks)
     const chunksFlat = chunksAll.flat()
     const suffixCount = new Map<string, number>()
@@ -66,7 +67,8 @@ function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
         .map(([suffix]) => suffix)
     // sort them by length, long to short
     commonSuffixes.sort((a, b) => b.length - a.length)
-    return chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
+    const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
+    return [commonSuffixes.reverse(), chunksAllCleaned]
 }
 
 export function confirmMatch(target: MatchChunks, query: string): boolean {
@@ -91,9 +93,12 @@ export async function loadSYAUData(
 
     const centroids = await loadCentroids(universe, typ, articleNames)
 
+    const [commonSuffixes, matchChunks] = computeMatchChunksAll(articleNames)
+
     return {
         longnames: articleNames,
-        matchChunks: computeMatchChunksAll(articleNames),
+        commonSuffixes,
+        matchChunks,
         populations: data.value,
         longnameToIndex: Object.fromEntries(articleNames.map((name, i) => [name, i])),
         centroids,
