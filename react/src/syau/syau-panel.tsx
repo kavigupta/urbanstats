@@ -256,7 +256,6 @@ function circleSector(color1: string, color2: string, radius: number, startAngle
         `<circle cx="${radius}" cy="${radius}" r="${radius}" fill="${color1}"></circle>`,
         ...singleSectors,
         '</svg>',
-        // place the text "ABC" over the circle
         '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 100%; text-align: center; font-weight: 500" class="serif">',
         text,
         '</div>',
@@ -345,9 +344,5 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             html,
             iconSize: L.point(circleMarkerRadius * 2, circleMarkerRadius * 2),
         })
-    }
-
-    colorFor(idx: number): string {
-        return this.props.isGuessed[idx] ? this.props.guessedColor : this.props.notGuessedColor
     }
 }
