@@ -3,15 +3,22 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { MapGeneric, MapGenericProps } from '../components/map'
 import { GenericSearchBox } from '../components/search-generic'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { PageTemplate } from '../page_template/template'
 import { StoredProperty } from '../quiz/quiz'
+import { Feature, ICoordinate } from '../utils/protos'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
+import { NormalizeProto } from '../utils/types'
 
 import { populationColumn, SYAUData } from './load'
+
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
 
 type Universe = string
 type Type = string
@@ -24,7 +31,9 @@ interface SYAUHistoryForGame {
 
 type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 
-export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
+const circleMarkerRadius = 20
+
+export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData, coordinates?: ICoordinate[] }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()
     return (
@@ -37,7 +46,7 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
                 in
                 <SelectUniverse typ={props.typ} universe={props.universe} counts={props.counts} />
             </div>
-            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />}
+            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} coordinates={props.coordinates!} />}
         </PageTemplate>
     )
 }
@@ -79,7 +88,7 @@ function isApproxMatch(longname: string, query: string): boolean {
     return longnameParts.includes(query)
 }
 
-export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData, coordinates: ICoordinate[] }): ReactNode {
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
     const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
@@ -131,6 +140,15 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                     % of the population guessed
                 </div>
             </div>
+            <SYAUMap
+                basemap={{ type: 'osm' }}
+                longnames={props.syauData.longnames}
+                population={props.syauData.populations}
+                coordinates={props.coordinates}
+                isGuessed={props.syauData.longnames.map(name => history.guessed.includes(name))}
+                guessedColor="green"
+                notGuessedColor="red"
+            />
         </div>
     )
 }
@@ -208,4 +226,136 @@ function EditableSelector(props: {
             )}
         />
     )
+}
+
+interface SYAUMapProps extends MapGenericProps {
+    longnames: string[]
+    population: number[]
+    coordinates: ICoordinate[]
+    isGuessed: boolean[]
+    guessedColor: string
+    notGuessedColor: string
+}
+
+function singleSector(radius: number, startAngle: number, endAngle: number, color2: string): string {
+    const startx = radius + radius * Math.cos(startAngle)
+    const starty = radius + radius * Math.sin(startAngle)
+    const endx = radius + radius * Math.cos(endAngle)
+    const endy = radius + radius * Math.sin(endAngle)
+    return `<path d="M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z" fill="${color2}"></path>`
+}
+
+function circleSector(color1: string, color2: string, radius: number, startAngle: number, sizeAngle: number): string {
+    const singleSectors = []
+    const target = startAngle + sizeAngle
+    let endAngle = Math.min(target, startAngle + Math.PI / 2)
+    while (true) {
+        singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
+        if (endAngle === target) {
+            break
+        }
+        startAngle = endAngle
+        endAngle = Math.min(target, startAngle + Math.PI / 2)
+    }
+
+    const result = [
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${radius * 2}" height="${radius * 2}" viewBox="0 0 ${radius * 2} ${radius * 2}">`,
+        `<circle cx="${radius}" cy="${radius}" r="${radius}" fill="${color1}"></circle>`,
+        ...singleSectors,
+        '</svg>',
+    ]
+
+    return result.join('')
+}
+
+type SYAUMarker = L.Marker & { syauIndex: number }
+
+class SYAUMap extends MapGeneric<SYAUMapProps> {
+    private alreadyFitBounds: boolean = false
+    private layer: L.LayerGroup | undefined = undefined
+
+    name_to_index: undefined | Map<string, number>
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- override
+    override loadShape(name: string): Promise<NormalizeProto<Feature>> {
+        throw new Error('Not implemented! Instead polygonGeojson is overridden')
+    }
+
+    override updateFn(): Promise<void> {
+        const self = this
+        this.setState({ loading: true })
+
+        this.attachBasemap()
+
+        const map = this.map!
+        if (this.layer !== undefined) {
+            map.removeLayer(this.layer)
+        }
+        const markers = L.markerClusterGroup({
+            iconCreateFunction(cluster) {
+                const indices = cluster.getAllChildMarkers().map(m => (m as SYAUMarker).syauIndex)
+                return L.divIcon({ html: self.sector(indices) })
+            },
+        })
+        for (let i = 0; i < this.props.coordinates.length; i++) {
+            const point = this.props.coordinates[i]
+            // yes I'm monkeypatching
+            const marker = L.marker([point.lat!, point.lon!], {
+                icon: L.divIcon({
+                    html: self.sector([i]),
+                }),
+            }) as SYAUMarker
+            marker.syauIndex = i
+            markers.addLayer(marker)
+        }
+        map.addLayer(markers)
+        this.layer = markers
+
+        this.setState({ loading: false })
+
+        if (this.alreadyFitBounds) {
+            return Promise.resolve()
+        }
+        this.alreadyFitBounds = true
+
+        let bounds = markers.getBounds()
+        const padding = (bounds.getNorth() - bounds.getSouth()) * circleMarkerRadius / 500
+        bounds = bounds.pad(padding)
+
+        map.fitBounds(bounds, { animate: false })
+
+        return Promise.resolve()
+    }
+
+    sector(idxs: number[]): string {
+        const sumpop = (is: number[]): number => is.map(idx => this.props.population[idx]).reduce((a, b) => a + b, 0)
+        const idxsGuessed = idxs.filter(idx => this.props.isGuessed[idx])
+        const populationGuessed = sumpop(idxsGuessed)
+        const populationTotal = sumpop(idxs)
+        const angleGuessed = 2 * Math.PI * (populationGuessed / populationTotal)
+        return circleSector('red', 'green', circleMarkerRadius, 0, angleGuessed)
+    }
+
+    colorFor(idx: number): string {
+        return this.props.isGuessed[idx] ? this.props.guessedColor : this.props.notGuessedColor
+    }
+
+    // override mapDidRender(): Promise <void> {
+    //     if (this.already_fit_bounds) {
+    //         return Promise.resolve()
+    //     }
+    //     this.already_fit_bounds = true
+    //     // zoom map to fit all coordinates
+    //     return Promise.resolve()
+    // }
+
+    // override mapDidRender(): Promise<void> {
+    // // zoom map to fit united states
+    // // do so instantly
+    //     this.map!.fitBounds([
+    //         [49.3457868, -124.7844079],
+    //         [24.7433195, -66.9513812],
+    //     ], { animate: false })
+    //     return Promise.resolve()
+    // }
 }

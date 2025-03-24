@@ -10,7 +10,7 @@ import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
-import { loadJSON, loadStatisticsPage } from '../load_json'
+import { loadJSON, loadProtobuf, loadStatisticsPage } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -25,11 +25,12 @@ import {
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article } from '../utils/protos'
+import { Article, ICoordinate } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
 import { base64Gunzip } from '../utils/urlParamShort'
 
+import { centroidsPath } from './links'
 import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
@@ -165,7 +166,7 @@ export type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, coordinates: ICoordinate[] | undefined }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -527,6 +528,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'syau':
             const counts = await getCountsByArticleType()
             const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
+            const coordinates = (
+                syauData !== undefined
+                    ? await loadCentroids(newDescriptor.universe!, newDescriptor.typ!, syauData.longnames)
+                    : undefined
+            )
             return {
                 pageData: {
                     kind: 'syau',
@@ -534,6 +540,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: newDescriptor.universe,
                     counts,
                     syauData,
+                    coordinates,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -549,6 +556,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
     }
+}
+
+async function loadCentroids(universe: string, typ: string, namesInOrder: string[]): Promise<ICoordinate[]> {
+    // put the results in the order of namesInOrder (currently they're in order of the sorted version)
+    const result = (await loadProtobuf(centroidsPath(universe, typ), 'PointSeries')).coords
+    const sortedNames = namesInOrder.slice().sort()
+    const nameToIndex = new Map(sortedNames.map((name, i) => [name, i]))
+    const sortedR = namesInOrder.map(name => result[nameToIndex.get(name)!])
+    return sortedR
 }
 
 function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {

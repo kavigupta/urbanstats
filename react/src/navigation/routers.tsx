@@ -178,7 +178,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                 />
             )
         case 'syau':
-            return <SYAUPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
+            return <SYAUPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} coordinates={pageData.coordinates} />
         case 'mapper':
             return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
