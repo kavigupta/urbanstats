@@ -330,7 +330,6 @@ def html_index(
         }}
       }}
     </style>
-    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
   </head>
 
   <body>
