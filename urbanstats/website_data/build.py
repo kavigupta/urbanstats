@@ -330,6 +330,12 @@ def html_index(
         }}
       }}
     </style>
+    <!-- Maplibre GL -->
+    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+
+    <!-- Maplibre GL Leaflet  -->
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
   </head>
 
   <body>

@@ -1,5 +1,7 @@
 import { GeoJSON2SVG } from 'geojson2svg'
 import L from 'leaflet'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import '@maplibre/maplibre-gl-leaflet'
 import 'leaflet/dist/leaflet.css'
 import React, { ReactNode } from 'react'
 
@@ -38,7 +40,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private delta = 0.25
     private version = 0
     private last_modified = Date.now()
-    private basemap_layer: null | L.TileLayer = null
+    private basemap_layer: null | L.Layer = null
     private basemap_props: null | Basemap = null
     protected map: L.Map | undefined = undefined
     private exist_this_time: string[] = []
@@ -245,9 +247,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (this.props.basemap.type === 'none') {
             return
         }
-        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
+        // const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        // const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
+        this.basemap_layer = (L as unknown as {
+            maplibreGL: (options: { style: string }) => L.Layer
+        }).maplibreGL({
+            style: 'https://tiles.openfreemap.org/styles/liberty',
+        })
         this.map!.addLayer(this.basemap_layer)
     }
 
