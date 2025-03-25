@@ -14,6 +14,8 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
+import { Geo } from '@observablehq/plot'
+
 export interface MapGenericProps {
     height?: string
     basemap: Basemap
@@ -76,9 +78,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async mapDidRender(): Promise<void> {
-    /**
-         * Called after the map is rendered
-         */
+        /**
+             * Called after the map is rendered
+             */
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
@@ -91,19 +93,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         //     zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
         // })
 
-        const berlin = {
-            center: [13.388, 52.517] as [number, number],
-            zoom: 9.5,
-            bearing: 0,
-            pitch: 0,
-        } as const
-
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/liberty',
-            center: berlin.center,
-            zoom: berlin.zoom,
-            bearing: berlin.bearing,
-            pitch: berlin.pitch,
             container: this.id,
             // boxZoom: false,
             // doubleClickZoom: false,
@@ -229,6 +220,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.version = version
         this.last_modified = now
+        while (!this.map!.isStyleLoaded()) {
+            // sleep 10ms
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
         await this.updateFn()
     }
 
@@ -249,7 +244,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // Remove polygons that no longer exist
         for (const [name] of this.polygon_by_name.entries()) {
             if (!this.exist_this_time.includes(name)) {
+                console.log('Removing', name)
                 map.removeLayer(name)
+                map.removeSource(name)
                 this.polygon_by_name.delete(name)
             }
         }
@@ -340,17 +337,22 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
-            // TODO handle styling
-            // this.polygon_by_name.get(polygon.name)!.setStyle(polygon.style)
+            const layer = this.map!.getLayer(polygon.name)!
+            this.map!.setPaintProperty(layer.id, 'fill-color', polygon.style.fillColor as string)
+            this.map!.setPaintProperty(layer.id, 'fill-opacity', polygon.style.fillOpacity as number)
+            this.map!.setPaintProperty(layer.id, 'fill-outline-color', polygon.style.color as string)
             return () => undefined
         }
         const geojson = await this.polygonGeojson(polygon.name)
         this.polygon_by_name.set(polygon.name, geojson)
         return () => {
+            console.log('Adding', polygon.name)
+            const time = Date.now()
             map.addSource(polygon.name, {
                 type: 'geojson',
                 data: geojson,
             })
+            console.log('Source', Date.now() - time)
             // const group = maplibregl.featureGroup()
             // const leafletPolygon = maplibregl.geoJson(geojson, {
             //     style: polygon.style,
@@ -358,6 +360,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             //     smoothFactor: 0.1,
             //     className: `tag-${polygon.name.replace(/ /g, '_')}`,
             // })
+            const time2 = Date.now()
             map.addLayer({
                 id: polygon.name,
                 type: 'fill',
@@ -368,7 +371,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'fill-outline-color': polygon.style.color as string,
                 },
             })
-            map.getSource(polygon.name)!
+            console.log('Layer', Date.now() - time2)
+            // map.getSource(polygon.name)!
             // TODO handle click
             // leafletPolygon.onClick('click', () => {
             //     void this.context.navigate({
@@ -378,33 +382,34 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             //     }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
             // })
 
-            // @ts-expect-error Second parameter not included in library type definitions
-            // group.addLayer(leafletPolygon, false)
+            if (fit_bounds) {
+                this.zoomToItems([geojson], { duration: 0 })
+            }
         }
     }
 
-    zoomToAll(): void {
-    // zoom such that all polygons are visible
-        // const bounds = new maplibregl.LatLngBounds([])
-        // for (const polygon of this.polygon_by_name.values()) {
-        //     bounds.extend(polygon.getBounds())
-        // }
+    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.AnimationOptions): void {
+        // zoom such that all items are visible
         const bounds = new maplibregl.LngLatBounds()
 
-        for (const polygon of this.polygon_by_name.values()) {
+        for (const polygon of items) {
             const bbox = geojsonExtent(polygon)
             bounds.extend(new maplibregl.LngLatBounds(
                 new maplibregl.LngLat(bbox[0], bbox[1]),
                 new maplibregl.LngLat(bbox[2], bbox[3]),
             ))
         }
-        this.map?.fitBounds(bounds)
+        console.log('BOUNDS', bounds)
+        this.map?.fitBounds(bounds, options)
+    }
+
+    zoomToAll(): void {
+        this.zoomToItems(this.polygon_by_name.values(), {})
     }
 
     zoomTo(name: string): void {
         // zoom to a specific polygon
-        // TODO
-        // this.map!.fitBounds(geojsonExtent(this.polygon_by_name.get(name)))
+        this.zoomToItems([this.polygon_by_name.get(name)!], {})
     }
 
     static override contextType = Navigator.Context
