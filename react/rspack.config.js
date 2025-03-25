@@ -26,7 +26,13 @@ export default env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { test: /\.m?js$/, loader: 'builtin:swc-loader', resolve: { fullySpecified: false } },
+            { 
+                test: /\.m?js$/, loader: 'builtin:swc-loader', 
+                resolve: { fullySpecified: false }, 
+                exclude: [
+                    path.resolve(import.meta.dirname, 'node_modules/maplibre-gl')
+                ] 
+            },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
