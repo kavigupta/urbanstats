@@ -1,6 +1,7 @@
+import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
 import { Basemap } from '../mapper/settings'
@@ -34,13 +35,13 @@ interface MapState {
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
-    private polygon_by_name = new Map<string, L.FeatureGroup>()
+    private polygon_by_name = new Map<string, GeoJSON.Feature>()
+
     private delta = 0.25
     private version = 0
     private last_modified = Date.now()
-    private basemap_layer: null | L.TileLayer = null
     private basemap_props: null | Basemap = null
-    protected map: L.Map | undefined = undefined
+    protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
     private id: string
 
@@ -85,9 +86,31 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        const map = new L.Map(this.id, {
-            layers: [], center: new L.LatLng(0, 0), zoom: 0,
-            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
+        // const map = new maplibregl.Map(this.id, {
+        //     layers: [], center: new maplibregl.LatLng(0, 0), zoom: 0,
+        //     zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
+        // })
+
+        const berlin = {
+            center: [13.388, 52.517] as [number, number],
+            zoom: 9.5,
+            bearing: 0,
+            pitch: 0,
+        } as const
+
+        const map = new maplibregl.Map({
+            style: 'https://tiles.openfreemap.org/styles/liberty',
+            center: berlin.center,
+            zoom: berlin.zoom,
+            bearing: berlin.bearing,
+            pitch: berlin.pitch,
+            container: this.id,
+            // boxZoom: false,
+            // doubleClickZoom: false,
+            scrollZoom: true,
+            attributionControl: false,
+            // cooperativeGestures: false,
+            dragRotate: false,
         })
         this.map = map
         await this.componentDidUpdate(this.props, this.state)
@@ -224,9 +247,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await this.mapDidRender()
 
         // Remove polygons that no longer exist
-        for (const [name, polygon] of this.polygon_by_name.entries()) {
+        for (const [name] of this.polygon_by_name.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                map.removeLayer(polygon)
+                map.removeLayer(name)
                 this.polygon_by_name.delete(name)
             }
         }
@@ -238,20 +261,20 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         this.basemap_props = this.props.basemap
-        if (this.basemap_layer !== null) {
-            this.map!.removeLayer(this.basemap_layer)
-            this.basemap_layer = null
-        }
+        // if (this.basemap_layer !== null) {
+        //     this.map!.removeLayer(this.basemap_layer)
+        //     this.basemap_layer = null
+        // }
         if (this.props.basemap.type === 'none') {
             return
         }
-        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
-        this.map!.addLayer(this.basemap_layer)
+        // const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        // const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // this.basemap_layer = maplibregl.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
+        // this.map!.addLayer(this.basemap_layer)
     }
 
-    async addPolygons(map: L.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
+    async addPolygons(map: maplibregl.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
         /*
          * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
@@ -314,51 +337,74 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async addPolygon(map: L.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
+    async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
-            this.polygon_by_name.get(polygon.name)!.setStyle(polygon.style)
+            // TODO handle styling
+            // this.polygon_by_name.get(polygon.name)!.setStyle(polygon.style)
             return () => undefined
         }
         const geojson = await this.polygonGeojson(polygon.name)
+        this.polygon_by_name.set(polygon.name, geojson)
         return () => {
-            const group = L.featureGroup()
-            const leafletPolygon = L.geoJson(geojson, {
-                style: polygon.style,
-                // @ts-expect-error smoothFactor not included in library type definitions
-                smoothFactor: 0.1,
-                className: `tag-${polygon.name.replace(/ /g, '_')}`,
+            map.addSource(polygon.name, {
+                type: 'geojson',
+                data: geojson,
             })
-            leafletPolygon.on('click', () => {
-                void this.context.navigate({
-                    kind: 'article',
-                    universe: this.context.universe,
-                    longname: polygon.name,
-                }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+            // const group = maplibregl.featureGroup()
+            // const leafletPolygon = maplibregl.geoJson(geojson, {
+            //     style: polygon.style,
+            //     // @ts-expect-error smoothFactor not included in library type definitions
+            //     smoothFactor: 0.1,
+            //     className: `tag-${polygon.name.replace(/ /g, '_')}`,
+            // })
+            map.addLayer({
+                id: polygon.name,
+                type: 'fill',
+                source: polygon.name,
+                paint: {
+                    'fill-color': polygon.style.fillColor as string,
+                    'fill-opacity': polygon.style.fillOpacity as number,
+                    'fill-outline-color': polygon.style.color as string,
+                },
             })
+            map.getSource(polygon.name)!
+            // TODO handle click
+            // leafletPolygon.onClick('click', () => {
+            //     void this.context.navigate({
+            //         kind: 'article',
+            //         universe: this.context.universe,
+            //         longname: polygon.name,
+            //     }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+            // })
 
             // @ts-expect-error Second parameter not included in library type definitions
-            group.addLayer(leafletPolygon, false)
-            if (fit_bounds) {
-                map.fitBounds(group.getBounds(), { animate: false })
-            }
-            map.addLayer(group)
-            this.polygon_by_name.set(polygon.name, group)
+            // group.addLayer(leafletPolygon, false)
         }
     }
 
     zoomToAll(): void {
     // zoom such that all polygons are visible
-        const bounds = new L.LatLngBounds([])
+        // const bounds = new maplibregl.LatLngBounds([])
+        // for (const polygon of this.polygon_by_name.values()) {
+        //     bounds.extend(polygon.getBounds())
+        // }
+        const bounds = new maplibregl.LngLatBounds()
+
         for (const polygon of this.polygon_by_name.values()) {
-            bounds.extend(polygon.getBounds())
+            const bbox = geojsonExtent(polygon)
+            bounds.extend(new maplibregl.LngLatBounds(
+                new maplibregl.LngLat(bbox[0], bbox[1]),
+                new maplibregl.LngLat(bbox[2], bbox[3]),
+            ))
         }
-        this.map!.fitBounds(bounds)
+        this.map?.fitBounds(bounds)
     }
 
     zoomTo(name: string): void {
         // zoom to a specific polygon
-        this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
+        // TODO
+        // this.map!.fitBounds(geojsonExtent(this.polygon_by_name.get(name)))
     }
 
     static override contextType = Navigator.Context
