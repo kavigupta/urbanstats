@@ -79,7 +79,7 @@
     "idb": "^8.0.2",
     "json5": "^2.2.0",
     "leaflet": "^1.9.4",
-    "maplibre-gl": "^1.5.0",
+    "maplibre-gl": "^5.2.0",
     "mathjs": "^12.1.0",
     "node-polyfill-webpack-plugin": "^3.0.0",
     "prng": "^0.0.1",
