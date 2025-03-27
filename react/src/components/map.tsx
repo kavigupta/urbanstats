@@ -245,10 +245,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         for (const [name] of this.polygon_by_name.entries()) {
             if (!this.exist_this_time.includes(name)) {
                 console.log('Removing', name)
-                map.removeLayer(name)
                 this.polygon_by_name.delete(name)
             }
         }
+        this.updateSources()
         this.setState({ loading: false })
     }
 
@@ -338,7 +338,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
         source.setData({
             type: 'FeatureCollection',
-            features: this.polygonData!,
+            features: Array.from(this.polygon_by_name.values()),
         })
         this.sources_last_updated = Date.now()
     }
@@ -350,10 +350,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
-            const layer = this.map!.getLayer(polygon.name)!
-            this.map!.setPaintProperty(layer.id, 'fill-color', polygon.style.fillColor as string)
-            this.map!.setPaintProperty(layer.id, 'fill-opacity', polygon.style.fillOpacity as number)
-            this.map!.setPaintProperty(layer.id, 'fill-outline-color', polygon.style.color as string)
+            // const layer = this.map!.getLayer(polygon.name)!
+            // this.map!.setPaintProperty(layer.id, 'fill-color', polygon.style.fillColor as string)
+            // this.map!.setPaintProperty(layer.id, 'fill-opacity', polygon.style.fillOpacity as number)
+            // this.map!.setPaintProperty(layer.id, 'fill-outline-color', polygon.style.color as string)
+            this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
             return () => undefined
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
@@ -364,7 +365,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         this.polygon_by_name.set(polygon.name, geojson)
         return () => {
-            console.log('Adding', polygon.name)
+            // console.log('Adding', polygon.name)
             const time = Date.now()
             if (!map.getSource('polygon')) {
                 this.polygonData = [geojson]
