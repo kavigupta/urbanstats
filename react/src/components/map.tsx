@@ -41,7 +41,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     private delta = 0.25
     private version = 0
-    private last_modified = Date.now()
+    private last_modified = 0
     private basemap_props: null | Basemap = null
     protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
@@ -208,6 +208,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateToVersion(version: number): Promise<void> {
+        console.log('UPDATINg', version)
         if (version <= this.version) {
             return
         }
@@ -220,10 +221,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.version = version
         this.last_modified = now
-        while (!this.map!.isStyleLoaded()) {
-            // sleep 10ms
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
+        // while (!this.map!.isStyleLoaded()) {
+        //     // sleep 10ms
+        //     await new Promise(resolve => setTimeout(resolve, 10))
+        // }
         await this.updateFn()
     }
 
