@@ -162,7 +162,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -190,7 +190,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name)
+            let feature = await this.polygonGeojson(polygon.name, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -246,7 +246,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             if (!this.exist_this_time.includes(name)) {
                 console.log('Removing', name)
                 map.removeLayer(name)
-                map.removeSource(name)
                 this.polygon_by_name.delete(name)
             }
         }
@@ -291,9 +290,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             adders.set(i, adder)
             addDone()
         }))
+        this.updateSources()
     }
 
-    async polygonGeojson(name: string): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, style: object): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -324,10 +324,23 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = {
             type: 'Feature' as const,
-            properties: {},
+            properties: { name, ...style },
             geometry,
         }
         return geojson
+    }
+
+    polygonData: GeoJSON.Feature[] | null = null
+    sources_last_updated = 0
+
+    updateSources(): void {
+        console.log('Updating sources')
+        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
+        source.setData({
+            type: 'FeatureCollection',
+            features: this.polygonData!,
+        })
+        this.sources_last_updated = Date.now()
     }
 
     /*
@@ -343,16 +356,47 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.map!.setPaintProperty(layer.id, 'fill-outline-color', polygon.style.color as string)
             return () => undefined
         }
-        const geojson = await this.polygonGeojson(polygon.name)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+        if (fit_bounds) {
+            console.log('Fitting bounds')
+            this.zoomToItems([geojson], { duration: 0 })
+        }
+
         this.polygon_by_name.set(polygon.name, geojson)
         return () => {
             console.log('Adding', polygon.name)
             const time = Date.now()
-            map.addSource(polygon.name, {
-                type: 'geojson',
-                data: geojson,
-            })
-            console.log('Source', Date.now() - time)
+            if (!map.getSource('polygon')) {
+                this.polygonData = [geojson]
+                map.addSource('polygon', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: this.polygonData,
+                    },
+                })
+                map.addLayer({
+                    id: 'polygon',
+                    type: 'fill',
+                    source: 'polygon',
+                    paint: {
+                        'fill-color': ['get', 'fillColor'],
+                        'fill-opacity': ['get', 'fillOpacity'],
+                        'fill-outline-color': ['get', 'color'],
+                    },
+                    // filter: ['==', '$name', polygon.name],
+                })
+            }
+            else {
+                // const data: maplibregl.GeoJSONSource = map.getSource(polygon.name)!
+                // const fc: GeoJSON.FeatureCollection =
+                this.polygonData!.push(geojson)
+                if (Date.now() - this.sources_last_updated > 1000) {
+                    this.updateSources()
+                }
+                // (data.data as GeoJSON.FeatureCollection).features.push(geojson)
+            }
+            // console.log('Source', Date.now() - time)
             // const group = maplibregl.featureGroup()
             // const leafletPolygon = maplibregl.geoJson(geojson, {
             //     style: polygon.style,
@@ -361,17 +405,19 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             //     className: `tag-${polygon.name.replace(/ /g, '_')}`,
             // })
             const time2 = Date.now()
-            map.addLayer({
-                id: polygon.name,
-                type: 'fill',
-                source: polygon.name,
-                paint: {
-                    'fill-color': polygon.style.fillColor as string,
-                    'fill-opacity': polygon.style.fillOpacity as number,
-                    'fill-outline-color': polygon.style.color as string,
-                },
-            })
-            console.log('Layer', Date.now() - time2)
+            // map.addLayer({
+            //     id: polygon.name,
+            //     type: 'fill',
+            //     source: 'polygon',
+            //     paint: {
+            //         'fill-color': polygon.style.fillColor as string,
+            //         'fill-opacity': polygon.style.fillOpacity as number,
+            //         'fill-outline-color': polygon.style.color as string,
+            //     },
+            //     // add filter that the property longname = name
+            //     filter: ['==', '$name', polygon.name],
+            // })
+            // console.log('Layer', Date.now() - time2)
             // map.getSource(polygon.name)!
             // TODO handle click
             // leafletPolygon.onClick('click', () => {
@@ -381,10 +427,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             //         longname: polygon.name,
             //     }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
             // })
-
-            if (fit_bounds) {
-                this.zoomToItems([geojson], { duration: 0 })
-            }
         }
     }
 
