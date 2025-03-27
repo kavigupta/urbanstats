@@ -350,10 +350,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
-            // const layer = this.map!.getLayer(polygon.name)!
-            // this.map!.setPaintProperty(layer.id, 'fill-color', polygon.style.fillColor as string)
-            // this.map!.setPaintProperty(layer.id, 'fill-opacity', polygon.style.fillOpacity as number)
-            // this.map!.setPaintProperty(layer.id, 'fill-outline-color', polygon.style.color as string)
             this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
             return () => undefined
         }
