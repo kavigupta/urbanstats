@@ -14,8 +14,6 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { Geo } from '@observablehq/plot'
-
 export interface MapGenericProps {
     height?: string
     basemap: Basemap
@@ -23,7 +21,7 @@ export interface MapGenericProps {
 
 export interface Polygon {
     name: string
-    style: Record<string, unknown>
+    style: PolygonStyle
     meta: Record<string, unknown>
 }
 export interface Polygons {
@@ -33,6 +31,13 @@ export interface Polygons {
 
 interface MapState {
     loading: boolean
+}
+
+interface PolygonStyle {
+    fillColor: string
+    fillOpacity: number
+    color: string
+    weight?: number
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
@@ -135,26 +140,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
         })
 
-        function toSvgStyle(style: Record<string, unknown> & { weight?: number }): string {
+        function toSvgStyle(style: PolygonStyle): string {
             let svgStyle = ''
-            for (const key of Object.keys(style)) {
-                if (key === 'fillColor') {
-                    svgStyle += `fill:${style[key]};`
-                    continue
-                }
-                else if (key === 'fillOpacity') {
-                    svgStyle += `fill-opacity:${style[key]};`
-                    continue
-                }
-                else if (key === 'color') {
-                    svgStyle += `stroke:${style[key]};`
-                    continue
-                }
-                else if (key === 'weight') {
-                    svgStyle += `stroke-width:${style[key]! / 10};`
-                    continue
-                }
-                svgStyle += `${key}:${style[key]};`
+            svgStyle += `fill:${style.fillColor};`
+            svgStyle += `fill-opacity:${style.fillOpacity};`
+            svgStyle += `stroke:${style.color};`
+            if (style.weight !== undefined) {
+                svgStyle += `stroke-width:${style.weight / 10};`
             }
             return svgStyle
         }
@@ -294,7 +286,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.updateSources()
     }
 
-    async polygonGeojson(name: string, style: object): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -380,9 +372,18 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     paint: {
                         'fill-color': ['get', 'fillColor'],
                         'fill-opacity': ['get', 'fillOpacity'],
-                        'fill-outline-color': ['get', 'color'],
                     },
                     // filter: ['==', '$name', polygon.name],
+                })
+                // and the outline
+                map.addLayer({
+                    id: 'polygon-outline',
+                    type: 'line',
+                    source: 'polygon',
+                    paint: {
+                        'line-color': ['get', 'color'],
+                        'line-width': ['get', 'weight'],
+                    },
                 })
             }
             else {
