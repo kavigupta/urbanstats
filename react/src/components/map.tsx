@@ -109,6 +109,21 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             dragRotate: false,
         })
         this.map = map
+        map.on('mouseover', 'polygon', () => {
+            map.getCanvas().style.cursor = 'pointer'
+        })
+        map.on('mouseleave', 'polygon', () => {
+            map.getCanvas().style.cursor = ''
+        })
+        map.on('click', 'polygon', (e) => {
+            const features = e.features!
+            const names = features.map(feature => feature.properties.name as string)
+            void this.context.navigate({
+                kind: 'article',
+                universe: this.context.universe,
+                longname: names[0],
+            }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+        })
         await this.componentDidUpdate(this.props, this.state)
     }
 
@@ -395,37 +410,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 }
                 // (data.data as GeoJSON.FeatureCollection).features.push(geojson)
             }
-            // console.log('Source', Date.now() - time)
-            // const group = maplibregl.featureGroup()
-            // const leafletPolygon = maplibregl.geoJson(geojson, {
-            //     style: polygon.style,
-            //     // @ts-expect-error smoothFactor not included in library type definitions
-            //     smoothFactor: 0.1,
-            //     className: `tag-${polygon.name.replace(/ /g, '_')}`,
-            // })
-            const time2 = Date.now()
-            // map.addLayer({
-            //     id: polygon.name,
-            //     type: 'fill',
-            //     source: 'polygon',
-            //     paint: {
-            //         'fill-color': polygon.style.fillColor as string,
-            //         'fill-opacity': polygon.style.fillOpacity as number,
-            //         'fill-outline-color': polygon.style.color as string,
-            //     },
-            //     // add filter that the property longname = name
-            //     filter: ['==', '$name', polygon.name],
-            // })
-            // console.log('Layer', Date.now() - time2)
-            // map.getSource(polygon.name)!
-            // TODO handle click
-            // leafletPolygon.onClick('click', () => {
-            //     void this.context.navigate({
-            //         kind: 'article',
-            //         universe: this.context.universe,
-            //         longname: polygon.name,
-            //     }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
-            // })
         }
     }
 
