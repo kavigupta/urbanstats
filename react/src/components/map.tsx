@@ -99,7 +99,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // })
 
         const map = new maplibregl.Map({
-            style: 'https://tiles.openfreemap.org/styles/liberty',
+            style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
             // boxZoom: false,
             // doubleClickZoom: false,
@@ -269,13 +269,30 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         //     this.map!.removeLayer(this.basemap_layer)
         //     this.basemap_layer = null
         // }
-        if (this.props.basemap.type === 'none') {
-            return
-        }
+        void this.loadBasemap()
         // const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         // const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         // this.basemap_layer = maplibregl.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
         // this.map!.addLayer(this.basemap_layer)
+    }
+
+    async loadBasemap(): Promise<void> {
+        while (!this.map!.isStyleLoaded()) {
+            // sleep 10ms
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        this.map!.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
+            if (layerspec.id === 'background') {
+                return
+            }
+            const layer = this.map!.getLayer(layerspec.id)!
+            if (this.props.basemap.type === 'none') {
+                layer.setLayoutProperty('visibility', 'none')
+            }
+            else {
+                layer.setLayoutProperty('visibility', 'visible')
+            }
+        })
     }
 
     async addPolygons(map: maplibregl.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
