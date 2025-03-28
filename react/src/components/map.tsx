@@ -257,11 +257,15 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         void this.loadBasemap()
     }
 
-    async loadBasemap(): Promise<void> {
+    async ensureStyleLoaded(): Promise<void> {
         while (!this.map!.isStyleLoaded()) {
             // sleep 10ms
             await new Promise(resolve => setTimeout(resolve, 10))
         }
+    }
+
+    async loadBasemap(): Promise<void> {
+        await this.ensureStyleLoaded()
         this.map!.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
             if (layerspec.id === 'background') {
                 return
@@ -291,6 +295,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 adderIndex++
             }
         }
+        await this.ensureStyleLoaded()
         await Promise.all(polygons.map(async (polygon, i) => {
             const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
