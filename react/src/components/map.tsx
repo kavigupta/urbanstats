@@ -8,6 +8,7 @@ import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { debugPerformance } from '../search'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -226,6 +227,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateFn(): Promise<void> {
+        const time = Date.now()
+        debugPerformance('Lading map...')
         this.setState({ loading: true })
 
         const map = this.map!
@@ -246,6 +249,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         this.updateSources()
+        debugPerformance('No longer loading map; took', Date.now() - time, 'ms')
         this.setState({ loading: false })
     }
 
