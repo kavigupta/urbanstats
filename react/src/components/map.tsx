@@ -228,7 +228,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async updateFn(): Promise<void> {
         const time = Date.now()
-        debugPerformance('Lading map...')
+        debugPerformance('Loading map...')
         this.setState({ loading: true })
 
         const map = this.map!
@@ -249,7 +249,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         this.updateSources()
-        debugPerformance('No longer loading map; took', Date.now() - time, 'ms')
+        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
         this.setState({ loading: false })
     }
 
@@ -348,7 +348,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     sources_last_updated = 0
 
     updateSources(): void {
-        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
+        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')
         source.setData({
             type: 'FeatureCollection',
             features: Array.from(this.polygon_by_name.values()),
