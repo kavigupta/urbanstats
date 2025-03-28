@@ -371,7 +371,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
-    async updateSources(force = true): Promise<void> {
+    async updateSources(force = false): Promise<void> {
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
