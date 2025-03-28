@@ -1,6 +1,8 @@
 from functools import lru_cache
 
-from urbanstats.games.quiz_columns import stat_to_quiz_name
+import numpy as np
+
+from urbanstats.games.quiz_columns import get_quiz_stats, stat_to_quiz_name
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
@@ -19,16 +21,22 @@ def custom_quiz_question(stat_column_name, longname_a, longname_b):
     }[stat_column_name]
     stat_column_question = stat_to_quiz_name()[stat_column_internal]
     stat_column_internal_original = stat_column_internal
-    if stat_column_internal == "population":
-        stat_column_internal = "best_population_estimate"
     return dict(
         stat_column_original=stat_column_internal_original,
         question=stat_column_question,
         longname_a=longname_a,
         longname_b=longname_b,
-        stat_a=t.loc[longname_a, stat_column_internal],
-        stat_b=t.loc[longname_b, stat_column_internal],
+        stat_a=extract(t.loc[longname_a], stat_column_internal),
+        stat_b=extract(t.loc[longname_b], stat_column_internal),
     )
+
+
+def extract(row, column):
+    [cols] = [z for x, _, z in get_quiz_stats() if x == column]
+    vals = [row[col] for col in cols]
+    # get the one non-nan value
+    [val] = [v for v in vals if not np.isnan(v)]
+    return float(val)
 
 
 @lru_cache(maxsize=None)
@@ -53,5 +61,33 @@ def get_custom_quizzes():
                 "Carbon County, Pennsylvania, USA",
                 "Clark County, Nevada, USA",
             ),
-        ]
+        ],
+        # april fool's day 2025
+        577: [
+            custom_quiz_question(
+                "PW Density (r=4km)",
+                "London Urban Center, United Kingdom",
+                "London Urban Center, Canada",
+            ),
+            custom_quiz_question(
+                "Snowfall [rain-equivalent]",
+                "Nevada County, California, USA",
+                "Nevada, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean PM2.5 Pollution",
+                "New York Urban Center, USA",
+                "York Urban Center, United Kingdom",
+            ),
+            custom_quiz_question(
+                "Cohabiting With Partner (Gay) %",
+                "Portland [Urban Area], OR-WA, USA",
+                "Portland [Urban Area], ME, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean Elevation",
+                "Georgia",
+                "Georgia, USA",
+            ),
+        ],
     }
