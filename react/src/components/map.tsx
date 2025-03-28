@@ -238,9 +238,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         const { polygons, zoomIndex } = await this.computePolygons()
 
+        debugPerformance(`Computed polygons; at ${Date.now() - time}ms`)
+
         await this.addPolygons(map, polygons, zoomIndex)
 
+        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
         await this.mapDidRender()
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - time}ms`)
 
         // Remove polygons that no longer exist
         for (const [name] of this.polygon_by_name.entries()) {
@@ -249,6 +253,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         this.updateSources()
+        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
         this.setState({ loading: false })
     }
@@ -290,6 +295,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
          * Waiting for all the polygons to load before adding them produces an unacceptable delay
          */
+        const time = Date.now()
+        debugPerformance('Adding polygons...')
         let adderIndex = 0
         const adders = new Map<number, () => void>()
         const addDone = (): void => {
@@ -299,13 +306,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 adderIndex++
             }
         }
-        await this.ensureStyleLoaded()
+        // await this.ensureStyleLoaded()
+        // debugPerformance(`Ensured style loaded; at ${Date.now() - time}ms`)
         await Promise.all(polygons.map(async (polygon, i) => {
             const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
             addDone()
         }))
+        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
         this.updateSources()
+        debugPerformance(`Updated sources; at ${Date.now() - time}ms`)
     }
 
     async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
@@ -361,6 +371,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
+        const time = Date.now()
+        debugPerformance(`Adding polygon ${polygon.name}...`)
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
             this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
@@ -372,6 +384,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
 
         this.polygon_by_name.set(polygon.name, geojson)
+        debugPerformance(`Loaded polygon ${polygon.name}; at ${Date.now() - time}ms`)
         return () => {
             if (!map.getSource('polygon')) {
                 map.addSource('polygon', {
@@ -405,6 +418,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     this.updateSources()
                 }
             }
+            debugPerformance(`Finished ${polygon.name}; at ${Date.now() - time}ms`)
         }
     }
 
