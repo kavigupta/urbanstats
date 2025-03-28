@@ -20,7 +20,7 @@ export interface MapGenericProps {
 
 export interface Polygon {
     name: string
-    style: Record<string, unknown>
+    style: PolygonStyle
     meta: Record<string, unknown>
 }
 export interface Polygons {
@@ -30,6 +30,13 @@ export interface Polygons {
 
 interface MapState {
     loading: boolean
+}
+
+interface PolygonStyle {
+    fillColor: string
+    fillOpacity: number
+    color: string
+    weight?: number
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
@@ -121,26 +128,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
         })
 
-        function toSvgStyle(style: Record<string, unknown> & { weight?: number }): string {
+        function toSvgStyle(style: PolygonStyle): string {
             let svgStyle = ''
-            for (const key of Object.keys(style)) {
-                if (key === 'fillColor') {
-                    svgStyle += `fill:${style[key]};`
-                    continue
-                }
-                else if (key === 'fillOpacity') {
-                    svgStyle += `fill-opacity:${style[key]};`
-                    continue
-                }
-                else if (key === 'color') {
-                    svgStyle += `stroke:${style[key]};`
-                    continue
-                }
-                else if (key === 'weight') {
-                    svgStyle += `stroke-width:${style[key]! / 10};`
-                    continue
-                }
-                svgStyle += `${key}:${style[key]};`
+            svgStyle += `fill:${style.fillColor};`
+            svgStyle += `fill-opacity:${style.fillOpacity};`
+            svgStyle += `stroke:${style.color};`
+            if (style.weight !== undefined) {
+                svgStyle += `stroke-width:${style.weight / 10};`
             }
             return svgStyle
         }
