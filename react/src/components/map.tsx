@@ -348,7 +348,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     sources_last_updated = 0
 
     updateSources(): void {
-        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')
+        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
         source.setData({
             type: 'FeatureCollection',
             features: Array.from(this.polygon_by_name.values()),
