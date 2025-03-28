@@ -93,11 +93,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        // const map = new maplibregl.Map(this.id, {
-        //     layers: [], center: new maplibregl.LatLng(0, 0), zoom: 0,
-        //     zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
-        // })
-
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
@@ -215,7 +210,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateToVersion(version: number): Promise<void> {
-        console.log('UPDATINg', version)
         if (version <= this.version) {
             return
         }
@@ -228,10 +222,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.version = version
         this.last_modified = now
-        // while (!this.map!.isStyleLoaded()) {
-        //     // sleep 10ms
-        //     await new Promise(resolve => setTimeout(resolve, 10))
-        // }
         await this.updateFn()
     }
 
@@ -252,7 +242,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // Remove polygons that no longer exist
         for (const [name] of this.polygon_by_name.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                console.log('Removing', name)
                 this.polygon_by_name.delete(name)
             }
         }
@@ -265,15 +254,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         this.basemap_props = this.props.basemap
-        // if (this.basemap_layer !== null) {
-        //     this.map!.removeLayer(this.basemap_layer)
-        //     this.basemap_layer = null
-        // }
         void this.loadBasemap()
-        // const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        // const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        // this.basemap_layer = maplibregl.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
-        // this.map!.addLayer(this.basemap_layer)
     }
 
     async loadBasemap(): Promise<void> {
@@ -355,11 +336,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return geojson
     }
 
-    polygonData: GeoJSON.Feature[] | null = null
     sources_last_updated = 0
 
     updateSources(): void {
-        console.log('Updating sources')
         const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
         source.setData({
             type: 'FeatureCollection',
@@ -380,21 +359,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         if (fit_bounds) {
-            console.log('Fitting bounds')
             this.zoomToItems([geojson], { duration: 0 })
         }
 
         this.polygon_by_name.set(polygon.name, geojson)
         return () => {
-            // console.log('Adding', polygon.name)
-            const time = Date.now()
             if (!map.getSource('polygon')) {
-                this.polygonData = [geojson]
                 map.addSource('polygon', {
                     type: 'geojson',
                     data: {
                         type: 'FeatureCollection',
-                        features: this.polygonData,
+                        features: [geojson],
                     },
                 })
                 map.addLayer({
@@ -405,9 +380,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                         'fill-color': ['get', 'fillColor'],
                         'fill-opacity': ['get', 'fillOpacity'],
                     },
-                    // filter: ['==', '$name', polygon.name],
                 })
-                // and the outline
                 map.addLayer({
                     id: 'polygon-outline',
                     type: 'line',
@@ -419,13 +392,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 })
             }
             else {
-                // const data: maplibregl.GeoJSONSource = map.getSource(polygon.name)!
-                // const fc: GeoJSON.FeatureCollection =
-                this.polygonData!.push(geojson)
                 if (Date.now() - this.sources_last_updated > 1000) {
                     this.updateSources()
                 }
-                // (data.data as GeoJSON.FeatureCollection).features.push(geojson)
             }
         }
     }
@@ -441,7 +410,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 new maplibregl.LngLat(bbox[2], bbox[3]),
             ))
         }
-        console.log('BOUNDS', bounds)
         this.map?.fitBounds(bounds, options)
     }
 
@@ -450,7 +418,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomTo(name: string): void {
-        // zoom to a specific polygon
         this.zoomToItems([this.polygon_by_name.get(name)!], {})
     }
 
