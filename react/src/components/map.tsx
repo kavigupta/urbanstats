@@ -52,6 +52,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
     private id: string
+    private ensureStyleLoaded: Promise<void> | undefined = undefined
 
     constructor(props: P) {
         super(props)
@@ -105,6 +106,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             dragRotate: false,
         })
         this.map = map
+        this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
             map.getCanvas().style.cursor = 'pointer'
         })
@@ -252,7 +254,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 this.polygon_by_name.delete(name)
             }
         }
-        this.updateSources()
+        await this.updateSources(true)
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
         this.setState({ loading: false })
@@ -266,15 +268,27 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         void this.loadBasemap()
     }
 
-    async ensureStyleLoaded(): Promise<void> {
-        while (!this.map!.isStyleLoaded()) {
-            // sleep 10ms
-            await new Promise(resolve => setTimeout(resolve, 10))
+    // async ensureStyleLoaded(): Promise<void> {
+    //     const time = Date.now()
+    //     while (!this.map!.isStyleLoaded()) {
+    //         debugPerformance(`Waiting for style to load...; at ${Date.now() - time}ms`)
+    //         // sleep 10ms
+    //         await new Promise(resolve => setTimeout(resolve, 10))
+    //     }
+    // }
+
+    async stylesheetPresent(): Promise<void> {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
+        if (this.map!.style.stylesheet !== undefined) {
+            return
         }
+        await new Promise(resolve => setTimeout(resolve, 10))
+        await this.stylesheetPresent()
     }
 
     async loadBasemap(): Promise<void> {
-        await this.ensureStyleLoaded()
+        await this.stylesheetPresent()
+        // await this.ensureStyleLoaded()
         this.map!.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
             if (layerspec.id === 'background') {
                 return
@@ -298,24 +312,24 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance('Adding polygons...')
         let adderIndex = 0
-        const adders = new Map<number, () => void>()
-        const addDone = (): void => {
+        const adders = new Map<number, () => Promise<void>>()
+        const addDone = async (): Promise<void> => {
             while (adders.has(adderIndex)) {
-                adders.get(adderIndex)!()
+                await adders.get(adderIndex)!()
                 adders.delete(adderIndex)
                 adderIndex++
             }
         }
-        // await this.ensureStyleLoaded()
+        // await this.ensureStyleLoaded!
         // debugPerformance(`Ensured style loaded; at ${Date.now() - time}ms`)
         await Promise.all(polygons.map(async (polygon, i) => {
             const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
-            addDone()
+            await addDone()
         }))
-        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
-        this.updateSources()
-        debugPerformance(`Updated sources; at ${Date.now() - time}ms`)
+        debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
+        await this.updateSources(true)
+        debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
     async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
@@ -357,26 +371,63 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
-    updateSources(): void {
-        const source: maplibregl.GeoJSONSource = this.map!.getSource('polygon')!
-        source.setData({
+    async updateSources(force = true): Promise<void> {
+        if (this.sources_last_updated > Date.now() - 1000 && !force) {
+            return
+        }
+        const time = Date.now()
+        if (!this.map!.isStyleLoaded() && !force) {
+            return
+        }
+        console.log('updating sources. last updated: ', this.sources_last_updated, ' now: ', Date.now())
+        this.sources_last_updated = Date.now()
+        await this.ensureStyleLoaded!
+        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
+        const map = this.map!
+        const data = {
             type: 'FeatureCollection',
             features: Array.from(this.polygon_by_name.values()),
-        })
-        this.sources_last_updated = Date.now()
+        } satisfies GeoJSON.FeatureCollection
+        let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        if (source === undefined) {
+            map.addSource('polygon', {
+                type: 'geojson',
+                data,
+            })
+            map.addLayer({
+                id: 'polygon',
+                type: 'fill',
+                source: 'polygon',
+                paint: {
+                    'fill-color': ['get', 'fillColor'],
+                    'fill-opacity': ['get', 'fillOpacity'],
+                },
+            })
+            map.addLayer({
+                id: 'polygon-outline',
+                type: 'line',
+                source: 'polygon',
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': ['get', 'weight'],
+                },
+            })
+            source = map.getSource('polygon')!
+        }
+        source.setData(data)
     }
 
     /*
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
+    async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         const time = Date.now()
         debugPerformance(`Adding polygon ${polygon.name}...`)
         this.exist_this_time.push(polygon.name)
         if (this.polygon_by_name.has(polygon.name)) {
             this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
-            return () => undefined
+            return () => Promise.resolve()
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         if (fit_bounds) {
@@ -385,39 +436,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         this.polygon_by_name.set(polygon.name, geojson)
         debugPerformance(`Loaded polygon ${polygon.name}; at ${Date.now() - time}ms`)
-        return () => {
-            if (!map.getSource('polygon')) {
-                map.addSource('polygon', {
-                    type: 'geojson',
-                    data: {
-                        type: 'FeatureCollection',
-                        features: [geojson],
-                    },
-                })
-                map.addLayer({
-                    id: 'polygon',
-                    type: 'fill',
-                    source: 'polygon',
-                    paint: {
-                        'fill-color': ['get', 'fillColor'],
-                        'fill-opacity': ['get', 'fillOpacity'],
-                    },
-                })
-                map.addLayer({
-                    id: 'polygon-outline',
-                    type: 'line',
-                    source: 'polygon',
-                    paint: {
-                        'line-color': ['get', 'color'],
-                        'line-width': ['get', 'weight'],
-                    },
-                })
-            }
-            else {
-                if (Date.now() - this.sources_last_updated > 1000) {
-                    this.updateSources()
-                }
-            }
+        return async () => {
+            await this.updateSources()
             debugPerformance(`Finished ${polygon.name}; at ${Date.now() - time}ms`)
         }
     }
