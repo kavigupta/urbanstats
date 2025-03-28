@@ -70,7 +70,7 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
 export async function waitForLoading(t: TestController): Promise<void> {
     // Wait for various components that need to load
     while (await Selector('[data-test-loading=true]').exists) {
-        await t.wait(1000)
+        await t.wait(10)
     }
     await t.wait(1000) // Wait for map to finish rendering
 }
@@ -79,7 +79,7 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
     // Wait for various components that need to load
     while (await Selector(`[data-test-loading-quiz=true]`).exists) {
         // this really shouldn't take that long to load, a few extra checks should be fine
-        await t.wait(100)
+        await t.wait(10)
     }
 }
 
