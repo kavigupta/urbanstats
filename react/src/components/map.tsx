@@ -429,7 +429,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
             return () => Promise.resolve()
         }
+        const t2 = Date.now()
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+        debugPerformance(`Actual loading of polygon ${polygon.name} took ${Date.now() - t2}ms`)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
         }
