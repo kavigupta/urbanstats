@@ -242,3 +242,7 @@ export async function createComparison(t: TestController, searchTerm: string): P
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
 }
+
+export function mapElement(r: RegExp): Selector {
+    return Selector('path').withAttribute('class', r)
+}
