@@ -1,33 +1,39 @@
 // Since testcafe accumulates memory in the CI, each memory test must be run in its own test file
-
-// This function is a factory becuase it's the only way I can figure out how to track other targets (Workers)
-// Only call this once per test session
-export async function memoryMonitor(t: TestController): Promise<() => Promise<number>> {
+export async function memoryUsage(t: TestController): Promise<number> {
     const cdpSession = await t.getCurrentCDPSession()
-    const { targetInfos: [defaultTarget] } = await cdpSession.Target.getTargets({}) // This is the page
-    let targetInfos: { targetId: string }[] = []
-    cdpSession.Target.on('attachedToTarget', ({ targetInfo }): void => { targetInfos.push(targetInfo) })
-    cdpSession.Target.on('detachedFromTarget', (event): void => { targetInfos = targetInfos.filter(({ targetId }) => targetId !== event.targetId) })
-    await cdpSession.Target.setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false })
-    await cdpSession.Target.setDiscoverTargets({ discover: true })
-    return async () => {
-        await t.wait(1000) // Wait for page to load
-        // We do main garabage collection in a separate step because it may cause other targets to be destroyed
-        await cdpSession.HeapProfiler.collectGarbage()
-        await t.wait(1000)
-        let bytesUsed = (await cdpSession.Runtime.getHeapUsage()).usedSize // For default target
-        for (const target of targetInfos) {
-            await cdpSession.Target.activateTarget(target)
-            await cdpSession.HeapProfiler.collectGarbage()
-            await t.wait(1000)
-            bytesUsed += (await cdpSession.Runtime.getHeapUsage()).usedSize
-        }
-        await cdpSession.Target.activateTarget(defaultTarget)
-        console.warn(`Bytes used: ${bytesUsed}`)
-        return bytesUsed
+    await t.wait(5000) // Wait for page to load + stabilize
+
+    let { targetInfos } = await cdpSession.Target.getTargets({})
+
+    for (const target of targetInfos) {
+        const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
+        // @ts-expect-error -- sessionid
+        await cdpSession.HeapProfiler.collectGarbage(sessionId)
     }
+
+    // Wait for garbage collection
+    await t.wait(1000);
+
+    // Targets may be cleaned up as the result of garbage collection
+    ({ targetInfos } = await cdpSession.Target.getTargets({}))
+
+    let bytesUsed = 0
+    const targetsWithMemory: (typeof targetInfos[number] & { bytes: number })[] = []
+
+    for (const target of targetInfos) {
+        const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
+
+        // @ts-expect-error -- sessionid
+        const targetBytes = (await cdpSession.Runtime.getHeapUsage(sessionId)).usedSize
+        targetsWithMemory.push({ ...target, bytes: targetBytes })
+
+        bytesUsed += targetBytes
+    }
+
+    console.warn(targetsWithMemory)
+    return bytesUsed
 }
 
-export const homePageThreshold = 22_000_000
-export const californiaArticleThreshold = 52_000_000
-export const searchSize = 23_000_000
+export const homePageSize = 13_000_000
+export const californiaArticleSize = 52_000_000
+export const searchSize = 36_000_000
