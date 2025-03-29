@@ -7,7 +7,6 @@ import {
     getLocation,
     createComparison,
     waitForPageLoaded,
-    mapElement,
     clickMapElement,
 } from './test_utils'
 
