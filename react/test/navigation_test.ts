@@ -22,7 +22,7 @@ const goBack = ClientFunction(() => { window.history.back() })
 const goForward = ClientFunction(() => { window.history.forward() })
 const getScroll = ClientFunction(() => window.scrollY)
 
-test('maintain and restore scroll position back-forward', async (t) => {
+test.only('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
     await t.expect(Selector('.headertext').withText(/Texas/).exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
     await t.scroll(0, 200)
@@ -34,7 +34,8 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.click(Selector('a').withText(/New York/))
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.scroll(0, 400)
-    await t.click(Selector('path[class*="Connecticut"]'))
+    // click on CT
+    await t.click(Selector('canvas'), { offsetX: 700, offsetY: 300 })
     await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)

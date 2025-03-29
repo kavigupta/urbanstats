@@ -32,6 +32,7 @@ export interface Polygons {
 
 interface MapState {
     loading: boolean
+    polygonByName: Map<string, GeoJSON.Feature>
 }
 
 interface PolygonStyle {
@@ -43,8 +44,6 @@ interface PolygonStyle {
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
-    private polygon_by_name = new Map<string, GeoJSON.Feature>()
-
     private delta = 0.25
     private version = 0
     private last_modified = 0
@@ -57,7 +56,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     constructor(props: P) {
         super(props)
         this.id = `map-${Math.random().toString(36).substring(2)}`
-        this.state = { loading: true }
+        this.state = { loading: true, polygonByName: new Map() }
     }
 
     override render(): ReactNode {
@@ -65,6 +64,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
+                <div style={{ display: 'none' }}>
+                    {Array.from(this.state.polygonByName.keys()).map(name =>
+                        // eslint-disable-next-line react/no-unknown-property -- this is a custom property
+                        <div key={name} clickable-polygon={name} onClick={() => { this.onClick(name) }} />,
+                    )}
+                </div>
             </>
         )
     }
@@ -116,13 +121,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         map.on('click', 'polygon', (e) => {
             const features = e.features!
             const names = features.map(feature => feature.properties.name as string)
-            void this.context.navigate({
-                kind: 'article',
-                universe: this.context.universe,
-                longname: names[0],
-            }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+            this.onClick(names[0])
         })
         await this.componentDidUpdate(this.props, this.state)
+    }
+
+    onClick(name: string): void {
+        void this.context.navigate({
+            kind: 'article',
+            universe: this.context.universe,
+            longname: name,
+        }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
     }
 
     /**
@@ -249,9 +258,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - time}ms`)
 
         // Remove polygons that no longer exist
-        for (const [name] of this.polygon_by_name.entries()) {
+        for (const [name] of this.state.polygonByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                this.polygon_by_name.delete(name)
+                this.state.polygonByName.delete(name)
             }
         }
         await this.updateSources(true)
@@ -386,7 +395,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const map = this.map!
         const data = {
             type: 'FeatureCollection',
-            features: Array.from(this.polygon_by_name.values()),
+            features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         if (source === undefined) {
@@ -425,8 +434,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance(`Adding polygon ${polygon.name}...`)
         this.exist_this_time.push(polygon.name)
-        if (this.polygon_by_name.has(polygon.name)) {
-            this.polygon_by_name.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
+        if (this.state.polygonByName.has(polygon.name)) {
+            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
             return () => Promise.resolve()
         }
         const t2 = Date.now()
@@ -436,7 +445,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.zoomToItems([geojson], { duration: 0 })
         }
 
-        this.polygon_by_name.set(polygon.name, geojson)
+        this.state.polygonByName.set(polygon.name, geojson)
         debugPerformance(`Loaded polygon ${polygon.name}; at ${Date.now() - time}ms`)
         return async () => {
             await this.updateSources()
@@ -459,11 +468,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomToAll(): void {
-        this.zoomToItems(this.polygon_by_name.values(), {})
+        this.zoomToItems(this.state.polygonByName.values(), {})
     }
 
     zoomTo(name: string): void {
-        this.zoomToItems([this.polygon_by_name.get(name)!], {})
+        this.zoomToItems([this.state.polygonByName.get(name)!], {})
     }
 
     static override contextType = Navigator.Context

@@ -244,5 +244,5 @@ export async function createComparison(t: TestController, searchTerm: string): P
 }
 
 export function mapElement(r: RegExp): Selector {
-    return Selector('path').withAttribute('class', r)
+    return Selector('div').withAttribute('clickable-polygon', r)
 }
