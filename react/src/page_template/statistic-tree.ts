@@ -48,6 +48,7 @@ export interface Statistic {
     source: DataSource | null
     path: StatPath
     name: string
+    statcol: StatCol
     parent: GroupYear
 }
 
@@ -60,12 +61,13 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
             ...group,
             contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
-                stats: stats_by_source.map(({ name, stats }) => ({
+                stats: stats_by_source.map(({ name, stats: s }) => ({
                     name,
-                    bySource: stats.map(({ source, column }) => ({
+                    bySource: s.map(({ source, column }) => ({
                         source,
                         path: statPaths[column],
                         name: statNames[column],
+                        statcol: stats[column],
                         parent: undefined as unknown as GroupYear, // set below
                     } satisfies Statistic)),
                 } satisfies MultiSourceStatistic)),
