@@ -1,3 +1,4 @@
+import { StatCol } from '../components/load-article'
 import stats from '../data/statistic_list'
 import statNames from '../data/statistic_name_list'
 import statPaths from '../data/statistic_path_list'
