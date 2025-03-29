@@ -32,6 +32,7 @@ def export_centroids(folder, shapefiles, ordering_info):
         longnames_for_ut = ordering_info.longnames[
             ordering_info.universe_type_masks[:, idx].toarray()[:, 0]
         ]
+        longnames_for_ut = sorted(longnames_for_ut)
         cs = centroids.loc[longnames_for_ut]
         path = os.path.join(folder, f"centroids/{universe}_{typ}.gz")
         series = data_files_pb2.PointSeries()

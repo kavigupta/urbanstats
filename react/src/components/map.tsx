@@ -7,6 +7,7 @@ import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { debugPerformance } from '../search'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -20,7 +21,7 @@ export interface MapGenericProps {
 
 export interface Polygon {
     name: string
-    style: Record<string, unknown>
+    style: PolygonStyle
     meta: Record<string, unknown>
 }
 export interface Polygons {
@@ -30,15 +31,24 @@ export interface Polygons {
 
 interface MapState {
     loading: boolean
+    polygonByName: Map<string, L.FeatureGroup>
 }
+
+interface PolygonStyle {
+    fillColor: string
+    fillOpacity: number
+    color: string
+    weight?: number
+}
+
+const activeMaps: MapGeneric<MapGenericProps>[] = []
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
-    private polygon_by_name = new Map<string, L.FeatureGroup>()
     private delta = 0.25
     private version = 0
-    private last_modified = Date.now()
-    private basemap_layer: null | L.Layer = null
+    private last_modified = 0
+    private basemap_layer: null | L.TileLayer = null
     private basemap_props: null | Basemap = null
     protected map: L.Map | undefined = undefined
     private exist_this_time: string[] = []
@@ -47,7 +57,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     constructor(props: P) {
         super(props)
         this.id = `map-${Math.random().toString(36).substring(2)}`
-        this.state = { loading: true }
+        this.state = { loading: true, polygonByName: new Map() }
+        activeMaps.push(this)
     }
 
     override render(): ReactNode {
@@ -55,6 +66,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
+                <div style={{ display: 'none' }}>
+                    {Array.from(this.state.polygonByName.keys()).map(name =>
+                        // eslint-disable-next-line react/no-unknown-property -- this is a custom property
+                        <div key={name} clickable-polygon={name} onClick={() => { this.onClick(name) }} />,
+                    )}
+                </div>
             </>
         )
     }
@@ -97,6 +114,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await this.componentDidUpdate(this.props, this.state)
     }
 
+    onClick(name: string): void {
+        void this.context.navigate({
+            kind: 'article',
+            universe: this.context.universe,
+            longname: name,
+        }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+    }
+
     /**
      * Export the map as an svg, without the background
      *
@@ -125,26 +150,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
         })
 
-        function toSvgStyle(style: Record<string, unknown> & { weight?: number }): string {
+        function toSvgStyle(style: PolygonStyle): string {
             let svgStyle = ''
-            for (const key of Object.keys(style)) {
-                if (key === 'fillColor') {
-                    svgStyle += `fill:${style[key]};`
-                    continue
-                }
-                else if (key === 'fillOpacity') {
-                    svgStyle += `fill-opacity:${style[key]};`
-                    continue
-                }
-                else if (key === 'color') {
-                    svgStyle += `stroke:${style[key]};`
-                    continue
-                }
-                else if (key === 'weight') {
-                    svgStyle += `stroke-width:${style[key]! / 10};`
-                    continue
-                }
-                svgStyle += `${key}:${style[key]};`
+            svgStyle += `fill:${style.fillColor};`
+            svgStyle += `fill-opacity:${style.fillOpacity};`
+            svgStyle += `stroke:${style.color};`
+            if (style.weight !== undefined) {
+                svgStyle += `stroke-width:${style.weight / 10};`
             }
             return svgStyle
         }
@@ -152,7 +164,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -180,7 +192,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name)
+            let feature = await this.polygonGeojson(polygon.name, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -214,6 +226,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateFn(): Promise<void> {
+        const time = Date.now()
+        debugPerformance('Loading map...')
         this.setState({ loading: true })
 
         const map = this.map!
@@ -228,12 +242,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await this.mapDidRender()
 
         // Remove polygons that no longer exist
-        for (const [name, polygon] of this.polygon_by_name.entries()) {
+        for (const [name, polygon] of this.state.polygonByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
                 map.removeLayer(polygon)
-                this.polygon_by_name.delete(name)
+                this.state.polygonByName.delete(name)
             }
         }
+        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
         this.setState({ loading: false })
     }
 
@@ -281,10 +296,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }))
     }
 
-    async polygonGeojson(name: string): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
-        return featureToGeoJSON(poly)
+        return featureToGeoJSON(poly, style)
     }
 
     /*
@@ -293,11 +308,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      */
     async addPolygon(map: L.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
         this.exist_this_time.push(polygon.name)
-        if (this.polygon_by_name.has(polygon.name)) {
-            this.polygon_by_name.get(polygon.name)!.setStyle(polygon.style)
+        if (this.state.polygonByName.has(polygon.name)) {
+            this.state.polygonByName.get(polygon.name)!.setStyle(polygon.style)
             return () => undefined
         }
-        const geojson = await this.polygonGeojson(polygon.name)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         return () => {
             const group = L.featureGroup()
             const leafletPolygon = L.geoJson(geojson, {
@@ -320,14 +335,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 map.fitBounds(group.getBounds(), { animate: false })
             }
             map.addLayer(group)
-            this.polygon_by_name.set(polygon.name, group)
+            this.state.polygonByName.set(polygon.name, group)
         }
     }
 
     zoomToAll(): void {
     // zoom such that all polygons are visible
         const bounds = new L.LatLngBounds([])
-        for (const polygon of this.polygon_by_name.values()) {
+        for (const polygon of this.state.polygonByName.values()) {
             bounds.extend(polygon.getBounds())
         }
         this.map!.fitBounds(bounds)
@@ -335,7 +350,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomTo(name: string): void {
         // zoom to a specific polygon
-        this.map!.fitBounds(this.polygon_by_name.get(name)!.getBounds())
+        this.map!.fitBounds(this.state.polygonByName.get(name)!.getBounds())
     }
 
     static override contextType = Navigator.Context
@@ -343,7 +358,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-export function featureToGeoJSON(poly: NormalizeProto<Feature>): GeoJSON.Feature {
+export function featureToGeoJSON(poly: NormalizeProto<Feature>, style: PolygonStyle): GeoJSON.Feature {
     let geometry: GeoJSON.Geometry
     if (poly.geometry === 'multipolygon') {
         const polys = poly.multipolygon.polygons
@@ -372,7 +387,7 @@ export function featureToGeoJSON(poly: NormalizeProto<Feature>): GeoJSON.Feature
     }
     const geojson = {
         type: 'Feature' as const,
-        properties: {},
+        properties: { name, ...style },
         geometry,
     }
     return geojson
@@ -404,6 +419,21 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
         </div>
     )
 }
+
+function clickMapElement(longname: string): void {
+    for (const map of activeMaps) {
+        if (map.state.polygonByName.has(longname)) {
+            map.onClick(longname)
+            return
+        }
+    }
+    throw new Error(`Polygon ${longname} not found in any map`)
+}
+
+// for testing
+(window as unknown as {
+    clickMapElement: (longname: string) => void
+}).clickMapElement = clickMapElement
 
 interface MapProps extends MapGenericProps {
     longname: string

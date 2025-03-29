@@ -5,6 +5,7 @@ import subprocess
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
+    output_boundaries,
     output_names,
 )
 from urbanstats.games.infinite.data import output_quiz_sampling_info
@@ -245,6 +246,7 @@ def build_urbanstats(
             )
 
         full_consolidated_data(site_folder)
+        output_boundaries(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
 
         if not no_sitemap:
