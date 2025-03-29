@@ -96,8 +96,9 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
             x.remove()
         }
         for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
-            const style = 'border-style: solid; border-color: #abcdef'
-            x.setAttribute('style', style)
+            if (x instanceof HTMLElement) {
+                x.style.visibility = 'hidden'
+            }
         }
         const currentVersion = document.getElementById('current-version')
         if (currentVersion !== null) {
