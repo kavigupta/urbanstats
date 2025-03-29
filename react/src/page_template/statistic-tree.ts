@@ -128,7 +128,7 @@ interface StatParent {
 
 const statParentsList: [StatPath, StatParent][] = allGroups
     .flatMap(group => group.contents
-        .flatMap(({ year, stats }) => stats
+        .flatMap(({ year, stats: s }) => s
             .flatMap(stat => stat.bySource
                 .map(({ source, path }) =>
                     [path, { group, year, groupYearName: stat.name, source }] satisfies [StatPath, StatParent]))))
