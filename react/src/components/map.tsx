@@ -160,7 +160,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -188,7 +188,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name)
+            let feature = await this.polygonGeojson(polygon.name, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -288,7 +288,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }))
     }
 
-    async polygonGeojson(name: string): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -319,7 +319,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = {
             type: 'Feature' as const,
-            properties: {},
+            properties: { name, ...style },
             geometry,
         }
         return geojson
@@ -335,7 +335,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.state.polygonByName.get(polygon.name)!.setStyle(polygon.style)
             return () => undefined
         }
-        const geojson = await this.polygonGeojson(polygon.name)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         return () => {
             const group = L.featureGroup()
             const leafletPolygon = L.geoJson(geojson, {
