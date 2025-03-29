@@ -331,7 +331,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.state.polygonByName.get(polygon.name)!.setStyle(polygon.style)
             return () => undefined
         }
-        const geojson = await this.polygonGeojson(polygon.name)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         return () => {
             const group = L.featureGroup()
             const leafletPolygon = L.geoJson(geojson, {
