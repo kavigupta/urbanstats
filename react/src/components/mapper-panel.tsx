@@ -329,14 +329,13 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         const geographyKind = mapSettings.geography_kind
         const colorStat = mapSettings.color_stat
         const filter = mapSettings.filter
-        const valid = valid_geographies.includes(geographyKind)
 
-        return !valid
+        return (underlyingShapes === undefined || underlyingStats === undefined)
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
-                        underlyingShapes={underlyingShapes!}
-                        underlyingStats={underlyingStats!}
+                        underlyingShapes={underlyingShapes}
+                        underlyingStats={underlyingStats}
                         geographyKind={geographyKind}
                         ramp={ramp}
                         colorStat={colorStat}
