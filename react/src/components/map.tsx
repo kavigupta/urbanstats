@@ -423,13 +423,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
-        const time = Date.now()
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
             return () => Promise.resolve()
         }
-        const t2 = Date.now()
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
