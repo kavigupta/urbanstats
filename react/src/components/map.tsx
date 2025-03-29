@@ -16,7 +16,7 @@ import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
 export interface MapGenericProps {
-    height?: string
+    height?: number | string
     basemap: Basemap
 }
 
@@ -66,7 +66,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <MapBody id={this.id} height={this.props.height} buttons={this.buttons()} />
+                <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.polygonByName.keys()).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
@@ -75,6 +75,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 </div>
             </>
         )
+    }
+
+    mapHeight(): number | string {
+        return this.props.height ?? 400
     }
 
     buttons(): ReactNode {
@@ -450,7 +454,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: string | undefined, buttons: ReactNode }): ReactNode {
+function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
     return (
         <div className="map-container-for-testing">
@@ -458,7 +462,7 @@ function MapBody(props: { id: string, height: string | undefined, buttons: React
                 id={props.id}
                 style={{
                     background: colors.background,
-                    height: props.height ?? 400,
+                    height: props.height,
                     width: '100%',
                     position: 'relative',
                     border: `1px solid ${colors.borderNonShadow}`,
