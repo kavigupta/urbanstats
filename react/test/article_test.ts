@@ -20,7 +20,7 @@ test('california-article-test', async (t) => {
 test('neighboring-state-test', async (t) => {
     await screencap(t)
     await t
-        .click(mapElement(/tag-Arizona,_USA/))
+        .click(mapElement(/Arizona,_USA/))
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Arizona%2C+USA`)
 })
@@ -308,7 +308,7 @@ test('when navigating to next media market that is two lines, maintains relative
 test('when navigating to next media market that is two lines vai map click, maintains relative position of map', async (t) => {
     const scrollPosition = ClientFunction(() => window.scrollY)
     const mapPosition = ClientFunction(() => document.querySelector('.map-container-for-testing')!.getBoundingClientRect().top)
-    const neighbor = mapElement(/tag-Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/)
+    const neighbor = mapElement(/Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/)
 
     await t.scrollIntoView(neighbor)
 
@@ -332,7 +332,7 @@ test('when navigating to next media market that is two lines vai map click, main
 })
 
 test('can navigate back to original navigated shape in map', async (t) => {
-    await t.click(mapElement(/tag-Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/))
+    await t.click(mapElement(/Raleigh-Durham_\(Fayetteville\)_NC_Media_Market/))
     await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
     await t.click(mapElement(/Charlotte_NC_Media_Market,_USA/))
     await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
