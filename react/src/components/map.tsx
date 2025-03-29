@@ -366,7 +366,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (!this.map!.isStyleLoaded() && !force) {
             return
         }
-        console.log('updating sources. last updated: ', this.sources_last_updated, ' now: ', Date.now())
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
