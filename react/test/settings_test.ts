@@ -8,6 +8,7 @@ import {
     screencap,
     urbanstatsFixture,
     doSearch,
+    mapElement,
 } from './test_utils'
 
 const testLocation = `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`
@@ -27,10 +28,10 @@ test('check-settings-loaded', async (t) => {
     // screenshot path: images/first_test.png
     await screencap(t)
     // check there's an element containing class Huntington_Library
-    await t.expect(Selector('path').withAttribute('class', /tag-Huntington_Library/).exists).ok()
+    await t.expect(mapElement(/tag-Huntington_Library/).exists).ok()
     // check that there's no element Pasadena_city or 91101
-    await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_city/).exists).notOk()
-    await t.expect(Selector('path').withAttribute('class', /tag-91101/).exists).notOk()
+    await t.expect(mapElement(/tag-Pasadena_city/).exists).notOk()
+    await t.expect(mapElement(/tag-91101/).exists).notOk()
 })
 
 test('check-settings-loaded-desktop', async (t) => {
@@ -60,14 +61,14 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
     // this should not be page specific
     await t.expect(Selector('span').withText(/mi/).exists).ok()
     // San Marino should be present
-    await t.expect(Selector('path').withAttribute('class', /tag-San_Marino_city/).exists).ok()
+    await t.expect(mapElement(/tag-San_Marino_city/).exists).ok()
     // neighborhoods should not be present (Huntington Library)
-    await t.expect(Selector('path').withAttribute('class', /tag-Huntington_Library/).exists).notOk()
+    await t.expect(mapElement(/tag-Huntington_Library/).exists).notOk()
 })
 
 test('checkboxes-can-be-checked', async (t) => {
     // check that Pasadena CCD is not present
-    await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).notOk()
+    await t.expect(mapElement(/tag-Pasadena_CCD/).exists).notOk()
     const pasadenaCCD = Selector('li').withAttribute('class', 'list_of_lists')
         .withText(/Pasadena CCD/)
     // find a checkbox inside it
@@ -75,9 +76,9 @@ test('checkboxes-can-be-checked', async (t) => {
     await t
         .click(pasadenaCCD)
     // check that Pasadena CCD is now present
-    await t.expect(Selector('path').withAttribute('class', /tag-Pasadena_CCD/).exists).ok()
+    await t.expect(mapElement(/tag-Pasadena_CCD/).exists).ok()
     // check that this is persistent by going to Berkeley and checking that Briones CCD is present
     await doSearch(t, 'Berkeley, CA, USA')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
-    await t.expect(Selector('path').withAttribute('class', /tag-Briones_CCD/).exists).ok()
+    await t.expect(mapElement(/tag-Briones_CCD/).exists).ok()
 })
