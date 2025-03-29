@@ -72,6 +72,10 @@ export function searchIconLink(typeIdx: number): string {
     return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
 }
 
+export function centroidsPath(universe: string, typ: string): string {
+    return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitize(typ))}.gz`
+}
+
 export function statisticDescriptor(props: {
     universe: string | undefined
     statname: StatName
