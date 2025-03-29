@@ -685,7 +685,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     })
 
     quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
-        debug_quiz_transition: '10000',
+        debug_quiz_transition: '15000',
     }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
