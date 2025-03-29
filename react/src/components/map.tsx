@@ -106,7 +106,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
         })
         this.map = map
-        this.activeMaps.push(map)
         await this.componentDidUpdate(this.props, this.state)
     }
 
