@@ -42,7 +42,7 @@ interface PolygonStyle {
     weight?: number
 }
 
-const activeMaps: maplibregl.Map[] = []
+const activeMaps: MapGeneric<MapGenericProps>[] = []
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
@@ -59,6 +59,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         super(props)
         this.id = `map-${Math.random().toString(36).substring(2)}`
         this.state = { loading: true, polygonByName: new Map() }
+        activeMaps.push(this)
     }
 
     override render(): ReactNode {
@@ -113,7 +114,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             dragRotate: false,
         })
         this.map = map
-        activeMaps.push(this.map)
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
             map.getCanvas().style.cursor = 'pointer'
@@ -514,16 +514,20 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
     })
 }
 
-function clearAllActiveMapsBackground(): void {
-    activeMaps.forEach((map) => {
-        setBasemap(map, { type: 'none' })
-    })
+function clickMapElement(longname: string): void {
+    for (const map of activeMaps) {
+        if (map.state.polygonByName.has(longname)) {
+            map.onClick(longname)
+            return
+        }
+    }
+    throw new Error(`Polygon ${longname} not found in any map`)
 }
 
 // for testing
 (window as unknown as {
-    clearAllActiveMapsBackground: () => void
-}).clearAllActiveMapsBackground = clearAllActiveMapsBackground
+    clickMapElement: (longname: string) => void
+}).clickMapElement = clickMapElement
 
 interface MapProps extends MapGenericProps {
     longname: string

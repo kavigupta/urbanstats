@@ -5,8 +5,6 @@ import sys
 import numpy as np
 from PIL import Image
 
-border_color = [0xAB, 0xCD, 0xEF, 0xFF]
-
 
 def pad_images(ref, act):
     if ref.shape[0] > act.shape[0]:
@@ -30,34 +28,8 @@ def plurality_color(arr):
     return np.array([(plur >> x) & 0xFF for x in range(24, -1, -8)])
 
 
-def difference_minimal(act, ref, bgc):
-    number_non_border = (ref != border_color).any(-1).sum()
-    number_distinct_pixels = (act != ref).any(-1).sum()
-    number_non_bg_non_border = (
-        (ref != border_color).any(-1) & (ref != bgc).any(-1)
-    ).sum()
-    frac_distinct = number_distinct_pixels / number_non_border
-    frac_filled = number_non_bg_non_border / number_non_border
-    frac_filled = max(frac_filled, 0.1)
-    return frac_distinct / frac_filled < 0.1
-
-
-def handle_normalized_map(ref, act):
-    ys, xs = np.where((ref == border_color).all(-1))
-    if ys.size == 0:
-        return
-    ymin, ymax = ys.min(), ys.max()
-    xmin, xmax = xs.min(), xs.max()
-    if not difference_minimal(
-        act[ymin:ymax, xmin:xmax], ref[ymin:ymax, xmin:xmax], plurality_color(ref)
-    ):
-        return
-    act[ymin:ymax, xmin:xmax] = ref[ymin:ymax, xmin:xmax]
-
-
 def compute_delta_image(ref, act):
     ref, act = pad_images(ref, act)
-    handle_normalized_map(ref, act)
     color = [255, 0, 255, 255]
     diff_mask = (act != ref).any(-1)
     ref[diff_mask] = color
