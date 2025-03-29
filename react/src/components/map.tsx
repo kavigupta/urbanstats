@@ -42,6 +42,8 @@ interface PolygonStyle {
     weight?: number
 }
 
+const activeMaps: maplibregl.Map[] = []
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -111,6 +113,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             dragRotate: false,
         })
         this.map = map
+        activeMaps.push(this.map)
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
             map.getCanvas().style.cursor = 'pointer'
@@ -298,18 +301,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async loadBasemap(): Promise<void> {
         await this.stylesheetPresent()
         // await this.ensureStyleLoaded()
-        this.map!.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
-            if (layerspec.id === 'background') {
-                return
-            }
-            const layer = this.map!.getLayer(layerspec.id)!
-            if (this.props.basemap.type === 'none') {
-                layer.setLayoutProperty('visibility', 'none')
-            }
-            else {
-                layer.setLayoutProperty('visibility', 'visible')
-            }
-        })
+        setBasemap(this.map!, this.props.basemap)
     }
 
     async addPolygons(map: maplibregl.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
@@ -506,6 +498,32 @@ function MapBody(props: { id: string, height: string | undefined, buttons: React
         </div>
     )
 }
+
+function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
+    map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
+        if (layerspec.id === 'background') {
+            return
+        }
+        const layer = map.getLayer(layerspec.id)!
+        if (basemap.type === 'none') {
+            layer.setLayoutProperty('visibility', 'none')
+        }
+        else {
+            layer.setLayoutProperty('visibility', 'visible')
+        }
+    })
+}
+
+function clearAllActiveMapsBackground(): void {
+    activeMaps.forEach((map) => {
+        setBasemap(map, { type: 'none' })
+    })
+}
+
+// for testing
+(window as unknown as {
+    clearAllActiveMapsBackground: () => void
+}).clearAllActiveMapsBackground = clearAllActiveMapsBackground
 
 interface MapProps extends MapGenericProps {
     longname: string
