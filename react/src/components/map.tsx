@@ -111,7 +111,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
             scrollZoom: true,
-            attributionControl: false,
             dragRotate: false,
         })
         this.map = map
