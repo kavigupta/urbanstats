@@ -46,7 +46,7 @@ const activeMaps: MapGeneric<MapGenericProps>[] = []
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
     private version = 0
-    private last_modified = Date.now()
+    private last_modified = 0
     private basemap_layer: null | L.TileLayer = null
     private basemap_props: null | Basemap = null
     protected map: L.Map | undefined = undefined
