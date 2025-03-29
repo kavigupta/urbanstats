@@ -106,11 +106,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
-            // boxZoom: false,
-            // doubleClickZoom: false,
             scrollZoom: true,
             attributionControl: false,
-            // cooperativeGestures: false,
             dragRotate: false,
         })
         this.map = map
@@ -280,15 +277,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         void this.loadBasemap()
     }
 
-    // async ensureStyleLoaded(): Promise<void> {
-    //     const time = Date.now()
-    //     while (!this.map!.isStyleLoaded()) {
-    //         debugPerformance(`Waiting for style to load...; at ${Date.now() - time}ms`)
-    //         // sleep 10ms
-    //         await new Promise(resolve => setTimeout(resolve, 10))
-    //     }
-    // }
-
     async stylesheetPresent(): Promise<void> {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
         if (this.map!.style.stylesheet !== undefined) {
@@ -321,8 +309,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 adderIndex++
             }
         }
-        // await this.ensureStyleLoaded!
-        // debugPerformance(`Ensured style loaded; at ${Date.now() - time}ms`)
         await Promise.all(polygons.map(async (polygon, i) => {
             const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
