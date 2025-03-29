@@ -84,14 +84,6 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
 }
 
 async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
-    await t.eval(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- defined in mapper
-        const clearAllActiveMapsBackground = (window as unknown as { clearAllActiveMapsBackground?: () => void }
-        ).clearAllActiveMapsBackground
-        if (clearAllActiveMapsBackground !== undefined) {
-            clearAllActiveMapsBackground()
-        }
-    })
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
