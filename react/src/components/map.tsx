@@ -424,7 +424,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      */
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         const time = Date.now()
-        debugPerformance(`Adding polygon ${polygon.name}...`)
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
@@ -432,16 +431,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const t2 = Date.now()
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
-        debugPerformance(`Actual loading of polygon ${polygon.name} took ${Date.now() - t2}ms`)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
         }
 
         this.state.polygonByName.set(polygon.name, geojson)
-        debugPerformance(`Loaded polygon ${polygon.name}; at ${Date.now() - time}ms`)
         return async () => {
             await this.updateSources()
-            debugPerformance(`Finished ${polygon.name}; at ${Date.now() - time}ms`)
         }
     }
 
