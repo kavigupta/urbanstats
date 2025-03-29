@@ -31,7 +31,7 @@ interface DisplayedMapProps extends MapGenericProps {
     rampCallback: (newRamp: EmpiricalRamp) => void
     lineStyle: LineStyle
     basemap: Basemap
-    height: string | undefined
+    height: number | string | undefined
 }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
@@ -181,7 +181,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
-    height: string | undefined
+    height: number | string | undefined
 }
 
 interface EmpiricalRamp {
