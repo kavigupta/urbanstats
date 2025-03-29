@@ -244,5 +244,16 @@ export async function createComparison(t: TestController, searchTerm: string): P
 }
 
 export function mapElement(r: RegExp): Selector {
-    return Selector('path').withAttribute('class', r)
+    return Selector('div').withAttribute('clickable-polygon', r)
+}
+
+export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
+    const element = mapElement(r)
+    const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
+    await t.eval(() => {
+        const cm = (window as unknown as {
+            clickMapElement: (longname: string) => void
+        }).clickMapElement
+        cm(clickablePolygon)
+    }, { dependencies: { clickablePolygon } })
 }
