@@ -252,7 +252,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.setState({ loading: false })
     }
 
-    computeBasemap(): Promise<L.Layer> {
+    computeBasemap(): Promise<L.TileLayer> {
         const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         return Promise.resolve(L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib }))

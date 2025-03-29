@@ -275,33 +275,12 @@ interface SYAUMapProps extends MapGenericProps {
 class SYAUMap extends MapGeneric<SYAUMapProps> {
     private alreadyFitBounds: boolean = false
     private layer: L.LayerGroup | undefined = undefined
-    basemap: Promise<GeoJSON.Feature[]>
 
     name_to_index: undefined | Map<string, number>
-
-    constructor(props: SYAUMapProps) {
-        super(props)
-        this.basemap = loadProtobuf('/consolidated/syau_boundaries.gz', 'ConsolidatedShapes').then(
-            (polys: ConsolidatedShapes) => polys.shapes.map(poly => featureToGeoJSON(poly as NormalizeProto<Feature>)),
-        )
-    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- override
     override loadShape(name: string): Promise<NormalizeProto<Feature>> {
         throw new Error('Not implemented! Instead polygonGeojson is overridden')
-    }
-
-    override async computeBasemap(): Promise<L.Layer> {
-        const basemap = await this.basemap
-        const layer = L.geoJSON(basemap, {
-            style: {
-                color: 'black',
-                weight: 0.5,
-                fillOpacity: 0,
-            },
-        })
-        return layer
-        // map.addLayer(layer)
     }
 
     override async updateFn(): Promise<void> {
