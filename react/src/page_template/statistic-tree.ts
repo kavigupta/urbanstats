@@ -1,3 +1,4 @@
+import stats from '../data/statistic_list'
 import statNames from '../data/statistic_name_list'
 import statPaths from '../data/statistic_path_list'
 import { rawStatsTree, dataSources } from '../data/statistics_tree'
