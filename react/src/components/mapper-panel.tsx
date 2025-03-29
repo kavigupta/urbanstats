@@ -100,8 +100,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     // zoom map to fit united states
     // do so instantly
         this.map!.fitBounds([
-            [49.3457868, -124.7844079],
-            [24.7433195, -66.9513812],
+            [-124.7844079, 49.3457868],
+            [-66.9513812, 24.7433195],
         ], { animate: false })
         return Promise.resolve()
     }
