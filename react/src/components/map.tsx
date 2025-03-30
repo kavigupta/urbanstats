@@ -218,7 +218,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
-        if (this.version === 0 || JSON.stringify(prevProps) !== JSON.stringify(this.props) || JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })) {
+        let shouldWeUpdate = false
+        shouldWeUpdate ||= this.version < 5
+        shouldWeUpdate ||= JSON.stringify(prevProps) !== JSON.stringify(this.props)
+        shouldWeUpdate ||= JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })
+        if (shouldWeUpdate) {
             // Only update if something that's not the loading has changed, or it's the first load
             await this.updateToVersion(this.version + 1)
         }
