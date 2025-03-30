@@ -91,10 +91,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
         await t.wait(1000)
     }
     await t.eval(() => {
-        // disable the base map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
-            x.remove()
-        }
+        // disable the map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
             if (x instanceof HTMLElement) {
                 x.style.visibility = 'hidden'
