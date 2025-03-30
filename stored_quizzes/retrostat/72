@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Building and grounds cleaning and maintenance occupations %",
+      "stat_path": "occupation_building_and_grounds_cleaning_and_maintenance_occupations",
+      "question": "higher % of workers employed in building and grounds cleaning and maintenance occupations!TOOLTIP janitors, maids, groundskeepers (gardeners), pest control workers, etc.",
+      "longname_a": "Indianapolis Urban Center, USA",
+      "longname_b": "Provo Urban Center, USA",
+      "stat_a": 0.029344619248733553,
+      "stat_b": 0.039247987788415234
+    },
+    "b": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Colorado, USA",
+      "longname_b": "California, USA",
+      "stat_a": 0.10260658236593122,
+      "stat_b": 0.05071964386750795
+    },
+    "a_ease": 0.2936893203883495,
+    "b_ease": 0.6940363007778738
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Professional, scientific, and technical services %",
+      "stat_path": "industry_professional,_scientific,_and_technical_services",
+      "question": "higher % of workers employed in the professional, scientific, and technical services industry!TOOLTIP legal services, accounting services, architectural services, engineering services, computer systems design services, management consulting services, etc.",
+      "longname_a": "Boise Urban Center, USA",
+      "longname_b": "Stockton Urban Center, USA",
+      "stat_a": 0.08727088435995793,
+      "stat_b": 0.03162472237213051
+    },
+    "b": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Myrtle Beach-North Myrtle Beach [Urban Area], SC-NC, USA",
+      "longname_b": "San Diego [Urban Area], CA, USA",
+      "stat_a": 0.2288827244133512,
+      "stat_b": 0.44139100100245937
+    },
+    "a_ease": 0.3936031331592689,
+    "b_ease": 0.793733681462141
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Somerset County, New Jersey, USA",
+      "longname_b": "Erie County, Pennsylvania, USA",
+      "stat_a": 0.189380749110322,
+      "stat_b": 0.45008385847102583
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Boston Urban Center, USA",
+      "longname_b": "Nashville Urban Center, USA",
+      "stat_a": -0.09244521700952651,
+      "stat_b": -0.04901231498242142
+    },
+    "a_ease": 0.8412903225806452,
+    "b_ease": 0.4358647096362476
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Madison [Urban Area], WI, USA",
+      "longname_b": "Ogden-Layton [Urban Area], UT, USA",
+      "stat_a": 0.22998111955894185,
+      "stat_b": 0.1005486543394898
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Omaha [Urban Area], NE-IA, USA",
+      "longname_b": "Atlantic City-Ocean City-Villas [Urban Area], NJ, USA",
+      "stat_a": 0.5550043789239841,
+      "stat_b": 0.8389009802432893
+    },
+    "a_ease": 0.8534031413612565,
+    "b_ease": 0.44288449266113594
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "College Station-Bryan MSA, TX, USA",
+      "longname_b": "Wilmington MSA, NC, USA",
+      "stat_a": 0.08720506825387225,
+      "stat_b": 0.11105805917713278
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "New York-Newark-Jersey City MSA, NY-NJ-PA, USA",
+      "longname_b": "Augusta-Richmond County MSA, GA-SC, USA",
+      "stat_a": 0.16995111912621014,
+      "stat_b": 0.42664722638655783
+    },
+    "a_ease": 0.6321989528795812,
+    "b_ease": 0.1662303664921466
+  }
+]

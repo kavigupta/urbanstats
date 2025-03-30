@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "UT-03, USA",
+      "longname_b": "TX-13, USA",
+      "stat_a": 1647.8772460493415,
+      "stat_b": 914.2577352420651
+    },
+    "b": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "St. Paul city, Minnesota, USA",
+      "longname_b": "Irving city, Texas, USA",
+      "stat_a": 0.08488913498472929,
+      "stat_b": 0.3395819742713253
+    },
+    "a_ease": 0.35448195576251457,
+    "b_ease": 0.7567221510883483
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Syracuse Urban Center, USA",
+      "longname_b": "Allentown Urban Center, USA",
+      "stat_a": 0.00670952543624104,
+      "stat_b": 0.0019962268339316505
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "stat_path": "mean_dist_Active Superfund Site_updated",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Nevada, USA",
+      "longname_b": "Utah, USA",
+      "stat_a": 175.03962141982672,
+      "stat_b": 44.075954754172194
+    },
+    "a_ease": 0.7320261437908496,
+    "b_ease": 0.29378172588832485
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "Sacramento [Urban Area], CA, USA",
+      "longname_b": "Mobile [Urban Area], AL, USA",
+      "stat_a": 0.03730564383320206,
+      "stat_b": 0.11091731355219435
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Waukesha County, Wisconsin, USA",
+      "longname_b": "Utah County, Utah, USA",
+      "stat_a": 0.049332933593164756,
+      "stat_b": 0.09290582946896742
+    },
+    "a_ease": 0.7937545388525781,
+    "b_ease": 0.3859138533178114
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "stat_path": "mean_dist_Public School_updated",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Montgomery [Urban Area], AL, USA",
+      "longname_b": "Spokane [Urban Area], WA, USA",
+      "stat_a": 1.3495909174104477,
+      "stat_b": 0.8430445872263655
+    },
+    "b": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "CA-14, USA",
+      "longname_b": "GA-04, USA",
+      "stat_a": 0.293354824621628,
+      "stat_b": 0.4053721353848049
+    },
+    "a_ease": 0.763764404609475,
+    "b_ease": 0.28794992175273865
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Educational services %",
+      "stat_path": "industry_educational_services",
+      "question": "higher % of workers employed in the educational services industry!TOOLTIP elementary and secondary schools, colleges, universities,etc.",
+      "longname_a": "Lancaster MSA, PA, USA",
+      "longname_b": "Ann Arbor MSA, MI, USA",
+      "stat_a": 0.08166471765659648,
+      "stat_b": 0.21815818984038526
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Hidalgo, Mexico",
+      "longname_b": "Kwazulu-Natal, South Africa",
+      "stat_a": 3388827.0,
+      "stat_b": 10782822.0
+    },
+    "a_ease": 0.7642607683352736,
+    "b_ease": 0.2639593908629442
+  }
+]
