@@ -219,6 +219,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
         let shouldWeUpdate = false
+        // 5 is some arbitrary small number. Originally it was < 1, but that led to some
+        // issues on pages with 2 maps. This appears to be some kind of data race, and
+        // this ensures that it will converge to eventual consistency.
+        // See #1039 for the PR adding this, and #1038 for the issue.
         shouldWeUpdate ||= this.version < 5
         shouldWeUpdate ||= JSON.stringify(prevProps) !== JSON.stringify(this.props)
         shouldWeUpdate ||= JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })
