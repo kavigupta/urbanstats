@@ -1,6 +1,7 @@
+import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
 import { Basemap } from '../mapper/settings'
@@ -31,7 +32,7 @@ export interface Polygons {
 
 interface MapState {
     loading: boolean
-    polygonByName: Map<string, L.FeatureGroup>
+    polygonByName: Map<string, GeoJSON.Feature>
 }
 
 interface PolygonStyle {
@@ -48,11 +49,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private delta = 0.25
     private version = 0
     private last_modified = 0
-    private basemap_layer: null | L.TileLayer = null
     private basemap_props: null | Basemap = null
-    protected map: L.Map | undefined = undefined
+    protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
     private id: string
+    private ensureStyleLoaded: Promise<void> | undefined = undefined
 
     constructor(props: P) {
         super(props)
@@ -96,9 +97,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async mapDidRender(): Promise<void> {
-    /**
-         * Called after the map is rendered
-         */
+        /**
+             * Called after the map is rendered
+             */
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
@@ -106,11 +107,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        const map = new L.Map(this.id, {
-            layers: [], center: new L.LatLng(0, 0), zoom: 0,
-            zoomSnap: this.delta, zoomDelta: this.delta, wheelPxPerZoomLevel: 60 / this.delta,
+        const map = new maplibregl.Map({
+            style: 'https://tiles.openfreemap.org/styles/bright',
+            container: this.id,
+            scrollZoom: true,
+            attributionControl: false,
+            dragRotate: false,
         })
         this.map = map
+        this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
+        map.on('mouseover', 'polygon', () => {
+            map.getCanvas().style.cursor = 'pointer'
+        })
+        map.on('mouseleave', 'polygon', () => {
+            map.getCanvas().style.cursor = ''
+        })
+        map.on('click', 'polygon', (e) => {
+            const features = e.features!
+            const names = features.map(feature => feature.properties.name as string)
+            this.onClick(names[0])
+        })
         await this.componentDidUpdate(this.props, this.state)
     }
 
@@ -237,17 +253,22 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         const { polygons, zoomIndex } = await this.computePolygons()
 
+        debugPerformance(`Computed polygons; at ${Date.now() - time}ms`)
+
         await this.addPolygons(map, polygons, zoomIndex)
 
+        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
         await this.mapDidRender()
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - time}ms`)
 
         // Remove polygons that no longer exist
-        for (const [name, polygon] of this.state.polygonByName.entries()) {
+        for (const [name] of this.state.polygonByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                map.removeLayer(polygon)
                 this.state.polygonByName.delete(name)
             }
         }
+        await this.updateSources(true)
+        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
         this.setState({ loading: false })
     }
@@ -257,30 +278,37 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         this.basemap_props = this.props.basemap
-        if (this.basemap_layer !== null) {
-            this.map!.removeLayer(this.basemap_layer)
-            this.basemap_layer = null
-        }
-        if (this.props.basemap.type === 'none') {
-            return
-        }
-        const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        const osmAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        this.basemap_layer = L.tileLayer(osmUrl, { maxZoom: 20, attribution: osmAttrib })
-        this.map!.addLayer(this.basemap_layer)
+        void this.loadBasemap()
     }
 
-    async addPolygons(map: L.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
+    async stylesheetPresent(): Promise<void> {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
+        if (this.map!.style.stylesheet !== undefined) {
+            return
+        }
+        await new Promise(resolve => setTimeout(resolve, 10))
+        await this.stylesheetPresent()
+    }
+
+    async loadBasemap(): Promise<void> {
+        await this.stylesheetPresent()
+        // await this.ensureStyleLoaded()
+        setBasemap(this.map!, this.props.basemap)
+    }
+
+    async addPolygons(map: maplibregl.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
         /*
          * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
          * Waiting for all the polygons to load before adding them produces an unacceptable delay
          */
+        const time = Date.now()
+        debugPerformance('Adding polygons...')
         let adderIndex = 0
-        const adders = new Map<number, () => void>()
-        const addDone = (): void => {
+        const adders = new Map<number, () => Promise<void>>()
+        const addDone = async (): Promise<void> => {
             while (adders.has(adderIndex)) {
-                adders.get(adderIndex)!()
+                await adders.get(adderIndex)!()
                 adders.delete(adderIndex)
                 adderIndex++
             }
@@ -288,8 +316,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await Promise.all(polygons.map(async (polygon, i) => {
             const adder = await this.addPolygon(map, polygon, i === zoom_to)
             adders.set(i, adder)
-            addDone()
+            await addDone()
         }))
+        debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
+        await this.updateSources(true)
+        debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
     async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
@@ -329,55 +360,94 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return geojson
     }
 
+    sources_last_updated = 0
+
+    async updateSources(force = false): Promise<void> {
+        if (this.sources_last_updated > Date.now() - 1000 && !force) {
+            return
+        }
+        const time = Date.now()
+        if (!this.map!.isStyleLoaded() && !force) {
+            return
+        }
+        this.sources_last_updated = Date.now()
+        await this.ensureStyleLoaded!
+        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
+        const map = this.map!
+        const data = {
+            type: 'FeatureCollection',
+            features: Array.from(this.state.polygonByName.values()),
+        } satisfies GeoJSON.FeatureCollection
+        let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        if (source === undefined) {
+            map.addSource('polygon', {
+                type: 'geojson',
+                data,
+            })
+            map.addLayer({
+                id: 'polygon',
+                type: 'fill',
+                source: 'polygon',
+                paint: {
+                    'fill-color': ['get', 'fillColor'],
+                    'fill-opacity': ['get', 'fillOpacity'],
+                },
+            })
+            map.addLayer({
+                id: 'polygon-outline',
+                type: 'line',
+                source: 'polygon',
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': ['get', 'weight'],
+                },
+            })
+            source = map.getSource('polygon')!
+        }
+        source.setData(data)
+    }
+
     /*
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async addPolygon(map: L.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => void> {
+    async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
-            this.state.polygonByName.get(polygon.name)!.setStyle(polygon.style)
-            return () => undefined
+            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
+            return () => Promise.resolve()
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.style)
-        return () => {
-            const group = L.featureGroup()
-            const leafletPolygon = L.geoJson(geojson, {
-                style: polygon.style,
-                // @ts-expect-error smoothFactor not included in library type definitions
-                smoothFactor: 0.1,
-                className: `tag-${polygon.name.replace(/ /g, '_')}`,
-            })
-            leafletPolygon.on('click', () => {
-                void this.context.navigate({
-                    kind: 'article',
-                    universe: this.context.universe,
-                    longname: polygon.name,
-                }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
-            })
-
-            // @ts-expect-error Second parameter not included in library type definitions
-            group.addLayer(leafletPolygon, false)
-            if (fit_bounds) {
-                map.fitBounds(group.getBounds(), { animate: false })
-            }
-            map.addLayer(group)
-            this.state.polygonByName.set(polygon.name, group)
+        if (fit_bounds) {
+            this.zoomToItems([geojson], { duration: 0 })
         }
+
+        this.state.polygonByName.set(polygon.name, geojson)
+        return async () => {
+            await this.updateSources()
+        }
+    }
+
+    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.AnimationOptions): void {
+        // zoom such that all items are visible
+        const bounds = new maplibregl.LngLatBounds()
+
+        for (const polygon of items) {
+            const bbox = geojsonExtent(polygon)
+            bounds.extend(new maplibregl.LngLatBounds(
+                new maplibregl.LngLat(bbox[0], bbox[1]),
+                new maplibregl.LngLat(bbox[2], bbox[3]),
+            ))
+        }
+        this.map?.fitBounds(bounds, options)
     }
 
     zoomToAll(): void {
-    // zoom such that all polygons are visible
-        const bounds = new L.LatLngBounds([])
-        for (const polygon of this.state.polygonByName.values()) {
-            bounds.extend(polygon.getBounds())
-        }
-        this.map!.fitBounds(bounds)
+        this.zoomToItems(this.state.polygonByName.values(), {})
     }
 
     zoomTo(name: string): void {
-        // zoom to a specific polygon
-        this.map!.fitBounds(this.state.polygonByName.get(name)!.getBounds())
+        this.zoomToItems([this.state.polygonByName.get(name)!], {})
     }
 
     static override contextType = Navigator.Context
@@ -410,6 +480,21 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
             </div>
         </div>
     )
+}
+
+function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
+    map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
+        if (layerspec.id === 'background') {
+            return
+        }
+        const layer = map.getLayer(layerspec.id)!
+        if (basemap.type === 'none') {
+            layer.setLayoutProperty('visibility', 'none')
+        }
+        else {
+            layer.setLayoutProperty('visibility', 'visible')
+        }
+    })
 }
 
 function clickMapElement(longname: string): void {
