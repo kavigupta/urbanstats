@@ -9388,8 +9388,8 @@ export default [
             'higher % of households with at least 1 vehicle',
             'higher % of people who are White',
             'higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.',
-            'higher % units built pre-1970',
-            'higher % units built in 2010s+',
+            'higher % of housing units built before 1970',
+            'higher % of housing units built in 2010 or later',
         ],
         questionDistribution: [
             [

@@ -28,8 +28,8 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             **QuizQuestionDescriptor.several(
                 HOUSING_YEAR,
                 {
-                    "year_built_1969_or_earlier": "higher % units built pre-1970",
-                    "year_built_2010_or_later": "higher % units built in 2010s+",
+                    "year_built_1969_or_earlier": "higher % of housing units built before 1970",
+                    "year_built_2010_or_later": "higher % of housing units built in 2010 or later",
                 },
             ),
             **QuizQuestionSkip.several(
