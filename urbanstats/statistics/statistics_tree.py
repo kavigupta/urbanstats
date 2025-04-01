@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from types import NoneType
 
+from urbanstats.data.census_blocks import RADII
+from urbanstats.statistics.collections.gpw import GPW_RADII
+
 from .stat_path import get_statistic_column_path
 
 
@@ -632,18 +635,28 @@ statistics_tree = StatisticTree(
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
-                **census_basics_with_ghs_and_canada(
-                    "ad_0.25", None, "density_2021_pw_0.25_canada", change=True
-                ),
-                **census_basics_with_ghs_and_canada(
-                    "ad_0.5", None, "density_2021_pw_0.5_canada", change=True
-                ),
-                **census_basics_with_ghs_and_canada(
-                    "ad_2", "gpw_pw_density_2", "density_2021_pw_2_canada", change=True
-                ),
-                **census_basics_with_ghs_and_canada(
-                    "ad_4", "gpw_pw_density_4", "density_2021_pw_4_canada", change=True
-                ),
+                k: v
+                for kvs in [
+                    census_basics_with_ghs_and_canada(
+                        f"ad_{r}",
+                        f"gpw_pw_density_{r}" if r in GPW_RADII else None,
+                        f"density_2021_pw_{r}_canada",
+                        change=True,
+                    )
+                    for r in RADII
+                    if r != 1
+                ]
+                for k, v in kvs.items()
+                # **,
+                # **census_basics_with_ghs_and_canada(
+                #     "ad_0.5", None, "density_2021_pw_0.5_canada", change=True
+                # ),
+                # **census_basics_with_ghs_and_canada(
+                #     "ad_2", "gpw_pw_density_2", "density_2021_pw_2_canada", change=True
+                # ),
+                # **census_basics_with_ghs_and_canada(
+                #     "ad_4", "gpw_pw_density_4", "density_2021_pw_4_canada", change=True
+                # ),
             },
         ),
     }
