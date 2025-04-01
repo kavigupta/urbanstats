@@ -111,7 +111,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
             scrollZoom: true,
+            dragRotate: false,
         })
+        this.map = map
+        this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
             map.getCanvas().style.cursor = 'pointer'
         })
