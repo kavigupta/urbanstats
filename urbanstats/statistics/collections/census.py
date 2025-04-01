@@ -180,10 +180,11 @@ class CensusChange(USAStatistics):
                 + DENSITY_EXPLANATION_PW,
                 POPULATION_OR_DENSITY_CHANGE,
             ),
-            f"ad_0.25_change_{year}": QuizQuestionSkip(),
-            f"ad_0.5_change_{year}": QuizQuestionSkip(),
-            f"ad_2_change_{year}": QuizQuestionSkip(),
-            f"ad_4_change_{year}": QuizQuestionSkip(),
+            **{
+                f"{k}_change_{year}": QuizQuestionSkip()
+                for k in density_metrics
+                if k != "ad_1"
+            },
         }
 
     def dependencies(self):
@@ -249,16 +250,16 @@ class Census2020(CensusForPreviousYear):
     def quiz_question_descriptors(self):
         return {
             "population": QuizQuestionDescriptor("higher population", POPULATION),
-            # duplicate
-            "ad_0.25": QuizQuestionSkip(),
-            "ad_0.5": QuizQuestionSkip(),
             "ad_1": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
             ),
             # duplicate
-            "ad_2": QuizQuestionSkip(),
-            "ad_4": QuizQuestionSkip(),
+            **{
+                k: QuizQuestionSkip()
+                for k in density_metrics
+                if k != "ad_1"
+            },
             # no sd because it's antithetical to the purpose of this site
             "sd": QuizQuestionSkip(),
             "white": QuizQuestionDescriptor("higher % of people who are White", RACE),

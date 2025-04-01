@@ -37,14 +37,15 @@ class CensusCanada(CanadaStatistics):
             "population_2021_canada": QuizQuestionDescriptor(
                 "higher population", POPULATION
             ),
-            "density_2021_pw_0.25_canada": QuizQuestionSkip(),
-            "density_2021_pw_0.5_canada": QuizQuestionSkip(),
             "density_2021_pw_1_canada": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
             ),
-            "density_2021_pw_2_canada": QuizQuestionSkip(),
-            "density_2021_pw_4_canada": QuizQuestionSkip(),
+            **{
+                f"density_2021_pw_{r}_canada": QuizQuestionSkip()
+                for r in RADII
+                if r not in (1,)
+            },
             "sd_2021_canada": QuizQuestionSkip(),
         }
 

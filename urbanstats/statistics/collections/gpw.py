@@ -37,8 +37,9 @@ class GPWStatistics(InternationalStatistics):
                 POPULATION_DENSITY,
             ),
             **QuizQuestionSkip.several(
-                "gpw_pw_density_1", "gpw_pw_density_2", "gpw_aw_density"
+                *[f"gpw_pw_density_{k}" for k in GPW_RADII if k not in (4,)]
             ),
+            "gpw_aw_density": QuizQuestionSkip(),
         }
 
     def dependencies(self):
