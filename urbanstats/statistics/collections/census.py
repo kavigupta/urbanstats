@@ -6,6 +6,7 @@ from permacache import permacache
 from urbanstats.data.census_blocks import (
     RADII,
     all_densities_gpd,
+    format_radius,
     housing_units,
     racial_demographics,
 )
@@ -42,13 +43,6 @@ race_names = {
     "hawaiian_pi": "Hawaiian / PI %",
     "other / mixed": "Other / Mixed %",
 }
-
-
-def format_radius(x):
-    if x < 1:
-        return f"{x * 1000:.0f}m"
-    assert x == int(x)
-    return f"{x:.0f}km"
 
 
 ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}

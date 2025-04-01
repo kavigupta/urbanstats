@@ -1,3 +1,4 @@
+from urbanstats.data.census_blocks import RADII, format_radius
 from urbanstats.data.gpw import compute_gpw_data_for_shapefile
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
@@ -9,6 +10,8 @@ from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
 
+GPW_RADII = [k for k in RADII if k >= 1]
+
 
 class GPWStatistics(InternationalStatistics):
     version = 2
@@ -17,8 +20,8 @@ class GPWStatistics(InternationalStatistics):
         return {
             "gpw_population": "Population [GHS-POP]",
             **{
-                f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GHS-POP]"
-                for k in (1, 2, 4)
+                f"gpw_pw_density_{k}": f"PW Density (r={format_radius(k)}) [GHS-POP]"
+                for k in GPW_RADII
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
         }
@@ -60,13 +63,8 @@ class GPWStatistics(InternationalStatistics):
 
     def extra_stats(self):
         return {
-            "gpw_pw_density_1": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_1", "gpw_population"
-            ),
-            "gpw_pw_density_2": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_2", "gpw_population"
-            ),
-            "gpw_pw_density_4": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_4", "gpw_population"
-            ),
+            f"gpw_pw_density_{k}": HistogramSpec(
+                0, 0.1, f"gpw_pw_density_histogram_{k}", "gpw_population"
+            )
+            for k in GPW_RADII
         }
