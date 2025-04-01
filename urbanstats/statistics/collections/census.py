@@ -255,11 +255,7 @@ class Census2020(CensusForPreviousYear):
                 POPULATION_DENSITY,
             ),
             # duplicate
-            **{
-                k: QuizQuestionSkip()
-                for k in density_metrics
-                if k != "ad_1"
-            },
+            **{k: QuizQuestionSkip() for k in density_metrics if k != "ad_1"},
             # no sd because it's antithetical to the purpose of this site
             "sd": QuizQuestionSkip(),
             "white": QuizQuestionDescriptor("higher % of people who are White", RACE),
