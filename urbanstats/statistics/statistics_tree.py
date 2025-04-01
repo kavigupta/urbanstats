@@ -647,16 +647,6 @@ statistics_tree = StatisticTree(
                     if r != 1
                 ]
                 for k, v in kvs.items()
-                # **,
-                # **census_basics_with_ghs_and_canada(
-                #     "ad_0.5", None, "density_2021_pw_0.5_canada", change=True
-                # ),
-                # **census_basics_with_ghs_and_canada(
-                #     "ad_2", "gpw_pw_density_2", "density_2021_pw_2_canada", change=True
-                # ),
-                # **census_basics_with_ghs_and_canada(
-                #     "ad_4", "gpw_pw_density_4", "density_2021_pw_4_canada", change=True
-                # ),
             },
         ),
     }
