@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from types import NoneType
 
 from urbanstats.data.census_blocks import RADII
-from urbanstats.statistics.collections.gpw import GPW_RADII
+from urbanstats.data.gpw import GPW_RADII
 
 from .stat_path import get_statistic_column_path
 
