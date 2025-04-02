@@ -125,7 +125,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             screencapElements={() => ({
                 path: `${sanitize(props.joinedString)}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
-                elementsToRender: [headersRef.current!, tableRef.current!],
+                elementsToRender: [{ type: 'element', element: headersRef.current! }, { type: 'element', element: tableRef.current! }],
             })}
             hasUniverseSelector={true}
             universes={universesFiltered}

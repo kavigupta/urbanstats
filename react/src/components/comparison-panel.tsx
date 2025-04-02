@@ -39,7 +39,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const screencapElements = (): ScreencapElements => ({
         path: `${sanitize(joinedString)}.png`,
         overallWidth: tableRef.current!.offsetWidth * 2,
-        elementsToRender: [tableRef.current!, mapRef.current!],
+        elementsToRender: [{ type: 'element', element: tableRef.current! }, { type: 'element', element: mapRef.current! }],
     })
 
     const leftMargin = (): number => {
