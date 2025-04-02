@@ -112,6 +112,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
+            // @ts-expect-error -- preserveDrawingBuffer is not documented, but it is used in the mapbox-gl library
+            // this is needed to export the map as an image
+            preserveDrawingBuffer: true,
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
