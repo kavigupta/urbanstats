@@ -61,10 +61,12 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     return screencapButton
 }
 
+type ElementToRender = { type: 'element', element: HTMLElement } | { type: 'canvas', canvas: HTMLCanvasElement }
+
 export interface ScreencapElements {
     path: string
     overallWidth: number
-    elementsToRender: HTMLElement[]
+    elementsToRender: ElementToRender[]
     heightMultiplier?: number
 }
 
@@ -72,7 +74,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
-    async function screencapElement(ref: HTMLElement): Promise<[string, number]> {
+    async function screencapHTMLElement(ref: HTMLElement): Promise<[string, number]> {
         const scaleFactor = overallWidth / ref.offsetWidth
         const link = await domtoimage.toPng(ref, {
             bgcolor: colors.background,
@@ -84,6 +86,21 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
             },
         })
         return [link, scaleFactor * ref.offsetHeight * heightMultiplier]
+    }
+
+    function screencapCanvas(ref: HTMLCanvasElement): Promise<[string, number]> {
+        const scaleFactor = overallWidth / ref.width
+        const link = ref.toDataURL('image/png', 1)
+        return Promise.resolve([link, scaleFactor * ref.height * heightMultiplier])
+    }
+
+    async function screencapElement(ref: ElementToRender): Promise<[string, number]> {
+        switch (ref.type) {
+            case 'element':
+                return screencapHTMLElement(ref.element)
+            case 'canvas':
+                return screencapCanvas(ref.canvas)
+        }
     }
 
     const pngLinks = []
