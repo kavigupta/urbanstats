@@ -89,8 +89,10 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     }
 
     function screencapCanvas(ref: HTMLCanvasElement): Promise<[string, number]> {
+        console.log(ref)
         const scaleFactor = overallWidth / ref.width
         const link = ref.toDataURL('image/png', 1)
+        console.log(link)
         return Promise.resolve([link, scaleFactor * ref.height * heightMultiplier])
     }
 

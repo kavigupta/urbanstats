@@ -35,7 +35,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
         elementsToRender: [
             { type: 'element', element: headersRef.current! },
             { type: 'element', element: tableRef.current! },
-            { type: 'element', element: mapRef.current! },
+            { type: 'canvas', canvas: mapRef.current!.querySelector('canvas')! },
         ],
     })
 
