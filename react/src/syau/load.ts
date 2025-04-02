@@ -18,6 +18,7 @@ export interface SYAUData {
     commonSuffixes: string[]
     matchChunks: MatchChunks[]
     populations: number[]
+    populationOrdinals: number[]
     longnameToIndex: Record<string, number>
     centroids: ICoordinate[]
 }
@@ -110,13 +111,16 @@ export async function loadSYAUData(
 
     const [commonSuffixes, matchChunks] = computeMatchChunksAll(articleNames)
 
-    console.log(values)
+    const populationOrdinals = values.map((v, i) => [v, i] as [number, number])
+        .sort((a, b) => b[0] - a[0])
+        .map(([, i]) => i + 1)
 
     return {
         longnames: articleNames,
         commonSuffixes,
         matchChunks,
         populations: values,
+        populationOrdinals,
         longnameToIndex: Object.fromEntries(articleNames.map((name, i) => [name, i])),
         centroids,
     }

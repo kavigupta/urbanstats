@@ -135,6 +135,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 basemap={{ type: 'osm' }}
                 longnames={props.syauData.longnames}
                 population={props.syauData.populations}
+                populationOrdinals={props.syauData.populationOrdinals}
                 centroids={props.syauData.centroids}
                 isGuessed={props.syauData.longnames.map(name => history.guessed.includes(name))}
                 guessedColor={jColors.correct}
@@ -262,6 +263,7 @@ function circleSector(color1: string, color2: string, radius: number, sizeAngle:
 interface SYAUMapProps extends MapGenericProps {
     longnames: string[]
     population: number[]
+    populationOrdinals: number[]
     centroids: ICoordinate[]
     isGuessed: boolean[]
     guessedColor: string
@@ -282,7 +284,6 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     // private layer: L.LayerGroup | undefined = undefined
 
     name_to_index: undefined | Map<string, number>
-    markers: Record<string, maplibregl.Marker | undefined> = {}
     markersOnScreen: Record<string, maplibregl.Marker | undefined> = {}
     updateAttached: boolean = false
 
@@ -309,6 +310,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                     populationGuessed: this.props.isGuessed[idx] ? this.props.population[idx] : 0,
                     isGuessed: this.props.isGuessed[idx] ? 1 : 0,
                     existence: 1,
+                    populationOrdinal: this.props.populationOrdinals[idx],
                 },
                 geometry: {
                     type: 'Point',
@@ -340,14 +342,6 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             }
             source.setData(data)
         }
-        console.log('flushing cache')
-        // flush caches
-        // for (const id in this.markersOnScreen) {
-        //     if (!this.markersOnScreen[id]) continue
-        //     this.markersOnScreen[id].remove()
-        // }
-        // this.markersOnScreen = {}
-        // this.markers = {}
         return source
     }
 
@@ -367,25 +361,43 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
-        console.log('updating markers')
         const map = this.map
         if (!map) return
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
 
+        console.log('features', features)
+
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
-            const props = feature.properties as { cluster_id: string, cluster: boolean, populationGuessed: number, population: number, isGuessed: number, existence: number }
-            if (!props.cluster) continue
-            if (this.markers[props.cluster_id]) {
-                this.markers[props.cluster_id]!.remove()
+            const props = feature.properties as (
+                { populationGuessed: number, population: number, isGuessed: number, existence: number }
+                &
+                // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
+                ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
+            )
+            const id = props.cluster ? props.cluster_id : props.name
+            console.log('props', props)
+            // if (!props.cluster) continue
+            if (this.markersOnScreen[id]) {
+                this.markersOnScreen[id].remove()
+            }
+            let text: string
+            if (props.cluster) {
+                text = `${props.isGuessed}/${props.existence}`
+            }
+            else if (props.isGuessed) {
+                text = `#${props.populationOrdinal}`
+            }
+            else {
+                text = `?`
             }
             const html = circleSector(
                 this.props.notGuessedColor,
                 this.props.guessedColor,
                 circleMarkerRadius,
                 2 * Math.PI * (props.populationGuessed / props.population),
-                `${props.isGuessed}/${props.existence}`,
+                text,
             )
             const el = document.createElement('div')
             el.innerHTML = html
@@ -395,9 +407,10 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             const marker = new maplibregl.Marker({
                 element: el,
             }).setLngLat(coords)
-            this.markers[props.cluster_id] = marker
-            newMarkers[props.cluster_id] = this.markers[props.cluster_id]
-            this.markers[props.cluster_id]?.addTo(map)
+            // the assignment to markersOnScreen is necessary in case multiple of these updates are running at once
+            // might be better to simply not allow that to happen.
+            newMarkers[id] = this.markersOnScreen[id] = marker
+            newMarkers[id].addTo(map)
         }
         for (const id in this.markersOnScreen) {
             if (!newMarkers[id]) this.markersOnScreen[id]?.remove()
@@ -420,34 +433,10 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                         this.props.guessedColor,
                         this.props.notGuessedColor,
                     ],
-                    'circle-radius': circleMarkerRadius,
+                    'circle-radius': 0,
                 },
             })
         }
-        // if (!map.getLayer('centroid_labels')) {
-        //     // only label guessed points, and only if they are not clustered
-        //     map.addLayer({
-        //         id: 'centroid_labels',
-        //         type: 'symbol',
-        //         source: 'centroids',
-        //         filter: ['!=', 'cluster', true],
-        //         layout: {
-        //             'text-field': [
-        //                 'case',
-        //                 ['==', ['get', 'isGuessed'], 1],
-        //                 ['get', 'name'],
-        //                 '',
-        //             ],
-        //             'text-size': 12,
-        //             // 'text-font': ['Jost Regular'],
-        //             'text-offset': [0, 0.6],
-        //             'text-anchor': 'top',
-        //         },
-        //         paint: {
-        //             // text-color: this.props.guessedColor,
-        //         },
-        //     })
-        // }
     }
 
     override async populateMap(map: maplibregl.Map): Promise<void> {
@@ -463,178 +452,4 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             source.on('data', () => { this.updateMarkers() })
         }
     }
-
-    // override async updateFn(): Promise<void> {
-    //     const self = this
-    //     this.setState({ loading: true })
-
-    //     this.attachBasemap()
-    //     await this.updateSources(true)
-
-    //     const map = this.map!
-
-    //     // map.setMaxZoom(20)
-
-    //     // map.addLayer(await this.computeBasemap2())
-
-    //     // if (this.layer !== undefined) {
-    //     //     map.removeLayer(this.layer)
-    //     // }
-    //     // const markers = L.markerClusterGroup({
-    //     //     iconCreateFunction(cluster) {
-    //     //         const indices = cluster.getAllChildMarkers().map(m => (m as SYAUMarker).syauIndex)
-    //     //         return self.sector(indices)
-    //     //     },
-    //     //     polygonOptions: {
-    //     //         weight: 1.5, color: self.props.voroniHighlightColor,
-    //     //     },
-    //     //     maxClusterRadius: 2.5 * circleMarkerRadius,
-    //     // })
-    //     // for (let i = 0; i < this.props.centroids.length; i++) {
-    //     //     const point = this.props.centroids[i]
-    //     //     // yes I'm monkeypatching
-    //     //     const marker = L.marker([point.lat!, point.lon!], {
-    //     //         icon: self.sector([i]),
-    //     //     })
-    //     //     marker.syauIndex = i
-    //     //     markers.addLayer(marker)
-    //     // }
-    //     // map.addLayer(markers)
-    //     // this.layer = markers
-
-    //     this.setState({ loading: false })
-
-    //     if (this.alreadyFitBounds) {
-    //         return
-    //     }
-    //     this.alreadyFitBounds = true
-
-    //     // let bounds = markers.getBounds()
-    //     // const h = this.mapHeight()
-    //     // if (typeof h !== 'number') {
-    //     //     throw new Error(`Map height is not a number; instead it is ${h}`)
-    //     // }
-    //     // const padding = (bounds.getNorth() - bounds.getSouth()) * circleMarkerRadius / h
-    //     // bounds = bounds.pad(padding)
-
-    //     return
-    // }
-
-    // sector(idxs: number[]): L.DivIcon {
-    //     const sumpop = (is: number[]): number => is.map(idx => this.props.population[idx]).reduce((a, b) => a + b, 0)
-    //     const idxsGuessed = idxs.filter(idx => this.props.isGuessed[idx])
-    //     const populationGuessed = sumpop(idxsGuessed)
-    //     const populationTotal = sumpop(idxs)
-    //     const angleGuessed = 2 * Math.PI * (populationGuessed / populationTotal)
-    //     const html = circleSector(
-    //         this.props.notGuessedColor,
-    //         this.props.guessedColor,
-    //         circleMarkerRadius,
-    //         angleGuessed,
-    //         `${idxsGuessed.length}/${idxs.length}`,
-    //     )
-    //     return L.divIcon({
-    //         html,
-    //         iconSize: L.point(circleMarkerRadius * 2, circleMarkerRadius * 2),
-    //         className: 'syau-marker',
-    //     })
-    // }
-}
-
-function createDonutChart(props: {
-    mag1: number
-    mag2: number
-    mag3: number
-    mag4: number
-    mag5: number
-}): HTMLElement {
-    const offsets = []
-    const counts = [
-        props.mag1,
-        props.mag2,
-        props.mag3,
-        props.mag4,
-        props.mag5,
-    ]
-    let total = 0
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of -- whatever
-    for (let i = 0; i < counts.length; i++) {
-        offsets.push(total)
-        total += counts[i]
-    }
-    const fontSize
-        = total >= 1000 ? 22 : total >= 100 ? 20 : total >= 10 ? 18 : 16
-    const r = total >= 1000 ? 50 : total >= 100 ? 32 : total >= 10 ? 24 : 18
-    const r0 = Math.round(r * 0.6)
-    const w = r * 2
-
-    let html
-        = `<div><svg width="${w
-        }" height="${w
-        }" viewbox="0 0 ${w
-        } ${w
-        }" text-anchor="middle" style="font: ${fontSize
-        }px sans-serif; display: block">`
-
-    for (let i = 0; i < counts.length; i++) {
-        html += donutSegment(
-            offsets[i] / total,
-            (offsets[i] + counts[i]) / total,
-            r,
-            r0,
-            colors[i],
-        )
-    }
-    html
-        += `<circle cx="${r
-        }" cy="${r
-        }" r="${r0
-        }" fill="white" /><text dominant-baseline="central" transform="translate(${r
-        }, ${r
-        })">${total.toLocaleString()
-        }</text></svg></div>`
-
-    const el = document.createElement('div')
-    el.innerHTML = html
-    return el.firstChild as HTMLElement
-}
-
-function donutSegment(start: number, end: number, r: number, r0: number, color: string): string {
-    if (end - start === 1) end -= 0.00001
-    const a0 = 2 * Math.PI * (start - 0.25)
-    const a1 = 2 * Math.PI * (end - 0.25)
-    const x0 = Math.cos(a0),
-        y0 = Math.sin(a0)
-    const x1 = Math.cos(a1),
-        y1 = Math.sin(a1)
-    const largeArc = end - start > 0.5 ? 1 : 0
-
-    return [
-        '<path d="M',
-        r + r0 * x0,
-        r + r0 * y0,
-        'L',
-        r + r * x0,
-        r + r * y0,
-        'A',
-        r,
-        r,
-        0,
-        largeArc,
-        1,
-        r + r * x1,
-        r + r * y1,
-        'L',
-        r + r0 * x1,
-        r + r0 * y1,
-        'A',
-        r0,
-        r0,
-        0,
-        largeArc,
-        0,
-        r + r0 * x0,
-        r + r0 * y0,
-        `" fill="${color}" />`,
-    ].join(' ')
 }
