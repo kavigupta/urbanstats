@@ -1,6 +1,5 @@
 from urbanstats.data.census_blocks import format_radius
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
-from urbanstats.data.gpw import GPW_RADII
+from urbanstats.data.gpw import GPW_RADII, compute_gpw_data_for_shapefile
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
     POPULATION_DENSITY,
@@ -10,6 +9,7 @@ from urbanstats.games.quiz_question_metadata import (
 from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import InternationalStatistics
+
 
 class GPWStatistics(InternationalStatistics):
     version = 2

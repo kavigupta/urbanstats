@@ -12,7 +12,6 @@ from urbanstats.data.census_blocks import RADII
 from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.utils import compute_bins
 
-
 GPW_RADII = [k for k in RADII if k >= 1]
 
 GPW_PATH = (
