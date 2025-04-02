@@ -8,8 +8,12 @@ import tqdm.auto as tqdm
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
 
+from urbanstats.data.census_blocks import RADII
 from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.utils import compute_bins
+
+
+GPW_RADII = [k for k in RADII if k >= 1]
 
 GPW_PATH = (
     "gpw_v4_population_count_rev11_2020_30_sec_",
@@ -397,18 +401,9 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
 
     shapes = shapefile.load_file()
 
-    result = {
-        "gpw_population": [],
-        "gpw_pw_density_1": [],
-        "gpw_pw_density_2": [],
-        "gpw_pw_density_4": [],
-    }
+    result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
 
-    result_hists = {
-        "gpw_pw_density_histogram_1": [],
-        "gpw_pw_density_histogram_2": [],
-        "gpw_pw_density_histogram_4": [],
-    }
+    result_hists = {f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII}
 
     for longname, shape in tqdm.tqdm(
         zip(shapes.longname, shapes.geometry),
