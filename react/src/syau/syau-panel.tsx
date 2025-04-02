@@ -286,10 +286,6 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     markersOnScreen: Record<string, maplibregl.Marker | undefined> = {}
     updateAttached: boolean = false
 
-    constructor(props: SYAUMapProps) {
-        super(props)
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- override
     override loadShape(name: string): Promise<NormalizeProto<Feature>> {
         throw new Error('Not implemented! Instead polygonGeojson is overridden')
@@ -302,7 +298,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         })
     }
 
-    updateCentroidsSource(map: maplibregl.Map): void {
+    updateCentroidsSource(map: maplibregl.Map): maplibregl.GeoJSONSource {
         const data = {
             type: 'FeatureCollection',
             features: this.props.centroids.map((c, idx) => ({
@@ -320,7 +316,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                 },
             })),
         } satisfies GeoJSON.FeatureCollection
-        const source = map.getSource('centroids')
+        let source: maplibregl.GeoJSONSource | undefined = map.getSource('centroids')
         if (!source) {
             map.addSource('centroids', {
                 type: 'geojson',
@@ -336,6 +332,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
                     existence: ['+', ['get', 'existence']],
                 },
             })
+            source = map.getSource('centroids')!
         }
         else {
             if (!(source instanceof maplibregl.GeoJSONSource)) {
@@ -343,13 +340,15 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             }
             source.setData(data)
         }
+        console.log('flushing cache')
         // flush caches
-        for (const id in this.markersOnScreen) {
-            if (!this.markers[id]) continue
-            this.markersOnScreen[id]?.remove()
-        }
-        this.markersOnScreen = {}
-        this.markers = {}
+        // for (const id in this.markersOnScreen) {
+        //     if (!this.markersOnScreen[id]) continue
+        //     this.markersOnScreen[id].remove()
+        // }
+        // this.markersOnScreen = {}
+        // this.markers = {}
+        return source
     }
 
     fitBounds(map: maplibregl.Map): void {
@@ -368,6 +367,7 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
+        console.log('updating markers')
         const map = this.map
         if (!map) return
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
@@ -377,29 +377,27 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const props = feature.properties as { cluster_id: string, cluster: boolean, populationGuessed: number, population: number, isGuessed: number, existence: number }
             if (!props.cluster) continue
-
-            if (!this.markers[props.cluster_id]) {
-                const html = circleSector(
-                    this.props.notGuessedColor,
-                    this.props.guessedColor,
-                    circleMarkerRadius,
-                    2 * Math.PI * (props.populationGuessed / props.population),
-                    `${props.isGuessed}/${props.existence}`,
-                )
-                const el = document.createElement('div')
-                el.innerHTML = html
-                el.className = 'syau-marker'
-                el.style.width = `${circleMarkerRadius * 2}px`
-                el.style.height = `${circleMarkerRadius * 2}px`
-                const marker = new maplibregl.Marker({
-                    element: el,
-                }).setLngLat(coords)
-                this.markers[props.cluster_id] = marker
+            if (this.markers[props.cluster_id]) {
+                this.markers[props.cluster_id]!.remove()
             }
+            const html = circleSector(
+                this.props.notGuessedColor,
+                this.props.guessedColor,
+                circleMarkerRadius,
+                2 * Math.PI * (props.populationGuessed / props.population),
+                `${props.isGuessed}/${props.existence}`,
+            )
+            const el = document.createElement('div')
+            el.innerHTML = html
+            el.className = 'syau-marker'
+            el.style.width = `${circleMarkerRadius * 2}px`
+            el.style.height = `${circleMarkerRadius * 2}px`
+            const marker = new maplibregl.Marker({
+                element: el,
+            }).setLngLat(coords)
+            this.markers[props.cluster_id] = marker
             newMarkers[props.cluster_id] = this.markers[props.cluster_id]
-            if (!this.markersOnScreen[props.cluster_id]) {
-                this.markers[props.cluster_id]?.addTo(map)
-            }
+            this.markers[props.cluster_id]?.addTo(map)
         }
         for (const id in this.markersOnScreen) {
             if (!newMarkers[id]) this.markersOnScreen[id]?.remove()
@@ -455,16 +453,15 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
     override async populateMap(map: maplibregl.Map): Promise<void> {
         await this.stylesheetPresent()
 
+        this.fitBounds(map)
+        const source = this.updateCentroidsSource(map)
+        this.addLayersIfNeeded(map)
         if (!this.updateAttached) {
             this.updateAttached = true
             map.on('move', () => { this.updateMarkers() })
             map.on('moveend', () => { this.updateMarkers() })
+            source.on('data', () => { this.updateMarkers() })
         }
-
-        this.fitBounds(map)
-        this.updateCentroidsSource(map)
-        this.addLayersIfNeeded(map)
-        this.updateMarkers()
     }
 
     // override async updateFn(): Promise<void> {
