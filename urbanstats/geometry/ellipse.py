@@ -73,11 +73,11 @@ class Ellipse:
 def locate_blocks(*, coordinates, population, radius=1):
     categories = categorize(coordinates)
     result = defaultdict(list)
-    for i in tqdm.trange(coordinates.shape[0]):
+    for i in tqdm.trange(coordinates.shape[0], desc=f"Categorizing {radius}km"):
         result[tuple(categories[i])].append(i)
     result = {
         cat: dict(indices=np.array(res), coordinates=coordinates[np.array(res)])
-        for cat, res in tqdm.tqdm(result.items())
+        for cat, res in tqdm.tqdm(result.items(), desc=f"Categorizing {radius}km")
     }
     return np.array(
         [
