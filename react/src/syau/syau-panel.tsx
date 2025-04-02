@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 
 import { confirmMatch, populationColumns, SYAUData } from './load'
 
-import maplibregl, { ExpressionSpecification, LngLatLike } from 'maplibre-gl'
+import maplibregl, { LngLatLike } from 'maplibre-gl'
 
 type Universe = string
 type Type = string
@@ -258,8 +258,6 @@ function circleSector(color1: string, color2: string, radius: number, sizeAngle:
     return result.join('')
 }
 
-// type SYAUMarker = L.Marker & { syauIndex: number }
-
 interface SYAUMapProps extends MapGenericProps {
     longnames: string[]
     population: number[]
@@ -270,14 +268,6 @@ interface SYAUMapProps extends MapGenericProps {
     notGuessedColor: string
     voroniHighlightColor: string
 }
-
-const mag1 = ['<', ['get', 'mag'], 2] satisfies ExpressionSpecification
-const mag2 = ['all', ['>=', ['get', 'mag'], 2], ['<', ['get', 'mag'], 3]] satisfies ExpressionSpecification
-const mag3 = ['all', ['>=', ['get', 'mag'], 3], ['<', ['get', 'mag'], 4]] satisfies ExpressionSpecification
-const mag4 = ['all', ['>=', ['get', 'mag'], 4], ['<', ['get', 'mag'], 5]] satisfies ExpressionSpecification
-const mag5 = ['>=', ['get', 'mag'], 5] satisfies ExpressionSpecification
-
-const colors = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c']
 
 class SYAUMap extends MapGeneric<SYAUMapProps> {
     private alreadyFitBounds: boolean = false
@@ -365,8 +355,6 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         if (!map) return
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
-
-        console.log('features', features)
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
