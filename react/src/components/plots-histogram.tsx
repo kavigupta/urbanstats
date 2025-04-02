@@ -94,7 +94,7 @@ function HistogramSettings(props: {
                             {
                                 path: `${props.shortnames.join('_')}_histogram`,
                                 overallWidth: props.plotRef.current.offsetWidth * 2,
-                                elementsToRender: [{ type: 'element', element: props.plotRef.current }],
+                                elementsToRender: [props.plotRef.current],
                                 heightMultiplier: 1.2,
                             },
                             universe,

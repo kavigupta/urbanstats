@@ -32,11 +32,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const screencapElements = (): ScreencapElements => ({
         path: `${sanitize(article.longname)}.png`,
         overallWidth: tableRef.current!.offsetWidth * 2,
-        elementsToRender: [
-            { type: 'element', element: headersRef.current! },
-            { type: 'element', element: tableRef.current! },
-            { type: 'canvas', canvas: mapRef.current!.querySelector('canvas')! },
-        ],
+        elementsToRender: [headersRef.current!, tableRef.current!, mapRef.current!],
     })
 
     const headerTextClass = useHeaderTextClass()
