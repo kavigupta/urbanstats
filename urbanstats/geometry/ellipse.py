@@ -77,12 +77,12 @@ def locate_blocks(*, coordinates, population, radius=1):
         result[tuple(categories[i])].append(i)
     result = {
         cat: dict(indices=np.array(res), coordinates=coordinates[np.array(res)])
-        for cat, res in tqdm.tqdm(result.items(), desc=f"Categorizing {radius}km")
+        for cat, res in tqdm.tqdm(result.items(), desc=f"Reorganizing categories {radius}km")
     }
     return np.array(
         [
             population[Ellipse(radius, *coord).find_neighbors(result)].sum(0)
-            for coord in tqdm.tqdm(coordinates)
+            for coord in tqdm.tqdm(coordinates, desc=f"Computing population of neighbors {radius}km")
         ]
     )
 
