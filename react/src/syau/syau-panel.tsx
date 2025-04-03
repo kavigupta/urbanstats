@@ -5,23 +5,23 @@ import '../common.css'
 import { CountsByUT } from '../components/countsByArticleType'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
-import { StoredProperty } from '../quiz/quiz'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 
 import { SelectType, SelectUniverse } from './EditableSelector'
+import { SYAULocalStorage } from './SYAULocalStorage'
 import { confirmMatch, SYAUData } from './load'
 import { SYAUMap } from './syau-map'
 
-type Universe = string
-type Type = string
+export type Universe = string
+export type Type = string
 
-type SYAUHistoryKey = `${Type}-${Universe}`
+export type SYAUHistoryKey = `${Type}-${Universe}`
 
-interface SYAUHistoryForGame {
+export interface SYAUHistoryForGame {
     guessed: string[]
 }
 
-type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
+export type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 
 export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
@@ -48,29 +48,6 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
             }
         </PageTemplate>
     )
-}
-
-export class SYAULocalStorage {
-    private constructor() {
-        // Private constructor
-    }
-
-    static shared = new SYAULocalStorage()
-
-    readonly history = new StoredProperty<SYAUHistory>(
-        'syau_history',
-        storedValue => JSON.parse(storedValue ?? '{}') as SYAUHistory,
-        value => JSON.stringify(value),
-    )
-
-    useHistory(typ: Type, universe: Universe): [SYAUHistoryForGame, (newHistory: SYAUHistoryForGame) => void] {
-        const key = `${typ}-${universe}` satisfies SYAUHistoryKey
-        const history = this.history.use()
-        const current: SYAUHistoryForGame = history[key] ?? { guessed: [] }
-        return [current, (newHistory) => {
-            this.history.value = { ...history, [key]: newHistory }
-        }]
-    }
 }
 
 export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
