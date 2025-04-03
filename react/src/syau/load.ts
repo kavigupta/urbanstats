@@ -3,8 +3,7 @@ import { forType } from '../components/load-article'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
-import { ICoordinate, IDataList } from '../utils/protos'
-import { NormalizeProto } from '../utils/types'
+import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
@@ -87,7 +86,6 @@ export async function loadSYAUData(
     }
 
     const statPath = populationColumns(counts, typ, universe).map(stat => stat.path)
-    console.log(statPath)
     if (statPath.length === 0) {
         return undefined
     }

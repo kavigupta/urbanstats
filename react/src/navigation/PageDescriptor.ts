@@ -25,7 +25,7 @@ import {
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article, ICoordinate } from '../utils/protos'
+import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
 import { base64Gunzip } from '../utils/urlParamShort'
