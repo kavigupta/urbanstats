@@ -1,3 +1,4 @@
+import maplibregl, { LngLatLike } from 'maplibre-gl'
 import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
@@ -16,8 +17,6 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { confirmMatch, populationColumns, SYAUData } from './load'
-
-import maplibregl, { LngLatLike } from 'maplibre-gl'
 
 type Universe = string
 type Type = string
@@ -45,7 +44,16 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
                 in
                 <SelectUniverse typ={props.typ} universe={props.universe} counts={props.counts} />
             </div>
-            {props.syauData === undefined ? undefined : <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />}
+            {
+                props.syauData === undefined
+                    ? undefined
+                    : (
+                            <div>
+                                <div style={{ marginBlockEnd: '1em' }} />
+                                <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />
+                            </div>
+                        )
+            }
         </PageTemplate>
     )
 }
@@ -116,20 +124,24 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         Reset progress
                     </button>
                 </div>
-                <div>
-                    <div>
+                <div style={{ marginBlockEnd: '1em' }} />
+                <div style={{ textAlign: 'center' }}>
+                    <b>
                         {history.guessed.length}
-                        {' '}
                         /
                         {props.syauData.longnames.length}
-                        {' '}
-                        regions guessed
-                    </div>
-                    <div>
+                    </b>
+                    {' '}
+                    regions guessed, which is
+                    {' '}
+                    <b>
                         {Math.round(100 * totalPopulationGuessed / totalPopulation)}
-                        % of the population guessed
-                    </div>
+                        %
+                    </b>
+                    {' '}
+                    of the total population.
                 </div>
+                <div style={{ marginBlockEnd: '1em' }} />
             </div>
             <SYAUMap
                 basemap={{ type: 'osm', disableBasemap: true }}
