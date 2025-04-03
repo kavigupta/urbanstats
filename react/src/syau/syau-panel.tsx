@@ -153,6 +153,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 guessedColor={jColors.correct}
                 notGuessedColor={jColors.incorrect}
                 voroniHighlightColor={colors.hueColors.blue}
+                height={600}
             />
         </div>
     )
@@ -351,13 +352,20 @@ class SYAUMap extends MapGeneric<SYAUMapProps> {
         if (this.alreadyFitBounds) {
             return
         }
-        const bounds = [[
-            this.props.centroids.map(c => c.lon!).reduce((a, b) => Math.min(a, b), 1000),
-            this.props.centroids.map(c => c.lat!).reduce((a, b) => Math.min(a, b), 1000),
-        ], [
-            this.props.centroids.map(c => c.lon!).reduce((a, b) => Math.max(a, b), -1000),
-            this.props.centroids.map(c => c.lat!).reduce((a, b) => Math.max(a, b), -1000),
-        ]] as [[number, number], [number, number]]
+        const longs = this.props.centroids.map(c => c.lon!)
+        const lats = this.props.centroids.map(c => c.lat!)
+        let minLon = Math.min(...longs)
+        let minLat = Math.min(...lats)
+        let maxLon = Math.max(...longs)
+        let maxLat = Math.max(...lats)
+        const lonRange = maxLon - minLon
+        const latRange = maxLat - minLat
+        const padPct = 0.1
+        minLon -= lonRange * padPct
+        minLat -= latRange * padPct
+        maxLon += lonRange * padPct
+        maxLat += latRange * padPct
+        const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
         map.fitBounds(bounds, { animate: false })
         this.alreadyFitBounds = true
     }
