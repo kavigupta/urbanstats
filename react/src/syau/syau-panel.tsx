@@ -1,18 +1,15 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode } from 'react'
 
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
-import { GenericSearchBox } from '../components/search-generic'
-import type_ordering_idx from '../data/type_ordering_idx'
-import universes_ordered from '../data/universes_ordered'
-import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { StoredProperty } from '../quiz/quiz'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 
-import { confirmMatch, populationColumns, SYAUData } from './load'
+import { SelectType, SelectUniverse } from './EditableSelector'
+import { confirmMatch, SYAUData } from './load'
 import { SYAUMap } from './syau-map'
 
 type Universe = string
@@ -92,7 +89,6 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
         return true
     }
 
-    // text field for guessing, followed by a description of the % of regions guessed and what % of the population that represents
     return (
         <div>
             <div style={{ margin: 'auto', width: '50%' }}>
@@ -151,80 +147,5 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 height={600}
             />
         </div>
-    )
-}
-function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
-    const types = Object.keys(type_ordering_idx).filter(
-        type => props.universe === undefined || populationColumns(props.counts, type, props.universe).length > 0,
-    )
-    const navContext = useContext(Navigator.Context)
-    return (
-        <EditableSelector
-            items={types}
-            selected={props.typ}
-            onSelect={
-                type => navContext.link({
-                    kind: 'syau',
-                    typ: type,
-                    universe: props.universe,
-                }, { scroll: { kind: 'none' } })
-            }
-            placeholder="Select a region type"
-        />
-    )
-}
-
-function SelectUniverse(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
-    const navContext = useContext(Navigator.Context)
-    const universes = universes_ordered.filter(
-        universe => props.typ === undefined || populationColumns(props.counts, props.typ, universe).length > 0,
-    )
-    return (
-        <EditableSelector
-            items={universes}
-            selected={props.universe}
-            onSelect={
-                universe => navContext.link({
-                    kind: 'syau',
-                    typ: props.typ,
-                    universe,
-                }, { scroll: { kind: 'none' } })
-            }
-            placeholder="Select a universe"
-        />
-    )
-}
-
-function EditableSelector(props: {
-    items: string[]
-    selected: string | undefined
-    onSelect: (item: string) => ReturnType<Navigator['link']>
-    placeholder: string
-}): ReactNode {
-    let selected = props.selected
-    if (selected !== undefined && !props.items.includes(selected)) {
-        selected = undefined
-    }
-    const subHeaderClass = useSubHeaderTextClass()
-    return (
-        <GenericSearchBox
-            matches={props.items}
-            doSearch={(sq: string) => Promise.resolve(props.items.filter(type => type.toLowerCase().includes(sq.toLowerCase())))}
-            link={props.onSelect}
-            autoFocus={true}
-            placeholder={selected ?? props.placeholder}
-            style={`${subHeaderClass} syau-searchbox`}
-            renderMatch={(currentMatch, onMouseOver, onClick, style, dataTestId) => (
-                <div
-                    key={currentMatch()}
-                    style={style}
-                    onClick={onClick}
-                    onMouseOver={onMouseOver}
-                    data-test-id={dataTestId}
-                >
-                    {currentMatch()}
-                </div>
-            )}
-        />
     )
 }
