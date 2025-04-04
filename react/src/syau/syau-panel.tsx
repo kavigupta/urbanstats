@@ -1,11 +1,13 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
-import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
+import { useUniverse } from '../universe'
+import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 
 import { SelectType, SelectUniverse } from './EditableSelector'
 import { SYAULocalStorage } from './SYAULocalStorage'
@@ -66,6 +68,8 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
         return true
     }
 
+    const isGuessed = props.syauData.longnames.map(name => history.guessed.includes(name))
+
     return (
         <div>
             <div style={{ margin: 'auto', width: '50%' }}>
@@ -117,12 +121,73 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 population={props.syauData.populations}
                 populationOrdinals={props.syauData.populationOrdinals}
                 centroids={props.syauData.centroids}
-                isGuessed={props.syauData.longnames.map(name => history.guessed.includes(name))}
+                isGuessed={isGuessed}
                 guessedColor={jColors.correct}
                 notGuessedColor={jColors.incorrect}
                 voroniHighlightColor={colors.hueColors.blue}
                 height={600}
             />
+            <div style={{ marginBlockEnd: '1em' }} />
+            <SYAUTable
+                longnames={props.syauData.longnames}
+                populationOrdinals={props.syauData.populationOrdinals}
+                isGuessed={isGuessed}
+            />
+        </div>
+    )
+}
+
+function SYAUTable(props: { longnames: string[], populationOrdinals: number[], isGuessed: boolean[] }): ReactNode {
+    const colors = useColors()
+    const jColors = useJuxtastatColors()
+    const isMobile = useMobileLayout()
+    const navContext = useContext(Navigator.Context)
+
+    const columns = isMobile ? 3 : 5
+    // const rows = Math.ceil(props.longnames.length / columns)
+
+    return (
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: '1em' }}>
+            {props.longnames.map((name, idx) => {
+                const ordinal = props.populationOrdinals[idx]
+                const guessed = props.isGuessed[idx]
+                const color = guessed ? 'white' : colors.textMain
+
+                const linkProps = guessed
+                    ? navContext.link({
+                        kind: 'article',
+                        longname: name,
+                    }, { scroll: { kind: 'position', top: 0 } })
+                    : {}
+
+                return (
+                    <a
+                        key={name}
+                        style={{
+                            backgroundColor: guessed ? jColors.correct : colors.background,
+                            padding: '1em',
+                            borderRadius: '5px',
+                            boxShadow: guessed ? `0 0 10px ${jColors.correct}` : `0 0 10px ${colors.background}`,
+                            borderColor: colors.textMain,
+                            borderWidth: '0.2em',
+                            borderStyle: 'solid',
+                            color,
+                            textDecoration: 'none',
+                        }}
+                        {
+                            ...linkProps
+                        }
+                    >
+                        <div style={{ color, fontWeight: 600 }}>
+                            {ordinal}
+                            .
+                            {' '}
+                            {guessed ? name.split(',')[0] : ''}
+                        </div>
+                    </a>
+                )
+            },
+            )}
         </div>
     )
 }

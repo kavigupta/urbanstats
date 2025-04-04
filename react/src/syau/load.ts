@@ -8,7 +8,8 @@ import { ICoordinate } from '../utils/protos'
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
 const suffixFreqThresholdPct = 0.01
-const suffixFreqThresholdRaw = 3
+// 4 means you can just have North South East West. Let's require at least 6
+const suffixFreqThresholdRaw = 6
 
 type MatchChunks = string[]
 
@@ -66,6 +67,7 @@ function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
     const commonSuffixes = Array.from(suffixCount.entries())
         .filter(([, count]) => count >= suffixFreqThresholdRaw && count >= suffixFreqThresholdPct * chunksFlat.length)
         .map(([suffix]) => suffix)
+    console.log('common suffixes', commonSuffixes)
     // sort them by length, long to short
     commonSuffixes.sort((a, b) => b.length - a.length)
     const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
