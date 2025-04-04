@@ -120,7 +120,7 @@ export function GenericSearchBox<T>(
                     overflowY: 'auto',
                     backgroundColor: colors.slightlyDifferentBackground,
                     borderRadius: '0.25em',
-                    zIndex: '1',
+                    zIndex: '3',
                 }}
             >
                 {matches.map((_, idx) => (
