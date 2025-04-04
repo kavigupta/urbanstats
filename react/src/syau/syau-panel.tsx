@@ -7,7 +7,6 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { buttonStyle, GenericShareButton } from '../quiz/quiz-result'
-import { useUniverse } from '../universe'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { pluralize } from '../utils/text'
 

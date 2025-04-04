@@ -67,7 +67,6 @@ function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
     const commonSuffixes = Array.from(suffixCount.entries())
         .filter(([, count]) => count >= suffixFreqThresholdRaw && count >= suffixFreqThresholdPct * chunksFlat.length)
         .map(([suffix]) => suffix)
-    console.log('common suffixes', commonSuffixes)
     // sort them by length, long to short
     commonSuffixes.sort((a, b) => b.length - a.length)
     const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
