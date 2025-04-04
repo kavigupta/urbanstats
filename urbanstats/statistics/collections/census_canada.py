@@ -17,7 +17,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 2
+    version = 3
 
     def name_for_each_statistic(self):
         return {
@@ -86,7 +86,7 @@ class CensusCanada(CanadaStatistics):
 
 
 @permacache(
-    "urbanstats/statistics/collections/census_canada/compute_census_stats",
+    "urbanstats/statistics/collections/census_canada/compute_census_stats_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_census_stats(year, shapefile):

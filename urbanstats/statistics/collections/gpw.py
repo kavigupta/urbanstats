@@ -12,7 +12,7 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 2
+    version = 3
 
     def name_for_each_statistic(self):
         return {

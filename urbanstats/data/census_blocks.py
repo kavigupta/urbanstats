@@ -8,12 +8,16 @@ import pandas as pd
 
 from urbanstats.geometry.ellipse import compute_density_for_radius
 
-RADII = (0.25, 0.5, 1, 2, 4)
+ONE_MILE = 1.609344
+
+RADII = (0.25, 0.5, 1, ONE_MILE, 2, 4, 8, 16, 32, 64)
 
 
 def format_radius(x):
-    if x < 1:
+    if x in (0.25, 0.5):
         return f"{x * 1000:.0f}m"
+    if x == ONE_MILE:
+        return "1mi"
     assert x == int(x)
     return f"{x:.0f}km"
 
