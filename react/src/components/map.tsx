@@ -112,6 +112,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
+            canvasContextAttributes: {
+                preserveDrawingBuffer: true,
+            },
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
