@@ -511,6 +511,9 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
             layer.setLayoutProperty('visibility', 'none')
         }
         else {
+            if (basemap.disableBasemap && layerspec.type === 'symbol' && map.getLayer(layerspec.id)) {
+                map.removeLayer(layerspec.id)
+            }
             layer.setLayoutProperty('visibility', 'visible')
         }
     })
