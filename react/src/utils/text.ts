@@ -4,7 +4,7 @@ export function displayType(universe: string, type: string): string {
     return pluralize(localize(universe, type))
 }
 
-function pluralize(type: string): string {
+export function pluralize(type: string): string {
     if (type.endsWith('y')) {
         return `${type.slice(0, -1)}ies`
     }

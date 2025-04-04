@@ -11,6 +11,7 @@ import { StatisticPanel } from '../components/statistic-panel'
 import { DataCreditPanel } from '../data-credit'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { SYAUPanel } from '../syau/syau-panel'
 
 import { Navigator } from './Navigator'
 import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
@@ -176,6 +177,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     todaysQuiz={pageData.quiz}
                 />
             )
+        case 'syau':
+            return <SYAUPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
             return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':

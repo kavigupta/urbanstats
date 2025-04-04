@@ -3,7 +3,7 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
-import { getCountsByArticleType } from '../components/countsByArticleType'
+import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
 import type { StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -23,6 +23,7 @@ import {
     loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
 } from '../quiz/quiz'
 import { getInfiniteQuizzes } from '../quiz/statistics'
+import { loadSYAUData, SYAUData } from '../syau/load'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -123,6 +124,11 @@ const quizSchema = z.intersection(
     }),
 )
 
+const syauSchema = z.object({
+    typ: z.optional(z.string()),
+    universe: z.optional(z.string()),
+})
+
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
     view: z.boolean(),
@@ -142,6 +148,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
+    z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
 ])
 
@@ -158,6 +165,7 @@ export type PageData =
     | { kind: 'about' }
     | { kind: 'dataCredit' }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined }
     | { kind: 'mapper', settings: MapSettings, view: boolean }
     | {
         kind: 'error'
@@ -188,6 +196,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/quiz.html':
             const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
+        case '/syau.html':
+            return { kind: 'syau', ...syauSchema.parse(params) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
@@ -272,6 +282,13 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizResult.hash = `#${hashParams.toString()}`
             }
             return quizResult
+        case 'syau':
+            pathname = '/syau.html'
+            searchParams = {
+                typ: pageDescriptor.typ,
+                universe: pageDescriptor.universe,
+            }
+            break
         case 'mapper':
             pathname = '/mapper.html'
             searchParams = {
@@ -507,6 +524,20 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
+        case 'syau':
+            const counts = await getCountsByArticleType()
+            const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
+            return {
+                pageData: {
+                    kind: 'syau',
+                    typ: newDescriptor.typ,
+                    universe: newDescriptor.universe,
+                    counts,
+                    syauData,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
         case 'mapper':
             return {
                 pageData: {
@@ -551,6 +582,8 @@ export function pageTitle(pageData: PageData): string {
                 case 'infinite':
                     return 'Juxtastat Infinite'
             }
+        case 'syau':
+            return `So you're an urbanist...`
         case 'article':
             return pageData.article.shortname
         case 'statistic':
