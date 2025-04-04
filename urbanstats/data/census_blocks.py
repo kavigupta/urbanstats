@@ -10,6 +10,14 @@ from urbanstats.geometry.ellipse import compute_density_for_radius
 
 RADII = (0.25, 0.5, 1, 2, 4)
 
+
+def format_radius(x):
+    if x < 1:
+        return f"{x * 1000:.0f}m"
+    assert x == int(x)
+    return f"{x:.0f}km"
+
+
 racial_demographics = {
     "hispanic": "P0020002",
     "white": "P0020005",
