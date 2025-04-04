@@ -256,20 +256,29 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance('Loading map...')
         this.setState({ loading: true })
 
-        const map = this.map!
         this.exist_this_time = []
 
         this.attachBasemap()
 
+        while (this.map === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        await this.populateMap(this.map, time)
+        this.setState({ loading: false })
+        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
+        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
+    }
+
+    async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
-        debugPerformance(`Computed polygons; at ${Date.now() - time}ms`)
+        debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.addPolygons(map, polygons, zoomIndex)
 
-        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
+        debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
         await this.mapDidRender()
-        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - time}ms`)
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
         for (const [name] of this.state.polygonByName.entries()) {
@@ -278,9 +287,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         await this.updateSources(true)
-        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
-        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
-        this.setState({ loading: false })
     }
 
     attachBasemap(): void {
@@ -293,7 +299,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async stylesheetPresent(): Promise<void> {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
-        if (this.map!.style.stylesheet !== undefined) {
+        if (this.map?.style.stylesheet !== undefined) {
             return
         }
         await new Promise(resolve => setTimeout(resolve, 10))
@@ -377,13 +383,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         const time = Date.now()
-        if (!this.map!.isStyleLoaded() && !force) {
+        while (this.map === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        if (!this.map.isStyleLoaded() && !force) {
             return
         }
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
-        const map = this.map!
+        const map = this.map
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
