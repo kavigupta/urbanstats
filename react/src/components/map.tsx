@@ -30,7 +30,7 @@ export interface Polygons {
     zoomIndex: number
 }
 
-interface MapState {
+export interface MapState {
     loading: boolean
     polygonByName: Map<string, GeoJSON.Feature>
 }

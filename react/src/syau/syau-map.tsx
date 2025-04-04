@@ -1,6 +1,6 @@
 import maplibregl, { LngLatLike } from 'maplibre-gl'
 
-import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
+import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
 import { Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
@@ -34,6 +34,16 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
             polygons: [],
             zoomIndex: -1,
         })
+    }
+
+    override async componentDidUpdate(prevProps: SYAUMapProps, prevState: MapState): Promise<void> {
+        if (
+            prevProps.longnames.length !== this.props.longnames.length
+            || prevProps.longnames.map((l, i) => l !== this.props.longnames[i]).some(x => x)
+        ) {
+            this.alreadyFitBounds = false
+        }
+        await super.componentDidUpdate(prevProps, prevState)
     }
 
     updateCentroidsSource(map: maplibregl.Map): maplibregl.GeoJSONSource {
@@ -86,21 +96,14 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         if (this.alreadyFitBounds) {
             return
         }
-        const longs = this.props.centroids.map(c => c.lon!)
+        const longs = optimizeWrapping(this.props.centroids.map(c => c.lon!))
         const lats = this.props.centroids.map(c => c.lat!)
-        let minLon = Math.min(...longs)
-        let minLat = Math.min(...lats)
-        let maxLon = Math.max(...longs)
-        let maxLat = Math.max(...lats)
-        const lonRange = maxLon - minLon
-        const latRange = maxLat - minLat
-        const padPct = 0.1
-        minLon -= lonRange * padPct
-        minLat -= latRange * padPct
-        maxLon += lonRange * padPct
-        maxLat += latRange * padPct
+        const minLon = Math.min(...longs)
+        const minLat = Math.min(...lats)
+        const maxLon = Math.max(...longs)
+        const maxLat = Math.max(...lats)
         const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
-        map.fitBounds(bounds, { animate: false })
+        map.fitBounds(bounds, { animate: false }, { padding: 20 })
         this.alreadyFitBounds = true
     }
 
@@ -229,4 +232,13 @@ function singleSector(radius: number, startAngle: number, endAngle: number, colo
     const endx = radius + radius * Math.cos(endAngle)
     const endy = radius + radius * Math.sin(endAngle)
     return `<path d="M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z" fill="${color2}"></path>`
+}
+
+function optimizeWrapping(lons: number[]): number[] {
+    const lonsAboutIDL = lons.map(lon => lon > 0 ? lon - 360 : lon)
+    const range = (xs: number[]): number => Math.max(...xs) - Math.min(...xs)
+    if (range(lons) < range(lonsAboutIDL)) {
+        return lons
+    }
+    return lonsAboutIDL
 }
