@@ -72,7 +72,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
 
     return (
         <div>
-            <div style={{ margin: 'auto', width: '50%' }}>
+            <div style={{ margin: 'auto', width: '70%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <input
                         type="text"

@@ -72,7 +72,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                 data,
                 cluster: true,
                 clusterMaxZoom: 14,
-                clusterRadius: 80,
+                clusterRadius: circleMarkerRadius * 2.5,
                 clusterProperties: {
                     // keep counts of population and guessed status in a cluster
                     population: ['+', ['get', 'population']],
@@ -98,12 +98,19 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         }
         const longs = optimizeWrapping(this.props.centroids.map(c => c.lon!))
         const lats = this.props.centroids.map(c => c.lat!)
-        const minLon = Math.min(...longs)
-        const minLat = Math.min(...lats)
-        const maxLon = Math.max(...longs)
-        const maxLat = Math.max(...lats)
+        let minLon = Math.min(...longs)
+        let minLat = Math.min(...lats)
+        let maxLon = Math.max(...longs)
+        let maxLat = Math.max(...lats)
+        const lonRange = maxLon - minLon
+        const latRange = maxLat - minLat
+        const padPct = 0.1
+        minLon -= lonRange * padPct
+        minLat -= latRange * padPct
+        maxLon += lonRange * padPct
+        maxLat += latRange * padPct
         const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
-        map.fitBounds(bounds, { animate: false }, { padding: 20 })
+        map.fitBounds(bounds, { animate: false })
         this.alreadyFitBounds = true
     }
 
