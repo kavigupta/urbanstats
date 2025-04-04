@@ -6,8 +6,10 @@ import { CountsByUT } from '../components/countsByArticleType'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { buttonStyle, GenericShareButton } from '../quiz/quiz-result'
 import { useUniverse } from '../universe'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
+import { pluralize } from '../utils/text'
 
 import { SelectType, SelectUniverse } from './EditableSelector'
 import { SYAULocalStorage } from './SYAULocalStorage'
@@ -59,6 +61,10 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
     const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
 
+    const shareRef = React.createRef<HTMLButtonElement>()
+
+    const pluralType = pluralize(props.typ)
+
     function attemptGuess(query: string): boolean {
         const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query)).filter(name => !history.guessed.includes(name))
         if (approxMatches.length === 0) {
@@ -72,30 +78,17 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
 
     return (
         <div>
-            <div style={{ margin: 'auto', width: '70%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <input
-                        type="text"
-                        style={{ width: '80%' }}
-                        placeholder="Type a region name"
-                        onChange={(e) => {
-                            if (attemptGuess(e.target.value)) {
-                                e.target.value = ''
-                            }
-                        }}
-                    />
-                    <button
-                        style={{ width: '20%' }}
-                        onClick={() => {
-                            // check if they are sure
-                            if (window.confirm('Are you sure you want to reset your progress?')) {
-                                setHistory({ guessed: [] })
-                            }
-                        }}
-                    >
-                        Reset progress
-                    </button>
-                </div>
+            <div style={{ margin: 'auto', width: '50%' }}>
+                <input
+                    type="text"
+                    placeholder="Type a region name"
+                    style={{ width: '100%' }}
+                    onChange={(e) => {
+                        if (attemptGuess(e.target.value)) {
+                            e.target.value = ''
+                        }
+                    }}
+                />
                 <div style={{ marginBlockEnd: '1em' }} />
                 <div style={{ textAlign: 'center' }}>
                     <b>
@@ -104,7 +97,9 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         {props.syauData.longnames.length}
                     </b>
                     {' '}
-                    regions guessed, which is
+                    {pluralType}
+                    {' '}
+                    guessed, which is
                     {' '}
                     <b>
                         {Math.round(100 * totalPopulationGuessed / totalPopulation)}
@@ -127,6 +122,48 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 voroniHighlightColor={colors.hueColors.blue}
                 height={600}
             />
+            <div style={{ marginBlockEnd: '1em' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
+                <div style={{ display: 'inline-block' }}>
+                    <GenericShareButton
+                        buttonRef={shareRef}
+                        produceSummary={
+                            () => {
+                                const frac = totalPopulationGuessed / totalPopulation
+                                const numGreen = Math.round(10 * frac)
+                                const numRed = 10 - numGreen
+                                const emoji = jColors.correctEmoji.repeat(numGreen) + jColors.incorrectEmoji.repeat(numRed)
+                                const lines = [
+                                    `I guessed ${history.guessed.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
+                                    `(${Math.round(100 * frac)}% of the population)`,
+                                    '',
+                                    emoji,
+                                    '',
+                                ]
+                                return Promise.resolve([
+                                    lines.join('\n'),
+                                    // TODO use the soyoureanurbanist.org link
+                                    document.location.href,
+                                ])
+                            }
+                        }
+                    />
+                </div>
+                <div style={{ display: 'inline-block', marginInlineStart: '1em' }} />
+                <div style={{ display: 'inline-block' }}>
+                    <button
+                        style={buttonStyle(colors.hueColors.red)}
+                        onClick={() => {
+                        // check if they are sure
+                            if (window.confirm('Are you sure you want to reset your progress?')) {
+                                setHistory({ guessed: [] })
+                            }
+                        }}
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
             <div style={{ marginBlockEnd: '1em' }} />
             <SYAUTable
                 longnames={props.syauData.longnames}
