@@ -9,7 +9,7 @@ from urbanstats.data.gpw import produce_histogram
 
 
 @permacache(
-    "urbanstats/data/census_histogram", key_function=dict(shap=lambda x: x.hash_key)
+    "urbanstats/data/census_histogram_2", key_function=dict(shap=lambda x: x.hash_key)
 )
 def census_histogram(shap, year):
     table = all_densities_gpd(year)
@@ -18,7 +18,7 @@ def census_histogram(shap, year):
 
 
 @permacache(
-    "urbanstats/data/census_histogram_canada_2",
+    "urbanstats/data/census_histogram_canada_3",
     key_function=dict(shap=lambda x: x.hash_key),
 )
 def census_histogram_canada(shap, year):
