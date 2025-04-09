@@ -28,11 +28,17 @@ function EditableSelector(props: {
             autoFocus={true}
             placeholder={selected ?? props.placeholder}
             style={`${subHeaderClass} syau-searchbox`}
+            onChange={(item) => {
+                void props.onSelect(item).onClick()
+            }}
             renderMatch={(currentMatch, onMouseOver, onClick, style, dataTestId) => (
                 <div
                     key={currentMatch()}
                     style={style}
-                    onClick={onClick}
+                    onClick={() => {
+                        console.log('Click!')
+                        onClick()
+                    }}
                     onMouseOver={onMouseOver}
                     data-test-id={dataTestId}
                 >
