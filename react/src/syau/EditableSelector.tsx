@@ -35,10 +35,7 @@ function EditableSelector(props: {
                 <div
                     key={currentMatch()}
                     style={style}
-                    onClick={() => {
-                        console.log('Click!')
-                        onClick()
-                    }}
+                    onClick={onClick}
                     onMouseOver={onMouseOver}
                     data-test-id={dataTestId}
                 >
