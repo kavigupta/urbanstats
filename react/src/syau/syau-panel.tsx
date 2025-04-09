@@ -102,7 +102,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                     guessed, which is
                     {' '}
                     <b>
-                        {Math.round(100 * totalPopulationGuessed / totalPopulation)}
+                        {Math.floor(100 * totalPopulationGuessed / totalPopulation)}
                         %
                     </b>
                     {' '}
@@ -130,12 +130,12 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         produceSummary={
                             () => {
                                 const frac = totalPopulationGuessed / totalPopulation
-                                const numGreen = Math.round(10 * frac)
+                                const numGreen = Math.floor(10 * frac)
                                 const numRed = 10 - numGreen
                                 const emoji = jColors.correctEmoji.repeat(numGreen) + jColors.incorrectEmoji.repeat(numRed)
                                 const lines = [
-                                    `I guessed ${history.guessed.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
-                                    `(${Math.round(100 * frac)}% of the population)`,
+                                    `I named ${history.guessed.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
+                                    `(${Math.floor(100 * frac)}% of the population)`,
                                     '',
                                     emoji,
                                     '',
