@@ -231,8 +231,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         shouldWeUpdate ||= JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })
         if (shouldWeUpdate) {
             // Only update if something that's not the loading has changed, or it's the first load
-            await this.updateToVersion(this.version + 1)
+            await this.bumpVersion()
         }
+    }
+
+    async bumpVersion(): Promise<void> {
+        return this.updateToVersion(this.version + 1)
     }
 
     async updateToVersion(version: number): Promise<void> {

@@ -33,7 +33,6 @@ function computeMatchChunks(longname: string): MatchChunks {
     longname = longname.replace(/\[.*\]/g, '')
     // split longname by -
     const longnameParts = longname.split(/[-/]/).map(s => onlyKeepAlpanumeric(s).trim())
-    console.log(longname, longnameParts)
     // check if query is equal to any part of the longname
     return longnameParts
 }

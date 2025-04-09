@@ -1,8 +1,7 @@
 import maplibregl, { LngLatLike } from 'maplibre-gl'
 
 import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
-import { Feature, ICoordinate } from '../utils/protos'
-import { NormalizeProto } from '../utils/types'
+import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
 
@@ -22,16 +21,21 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     // private layer: L.LayerGroup | undefined = undefined
     name_to_index: undefined | Map<string, number>
     markersOnScreen: Record<string, maplibregl.Marker | undefined> = {}
+    polysOnScreen: { name: string, isGuessed: boolean }[] = []
     updateAttached: boolean = false
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- override
-    override loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        throw new Error('Not implemented! Instead polygonGeojson is overridden')
-    }
 
     override computePolygons(): Promise<Polygons> {
         return Promise.resolve({
-            polygons: [],
+            polygons: this.polysOnScreen.map(({ name, isGuessed }) => ({
+                name,
+                style: {
+                    fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                    fillOpacity: 0.5,
+                    color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                    weight: 2,
+                },
+                meta: {},
+            })),
             zoomIndex: -1,
         })
     }
@@ -120,6 +124,8 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
 
+        const polysOnScreen: { name: string, isGuessed: boolean }[] = []
+
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const props = feature.properties as (
@@ -136,11 +142,17 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
             if (props.cluster) {
                 text = `${props.isGuessed}/${props.existence}`
             }
-            else if (props.isGuessed) {
-                text = `#${props.populationOrdinal}`
-            }
             else {
-                text = `?`
+                polysOnScreen.push({
+                    name: props.name,
+                    isGuessed: props.isGuessed === 1,
+                })
+                if (props.isGuessed) {
+                    text = `#${props.populationOrdinal}`
+                }
+                else {
+                    text = `?`
+                }
             }
             const html = circleSector(
                 this.props.notGuessedColor,
@@ -166,6 +178,15 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
             if (!newMarkers[id]) this.markersOnScreen[id]?.remove()
         }
         this.markersOnScreen = newMarkers
+        polysOnScreen.sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+        })
+        if (JSON.stringify(polysOnScreen) !== JSON.stringify(this.polysOnScreen)) {
+            this.polysOnScreen = polysOnScreen
+            void this.bumpVersion()
+        }
     }
 
     addLayersIfNeeded(map: maplibregl.Map): void {
@@ -189,7 +210,8 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         }
     }
 
-    override async populateMap(map: maplibregl.Map): Promise<void> {
+    override async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
+        await super.populateMap(map, timeBasis)
         await this.stylesheetPresent()
 
         this.fitBounds(map)
