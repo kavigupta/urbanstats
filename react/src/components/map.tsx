@@ -24,6 +24,7 @@ export interface Polygon {
     name: string
     style: PolygonStyle
     meta: Record<string, unknown>
+    notClickable?: boolean
 }
 export interface Polygons {
     polygons: Polygon[]
@@ -126,7 +127,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
         map.on('click', 'polygon', (e) => {
             const features = e.features!
-            const names = features.map(feature => feature.properties.name as string)
+            const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+            if (names.length === 0) {
+                return
+            }
             this.onClick(names[0])
         })
         await this.componentDidUpdate(this.props, this.state)
@@ -182,7 +186,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -210,7 +214,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name, polygon.style)
+            let feature = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -343,7 +347,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
-    async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -374,7 +378,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = {
             type: 'Feature' as const,
-            properties: { name, ...style },
+            properties: { name, notClickable, ...style },
             geometry,
         }
         return geojson
@@ -437,10 +441,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
-            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
+            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
             return () => Promise.resolve()
         }
-        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
         }
