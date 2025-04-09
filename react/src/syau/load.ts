@@ -3,6 +3,7 @@ import { forType } from '../components/load-article'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
+import { normalize } from '../search'
 import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
@@ -24,14 +25,15 @@ export interface SYAUData {
 }
 
 function computeMatchChunks(longname: string): MatchChunks {
-    longname = longname.toLowerCase()
+    longname = normalize(longname, false)
     // split longname by comma and take the first part
     longname = longname.split(',')[0]
     // remove portions in parentheses and brackets
     longname = longname.replace(/\(.*\)/g, '')
     longname = longname.replace(/\[.*\]/g, '')
     // split longname by -
-    const longnameParts = longname.split('-').map(s => s.trim())
+    const longnameParts = longname.split(/[-/]/).map(s => onlyKeepAlpanumeric(s).trim())
+    console.log(longname, longnameParts)
     // check if query is equal to any part of the longname
     return longnameParts
 }
@@ -73,8 +75,13 @@ function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
     return [commonSuffixes.reverse(), chunksAllCleaned]
 }
 
+export function onlyKeepAlpanumeric(s: string): string {
+    // remove all non-alphanumeric characters
+    return s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
+}
+
 export function confirmMatch(target: MatchChunks, query: string): boolean {
-    return target.includes(query.toLowerCase())
+    return target.includes(onlyKeepAlpanumeric(normalize(query)))
 }
 
 export async function loadSYAUData(

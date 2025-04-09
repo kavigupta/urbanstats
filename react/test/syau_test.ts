@@ -1,0 +1,129 @@
+import { Selector } from 'testcafe'
+
+import { urbanstatsFixture } from './test_utils'
+
+const syauInput = Selector('input[id="syau-input"]')
+
+async function addInputText(t: TestController, text: string, expected: string | undefined = undefined): Promise<void> {
+    await t.typeText(syauInput, text)
+    await t.expect(syauInput.value).eql(expected ?? text)
+}
+
+async function clearInputText(t: TestController): Promise<void> {
+    await t.selectText(syauInput).pressKey('ctrl+a delete')
+}
+
+async function allSyauPredictions(): Promise<string[]> {
+    // Get text of all classes 'testing-syau-guessed'
+    const elements = Selector('.testing-syau-guessed')
+    const elementsCount = await elements.count
+    const elementsText: string[] = []
+    for (let i = 0; i < elementsCount; i++) {
+        const element = elements.nth(i)
+        const text = await element.innerText
+        elementsText.push(text)
+    }
+    return elementsText
+}
+
+urbanstatsFixture('california-cities', '/syau.html?typ=City&universe=California%2C+USA')
+
+test('los-angeles', async (t) => {
+    await addInputText(t, 'Los Angele')
+    await t.expect(await allSyauPredictions()).eql([])
+    await addInputText(t, 's', '')
+    await t.expect(await allSyauPredictions()).eql(['1. Los Angeles city'])
+})
+
+test('oakland', async (t) => {
+    await addInputText(t, 'Oakland', 'land')
+    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await clearInputText(t)
+    await addInputText(t, 'Oakland', '')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
+})
+
+test('la-canada', async (t) => {
+    await addInputText(t, 'la canada flintridge', '')
+    await t.expect(await allSyauPredictions()).eql(['344. La Cañada Flintridge city'])
+})
+
+test('ventura', async (t) => {
+    await addInputText(t, 'san buenaventura', '')
+    await t.expect(await allSyauPredictions()).eql(['61. San Buenaventura (Ventura) city'])
+})
+
+test('oakland-simulate-autocomplete', async (t) => {
+    await t.typeText(syauInput, 'Oakland ', { paste: true })
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+})
+
+urbanstatsFixture('missouri-cities', '/syau.html?typ=City&universe=Missouri%2C+USA')
+
+test('o-fallon', async (t) => {
+    await addInputText(t, 'o', '')
+    await addInputText(t, 'o\'fallon', '')
+    await t.expect(await allSyauPredictions()).eql(['7. O\'Fallon city', '865. Chain-O-Lakes village'])
+})
+
+test('o-fallon-smartquote', async (t) => {
+    await addInputText(t, 'o', '')
+    await addInputText(t, 'o’fallon', '')
+    await t.expect(await allSyauPredictions()).eql(['7. O\'Fallon city', '865. Chain-O-Lakes village'])
+})
+
+urbanstatsFixture('usa-urban-areas', '/syau.html?typ=Urban+Area&universe=USA')
+test('boise-ua', async (t) => {
+    await addInputText(t, 'boise', '')
+    await t.expect(await allSyauPredictions()).eql(['94. Boise City [Urban Area]'])
+})
+
+test('louisville-ua', async (t) => {
+    await addInputText(t, 'louisville', '')
+    await t.expect(await allSyauPredictions()).eql(['48. Louisville/Jefferson County [Urban Area]', '320. Lafayette-Erie-Louisville [Urban Area]'])
+})
+
+test('st-louis-ua', async (t) => {
+    await addInputText(t, 'st louis', '')
+    await t.expect(await allSyauPredictions()).eql(['22. St. Louis [Urban Area]', '1003. Alma-St. Louis [Urban Area]'])
+})
+
+test('st.-louis-ua', async (t) => {
+    await addInputText(t, 'st. louis', '')
+    await t.expect(await allSyauPredictions()).eql(['22. St. Louis [Urban Area]', '1003. Alma-St. Louis [Urban Area]'])
+})
+
+test('los-angeles-ua', async (t) => {
+    await addInputText(t, 'los angeles', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Los Angeles-Long Beach-Anaheim [Urban Area]'])
+})
+
+test('anaheim-ua', async (t) => {
+    await addInputText(t, 'anaheim', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Los Angeles-Long Beach-Anaheim [Urban Area]'])
+})
+
+urbanstatsFixture('us-urban-centers', '/syau.html?typ=Urban+Center&universe=USA')
+test('washington-dc-urban-center', async (t) => {
+    await addInputText(t, 'washington dc', '')
+    await t.expect(await allSyauPredictions()).eql(['8. Washington D.C. Urban Center'])
+})
+
+urbanstatsFixture('delaware-counties', '/syau.html?typ=County&universe=Delaware%2C+USA')
+
+test('sussex-delaware', async (t) => {
+    await addInputText(t, 'sussex', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
+})
+
+urbanstatsFixture('canada-cma', '/syau.html?typ=CA+CMA&universe=Canada')
+test('toronto-cma', async (t) => {
+    await addInputText(t, 'toronto', '')
+    await t.expect(await allSyauPredictions()).eql(['1. Toronto CMA'])
+})
+
+test('montreal-cma', async (t) => {
+    await addInputText(t, 'montreal', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Montréal CMA'])
+})

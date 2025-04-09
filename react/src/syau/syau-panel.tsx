@@ -80,6 +80,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
             <div style={{ margin: 'auto', width: '50%' }}>
                 <input
                     type="text"
+                    id="syau-input"
                     placeholder="Type a region name"
                     style={{ width: '100%' }}
                     onChange={(e) => {
@@ -199,6 +200,7 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
                 return (
                     <a
                         key={name}
+                        className={guessed ? 'testing-syau-guessed' : 'testing-syau-not-guessed'}
                         style={{
                             backgroundColor: guessed ? jColors.correct : colors.background,
                             padding: '1em',
