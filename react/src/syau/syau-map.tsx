@@ -34,6 +34,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                     color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
                     weight: 2,
                 },
+                notClickable: true,
                 meta: {},
             })),
             zoomIndex: -1,
