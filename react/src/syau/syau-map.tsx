@@ -118,10 +118,11 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         this.alreadyFitBounds = true
     }
 
-    updateMarkers(): void {
+    async updateMarkers(): Promise<void> {
         const map = this.map
         if (!map) return
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
+        const clusterSource: maplibregl.GeoJSONSource = map.getSource('centroids')!
         const features = map.querySourceFeatures('centroids')
 
         const polysOnScreen: { name: string, isGuessed: boolean }[] = []
@@ -132,7 +133,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                 { populationGuessed: number, population: number, isGuessed: number, existence: number } &
 
                 // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-                ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
+                ({ cluster: true, cluster_id: number } | { cluster: undefined, name: string, populationOrdinal: number }))
             const id = props.cluster ? props.cluster_id : props.name
             // if (!props.cluster) continue
             if (this.markersOnScreen[id]) {
@@ -141,6 +142,16 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
             let text: string
             if (props.cluster) {
                 text = `${props.isGuessed}/${props.existence}`
+                if (props.existence < 5) {
+                    const leaves = await clusterSource.getClusterLeaves(props.cluster_id, 5, 0)
+                    for (const leaf of leaves) {
+                        const properties = leaf.properties as ({ name: string, population: number, isGuessed: number, populationOrdinal: number })
+                        polysOnScreen.push({
+                            name: properties.name,
+                            isGuessed: properties.isGuessed === 1,
+                        })
+                    }
+                }
             }
             else {
                 polysOnScreen.push({
@@ -211,7 +222,6 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     override async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
-        await super.populateMap(map, timeBasis)
         await this.stylesheetPresent()
 
         this.fitBounds(map)
@@ -219,10 +229,11 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         this.addLayersIfNeeded(map)
         if (!this.updateAttached) {
             this.updateAttached = true
-            map.on('move', () => { this.updateMarkers() })
-            map.on('moveend', () => { this.updateMarkers() })
-            source.on('data', () => { this.updateMarkers() })
+            map.on('move', () => { void this.updateMarkers() })
+            map.on('moveend', () => { void this.updateMarkers() })
+            source.on('data', () => { void this.updateMarkers() })
         }
+        await super.populateMap(map, timeBasis)
     }
 }
 
