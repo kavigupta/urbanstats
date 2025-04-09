@@ -128,6 +128,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         map.on('click', 'polygon', (e) => {
             const features = e.features!
             const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+            if (names.length === 0) {
+                return
+            }
             this.onClick(names[0])
         })
         await this.componentDidUpdate(this.props, this.state)
