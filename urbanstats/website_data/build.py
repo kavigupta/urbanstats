@@ -286,7 +286,7 @@ def build_urbanstats(
                 title="So you're an urbanist?",
                 # TODO change image
                 image="https://urbanstats.org/juxtastat-link-preview.png",
-                description="Name every city 😤",
+                description="Name every urb 😤",
             )
         )
 
