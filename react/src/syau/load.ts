@@ -110,6 +110,7 @@ export async function loadSYAUData(
     }
 
     const articleNames = Array.from(articleNameToValue.keys())
+    articleNames.sort((a, b) => articleNameToValue.get(b)! - articleNameToValue.get(a)!)
     const values = articleNames.map(name => articleNameToValue.get(name)!)
 
     const centroids = await loadCentroids(universe, typ, articleNames)
@@ -118,6 +119,9 @@ export async function loadSYAUData(
 
     const populationOrdinals = values.map((v, i) => [v, i] as [number, number])
         .sort((a, b) => b[0] - a[0])
+        .map(([, i]) => i)
+        .map((v, i) => [v, i] as [number, number])
+        .sort((a, b) => a[0] - b[0])
         .map(([, i]) => i + 1)
 
     return {

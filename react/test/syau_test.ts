@@ -107,7 +107,12 @@ test('anaheim-ua', async (t) => {
 urbanstatsFixture('us-urban-centers', '/syau.html?typ=Urban+Center&universe=USA')
 test('washington-dc-urban-center', async (t) => {
     await addInputText(t, 'washington dc', '')
-    await t.expect(await allSyauPredictions()).eql(['8. Washington D.C. Urban Center'])
+    await t.expect(await allSyauPredictions()).eql(['10. Washington D.C. Urban Center'])
+})
+
+test('tijuana-urban-center', async (t) => {
+    await addInputText(t, 'tijuana', '')
+    await t.expect(await allSyauPredictions()).eql(['8. Tijuana Urban Center'])
 })
 
 urbanstatsFixture('delaware-counties', '/syau.html?typ=County&universe=Delaware%2C+USA')
