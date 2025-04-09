@@ -186,7 +186,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable ?? false, polygon.style)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -214,7 +214,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name, polygon.notClickable ?? false, polygon.style)
+            let feature = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -343,7 +343,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
-    async polygonGeojson(name: string, notClickable: boolean, style: PolygonStyle): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -440,7 +440,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
             return () => Promise.resolve()
         }
-        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable ?? false, polygon.style)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
         }
