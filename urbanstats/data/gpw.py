@@ -357,27 +357,23 @@ def compute_gpw_weighted_for_shape(
 def compute_gpw_for_shape(shape, collect_density=True):
     glo = load_full_ghs()
     if collect_density:
-        dens_1 = compute_circle_density_per_cell(1)
-        dens_2 = compute_circle_density_per_cell(2)
-        dens_4 = compute_circle_density_per_cell(4)
+        dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
     row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
     if collect_density:
-        dens_1_selected = dens_1[row_selected, col_selected]
-        dens_2_selected = dens_2[row_selected, col_selected]
-        dens_4_selected = dens_4[row_selected, col_selected]
-        hists = dict(
-            gpw_pw_density_histogram_1=produce_histogram(dens_1_selected, pop),
-            gpw_pw_density_histogram_2=produce_histogram(dens_2_selected, pop),
-            gpw_pw_density_histogram_4=produce_histogram(dens_4_selected, pop),
-        )
-        density = dict(
-            gpw_pw_density_1=np.nansum(pop * dens_1_selected) / pop_sum,
-            gpw_pw_density_2=np.nansum(pop * dens_2_selected) / pop_sum,
-            gpw_pw_density_4=np.nansum(pop * dens_4_selected) / pop_sum,
-        )
+        dens_selected = {
+            k: dens_by_radius[k][row_selected, col_selected] for k in GPW_RADII
+        }
+        hists = {
+            f"gpw_pw_density_histogram_{k}": produce_histogram(dens, pop)
+            for k, dens in dens_selected.items()
+        }
+        density = {
+            f"gpw_pw_density_{k}": np.nansum(pop * dens) / pop_sum
+            for k, dens in dens_selected.items()
+        }
     else:
         hists = {}
         density = {}
