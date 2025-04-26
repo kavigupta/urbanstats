@@ -24,6 +24,7 @@ export interface Polygon {
     name: string
     style: PolygonStyle
     meta: Record<string, unknown>
+    notClickable?: boolean
 }
 export interface Polygons {
     polygons: Polygon[]
@@ -112,6 +113,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
+            canvasContextAttributes: {
+                preserveDrawingBuffer: true,
+            },
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
@@ -123,7 +127,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
         map.on('click', 'polygon', (e) => {
             const features = e.features!
-            const names = features.map(feature => feature.properties.name as string)
+            const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+            if (names.length === 0) {
+                return
+            }
             this.onClick(names[0])
         })
         await this.componentDidUpdate(this.props, this.state)
@@ -179,7 +186,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const overallSvg = []
 
         for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
             for (const elem of svg) {
                 overallSvg.push(elem)
@@ -207,7 +214,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: [],
         }
         for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name, polygon.style)
+            let feature = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
             for (const [key, value] of Object.entries(polygon.meta)) {
                 feature.properties![key] = value
@@ -253,20 +260,29 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance('Loading map...')
         this.setState({ loading: true })
 
-        const map = this.map!
         this.exist_this_time = []
 
         this.attachBasemap()
 
+        while (this.map === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        await this.populateMap(this.map, time)
+        this.setState({ loading: false })
+        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
+        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
+    }
+
+    async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
-        debugPerformance(`Computed polygons; at ${Date.now() - time}ms`)
+        debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.addPolygons(map, polygons, zoomIndex)
 
-        debugPerformance(`Added polygons; at ${Date.now() - time}ms`)
+        debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
         await this.mapDidRender()
-        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - time}ms`)
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
         for (const [name] of this.state.polygonByName.entries()) {
@@ -275,9 +291,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         await this.updateSources(true)
-        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
-        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
-        this.setState({ loading: false })
     }
 
     attachBasemap(): void {
@@ -290,7 +303,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async stylesheetPresent(): Promise<void> {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
-        if (this.map!.style.stylesheet !== undefined) {
+        if (this.map?.style.stylesheet !== undefined) {
             return
         }
         await new Promise(resolve => setTimeout(resolve, 10))
@@ -330,7 +343,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
-    async polygonGeojson(name: string, style: PolygonStyle): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
         // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
         let geometry: GeoJSON.Geometry
@@ -361,7 +374,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = {
             type: 'Feature' as const,
-            properties: { name, ...style },
+            properties: { name, notClickable, ...style },
             geometry,
         }
         return geojson
@@ -374,13 +387,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         const time = Date.now()
-        if (!this.map!.isStyleLoaded() && !force) {
+        while (this.map === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        if (!this.map.isStyleLoaded() && !force) {
             return
         }
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
-        const map = this.map!
+        const map = this.map
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
@@ -421,10 +437,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
-            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name }
+            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
             return () => Promise.resolve()
         }
-        const geojson = await this.polygonGeojson(polygon.name, polygon.style)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
             this.zoomToItems([geojson], { duration: 0 })
         }
@@ -499,6 +515,9 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
             layer.setLayoutProperty('visibility', 'none')
         }
         else {
+            if (basemap.disableBasemap && layerspec.type === 'symbol' && map.getLayer(layerspec.id)) {
+                map.removeLayer(layerspec.id)
+            }
             layer.setLayoutProperty('visibility', 'visible')
         }
     })

@@ -25,84 +25,9 @@ GPW_LAND_PATH = (
 )
 
 
-@lru_cache(maxsize=None)
-def load_file(prefix, path, tag):
-    x = read_asc_file(prefix, path, tag)
-
-    assert x.pop(-1) == ""
-
-    ncols = int(x[0].split(" ")[-1])
-    nrows = int(x[1].split(" ")[-1])
-    xllcorner = float(x[2].split(" ")[-1])
-    yllcorner = float(x[3].split(" ")[-1])
-    cellsize = float(x[4].split(" ")[-1])
-    NODATA_value = float(x[5].split(" ")[-1])
-
-    data_rows = x[6:]
-    assert all(row[-1] == " " for row in data_rows)
-    data_rows = [row[:-1] for row in data_rows]
-    assert len(data_rows) == nrows, (len(data_rows), nrows)
-    assert len(data_rows[0].split(" ")) == ncols, (len(data_rows[0].split(" ")), ncols)
-
-    data = np.zeros((nrows, ncols), dtype=np.float32)
-    for i, row in enumerate(tqdm.tqdm(data_rows)):
-        data[i] = np.array(row.split(" ")).astype(np.float32)
-
-    data[data == NODATA_value] = np.nan
-
-    return dict(
-        ncols=ncols,
-        nrows=nrows,
-        xllcorner=xllcorner,
-        yllcorner=yllcorner,
-        cellsize=cellsize,
-        data=data,
-    )
-
-
-def read_asc_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as zipf:
-        with zipf.open(f"{prefix}{tag}.asc") as f:
-            x = f.read().decode("utf-8")
-        x = x.split("\r\n")
-    return x
-
-
-def load(prefix, path):
-    tag = 1
-    result = []
-    for row in 0, -90:
-        result.append([])
-        for col in -180, -90, 0, 90:
-            f = load_file(prefix, path, tag)
-            print(f["xllcorner"], col)
-            print(f["yllcorner"], row)
-            assert abs(f["xllcorner"] - col) < 0.1
-            assert abs(f["yllcorner"] - row) < 0.1
-
-            result[-1].append(f["data"])
-            tag += 1
-
-    return result
-
-
-def load_concatenated(prefix, path):
-    result = load(prefix, path)
-    result = np.concatenate(result, axis=1)
-    result = np.concatenate(result, axis=1)
-    assert result.shape == (21600, 43200)
-    return result
-
-
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
-
-
-@permacache("urbanstats/data/gpw/load_full_ghs_2015")
-def load_full_ghs_2015():
-    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path)
 
 
@@ -116,16 +41,6 @@ def load_ghs_from_path(path):
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
-
-
-@permacache("urbanstats/data/gpw/load_full")
-def load_full():
-    return load_concatenated(*GPW_PATH)
-
-
-@permacache("urbanstats/data/gpw/load_full_landarea")
-def load_full_landarea():
-    return load_concatenated(*GPW_LAND_PATH)
 
 
 def lat_from_row_idx(row_idx):
