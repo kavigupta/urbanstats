@@ -79,7 +79,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                 clusterMaxZoom: 14,
                 clusterRadius: circleMarkerRadius * 2.5,
                 clusterProperties: {
-                    // keep counts of population and guessed status in a cluster
+                    // keep counts of population and named status in a cluster
                     population: ['+', ['get', 'population']],
                     populationGuessed: ['+', ['get', 'populationGuessed']],
                     isGuessed: ['+', ['get', 'isGuessed']],

@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { urbanstatsFixture } from './test_utils'
+import { withMockedClipboard } from './quiz_test_utils'
+import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 const syauInput = Selector('input[id="syau-input"]')
 
@@ -14,8 +15,8 @@ async function clearInputText(t: TestController): Promise<void> {
 }
 
 async function allSyauPredictions(): Promise<string[]> {
-    // Get text of all classes 'testing-syau-guessed'
-    const elements = Selector('.testing-syau-guessed')
+    // Get text of all classes 'testing-syau-named'
+    const elements = Selector('.testing-syau-named')
     const elementsCount = await elements.count
     const elementsText: string[] = []
     for (let i = 0; i < elementsCount; i++) {
@@ -24,6 +25,19 @@ async function allSyauPredictions(): Promise<string[]> {
         elementsText.push(text)
     }
     return elementsText
+}
+
+async function assertCopy(t: TestController, expected: string[]): Promise<void> {
+    await t.expect(await withMockedClipboard(t, async () => {
+        await t.click(Selector('button').withExactText('Copy'))
+    })).eql(expected)
+}
+
+async function assertText(t: TestController, expected: string): Promise<void> {
+    // get text of test-syau-status
+    const element = Selector('#test-syau-status')
+    const text = await element.innerText
+    await t.expect(text).eql(expected)
 }
 
 urbanstatsFixture('california-cities', '/syau.html?typ=City&universe=California%2C+USA')
@@ -57,6 +71,34 @@ test('oakland-simulate-autocomplete', async (t) => {
     await t.typeText(syauInput, 'Oakland ', { paste: true })
     await t.expect(syauInput.value).eql('')
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+})
+
+test('round-down', async (t) => {
+    await addInputText(t, 'san francisco', '')
+    await addInputText(t, 'san diego', '')
+    await addInputText(t, 'fresno', '')
+    await screencap(t)
+    await assertCopy(t, [
+        'I named 3/1607 Cities in California, USA\n'
+        + '(7% of the population)\n'
+        + '\n'
+        + '🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=City&universe=California%2C+USA`,
+    ])
+    await assertText(t, '3/1607 Cities named, which is 7% of the total population.')
+    await safeReload(t)
+    await addInputText(t, 'los angeles', '')
+    await screencap(t)
+    await assertCopy(t, [
+        'I named 4/1607 Cities in California, USA\n'
+        + '(17% of the population)\n'
+        + '\n'
+        + '🟩🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=City&universe=California%2C+USA`,
+    ])
+    await assertText(t, '4/1607 Cities named, which is 17% of the total population.')
 })
 
 urbanstatsFixture('missouri-cities', '/syau.html?typ=City&universe=Missouri%2C+USA')
