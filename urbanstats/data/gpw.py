@@ -96,7 +96,7 @@ def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100):
     }
 
 
-@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2")
+@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2.5")
 def compute_circle_density_per_cell(
     radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
 ):
@@ -253,7 +253,7 @@ def compute_gpw_weighted_for_shape(
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_4.5",
+    "urbanstats/data/gpw/compute_gpw_for_shape_4.6",
     key_function=dict(
         shape=lambda x: stable_hash(shapely.to_geojson(x)),
         collect_density=drop_if_equal(True),
@@ -287,7 +287,7 @@ def compute_gpw_for_shape(shape, collect_density=True):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.5",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.6",
     key_function=dict(
         shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
