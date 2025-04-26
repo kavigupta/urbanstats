@@ -126,6 +126,8 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         const clusterSource: maplibregl.GeoJSONSource = map.getSource('centroids')!
         const features = map.querySourceFeatures('centroids')
 
+        const oldMarkers = { ...this.markersOnScreen }
+
         const polysOnScreen: { name: string, isGuessed: boolean }[] = []
 
         for (const feature of features) {
@@ -137,8 +139,8 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                 ({ cluster: true, cluster_id: number } | { cluster: undefined, name: string, populationOrdinal: number }))
             const id = props.cluster ? props.cluster_id : props.name
             // if (!props.cluster) continue
-            if (this.markersOnScreen[id]) {
-                this.markersOnScreen[id].remove()
+            if (oldMarkers[id]) {
+                oldMarkers[id].remove()
             }
             let text: string
             if (props.cluster) {
@@ -183,11 +185,11 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
             }).setLngLat(coords)
             // the assignment to markersOnScreen is necessary in case multiple of these updates are running at once
             // might be better to simply not allow that to happen.
-            newMarkers[id] = this.markersOnScreen[id] = marker
+            newMarkers[id] = oldMarkers[id] = marker
             newMarkers[id].addTo(map)
         }
-        for (const id in this.markersOnScreen) {
-            if (!newMarkers[id]) this.markersOnScreen[id]?.remove()
+        for (const id in oldMarkers) {
+            if (!newMarkers[id]) oldMarkers[id]?.remove()
         }
         this.markersOnScreen = newMarkers
         polysOnScreen.sort((a, b) => {
