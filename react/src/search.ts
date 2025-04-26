@@ -35,7 +35,7 @@ export function normalize(a: string, handlePunctuation = true): string {
     a = a.normalize('NFD')
     a = a.replace(/[\u0300-\u036f]/g, '')
     if (handlePunctuation) {
-        a = a.replace(/[\(\)\[\]]/g, '')
+        a = a.replace(/[,\(\)\[\]]/g, '')
         a = a.replaceAll('-', ' ')
     }
     return a
