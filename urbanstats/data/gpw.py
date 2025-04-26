@@ -10,6 +10,7 @@ from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.features.within_distance import xy_to_radius
+from urbanstats.geometry.ellipse import Ellipse
 from urbanstats.utils import compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
@@ -23,6 +24,9 @@ GPW_LAND_PATH = (
     "gpw_v4_land_water_area_rev11_landareakm_30_sec_",
     "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
 )
+
+
+CELLS_PER_DEGREE = 120
 
 
 @lru_cache(maxsize=None)
@@ -196,6 +200,41 @@ def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
     return result
 
 
+def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
+    x, y = lon_from_col_idx(0.5), lat_from_row_idx(row_idx + 0.5)
+    ell = Ellipse(radius, y, x)
+    yr, xr = ell.lat_radius, ell.lon_radius
+    xr_idxs, yr_idxs = [
+        int(np.ceil(radius * CELLS_PER_DEGREE + 2)) for radius in (xr, yr)
+    ]
+    xs, ys = [np.arange(-radius, radius + 1) for radius in (xr_idxs, yr_idxs)]
+    # placing a grid off-index, e.g., if grid size is 3, we do 1/6, 3/6, 5/6.
+    within_cell_grid = np.linspace(1 / grid_size / 2, 1 - 1 / grid_size / 2, grid_size)
+    xs_specific, ys_specific = [
+        (np.repeat(seq[:, None], grid_size, axis=1) + within_cell_grid)
+        for seq in (xs, ys)
+    ]
+    xs_specific, ys_specific = [
+        (seq - 0.5) / CELLS_PER_DEGREE for seq in (xs_specific, ys_specific)
+    ]
+    dist_from_center = (xs_specific[..., None, None] / xr) ** 2 + (
+        ys_specific[None, None] / yr
+    ) ** 2
+    attributable_to_each = (dist_from_center <= 1).mean((1, 3))
+    return xs, ys, attributable_to_each
+
+
+def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100):
+    xs, ys, b_arr = compute_cell_overlaps_with_circle_grid_array(
+        radius, row_idx, grid_size=grid_size
+    )
+    x_idxs, y_idxs = np.where(b_arr)
+    return {
+        (y + row_idx, x): amount
+        for (x, y, amount) in zip(xs[x_idxs], ys[y_idxs], b_arr[x_idxs, y_idxs])
+    }
+
+
 @permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2")
 def compute_circle_density_per_cell(
     radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
@@ -203,14 +242,19 @@ def compute_circle_density_per_cell(
     glo = load_full_ghs()
     glo = glo[:, longitude_start:longitude_end]
     glo_zero = np.nan_to_num(glo, 0)
-    out = np.zeros_like(glo_zero)
     [row_idxs] = np.where((glo_zero[latitude_start:latitude_end] != 0).any(axis=1))
     row_idxs += latitude_start
+    out = np.zeros_like(glo_zero)
+    out = sum_in_radius(radius, glo_zero, row_idxs, out)
+    out = out / (np.pi * radius**2)
+    return out
+
+
+def sum_in_radius(radius, global_map, row_idxs, out):
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
         overlaps = compute_full_cell_overlaps_with_circle(radius, row_idx)
         for (source_row, off), weight in overlaps.items():
-            out[row_idx] += np.roll(glo_zero[source_row], -off) * weight
-    out = out / (np.pi * radius**2)
+            out[row_idx] += np.roll(global_map[source_row], -off) * weight
     return out
 
 
@@ -357,9 +401,7 @@ def compute_gpw_weighted_for_shape(
 def compute_gpw_for_shape(shape, collect_density=True):
     glo = load_full_ghs()
     if collect_density:
-        dens_by_radius = {
-            k: compute_circle_density_per_cell(k) for k in GPW_RADII
-        }
+        dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
     row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
