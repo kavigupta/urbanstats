@@ -6,6 +6,7 @@ from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
+from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_lines
 from urbanstats.utils import compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
@@ -253,17 +254,19 @@ def compute_gpw_weighted_for_shape(
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_4.6",
-    key_function=dict(
-        shape=lambda x: stable_hash(shapely.to_geojson(x)),
-        collect_density=drop_if_equal(True),
-    ),
+    "urbanstats/data/gpw/compute_gpw_for_shape_raster",
+    key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
-def compute_gpw_for_shape(shape, collect_density=True):
+def compute_gpw_for_shape_raster(shape, collect_density=True):
     glo = load_full_ghs()
     if collect_density:
         dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
-    row_selected, col_selected = lattice_cells_contained(glo, shape)
+    lats, lon_starts, lon_ends = rasterize_using_lines(
+        shape, resolution=CELLS_PER_DEGREE
+    )
+    row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
+    # import IPython; IPython.embed()
+    # row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
@@ -287,7 +290,7 @@ def compute_gpw_for_shape(shape, collect_density=True):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.6",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.7",
     key_function=dict(
         shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
@@ -312,7 +315,9 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
     ):
         if log:
             print(longname)
-        res, hists = compute_gpw_for_shape(shape, collect_density=collect_density)
+        res, hists = compute_gpw_for_shape_raster(
+            shape, collect_density=collect_density
+        )
         if log:
             print(res)
         for k, v in res.items():
