@@ -1,6 +1,4 @@
-import zipfile
 from collections import defaultdict
-from functools import lru_cache
 
 import numpy as np
 import shapely
@@ -8,8 +6,11 @@ import tqdm.auto as tqdm
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
 
+from urbanstats.data.census_blocks import RADII
 from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.utils import compute_bins
+
+GPW_RADII = [k for k in RADII if k >= 1]
 
 GPW_PATH = (
     "gpw_v4_population_count_rev11_2020_30_sec_",
@@ -22,84 +23,9 @@ GPW_LAND_PATH = (
 )
 
 
-@lru_cache(maxsize=None)
-def load_file(prefix, path, tag):
-    x = read_asc_file(prefix, path, tag)
-
-    assert x.pop(-1) == ""
-
-    ncols = int(x[0].split(" ")[-1])
-    nrows = int(x[1].split(" ")[-1])
-    xllcorner = float(x[2].split(" ")[-1])
-    yllcorner = float(x[3].split(" ")[-1])
-    cellsize = float(x[4].split(" ")[-1])
-    NODATA_value = float(x[5].split(" ")[-1])
-
-    data_rows = x[6:]
-    assert all(row[-1] == " " for row in data_rows)
-    data_rows = [row[:-1] for row in data_rows]
-    assert len(data_rows) == nrows, (len(data_rows), nrows)
-    assert len(data_rows[0].split(" ")) == ncols, (len(data_rows[0].split(" ")), ncols)
-
-    data = np.zeros((nrows, ncols), dtype=np.float32)
-    for i, row in enumerate(tqdm.tqdm(data_rows)):
-        data[i] = np.array(row.split(" ")).astype(np.float32)
-
-    data[data == NODATA_value] = np.nan
-
-    return dict(
-        ncols=ncols,
-        nrows=nrows,
-        xllcorner=xllcorner,
-        yllcorner=yllcorner,
-        cellsize=cellsize,
-        data=data,
-    )
-
-
-def read_asc_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as zipf:
-        with zipf.open(f"{prefix}{tag}.asc") as f:
-            x = f.read().decode("utf-8")
-        x = x.split("\r\n")
-    return x
-
-
-def load(prefix, path):
-    tag = 1
-    result = []
-    for row in 0, -90:
-        result.append([])
-        for col in -180, -90, 0, 90:
-            f = load_file(prefix, path, tag)
-            print(f["xllcorner"], col)
-            print(f["yllcorner"], row)
-            assert abs(f["xllcorner"] - col) < 0.1
-            assert abs(f["yllcorner"] - row) < 0.1
-
-            result[-1].append(f["data"])
-            tag += 1
-
-    return result
-
-
-def load_concatenated(prefix, path):
-    result = load(prefix, path)
-    result = np.concatenate(result, axis=1)
-    result = np.concatenate(result, axis=1)
-    assert result.shape == (21600, 43200)
-    return result
-
-
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
-
-
-@permacache("urbanstats/data/gpw/load_full_ghs_2015")
-def load_full_ghs_2015():
-    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path)
 
 
@@ -113,16 +39,6 @@ def load_ghs_from_path(path):
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
-
-
-@permacache("urbanstats/data/gpw/load_full")
-def load_full():
-    return load_concatenated(*GPW_PATH)
-
-
-@permacache("urbanstats/data/gpw/load_full_landarea")
-def load_full_landarea():
-    return load_concatenated(*GPW_LAND_PATH)
 
 
 def lat_from_row_idx(row_idx):
@@ -354,27 +270,23 @@ def compute_gpw_weighted_for_shape(
 def compute_gpw_for_shape(shape, collect_density=True):
     glo = load_full_ghs()
     if collect_density:
-        dens_1 = compute_circle_density_per_cell(1)
-        dens_2 = compute_circle_density_per_cell(2)
-        dens_4 = compute_circle_density_per_cell(4)
+        dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
     row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
     if collect_density:
-        dens_1_selected = dens_1[row_selected, col_selected]
-        dens_2_selected = dens_2[row_selected, col_selected]
-        dens_4_selected = dens_4[row_selected, col_selected]
-        hists = dict(
-            gpw_pw_density_histogram_1=produce_histogram(dens_1_selected, pop),
-            gpw_pw_density_histogram_2=produce_histogram(dens_2_selected, pop),
-            gpw_pw_density_histogram_4=produce_histogram(dens_4_selected, pop),
-        )
-        density = dict(
-            gpw_pw_density_1=np.nansum(pop * dens_1_selected) / pop_sum,
-            gpw_pw_density_2=np.nansum(pop * dens_2_selected) / pop_sum,
-            gpw_pw_density_4=np.nansum(pop * dens_4_selected) / pop_sum,
-        )
+        dens_selected = {
+            k: dens_by_radius[k][row_selected, col_selected] for k in GPW_RADII
+        }
+        hists = {
+            f"gpw_pw_density_histogram_{k}": produce_histogram(dens, pop)
+            for k, dens in dens_selected.items()
+        }
+        density = {
+            f"gpw_pw_density_{k}": np.nansum(pop * dens) / pop_sum
+            for k, dens in dens_selected.items()
+        }
     else:
         hists = {}
         density = {}
@@ -397,18 +309,9 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
 
     shapes = shapefile.load_file()
 
-    result = {
-        "gpw_population": [],
-        "gpw_pw_density_1": [],
-        "gpw_pw_density_2": [],
-        "gpw_pw_density_4": [],
-    }
+    result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
 
-    result_hists = {
-        "gpw_pw_density_histogram_1": [],
-        "gpw_pw_density_histogram_2": [],
-        "gpw_pw_density_histogram_4": [],
-    }
+    result_hists = {f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII}
 
     for longname, shape in tqdm.tqdm(
         zip(shapes.longname, shapes.geometry),
