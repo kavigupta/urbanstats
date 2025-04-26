@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
@@ -7,7 +5,6 @@ from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
-from urbanstats.features.within_distance import xy_to_radius
 from urbanstats.geometry.ellipse import Ellipse
 from urbanstats.utils import compute_bins
 
