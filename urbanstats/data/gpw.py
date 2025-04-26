@@ -25,88 +25,12 @@ GPW_LAND_PATH = (
     "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
 )
 
-
 CELLS_PER_DEGREE = 120
-
-
-@lru_cache(maxsize=None)
-def load_file(prefix, path, tag):
-    x = read_asc_file(prefix, path, tag)
-
-    assert x.pop(-1) == ""
-
-    ncols = int(x[0].split(" ")[-1])
-    nrows = int(x[1].split(" ")[-1])
-    xllcorner = float(x[2].split(" ")[-1])
-    yllcorner = float(x[3].split(" ")[-1])
-    cellsize = float(x[4].split(" ")[-1])
-    NODATA_value = float(x[5].split(" ")[-1])
-
-    data_rows = x[6:]
-    assert all(row[-1] == " " for row in data_rows)
-    data_rows = [row[:-1] for row in data_rows]
-    assert len(data_rows) == nrows, (len(data_rows), nrows)
-    assert len(data_rows[0].split(" ")) == ncols, (len(data_rows[0].split(" ")), ncols)
-
-    data = np.zeros((nrows, ncols), dtype=np.float32)
-    for i, row in enumerate(tqdm.tqdm(data_rows)):
-        data[i] = np.array(row.split(" ")).astype(np.float32)
-
-    data[data == NODATA_value] = np.nan
-
-    return dict(
-        ncols=ncols,
-        nrows=nrows,
-        xllcorner=xllcorner,
-        yllcorner=yllcorner,
-        cellsize=cellsize,
-        data=data,
-    )
-
-
-def read_asc_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as zipf:
-        with zipf.open(f"{prefix}{tag}.asc") as f:
-            x = f.read().decode("utf-8")
-        x = x.split("\r\n")
-    return x
-
-
-def load(prefix, path):
-    tag = 1
-    result = []
-    for row in 0, -90:
-        result.append([])
-        for col in -180, -90, 0, 90:
-            f = load_file(prefix, path, tag)
-            print(f["xllcorner"], col)
-            print(f["yllcorner"], row)
-            assert abs(f["xllcorner"] - col) < 0.1
-            assert abs(f["yllcorner"] - row) < 0.1
-
-            result[-1].append(f["data"])
-            tag += 1
-
-    return result
-
-
-def load_concatenated(prefix, path):
-    result = load(prefix, path)
-    result = np.concatenate(result, axis=1)
-    result = np.concatenate(result, axis=1)
-    assert result.shape == (21600, 43200)
-    return result
 
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
-
-
-@permacache("urbanstats/data/gpw/load_full_ghs_2015")
-def load_full_ghs_2015():
-    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path)
 
 
@@ -120,16 +44,6 @@ def load_ghs_from_path(path):
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
-
-
-@permacache("urbanstats/data/gpw/load_full")
-def load_full():
-    return load_concatenated(*GPW_PATH)
-
-
-@permacache("urbanstats/data/gpw/load_full_landarea")
-def load_full_landarea():
-    return load_concatenated(*GPW_LAND_PATH)
 
 
 def lat_from_row_idx(row_idx):
@@ -150,54 +64,6 @@ def row_idx_from_lat(lat):
 
 def grid_area_km(lat):
     return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
-
-
-def cell_overlaps(shape):
-    """
-    Take a shape (in lat/lon coordinates) and return a dictionary from (row, col) to the fraction of the cell that overlaps the shape.
-    """
-
-    lon_min, lat_min, lon_max, lat_max = shape.bounds
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
-
-    result = {}
-
-    for row_idx in range(int(row_min), int(row_max) + 1):
-        for col_idx in range(int(col_min), int(col_max) + 1):
-            cell = box_for_cell(row_idx, col_idx)
-            intersection = cell.intersection(shape)
-            if intersection.is_empty or cell.area == 0:
-                continue
-            result[(row_idx, col_idx)] = intersection.area / cell.area
-
-    return result
-
-
-def box_for_cell(row_idx, col_idx):
-    cell_lat_min = lat_from_row_idx(row_idx)
-    cell_lat_max = lat_from_row_idx(row_idx + 1)
-    cell_lon_min = lon_from_col_idx(col_idx)
-    cell_lon_max = lon_from_col_idx(col_idx + 1)
-
-    cell = shapely.geometry.box(cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max)
-
-    return cell
-
-
-def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
-    result = defaultdict(float)
-    for offx in np.linspace(0, 1, num_grid + 1)[:-1]:
-        for offy in np.linspace(0, 1, num_grid + 1)[:-1]:
-            lat = lat_from_row_idx(row_idx + offy)
-            lon = lon_from_col_idx(offx)
-            circle = xy_to_radius(radius, lon, lat)
-            for (r, c), frac in cell_overlaps(circle).items():
-                result[(r, c)] += frac / (num_grid**2)
-    return result
 
 
 def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):

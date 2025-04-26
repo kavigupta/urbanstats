@@ -313,10 +313,10 @@ export default [
     null,
     null,
     null,
-    'higher % units built pre-1970',
+    'higher % of housing units built before 1970',
     null,
     null,
     null,
     null,
-    'higher % units built in 2010s+',
+    'higher % of housing units built in 2010 or later',
 ] as const
