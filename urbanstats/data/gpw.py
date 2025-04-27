@@ -265,8 +265,6 @@ def compute_gpw_for_shape_raster(shape, collect_density=True):
         shape, resolution=CELLS_PER_DEGREE
     )
     row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
-    # import IPython; IPython.embed()
-    # row_selected, col_selected = lattice_cells_contained(glo, shape)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)

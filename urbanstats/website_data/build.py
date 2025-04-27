@@ -280,6 +280,15 @@ def build_urbanstats(
             )
         )
 
+    with open(f"{site_folder}/syau.html", "w") as f:
+        f.write(
+            html_index(
+                title="So you're an urbanist?",
+                image="https://urbanstats.org/syau-link-preview.png",
+                description="Name every urb 😤",
+            )
+        )
+
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
     shutil.copy("icons/main/banner-dark.png", f"{site_folder}/")
@@ -290,6 +299,7 @@ def build_urbanstats(
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/life.png", f"{site_folder}/")
     shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")

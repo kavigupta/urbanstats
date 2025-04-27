@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "Newark city, New Jersey, USA",
+      "longname_b": "Seattle city, Washington, USA",
+      "stat_a": 0.4603339615849574,
+      "stat_b": 0.8305879131190741
+    },
+    "b": {
+      "stat_column": "Hearing disability %",
+      "stat_path": "HEARING_cdc_2",
+      "question": "higher % of adults with a hearing disability",
+      "longname_a": "Lubbock [Urban Area], TX, USA",
+      "longname_b": "Montgomery [Urban Area], AL, USA",
+      "stat_a": 0.06389765372608336,
+      "stat_b": 0.05646997713860394
+    },
+    "a_ease": 0.7151515151515152,
+    "b_ease": 0.31391962725684336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Minneapolis [Saint Paul] Urban Center, USA",
+      "longname_b": "Syracuse Urban Center, USA",
+      "stat_a": 0.18967072158995282,
+      "stat_b": 0.2171583734436471
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Lake County, Florida, USA",
+      "longname_b": "Erie County, New York, USA",
+      "stat_a": 7.681203581414053,
+      "stat_b": 4.655123400842176
+    },
+    "a_ease": 0.26391279403327594,
+    "b_ease": 0.6736672051696284
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Victoria Population Center, BC, Canada",
+      "longname_b": "London Population Center, ON, Canada",
+      "stat_a": 0.9431224102394071,
+      "stat_b": 0.9101569336344597
+    },
+    "b": {
+      "stat_column": "Agriculture, forestry, fishing and hunting %",
+      "stat_path": "industry_agriculture,_forestry,_fishing_and_hunting",
+      "question": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries!TOOLTIP agriculture, forestry, logging, fishing, and hunting",
+      "longname_a": "Montana, USA",
+      "longname_b": "Alaska, USA",
+      "stat_a": 0.04794537455306352,
+      "stat_b": 0.017178454867957885
+    },
+    "a_ease": 0.6446062210456651,
+    "b_ease": 0.24096385542168675
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "Saskatchewan, Canada",
+      "stat_a": 0.05282716639058258,
+      "stat_b": 0.04045994619541524
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Omaha-Council Bluffs MSA, NE-IA, USA",
+      "longname_b": "Aguadilla-Isabela MSA, PR, USA",
+      "stat_a": 0.042533709332640786,
+      "stat_b": -0.12654107700865744
+    },
+    "a_ease": 0.1997670355270821,
+    "b_ease": 0.6332794830371568
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Tampa city, Florida, USA",
+      "longname_b": "Oakland city, California, USA",
+      "stat_a": 6.11480746162633e-05,
+      "stat_b": 2.722934597380083e-05
+    },
+    "b": {
+      "stat_column": "Management of companies and enterprises %",
+      "stat_path": "industry_management_of_companies_and_enterprises",
+      "question": "higher % of workers employed in the management industry!TOOLTIP management of companies and enterprises",
+      "longname_a": "Indiana, USA",
+      "longname_b": "Alaska, USA",
+      "stat_a": 0.0009538829433979268,
+      "stat_b": 0.0026222103302356494
+    },
+    "a_ease": 0.5366685616827743,
+    "b_ease": 0.13644115974985788
+  }
+]
