@@ -1,11 +1,12 @@
 import os
+
+import dask.array
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
-from geotiff import GeoTiff
-import dask.array
-from permacache import drop_if_equal, permacache, stable_hash
 import zarr
+from geotiff import GeoTiff
+from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
@@ -93,21 +94,6 @@ def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100):
     }
 
 
-@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2.5")
-def compute_circle_density_per_cell(
-    radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
-):
-    glo = load_full_ghs()
-    glo = glo[:, longitude_start:longitude_end]
-    glo_zero = np.nan_to_num(glo, 0)
-    [row_idxs] = np.where((glo_zero[latitude_start:latitude_end] != 0).any(axis=1))
-    row_idxs += latitude_start
-    out = np.zeros_like(glo_zero)
-    out = sum_in_radius(radius, glo_zero, row_idxs, out)
-    out = out / (np.pi * radius**2)
-    return out
-
-
 def compute_circle_density_per_cell_zarr(radius):
     path = f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km"
     if os.path.exists(path):
@@ -115,7 +101,6 @@ def compute_circle_density_per_cell_zarr(radius):
     glo = load_full_ghs_zarr()
     glo_dask = dask.array.from_zarr(glo)
     [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
-    print(row_idxs)
     with zarr.open(path, mode="w") as z:
         z.create_dataset("data", shape=glo.shape)
         sum_in_radius(
@@ -138,7 +123,6 @@ class ChunkedAssigner:
         self.cache[row_idx - self.current_start] = value
 
     def flush(self):
-        print("flushing", self.current_start)
         self.out[self.current_start : self.current_start + self.chunk_size] = self.cache
         self.current_start = "invalid"
         self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
@@ -154,7 +138,6 @@ def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1):
         nonlocal loading_start, local_array
         assert start >= loading_start
         if end >= loading_start + loading_chunk:
-            print("loading", start)
             loading_start = start
             assert end < loading_start + loading_chunk
             local_array = np.array(
@@ -166,12 +149,11 @@ def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1):
         overlaps = compute_cell_overlaps_with_circle(radius, row_idx, grid_size=40)
         rows = [row for row, _ in overlaps.keys()]
         fetch_chunk_for(min(rows), max(rows))
-        result_for_row = 0
-        for (source_row, off), weight in overlaps.items():
-            hi = np.roll(local_array[source_row - loading_start], -off) * weight
-            result_for_row += hi
+        result_for_row = sum(
+            np.roll(local_array[source_row - loading_start], -off) * weight
+            for (source_row, off), weight in overlaps.items()
+        )
         assigner.assign(row_idx, result_for_row * multiplier)
-        # out[row_idx] = result_for_row * multiplier
     assigner.flush()
     return out
 
@@ -206,27 +188,14 @@ def compute_gpw_weighted_for_shape(
     return result, hists
 
 
-# @permacache(
-#     "urbanstats/data/gpw/compute_all_gpw",
-# )
-# def compute_all_gpw(radii=GPW_RADII):
-#     population = load_full_ghs()
-#     population = np.nan_to_num(population, 0)
-#     population = sparse.csr_matrix(population)
-#     densities = {
-#         k: sparse.csr_matrix(compute_circle_density_per_cell(k)) for k in radii
-#     }
-#     return population, densities
-
-
 @permacache(
     "urbanstats/data/gpw/compute_gpw_for_shape_raster",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
 def compute_gpw_for_shape_raster(shape, collect_density=True):
-    glo = load_full_ghs()
+    glo = load_full_ghs_zarr()
     if collect_density:
-        dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
+        dens_by_radius = {k: compute_circle_density_per_cell_zarr(k) for k in GPW_RADII}
     row_selected, col_selected = select_points_in_shape(shape, glo)
     pop = glo[row_selected, col_selected]
 

@@ -1,10 +1,10 @@
 import json
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 import numpy as np
-from permacache import stable_hash
 import zarr
+from permacache import stable_hash
 
 
 def hash_full_table(sh):
