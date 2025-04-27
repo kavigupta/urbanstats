@@ -121,12 +121,7 @@ def produce_histogram(density_data, population_data):
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms
 ):
-    lats, lon_starts, lon_ends = rasterize_using_lines(
-        shape, resolution=CELLS_PER_DEGREE
-    )
-    row_selected, col_selected = exract_raster_points(
-        lats, lon_starts, lon_ends, glo_pop
-    )
+    row_selected, col_selected = select_points_in_shape(shape, glo_pop)
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
@@ -150,10 +145,7 @@ def compute_gpw_for_shape_raster(shape, collect_density=True):
     glo = load_full_ghs()
     if collect_density:
         dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
-    lats, lon_starts, lon_ends = rasterize_using_lines(
-        shape, resolution=CELLS_PER_DEGREE
-    )
-    row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
+    row_selected, col_selected = select_points_in_shape(shape, glo)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
@@ -174,6 +166,14 @@ def compute_gpw_for_shape_raster(shape, collect_density=True):
         density = {}
 
     return dict(gpw_population=pop_sum, **density), hists
+
+
+def select_points_in_shape(shape, glo):
+    lats, lon_starts, lon_ends = rasterize_using_lines(
+        shape, resolution=CELLS_PER_DEGREE
+    )
+    row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
+    return row_selected, col_selected
 
 
 @permacache(
