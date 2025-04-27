@@ -1,6 +1,6 @@
 import numpy as np
 import shapely
-from permacache import permacache, stable_hash, drop_if_equal
+from permacache import permacache, stable_hash
 
 
 def to_col_idx(lon, resolution):
@@ -65,25 +65,7 @@ def rasterize_using_lines(shape, resolution):
                 iff
             exists i st lat_start[i] == to_row_idx(y, res) and lon_start[i] <= to_col_idx(x, res) <= lon_end[i]
     """
-    # Get the bounds of the shape
-    minx, miny, maxx, maxy = shape.bounds
-    minx -= 1 / resolution
-    miny -= 1 / resolution
-    maxx += 1 / resolution
-    maxy += 1 / resolution
-
-    # flipped because the grid is flipped
-    yidxs = np.arange(
-        min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1),
-        max(to_row_idx(maxy, resolution), 0) - 1,
-        -1,
-        dtype=np.int32,
-    )
-
-    # place the lines in the middle of the pixels
-    ys = from_row_idx(yidxs + 0.5, resolution)
-    lines = [shapely.geometry.LineString([(minx, y), (maxx, y)]) for y in ys]
-    multilines = shapely.geometry.MultiLineString(lines)
+    multilines = compute_multilines(shape, resolution)
     intersections = multilines.intersection(shape)
     if isinstance(intersections, shapely.geometry.LineString):
         intersections = [intersections]
@@ -114,6 +96,29 @@ def rasterize_using_lines(shape, resolution):
     lon_start = lon_start[mask]
     lon_end = lon_end[mask]
     return rows, lon_start, lon_end
+
+
+def compute_multilines(shape, resolution):
+    # Get the bounds of the shape
+    minx, miny, maxx, maxy = shape.bounds
+    minx -= 1 / resolution
+    miny -= 1 / resolution
+    maxx += 1 / resolution
+    maxy += 1 / resolution
+
+    # flipped because the grid is flipped
+    yidxs = np.arange(
+        min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1),
+        max(to_row_idx(maxy, resolution), 0) - 1,
+        -1,
+        dtype=np.int32,
+    )
+
+    # place the lines in the middle of the pixels
+    ys = from_row_idx(yidxs + 0.5, resolution)
+    lines = [shapely.geometry.LineString([(minx, y), (maxx, y)]) for y in ys]
+    multilines = shapely.geometry.MultiLineString(lines)
+    return multilines
 
 
 def exract_raster_points(
