@@ -1,13 +1,16 @@
+import os
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
 from geotiff import GeoTiff
+import dask.array
 from permacache import drop_if_equal, permacache, stable_hash
+import zarr
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
 from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_lines
-from urbanstats.utils import compute_bins
+from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
 
@@ -28,6 +31,12 @@ CELLS_PER_DEGREE = 120
 def load_full_ghs():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path)
+
+
+def load_full_ghs_zarr():
+    return cached_zarr_array(
+        "named_region_shapefiles/gpw/zarr/ghs_population", load_full_ghs
+    )
 
 
 def load_ghs_from_path(path):
@@ -99,11 +108,71 @@ def compute_circle_density_per_cell(
     return out
 
 
-def sum_in_radius(radius, global_map, row_idxs, out):
+def compute_circle_density_per_cell_zarr(radius):
+    path = f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km"
+    if os.path.exists(path):
+        return zarr.open(path, mode="r")["data"]
+    glo = load_full_ghs_zarr()
+    glo_dask = dask.array.from_zarr(glo)
+    [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
+    print(row_idxs)
+    with zarr.open(path, mode="w") as z:
+        z.create_dataset("data", shape=glo.shape)
+        sum_in_radius(
+            radius, glo_dask, row_idxs, z["data"], multiplier=1 / (np.pi * radius**2)
+        )
+    return compute_circle_density_per_cell_zarr(radius)
+
+
+class ChunkedAssigner:
+    def __init__(self, out, chunk_size):
+        self.out = out
+        self.chunk_size = chunk_size
+        self.current_start = 0
+        self.cache = np.zeros((chunk_size, *out.shape[1:]), dtype=out.dtype)
+
+    def assign(self, row_idx, value):
+        if row_idx >= self.current_start + self.chunk_size:
+            self.flush()
+            self.current_start = row_idx
+        self.cache[row_idx - self.current_start] = value
+
+    def flush(self):
+        print("flushing", self.current_start)
+        self.out[self.current_start : self.current_start + self.chunk_size] = self.cache
+        self.current_start = "invalid"
+        self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
+
+
+def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1):
+    loading_chunk = 1000
+    assigner = ChunkedAssigner(out, loading_chunk)
+    loading_start = -float("inf")
+    local_array = None
+
+    def fetch_chunk_for(start, end):
+        nonlocal loading_start, local_array
+        assert start >= loading_start
+        if end >= loading_start + loading_chunk:
+            print("loading", start)
+            loading_start = start
+            assert end < loading_start + loading_chunk
+            local_array = np.array(
+                global_map[loading_start : loading_start + loading_chunk]
+            )
+
+    fetch_chunk_for(0, 0)
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
         overlaps = compute_cell_overlaps_with_circle(radius, row_idx, grid_size=40)
+        rows = [row for row, _ in overlaps.keys()]
+        fetch_chunk_for(min(rows), max(rows))
+        result_for_row = 0
         for (source_row, off), weight in overlaps.items():
-            out[row_idx] += np.roll(global_map[source_row], -off) * weight
+            hi = np.roll(local_array[source_row - loading_start], -off) * weight
+            result_for_row += hi
+        assigner.assign(row_idx, result_for_row * multiplier)
+        # out[row_idx] = result_for_row * multiplier
+    assigner.flush()
     return out
 
 
@@ -135,6 +204,19 @@ def compute_gpw_weighted_for_shape(
             assert pop_weight, "pop_weight is required for histograms"
             hists[name] = produce_histogram(data_selected, pop)
     return result, hists
+
+
+# @permacache(
+#     "urbanstats/data/gpw/compute_all_gpw",
+# )
+# def compute_all_gpw(radii=GPW_RADII):
+#     population = load_full_ghs()
+#     population = np.nan_to_num(population, 0)
+#     population = sparse.csr_matrix(population)
+#     densities = {
+#         k: sparse.csr_matrix(compute_circle_density_per_cell(k)) for k in radii
+#     }
+#     return population, densities
 
 
 @permacache(
