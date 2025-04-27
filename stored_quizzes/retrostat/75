@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen X %",
+      "stat_path": "generation_genx",
+      "question": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+      "longname_a": "WV-02 (2023), USA",
+      "longname_b": "OH-03 (2023), USA",
+      "stat_a": 0.1908628481111306,
+      "stat_b": 0.169057344900649
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Howard County, Maryland, USA",
+      "longname_b": "Queens County, New York, USA",
+      "stat_a": 0.10905915866697873,
+      "stat_b": 0.2641235223640903
+    },
+    "a_ease": 0.3380202474690664,
+    "b_ease": 0.7409766454352441
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "stat_path": "transportation_commute_time_over_60",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Ottawa City, Ottawa CDR, Ontario, Canada",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 0.044770089613633,
+      "stat_b": 0.15035865626142
+    },
+    "b": {
+      "stat_column": "Office and administrative support occupations %",
+      "stat_path": "occupation_office_and_administrative_support_occupations",
+      "question": "higher % of workers employed as office and administrative support workers!TOOLTIP secretaries, receptionists, data entry clerks, office clerks, mail carriers, shipping clerks, etc.",
+      "longname_a": "CA-16 (2023), USA",
+      "longname_b": "GA-07 (2025), USA",
+      "stat_a": 0.07445441936830424,
+      "stat_b": 0.09087767424320628
+    },
+    "a_ease": 0.670205237084218,
+    "b_ease": 0.2568208778173191
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Modesto Urban Center, USA",
+      "longname_b": "Albuquerque Urban Center, USA",
+      "stat_a": 0.06748844925700626,
+      "stat_b": 0.018970378804939087
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Boulder MSA, CO, USA",
+      "longname_b": "Cleveland-Elyria MSA, OH, USA",
+      "stat_a": 0.0850126719969432,
+      "stat_b": -0.1898209798759858
+    },
+    "a_ease": 0.34253731343283583,
+    "b_ease": 0.7606689734717417
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Chattanooga TN Media Market, USA",
+      "longname_b": "Houston TX Media Market, USA",
+      "stat_a": 0.1758045412611969,
+      "stat_b": 0.49143788515474507
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Alberta, Canada",
+      "longname_b": "Quebec, Canada",
+      "stat_a": 0.48839383977797163,
+      "stat_b": 0.3379029737248833
+    },
+    "a_ease": 0.7947131608548932,
+    "b_ease": 0.39122257053291537
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Gainesville MSA, FL, USA",
+      "longname_b": "Charleston-North Charleston MSA, SC, USA",
+      "stat_a": 0.2561330628022411,
+      "stat_b": 0.1968948026583864
+    },
+    "b": {
+      "stat_column": "Within 1mi of a grocery store %",
+      "stat_path": "lapop1share_usda_fra_1",
+      "question": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+      "longname_a": "PA-15 (2023), USA",
+      "longname_b": "CA-19 (2023), USA",
+      "stat_a": 0.34966407250392395,
+      "stat_b": 0.7068095316669405
+    },
+    "a_ease": 0.40815047021943573,
+    "b_ease": 0.8119810201660735
+  }
+]
