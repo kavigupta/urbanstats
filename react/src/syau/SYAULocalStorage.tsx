@@ -18,7 +18,7 @@ export class SYAULocalStorage {
     useHistory(typ: Type, universe: Universe): [SYAUHistoryForGame, (newHistory: SYAUHistoryForGame) => void] {
         const key = `${typ}-${universe}` satisfies SYAUHistoryKey
         const history = this.history.use()
-        const current: SYAUHistoryForGame = history[key] ?? { named: [] }
+        const current: SYAUHistoryForGame = history[key] ?? { guessed: [] }
         return [current, (newHistory) => {
             this.history.value = { ...history, [key]: newHistory }
         }]

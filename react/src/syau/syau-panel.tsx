@@ -21,7 +21,7 @@ export type Type = string
 export type SYAUHistoryKey = `${Type}-${Universe}`
 
 export interface SYAUHistoryForGame {
-    named: string[]
+    guessed: string[]
 }
 
 export type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
@@ -58,22 +58,22 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
-    const totalPopulationGuessed = history.named.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
+    const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
 
     const shareRef = React.createRef<HTMLButtonElement>()
 
     const pluralType = pluralize(props.typ)
 
     function attemptGuess(query: string): boolean {
-        const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query)).filter(name => !history.named.includes(name))
+        const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query)).filter(name => !history.guessed.includes(name))
         if (approxMatches.length === 0) {
             return false
         }
-        setHistory({ named: [...history.named, ...approxMatches] })
+        setHistory({ guessed: [...history.guessed, ...approxMatches] })
         return true
     }
 
-    const isGuessed = props.syauData.longnames.map(name => history.named.includes(name))
+    const isGuessed = props.syauData.longnames.map(name => history.guessed.includes(name))
 
     return (
         <div>
@@ -92,7 +92,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 <div style={{ marginBlockEnd: '1em' }} />
                 <div style={{ textAlign: 'center' }} id="test-syau-status">
                     <b>
-                        {history.named.length}
+                        {history.guessed.length}
                         /
                         {props.syauData.longnames.length}
                     </b>
@@ -102,8 +102,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                     named, which is
                     {' '}
                     <b>
-                        {Math.floor(100 * totalPopulationGuessed / totalPopulation)}
-                        %
+                        {renderPct(totalPopulationGuessed / totalPopulation)}
                     </b>
                     {' '}
                     of the total population.
@@ -134,8 +133,8 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                                 const numRed = 10 - numGreen
                                 const emoji = jColors.correctEmoji.repeat(numGreen) + jColors.incorrectEmoji.repeat(numRed)
                                 const lines = [
-                                    `I named ${history.named.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
-                                    `(${Math.floor(100 * frac)}% of the population)`,
+                                    `I named ${history.guessed.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
+                                    `(${renderPct(frac)} of the population)`,
                                     '',
                                     emoji,
                                     '',
@@ -156,7 +155,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         onClick={() => {
                         // check if they are sure
                             if (window.confirm('Are you sure you want to reset your progress?')) {
-                                setHistory({ named: [] })
+                                setHistory({ guessed: [] })
                             }
                         }}
                     >
@@ -174,6 +173,20 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
     )
 }
 
+function renderPct(frac: number): string {
+    const pct = 100 * frac
+    if (pct > 99.9) {
+        return `${pct.toFixed(3)}%`
+    }
+    if (pct > 99) {
+        return `${pct.toFixed(2)}%`
+    }
+    if (pct > 90) {
+        return `${pct.toFixed(1)}%`
+    }
+    return `${pct.toFixed(0)}%`
+}
+
 function SYAUTable(props: { longnames: string[], populationOrdinals: number[], isGuessed: boolean[] }): ReactNode {
     const colors = useColors()
     const jColors = useJuxtastatColors()
@@ -187,10 +200,10 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: '1em' }}>
             {props.longnames.map((name, idx) => {
                 const ordinal = props.populationOrdinals[idx]
-                const named = props.isGuessed[idx]
-                const color = named ? 'white' : colors.textMain
+                const guessed = props.isGuessed[idx]
+                const color = guessed ? 'white' : colors.textMain
 
-                const linkProps = named
+                const linkProps = guessed
                     ? navContext.link({
                         kind: 'article',
                         longname: name,
@@ -200,12 +213,12 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
                 return (
                     <a
                         key={name}
-                        className={named ? 'testing-syau-named' : 'testing-syau-not-named'}
+                        className={guessed ? 'testing-syau-named' : 'testing-syau-not-named'}
                         style={{
-                            backgroundColor: named ? jColors.correct : colors.background,
+                            backgroundColor: guessed ? jColors.correct : colors.background,
                             padding: '1em',
                             borderRadius: '5px',
-                            boxShadow: named ? `0 0 10px ${jColors.correct}` : `0 0 10px ${colors.background}`,
+                            boxShadow: guessed ? `0 0 10px ${jColors.correct}` : `0 0 10px ${colors.background}`,
                             borderColor: colors.textMain,
                             borderWidth: '0.2em',
                             borderStyle: 'solid',
@@ -220,7 +233,7 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
                             {ordinal}
                             .
                             {' '}
-                            {named ? name.split(',')[0] : ''}
+                            {guessed ? name.split(',')[0] : ''}
                         </div>
                     </a>
                 )
