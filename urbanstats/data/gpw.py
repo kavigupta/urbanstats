@@ -63,8 +63,7 @@ def grid_area_km(lat):
 
 
 def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
-    x, y = lon_from_col_idx(0.5), lat_from_row_idx(row_idx + 0.5)
-    ell = Ellipse(radius, y, x)
+    ell = Ellipse(radius, lat_from_row_idx(row_idx + 0.5), lon_from_col_idx(0.5))
     yr, xr = ell.lat_radius, ell.lon_radius
     xr_idxs, yr_idxs = [
         int(np.ceil(radius * CELLS_PER_DEGREE + 2)) for radius in (xr, yr)
