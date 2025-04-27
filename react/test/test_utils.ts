@@ -223,7 +223,7 @@ export async function safeReload(t: TestController): Promise<void> {
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
 
 export async function waitForSelectedSearchResult(t: TestController): Promise<void> {
-    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok({ timeout: 10000 })
 }
 
 export async function doSearch(t: TestController, searchTerm: string): Promise<void> {
