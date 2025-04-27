@@ -284,8 +284,7 @@ def build_urbanstats(
         f.write(
             html_index(
                 title="So you're an urbanist?",
-                # TODO change image
-                image="https://urbanstats.org/juxtastat-link-preview.png",
+                image="https://urbanstats.org/syau-link-preview.png",
                 description="Name every urb 😤",
             )
         )
@@ -300,6 +299,7 @@ def build_urbanstats(
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/life.png", f"{site_folder}/")
     shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")
