@@ -50,18 +50,6 @@ def lon_from_col_idx(col_idx):
     return -180 + col_idx * 1 / 120
 
 
-def col_idx_from_lon(lon):
-    return (lon + 180) * 120
-
-
-def row_idx_from_lat(lat):
-    return (90 - lat) * 120
-
-
-def grid_area_km(lat):
-    return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
-
-
 def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
     ell = Ellipse(radius, lat_from_row_idx(row_idx + 0.5), lon_from_col_idx(0.5))
     yr, xr = ell.lat_radius, ell.lon_radius
@@ -119,109 +107,6 @@ def sum_in_radius(radius, global_map, row_idxs, out):
     return out
 
 
-def filter_lat_lon_direct(polygon, row_idxs, col_idxs):
-    # convert back to lat/lon
-    lats = lat_from_row_idx(row_idxs + 0.5)
-    lons = lon_from_col_idx(col_idxs + 0.5)
-
-    # convert to shapely points
-    points = shapely.geometry.MultiPoint(np.stack([lons, lats], axis=1))
-
-    # check containment
-    intersect = polygon.intersection(points)
-
-    # check if empty point
-    if intersect.is_empty:
-        return np.array([], dtype=np.int32), np.array([], dtype=np.int32)
-
-    pts = (
-        list(intersect.geoms)
-        if isinstance(intersect, shapely.geometry.MultiPoint)
-        else [intersect]
-    )
-
-    lon_selected = np.array([p.x for p in pts])
-    lat_selected = np.array([p.y for p in pts])
-
-    # convert back to row/col indices
-    row_selected = row_idx_from_lat(lat_selected) - 0.5
-    col_selected = col_idx_from_lon(lon_selected) - 0.5
-
-    row_selected = row_selected.astype(np.int32)
-    col_selected = col_selected.astype(np.int32)
-
-    return row_selected, col_selected
-
-
-def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10**5):
-    """
-    Filter a list of row/col indices to only those that are contained in the polygon.
-    """
-
-    if len(row_idxs) < chunk_size:
-        # just to avoid the progress bar
-        return filter_lat_lon_direct(polygon, row_idxs, col_idxs)
-
-    row_selected = []
-    col_selected = []
-
-    for i in tqdm.tqdm(range(0, len(row_idxs), chunk_size)):
-        sl = slice(i, i + chunk_size)
-        row_selected_chunk, col_selected_chunk = filter_lat_lon_direct(
-            polygon, row_idxs[sl], col_idxs[sl]
-        )
-        row_selected.append(row_selected_chunk)
-        col_selected.append(col_selected_chunk)
-
-    row_selected = np.concatenate(row_selected)
-    col_selected = np.concatenate(col_selected)
-
-    return row_selected, col_selected
-
-
-def lattice_cells_contained(glo, polygon):
-    """
-    Return a list of (row, col) tuples of lattice cells that are contained in the polygon.
-    """
-
-    row_min, row_max, col_min, col_max = get_cell_bounds(polygon)
-
-    # produce full arrays of row and col indices
-    row_idxs = np.arange(max(0, int(row_min)), min(int(row_max) + 1, glo.shape[0]))
-    col_idxs = np.arange(max(0, int(col_min)), min(int(col_max) + 1, glo.shape[1]))
-    # product
-    # no idea why this is necessary
-    # pylint: disable=unpacking-non-sequence
-    row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
-    # filter
-    glo_vals = glo[row_idxs, col_idxs]
-    mask = ~np.isnan(glo_vals) & (glo_vals > 0)
-    row_idxs = row_idxs[mask]
-    col_idxs = col_idxs[mask]
-    # flatten
-    row_idxs = row_idxs.flatten()
-    col_idxs = col_idxs.flatten()
-
-    row_selected, col_selected = filter_lat_lon(polygon, row_idxs, col_idxs)
-
-    return row_selected, col_selected
-
-
-def get_cell_bounds(polygon):
-    lon_min, lat_min, lon_max, lat_max = polygon.bounds
-    # pad by 1/120 to make sure we get all cells that are even slightly contained
-    lon_min -= 1 / 120
-    lat_min -= 1 / 120
-    lon_max += 1 / 120
-    lat_max += 1 / 120
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
-    return row_min, row_max, col_min, col_max
-
-
 def produce_histogram(density_data, population_data):
     """
     Produce a histogram of population data with the given density data.
@@ -236,7 +121,12 @@ def produce_histogram(density_data, population_data):
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms
 ):
-    row_selected, col_selected = lattice_cells_contained(glo_pop, shape)
+    lats, lon_starts, lon_ends = rasterize_using_lines(
+        shape, resolution=CELLS_PER_DEGREE
+    )
+    row_selected, col_selected = exract_raster_points(
+        lats, lon_starts, lon_ends, glo_pop
+    )
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
