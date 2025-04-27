@@ -175,6 +175,9 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
 
 function renderPct(frac: number): string {
     const pct = 100 * frac
+    if (pct === 100) {
+        return '100%'
+    }
     if (pct > 99.9) {
         return `${pct.toFixed(3)}%`
     }

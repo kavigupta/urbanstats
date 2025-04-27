@@ -174,3 +174,74 @@ test('montreal-cma', async (t) => {
     await addInputText(t, 'montreal', '')
     await t.expect(await allSyauPredictions()).eql(['2. Montréal CMA'])
 })
+
+urbanstatsFixture('nevada-counties', '/syau.html?typ=County&universe=Nevada%2C+USA')
+
+test('more-precise-percentages', async (t) => {
+    await addInputText(t, 'clark', '')
+    await assertText(t, '1/17 Counties named, which is 73% of the total population.')
+    await assertCopy(t, [
+        'I named 1/17 Counties in Nevada, USA\n'
+        + '(73% of the population)\n'
+        + '\n'
+        + '🟩🟩🟩🟩🟩🟩🟩🟥🟥🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+    ])
+    await safeReload(t)
+    await addInputText(t, 'washoe', '')
+    await addInputText(t, 'lyon', '')
+    await assertText(t, '3/17 Counties named, which is 90.5% of the total population.')
+    await assertCopy(t, [
+        'I named 3/17 Counties in Nevada, USA\n'
+        + '(90.5% of the population)\n'
+        + '\n'
+        + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+    ])
+    await safeReload(t)
+    await addInputText(t, 'carson city', '')
+    await addInputText(t, 'elko', '')
+    await addInputText(t, 'nye', '')
+    await addInputText(t, 'douglas', '')
+    await addInputText(t, 'churchill', '')
+    await addInputText(t, 'humboldt', '')
+    await addInputText(t, 'white pine', '')
+    await assertText(t, '10/17 Counties named, which is 99.09% of the total population.')
+    await assertCopy(t, [
+        'I named 10/17 Counties in Nevada, USA\n'
+        + '(99.09% of the population)\n'
+        + '\n'
+        + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+    ])
+    await safeReload(t)
+    await addInputText(t, 'pershing', '')
+    await addInputText(t, 'lander', '')
+    await addInputText(t, 'mineral', '')
+    await addInputText(t, 'lincoln', '')
+    await addInputText(t, 'storey', '')
+    await assertText(t, '15/17 Counties named, which is 99.917% of the total population.')
+    await assertCopy(t, [
+        'I named 15/17 Counties in Nevada, USA\n'
+        + '(99.917% of the population)\n'
+        + '\n'
+        + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
+        + '\n'
+        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+    ])
+    await safeReload(t)
+    await addInputText(t, 'eureka', '')
+    await addInputText(t, 'esmeralda', '')
+    await assertText(t, '17/17 Counties named, which is 100% of the total population.')
+    await assertCopy(t, [
+        'I named 17/17 Counties in Nevada, USA\n'
+        + '(100% of the population)\n'
+        + '\n'
+        + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩\n'
+        + '\n'
+        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+    ])
+})
