@@ -57,6 +57,13 @@ test('oakland', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
 })
 
+test('oak-partial', async (t) => {
+    await addInputText(t, 'Oak', '')
+    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await addInputText(t, 'Oak', '')
+    await screencap(t)
+})
+
 test('la-canada', async (t) => {
     await addInputText(t, 'la canada flintridge', '')
     await t.expect(await allSyauPredictions()).eql(['344. La Cañada Flintridge city'])

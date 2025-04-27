@@ -59,36 +59,45 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
     const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
+    const [alreadyGuessed, setAlreadyGuessed] = React.useState(false)
 
     const shareRef = React.createRef<HTMLButtonElement>()
 
     const pluralType = pluralize(props.typ)
 
     function attemptGuess(query: string): boolean {
-        const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query)).filter(name => !history.guessed.includes(name))
-        if (approxMatches.length === 0) {
+        const approxMatches = props.syauData.longnames.filter((_, idx) => confirmMatch(props.syauData.matchChunks[idx], query))
+        const unguessedApproxMatches = approxMatches.filter(name => !history.guessed.includes(name))
+        setAlreadyGuessed(approxMatches.length !== 0 && unguessedApproxMatches.length === 0)
+        if (unguessedApproxMatches.length === 0) {
             return false
         }
-        setHistory({ guessed: [...history.guessed, ...approxMatches] })
+        setHistory({ guessed: [...history.guessed, ...unguessedApproxMatches] })
         return true
     }
 
     const isGuessed = props.syauData.longnames.map(name => history.guessed.includes(name))
+    const indicatorColor = alreadyGuessed ? jColors.correct : colors.background
 
     return (
         <div>
             <div style={{ margin: 'auto', width: '50%' }}>
-                <input
-                    type="text"
-                    id="syau-input"
-                    placeholder="Type a region name"
-                    style={{ width: '100%' }}
-                    onChange={(e) => {
-                        if (attemptGuess(e.target.value)) {
-                            e.target.value = ''
-                        }
-                    }}
-                />
+                <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
+                    <div style={{ width: '7%', height: '1.5em' }} />
+                    <input
+                        type="text"
+                        id="syau-input"
+                        placeholder="Type a region name"
+                        style={{ width: '86%' }}
+                        onChange={(e) => {
+                            if (attemptGuess(e.target.value)) {
+                                e.target.value = ''
+                            }
+                        }}
+                    />
+                    <div style={{ width: '2%', height: '1.5em' }} />
+                    <div style={{ width: '5%', height: '1.5em', backgroundColor: indicatorColor }} />
+                </div>
                 <div style={{ marginBlockEnd: '1em' }} />
                 <div style={{ textAlign: 'center' }} id="test-syau-status">
                     <b>
