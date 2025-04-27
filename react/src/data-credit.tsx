@@ -773,8 +773,9 @@ export function DataCreditPanel(): ReactNode {
                             {' '}
                             We use the 2020 population estimates, which are
                             not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
-                            we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
-                            but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
+                            we are using for the US data. We use the 3arcsecond resolution data on a WSG84 (equirectangular) projection.
+                            To compute PW density, we treat each cell as effectively homogenous,
+                            but since the cells are all smaller than 100m*100m, this should not be a major issue for
                             radii above 1km (which is the smallest radius we use for GHS-POP data).
                         </div>
                         <h1>Canadian Data</h1>
