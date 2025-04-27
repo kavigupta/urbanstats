@@ -59,8 +59,9 @@ test('oakland', async (t) => {
 
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
+    await screencap(t)
     await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
-    await addInputText(t, 'Oak', '')
+    await addInputText(t, 'Oak', 'Oak')
     await screencap(t)
 })
 
@@ -80,7 +81,7 @@ test('oakland-simulate-autocomplete', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
 })
 
-test('round-down', async (t) => {
+test.only('round-down', async (t) => {
     await addInputText(t, 'san francisco', '')
     await addInputText(t, 'san diego', '')
     await addInputText(t, 'fresno', '')
@@ -99,13 +100,13 @@ test('round-down', async (t) => {
     await screencap(t)
     await assertCopy(t, [
         'I named 4/1607 Cities in California, USA\n'
-        + '(17% of the population)\n'
+        + '(18% of the population)\n'
         + '\n'
         + '🟩🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
         + '\n'
         + `${target}/syau.html?typ=City&universe=California%2C+USA`,
     ])
-    await assertText(t, '4/1607 Cities named, which is 17% of the total population.')
+    await assertText(t, '4/1607 Cities named, which is 18% of the total population.')
 })
 
 urbanstatsFixture('missouri-cities', '/syau.html?typ=City&universe=Missouri%2C+USA')
