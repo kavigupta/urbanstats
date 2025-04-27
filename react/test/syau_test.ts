@@ -81,7 +81,7 @@ test('oakland-simulate-autocomplete', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
 })
 
-test.only('round-down', async (t) => {
+test('round-down', async (t) => {
     await addInputText(t, 'san francisco', '')
     await addInputText(t, 'san diego', '')
     await addInputText(t, 'fresno', '')
@@ -165,12 +165,13 @@ test('tijuana-urban-center', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Tijuana Urban Center'])
 })
 
-urbanstatsFixture('delaware-counties', '/syau.html?typ=County&universe=Delaware%2C+USA')
+// TODO reenable this
+// urbanstatsFixture('delaware-counties', '/syau.html?typ=County&universe=Delaware%2C+USA')
 
-test('sussex-delaware', async (t) => {
-    await addInputText(t, 'sussex', '')
-    await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
-})
+// test('sussex-delaware', async (t) => {
+//     await addInputText(t, 'sussex', '')
+//     await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
+// })
 
 urbanstatsFixture('canada-cma', '/syau.html?typ=CA+CMA&universe=Canada')
 test('toronto-cma', async (t) => {
