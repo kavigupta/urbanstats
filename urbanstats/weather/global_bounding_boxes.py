@@ -5,24 +5,24 @@ chunk = 360 * 4
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from urbanstats.data.gpw import lat_from_row_idx, load_full_ghs, lon_from_col_idx
+from urbanstats.data.gpw import lat_from_row_idx, load_full_ghs_30_arcsec, lon_from_col_idx
 
 
 def produce_all_bounding_boxes():
-    mask = load_full_ghs() > 0
+    mask = load_full_ghs_30_arcsec() > 0
     rows, cols = mask.shape
     for i in range(0, rows, chunk):
         for j in range(0, cols, chunk):
             if mask[i : i + chunk, j : j + chunk].any():
-                yield coords(i, j, mask)
+                yield coords(i, j, mask, resolution=120)
 
 
-def coords(i, j, mask):
+def coords(i, j, mask, resolution):
     i, j, i_end, j_end = clip(i, j, i + chunk, j + chunk, mask)
-    lon_min = lon_from_col_idx(j)
-    lon_max = lon_from_col_idx(j_end)
-    lat_max = lat_from_row_idx(i)
-    lat_min = lat_from_row_idx(i_end)
+    lon_min = lon_from_col_idx(j, resolution)
+    lon_max = lon_from_col_idx(j_end, resolution)
+    lat_max = lat_from_row_idx(i, resolution)
+    lat_min = lat_from_row_idx(i_end, resolution)
     return (lon_min, lat_min, lon_max, lat_max)
 
 

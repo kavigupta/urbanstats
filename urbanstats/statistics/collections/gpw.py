@@ -12,7 +12,7 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 2.7
+    version = 2.8
 
     def name_for_each_statistic(self):
         return {
@@ -48,7 +48,7 @@ class GPWStatistics(InternationalStatistics):
     ):
         statistics_table = {}
 
-        result, hists = compute_gpw_data_for_shapefile(shapefile)
+        result, hists = compute_gpw_data_for_shapefile(shapefile, resolution=1200)
         for k, rk in result.items():
             statistics_table[k] = rk
         for k, hk in hists.items():

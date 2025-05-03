@@ -32,6 +32,7 @@ def direct_population_overlay(frame, sh):
         ),
         collect_density=False,
         log=False,
+        resolution=120,
     )
     overlays["population"] = res["gpw_population"]
     return overlays

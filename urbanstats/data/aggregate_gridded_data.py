@@ -8,7 +8,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
-from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs
+from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs_30_arcsec
 from urbanstats.geometry.census_aggregation import (
     aggregate_by_census_block,
     aggregate_by_census_block_canada,
@@ -83,12 +83,13 @@ def disaggregate_gridded_data(
 def statistics_for_shape(gridded_data_sources, shape):
     return compute_gpw_weighted_for_shape(
         shape,
-        load_full_ghs(),
+        load_full_ghs_30_arcsec(),
         {
             k: (v.load_gridded_data(60 * 2), True)
             for k, v in gridded_data_sources.items()
         },
         do_histograms=False,
+        resolution=120
     )
 
 
