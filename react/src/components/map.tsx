@@ -15,7 +15,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-const defaultMapPadding = 20
+export const defaultMapPadding = 20
 
 export interface MapGenericProps {
     height?: number | string
@@ -55,8 +55,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private basemap_props: null | Basemap = null
     protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
-    private id: string
+    protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
+    protected onAutoZoomCallbacks: (() => void)[] = []
 
     constructor(props: P) {
         super(props)
@@ -228,11 +229,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
         let shouldWeUpdate = false
-        // 5 is some arbitrary small number. Originally it was < 1, but that led to some
-        // issues on pages with 2 maps. This appears to be some kind of data race, and
-        // this ensures that it will converge to eventual consistency.
-        // See #1039 for the PR adding this, and #1038 for the issue.
-        shouldWeUpdate ||= this.version < 5
+        // make sure we update the first time
+        shouldWeUpdate ||= this.version < 1
         shouldWeUpdate ||= JSON.stringify(prevProps) !== JSON.stringify(this.props)
         shouldWeUpdate ||= JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })
         if (shouldWeUpdate) {
@@ -448,7 +446,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
-            this.zoomToItems([geojson], { duration: 0 })
+            for (const callback of this.onAutoZoomCallbacks) {
+                callback()
+            }
+            this.zoomToItems([geojson], { animate: false })
         }
 
         this.state.polygonByName.set(polygon.name, geojson)
