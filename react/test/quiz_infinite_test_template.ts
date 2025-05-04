@@ -228,7 +228,9 @@ export function quizInfiniteTest0(): void {
             `https://juxtastat.org/#date=99`,
         ])
     })
+}
 
+export function quizInfiniteTest1(): void {
     async function doNotReportPartial(t: TestController): Promise<void> {
         await provideAnswers(t, 0, [false, true, true, true, true], seedStr)
         await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
@@ -259,9 +261,7 @@ export function quizInfiniteTest0(): void {
         // should've redirected to unfinished quiz
         await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
     })
-}
 
-export function quizInfiniteTest1(): void {
     quizFixture(
         'generate link',
         `${target}/quiz.html${param}`,
