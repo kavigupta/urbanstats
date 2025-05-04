@@ -56,6 +56,13 @@ function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number,
     return quizHistory
 }
 
+async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
+    const text = await Selector('#quiz-result-summary-words').innerText
+    await t.expect(text).eql(words)
+    const emojiText = await Selector('#quiz-result-summary-emoji').innerText
+    await t.expect(emojiText).eql(emoji)
+}
+
 export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture(
         'quiz clickthrough test on empty background',
@@ -325,13 +332,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         platform,
     )
 
-    async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
-        const text = await Selector('#quiz-result-summary-words').innerText
-        await t.expect(text).eql(words)
-        const emojiText = await Selector('#quiz-result-summary-emoji').innerText
-        await t.expect(emojiText).eql(emoji)
-    }
-
     test('quiz-results-test', async (t) => {
         await safeReload(t)
         await quizScreencap(t)
@@ -395,7 +395,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo('/quiz.html#date=95')
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
+}
 
+export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture('export quiz progress', `${target}/quiz.html#date=90`,
         {
             quiz_history: JSON.stringify({
