@@ -4,7 +4,7 @@ import '../components/quiz.css'
 import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
-import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
+import { defaultMapPadding, MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -35,7 +35,7 @@ class Map extends MapGeneric<MapProps> {
     override async componentDidMount(): Promise<void> {
         await super.componentDidMount()
         setTimeout(() => {
-            this.zoomToAll(19)
+            this.zoomToAll(defaultMapPadding - 1)
         }, 1000)
     }
 }

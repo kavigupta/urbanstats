@@ -15,7 +15,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-const defaultMapPadding = 20
+export const defaultMapPadding = 20
 
 export interface MapGenericProps {
     height?: number | string
