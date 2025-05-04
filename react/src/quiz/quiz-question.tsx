@@ -34,10 +34,38 @@ class Map extends MapGeneric<MapProps> {
 
     override async componentDidMount(): Promise<void> {
         await super.componentDidMount()
-        // force the map to update a second time to ensure the basemap is loaded
-        setTimeout(() => {
-            this.zoomToAll(defaultMapPadding - 1)
-        }, 1000)
+        this.periodicallyRefresh()
+    }
+
+    periodicallyRefresh(): void {
+        // Periodically refresh the page, to ensure the map is updated
+        // This is necessary because the map may not be fully loaded when the component is mounted
+        // I assume there's som e bug in maplibre that causes the map to not be fully loaded
+        const map = this.map!
+        let hasBeenMoved = false
+        map.on('move', (event: maplibregl.MapLibreEvent) => {
+            // If the map is moved, the user has triggered the move, we don't need to do it (and it would be bad to do so)
+            if (event.originalEvent) {
+                hasBeenMoved = true
+            }
+        })
+        this.onAutoZoomCallbacks.push(() => {
+            // When the map is autozoomed, that is usually because of a change in the data,
+            // we need to reset the hasBeenMoved flag
+            hasBeenMoved = false
+        })
+
+        const forceUpdate = (): void => {
+            setTimeout(() => {
+                // if the map is not on the screen, we don't need to update it
+                const noLongerPresent = document.getElementById(this.id) === null
+                if (!hasBeenMoved && !noLongerPresent) {
+                    this.zoomToAll(defaultMapPadding)
+                }
+                forceUpdate()
+            }, 1000)
+        }
+        forceUpdate()
     }
 }
 
