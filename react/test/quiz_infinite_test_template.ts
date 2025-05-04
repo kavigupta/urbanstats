@@ -115,7 +115,7 @@ async function copyLines(t: TestController): Promise<string[]> {
 const seedStr = 'deadbeef00'
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 
-export function quizInfiniteTest1(): void {
+export function quizInfiniteTest0(): void {
     regressionTestForAllVersions()
 
     quizFixture(
@@ -261,7 +261,7 @@ export function quizInfiniteTest1(): void {
     })
 }
 
-export function quizInfiniteTest2(): void {
+export function quizInfiniteTest1(): void {
     test('several-different-quizzes', async (t) => {
         // first score is 12
         await provideAnswers(t, 0, '11110' + '11110' + '11110', seedStr)
@@ -378,6 +378,3 @@ export function quizInfiniteTest2(): void {
         await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
     })
 }
-
-quizInfiniteTest1()
-quizInfiniteTest2()
