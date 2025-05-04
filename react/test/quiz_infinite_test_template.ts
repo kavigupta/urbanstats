@@ -262,6 +262,14 @@ export function quizInfiniteTest0(): void {
 }
 
 export function quizInfiniteTest1(): void {
+    quizFixture(
+        'generate link',
+        `${target}/quiz.html${param}`,
+        localStorageDefault,
+        ``,
+        'desktop',
+    )
+
     test('several-different-quizzes', async (t) => {
         // first score is 12
         await provideAnswers(t, 0, '11110' + '11110' + '11110', seedStr)
