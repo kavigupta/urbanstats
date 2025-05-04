@@ -15,6 +15,8 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
+const defaultMapPadding = 20
+
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
@@ -455,7 +457,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
     }
 
-    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.AnimationOptions): void {
+    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
         const bounds = new maplibregl.LngLatBounds()
 
@@ -466,11 +468,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 new maplibregl.LngLat(bbox[2], bbox[3]),
             ))
         }
-        this.map?.fitBounds(bounds, options)
+        this.map?.fitBounds(bounds, { padding: defaultMapPadding, ...options })
     }
 
-    zoomToAll(): void {
-        this.zoomToItems(this.state.polygonByName.values(), {})
+    zoomToAll(padding: number = 0): void {
+        this.zoomToItems(this.state.polygonByName.values(), { padding })
     }
 
     zoomTo(name: string): void {
