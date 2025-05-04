@@ -31,6 +31,13 @@ class Map extends MapGeneric<MapProps> {
             zoomIndex: 0,
         })
     }
+
+    override async componentDidMount(): Promise<void> {
+        await super.componentDidMount()
+        setTimeout(() => {
+            this.zoomToAll(19)
+        }, 1000)
+    }
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (
