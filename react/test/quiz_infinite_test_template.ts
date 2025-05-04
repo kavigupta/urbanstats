@@ -231,6 +231,14 @@ export function quizInfiniteTest0(): void {
 }
 
 export function quizInfiniteTest1(): void {
+    quizFixture(
+        'generate link',
+        `${target}/quiz.html${param}`,
+        localStorageDefault,
+        ``,
+        'desktop',
+    )
+
     async function doNotReportPartial(t: TestController): Promise<void> {
         await provideAnswers(t, 0, [false, true, true, true, true], seedStr)
         await t.navigateTo(`${target}/quiz.html#mode=infinite&seed=deadbeef01&v=${version}`)
@@ -261,14 +269,6 @@ export function quizInfiniteTest1(): void {
         // should've redirected to unfinished quiz
         await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
     })
-
-    quizFixture(
-        'generate link',
-        `${target}/quiz.html${param}`,
-        localStorageDefault,
-        ``,
-        'desktop',
-    )
 
     test('several-different-quizzes', async (t) => {
         // first score is 12
