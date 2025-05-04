@@ -119,6 +119,7 @@ def compute_circle_density_per_cell_zarr(radius, resolution):
     )
     if os.path.exists(path):
         return zarr.open(path, mode="r")["data"]
+    print("Computing density for radius", radius)
     glo = load_full_ghs_zarr(resolution)
     glo_dask = dask.array.from_zarr(glo)
     [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
@@ -168,9 +169,10 @@ def sum_in_radius(
     assigner = ChunkedAssigner(out, saving_chunk)
     loading_start = -float("inf")
     local_array = None
+    local_array_cumsum = None
 
     def fetch_chunk_for(start, end):
-        nonlocal loading_start, local_array
+        nonlocal loading_start, local_array, local_array_cumsum
         assert start >= loading_start
         if end >= loading_start + loading_chunk:
             loading_start = start
@@ -178,6 +180,7 @@ def sum_in_radius(
             local_array = np.array(
                 global_map[loading_start : loading_start + loading_chunk]
             )
+            local_array_cumsum = np.cumsum(local_array, axis=1)
 
     fetch_chunk_for(0, 0)
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
@@ -194,22 +197,23 @@ def sum_in_radius(
         result_for_row = 0
         for source_row in source_rows:
             local_row = local_array[source_row - loading_start]
+            local_row_cumsum = local_array_cumsum[source_row - loading_start]
             columns = [off for sr, off in overlaps.keys() if sr == source_row]
-            assert max(columns) == -min(columns)
-            # result_for_row += sum(
-            #     np.roll(local_row, -off) * overlaps[(source_row, off)]
-            #     for off in range(-max(columns), max(columns) + 1)
-            # )
-            result_for_row += scipy.ndimage.convolve(
-                local_row, [
-                    overlaps[(source_row, off)]
-                    for off in range(-max(columns), max(columns) + 1)
-                ], mode="wrap"
-            )
+            consecutives = []
+            for off in range(-max(columns), max(columns) + 1):
+                if overlaps[source_row, off] > 1 - 1e-5:
+                    consecutives.append(off)
+                    continue
+                result_for_row += np.roll(local_row, -off) * overlaps[(source_row, off)]
+            if not consecutives:
+                continue
+            lo, hi = min(consecutives), max(consecutives)
+            assert len(consecutives) == hi - lo + 1
+            delta = (
+                np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
+            ) % local_row_cumsum[-1]
+            result_for_row += delta
 
-        # result_for_row = scipy.ndimage.convolve(
-        #     local_array[rows - loading_start], overlaps.values(), mode="constant"
-        # )
         assigner.assign(row_idx, result_for_row * multiplier)
     assigner.flush()
     return out
