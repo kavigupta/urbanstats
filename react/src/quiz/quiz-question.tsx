@@ -34,6 +34,7 @@ class Map extends MapGeneric<MapProps> {
 
     override async componentDidMount(): Promise<void> {
         await super.componentDidMount()
+        // force the map to update a second time to ensure the basemap is loaded
         setTimeout(() => {
             this.zoomToAll(defaultMapPadding - 1)
         }, 1000)
