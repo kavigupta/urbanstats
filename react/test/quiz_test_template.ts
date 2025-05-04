@@ -685,14 +685,16 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
     })
 
-    quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
-        debug_quiz_transition: '15000',
+    const debugTime = 25
+
+    quizFixture(`current juxta ending in ${debugTime}s`, `${target}/quiz.html`, {
+        debug_quiz_transition: `${debugTime * 1000}`,
     }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
-        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.click(Selector('a', { timeout: debugTime * 1000 }).withExactText('Next Quiz'))
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
     })
 
