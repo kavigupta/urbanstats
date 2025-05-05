@@ -157,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_5",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_6",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -175,9 +175,13 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         mask = universe_type_masks_permuted[:, ut_idx].indices
         mask.sort()
         filt_table = table.iloc[mask]
+        non_nan = ~np.isnan(filt_table[stat_col].array)
+        mask = mask[non_nan]
+        filt_table = filt_table.iloc[non_nan]
 
         cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
-        cum_pop /= cum_pop[0]
+        if cum_pop.size > 0:
+            cum_pop /= cum_pop[0]
 
         ut_idx = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
 
