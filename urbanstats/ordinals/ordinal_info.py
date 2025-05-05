@@ -157,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_6",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_7",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -189,7 +189,7 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         percentile.append((filt_table.index[:-1], ut_idx[1:], cum_pop[1:]))
         values.append((filt_table.index, ut_idx, filt_table[stat_col]))
     ordinal, percentile, values = [
-        to_csc_matrix(arr, dtype)
+        to_csc_matrix(arr, dtype=dtype, shape=(table.shape[0], len(universe_typ)))
         for arr, dtype in zip(
             [ordinal, percentile, values], [np.int32, np.float64, np.float64]
         )
@@ -245,6 +245,6 @@ def sort_by_column(sorted_by_name, stat_col):
     return selected_and_sorted
 
 
-def to_csc_matrix(arr, dtype):
+def to_csc_matrix(arr, dtype, shape):
     row_idxs, col_idxs, data = [np.concatenate(x) for x in zip(*arr)]
-    return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype)
+    return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype, shape=shape)
