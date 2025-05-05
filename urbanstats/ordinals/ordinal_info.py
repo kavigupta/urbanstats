@@ -157,7 +157,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_5",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_10",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -176,16 +176,24 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         mask.sort()
         filt_table = table.iloc[mask]
 
-        cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
-        cum_pop /= cum_pop[0]
-
         ut_idx = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
-
-        ordinal.append((filt_table.index, ut_idx, np.arange(len(filt_table))))
-        percentile.append((filt_table.index[:-1], ut_idx[1:], cum_pop[1:]))
         values.append((filt_table.index, ut_idx, filt_table[stat_col]))
+        ordinal.append((filt_table.index, ut_idx, np.arange(len(filt_table))))
+
+        # Remove NaN values from the filtered table to compute percentiles
+        # We do not do this for other values, to preserve stability of sorting etc
+        non_nan = ~np.isnan(filt_table[stat_col].array)
+        mask = mask[non_nan]
+        filt_table = filt_table.iloc[non_nan]
+        ut_idx = ut_idx[non_nan]
+
+        cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
+        if cum_pop.size > 0:
+            cum_pop /= cum_pop[0]
+
+        percentile.append((filt_table.index[:-1], ut_idx[1:], cum_pop[1:]))
     ordinal, percentile, values = [
-        to_csc_matrix(arr, dtype)
+        to_csc_matrix(arr, dtype=dtype, shape=(table.shape[0], len(universe_typ)))
         for arr, dtype in zip(
             [ordinal, percentile, values], [np.int32, np.float64, np.float64]
         )
@@ -241,6 +249,6 @@ def sort_by_column(sorted_by_name, stat_col):
     return selected_and_sorted
 
 
-def to_csc_matrix(arr, dtype):
+def to_csc_matrix(arr, dtype, shape):
     row_idxs, col_idxs, data = [np.concatenate(x) for x in zip(*arr)]
-    return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype)
+    return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype, shape=shape)
