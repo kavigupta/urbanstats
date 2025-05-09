@@ -504,7 +504,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                     position: 'relative',
                     border: `1px solid ${colors.borderNonShadow}`,
                     borderRadius: '5px',
-                    display: isTesting() ? 'none' : undefined,
+                    visibility: isTesting() ? 'hidden' : undefined,
                 }}
             >
                 {/* place this on the right of the map */}
