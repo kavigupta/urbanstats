@@ -10,6 +10,7 @@ import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
 import { randomColor } from '../utils/color'
+import { isTesting } from '../utils/isTesting'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
@@ -119,7 +120,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             canvasContextAttributes: {
                 preserveDrawingBuffer: true,
             },
-            pixelRatio: 0.0,
+            /*
+             * E2E tests are often run without hardware acceleration
+             * Reducing the map resolution helps improve their performance
+             */
+            pixelRatio: isTesting() ? 0.25 : undefined,
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
