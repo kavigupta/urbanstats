@@ -138,7 +138,7 @@ jobs:
             --browser=chromium \
             --test=test/${{ matrix.test-file }}.ts \
             --parallel=1 \
-            --headless=false \
+            --headless=true \
             --compare=true \
             --time-limit-seconds=1000
         working-directory: react
