@@ -120,11 +120,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             canvasContextAttributes: {
                 preserveDrawingBuffer: true,
             },
-            /*
-             * E2E tests are often run without hardware acceleration
-             * Reducing the map resolution helps improve their performance
-             */
-            pixelRatio: isTesting() ? 0.25 : undefined,
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
@@ -494,26 +489,30 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
     return (
-        <div className="map-container-for-testing">
-            <div
-                id={props.id}
-                style={{
-                    background: colors.background,
-                    height: props.height,
-                    width: '100%',
-                    position: 'relative',
-                    border: `1px solid ${colors.borderNonShadow}`,
-                    borderRadius: '5px',
-                    visibility: isTesting() ? 'hidden' : undefined,
-                }}
+        <div
+            id={props.id}
+            style={{
+                background: colors.background,
+                height: props.height,
+                width: '100%',
+                position: 'relative',
+                border: `1px solid ${colors.borderNonShadow}`,
+                borderRadius: '5px',
+                /*
+                 * E2E tests are often run without hardware acceleration
+                 * Hiding the map to helps improve their performance
+                 * Additionally, maps are not included in test screenshots
+                 */
+                visibility: isTesting() ? 'hidden' : undefined,
+            }}
+            className="map-container-for-testing"
+        >
+            {/* place this on the right of the map */}
+            <div style={
+                { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
+            }
             >
-                {/* place this on the right of the map */}
-                <div style={
-                    { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-                }
-                >
-                    {props.buttons}
-                </div>
+                {props.buttons}
             </div>
         </div>
     )
