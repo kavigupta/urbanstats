@@ -62,7 +62,7 @@ async function main(): Promise<void> {
 
         let runner = testcafe.createRunner()
             .src(`test/${test}.ts`)
-            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent=${testingUserAgent}`])
+            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
             .screenshots(`screenshots/${test}`)
 
         if (options.video) {

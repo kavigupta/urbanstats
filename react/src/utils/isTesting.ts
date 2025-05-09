@@ -4,7 +4,7 @@
  * Use sparingly! Functionality under testing should diverge minimally.
  */
 export function isTesting(): boolean {
-    return navigator.userAgent === testingUserAgent
+    return navigator.userAgent.includes(testingUserAgent)
 }
 
 export const testingUserAgent = 'urbanstats-e2e'
