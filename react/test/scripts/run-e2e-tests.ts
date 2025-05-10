@@ -6,6 +6,8 @@ import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
+import { testingUserAgent } from '../../src/utils/isTesting'
+
 import { startProxy } from './ci_proxy'
 import { booleanArgument } from './util'
 
@@ -60,7 +62,7 @@ async function main(): Promise<void> {
 
         let runner = testcafe.createRunner()
             .src(`test/${test}.ts`)
-            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
+            .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
             .screenshots(`screenshots/${test}`)
 
         if (options.video) {
