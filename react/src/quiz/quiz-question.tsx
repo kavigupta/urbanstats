@@ -67,6 +67,10 @@ class Map extends MapGeneric<MapProps> {
         }
         forceUpdate()
     }
+
+    override startShowingAttribution(): boolean {
+        return false
+    }
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (

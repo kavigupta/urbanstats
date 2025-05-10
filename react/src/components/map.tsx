@@ -1,6 +1,6 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import maplibregl from 'maplibre-gl'
+import maplibregl, { AttributionControl, AttributionControlOptions } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
@@ -46,6 +46,24 @@ interface PolygonStyle {
 }
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
+
+class CustomAttributionControl extends AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
@@ -110,6 +128,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    startShowingAttribution(): boolean {
+        return true
+    }
+
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -119,7 +141,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             canvasContextAttributes: {
                 preserveDrawingBuffer: true,
             },
+            attributionControl: false,
         })
+
+        map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
+
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
