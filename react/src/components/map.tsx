@@ -120,7 +120,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             canvasContextAttributes: {
                 preserveDrawingBuffer: true,
             },
-            pixelRatio: isTesting() ? 0.1 : undefined,
+            pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
         })
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
