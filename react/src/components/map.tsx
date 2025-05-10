@@ -1,6 +1,6 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import maplibregl, { AttributionControl, AttributionControlOptions } from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
@@ -47,7 +47,7 @@ interface PolygonStyle {
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
 
-class CustomAttributionControl extends AttributionControl {
+class CustomAttributionControl extends maplibregl.AttributionControl {
     constructor(startShowingAttribution: boolean) {
         super()
 
