@@ -48,6 +48,24 @@ interface PolygonStyle {
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
 
+class CustomAttributionControl extends maplibregl.AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -111,6 +129,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    startShowingAttribution(): boolean {
+        return true
+    }
+
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -121,7 +143,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 preserveDrawingBuffer: true,
             },
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
+            attributionControl: false,
         })
+
+        map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
+
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
