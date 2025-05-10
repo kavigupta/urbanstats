@@ -252,7 +252,7 @@ def compute_gpw_weighted_for_shape(
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_raster_2",
+    "urbanstats/data/gpw/compute_gpw_for_shape_raster_5",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
 def compute_gpw_for_shape_raster(shape, collect_density=True, resolution=1200):
@@ -269,7 +269,11 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, resolution=1200):
     pop_sum = np.nansum(pop)
     if collect_density:
         dens_selected = {
-            k: dens_by_radius[k][row_selected, col_selected] for k in GPW_RADII
+            k: np.nan_to_num(
+                dens_by_radius[k][row_selected, col_selected],
+                nan=0,
+            )
+            for k in GPW_RADII
         }
         hists = {
             f"gpw_pw_density_histogram_{k}": produce_histogram(dens, pop)
@@ -293,7 +297,7 @@ def select_points_in_shape(shape, glo, *, resolution):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.7",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.8",
     key_function=dict(
         shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
