@@ -490,30 +490,25 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
     return (
-        <div
-            id={props.id}
-            style={{
-                background: colors.background,
-                height: props.height,
-                width: '100%',
-                position: 'relative',
-                border: `1px solid ${colors.borderNonShadow}`,
-                borderRadius: '5px',
-                /*
-                 * E2E tests are often run without hardware acceleration
-                 * Hiding the map to helps improve their performance
-                 * Additionally, maps are not included in test screenshots
-                 */
-                visibility: isTesting() ? 'hidden' : undefined,
-            }}
-            className="map-container-for-testing"
-        >
-            {/* place this on the right of the map */}
-            <div style={
-                { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-            }
+        <div className="map-container-for-testing">
+            <div
+                id={props.id}
+                style={{
+                    background: colors.background,
+                    height: props.height,
+                    width: '100%',
+                    position: 'relative',
+                    border: `1px solid ${colors.borderNonShadow}`,
+                    borderRadius: '5px',
+                }}
             >
-                {props.buttons}
+                {/* place this on the right of the map */}
+                <div style={
+                    { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
+                }
+                >
+                    {props.buttons}
+                </div>
             </div>
         </div>
     )
