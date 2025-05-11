@@ -258,6 +258,6 @@ test('renders successfully', async (t) => {
 
 urbanstatsFixture('comparison with heterogenous data sources', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22Canada%22%2C%22Australia%22%5D&s=k32AgBaCktXf8M`)
 
-test.only('renders us canada austrailia successfully', async (t) => {
+test('renders us canada austrailia successfully', async (t) => {
     await screencap(t)
 })
