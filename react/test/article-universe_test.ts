@@ -132,3 +132,43 @@ test('article-universe-state-from-subnational', async (t) => {
         .eql(`${target}/article.html?longname=California%2C+USA&universe=world`)
     await screencap(t)
 })
+
+urbanstatsFixture('values-same-by-universe', '/article.html?longname=California%2C+USA')
+
+async function pullRows(): Promise<string[][]> {
+    // Get all elements with class for-testing
+    const elements = Selector('div').withAttribute('class', 'for-testing-table-row')
+    const count = await elements.count
+    const results: string[][] = []
+    for (let i = 0; i < count; i++) {
+        const element = elements.nth(i)
+        let lines = (await element.innerText).split('\n')
+        lines = lines.slice(0, lines.length - 2)
+        results.push(lines)
+    }
+    return results
+}
+
+test('values-same-by-universe', async (t) => {
+    const original = await pullRows()
+    // set universe to world
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'))
+        .click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', 'world'))
+    const withWorld = await pullRows()
+    for (const row of original) {
+        row[row.length - 1] = row[row.length - 1].replace(/State/g, 'Subnational Region')
+    }
+    // clear out the ones that are different by universe (compactness [3] and area [4])
+    for (let rowIdx = 3; rowIdx < original.length; rowIdx++) {
+        // ordinal and percentile
+        for (let colIdx = 3; colIdx < original[rowIdx].length; colIdx++) {
+            original[rowIdx][colIdx] = '<varies>'
+            withWorld[rowIdx][colIdx] = '<varies>'
+        }
+    }
+    await t.expect(original).eql(withWorld)
+})
