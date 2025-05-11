@@ -89,7 +89,7 @@ def statistics_for_shape(gridded_data_sources, shape):
             for k, v in gridded_data_sources.items()
         },
         do_histograms=False,
-        resolution=120
+        resolution=60 * 2,
     )
 
 
