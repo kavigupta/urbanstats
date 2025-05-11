@@ -190,34 +190,41 @@ def sum_in_radius(
         )
         rows = [row for row, _ in overlaps.keys()]
         fetch_chunk_for(min(rows), max(rows))
-        # result_for_row = sum(
-        #     np.roll(local_array[source_row - loading_start], -off) * weight
-        #     for (source_row, off), weight in overlaps.items()
-        # )
-        source_rows = {source_row for source_row, _ in overlaps.keys()}
-        result_for_row = 0
-        for source_row in source_rows:
-            local_row = local_array[source_row - loading_start]
-            local_row_cumsum = local_array_cumsum[source_row - loading_start]
-            columns = [off for sr, off in overlaps.keys() if sr == source_row]
-            consecutives = []
-            for off in range(-max(columns), max(columns) + 1):
-                if overlaps[source_row, off] > 1 - 1e-5:
-                    consecutives.append(off)
-                    continue
-                result_for_row += np.roll(local_row, -off) * overlaps[(source_row, off)]
-            if not consecutives:
-                continue
-            lo, hi = min(consecutives), max(consecutives)
-            assert len(consecutives) == hi - lo + 1
-            delta = (
-                np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
-            ) % local_row_cumsum[-1]
-            result_for_row += delta
+        result_for_row = compute_convolution(
+            loading_start, local_array, local_array_cumsum, overlaps
+        )
 
         assigner.assign(row_idx, result_for_row * multiplier)
     assigner.flush()
     return out
+
+
+def compute_convolution(
+    array_row_idx_base, local_array, local_array_cumsum, filter_to_convolve
+):
+    source_rows = {source_row for source_row, _ in filter_to_convolve.keys()}
+    result_for_row = 0
+    for source_row in source_rows:
+        local_row = local_array[source_row - array_row_idx_base]
+        local_row_cumsum = local_array_cumsum[source_row - array_row_idx_base]
+        columns = [off for sr, off in filter_to_convolve.keys() if sr == source_row]
+        consecutives = []
+        for off in range(-max(columns), max(columns) + 1):
+            if filter_to_convolve[source_row, off] > 1 - 1e-5:
+                consecutives.append(off)
+                continue
+            result_for_row += (
+                np.roll(local_row, -off) * filter_to_convolve[(source_row, off)]
+            )
+        if not consecutives:
+            continue
+        lo, hi = min(consecutives), max(consecutives)
+        assert len(consecutives) == hi - lo + 1
+        delta = (
+            np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
+        ) % local_row_cumsum[-1]
+        result_for_row += delta
+    return result_for_row
 
 
 def produce_histogram(density_data, population_data):
