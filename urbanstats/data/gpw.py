@@ -144,14 +144,24 @@ class ChunkedAssigner:
         self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
 
 
-def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1, *, resolution):
-    loading_chunk = 1000
-    assigner = ChunkedAssigner(out, loading_chunk)
+def sum_in_radius(
+    radius,
+    global_map,
+    row_idxs,
+    out,
+    multiplier=1,
+    *,
+    resolution,
+    loading_chunk=1000,
+    saving_chunk=1000,
+):
+    assigner = ChunkedAssigner(out, saving_chunk)
     loading_start = -float("inf")
     local_array = None
+    local_array_cumsum = None
 
     def fetch_chunk_for(start, end):
-        nonlocal loading_start, local_array
+        nonlocal loading_start, local_array, local_array_cumsum
         assert start >= loading_start
         if end >= loading_start + loading_chunk:
             loading_start = start
@@ -159,6 +169,7 @@ def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1, *, resolution
             local_array = np.array(
                 global_map[loading_start : loading_start + loading_chunk]
             )
+            local_array_cumsum = np.cumsum(local_array, axis=1)
 
     fetch_chunk_for(0, 0)
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
@@ -167,13 +178,41 @@ def sum_in_radius(radius, global_map, row_idxs, out, multiplier=1, *, resolution
         )
         rows = [row for row, _ in overlaps.keys()]
         fetch_chunk_for(min(rows), max(rows))
-        result_for_row = sum(
-            np.roll(local_array[source_row - loading_start], -off) * weight
-            for (source_row, off), weight in overlaps.items()
+        result_for_row = compute_convolution(
+            loading_start, local_array, local_array_cumsum, overlaps
         )
+
         assigner.assign(row_idx, result_for_row * multiplier)
     assigner.flush()
     return out
+
+
+def compute_convolution(
+    array_row_idx_base, local_array, local_array_cumsum, filter_to_convolve
+):
+    source_rows = {source_row for source_row, _ in filter_to_convolve.keys()}
+    result_for_row = 0
+    for source_row in source_rows:
+        local_row = local_array[source_row - array_row_idx_base]
+        local_row_cumsum = local_array_cumsum[source_row - array_row_idx_base]
+        columns = [off for sr, off in filter_to_convolve.keys() if sr == source_row]
+        consecutives = []
+        for off in range(-max(columns), max(columns) + 1):
+            if filter_to_convolve[source_row, off] > 1 - 1e-5:
+                consecutives.append(off)
+                continue
+            result_for_row += (
+                np.roll(local_row, -off) * filter_to_convolve[(source_row, off)]
+            )
+        if not consecutives:
+            continue
+        lo, hi = min(consecutives), max(consecutives)
+        assert len(consecutives) == hi - lo + 1
+        delta = (
+            np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
+        ) % local_row_cumsum[-1]
+        result_for_row += delta
+    return result_for_row
 
 
 def produce_histogram(density_data, population_data):
