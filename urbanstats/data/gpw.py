@@ -30,7 +30,7 @@ GPW_LAND_PATH = (
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs_30_arcsec():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
+    return load_ghs_from_path(path, resolution=60 * 60 // 30)
 
 
 def load_full_ghs_3arcsec_zarr():
@@ -55,13 +55,13 @@ def load_full_ghs_zarr(resolution):
         raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
 
 
-def load_ghs_from_path(path):
+def load_ghs_from_path(path, resolution):
     gt = GeoTiff(path)
     ghs = np.array(gt.read())
-    popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
+    popu = np.zeros((180 * resolution, 360 * resolution), dtype=np.float32)
     min_lon, max_lat = gt.get_coords(0, 0)
-    j_off = round((min_lon - (-180)) * 120)
-    i_off = round((90 - max_lat) * 120)
+    j_off = round((min_lon - (-180)) * resolution)
+    i_off = round((90 - max_lat) * resolution)
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
@@ -78,6 +78,7 @@ def lon_from_col_idx(col_idx, resolution):
 def compute_cell_overlaps_with_circle_grid_array(
     radius, row_idx, *, grid_size, resolution
 ):
+    # pylint: disable=too-many-locals
     ell = Ellipse(
         radius,
         lat_from_row_idx(row_idx + 0.5, resolution),

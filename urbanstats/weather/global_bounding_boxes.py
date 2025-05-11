@@ -5,7 +5,11 @@ chunk = 360 * 4
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from urbanstats.data.gpw import lat_from_row_idx, load_full_ghs_30_arcsec, lon_from_col_idx
+from urbanstats.data.gpw import (
+    lat_from_row_idx,
+    load_full_ghs_30_arcsec,
+    lon_from_col_idx,
+)
 
 
 def produce_all_bounding_boxes():

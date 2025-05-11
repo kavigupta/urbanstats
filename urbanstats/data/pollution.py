@@ -30,8 +30,12 @@ def pollution_in_ghs_coordinates():
     latitudes = f["latitudes"]
     longitudes = f["longitudes"]
     pollution_data = f["mean_pollution"]
-    ghs_lat_deg = lat_from_row_idx(np.arange(180 * deg_2_ghs_index), 120)
-    ghs_lon_deg = lon_from_col_idx(np.arange(360 * deg_2_ghs_index), 120)
+    ghs_lat_deg = lat_from_row_idx(
+        np.arange(180 * deg_2_ghs_index), resolution=deg_2_ghs_index
+    )
+    ghs_lon_deg = lon_from_col_idx(
+        np.arange(360 * deg_2_ghs_index), resolution=deg_2_ghs_index
+    )
 
     ghs_lat_pol_idx = (
         (ghs_lat_deg - latitudes[0])
