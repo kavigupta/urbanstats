@@ -21,41 +21,44 @@ GPW_LAND_PATH = (
     "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
 )
 
-CELLS_PER_DEGREE = 120
-
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
-def load_full_ghs():
+def load_full_ghs_30_arcsec():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
+    return load_ghs_from_path(path, resolution=60 * 60 // 30)
 
 
-def load_ghs_from_path(path):
+def load_ghs_from_path(path, resolution):
     gt = GeoTiff(path)
     ghs = np.array(gt.read())
-    popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
+    popu = np.zeros((180 * resolution, 360 * resolution), dtype=np.float32)
     min_lon, max_lat = gt.get_coords(0, 0)
-    j_off = round((min_lon - (-180)) * 120)
-    i_off = round((90 - max_lat) * 120)
+    j_off = round((min_lon - (-180)) * resolution)
+    i_off = round((90 - max_lat) * resolution)
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
 
 
-def lat_from_row_idx(row_idx):
-    return 90 - row_idx * 1 / 120
+def lat_from_row_idx(row_idx, resolution):
+    return 90 - row_idx * 1 / resolution
 
 
-def lon_from_col_idx(col_idx):
-    return -180 + col_idx * 1 / 120
+def lon_from_col_idx(col_idx, resolution):
+    return -180 + col_idx * 1 / resolution
 
 
-def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
-    ell = Ellipse(radius, lat_from_row_idx(row_idx + 0.5), lon_from_col_idx(0.5))
+def compute_cell_overlaps_with_circle_grid_array(
+    radius, row_idx, *, grid_size, resolution
+):
+    # pylint: disable=too-many-locals
+    ell = Ellipse(
+        radius,
+        lat_from_row_idx(row_idx + 0.5, resolution),
+        lon_from_col_idx(0.5, resolution),
+    )
     yr, xr = ell.lat_radius, ell.lon_radius
-    xr_idxs, yr_idxs = [
-        int(np.ceil(radius * CELLS_PER_DEGREE + 2)) for radius in (xr, yr)
-    ]
+    xr_idxs, yr_idxs = [int(np.ceil(radius * resolution + 2)) for radius in (xr, yr)]
     xs, ys = [np.arange(-radius, radius + 1) for radius in (xr_idxs, yr_idxs)]
     # placing a grid off-index, e.g., if grid size is 3, we do 1/6, 3/6, 5/6.
     within_cell_grid = np.linspace(1 / grid_size / 2, 1 - 1 / grid_size / 2, grid_size)
@@ -64,7 +67,7 @@ def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
         for seq in (xs, ys)
     ]
     xs_specific, ys_specific = [
-        (seq - 0.5) / CELLS_PER_DEGREE for seq in (xs_specific, ys_specific)
+        (seq - 0.5) / resolution for seq in (xs_specific, ys_specific)
     ]
     dist_from_center = (xs_specific[..., None, None] / xr) ** 2 + (
         ys_specific[None, None] / yr
@@ -73,9 +76,9 @@ def compute_cell_overlaps_with_circle_grid_array(radius, row_idx, *, grid_size):
     return xs, ys, attributable_to_each
 
 
-def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100):
+def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100, *, resolution):
     xs, ys, b_arr = compute_cell_overlaps_with_circle_grid_array(
-        radius, row_idx, grid_size=grid_size
+        radius, row_idx, grid_size=grid_size, resolution=resolution
     )
     x_idxs, y_idxs = np.where(b_arr)
     return {
@@ -86,22 +89,30 @@ def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100):
 
 @permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2.5")
 def compute_circle_density_per_cell(
-    radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
+    radius,
+    longitude_start=0,
+    longitude_end=None,
+    latitude_start=0,
+    latitude_end=None,
+    *,
+    resolution,
 ):
-    glo = load_full_ghs()
+    glo = load_full_ghs_30_arcsec()
     glo = glo[:, longitude_start:longitude_end]
     glo_zero = np.nan_to_num(glo, 0)
     [row_idxs] = np.where((glo_zero[latitude_start:latitude_end] != 0).any(axis=1))
     row_idxs += latitude_start
     out = np.zeros_like(glo_zero)
-    out = sum_in_radius(radius, glo_zero, row_idxs, out)
+    out = sum_in_radius(radius, glo_zero, row_idxs, out, resolution=resolution)
     out = out / (np.pi * radius**2)
     return out
 
 
-def sum_in_radius(radius, global_map, row_idxs, out):
+def sum_in_radius(radius, global_map, row_idxs, out, *, resolution):
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
-        overlaps = compute_cell_overlaps_with_circle(radius, row_idx, grid_size=40)
+        overlaps = compute_cell_overlaps_with_circle(
+            radius, row_idx, grid_size=40, resolution=resolution
+        )
         for (source_row, off), weight in overlaps.items():
             out[row_idx] += np.roll(global_map[source_row], -off) * weight
     return out
@@ -119,9 +130,9 @@ def produce_histogram(density_data, population_data):
 
 
 def compute_gpw_weighted_for_shape(
-    shape, glo_pop, gridded_statistics, *, do_histograms
+    shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
-    row_selected, col_selected = select_points_in_shape(shape, glo_pop)
+    row_selected, col_selected = select_points_in_shape(shape, glo_pop, resolution=resolution)
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
@@ -142,10 +153,14 @@ def compute_gpw_weighted_for_shape(
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
 def compute_gpw_for_shape_raster(shape, collect_density=True):
-    glo = load_full_ghs()
+    glo = load_full_ghs_30_arcsec()
+    resolution = 60 * 60 // 30
     if collect_density:
-        dens_by_radius = {k: compute_circle_density_per_cell(k) for k in GPW_RADII}
-    row_selected, col_selected = select_points_in_shape(shape, glo)
+        dens_by_radius = {
+            k: compute_circle_density_per_cell(k, resolution=resolution)
+            for k in GPW_RADII
+        }
+    row_selected, col_selected = select_points_in_shape(shape, glo, resolution)
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
@@ -168,10 +183,8 @@ def compute_gpw_for_shape_raster(shape, collect_density=True):
     return dict(gpw_population=pop_sum, **density), hists
 
 
-def select_points_in_shape(shape, glo):
-    lats, lon_starts, lon_ends = rasterize_using_lines(
-        shape, resolution=CELLS_PER_DEGREE
-    )
+def select_points_in_shape(shape, glo, resolution):
+    lats, lon_starts, lon_ends = rasterize_using_lines(shape, resolution=resolution)
     row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
     return row_selected, col_selected
 
