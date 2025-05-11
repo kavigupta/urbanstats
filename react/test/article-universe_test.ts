@@ -121,7 +121,7 @@ test('article-universe-state-world', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('article universe state from subnational test', `/article.html?longname=Kerala%2C+India`)
+urbanstatsFixture('article universe state from subnational test', `/article.html?longname=Jhārkhand%2C+India`)
 
 test('article-universe-state-from-subnational', async (t) => {
     await screencap(t)
