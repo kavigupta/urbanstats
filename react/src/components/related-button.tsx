@@ -1,6 +1,5 @@
-import React, { ReactNode, useContext, useId } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useId } from 'react'
 
-import './related.css'
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
 import type_to_type_category from '../data/type_to_type_category'
@@ -24,6 +23,18 @@ function colorsEach(colors: HueColors): Record<string, string> {
     return Object.fromEntries(keys)
 }
 
+function useLinkedListelStyle(): CSSProperties {
+    const isMobile = useMobileLayout()
+    return {
+        minHeight: isMobile ? '20pt' : '13pt',
+        marginTop: isMobile ? '0px' : '1px',
+        marginBottom: isMobile ? '0px' : '1px',
+        float: 'left',
+        paddingRight: '0.3em',
+        verticalAlign: 'middle',
+    }
+}
+
 function RelatedButton(props: { region: Region }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -36,7 +47,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
     }
     const color = colorsEach(colors.hueColors)[typeCategory]
     return (
-        <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
+        <li style={useLinkedListelStyle()}>
             <a
                 className={classes}
                 style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
@@ -48,8 +59,7 @@ function RelatedButton(props: { region: Region }): ReactNode {
     )
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }): ReactNode {
-    const settingKey = relationshipKey(props.articleType, props.buttonType)
+function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string }): ReactNode {
     function displayName(name: string): string {
         name = name.replaceAll('_', ' ')
         // title case
@@ -59,11 +69,55 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
         return name
     }
 
+    return (
+        <ul
+            style={{
+                display: 'inline-block',
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+                flexGrow: 1,
+                margin: '0.1em',
+            }}
+        >
+            <li
+                className="serif"
+                style={{
+                    ...useLinkedListelStyle(),
+                    fontSize:
+                useMobileLayout() ? '12pt' : '10pt',
+                    paddingTop: '1pt', fontWeight: 500,
+                }}
+            >
+                <label htmlFor={props.checkId}>
+                    {displayName(props.relationshipType)}
+                </label>
+            </li>
+            {
+                props.regions.map((row, i) => (
+                    <RelatedButton
+                        key={i}
+                        region={row}
+                    />
+                ),
+                )
+            }
+        </ul>
+    )
+}
+
+function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }): ReactNode {
+    const settingKey = relationshipKey(props.articleType, props.buttonType)
+
     const checkId = useId()
-    const mobileLayout = useMobileLayout()
 
     return (
-        <li className="list_of_lists">
+        <li style={{
+            paddingInlineStart: '0px',
+            listStyleType: 'none',
+            flexGrow: 1,
+            margin: 0,
+        }}
+        >
             <div style={{ display: 'flex' }}>
                 <div className="linkbox">
                     <div style={{ paddingTop: '2pt' }}>
@@ -75,37 +129,17 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
                         />
                     </div>
                 </div>
-                <ul className="list_of_lists">
+                <ul style={{
+                    paddingInlineStart: '0px',
+                    listStyleType: 'none',
+                    flexGrow: 1,
+                    margin: 0,
+                }}
+                >
                     {
-                        Object.keys(props.regions).map((relationshipType, j) => {
-                            const regions = props.regions[relationshipType]
-                            return (
-                                <ul key={j} className="linklist">
-                                    <li
-                                        className={`serif linklistel${mobileLayout ? ' linklistel_mobile' : ''}`}
-                                        style={{
-                                            fontSize:
-                                                mobileLayout ? '12pt' : '10pt',
-                                            paddingTop: '1pt', fontWeight: 500,
-                                        }}
-                                    >
-                                        <label htmlFor={checkId}>
-                                            {displayName(relationshipType)}
-                                        </label>
-                                    </li>
-                                    {
-                                        regions.map((row, i) => (
-                                            <RelatedButton
-                                                key={i}
-                                                region={row}
-                                            />
-                                        ),
-                                        )
-                                    }
-                                </ul>
-                            )
-                        },
-                        )
+                        Object.keys(props.regions).map((relationshipType) => {
+                            return <RelationshipGroup key={relationshipType} regions={props.regions[relationshipType]} checkId={checkId} relationshipType={relationshipType} />
+                        })
                     }
                 </ul>
             </div>
@@ -154,7 +188,15 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     }
 
     return (
-        <div className="related_areas">
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'start',
+            flexGrow: 1,
+            flexBasis: 0,
+            margin: '1em',
+        }}
+        >
             {elements}
         </div>
     )
