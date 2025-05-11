@@ -132,7 +132,9 @@ def produce_histogram(density_data, population_data):
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
-    row_selected, col_selected = select_points_in_shape(shape, glo_pop, resolution=resolution)
+    row_selected, col_selected = select_points_in_shape(
+        shape, glo_pop, resolution=resolution
+    )
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
