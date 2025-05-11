@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState, useSyncExternalStore } from 'react'
 import { z } from 'zod'
 
 import { discordFix } from '../discord-fix'
@@ -308,18 +308,13 @@ export class Navigator {
         }
     }
 
+    private subscribeToPageState: Parameters<typeof useSyncExternalStore>[0] = (observer) => {
+        this.pageStateObservers.add(observer)
+        return () => { this.pageStateObservers.delete(observer) }
+    }
+
     usePageState(): PageState {
-        const [result, setResult] = useState(this.pageState)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setResult(this.pageState)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return result
+        return useSyncExternalStore(this.subscribeToPageState, () => this.pageState)
     }
 
     get currentDescriptor(): ExceptionalPageDescriptor {
@@ -339,17 +334,7 @@ export class Navigator {
     }
 
     useUniverse(): string | undefined {
-        const [universe, setUniverse] = useState(this.universe)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setUniverse(this.universe)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return universe
+        return useSyncExternalStore(this.subscribeToPageState, () => this.universe)
     }
 
     setUniverse(newUniverse: string): void {
@@ -381,17 +366,7 @@ export class Navigator {
     }
 
     useStatPathsAll(): StatPath[][] | undefined {
-        const [statPaths, setStatPaths] = useState(this.statPaths)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setStatPaths(this.statPaths)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return statPaths
+        return useSyncExternalStore(this.subscribeToPageState, () => this.statPaths)
     }
 
     setSettingsVector(newVector: string): void {
@@ -424,6 +399,12 @@ export class Navigator {
             const observer = (): void => {
                 setLoading(loadingStateFromPageState(this.pageState))
             }
+            /*
+             * Need to account for the race condition where the page state changes between the first render and the effect
+             * Normally we use useSyncExternalStore, but we can't use that here because we set state in a timeout
+             */
+            setLoading(loadingStateFromPageState(this.pageState))
+
             this.pageStateObservers.add(observer)
             return () => { this.pageStateObservers.delete(observer) }
         }, [])

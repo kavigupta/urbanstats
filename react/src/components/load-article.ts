@@ -276,9 +276,6 @@ function computeCollapsedRows(hasValue: Map<number, boolean[]>): number[][] {
      * @returns: A list of lists of numbers. Each list of numbers is a set of rows that should
      * be collapsed together. The numbers are the indices of the rows in the original array.
      */
-    // if (hasValue.length === 0) {
-    //     return []
-    // }
     if (hasValue.size === 0) {
         return []
     }
@@ -312,13 +309,14 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     const rowsByArticle = rows[0].map((_, i) => rows.map(row => row[i]))
     return rowsByArticle.map((rowsForArticle) => {
         const rowsWithValues = rowsForArticle.filter(row => !Number.isNaN(row.statval))
-        if (rowsWithValues.length !== 1) {
-            throw new Error('Cannot collapse rows with none, or multiple, values')
+        if (rowsWithValues.length > 1) {
+            throw new Error(`Cannot collapse rows with ${rowsWithValues.length} values (expected <= 1)`)
         }
-        // row is a copy of rowsWithValues[0]
-        const row = JSON.parse(JSON.stringify(rowsWithValues[0])) as ArticleRow
-        row.renderedStatname = groupYearName
-        row.disclaimer = 'heterogenous-sources'
-        return row
+        return {
+            // If we can't find any rows with values, just use the first one
+            ...(rowsWithValues[0] ?? rowsForArticle[0]),
+            renderedStatname: groupYearName,
+            disclaimer: 'heterogenous-sources',
+        }
     })
 }
