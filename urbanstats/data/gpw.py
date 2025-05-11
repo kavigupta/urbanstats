@@ -167,6 +167,7 @@ def sum_in_radius(
     loading_chunk=1000,
     saving_chunk=1000,
 ):
+    # pylint: disable=too-many-locals
     assigner = ChunkedAssigner(out, saving_chunk)
     loading_start = -float("inf")
     local_array = None
