@@ -18,16 +18,15 @@ def produce_all_bounding_boxes():
     for i in range(0, rows, chunk):
         for j in range(0, cols, chunk):
             if mask[i : i + chunk, j : j + chunk].any():
-                yield coords(i, j, mask)
+                yield coords(i, j, mask, resolution=120)
 
 
-def coords(i, j, mask):
-    res30arcsec = 60 * 60 // 30
+def coords(i, j, mask, resolution):
     i, j, i_end, j_end = clip(i, j, i + chunk, j + chunk, mask)
-    lon_min = lon_from_col_idx(j, resolution=res30arcsec)
-    lon_max = lon_from_col_idx(j_end, resolution=res30arcsec)
-    lat_max = lat_from_row_idx(i, resolution=res30arcsec)
-    lat_min = lat_from_row_idx(i_end, resolution=res30arcsec)
+    lon_min = lon_from_col_idx(j, resolution)
+    lon_max = lon_from_col_idx(j_end, resolution)
+    lat_max = lat_from_row_idx(i, resolution)
+    lat_min = lat_from_row_idx(i_end, resolution)
     return (lon_min, lat_min, lon_max, lat_max)
 
 
