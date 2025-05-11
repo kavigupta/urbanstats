@@ -215,7 +215,9 @@ def compute_gpw_weighted_for_shape(
 def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution):
     glo = load_full_ghs_zarr(resolution)
     if collect_density:
-        dens_by_radius = {k: compute_circle_density_per_cell_zarr(k, resolution) for k in GPW_RADII}
+        dens_by_radius = {
+            k: compute_circle_density_per_cell_zarr(k, resolution) for k in GPW_RADII
+        }
     row_selected, col_selected = select_points_in_shape(
         shape, glo, resolution=resolution
     )
@@ -255,7 +257,9 @@ def select_points_in_shape(shape, glo, resolution):
         log=drop_if_equal(True),
     ),
 )
-def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True, *, resolution):
+def compute_gpw_data_for_shapefile(
+    shapefile, collect_density=True, log=True, *, resolution
+):
     """
     Compute the GHS-POP data for a shapefile.
     """
