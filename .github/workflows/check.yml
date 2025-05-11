@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 20
       - uses: ./.github/actions/node_modules
-      - run: npx eslint .
+      - run: npm run lint:ci
         working-directory: react
 
   build-and-push-common-image:
