@@ -117,29 +117,27 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
     }
 
     return (
-        <Cell widthProp={1 / props.numColumns}>
-            <ul
-                style={{
-                    display: 'inline-block',
-                    paddingInlineStart: '0px',
-                    listStyleType: 'none',
-                    margin: '0.1em',
-                }}
-            >
-                <Label checkId={props.checkId} fontWeight={300}>
-                    {displayName(props.relationshipType)}
-                </Label>
-                {
-                    props.regions.map((row, i) => (
-                        <RelatedButton
-                            key={i}
-                            region={row}
-                        />
-                    ),
-                    )
-                }
-            </ul>
-        </Cell>
+        <ul
+            style={{
+                display: 'block',
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+                margin: '0.1em',
+            }}
+        >
+            <Label checkId={props.checkId} fontWeight={300}>
+                {displayName(props.relationshipType)}
+            </Label>
+            {
+                props.regions.map((row, i) => (
+                    <RelatedButton
+                        key={i}
+                        region={row}
+                    />
+                ),
+                )
+            }
+        </ul>
     )
 }
 
@@ -185,8 +183,9 @@ function Row(props: {
                 paddingInlineStart: '0px',
                 listStyleType: 'none',
                 margin: 0,
-                display: 'flex',
                 width: `${100 * (1 - propForRegionTypes)}%`,
+                display: 'flex',
+                flexDirection: 'column',
             }}
             >
                 {
