@@ -2,7 +2,6 @@ import os
 
 import dask.array
 import numpy as np
-import scipy
 import shapely
 import tqdm.auto as tqdm
 import zarr
@@ -49,10 +48,9 @@ def load_full_ghs_30arcsec_zarr():
 def load_full_ghs_zarr(resolution):
     if resolution == 1200:
         return load_full_ghs_3arcsec_zarr()
-    elif resolution == 120:
+    if resolution == 120:
         return load_full_ghs_30arcsec_zarr()
-    else:
-        raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
+    raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
 
 
 def load_ghs_from_path(path, resolution):
