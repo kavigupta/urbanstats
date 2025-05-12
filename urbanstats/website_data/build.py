@@ -390,9 +390,6 @@ def html_index(
       </div>
     </div>
     <div id="root"></div>
-    <!-- Put script tags here rather than dynamically loading in loading.js for better parallelism -->
-    <script async src="/scripts/index.js"></script>
-    <!-- This tag must be last as it looks for the other tags -->
     <script src="/scripts/loading.js"></script>
 
 

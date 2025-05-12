@@ -8,7 +8,6 @@ const isProduction = process.env.NODE_ENV === 'production'
 
 export default env => ({
     entry: {
-        index: ['./src/index.tsx'],
         loading: ['./src/loading.ts'],
     },
     output: {
@@ -41,15 +40,9 @@ export default env => ({
 
         ],
     },
-    optimization: {
-        minimize: true,
-    },
     plugins: [
         new NodePolyfillPlugin(),
         new ForkTsCheckerWebpackPlugin(),
-        new rspack.CopyRspackPlugin({
-            patterns: [{ from: 'node_modules/maplibre-gl/dist/maplibre-gl.js' }]
-        })
     ],
     devServer: {
         static: {
@@ -66,7 +59,4 @@ export default env => ({
         maxAssetSize: Number.MAX_SAFE_INTEGER,
         maxEntrypointSize: 3.4 * Math.pow(2, 20)
     },
-    externals: {
-        'maplibre-gl': 'window maplibregl'
-    }
 })
