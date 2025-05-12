@@ -25,11 +25,11 @@ function colorsEach(colors: HueColors): Record<string, string> {
     return Object.fromEntries(keys)
 }
 
-function useRelatedColor(rowType: string, mixMultiplier: number): string {
+function useRelatedColor(rowType: string, colorIntensity: number): string {
     const colors = useColors()
     const typeCategory = type_to_type_category[rowType]
     const color = colorsEach(colors.hueColors)[typeCategory]
-    return mixWithBackground(color, (colors.mixPct + (100 - colors.mixPct) * (1 - mixMultiplier)) / 100, colors.background)
+    return mixWithBackground(color, (colors.mixPct + (100 - colors.mixPct) * (1 - colorIntensity)) / 100, colors.background)
 }
 
 function RelatedButton(props: { region: Region }): ReactNode {
