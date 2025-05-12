@@ -325,9 +325,9 @@ const value: Record<string, number[]> = {
         8,
     ],
     'Africa__overall': [
-        143,
-        143,
-        34,
+        142,
+        142,
+        36,
     ],
     'Africa__Urban Center': [
         257,

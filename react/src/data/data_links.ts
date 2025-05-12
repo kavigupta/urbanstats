@@ -342,8 +342,8 @@ const value: Record<string, number[]> = {
         32,
     ],
     'Europe__Subnational Region': [
-        211,
-        109,
+        210,
+        110,
     ],
     'Europe__Urban Center': [
         205,

@@ -31,7 +31,7 @@ firstResult(test)('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urb
 firstResult(test)('san marino', 'San Marino') // Should not be "San Marino, San Marino"
 firstResult(test)('queens', 'Queens County, New York, USA')
 firstResult(test)('india', 'India')
-firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
+firstResult(test)('urban center', 'Jakarta Urban Center, Indonesia') // Should be some Urban Center
 firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
 firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
 firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspelling
