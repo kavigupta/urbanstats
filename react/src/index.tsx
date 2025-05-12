@@ -6,6 +6,12 @@ import './common.css'
 
 import { Router } from './navigation/routers'
 
+declare global {
+    /* eslint-disable no-restricted-syntax,no-var -- Global variables */
+    var startUrbanstats: () => void
+    /* eslint-enable no-restricted-syntax,no-var */
+}
+
 function loadPage(): void {
     const root = ReactDOM.createRoot(document.getElementById('root')!)
     root.render(
@@ -14,4 +20,4 @@ function loadPage(): void {
     document.getElementById('loading')!.remove()
 }
 
-loadPage()
+window.startUrbanstats = loadPage

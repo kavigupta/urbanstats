@@ -2,6 +2,7 @@ import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import rspack from "@rspack/core"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -40,10 +41,15 @@ export default env => ({
 
         ],
     },
-    // devtool: 'inline-source-map',
+    optimization: {
+        minimize: true,
+    },
     plugins: [
         new NodePolyfillPlugin(),
         new ForkTsCheckerWebpackPlugin(),
+        new rspack.CopyRspackPlugin({
+            patterns: [{ from: 'node_modules/maplibre-gl/dist/maplibre-gl.js' }]
+        })
     ],
     devServer: {
         static: {
@@ -58,6 +64,9 @@ export default env => ({
     performance: {
         hints: isProduction ? 'error': false,
         maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.5 * Math.pow(2, 20)
+        maxEntrypointSize: 3.4 * Math.pow(2, 20)
+    },
+    externals: {
+        'maplibre-gl': 'window maplibregl'
     }
 })

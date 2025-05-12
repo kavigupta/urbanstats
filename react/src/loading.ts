@@ -23,3 +23,11 @@ if (loadedSettings.clean_background) {
 
 document.documentElement.style.setProperty('--loading-main', themeDict.textMain)
 document.documentElement.style.setProperty('--loading-background', themeDict.background)
+
+await Promise.all(Array.from(document.querySelectorAll('script[src^="/scripts"]')).map(tag => new Promise((resolve, reject) => {
+    const scriptTag = tag as HTMLScriptElement
+    scriptTag.onload = resolve
+    scriptTag.onerror = reject
+})))
+
+window.startUrbanstats()
