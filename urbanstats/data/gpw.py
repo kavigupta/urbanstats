@@ -34,7 +34,7 @@ def load_full_ghs_30_arcsec():
 
 def load_full_ghs_3arcsec_zarr():
     result = GeoTiff(
-        "named_region_shapefiles/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0.tif"
+        "named_region_shapefiles/gpw/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0/GHS_POP_E2030_GLOBE_R2023A_4326_3ss_V1_0.tif"
     )
     return result.read()
 
