@@ -18,6 +18,9 @@ import { CheckboxSetting } from './sidebar'
 
 interface Region { rowType: string, longname: string, shortname: string }
 
+const propForRegionTypes = 0.20
+const spacing = 2
+
 function colorsEach(colors: HueColors): Record<string, string> {
     const keys: [string, string][] = relatedButtonColors.map(
         ([typ, color]) => [typ, colors[color]],
@@ -81,23 +84,6 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
         </div>
     )
 }
-
-const propForRegionTypes = 0.20
-
-function Cell(props: { widthProp: number, children: ReactNode }): ReactNode {
-    return (
-        <div style={{
-            display: 'flex',
-            width: `${100 * props.widthProp}%`,
-            alignItems: 'center',
-        }}
-        >
-            { props.children }
-        </div>
-    )
-}
-
-const spacing = 2
 
 function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     function displayName(name: string): string {
@@ -172,7 +158,12 @@ function Row(props: {
             borderRadius: props.rowIndex === 0 ? '5px 5px 0 0' : (props.rowIndex === props.totalRows - 1 ? '0 0 5px 5px' : undefined),
         }}
         >
-            <Cell widthProp={propForRegionTypes}>
+            <div style={{
+                display: 'flex',
+                width: `${100 * propForRegionTypes}%`,
+                alignItems: 'center',
+            }}
+            >
                 <CheckboxSetting
                     name=""
                     settingKey={settingKey}
@@ -182,7 +173,7 @@ function Row(props: {
                 <Label checkId={checkId} fontWeight={500}>
                     {displayType(universe, props.buttonType)}
                 </Label>
-            </Cell>
+            </div>
             <ul style={{
                 paddingInlineStart: '0px',
                 listStyleType: 'none',
