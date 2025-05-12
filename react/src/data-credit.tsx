@@ -780,12 +780,6 @@ export function DataCreditPanel(): ReactNode {
                             the 30&quot; data, which is not as accurate, and led to underestimates of population density
                             in some areas; we continue to use this data for disaggregation purposes, but weather and pollution tend not
                             to vary nearly as much as population, and data is not available at 3&quot; resolution for these datasets.
-                            {' '}
-                            <em>
-                                Note: For whatever reason, the GHSL 3&quot; data needs to be adjusted southwards by 54&apos;27&quot;. I do
-                                not know why this is the case, but we confirmed this on several regions, such as Singapore, Monaco, Johannesburg,
-                                and Manhattan, and the offset is consistent across all regions.
-                            </em>
                         </div>
                         <h1>Canadian Data</h1>
                         <div>

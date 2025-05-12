@@ -95,9 +95,9 @@ def rasterize_using_lines(shape, resolution):
     rows = rows[mask]
     lon_start = lon_start[mask]
     lon_end = lon_end[mask]
-    # see notebooks/gpw-alignment.ipynb for why we picked these values, but it does seem
-    # to line everything up properly.
+    # see notebooks/gpw-alignment.ipynb to confirm these are correct.
     if resolution == 1200:
+        # 60 * 60 * 180 // 3 - global_map.shape[0] = 2178, half of this is 1089
         rows = rows - 1089
     elif resolution == 120:
         rows = rows - 1
