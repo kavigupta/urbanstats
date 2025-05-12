@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useId } from 'react'
+import React, { ReactNode, useContext, useId } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
@@ -25,41 +25,33 @@ function colorsEach(colors: HueColors): Record<string, string> {
     return Object.fromEntries(keys)
 }
 
-function useLinkedListelStyle(): CSSProperties {
-    const isMobile = useMobileLayout()
-    return {
-        minHeight: isMobile ? '20pt' : '13pt',
-        marginTop: isMobile ? '0px' : '1px',
-        marginBottom: isMobile ? '0px' : '1px',
-        float: 'left',
-        paddingRight: '0.3em',
-        verticalAlign: 'middle',
-    }
-}
-
-function useRelatedColor(rowType: string): string {
+function useRelatedColor(rowType: string, mixMultiplier: number): string {
     const colors = useColors()
     const typeCategory = type_to_type_category[rowType]
     const color = colorsEach(colors.hueColors)[typeCategory]
-    return mixWithBackground(color, colors.mixPct / 100, colors.background)
+    return mixWithBackground(color, (colors.mixPct + (100 - colors.mixPct) * (1 - mixMultiplier)) / 100, colors.background)
 }
 
 function RelatedButton(props: { region: Region }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-
-    let classes = `serif button_related`
-    if (useMobileLayout()) {
-        classes += ' button_related_mobile'
-    }
     return (
-        <li style={useLinkedListelStyle()}>
+        <li style={{
+            display: 'flex',
+            margin: `${spacing}px`,
+        }}
+        >
             <a
-                className={classes}
+                className="serif"
                 style={{
                     color: colors.textMain,
-                    backgroundColor: useRelatedColor(props.region.rowType),
+                    backgroundColor: useRelatedColor(props.region.rowType, 1),
+                    textDecoration: 'none',
+                    padding: '2px 6px 2px 6px',
+                    borderRadius: '5px',
+                    fontWeight: 400,
+                    fontSize: useMobileLayout() ? '12pt' : '8pt',
                 }}
                 {...navContext.link(
                     { kind: 'article', longname: props.region.longname, universe: currentUniverse },
@@ -77,11 +69,10 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
         <div
             className="serif"
             style={{
-                ...useLinkedListelStyle(),
                 fontSize: useMobileLayout() ? '12pt' : '10pt',
-                paddingTop: '1pt',
                 fontWeight: props.fontWeight,
                 alignContent: 'center',
+                margin: `${spacing}px`,
             }}
         >
             <label htmlFor={props.checkId}>
@@ -106,7 +97,9 @@ function Cell(props: { widthProp: number, children: ReactNode }): ReactNode {
     )
 }
 
-function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, numColumns: number }): ReactNode {
+const spacing = 2
+
+function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     function displayName(name: string): string {
         name = name.replaceAll('_', ' ')
         // title case
@@ -116,16 +109,27 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
         return name
     }
 
+    const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
+
     return (
         <ul
             style={{
-                display: 'block',
+                display: 'flex',
+                flexFlow: 'row wrap',
                 paddingInlineStart: '0px',
                 listStyleType: 'none',
-                margin: '0.1em',
+                padding: `${spacing}px`,
+                ...(props.numGroups > 1
+                    ? {
+                            backgroundColor,
+                            // Border radius if first or last group
+                            borderRadius: props.groupIndex === 0 ? '5px 5px 0 0' : (props.groupIndex === props.numGroups - 1 ? '0 0 5px 5px' : undefined),
+                            paddingLeft: `${2 * spacing}px`,
+                        }
+                    : {}),
             }}
         >
-            <Label checkId={props.checkId} fontWeight={300}>
+            <Label checkId={props.checkId} fontWeight={400}>
                 {displayName(props.relationshipType)}
             </Label>
             {
@@ -147,7 +151,6 @@ function Row(props: {
     regions: Map<string, Region[]>
     rowIndex: number
     totalRows: number
-    numColumns: number
 }): ReactNode {
     const settingKey = relationshipKey(props.articleType, props.buttonType)
 
@@ -160,12 +163,13 @@ function Row(props: {
             paddingInlineStart: '0px',
             listStyleType: 'none',
             margin: 0,
-            backgroundColor: `${useRelatedColor(props.buttonType)}${props.rowIndex % 2 === 0 ? '33' : '55'}`,
             width: '100%',
-            // Border radius if first or last row
-            borderRadius: props.rowIndex === 0 ? '5px 5px 0 0' : (props.rowIndex === props.totalRows - 1 ? '0 0 5px 5px' : undefined),
             display: 'flex',
             alignItems: 'center',
+            position: 'relative',
+            backgroundColor: useRelatedColor(props.buttonType, props.rowIndex % 2 === 0 ? 0.1 : 0.2),
+            // Border radius if first or last row
+            borderRadius: props.rowIndex === 0 ? '5px 5px 0 0' : (props.rowIndex === props.totalRows - 1 ? '0 0 5px 5px' : undefined),
         }}
         >
             <Cell widthProp={propForRegionTypes}>
@@ -186,17 +190,20 @@ function Row(props: {
                 width: `${100 * (1 - propForRegionTypes)}%`,
                 display: 'flex',
                 flexDirection: 'column',
+                padding: props.regions.size > 1 ? `${2 * spacing}px` : `0 0 0 ${3 * spacing}px`,
             }}
             >
                 {
-                    Array.from(props.regions).map(([relationshipType, regions]) => {
+                    Array.from(props.regions).map(([relationshipType, regions], i) => {
                         return (
                             <RelationshipGroup
                                 key={relationshipType}
                                 regions={regions}
                                 checkId={checkId}
                                 relationshipType={relationshipType}
-                                numColumns={props.numColumns}
+                                groupIndex={i}
+                                buttonType={props.buttonType}
+                                numGroups={props.regions.size}
                             />
                         )
                     })
@@ -221,8 +228,6 @@ export function Related(props: { articleType: string, related: { relationshipTyp
         .sort((a, b) => type_ordering_idx[a] - type_ordering_idx[b])
         .filter(buttonKey => showHistoricalCds || !isHistoricalCD(buttonKey))
 
-    const numColumns = buttonKeys.reduce((result, buttonKey) => Math.max(result, buttons.get(buttonKey).size), 0)
-
     const elements = buttonKeys.map((key, i) => (
         <Row
             key={key}
@@ -231,7 +236,6 @@ export function Related(props: { articleType: string, related: { relationshipTyp
             articleType={props.articleType}
             rowIndex={i}
             totalRows={buttonKeys.length}
-            numColumns={numColumns}
         />
     ))
 
