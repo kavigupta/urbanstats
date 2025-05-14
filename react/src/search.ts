@@ -345,7 +345,7 @@ export async function getIndexCacheKey(): Promise<string | undefined> {
     try {
         const start = performance.now()
         // location is sometimes a worker
-        const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
+        const resources = ['/scripts/hash.txt', '/index/pages_all.gz']
         const etags = await Promise.all(resources.map(async (resource) => {
             const response = await fetch(resource, { method: 'HEAD' })
             if (!response.ok) {

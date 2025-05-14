@@ -138,7 +138,7 @@ export class DelayRequests extends RequestHook {
 
 const delayRequests = new DelayRequests()
 const dataFilter: Filter = options => options.path.startsWith('/data')
-const indexFilter: Filter = options => options.path === '/scripts/index.js'
+const indexFilter: Filter = options => options.path !== '/scripts/loading.js' && options.path.endsWith('.js')
 
 urbanstatsFixture('loading tests', '/', async (t) => {
     delayRequests.removeFilter()
