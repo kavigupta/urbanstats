@@ -2,9 +2,17 @@ import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
-import rspack from "@rspack/core"
+import { execa } from "execa"
 
 const isProduction = process.env.NODE_ENV === 'production'
+
+class HashPlugin {
+    apply(compiler) {
+        compiler.hooks.afterEmit.tap('HashPlugin', (event) => {
+            execa('bash', ['-c', `shasum -a 256 ** | shasum -a 256 > hash.txt`], { cwd: event.outputOptions.path })
+        })
+    }
+}
 
 export default env => ({
     entry: {
@@ -43,6 +51,7 @@ export default env => ({
     plugins: [
         new NodePolyfillPlugin(),
         new ForkTsCheckerWebpackPlugin(),
+        new HashPlugin()
     ],
     devServer: {
         static: {
@@ -59,4 +68,7 @@ export default env => ({
         maxAssetSize: Number.MAX_SAFE_INTEGER,
         maxEntrypointSize: 3.4 * Math.pow(2, 20)
     },
+    externals: {
+        'maplibre-gl': 'window maplibregl'
+    }
 })

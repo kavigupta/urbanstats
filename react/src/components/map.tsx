@@ -1,5 +1,6 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
+import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
@@ -115,7 +116,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        const map = new window.maplibregl.Map({
+        const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
             scrollZoom: true,
@@ -128,7 +129,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
 
         // Must be inlined because needs to wait for maplibre load
-        class CustomAttributionControl extends window.maplibregl.AttributionControl {
+        class CustomAttributionControl extends maplibregl.AttributionControl {
             constructor(startShowingAttribution: boolean) {
                 super()
 
@@ -488,13 +489,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
-        const bounds = new window.maplibregl.LngLatBounds()
+        const bounds = new maplibregl.LngLatBounds()
 
         for (const polygon of items) {
             const bbox = geojsonExtent(polygon)
-            bounds.extend(new window.maplibregl.LngLatBounds(
-                new window.maplibregl.LngLat(bbox[0], bbox[1]),
-                new window.maplibregl.LngLat(bbox[2], bbox[3]),
+            bounds.extend(new maplibregl.LngLatBounds(
+                new maplibregl.LngLat(bbox[0], bbox[1]),
+                new maplibregl.LngLat(bbox[2], bbox[3]),
             ))
         }
         this.map?.fitBounds(bounds, { padding: defaultMapPadding, ...options })

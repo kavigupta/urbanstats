@@ -25,7 +25,7 @@ document.documentElement.style.setProperty('--loading-main', themeDict.textMain)
 document.documentElement.style.setProperty('--loading-background', themeDict.background)
 
 const index = import('./index')
-const maplibregl = import('maplibre-gl')
+const maplibregl = import('../node_modules/maplibre-gl/dist/maplibre-gl.js')
 
 window.maplibregl = await maplibregl;
 
