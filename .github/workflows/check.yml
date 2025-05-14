@@ -117,7 +117,7 @@ jobs:
           name: frontend-build
           path: react/test/density-db
       - name: Check site size
-        run: python3 scripts/check_site_size react/test/density-db
+        run: python3 scripts/check_site_size.py react/test/density-db
 
   list-e2e-tests:
     runs-on: ubuntu-22.04
