@@ -50,6 +50,12 @@ export default tseslint.config(
             'import/no-named-as-default-member': 'off',
             'import/namespace': 'off',
             'import/named': 'off',
+            "no-restricted-imports": ["error", {
+                paths: [{
+                    "name": "maplibre-gl",
+                    "message": "Use dynamic import"
+                }]
+            }]
         },
         settings: {
             'import/resolver': {

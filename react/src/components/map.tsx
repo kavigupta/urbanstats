@@ -1,6 +1,6 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import maplibregl from 'maplibre-gl'
+const maplibregl = await import('../../node_modules/maplibre-gl/dist/maplibre-gl.js')
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
