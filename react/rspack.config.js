@@ -64,9 +64,7 @@ export default env => ({
         },
     },
     performance: {
-        hints: isProduction ? 'error': false,
-        maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.4 * Math.pow(2, 20)
+        hints: false
     },
     externals: {
         'maplibre-gl': 'window maplibregl'

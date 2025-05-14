@@ -104,6 +104,21 @@ jobs:
           name: frontend-build
           path: react/test/density-db
 
+  check_site_size:
+    runs-on: ubuntu-22.04
+    needs: [build-and-push-common-image, build-frontend]
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+      - name: Check site size
+        run: python3 scripts/check_site_size react/test/density-db
+
   list-e2e-tests:
     runs-on: ubuntu-22.04
     outputs:
