@@ -3,13 +3,18 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
+import type { ArticlePanel } from '../components/article-panel'
+import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
-import type { StatisticPanelProps } from '../components/statistic-panel'
+import type { MapperPanel } from '../components/mapper-panel'
+import type { QuizPanel } from '../components/quiz-panel'
+import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
 import paths from '../data/statistic_path_list'
+import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
 import { defaultSettings, MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
@@ -24,6 +29,7 @@ import {
 } from '../quiz/quiz'
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
+import { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -158,15 +164,15 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'statistic', universe: string } & StatisticPanelProps
+    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
-    | { kind: 'dataCredit' }
-    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined }
-    | { kind: 'mapper', settings: MapSettings, view: boolean }
+    | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
     | {
         kind: 'error'
         error: unknown
@@ -333,6 +339,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: articleUniverse,
                     rows: articleRows,
                     statPaths: articleStatPaths,
+                    articlePanel: (await import('../components/article-panel')).ArticlePanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -374,6 +381,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universes,
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
+                    comparisonPanel: (await import('../components/comparison-panel')).ComparisonPanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -426,7 +434,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: statUniverse,
                     // StatisticPanel needs this to compute the set of universes to display
                     counts: await getCountsByArticleType(),
-
+                    statisticPanel: (await import('../components/statistic-panel')).StatisticPanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -453,8 +461,19 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
         case 'index':
         case 'about':
-        case 'dataCredit':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
+
+        case 'dataCredit':
+
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    dataCreditPanel: (await import('../data-credit')).DataCreditPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
         case 'quiz':
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
@@ -511,6 +530,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz,
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
+                    quizPanel: (await import('../components/quiz-panel')).QuizPanel,
                 },
                 newPageDescriptor: {
                     ...updatedDescriptor,
@@ -534,6 +554,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: newDescriptor.universe,
                     counts,
                     syauData,
+                    syauPanel: (await import('../syau/syau-panel')).SYAUPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -544,6 +565,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'mapper',
                     view: newDescriptor.view,
                     settings: mapSettingsFromURLParam(newDescriptor.settings),
+                    mapperPanel: (await import('../components/mapper-panel')).MapperPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,

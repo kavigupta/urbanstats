@@ -2,6 +2,7 @@ import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import { rspack } from "@rspack/core"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -14,6 +15,7 @@ export default env => ({
         filename: '[name].js',
         path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
+        chunkFilename: '[name].js'
     },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
@@ -59,5 +61,14 @@ export default env => ({
         hints: isProduction ? 'error': false,
         maxAssetSize: Number.MAX_SAFE_INTEGER,
         maxEntrypointSize: 3.5 * Math.pow(2, 20)
+    },
+    optimization: {
+        minimizer: [
+            new rspack.SwcJsMinimizerRspackPlugin({
+              exclude: /maplibre/
+            }),
+            new rspack.LightningCssMinimizerRspackPlugin(),
+        ],
+        chunkIds: 'named'
     }
 })
