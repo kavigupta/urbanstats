@@ -488,20 +488,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
 
         case 'quiz': {
-            // const [
-            //     { wrapQuestionsModel, infiniteQuiz, addFriendFromLink, loadRetro, loadJuxta },
-            //     { getRetrostatOffsetNumber, getDailyOffsetNumber },
-            //     panel,
-            //     statistics,
-            //     infinite,
-            // ] = await Promise.all([
-            //     import('../quiz/quiz'),
-            //     import('../quiz/dates'),
-            //     import('../components/quiz-panel'),
-            //     newDescriptor.mode === 'infinite' ? import('../quiz/statistics') : undefined,
-            //     newDescriptor.mode === 'infinite' ? import('../quiz/infinite') : undefined,
-            // ])
-
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string | undefined
