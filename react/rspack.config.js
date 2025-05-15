@@ -58,8 +58,8 @@ export default env => ({
     },
     performance: {
         hints: isProduction ? 'error': false,
-        maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.5 * Math.pow(2, 20)
+        maxAssetSize: 1_100_000,
+        maxEntrypointSize: 1_100_000
     },
     optimization: {
         splitChunks: {

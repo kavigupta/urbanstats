@@ -12,26 +12,23 @@ import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
+import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
-import { defaultSettings, MapSettings } from '../mapper/settings'
+import type { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
-import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { validQuizInfiniteVersions } from '../quiz/infinite'
-import {
-    QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON,
-    loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
+import type {
+    QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
+    QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
-import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article } from '../utils/protos'
+import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
 import { base64Gunzip } from '../utils/urlParamShort'
@@ -475,6 +472,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
 
         case 'quiz':
+            const { wrapQuestionsModel, infiniteQuiz, addFriendFromLink, loadRetro, loadJuxta } = await import('../quiz/quiz')
+            const { getRetrostatOffsetNumber, getDailyOffsetNumber } = await import('../quiz/dates')
+
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string | undefined
@@ -500,6 +500,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 case 'infinite':
                     if (updatedDescriptor.seed === undefined) {
+                        const { getInfiniteQuizzes } = await import('../quiz/statistics')
                         const [seedVersions] = getInfiniteQuizzes(JSON.parse((localStorage.quiz_history || '{}') as string) as QuizHistory, false)
                         if (seedVersions.length > 0) {
                             const [seed, version] = seedVersions[0]
@@ -511,6 +512,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         }
                     }
                     if (updatedDescriptor.v === undefined) {
+                        const { validQuizInfiniteVersions } = await import('../quiz/infinite')
                         updatedDescriptor.v = Math.max(...validQuizInfiniteVersions)
                     }
                     quizDescriptor = { kind: 'infinite', name: `I_${updatedDescriptor.seed}_${updatedDescriptor.v}`, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
@@ -564,7 +566,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: await mapSettingsFromURLParam(newDescriptor.settings),
                     mapperPanel: (await import('../components/mapper-panel')).MapperPanel,
                 },
                 newPageDescriptor: newDescriptor,
@@ -573,7 +575,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
     }
 }
 
-function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
+async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
+    const { defaultSettings } = await import('../mapper/settings')
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
