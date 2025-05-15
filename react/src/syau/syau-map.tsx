@@ -1,4 +1,4 @@
-const maplibregl = await import('../../node_modules/maplibre-gl/dist/maplibre-gl.js')
+import maplibregl from 'maplibre-gl'
 
 import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
 import { ICoordinate } from '../utils/protos'

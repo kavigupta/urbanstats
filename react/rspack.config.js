@@ -15,7 +15,6 @@ export default env => ({
         filename: '[name].js',
         path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
-        chunkFilename: '[name].js'
     },
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
@@ -63,12 +62,19 @@ export default env => ({
         maxEntrypointSize: 3.5 * Math.pow(2, 20)
     },
     optimization: {
+        splitChunks: {
+            cacheGroups: {
+                someLib: {
+                    test: /maplibre/,
+                    name: 'maplibre',
+                },
+            },
+        },
         minimizer: [
             new rspack.SwcJsMinimizerRspackPlugin({
               exclude: /maplibre/
             }),
             new rspack.LightningCssMinimizerRspackPlugin(),
         ],
-        chunkIds: 'named'
     }
 })
