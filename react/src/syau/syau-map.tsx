@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl'
+import maplibregl, { LngLatLike } from 'maplibre-gl'
 
 import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
 import { ICoordinate } from '../utils/protos'
@@ -130,7 +130,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         const polysOnScreen: { name: string, isGuessed: boolean }[] = []
 
         for (const feature of features) {
-            const coords: maplibregl.LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as maplibregl.LngLatLike
+            const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const props = feature.properties as (
                 { populationGuessed: number, population: number, isGuessed: number, existence: number } &
 

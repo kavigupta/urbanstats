@@ -29,7 +29,7 @@ import {
 } from '../quiz/quiz'
 import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
-import { SYAUPanel } from '../syau/syau-panel'
+import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
