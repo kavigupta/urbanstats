@@ -28,5 +28,5 @@ urbanstatsFixture('pollution', `/article.html?longname=California%2C+USA&s=${pol
 
 test('pollution-not-negative-test', async (t: TestController) => {
     await goToExtremeArticle(t)
-    await t.expect(await dataValues()).eql(['0'])
+    await t.expect(await dataValues()).eql(['0.00'])
 })
