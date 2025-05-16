@@ -27,12 +27,12 @@ export default env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { 
-                test: /\.m?js$/, loader: 'builtin:swc-loader', 
-                resolve: { fullySpecified: false }, 
+            {
+                test: /\.m?js$/, loader: 'builtin:swc-loader',
+                resolve: { fullySpecified: false },
                 exclude: [
                     path.resolve(import.meta.dirname, 'node_modules/maplibre-gl')
-                ] 
+                ]
             },
             {
                 test: /\.css$/i,
@@ -57,7 +57,7 @@ export default env => ({
         },
     },
     performance: {
-        hints: isProduction ? 'error': false,
+        hints: isProduction ? 'error' : false,
         maxAssetSize: 1_100_000,
         maxEntrypointSize: 1_100_000
     },
@@ -72,7 +72,7 @@ export default env => ({
         },
         minimizer: [
             new rspack.SwcJsMinimizerRspackPlugin({
-              exclude: /maplibre/ // MapLibre starts having race conditions if minimized
+                exclude: /maplibre/ // MapLibre starts having race conditions if minimized
             }),
             new rspack.LightningCssMinimizerRspackPlugin(),
         ],
