@@ -575,7 +575,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         void (async () => {
                             const { addFriendFromLink } = await quizImport
                             await addFriendFromLink(friendId, friendName)
-                        })
+                        })()
                     }
                 },
             }
