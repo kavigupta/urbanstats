@@ -76,7 +76,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private exist_this_time: string[] = []
     protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
-    protected onAutoZoomCallbacks: (() => void)[] = []
 
     constructor(props: P) {
         super(props)
@@ -474,9 +473,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
-            for (const callback of this.onAutoZoomCallbacks) {
-                callback()
-            }
             this.zoomToItems([geojson], { animate: false })
         }
 
