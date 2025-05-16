@@ -37,22 +37,27 @@ export async function startProxy(): Promise<void> {
 
     const app = express()
 
-    app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {
-        proxyReqPathResolver(req) {
-            return `/densitydb/densitydb.github.io/${branch}${req.path}`
-        },
-        userResHeaderDecorator(headers, userReq) {
-            const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
-            const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
-            const { 'content-security-policy': _, ...filteredHeaders } = headers
-            return {
-                ...filteredHeaders,
-                'content-type': mimeType ?? headers['content-type'],
-                ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
-            }
-        },
-    }))
+    app.use(
+        express.static('test/density-db'),
+        branch === 'master'
+            ? proxy('https://urbanstats.org')
+            : proxy('https://raw.githubusercontent.com', {
+                proxyReqPathResolver(req) {
+                    return `/densitydb/densitydb.github.io/${branch}${req.path}`
+                },
+                userResHeaderDecorator(headers, userReq) {
+                    const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
+                    const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
+                    const { 'content-security-policy': _, ...filteredHeaders } = headers
+                    return {
+                        ...filteredHeaders,
+                        'content-type': mimeType ?? headers['content-type'],
+                        ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+                    }
+                },
+            }),
+    )
 
     app.listen(8000)
 }
