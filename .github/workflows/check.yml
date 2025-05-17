@@ -143,7 +143,7 @@ jobs:
             --time-limit-seconds=700
         working-directory: react
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.READ_TOKEN }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -191,4 +191,4 @@ jobs:
             --proxy=true
         working-directory: react
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.READ_TOKEN }}
