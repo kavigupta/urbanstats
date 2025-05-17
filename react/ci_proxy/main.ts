@@ -22,7 +22,7 @@ async function update(): Promise<void> {
         for (const branch of branches) {
             if (existsSync(repoPath(branch))) {
                 await execa('git', ['fetch'], { stdio: 'inherit', cwd: repoPath(branch) })
-                if ((await execa('git', ['rev-parse', 'HEAD'])).stdout !== (await execa('git', ['rev-parse', `${origin}/branch`])).stdout) {
+                if ((await execa('git', ['rev-parse', 'HEAD'])).stdout !== (await execa('git', ['rev-parse', `origin/${branch}`])).stdout) {
                     await execa('git', ['reset', '--hard', `origin/${branch}`], { stdio: 'inherit', cwd: repoPath(branch) })
                 }
             }
