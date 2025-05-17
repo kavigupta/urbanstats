@@ -10,7 +10,7 @@ const targetPath = join(import.meta.dirname, 'densitydb.github.io')
 if (!existsSync(targetPath)) {
     console.warn('Repository not found. Cloning...')
     try {
-        await execa(`git`, ['clone', '--mirror', repoUrl, targetPath], { stdio: 'inherit' })
+        await execa(`git`, ['clone', '--mirror', '--progress', repoUrl, targetPath], { stdio: 'inherit' })
         console.warn('Repository cloned successfully.')
     }
     catch (error) {
