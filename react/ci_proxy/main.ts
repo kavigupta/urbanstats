@@ -2,7 +2,6 @@ import { existsSync } from 'fs'
 import { readdir, rm } from 'fs/promises'
 import { join } from 'path'
 
-import compression from 'compression'
 import { execa } from 'execa'
 import express from 'express'
 
@@ -46,8 +45,6 @@ async function update(): Promise<void> {
 void update()
 
 const app = express()
-
-app.use(compression())
 
 app.use((req, res, next) => {
     express.static(repoPath(req.headers['x-branch'] as string | undefined ?? 'master'))(req, res, next)
