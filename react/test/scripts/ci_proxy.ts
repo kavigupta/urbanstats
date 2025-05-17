@@ -35,7 +35,7 @@ export async function startProxy(): Promise<void> {
 
     app.use(
         express.static('test/density-db'),
-        proxy('https://urbanstats-ci-proxy.fly.dev', {
+        proxy('http://168.235.104.155:8001', {
             proxyReqOptDecorator(proxyReqOpts) {
                 return {
                     ...proxyReqOpts,
