@@ -6,9 +6,9 @@ COPY main.mts main.mts
 
 RUN npm ci
 
-RUN git config --global pack.windowMemory "512m"
-RUN git config --global pack.packSizeLimit "512m"
-RUN git config --global pack.threads "2"
+RUN git config --global pack.windowMemory "256m"
+RUN git config --global pack.packSizeLimit "256m"
+RUN git config --global pack.threads "1"
 
 ENTRYPOINT ["npx", "tsx", "main.mts"]
 

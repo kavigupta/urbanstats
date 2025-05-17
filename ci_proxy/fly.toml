@@ -17,9 +17,9 @@ primary_region = 'sjc'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '512mb'
   cpu_kind = 'shared'
-  cpus = 2
+  cpus = 1
 
 [mounts]
   source = "densitydb"
