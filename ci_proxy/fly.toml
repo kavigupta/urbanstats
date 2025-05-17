@@ -17,8 +17,8 @@ primary_region = 'sjc'
   processes = ['app']
 
 [[vm]]
-  memory = '512mb'
-  cpu_kind = 'shared'
+  memory = '2G'
+  cpu_kind = 'performance'
   cpus = 1
 
 [mounts]

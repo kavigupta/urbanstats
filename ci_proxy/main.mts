@@ -2,14 +2,29 @@ import { join } from 'path'
 
 import { execa } from 'execa'
 import express from 'express'
+import { existsSync } from "fs"
 
 // Git repo must be manually initialized
 // Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
 
-const targetPath = join(import.meta.dirname, 'densitydb', 'densitydb.github.io')
+const bareRepo = join(import.meta.dirname, 'densitydb', 'densitydb.github.io')
+
+function repoPath(branch: string): string {
+    return join(import.meta.dirname, 'densitydb', 'repos', branch)
+}
 
 async function update(): Promise<void> {
-    execa(`git`, ['remote', 'update', '--prune'], { cwd: targetPath, stdio: 'inherit', reject: false })
+    await execa(`git`, ['remote', 'update', '--prune'], { cwd: bareRepo, stdio: 'inherit', reject: false })
+    const { stdout: branchesOutput } = await execa('git', ['branch'], { cwd: bareRepo })
+    const branches = Array.from(branchesOutput.matchAll(/^\*? {1,2}(.+)$/mg)).map(([, branch]) => branch)
+    for (const branch of branches) {
+        if (existsSync(repoPath(branch))) {
+            await execa('git', ['fetch'], { stdio: 'inherit', cwd: repoPath(branch) })
+            await execa('git', ['reset', '--hard', `origin/${branch}`], { stdio: 'inherit', cwd: repoPath(branch) })
+        } else {
+            await execa('git', ['clone', '--branch', branch, bareRepo, repoPath(branch)], { stdio: 'inherit' })
+        }
+    }
     setTimeout(update, 60 * 1000)
 }
 
@@ -17,23 +32,8 @@ void update()
 
 const app = express()
 
-app.use(async (req, res) => {
-    let path = decodeURIComponent(req.path.slice(1))
-    if (path === '') {
-        path = 'index.html'
-    }
-    const object = `${req.headers['x-branch'] ?? 'master'}:${path}`
-    if ((await execa('git', ['cat-file', '-e', object], { cwd: targetPath, reject: false })).exitCode === 128) {
-        console.warn(`Not found: ${object}`)
-        res.sendStatus(404)
-        return
-    }
-    const fileExtension = (/\.(.+)$/.exec(path))?.[1]
-    const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-    if (mimeType !== undefined) {
-        res.setHeader('content-type', mimeType)
-    }
-    execa('git', ['cat-file', '-p', object], { cwd: targetPath }).stdout!.pipe(res)
+app.use((req, res, next) => {
+    express.static(repoPath(req.headers['x-branch'] as string | undefined ?? 'master'))(req, res, next)
 })
 
 app.listen(8001)
