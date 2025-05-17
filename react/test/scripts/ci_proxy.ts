@@ -11,10 +11,6 @@ import express from 'express'
 import proxy from 'express-http-proxy'
 
 export async function startProxy(): Promise<void> {
-    if (process.env.GITHUB_TOKEN === undefined) {
-        console.warn('GITHUB_TOKEN is not present, may get 429 too many requests')
-    }
-
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *
@@ -49,7 +45,8 @@ export async function startProxy(): Promise<void> {
             return {
                 ...filteredHeaders,
                 'content-type': mimeType ?? headers['content-type'],
-                ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
+                // Temporarily include this read-only token for testing
+                'authorization': `Bearer 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`,
             }
         },
     }))
