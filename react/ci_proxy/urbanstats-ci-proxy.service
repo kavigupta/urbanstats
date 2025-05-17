@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/bin/bash -c "source /root/.bashrc && cd /root/urbanstats/react/ci_proxy && npx tsx main.ts"
+ExecStart=/usr/bin/env bash -c "cd /root/urbanstats/react/ci_proxy && npx tsx main.ts"
 
 [Install]
 WantedBy=multi-user.target

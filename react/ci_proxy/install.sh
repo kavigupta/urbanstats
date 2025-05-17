@@ -17,5 +17,6 @@ sed -i -e 's/user www-data/user root/g' /etc/nginx/nginx.conf
 service nginx restart
 
 cp /root/urbanstats/react/ci_proxy/urbanstats-ci-proxy.service /etc/systemd/system
+systemctl daemon-reload
 service urbanstats-ci-proxy start
 service urbanstats-ci-proxy enable
