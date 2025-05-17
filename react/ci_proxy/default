@@ -1,0 +1,14 @@
+# nginx configuration
+
+server {
+    listen 80;
+
+    location / {
+        set $branch $http_x_branch;
+        if ($branch = "") {
+            set $branch "master";
+        }
+        root /root/urbanstats/react/ci_proxy/densitydb/repos/$branch;
+        try_files $uri $uri/ =404;
+    }
+}
