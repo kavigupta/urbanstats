@@ -20,3 +20,7 @@ primary_region = 'sjc'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 2
+
+[mounts]
+  source = "densitydb"
+  destination = "densitydb"

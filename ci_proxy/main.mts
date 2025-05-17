@@ -1,30 +1,19 @@
-import { existsSync } from 'fs'
 import { join } from 'path'
 
 import { execa } from 'execa'
 import express from 'express'
 
-const repoUrl = 'https://github.com/densitydb/densitydb.github.io.git'
-const targetPath = join(import.meta.dirname, 'densitydb.github.io')
+// Git repo must be manually initialized
+// Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
 
-if (!existsSync(targetPath)) {
-    console.warn('Repository not found. Cloning...')
-    try {
-        await execa(`git`, ['clone', '--mirror', '--progress', repoUrl, targetPath], { stdio: 'inherit' })
-        console.warn('Repository cloned successfully.')
-    }
-    catch (error) {
-        console.error('Failed to clone repository:', error)
-    }
-}
-else {
-    console.warn('Repository already exists.')
-    await execa(`git`, ['remote', 'update', '--prune'], { cwd: targetPath, stdio: 'inherit' })
+const targetPath = join(import.meta.dirname, 'densitydb', 'densitydb.github.io')
+
+async function update(): Promise<void> {
+    execa(`git`, ['remote', 'update', '--prune'], { cwd: targetPath, stdio: 'inherit', reject: false })
+    setTimeout(update, 60 * 1000)
 }
 
-setInterval(() => {
-    void execa(`git`, ['remote', 'update', '--prune'], { cwd: targetPath, stdio: 'inherit' })
-}, 60 * 1000)
+void update()
 
 const app = express()
 
