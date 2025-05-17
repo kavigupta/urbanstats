@@ -13,6 +13,7 @@ deg_2_ghs_index = 60 * 2  # 30 arcseconds
 @dataclass(frozen=True)
 class PollutionGriddedData(GriddedDataSource):
     version: int = 2
+
     # pylint: disable=method-cache-max-size-none
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
