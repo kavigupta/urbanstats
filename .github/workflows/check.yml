@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 20
       - uses: ./.github/actions/node_modules
-      - run: npx eslint .
+      - run: npm run lint:ci
         working-directory: react
 
   build-and-push-common-image:
@@ -140,7 +140,7 @@ jobs:
             --parallel=1 \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=1000
+            --time-limit-seconds=500
         working-directory: react
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

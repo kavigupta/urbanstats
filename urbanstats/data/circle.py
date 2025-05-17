@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
 
-from urbanstats.data.gpw import load_full_ghs
+from urbanstats.data.gpw import load_full_ghs_30_arcsec
 from urbanstats.data.population_overlays import (
     direct_population_overlay,
     relevant_regions,
@@ -527,7 +527,7 @@ def overlapping_circles_frame(
     country_shapefile, population, suffix, max_radius_in_chunks=20
 ):
     print(f"population circles being computed for {suffix}")
-    ghs = load_full_ghs()
+    ghs = load_full_ghs_30_arcsec()
     circles = overlapping_circles_fast(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
     )
@@ -759,10 +759,10 @@ pc_types = {x + " Person Circle" for x in named_populations.values()}
 def create_circle_image(population):
     print("Computing circles for population", population)
     circles = overlapping_circles_fast(
-        load_full_ghs(), population, limit=10**9, max_radius_in_chunks=20
+        load_full_ghs_30_arcsec(), population, limit=10**9, max_radius_in_chunks=20
     )
     print("Creating image for population", population)
-    out = create_rgb_image(load_full_ghs(), circles, 5)
+    out = create_rgb_image(load_full_ghs_30_arcsec(), circles, 5)
     return out
 
 
