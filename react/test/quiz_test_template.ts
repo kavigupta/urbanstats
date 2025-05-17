@@ -56,6 +56,13 @@ function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number,
     return quizHistory
 }
 
+async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
+    const text = await Selector('#quiz-result-summary-words').innerText
+    await t.expect(text).eql(words)
+    const emojiText = await Selector('#quiz-result-summary-emoji').innerText
+    await t.expect(emojiText).eql(emoji)
+}
+
 export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture(
         'quiz clickthrough test on empty background',
@@ -325,13 +332,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         platform,
     )
 
-    async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
-        const text = await Selector('#quiz-result-summary-words').innerText
-        await t.expect(text).eql(words)
-        const emojiText = await Selector('#quiz-result-summary-emoji').innerText
-        await t.expect(emojiText).eql(emoji)
-    }
-
     test('quiz-results-test', async (t) => {
         await safeReload(t)
         await quizScreencap(t)
@@ -395,7 +395,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo('/quiz.html#date=95')
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
+}
 
+export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture('export quiz progress', `${target}/quiz.html#date=90`,
         {
             quiz_history: JSON.stringify({
@@ -685,14 +687,16 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
     })
 
-    quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
-        debug_quiz_transition: '15000',
+    const debugTime = 25
+
+    quizFixture(`current juxta ending in ${debugTime}s`, `${target}/quiz.html`, {
+        debug_quiz_transition: `${debugTime * 1000}`,
     }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
-        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.click(Selector('a', { timeout: debugTime * 1000 }).withExactText('Next Quiz'))
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
     })
 

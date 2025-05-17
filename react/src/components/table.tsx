@@ -539,6 +539,7 @@ export function TableRowContainer({ children, index }: { children: React.ReactNo
     }
     return (
         <div
+            className="for-testing-table-row"
             style={style}
         >
             {children}
