@@ -1,8 +1,8 @@
+import { existsSync } from 'fs'
 import { join } from 'path'
 
 import { execa } from 'execa'
 import express from 'express'
-import { existsSync } from "fs"
 
 // Git repo must be manually initialized
 // Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
@@ -21,7 +21,8 @@ async function update(): Promise<void> {
         if (existsSync(repoPath(branch))) {
             await execa('git', ['fetch'], { stdio: 'inherit', cwd: repoPath(branch) })
             await execa('git', ['reset', '--hard', `origin/${branch}`], { stdio: 'inherit', cwd: repoPath(branch) })
-        } else {
+        }
+        else {
             await execa('git', ['clone', '--branch', branch, bareRepo, repoPath(branch)], { stdio: 'inherit' })
         }
     }
