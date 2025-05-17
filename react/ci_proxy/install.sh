@@ -23,5 +23,5 @@ service nginx restart
 
 cp /root/urbanstats/react/ci_proxy/urbanstats-ci-proxy.service /etc/systemd/system
 systemctl daemon-reload
-service urbanstats-ci-proxy start
-service urbanstats-ci-proxy enable
+systemctl start urbanstats-ci-proxy.service
+systemctl enable urbanstats-ci-proxy.service

@@ -14,3 +14,9 @@ A server runs two components:
 - `nginx` Uses the configuration in `default` to serve the files in `densitydb/repos/*`. Translates the `x-branch` header into the appropriate branch (or `master`) if absent.
   - We use `nginx` because it performs very well, when running lots of CI jobs there can be quite a bit of demand.
   - This also means you can restart `main.ts` without interrupting ongoing CI jobs.
+
+## Installation
+
+Clone this repo.
+
+Run `./install.sh` in this folder. Assumes root user. Tested on Ubuntu 24.04
