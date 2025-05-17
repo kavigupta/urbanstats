@@ -3,7 +3,6 @@ import { readdir, rm } from 'fs/promises'
 import { join } from 'path'
 
 import { execa } from 'execa'
-import express from 'express'
 
 // Git repo must be manually initialized
 // Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
@@ -39,15 +38,7 @@ async function update(): Promise<void> {
     catch (e) {
         console.error(e)
     }
-    setTimeout(update, 60 * 1000)
+    setTimeout(update, 10 * 1000)
 }
 
 void update()
-
-const app = express()
-
-app.use((req, res, next) => {
-    express.static(repoPath(req.headers['x-branch'] as string | undefined ?? 'master'))(req, res, next)
-})
-
-app.listen(8001)
