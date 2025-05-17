@@ -139,7 +139,7 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
     // no overlap: both are forced onto the screen
     await t.expect(await checkboxStatus('US Census')).eql('missing')
     await t.expect(await checkboxStatus('GHSL')).eql('missing')
-    await t.expect(await dataValues()).eql(['119', '419'])
+    await t.expect(await dataValues()).eql(['119', '420'])
     await screencap(t)
     await t.click(Selector('.disclaimer-toggle'))
     await screencap(t)
@@ -190,11 +190,11 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.9', '40.4'])
+    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.8', '40.4'])
     await checkTextboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
-    await t.expect(await dataValues()).eql(['20.9', '40.4'])
+    await t.expect(await dataValues()).eql(['20.8', '40.4'])
     // disabled so this does nothing
     await checkTextboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)

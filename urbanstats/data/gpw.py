@@ -32,6 +32,13 @@ def load_full_ghs_30_arcsec():
     return load_ghs_from_path(path, resolution=60 * 60 // 30)
 
 
+def load_full_ghs_3arcsec_zarr():
+    result = GeoTiff(
+        "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0.tif"
+    )
+    return result.read()
+
+
 def load_full_ghs_30arcsec_zarr():
     return cached_zarr_array(
         "named_region_shapefiles/gpw/zarr/ghs_population", load_full_ghs_30_arcsec
@@ -39,9 +46,11 @@ def load_full_ghs_30arcsec_zarr():
 
 
 def load_full_ghs_zarr(resolution):
+    if resolution == 1200:
+        return load_full_ghs_3arcsec_zarr()
     if resolution == 120:
         return load_full_ghs_30arcsec_zarr()
-    raise ValueError(f"Resolution must be 120, not {resolution}")
+    raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
 
 
 def load_ghs_from_path(path, resolution):
@@ -109,6 +118,7 @@ def compute_circle_density_per_cell_zarr(radius, resolution):
     )
     if os.path.exists(path):
         return zarr.open(path, mode="r")["data"]
+    print("Computing density for radius", radius)
     glo = load_full_ghs_zarr(resolution)
     glo_dask = dask.array.from_zarr(glo)
     [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
@@ -249,10 +259,10 @@ def compute_gpw_weighted_for_shape(
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_raster",
+    "urbanstats/data/gpw/compute_gpw_for_shape_raster_6",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
-def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution):
+def compute_gpw_for_shape_raster(shape, collect_density=True, resolution=1200):
     glo = load_full_ghs_zarr(resolution)
     if collect_density:
         dens_by_radius = {
@@ -266,7 +276,11 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution):
     pop_sum = np.nansum(pop)
     if collect_density:
         dens_selected = {
-            k: dens_by_radius[k][row_selected, col_selected] for k in GPW_RADII
+            k: np.nan_to_num(
+                dens_by_radius[k][row_selected, col_selected],
+                nan=0,
+            )
+            for k in GPW_RADII
         }
         hists = {
             f"gpw_pw_density_histogram_{k}": produce_histogram(dens, pop)
@@ -283,7 +297,7 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution):
     return dict(gpw_population=pop_sum, **density), hists
 
 
-def select_points_in_shape(shape, glo, resolution):
+def select_points_in_shape(shape, glo, *, resolution):
     lats, lon_starts, lon_ends = rasterize_using_lines(shape, resolution=resolution)
     row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
     return row_selected, col_selected

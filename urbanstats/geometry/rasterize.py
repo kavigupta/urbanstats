@@ -48,7 +48,7 @@ def from_col_idx(col, resolution):
 
 
 @permacache(
-    "urbanstats/geometry/rasterize/rasterize_using_lines_2",
+    "urbanstats/geometry/rasterize/rasterize_using_lines_6",
     key_function=dict(
         shape=lambda x: stable_hash(shapely.to_geojson(x)),
     ),
@@ -85,7 +85,7 @@ def rasterize_using_lines(shape, resolution):
     latitudes = coordinates[:, 0, 1]
     longitudes = coordinates[:, :, 0]
     rows = to_row_idx(latitudes, resolution) - 0.5
-    rows = rows.astype(np.int32)
+    rows = np.round(rows).astype(np.int32)
     cols = to_col_idx(longitudes, resolution) - 0.5
     lon_start = np.ceil(cols[:, 0]).astype(np.int32)
     lon_start = np.clip(lon_start, 0, 360 * resolution - 1)
@@ -95,6 +95,12 @@ def rasterize_using_lines(shape, resolution):
     rows = rows[mask]
     lon_start = lon_start[mask]
     lon_end = lon_end[mask]
+    # see notebooks/gpw-alignment.ipynb to confirm these are correct.
+    if resolution == 1200:
+        # 60 * 60 * 180 // 3 - global_map.shape[0] = 2178, half of this is 1089
+        rows = rows - 1089
+    elif resolution == 120:
+        rows = rows - 1
     return rows, lon_start, lon_end
 
 

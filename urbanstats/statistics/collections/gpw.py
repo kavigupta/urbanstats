@@ -48,7 +48,7 @@ class GPWStatistics(InternationalStatistics):
     ):
         statistics_table = {}
 
-        result, hists = compute_gpw_data_for_shapefile(shapefile, resolution=120)
+        result, hists = compute_gpw_data_for_shapefile(shapefile, resolution=1200)
         for k, rk in result.items():
             statistics_table[k] = rk
         for k, hk in hists.items():
