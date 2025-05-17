@@ -1,13 +1,17 @@
+import os
+
+import dask.array
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
+import zarr
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
 from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_lines
-from urbanstats.utils import compute_bins
+from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
 
@@ -26,6 +30,18 @@ GPW_LAND_PATH = (
 def load_full_ghs_30_arcsec():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path, resolution=60 * 60 // 30)
+
+
+def load_full_ghs_30arcsec_zarr():
+    return cached_zarr_array(
+        "named_region_shapefiles/gpw/zarr/ghs_population", load_full_ghs_30_arcsec
+    )
+
+
+def load_full_ghs_zarr(resolution):
+    if resolution == 120:
+        return load_full_ghs_30arcsec_zarr()
+    raise ValueError(f"Resolution must be 120, not {resolution}")
 
 
 def load_ghs_from_path(path, resolution):
@@ -87,35 +103,117 @@ def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100, *, resolut
     }
 
 
-@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2.5")
-def compute_circle_density_per_cell(
+def compute_circle_density_per_cell_zarr(radius, resolution):
+    path = (
+        f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km_res_{resolution}"
+    )
+    if os.path.exists(path):
+        return zarr.open(path, mode="r")["data"]
+    glo = load_full_ghs_zarr(resolution)
+    glo_dask = dask.array.from_zarr(glo)
+    [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
+    with zarr.open(path, mode="w") as z:
+        z.create_dataset("data", shape=glo.shape)
+        sum_in_radius(
+            radius,
+            glo_dask,
+            row_idxs,
+            z["data"],
+            multiplier=1 / (np.pi * radius**2),
+            resolution=resolution,
+        )
+    return compute_circle_density_per_cell_zarr(radius, resolution)
+
+
+class ChunkedAssigner:
+    def __init__(self, out, chunk_size):
+        self.out = out
+        self.chunk_size = chunk_size
+        self.current_start = 0
+        self.cache = np.zeros((chunk_size, *out.shape[1:]), dtype=out.dtype)
+
+    def assign(self, row_idx, value):
+        if row_idx >= self.current_start + self.chunk_size:
+            self.flush()
+            self.current_start = row_idx
+        self.cache[row_idx - self.current_start] = value
+
+    def flush(self):
+        self.out[self.current_start : self.current_start + self.chunk_size] = self.cache
+        self.current_start = "invalid"
+        self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
+
+
+def sum_in_radius(
     radius,
-    longitude_start=0,
-    longitude_end=None,
-    latitude_start=0,
-    latitude_end=None,
+    global_map,
+    row_idxs,
+    out,
+    multiplier=1,
     *,
     resolution,
+    loading_chunk=1000,
+    saving_chunk=1000,
 ):
-    glo = load_full_ghs_30_arcsec()
-    glo = glo[:, longitude_start:longitude_end]
-    glo_zero = np.nan_to_num(glo, 0)
-    [row_idxs] = np.where((glo_zero[latitude_start:latitude_end] != 0).any(axis=1))
-    row_idxs += latitude_start
-    out = np.zeros_like(glo_zero)
-    out = sum_in_radius(radius, glo_zero, row_idxs, out, resolution=resolution)
-    out = out / (np.pi * radius**2)
-    return out
+    # pylint: disable=too-many-locals
+    assigner = ChunkedAssigner(out, saving_chunk)
+    loading_start = -float("inf")
+    local_array = None
+    local_array_cumsum = None
 
+    def fetch_chunk_for(start, end):
+        nonlocal loading_start, local_array, local_array_cumsum
+        assert start >= loading_start
+        if end >= loading_start + loading_chunk:
+            loading_start = start
+            assert end < loading_start + loading_chunk
+            local_array = np.array(
+                global_map[loading_start : loading_start + loading_chunk]
+            )
+            local_array_cumsum = np.cumsum(local_array, axis=1)
 
-def sum_in_radius(radius, global_map, row_idxs, out, *, resolution):
+    fetch_chunk_for(0, 0)
     for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
         overlaps = compute_cell_overlaps_with_circle(
             radius, row_idx, grid_size=40, resolution=resolution
         )
-        for (source_row, off), weight in overlaps.items():
-            out[row_idx] += np.roll(global_map[source_row], -off) * weight
+        rows = [row for row, _ in overlaps.keys()]
+        fetch_chunk_for(min(rows), max(rows))
+        result_for_row = compute_convolution(
+            loading_start, local_array, local_array_cumsum, overlaps
+        )
+
+        assigner.assign(row_idx, result_for_row * multiplier)
+    assigner.flush()
     return out
+
+
+def compute_convolution(
+    array_row_idx_base, local_array, local_array_cumsum, filter_to_convolve
+):
+    source_rows = {source_row for source_row, _ in filter_to_convolve.keys()}
+    result_for_row = 0
+    for source_row in source_rows:
+        local_row = local_array[source_row - array_row_idx_base]
+        local_row_cumsum = local_array_cumsum[source_row - array_row_idx_base]
+        columns = [off for sr, off in filter_to_convolve.keys() if sr == source_row]
+        consecutives = []
+        for off in range(-max(columns), max(columns) + 1):
+            if filter_to_convolve[source_row, off] > 1 - 1e-5:
+                consecutives.append(off)
+                continue
+            result_for_row += (
+                np.roll(local_row, -off) * filter_to_convolve[(source_row, off)]
+            )
+        if not consecutives:
+            continue
+        lo, hi = min(consecutives), max(consecutives)
+        assert len(consecutives) == hi - lo + 1
+        delta = (
+            np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
+        ) % local_row_cumsum[-1]
+        result_for_row += delta
+    return result_for_row
 
 
 def produce_histogram(density_data, population_data):
@@ -154,15 +252,15 @@ def compute_gpw_weighted_for_shape(
     "urbanstats/data/gpw/compute_gpw_for_shape_raster",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
-def compute_gpw_for_shape_raster(shape, collect_density=True):
-    glo = load_full_ghs_30_arcsec()
-    resolution = 60 * 60 // 30
+def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution):
+    glo = load_full_ghs_zarr(resolution)
     if collect_density:
         dens_by_radius = {
-            k: compute_circle_density_per_cell(k, resolution=resolution)
-            for k in GPW_RADII
+            k: compute_circle_density_per_cell_zarr(k, resolution) for k in GPW_RADII
         }
-    row_selected, col_selected = select_points_in_shape(shape, glo, resolution)
+    row_selected, col_selected = select_points_in_shape(
+        shape, glo, resolution=resolution
+    )
     pop = glo[row_selected, col_selected]
 
     pop_sum = np.nansum(pop)
@@ -199,7 +297,9 @@ def select_points_in_shape(shape, glo, resolution):
         log=drop_if_equal(True),
     ),
 )
-def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
+def compute_gpw_data_for_shapefile(
+    shapefile, collect_density=True, log=True, *, resolution
+):
     """
     Compute the GHS-POP data for a shapefile.
     """
@@ -218,7 +318,7 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
         if log:
             print(longname)
         res, hists = compute_gpw_for_shape_raster(
-            shape, collect_density=collect_density
+            shape, collect_density=collect_density, resolution=resolution
         )
         if log:
             print(res)
