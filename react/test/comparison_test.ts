@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -116,15 +116,6 @@ async function checkboxStatus(name: string): Promise<string> {
         return 'disabled'
     }
     return 'enabled'
-}
-
-async function dataValues(): Promise<string[]> {
-    const selector = Selector('span').withAttribute('class', /testing-statistic-value/)
-    const values = [] as string[]
-    for (let i = 0; i < await selector.count; i++) {
-        values.push(await selector.nth(i).innerText)
-    }
-    return values
 }
 
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'

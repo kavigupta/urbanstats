@@ -11,7 +11,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class PollutionStatistics(GeographicStatistics):
-    version = 1
+    version = 2
 
     def name_for_each_statistic(self):
         return {
