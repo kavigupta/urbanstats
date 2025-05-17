@@ -1,0 +1,13 @@
+[Unit]
+Description=Urban Stats CI Proxy Service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/bin/bash -c "cd /root/urbanstats/react/ci_proxy && npx tsx main.ts"
+
+[Install]
+WantedBy=multi-user.target
