@@ -7,6 +7,7 @@
  * and then any files not generated, we'll proxy the request to densitydb on Github.
  */
 
+import { execa } from 'execa'
 import express from 'express'
 import proxy from 'express-http-proxy'
 
@@ -35,28 +36,18 @@ export async function startProxy(): Promise<void> {
     // This is useful for debugging in case the proxy isn't working
     console.warn('Proxy is using branch...', branch)
 
+    if (branch !== 'master') {
+        console.warn('Cloning repo...')
+        await execa('git', ['clone', '-b', branch, '--single-branch', '--depth', '1', 'https://github.com/densitydb/densitydb.github.io.git'], { stdio: 'inherit' })
+    }
+
     const app = express()
 
     app.use(
         express.static('test/density-db'),
         branch === 'master'
             ? proxy('https://urbanstats.org')
-            : proxy('https://raw.githubusercontent.com', {
-                proxyReqPathResolver(req) {
-                    return `/densitydb/densitydb.github.io/${branch}${req.path}`
-                },
-                userResHeaderDecorator(headers, userReq) {
-                    const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
-                    const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
-                    const { 'content-security-policy': _, ...filteredHeaders } = headers
-                    return {
-                        ...filteredHeaders,
-                        'content-type': mimeType ?? headers['content-type'],
-                        ...(process.env.GITHUB_TOKEN !== undefined ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
-                    }
-                },
-            }),
+            : express.static('densitydb.github.io'),
     )
 
     app.listen(8000)
