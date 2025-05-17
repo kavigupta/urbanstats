@@ -1,9 +1,9 @@
+import { existsSync } from 'fs'
 import { readdir, rm } from 'fs/promises'
 import { join } from 'path'
 
 import { execa } from 'execa'
 import express from 'express'
-import { existsSync } from "fs"
 
 // Git repo must be manually initialized
 // Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
@@ -33,7 +33,8 @@ async function update(): Promise<void> {
                 await rm(repoPath(branchFolder), { recursive: true, force: true })
             }
         }
-    } catch (e) {
+    }
+    catch (e) {
         console.error(e)
     }
     setTimeout(update, 60 * 1000)
