@@ -22,6 +22,14 @@ def format_radius(x):
     return f"{x:.0f}km"
 
 
+
+def format_radius(x):
+    if x < 1:
+        return f"{x * 1000:.0f}m"
+    assert x == int(x)
+    return f"{x:.0f}km"
+
+
 racial_demographics = {
     "hispanic": "P0020002",
     "white": "P0020005",
