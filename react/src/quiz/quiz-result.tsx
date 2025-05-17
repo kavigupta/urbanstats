@@ -208,8 +208,16 @@ function ShareButton(props: ShareButtonProps): ReactNode {
 }
 
 function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, medal, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
-    const colors = useColors()
     const juxtaColors = useJuxtastatColors()
+    const produceSummary = (): Promise<[string, string]> => summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
+    return <GenericShareButton buttonRef={buttonRef} produceSummary={produceSummary} />
+}
+
+export function GenericShareButton(props: {
+    buttonRef: React.RefObject<HTMLButtonElement>
+    produceSummary: () => Promise<[string, string]>
+}): ReactNode {
+    const colors = useColors()
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We need to check the condition for browser compatibility.
     const canShare = navigator.canShare?.({ url: 'https://juxtastat.org', text: 'test' }) ?? false
     const isShare = isMobile && canShare && !isFirefox
@@ -218,13 +226,13 @@ function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, med
         <button
             className="serif"
             style={buttonStyle(colors.hueColors.green)}
-            ref={buttonRef}
+            ref={props.buttonRef}
             onClick={async () => {
-                const [text, url] = await summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
+                const [text, url] = await props.produceSummary()
 
                 async function copyToClipboard(): Promise<void> {
                     await navigator.clipboard.writeText(`${text}\n${url}`)
-                    buttonRef.current!.textContent = 'Copied!'
+                    props.buttonRef.current!.textContent = 'Copied!'
                 }
 
                 if (isShare) {

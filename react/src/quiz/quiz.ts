@@ -82,7 +82,7 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-class StoredProperty<T> {
+export class StoredProperty<T> {
     private _value: T
     private observers = new Set<() => void>()
 
