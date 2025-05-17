@@ -4,7 +4,12 @@ apt update
 apt install -y unzip nginx
 
 curl -o- https://fnm.vercel.app/install | bash
-source /root/.bashrc
+# fnm
+FNM_PATH="/root/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "`fnm env --shell bash`"
+fi
 fnm install 22
 
 cd /root/urbanstats/react
