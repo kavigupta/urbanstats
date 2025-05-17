@@ -15,7 +15,7 @@ function repoPath(branch?: string): string {
 
 async function update(): Promise<void> {
     try {
-        await execa(`git`, ['remote', 'update', '--prune'], { cwd: bareRepo, stdio: 'inherit', reject: false })
+        await execa(`git`, ['remote', 'update', '--prune'], { cwd: bareRepo, stdio: 'inherit' })
         const { stdout: branchesOutput } = await execa('git', ['branch'], { cwd: bareRepo })
         const branches = Array.from(branchesOutput.matchAll(/^\*? {1,2}(.+)$/mg)).map(([, branch]) => branch)
         for (const branch of branches) {
@@ -38,7 +38,7 @@ async function update(): Promise<void> {
     catch (e) {
         console.error(e)
     }
-    setTimeout(update, 10 * 1000)
+    setTimeout(update, 30 * 1000)
 }
 
 void update()

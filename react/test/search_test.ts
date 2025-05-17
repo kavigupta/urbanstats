@@ -7,6 +7,7 @@ import {
     openInNewTabModifiers,
     waitForPageLoaded,
     pageDescriptorKind,
+    waitForSelectedSearchResult,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -15,6 +16,7 @@ test('search-test', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
     await screencap(t)
     await t
         .pressKey('enter')
