@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 from permacache import permacache, stable_hash
 
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
+from urbanstats.data.gpw import GPW_RADII, compute_gpw_data_for_shapefile
 
 
 @permacache(
@@ -32,7 +32,7 @@ def direct_population_overlay(frame, sh):
         ),
         collect_density=False,
         log=False,
-        resolution=120,
+        resolution_by_radius={k: 120 for k in GPW_RADII},
     )
     overlays["population"] = res["gpw_population"]
     return overlays
