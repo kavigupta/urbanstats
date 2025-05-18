@@ -166,11 +166,10 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                                     emoji,
                                     '',
                                 ]
-                                return Promise.resolve([
-                                    lines.join('\n'),
-                                    // TODO use the soyoureanurbanist.org link
-                                    document.location.href,
-                                ])
+                                // eslint-disable-next-line no-restricted-syntax -- Sharing
+                                const hash = window.location.hash
+                                const url = `https://soyoureanurbanist.org${hash === '' ? '' : `/${hash}`}`
+                                return Promise.resolve([lines.join('\n'), url])
                             }
                         }
                     />
