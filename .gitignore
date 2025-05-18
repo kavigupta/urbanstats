@@ -11,3 +11,4 @@ react/test/density-db
 venv/
 .envrc
 densitydb-site-repo/
+cache

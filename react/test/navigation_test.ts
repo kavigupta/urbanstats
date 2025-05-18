@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
+import { clickMapElement, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -34,7 +34,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.click(Selector('a').withText(/New York/))
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.scroll(0, 400)
-    await t.click(Selector('path[class*="Connecticut"]'))
+    await clickMapElement(t, /Connecticut/)
     await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
@@ -91,7 +91,7 @@ test('data credit hash from stats page', async (t) => {
 urbanstatsFixture('article page', '/article.html?longname=MN-08+in+Washington+County%2C+USA&s=CPiCUKKL5WuCCLpM24V')
 
 test('going to related resets scroll', async (t) => {
-    await t.click(Selector('a').withExactText('WI-07'))
+    await t.click(Selector('a').withExactText('WI-07 (2023)'))
     await t.expect(t.eval(() => window.scrollY)).eql(0)
 })
 

@@ -4,12 +4,6 @@ import { ZodError } from 'zod'
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { handleLoginCallback, LoginPanel } from '../components/LoginPanel'
-import { ArticlePanel } from '../components/article-panel'
-import { ComparisonPanel } from '../components/comparison-panel'
-import { MapperPanel } from '../components/mapper-panel'
-import { QuizPanel } from '../components/quiz-panel'
-import { StatisticPanel } from '../components/statistic-panel'
-import { DataCreditPanel } from '../data-credit'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
@@ -151,15 +145,15 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <ArticlePanel article={pageData.article} rows={pageData.rows} />
+                <pageData.articlePanel article={pageData.article} rows={pageData.rows} />
             )
         case 'comparison':
             return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
+                <pageData.comparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
             )
         case 'statistic':
             return (
-                <StatisticPanel
+                <pageData.statisticPanel
                     {...pageData}
                 />
             )
@@ -168,17 +162,19 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'about':
             return <AboutPanel />
         case 'dataCredit':
-            return <DataCreditPanel />
+            return <pageData.dataCreditPanel />
         case 'quiz':
             return (
-                <QuizPanel
+                <pageData.quizPanel
                     quizDescriptor={pageData.quizDescriptor}
                     todayName={pageData.todayName}
                     todaysQuiz={pageData.quiz}
                 />
             )
+        case 'syau':
+            return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
-            return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
+            return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'login':

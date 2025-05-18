@@ -3582,6 +3582,230 @@ export const Feature = $root.Feature = (() => {
     return Feature;
 })();
 
+export const PointSeries = $root.PointSeries = (() => {
+
+    /**
+     * Properties of a PointSeries.
+     * @exports IPointSeries
+     * @interface IPointSeries
+     * @property {Array.<ICoordinate>|null} [coords] PointSeries coords
+     */
+
+    /**
+     * Constructs a new PointSeries.
+     * @exports PointSeries
+     * @classdesc Represents a PointSeries.
+     * @implements IPointSeries
+     * @constructor
+     * @param {IPointSeries=} [properties] Properties to set
+     */
+    function PointSeries(properties) {
+        this.coords = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * PointSeries coords.
+     * @member {Array.<ICoordinate>} coords
+     * @memberof PointSeries
+     * @instance
+     */
+    PointSeries.prototype.coords = $util.emptyArray;
+
+    /**
+     * Creates a new PointSeries instance using the specified properties.
+     * @function create
+     * @memberof PointSeries
+     * @static
+     * @param {IPointSeries=} [properties] Properties to set
+     * @returns {PointSeries} PointSeries instance
+     */
+    PointSeries.create = function create(properties) {
+        return new PointSeries(properties);
+    };
+
+    /**
+     * Encodes the specified PointSeries message. Does not implicitly {@link PointSeries.verify|verify} messages.
+     * @function encode
+     * @memberof PointSeries
+     * @static
+     * @param {IPointSeries} message PointSeries message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    PointSeries.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.coords != null && message.coords.length)
+            for (let i = 0; i < message.coords.length; ++i)
+                $root.Coordinate.encode(message.coords[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified PointSeries message, length delimited. Does not implicitly {@link PointSeries.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof PointSeries
+     * @static
+     * @param {IPointSeries} message PointSeries message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    PointSeries.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a PointSeries message from the specified reader or buffer.
+     * @function decode
+     * @memberof PointSeries
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {PointSeries} PointSeries
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    PointSeries.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PointSeries();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.coords && message.coords.length))
+                        message.coords = [];
+                    message.coords.push($root.Coordinate.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a PointSeries message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof PointSeries
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {PointSeries} PointSeries
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    PointSeries.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a PointSeries message.
+     * @function verify
+     * @memberof PointSeries
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    PointSeries.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.coords != null && message.hasOwnProperty("coords")) {
+            if (!Array.isArray(message.coords))
+                return "coords: array expected";
+            for (let i = 0; i < message.coords.length; ++i) {
+                let error = $root.Coordinate.verify(message.coords[i]);
+                if (error)
+                    return "coords." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a PointSeries message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof PointSeries
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {PointSeries} PointSeries
+     */
+    PointSeries.fromObject = function fromObject(object) {
+        if (object instanceof $root.PointSeries)
+            return object;
+        let message = new $root.PointSeries();
+        if (object.coords) {
+            if (!Array.isArray(object.coords))
+                throw TypeError(".PointSeries.coords: array expected");
+            message.coords = [];
+            for (let i = 0; i < object.coords.length; ++i) {
+                if (typeof object.coords[i] !== "object")
+                    throw TypeError(".PointSeries.coords: object expected");
+                message.coords[i] = $root.Coordinate.fromObject(object.coords[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a PointSeries message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof PointSeries
+     * @static
+     * @param {PointSeries} message PointSeries
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    PointSeries.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.coords = [];
+        if (message.coords && message.coords.length) {
+            object.coords = [];
+            for (let j = 0; j < message.coords.length; ++j)
+                object.coords[j] = $root.Coordinate.toObject(message.coords[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this PointSeries to JSON.
+     * @function toJSON
+     * @memberof PointSeries
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    PointSeries.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for PointSeries
+     * @function getTypeUrl
+     * @memberof PointSeries
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    PointSeries.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/PointSeries";
+    };
+
+    return PointSeries;
+})();
+
 export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
 
     /**

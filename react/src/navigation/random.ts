@@ -5,8 +5,10 @@ import { isHistoricalCD } from '../utils/is_historical'
 import { SearchIndex } from '../utils/protos'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
-    const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
-    const populations = await loadJSON('/index/best_population_estimate.json') as number[]
+    const [index, populations] = await Promise.all([
+        loadProtobuf('/index/pages_all.gz', 'SearchIndex'),
+        loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
+    ])
     const totalWeight = populations.reduce((sum, x) => sum + x)
 
     return () => {

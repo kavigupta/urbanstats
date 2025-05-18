@@ -10,8 +10,8 @@ sys.path.append(location)
 
 from scripts.deploy_site import get_current_branch
 
-with open(os.path.expanduser("~/.github-token"), "r") as f:
-    GITHUB_TOKEN = f.read().strip()
+with open(os.path.expanduser("~/.github-token"), "r") as token:
+    GITHUB_TOKEN = token.read().strip()
 
 REPO = "kavigupta/urbanstats"
 
@@ -62,10 +62,10 @@ def get_action(pr):
     runs = data["workflow_runs"]
     assert len(runs) <= 1, "More than one action found (?)"
     if len(runs) == 0:
-        raise Exception("No actions found for PR: " + pr["html_url"])
+        raise RuntimeError("No actions found for PR: " + pr["html_url"])
     run = runs[0]
     if run["status"] != "completed":
-        raise Exception("Action is not completed")
+        raise RuntimeError("Action is not completed")
     return run
 
 
@@ -113,7 +113,7 @@ def main():
     delta_location = os.path.expanduser("~/Downloads/temp/delta")
 
     # delete and recreate the delta location
-    subprocess.run(["rm", "-rf", delta_location])
+    subprocess.run(["rm", "-rf", delta_location], check=False)
     os.makedirs(delta_location)
 
     unzip_artifact(artifacts["artifacts"], "delta", delta_location)

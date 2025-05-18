@@ -8,23 +8,24 @@ import { ClientFunction, Selector } from 'testcafe'
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
 import { target, mostRecentDownloadPath, safeReload, screencap, getLocation } from './test_utils'
 
-export async function runQuery(query: string): Promise<string> {
+export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
     const commandLine = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`
+    await t.wait(500)
     const result = await promisify(exec)(commandLine)
     return result.stdout
 }
 
-function juxtastatTable(): Promise<string> {
-    return runQuery('SELECT user, day, corrects from JuxtaStatIndividualStats')
+function juxtastatTable(t: TestController): Promise<string> {
+    return runQuery(t, 'SELECT user, day, corrects from JuxtaStatIndividualStats')
 }
 
-function retrostatTable(): Promise<string> {
-    return runQuery('SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat')
+function retrostatTable(t: TestController): Promise<string> {
+    return runQuery(t, 'SELECT user, week, corrects from JuxtaStatIndividualStatsRetrostat')
 }
 
-function secureIdTable(): Promise<string> {
-    return runQuery('SELECT user, secure_id from JuxtaStatUserSecureID')
+function secureIdTable(t: TestController): Promise<string> {
+    return runQuery(t, 'SELECT user, secure_id from JuxtaStatUserSecureID')
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Persisted data
@@ -53,6 +54,13 @@ function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number,
         }
     }
     return quizHistory
+}
+
+async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
+    const text = await Selector('#quiz-result-summary-words').innerText
+    await t.expect(text).eql(words)
+    const emojiText = await Selector('#quiz-result-summary-emoji').innerText
+    await t.expect(emojiText).eql(emoji)
 }
 
 export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void {
@@ -86,7 +94,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             return JSON.stringify(JSON.parse(localStorage.getItem('quiz_history')!))
         })
         await t.expect(quizHistory).eql('{"99":{"choices":["A","B","A","B","A"],"correct_pattern":[true,false,true,false,false]}}')
-        await t.expect(await juxtastatTable()).eql('7|99|5\n')
+        await t.expect(await juxtastatTable(t)).eql('7|99|5\n')
     })
 
     quizFixture(
@@ -109,9 +117,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             correct_pattern: [true, true, true, true, false],
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
-        await t.expect(await juxtastatTable()).eql('7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
+        await t.expect(await juxtastatTable(t)).eql('7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
         // check that the user was registered
-        await t.expect(await secureIdTable()).eql('7|3\n')
+        await t.expect(await secureIdTable(t)).eql('7|3\n')
     })
 
     quizFixture(
@@ -129,8 +137,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     test('quiz-trust-on-first-use', async (t) => {
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await t.expect(await juxtastatTable()).eql('7|30|0\n7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
-        await t.expect(await secureIdTable()).eql('7|3\n')
+        await t.expect(await juxtastatTable(t)).eql('7|30|0\n7|87|7\n7|88|15\n7|89|23\n7|90|7\n7|99|15\n')
+        await t.expect(await secureIdTable(t)).eql('7|3\n')
     })
 
     quizFixture(
@@ -151,8 +159,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         // authentication failure, so no change to the database
-        await t.expect(await juxtastatTable()).eql('7|30|0\n')
-        await t.expect(await secureIdTable()).eql('7|4\n')
+        await t.expect(await juxtastatTable(t)).eql('7|30|0\n')
+        await t.expect(await secureIdTable(t)).eql('7|4\n')
         await quizScreencap(t)
     })
 
@@ -183,7 +191,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             correct_pattern: [true, true, true, true, false],
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
-        await t.expect(await juxtastatTable()).eql('7|87|0\n7|88|0\n7|89|0\n7|90|0\n7|91|15\n7|92|7\n7|99|15\n')
+        await t.expect(await juxtastatTable(t)).eql('7|87|0\n7|88|0\n7|89|0\n7|90|0\n7|91|15\n7|92|7\n7|99|15\n')
     })
 
     quizFixture(
@@ -208,7 +216,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await quizScreencap(t)
-        await t.expect(await juxtastatTable()).eql(
+        await t.expect(await juxtastatTable(t)).eql(
             `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n`,
         )
         // assert no element with id quiz-audience-statistics
@@ -222,7 +230,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await quizScreencap(t)
-        await t.expect(await juxtastatTable()).eql(
+        await t.expect(await juxtastatTable(t)).eql(
             `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n` + `8|99|15\n`,
         )
         // assert element with id quiz-audience-statistics exists
@@ -258,10 +266,10 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         const [userId, secureId] = result!
         const userIdInt = hexToDec(userId)
         const secureIdInt = hexToDec(secureId)
-        const juxtaTable = await juxtastatTable()
+        const juxtaTable = await juxtastatTable(t)
         await t.expect(juxtaTable).eql(`${userIdInt}|99|15\n`)
-        await t.expect(await runQuery('SELECT user from JuxtastatUserDomain')).eql(`${userIdInt}\n`)
-        const secureTable = await secureIdTable()
+        await t.expect(await runQuery(t, 'SELECT user from JuxtastatUserDomain')).eql(`${userIdInt}\n`)
+        const secureTable = await secureIdTable(t)
         await t.expect(secureTable).eql(`${userIdInt}|${secureIdInt}\n`)
     })
 
@@ -294,8 +302,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             correct_pattern: [true, true, true, true, false],
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
-        await t.expect(await juxtastatTable()).eql('7|90|0\n7|91|15\n7|92|7\n7|93|23\n7|99|15\n')
-        await t.expect(await retrostatTable()).eql('7|30|0\n')
+        await t.expect(await juxtastatTable(t)).eql('7|90|0\n7|91|15\n7|92|7\n7|93|23\n7|99|15\n')
+        await t.expect(await retrostatTable(t)).eql('7|30|0\n')
     })
 
     test('quiz-retrostat-retrostat-reporting', async (t) => {
@@ -312,8 +320,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             correct_pattern: [false, false, true, false, true],
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
-        await t.expect(await juxtastatTable()).eql('7|90|0\n')
-        await t.expect(await retrostatTable()).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
+        await t.expect(await juxtastatTable(t)).eql('7|90|0\n')
+        await t.expect(await retrostatTable(t)).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
     })
 
     quizFixture(
@@ -323,13 +331,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         '',
         platform,
     )
-
-    async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
-        const text = await Selector('#quiz-result-summary-words').innerText
-        await t.expect(text).eql(words)
-        const emojiText = await Selector('#quiz-result-summary-emoji').innerText
-        await t.expect(emojiText).eql(emoji)
-    }
 
     test('quiz-results-test', async (t) => {
         await safeReload(t)
@@ -394,7 +395,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo('/quiz.html#date=95')
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
+}
 
+export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture('export quiz progress', `${target}/quiz.html#date=90`,
         {
             quiz_history: JSON.stringify({
@@ -684,14 +687,16 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
     })
 
-    quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
-        debug_quiz_transition: '10000',
+    const debugTime = 25
+
+    quizFixture(`current juxta ending in ${debugTime}s`, `${target}/quiz.html`, {
+        debug_quiz_transition: `${debugTime * 1000}`,
     }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
-        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.click(Selector('a', { timeout: debugTime * 1000 }).withExactText('Next Quiz'))
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
     })
 
@@ -796,7 +801,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(Selector('#quiz-result-summary-emoji').innerText).eql('🟥🟩🟩🟥🟥')
         await screencap(t)
         // no change to the database
-        await t.expect(await juxtastatTable()).eql('')
+        await t.expect(await juxtastatTable(t)).eql('')
         // refreshing brings us back to the same quiz
         await safeReload(t)
         await checkFirstQuestionPage()

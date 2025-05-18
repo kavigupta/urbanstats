@@ -5,6 +5,7 @@ import subprocess
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
+    output_boundaries,
     output_names,
 )
 from urbanstats.games.infinite.data import output_quiz_sampling_info
@@ -21,7 +22,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
-from urbanstats.special_cases import symlinks
+from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.output_statistics_metadata import (
@@ -33,6 +34,7 @@ from urbanstats.universe.icons import (
     place_icons_in_site_folder,
 )
 from urbanstats.universe.universe_list import all_universes, default_universes
+from urbanstats.website_data.centroids import export_centroids
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     create_symlink_gzips,
@@ -230,7 +232,7 @@ def build_urbanstats(
             create_article_gzips(
                 site_folder, shapefile_without_ordinals(), all_ordinals()
             )
-            create_symlink_gzips(site_folder, symlinks.symlinks)
+            create_symlink_gzips(site_folder, compute_symlinks())
 
         if not no_index:
             export_index(shapefile_without_ordinals(), site_folder)
@@ -244,6 +246,8 @@ def build_urbanstats(
             )
 
         full_consolidated_data(site_folder)
+        output_boundaries(site_folder)
+        export_centroids(site_folder, shapefiles, all_ordinals())
 
         if not no_sitemap:
             output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
@@ -277,6 +281,15 @@ def build_urbanstats(
             )
         )
 
+    with open(f"{site_folder}/syau.html", "w") as f:
+        f.write(
+            html_index(
+                title="So you're an urbanist?",
+                image="https://urbanstats.org/syau-link-preview.png",
+                description="Name every urb 😤",
+            )
+        )
+
     shutil.copy("icons/main/thumbnail.png", f"{site_folder}/")
     shutil.copy("icons/main/banner.png", f"{site_folder}/")
     shutil.copy("icons/main/banner-dark.png", f"{site_folder}/")
@@ -287,6 +300,7 @@ def build_urbanstats(
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/life.png", f"{site_folder}/")
     shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")

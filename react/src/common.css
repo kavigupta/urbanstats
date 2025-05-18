@@ -116,3 +116,7 @@ input[type=text] {
     border: 1px solid var(--ordinal-text-color);
     font-family: 'Jost', 'Arial', sans-serif;
 }
+
+.syau-searchbox::placeholder {
+    color: var(--text-main)
+}

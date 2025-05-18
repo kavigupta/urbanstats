@@ -204,3 +204,10 @@ urbanstatsFixture('stats page without enough geos to fill', `${target}/statistic
 test('displays without error', async (t) => {
     await screencap(t)
 })
+
+urbanstatsFixture('40 Mass state senate districts', `${target}/statistic.html?statname=Population&article_type=State+Senate+District&start=1&amount=20&universe=Massachusetts%2C+USA`)
+
+test('shows correct number of rows when count is multiple of amount', async (t) => {
+    await t.expect(Selector('div').withExactText('20').exists).ok()
+    await t.expect(Selector('div').withExactText('21').exists).notOk()
+})

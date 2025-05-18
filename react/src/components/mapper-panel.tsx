@@ -31,7 +31,7 @@ interface DisplayedMapProps extends MapGenericProps {
     rampCallback: (newRamp: EmpiricalRamp) => void
     lineStyle: LineStyle
     basemap: Basemap
-    height: string | undefined
+    height: number | string | undefined
 }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
@@ -100,8 +100,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     // zoom map to fit united states
     // do so instantly
         this.map!.fitBounds([
-            [49.3457868, -124.7844079],
-            [24.7433195, -66.9513812],
+            [-124.7844079, 49.3457868],
+            [-66.9513812, 24.7433195],
         ], { animate: false })
         return Promise.resolve()
     }
@@ -181,7 +181,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
-    height: string | undefined
+    height: number | string | undefined
 }
 
 interface EmpiricalRamp {
@@ -329,14 +329,13 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         const geographyKind = mapSettings.geography_kind
         const colorStat = mapSettings.color_stat
         const filter = mapSettings.filter
-        const valid = valid_geographies.includes(geographyKind)
 
-        return !valid
+        return (underlyingShapes === undefined || underlyingStats === undefined)
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
-                        underlyingShapes={underlyingShapes!}
-                        underlyingStats={underlyingStats!}
+                        underlyingShapes={underlyingShapes}
+                        underlyingStats={underlyingStats}
                         geographyKind={geographyKind}
                         ramp={ramp}
                         colorStat={colorStat}

@@ -206,6 +206,14 @@ class Feature(_message.Message):
         center_lon: _Optional[float] = ...,
     ) -> None: ...
 
+class PointSeries(_message.Message):
+    __slots__ = ("coords",)
+    COORDS_FIELD_NUMBER: _ClassVar[int]
+    coords: _containers.RepeatedCompositeFieldContainer[Coordinate]
+    def __init__(
+        self, coords: _Optional[_Iterable[_Union[Coordinate, _Mapping]]] = ...
+    ) -> None: ...
+
 class ArticleOrderingList(_message.Message):
     __slots__ = ("longnames", "types")
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]

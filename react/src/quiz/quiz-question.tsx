@@ -23,12 +23,17 @@ class Map extends MapGeneric<MapProps> {
             polygons: [
                 {
                     name: this.props.longname,
-                    style: { interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
+                    notClickable: true,
                 },
             ],
             zoomIndex: 0,
         })
+    }
+
+    override startShowingAttribution(): boolean {
+        return false
     }
 }
 

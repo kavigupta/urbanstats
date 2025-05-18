@@ -2,7 +2,7 @@ import numpy as np
 from permacache import permacache
 
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
-from urbanstats.data.census_blocks import RADII
+from urbanstats.data.census_blocks import RADII, format_radius
 from urbanstats.data.census_histogram import census_histogram_canada
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
@@ -11,10 +11,7 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionSkip,
 )
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
-from urbanstats.statistics.collections.census import (
-    DENSITY_EXPLANATION_PW,
-    format_radius,
-)
+from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 
@@ -40,14 +37,15 @@ class CensusCanada(CanadaStatistics):
             "population_2021_canada": QuizQuestionDescriptor(
                 "higher population", POPULATION
             ),
-            "density_2021_pw_0.25_canada": QuizQuestionSkip(),
-            "density_2021_pw_0.5_canada": QuizQuestionSkip(),
             "density_2021_pw_1_canada": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
             ),
-            "density_2021_pw_2_canada": QuizQuestionSkip(),
-            "density_2021_pw_4_canada": QuizQuestionSkip(),
+            **{
+                f"density_2021_pw_{r}_canada": QuizQuestionSkip()
+                for r in RADII
+                if r not in (1,)
+            },
             "sd_2021_canada": QuizQuestionSkip(),
         }
 

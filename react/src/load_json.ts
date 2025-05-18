@@ -14,7 +14,9 @@ import {
     SearchIndex,
     ArticleOrderingList,
     Symlinks,
+    PointSeries,
 } from './utils/protos'
+import { NormalizeProto } from './utils/types'
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -29,7 +31,7 @@ export async function loadJSON(filePath: string): Promise<unknown> {
 
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
-export async function loadProtobuf(filePath: string, name: 'Feature'): Promise<Feature>
+export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
 export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
@@ -40,7 +42,8 @@ export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | undefined> {
+export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -104,6 +107,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'Symlinks') {
         return Symlinks.decode(arr)
     }
+    else if (name === 'PointSeries') {
+        return PointSeries.decode(arr)
+    }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
@@ -156,4 +162,12 @@ export async function loadOrdering(universe: string, statpath: string, type: str
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
     return { longnames: namesInOrder, typeIndices: typesInOrder }
+}
+
+export async function loadStatisticsPage(
+    statUniverse: string, statpath: string, articleType: string,
+): Promise<[NormalizeProto<IDataList>, string[]]> {
+    const data = loadOrderingProtobuf(statUniverse, statpath, articleType, true).then(result => result as NormalizeProto<IDataList>)
+    const articleNames = loadOrdering(statUniverse, statpath, articleType).then(result => result.longnames)
+    return [await data, await articleNames]
 }

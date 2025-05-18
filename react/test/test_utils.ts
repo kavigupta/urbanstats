@@ -91,13 +91,11 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
         await t.wait(1000)
     }
     await t.eval(() => {
-        // disable the base map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('leaflet-tile-pane'))) {
-            x.remove()
-        }
+        // disable the map, so that we're not testing the tiles
         for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
-            const style = 'border-style: solid; border-color: #abcdef'
-            x.setAttribute('style', style)
+            if (x instanceof HTMLElement) {
+                x.style.visibility = 'hidden'
+            }
         }
         const currentVersion = document.getElementById('current-version')
         if (currentVersion !== null) {
@@ -225,7 +223,7 @@ export async function safeReload(t: TestController): Promise<void> {
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
 
 export async function waitForSelectedSearchResult(t: TestController): Promise<void> {
-    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok({ timeout: 10000 })
 }
 
 export async function doSearch(t: TestController, searchTerm: string): Promise<void> {
@@ -241,4 +239,28 @@ export async function createComparison(t: TestController, searchTerm: string): P
         .typeText(otherRegion, searchTerm)
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
+}
+
+export function mapElement(r: RegExp): Selector {
+    return Selector('div').withAttribute('clickable-polygon', r)
+}
+
+export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
+    const element = mapElement(r)
+    const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
+    await t.eval(() => {
+        const cm = (window as unknown as {
+            clickMapElement: (longname: string) => void
+        }).clickMapElement
+        cm(clickablePolygon)
+    }, { dependencies: { clickablePolygon } })
+}
+
+export async function dataValues(): Promise<string[]> {
+    const selector = Selector('span').withAttribute('class', /testing-statistic-value/)
+    const values = [] as string[]
+    for (let i = 0; i < await selector.count; i++) {
+        values.push(await selector.nth(i).innerText)
+    }
+    return values
 }
