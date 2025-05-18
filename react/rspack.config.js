@@ -2,6 +2,7 @@ import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import { rspack } from "@rspack/core"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -26,12 +27,12 @@ export default env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { 
-                test: /\.m?js$/, loader: 'builtin:swc-loader', 
-                resolve: { fullySpecified: false }, 
+            {
+                test: /\.m?js$/, loader: 'builtin:swc-loader',
+                resolve: { fullySpecified: false },
                 exclude: [
                     path.resolve(import.meta.dirname, 'node_modules/maplibre-gl')
-                ] 
+                ]
             },
             {
                 test: /\.css$/i,
@@ -56,8 +57,24 @@ export default env => ({
         },
     },
     performance: {
-        hints: isProduction ? 'error': false,
-        maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.6 * Math.pow(2, 20)
+        hints: isProduction ? 'error' : false,
+        maxAssetSize: 1_100_000,
+        maxEntrypointSize: 1_100_000
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                someLib: {
+                    test: /maplibre/,
+                    name: 'maplibre',
+                },
+            },
+        },
+        minimizer: [
+            new rspack.SwcJsMinimizerRspackPlugin({
+                exclude: /maplibre/ // MapLibre starts having race conditions if minimized
+            }),
+            new rspack.LightningCssMinimizerRspackPlugin(),
+        ],
     }
 })
