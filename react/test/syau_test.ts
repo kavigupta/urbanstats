@@ -109,7 +109,7 @@ test('round-down', async (t) => {
         + '\n'
         + '🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
         + '\n'
-        + `${target}/syau.html#typ=City&universe=California%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=City&universe=California%2C+USA`,
     ])
     await assertText(t, '3/1607 Cities named, which is 7% of the total population.')
     await safeReload(t)
@@ -121,7 +121,7 @@ test('round-down', async (t) => {
         + '\n'
         + '🟩🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
         + '\n'
-        + `${target}/syau.html#typ=City&universe=California%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=City&universe=California%2C+USA`,
     ])
     await assertText(t, '4/1607 Cities named, which is 18% of the total population.')
 })
