@@ -96,6 +96,7 @@ HISTORICAL_CONGRESSIONALs = {
         end_date=lambda x: to_year(x.end) + 1,
         start_date_overall=decade + 3 if decade != 1780 else 1789,
         end_date_overall=decade + 12,
+        include_in_syau=False,
     )
     for decade in decades
 }
@@ -125,4 +126,5 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     end_date=lambda x: x["end_date"],
     start_date_overall=2023,
     end_date_overall=2024,
+    include_in_syau=False,
 )

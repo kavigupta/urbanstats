@@ -812,4 +812,5 @@ def circle_shapefile_object(country_shapefile, population):
             linkText="Detailed maps and JSON files",
             link="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles",
         ),
+        include_in_syau=False,
     )

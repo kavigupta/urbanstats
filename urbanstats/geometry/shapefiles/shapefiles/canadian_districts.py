@@ -34,4 +34,5 @@ CANADIAN_DISTRICTS = Shapefile(
         linkText="Canadian Census",
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lfed000a21a_e.zip",
     ),
+    include_in_syau=True,
 )

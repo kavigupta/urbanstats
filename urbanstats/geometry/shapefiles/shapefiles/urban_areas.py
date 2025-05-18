@@ -29,4 +29,5 @@ URBAN_AREAS = Shapefile(
         linkText="US Census",
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
+    include_in_syau=True,
 )
