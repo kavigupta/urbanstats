@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -118,15 +118,6 @@ async function checkboxStatus(name: string): Promise<string> {
     return 'enabled'
 }
 
-async function dataValues(): Promise<string[]> {
-    const selector = Selector('span').withAttribute('class', /testing-statistic-value/)
-    const values = [] as string[]
-    for (let i = 0; i < await selector.count; i++) {
-        values.push(await selector.nth(i).innerText)
-    }
-    return values
-}
-
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'
 const neither = 'AkWGLJ6mbMkR7'
 
@@ -139,7 +130,7 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
     // no overlap: both are forced onto the screen
     await t.expect(await checkboxStatus('US Census')).eql('missing')
     await t.expect(await checkboxStatus('GHSL')).eql('missing')
-    await t.expect(await dataValues()).eql(['119', '419'])
+    await t.expect(await dataValues()).eql(['119', '420'])
     await screencap(t)
     await t.click(Selector('.disclaimer-toggle'))
     await screencap(t)
@@ -190,11 +181,11 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('US Census')).eql('enabled')
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.9', '40.4'])
+    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.8', '40.4'])
     await checkTextboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
-    await t.expect(await dataValues()).eql(['20.9', '40.4'])
+    await t.expect(await dataValues()).eql(['20.8', '40.4'])
     // disabled so this does nothing
     await checkTextboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)
@@ -253,5 +244,11 @@ test('comparison-uc-vs-uc-intl', async (t) => {
 urbanstatsFixture('comparison with histogram with data only for second comparee', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%5D&s=4gm8ETCK5SCX`)
 
 test('renders successfully', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('comparison with heterogenous data sources', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22Canada%22%2C%22Australia%22%5D&s=k32AgBaCktXf8M`)
+
+test('renders us canada austrailia successfully', async (t) => {
     await screencap(t)
 })

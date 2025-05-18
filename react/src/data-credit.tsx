@@ -615,14 +615,14 @@ export function DataCreditPanel(): ReactNode {
                             We compute hilliness by first computing the absolute grade (rise over run)
                             at each point to a point 100m to the north, east, south, and west. We then
                             take the average of these four values. To compute population weighted elevation
-                            and hilliness, we then aggregate these values to 30 arc-second blocks, and then
+                            and hilliness, we then aggregate these values to 30&quot; blocks, and then
                             use
                             {' '}
-                            <a href="#explanation_gpw">GPW</a>
+                            <a href="#explanation_gpw">GHSL</a>
                             {' '}
                             data to compute the population weighted average of these statistics for each geography
                             for large regions. For American and Canadian regions, we disaggregate to the block level (starting
-                            with 15 arc-second blocks) via bilinear interpolation and then use the population of each
+                            with 15&quot; blocks) via bilinear interpolation and then use the population of each
                             block as a weight.
                         </div>
 
@@ -651,7 +651,7 @@ export function DataCreditPanel(): ReactNode {
                                 Atmospheric Composition Analysis group.
                             </FootnoteRef>
                             {'. '}
-                            This data is provided at 0.01 degree resolution (36 arc-seconds). We disaggregate to 30 arc-second blocks,
+                            This data is provided at 0.01 degree resolution (36&quot;). We disaggregate to 30&quot; blocks,
                             and then use the same method as for elevation and hilliness to compute population weighted pollution
                             for each geography.
                         </div>
@@ -768,14 +768,18 @@ export function DataCreditPanel(): ReactNode {
                                 </span>
                             )}
                             >
-                                GPW.
+                                GHSL.
                             </FootnoteRef>
                             {' '}
                             We use the 2020 population estimates, which are
                             not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
-                            we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
-                            but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
-                            radii above 1km (which is the smallest radius we use for GHS-POP data).
+                            we are using for the US data. We use the 3&quot; resolution data on a WSG84 (equirectangular) projection.
+                            To compute PW density, we treat each cell as effectively homogenous,
+                            but since the cells are all smaller than 100m*100m, this should not be a major issue for
+                            radii above 1km (which is the smallest radius we use for GHS-POP data). Before 23.13.0, we used
+                            the 30&quot; data, which is not as accurate, and led to underestimates of population density
+                            in some areas; we continue to use this data for disaggregation purposes, but weather and pollution tend not
+                            to vary nearly as much as population, and data is not available at 3&quot; resolution for these datasets.
                         </div>
                         <h1>Canadian Data</h1>
                         <div>

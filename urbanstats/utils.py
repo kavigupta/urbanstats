@@ -1,7 +1,9 @@
 import json
+import os
 from dataclasses import dataclass
 
 import numpy as np
+import zarr
 from permacache import stable_hash
 
 
@@ -72,3 +74,11 @@ class DiscreteDistribution:
     def sample(self, rng, *args):
         r = rng.random(*args)
         return np.searchsorted(self.cumulative_dist, r, side="left")
+
+
+def cached_zarr_array(path, create_fn):
+    if not os.path.exists(path):
+        result = create_fn()
+        with zarr.open(path, mode="w") as z:
+            z.create_dataset("data", data=result)
+    return zarr.open(path, mode="r")["data"]

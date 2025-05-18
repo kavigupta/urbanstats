@@ -69,7 +69,7 @@ test('check-related-button-checkboxes-page-specific', async (t) => {
 test('checkboxes-can-be-checked', async (t) => {
     // check that Pasadena CCD is not present
     await t.expect(mapElement(/Pasadena CCD/).exists).notOk()
-    const pasadenaCCD = Selector('li').withAttribute('class', 'list_of_lists')
+    const pasadenaCCD = Selector('li')
         .withText(/Pasadena CCD/)
     // find a checkbox inside it
         .find('input')

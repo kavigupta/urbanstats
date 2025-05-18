@@ -1,6 +1,5 @@
 import React, { ReactNode, useContext, useId } from 'react'
 
-import './related.css'
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
 import type_to_type_category from '../data/type_to_type_category'
@@ -9,13 +8,18 @@ import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { relationshipKey, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
+import { DefaultMap } from '../utils/DefaultMap'
 import { mixWithBackground } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { useMobileLayout } from '../utils/responsive'
+import { displayType } from '../utils/text'
 
 import { CheckboxSetting } from './sidebar'
 
 interface Region { rowType: string, longname: string, shortname: string }
+
+const propForRegionTypes = 0.20
+const spacing = 2
 
 function colorsEach(colors: HueColors): Record<string, string> {
     const keys: [string, string][] = relatedButtonColors.map(
@@ -24,23 +28,38 @@ function colorsEach(colors: HueColors): Record<string, string> {
     return Object.fromEntries(keys)
 }
 
+function useRelatedColor(rowType: string, colorIntensity: number): string {
+    const colors = useColors()
+    const typeCategory = type_to_type_category[rowType]
+    const color = colorsEach(colors.hueColors)[typeCategory]
+    return mixWithBackground(color, (colors.mixPct + (100 - colors.mixPct) * (1 - colorIntensity)) / 100, colors.background)
+}
+
 function RelatedButton(props: { region: Region }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
-    const typeCategory = type_to_type_category[props.region.rowType]
     const navContext = useContext(Navigator.Context)
-
-    let classes = `serif button_related`
-    if (useMobileLayout()) {
-        classes += ' button_related_mobile'
-    }
-    const color = colorsEach(colors.hueColors)[typeCategory]
     return (
-        <li className={`linklistel${useMobileLayout() ? ' linklistel_mobile' : ''}`}>
+        <li style={{
+            display: 'flex',
+            margin: `${spacing}px`,
+        }}
+        >
             <a
-                className={classes}
-                style={{ color: colors.textMain, backgroundColor: mixWithBackground(color, colors.mixPct / 100, colors.background) }}
-                {...navContext.link({ kind: 'article', longname: props.region.longname, universe: currentUniverse }, { scroll: { kind: 'position', top: 0 } })}
+                className="serif"
+                style={{
+                    color: colors.textMain,
+                    backgroundColor: useRelatedColor(props.region.rowType, 1),
+                    textDecoration: 'none',
+                    padding: '2px 6px 2px 6px',
+                    borderRadius: '5px',
+                    fontWeight: 400,
+                    fontSize: useMobileLayout() ? '12pt' : '8pt',
+                }}
+                {...navContext.link(
+                    { kind: 'article', longname: props.region.longname, universe: currentUniverse },
+                    { scroll: { kind: 'position', top: 0 } },
+                )}
             >
                 {props.region.shortname}
             </a>
@@ -48,8 +67,25 @@ function RelatedButton(props: { region: Region }): ReactNode {
     )
 }
 
-function RelatedList(props: { articleType: string, buttonType: string, regions: Record<string, Region[]> }): ReactNode {
-    const settingKey = relationshipKey(props.articleType, props.buttonType)
+function Label(props: { checkId: string, children: ReactNode, fontWeight: number }): ReactNode {
+    return (
+        <div
+            className="serif"
+            style={{
+                fontSize: useMobileLayout() ? '12pt' : '10pt',
+                fontWeight: props.fontWeight,
+                alignContent: 'center',
+                margin: `${spacing}px`,
+            }}
+        >
+            <label htmlFor={props.checkId}>
+                {props.children}
+            </label>
+        </div>
+    )
+}
+
+function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     function displayName(name: string): string {
         name = name.replaceAll('_', ' ')
         // title case
@@ -59,56 +95,111 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
         return name
     }
 
-    const checkId = useId()
-    const mobileLayout = useMobileLayout()
+    const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
 
     return (
-        <li className="list_of_lists">
-            <div style={{ display: 'flex' }}>
-                <div className="linkbox">
-                    <div style={{ paddingTop: '2pt' }}>
-                        <CheckboxSetting
-                            name=""
-                            settingKey={settingKey}
-                            classNameToUse="related_checkbox"
-                            id={checkId}
-                        />
-                    </div>
-                </div>
-                <ul className="list_of_lists">
-                    {
-                        Object.keys(props.regions).map((relationshipType, j) => {
-                            const regions = props.regions[relationshipType]
-                            return (
-                                <ul key={j} className="linklist">
-                                    <li
-                                        className={`serif linklistel${mobileLayout ? ' linklistel_mobile' : ''}`}
-                                        style={{
-                                            fontSize:
-                                                mobileLayout ? '12pt' : '10pt',
-                                            paddingTop: '1pt', fontWeight: 500,
-                                        }}
-                                    >
-                                        <label htmlFor={checkId}>
-                                            {displayName(relationshipType)}
-                                        </label>
-                                    </li>
-                                    {
-                                        regions.map((row, i) => (
-                                            <RelatedButton
-                                                key={i}
-                                                region={row}
-                                            />
-                                        ),
-                                        )
-                                    }
-                                </ul>
-                            )
-                        },
-                        )
-                    }
-                </ul>
+        <ul
+            style={{
+                display: 'flex',
+                flexFlow: 'row wrap',
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+                padding: `${spacing}px`,
+                ...(props.numGroups > 1
+                    ? {
+                            backgroundColor,
+                            // Border radius if first or last group
+                            borderRadius: props.groupIndex === 0 ? '5px 5px 0 0' : (props.groupIndex === props.numGroups - 1 ? '0 0 5px 5px' : undefined),
+                            paddingLeft: `${2 * spacing}px`,
+                        }
+                    : {}),
+            }}
+        >
+            <Label checkId={props.checkId} fontWeight={400}>
+                {displayName(props.relationshipType)}
+            </Label>
+            {
+                props.regions.map((row, i) => (
+                    <RelatedButton
+                        key={i}
+                        region={row}
+                    />
+                ),
+                )
+            }
+        </ul>
+    )
+}
+
+function Row(props: {
+    articleType: string
+    buttonType: string
+    regions: Map<string, Region[]>
+    rowIndex: number
+    totalRows: number
+}): ReactNode {
+    const settingKey = relationshipKey(props.articleType, props.buttonType)
+
+    const checkId = useId()
+
+    const universe = useUniverse()
+
+    return (
+        <li style={{
+            paddingInlineStart: '0px',
+            listStyleType: 'none',
+            margin: 0,
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            position: 'relative',
+            backgroundColor: useRelatedColor(props.buttonType, props.rowIndex % 2 === 0 ? 0.1 : 0.2),
+            // Border radius if first or last row
+            borderRadius: props.rowIndex === 0 ? '5px 5px 0 0' : (props.rowIndex === props.totalRows - 1 ? '0 0 5px 5px' : undefined),
+        }}
+        >
+            <div style={{
+                display: 'flex',
+                width: `${100 * propForRegionTypes}%`,
+                alignItems: 'center',
+            }}
+            >
+                <CheckboxSetting
+                    name=""
+                    settingKey={settingKey}
+                    classNameToUse="related_checkbox"
+                    id={checkId}
+                />
+                <Label checkId={checkId} fontWeight={500}>
+                    {displayType(universe, props.buttonType)}
+                </Label>
             </div>
+            <ul style={{
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+                margin: 0,
+                width: `${100 * (1 - propForRegionTypes)}%`,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: props.regions.size > 1 ? `${2 * spacing}px` : `0 0 0 ${3 * spacing}px`,
+            }}
+            >
+                {
+                    Array.from(props.regions).map(([relationshipType, regions], i) => {
+                        return (
+                            <RelationshipGroup
+                                key={relationshipType}
+                                regions={regions}
+                                checkId={checkId}
+                                relationshipType={relationshipType}
+                                groupIndex={i}
+                                buttonType={props.buttonType}
+                                numGroups={props.regions.size}
+                            />
+                        )
+                    })
+                }
+            </ul>
         </li>
     )
 }
@@ -116,46 +207,37 @@ function RelatedList(props: { articleType: string, buttonType: string, regions: 
 export function Related(props: { articleType: string, related: { relationshipType: string, buttons: Region[] }[] }): ReactNode {
     // buttons[rowType][relationshipType] = <list of buttons>
     const [showHistoricalCds] = useSetting('show_historical_cds')
-    const buttons: Record<string, Record<string, Region[]>> = {}
+    const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
     for (const relateds of props.related) {
-        const relationshipType = relateds.relationshipType
         for (const button of relateds.buttons) {
-            const rowType = button.rowType
-            if (!(rowType in buttons)) {
-                buttons[rowType] = {}
-            }
-            if (!(relationshipType in buttons[rowType])) {
-                buttons[rowType][relationshipType] = []
-            }
-            buttons[rowType][relationshipType].push(button)
+            buttons.get(button.rowType).get(relateds.relationshipType).push(button)
         }
     }
 
     // get a sorted list of keys of buttons
-    const buttonKeys = Object.keys(buttons).sort((a, b) =>
-        type_ordering_idx[a] - type_ordering_idx[b],
-    )
+    const buttonKeys = Array.from(buttons.keys())
+        .sort((a, b) => type_ordering_idx[a] - type_ordering_idx[b])
+        .filter(buttonKey => showHistoricalCds || !isHistoricalCD(buttonKey))
 
-    const elements = []
-    for (const key of buttonKeys) {
-        if (!showHistoricalCds) {
-            if (isHistoricalCD(key)) {
-                continue
-            }
-        }
-        elements.push(
-            <RelatedList
-                key={key}
-                buttonType={key}
-                regions={buttons[key]}
-                articleType={props.articleType}
-            />,
-        )
-    }
+    const elements = buttonKeys.map((key, i) => (
+        <Row
+            key={key}
+            buttonType={key}
+            regions={buttons.get(key)}
+            articleType={props.articleType}
+            rowIndex={i}
+            totalRows={buttonKeys.length}
+        />
+    ))
 
     return (
-        <div className="related_areas">
+        <ul style={{
+            margin: '1em 0',
+            paddingInlineStart: '0px',
+            listStyleType: 'none',
+        }}
+        >
             {elements}
-        </div>
+        </ul>
     )
 }

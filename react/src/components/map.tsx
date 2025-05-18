@@ -10,10 +10,13 @@ import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
 import { randomColor } from '../utils/color'
+import { isTesting } from '../utils/isTesting'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
+
+export const defaultMapPadding = 20
 
 export interface MapGenericProps {
     height?: number | string
@@ -45,6 +48,24 @@ interface PolygonStyle {
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
 
+class CustomAttributionControl extends maplibregl.AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -53,7 +74,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private basemap_props: null | Basemap = null
     protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
-    private id: string
+    protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
 
     constructor(props: P) {
@@ -107,6 +128,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    startShowingAttribution(): boolean {
+        return true
+    }
+
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -116,7 +141,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             canvasContextAttributes: {
                 preserveDrawingBuffer: true,
             },
+            pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
+            attributionControl: false,
         })
+
+        map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
+
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
         map.on('mouseover', 'polygon', () => {
@@ -226,11 +256,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidUpdate(prevProps: P, prevState: MapState): Promise<void> {
         let shouldWeUpdate = false
-        // 5 is some arbitrary small number. Originally it was < 1, but that led to some
-        // issues on pages with 2 maps. This appears to be some kind of data race, and
-        // this ensures that it will converge to eventual consistency.
-        // See #1039 for the PR adding this, and #1038 for the issue.
-        shouldWeUpdate ||= this.version < 5
+        // make sure we update the first time
+        shouldWeUpdate ||= this.version < 1
         shouldWeUpdate ||= JSON.stringify(prevProps) !== JSON.stringify(this.props)
         shouldWeUpdate ||= JSON.stringify({ ...prevState, loading: undefined }) !== JSON.stringify({ ...this.state, loading: undefined })
         if (shouldWeUpdate) {
@@ -446,7 +473,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
-            this.zoomToItems([geojson], { duration: 0 })
+            this.zoomToItems([geojson], { animate: false })
         }
 
         this.state.polygonByName.set(polygon.name, geojson)
@@ -455,7 +482,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
     }
 
-    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.AnimationOptions): void {
+    zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
         const bounds = new maplibregl.LngLatBounds()
 
@@ -466,11 +493,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 new maplibregl.LngLat(bbox[2], bbox[3]),
             ))
         }
-        this.map?.fitBounds(bounds, options)
+        this.map?.fitBounds(bounds, { padding: defaultMapPadding, ...options })
     }
 
-    zoomToAll(): void {
-        this.zoomToItems(this.state.polygonByName.values(), {})
+    zoomToAll(padding: number = 0): void {
+        this.zoomToItems(this.state.polygonByName.values(), { padding })
     }
 
     zoomTo(name: string): void {

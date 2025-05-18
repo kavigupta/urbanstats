@@ -31,6 +31,10 @@ class Map extends MapGeneric<MapProps> {
             zoomIndex: 0,
         })
     }
+
+    override startShowingAttribution(): boolean {
+        return false
+    }
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (

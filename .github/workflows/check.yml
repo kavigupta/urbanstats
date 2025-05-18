@@ -7,7 +7,8 @@ on:
 env:
   # This is used in ci_proxy, do not remove. It is necessary so that
   # we can test against non-production data
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   lint:
     runs-on: ubuntu-22.04
@@ -17,7 +18,7 @@ jobs:
         with:
           node-version: 20
       - uses: ./.github/actions/node_modules
-      - run: npx eslint .
+      - run: npm run lint:ci
         working-directory: react
 
   build-and-push-common-image:
@@ -58,23 +59,23 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
+      - name: allow all directories
+        # This is needed because git complains about git repositories outside the user directory
+        run: git config --global --add safe.directory '*'
       - name: Lint with pylint
-        run: python -m pylint --prefer-stubs=true urbanstats tests
-      - name: Check black
-        run: |
-          python -m isort urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
-          python -m black urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
-           # allow all directories. This is needed because git complains about git repositories outside the user directory
-          git config --global --add safe.directory '*'
-          # check if there are any changes
-          # if there are, print the diff and exit with an error
-          # this is needed because isort and black disagree on the formatting of some files, so we run both and check
-          # if there's a difference
-          bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+        run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
+      - name: isort
+        run: python -m isort $(git ls-files '*.py')
+      - name: black
+        run: python -m black $(git ls-files '*.py')
+      - name: check if there are any changes
+        # if there are, print the diff and exit with an error
+        # this is needed because isort and black disagree on the formatting of some files, so we run both and check
+        # if there's a difference
+        run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   test-python:
     runs-on: ubuntu-22.04
@@ -114,9 +115,27 @@ jobs:
         run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
         working-directory: react/test
 
+  resolve-proxy-branch:
+    runs-on: ubuntu-22.04
+    outputs:
+      ci-proxy-origin: ${{ steps.resolve-proxy-branch.outputs.ci-proxy-origin }}
+      densitydb-branch-name: ${{ steps.resolve-proxy-branch.outputs.densitydb-branch-name }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: resolve-proxy-branch
+        run: python3 scripts/resolve_proxy_branch.py >> $GITHUB_OUTPUT
+      - run: echo "$OUTPUTS"
+        shell: bash
+        env:
+          OUTPUTS: ${{ toJSON(steps.resolve-proxy-branch.outputs) }}
+
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-e2e-image, build-frontend, list-e2e-tests]
+    needs:
+      - build-and-push-e2e-image
+      - build-frontend
+      - list-e2e-tests
+      - resolve-proxy-branch
     container:
       image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
@@ -140,10 +159,11 @@ jobs:
             --parallel=1 \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=1000
+            --time-limit-seconds=700
         working-directory: react
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
+          DENSITYDB_BRANCH_NAME: ${{ needs.resolve-proxy-branch.outputs.densitydb-branch-name }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -179,7 +199,7 @@ jobs:
 
   run-unit-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-common-image]
+    needs: [build-and-push-common-image, resolve-proxy-branch]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
@@ -191,4 +211,5 @@ jobs:
             --proxy=true
         working-directory: react
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
+          DENSITYDB_BRANCH_NAME: ${{ needs.resolve-proxy-branch.outputs.densitydb-branch-name }}

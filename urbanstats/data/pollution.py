@@ -11,7 +11,9 @@ deg_2_ghs_index = 60 * 2  # 30 arcseconds
 
 
 @dataclass(frozen=True)
-class HillinessGriddedData(GriddedDataSource):
+class PollutionGriddedData(GriddedDataSource):
+    version: int = 2
+
     # pylint: disable=method-cache-max-size-none
     @lru_cache(maxsize=None)
     def load_gridded_data(self, resolution: int | str = "most_detailed"):
@@ -20,18 +22,22 @@ class HillinessGriddedData(GriddedDataSource):
 
 
 pollution_gds = {
-    "pm_25_2018_2022": HillinessGriddedData(),
+    "pm_25_2018_2022": PollutionGriddedData(),
 }
 
 
-@permacache("urbanstats/data/pollution/pollution_in_ghs_coordinates")
+@permacache("urbanstats/data/pollution/pollution_in_ghs_coordinates_2")
 def pollution_in_ghs_coordinates():
     f = np.load("named_region_shapefiles/pollution/annual_mean.npz")
     latitudes = f["latitudes"]
     longitudes = f["longitudes"]
     pollution_data = f["mean_pollution"]
-    ghs_lat_deg = lat_from_row_idx(np.arange(180 * deg_2_ghs_index))
-    ghs_lon_deg = lon_from_col_idx(np.arange(360 * deg_2_ghs_index))
+    ghs_lat_deg = lat_from_row_idx(
+        np.arange(180 * deg_2_ghs_index), resolution=deg_2_ghs_index
+    )
+    ghs_lon_deg = lon_from_col_idx(
+        np.arange(360 * deg_2_ghs_index), resolution=deg_2_ghs_index
+    )
 
     ghs_lat_pol_idx = (
         (ghs_lat_deg - latitudes[0])
@@ -62,6 +68,10 @@ def pollution_in_ghs_coordinates():
                 y_idx=top_left_lat + di,
                 x_idx=top_left_lon + dj,
             )
+
+    # some of the edges of the original dataset have negative values, which are
+    # not valid
+    result[result < 0] = 0
 
     return result
 

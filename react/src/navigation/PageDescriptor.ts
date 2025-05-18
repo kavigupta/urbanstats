@@ -3,29 +3,32 @@ import { gunzipSync } from 'zlib'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
+import type { ArticlePanel } from '../components/article-panel'
+import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
-import type { StatisticPanelProps } from '../components/statistic-panel'
+import type { MapperPanel } from '../components/mapper-panel'
+import type { QuizPanel } from '../components/quiz-panel'
+import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
+import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
-import { defaultSettings, MapSettings } from '../mapper/settings'
+import type { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
-import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { validQuizInfiniteVersions } from '../quiz/infinite'
-import {
-    QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON,
-    loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
+import type {
+    QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
+    QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
-import { getInfiniteQuizzes } from '../quiz/statistics'
 import { loadSYAUData, SYAUData } from '../syau/load'
+import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article } from '../utils/protos'
+import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
 import { base64Gunzip } from '../utils/urlParamShort'
@@ -158,15 +161,15 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'statistic', universe: string } & StatisticPanelProps
+    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
-    | { kind: 'dataCredit' }
-    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined }
-    | { kind: 'mapper', settings: MapSettings, view: boolean }
+    | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
+    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
     | {
         kind: 'error'
         error: unknown
@@ -313,10 +316,15 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 }
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
+// Only use one await per block (or use overlapping promises), so that resources may be loaded in parallel to improve performance
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
-        case 'article':
-            const article = await loadArticleFromPossibleSymlink(newDescriptor.longname)
+        case 'article': {
+            const [article, panel, countsByArticleType] = await Promise.all([
+                loadArticleFromPossibleSymlink(newDescriptor.longname),
+                import('../components/article-panel'),
+                getCountsByArticleType(),
+            ])
 
             const defaultUniverse = defaultArticleUniverse(article.universes)
 
@@ -324,7 +332,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await getCountsByArticleType(), articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], countsByArticleType, articleUniverse)
 
             return {
                 pageData: {
@@ -333,6 +341,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: articleUniverse,
                     rows: articleRows,
                     statPaths: articleStatPaths,
+                    articlePanel: panel.ArticlePanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -352,8 +361,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
-        case 'comparison':
-            const articles = await loadArticlesFromPossibleSymlinks(newDescriptor.longnames)
+        }
+        case 'comparison': {
+            const [articles, countsByArticleType, panel] = await Promise.all([
+                loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
+                getCountsByArticleType(),
+                import('../components/comparison-panel'),
+            ])
+
             // intersection of all the data.universes
             const articleUniverses = articles.map(x => x.universes)
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
@@ -364,7 +379,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await getCountsByArticleType(), comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, countsByArticleType, comparisonUniverse)
 
             return {
                 pageData: {
@@ -374,6 +389,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universes,
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
+                    comparisonPanel: panel.ComparisonPanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -388,7 +404,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
-        case 'statistic':
+        }
+        case 'statistic': {
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
@@ -397,7 +414,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statcol = stats[statIndex]
             const explanationPage = explanation_pages[statIndex]
 
-            const [data, articleNames] = await loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type)
+            const [[data, articleNames], countsByArticleType, panel] = await Promise.all([
+                loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type),
+                getCountsByArticleType(),
+                import('../components/statistic-panel'),
+            ])
 
             let parsedAmount: number
             if (newDescriptor.amount === 'All') {
@@ -412,7 +433,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(await getCountsByArticleType(), statUniverse, statcol, newDescriptor.article_type),
+                    count: forType(countsByArticleType, statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
@@ -425,8 +446,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
                     // StatisticPanel needs this to compute the set of universes to display
-                    counts: await getCountsByArticleType(),
-
+                    counts: countsByArticleType,
+                    statisticPanel: panel.StatisticPanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -435,6 +456,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
                 effects: () => undefined,
             }
+        }
         case 'random':
             let longname: string
             switch (newDescriptor.sampleby) {
@@ -453,15 +475,29 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
         case 'index':
         case 'about':
-        case 'dataCredit':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
-        case 'quiz':
+
+        case 'dataCredit':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    dataCreditPanel: (await import('../data-credit')).DataCreditPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
+        case 'quiz': {
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string | undefined
             const updatedDescriptor: PageDescriptor = { ...newDescriptor }
+            const panel = import('../components/quiz-panel')
+            const dates = import('../quiz/dates')
+            const quizImport = import('../quiz/quiz')
             switch (newDescriptor.mode) {
-                case 'custom':
+                case 'custom': {
+                    const { wrapQuestionsModel } = await import('../quiz/quiz')
                     const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
@@ -470,17 +506,24 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz = wrapQuestionsModel(custom.questions)
                     todayName = custom.name
                     break
-                case 'retro':
-                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
+                }
+                case 'retro': {
+                    const retro = newDescriptor.date ?? (await dates).getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = wrapQuestionsModel((await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro))
+                    const [json, { wrapQuestionsModel, loadRetro }] = await Promise.all([
+                        loadJSON(`/retrostat/${retro}`),
+                        quizImport,
+                    ])
+                    quiz = wrapQuestionsModel((json as RetroQuestionJSON[]).map(loadRetro))
                     todayName = `Week ${retro}`
                     break
-                case 'infinite':
+                }
+                case 'infinite': {
                     if (updatedDescriptor.seed === undefined) {
+                        const { getInfiniteQuizzes } = await import('../quiz/statistics')
                         const [seedVersions] = getInfiniteQuizzes(JSON.parse((localStorage.quiz_history || '{}') as string) as QuizHistory, false)
                         if (seedVersions.length > 0) {
                             const [seed, version] = seedVersions[0]
@@ -492,16 +535,22 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         }
                     }
                     if (updatedDescriptor.v === undefined) {
+                        const { validQuizInfiniteVersions } = await import('../quiz/infinite')
                         updatedDescriptor.v = Math.max(...validQuizInfiniteVersions)
                     }
                     quizDescriptor = { kind: 'infinite', name: `I_${updatedDescriptor.seed}_${updatedDescriptor.v}`, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
-                    quiz = infiniteQuiz(updatedDescriptor.seed, updatedDescriptor.v)
+                    quiz = (await quizImport).infiniteQuiz(updatedDescriptor.seed, updatedDescriptor.v)
                     todayName = undefined
                     break
+                }
                 case undefined:
-                    const today = newDescriptor.date ?? getDailyOffsetNumber()
+                    const today = newDescriptor.date ?? (await dates).getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = wrapQuestionsModel((await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta))
+                    const [json, { wrapQuestionsModel, loadJuxta }] = await Promise.all([
+                        loadJSON(`/quiz/${today}`),
+                        import('../quiz/quiz'),
+                    ])
+                    quiz = wrapQuestionsModel((json as JuxtaQuestionJSON[]).map(loadJuxta))
                     todayName = today.toString()
             }
             return {
@@ -511,6 +560,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz,
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
+                    quizPanel: (await panel).QuizPanel,
                 },
                 newPageDescriptor: {
                     ...updatedDescriptor,
@@ -520,11 +570,18 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
                 effects: () => {
                     if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
-                        void addFriendFromLink(newDescriptor.id, newDescriptor.name.trim())
+                        const friendId = newDescriptor.id
+                        const friendName = newDescriptor.name.trim()
+                        void (async () => {
+                            const { addFriendFromLink } = await quizImport
+                            await addFriendFromLink(friendId, friendName)
+                        })()
                     }
                 },
             }
-        case 'syau':
+        }
+        case 'syau': {
+            const panel = import('../syau/syau-panel')
             const counts = await getCountsByArticleType()
             const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
             return {
@@ -534,24 +591,33 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: newDescriptor.universe,
                     counts,
                     syauData,
+                    syauPanel: (await panel).SYAUPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
-        case 'mapper':
+        }
+        case 'mapper': {
+            const [mapSettings, panel] = await Promise.all([
+                mapSettingsFromURLParam(newDescriptor.settings),
+                import('../components/mapper-panel'),
+            ])
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: mapSettings,
+                    mapperPanel: panel.MapperPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
+        }
     }
 }
 
-function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
+async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
+    const { defaultSettings } = await import('../mapper/settings')
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
