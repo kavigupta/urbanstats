@@ -57,6 +57,23 @@ test('oakland', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
 })
 
+test('oakland-require-enter', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'Oakland', 'Oakland')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+    await addInputText(t, 'San Francisc', 'San Francisc')
+    await t.selectText(syauInput).pressKey('enter')
+    // clears input, in this mode. Does not give a correct answer.
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'Oakland', 'land')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
+})
+
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
     await screencap(t)

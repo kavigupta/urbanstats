@@ -73,9 +73,8 @@ function GuessInputField(props: { guessCallback: (query: string) => boolean }): 
             }}
             onKeyDown={(e) => {
                 if (syauRequireEnter && e.key === 'Enter') {
-                    if (props.guessCallback(e.currentTarget.value)) {
-                        e.currentTarget.value = ''
-                    }
+                    props.guessCallback(e.currentTarget.value)
+                    e.currentTarget.value = ''
                 }
             }}
         />
