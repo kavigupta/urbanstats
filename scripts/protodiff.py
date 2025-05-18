@@ -45,7 +45,7 @@ def main():
             f.write(str(new))
 
         # run diff
-        subprocess.run(["git", "diff", "--no-index", old_path, new_path])
+        subprocess.run(["git", "diff", "--no-index", old_path, new_path], check=True)
 
 
 if __name__ == "__main__":

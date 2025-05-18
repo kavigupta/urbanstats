@@ -63,7 +63,7 @@ def combine_shapefiles(suffix, state_column, number_column):
 
 
 def main():
-    subprocess.run(["mkdir", "-p", "shapefiles"])
+    subprocess.run(["mkdir", "-p", "shapefiles"], check=True)
     download()
     for _, suffix, state_column, number_column in metadata:
         combine_shapefiles(suffix, state_column, number_column)

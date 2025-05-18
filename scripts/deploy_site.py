@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import subprocess
@@ -35,18 +36,19 @@ def update_scripts(branch):
     current_branch = get_current_branch()
     if current_branch != branch:
         # create a new branch if it doesn't exist
-        subprocess.run(["git", "checkout", "-b", branch], cwd=PATH)
+        subprocess.run(["git", "checkout", "-b", branch], cwd=PATH, check=True)
     # add the files to the git repo
-    subprocess.run(["git", "add", "."], cwd=PATH)
+    subprocess.run(["git", "add", "."], cwd=PATH, check=True)
     # commit the changes, using the commit message corresponding to the one in the local repo
     local_commit_message = subprocess.run(
         ["git", "log", "-1", "--pretty=%B"],
         cwd=LOCAL_REPO,
         capture_output=True,
         text=True,
+        check=True,
     ).stdout.strip()
-    subprocess.run(["git", "commit", "-m", local_commit_message], cwd=PATH)
-    subprocess.run(["git", "push", "origin", branch], cwd=PATH)
+    subprocess.run(["git", "commit", "-m", local_commit_message], cwd=PATH, check=True)
+    subprocess.run(["git", "push", "origin", branch], cwd=PATH, check=True)
 
 
 def get_current_branch(path=PATH):
@@ -55,6 +57,7 @@ def get_current_branch(path=PATH):
         cwd=path,
         capture_output=True,
         text=True,
+        check=True,
     ).stdout.strip()
 
     return current_branch
@@ -71,23 +74,25 @@ def push_to_master(new_branch):
     assert current_branch == new_branch != "master", (current_branch, new_branch)
     # check if master branch exists
     branches = subprocess.run(
-        ["git", "branch"], cwd=PATH, capture_output=True, text=True
+        ["git", "branch"], cwd=PATH, capture_output=True, text=True, check=True
     ).stdout.split("\n")
     branches = [x.strip().strip("*").strip() for x in branches]
     if "master" in branches:
         # checkout to master branch
-        subprocess.run(["git", "checkout", "master"], cwd=PATH)
+        subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
         # merge in the branch we were on
-        subprocess.run(["git", "merge", new_branch], cwd=PATH)
+        subprocess.run(["git", "merge", new_branch], cwd=PATH, check=True)
     else:
         # add master branch
-        subprocess.run(["git", "checkout", "-b", "master"], cwd=PATH)
+        subprocess.run(["git", "checkout", "-b", "master"], cwd=PATH, check=True)
     # force push to master
-    subprocess.run(["git", "push", "-f", "origin", "master"], cwd=PATH)
+    subprocess.run(["git", "push", "-f", "origin", "master"], cwd=PATH, check=True)
     # remove temp branch
-    subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH)
+    subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH, check=True)
     # push removal of temp branch
-    subprocess.run(["git", "push", "origin", "--delete", new_branch], cwd=PATH)
+    subprocess.run(
+        ["git", "push", "origin", "--delete", new_branch], cwd=PATH, check=True
+    )
 
 
 def push_to_new_branch(new_branch):
@@ -96,11 +101,11 @@ def push_to_new_branch(new_branch):
     os.makedirs(PATH, exist_ok=True)
     synchronize()
     # initialize git
-    subprocess.run(["git", "init"], cwd=PATH)
+    subprocess.run(["git", "init"], cwd=PATH, check=True)
     # checkout to temp branch
-    subprocess.run(["git", "checkout", "-b", new_branch], cwd=PATH)
+    subprocess.run(["git", "checkout", "-b", new_branch], cwd=PATH, check=True)
     # add remote origin
-    subprocess.run(["git", "remote", "add", "origin", REPO], cwd=PATH)
+    subprocess.run(["git", "remote", "add", "origin", REPO], cwd=PATH, check=True)
     # add several folders and push to master
     for folder, message in [
         ("shape", "shape"),
@@ -108,37 +113,39 @@ def push_to_new_branch(new_branch):
         ("data", "data"),
         (".", "rest"),
     ]:
-        subprocess.run(["git", "add", folder], cwd=PATH)
-        subprocess.run(["git", "commit", "-m", message], cwd=PATH)
-        subprocess.run(["git", "push", "-f", "origin", new_branch], cwd=PATH)
+        subprocess.run(["git", "add", folder], cwd=PATH, check=True)
+        subprocess.run(["git", "commit", "-m", message], cwd=PATH, check=True)
+        subprocess.run(
+            ["git", "push", "-f", "origin", new_branch], cwd=PATH, check=True
+        )
 
 
 def merge(new_branch):
     current_branch = get_current_branch()
     assert current_branch == new_branch != "master", (current_branch, new_branch)
     # switch to master
-    subprocess.run(["git", "checkout", "master"], cwd=PATH)
+    subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
     # merge in the branch we were on
-    subprocess.run(["git", "merge", new_branch], cwd=PATH)
+    subprocess.run(["git", "merge", new_branch], cwd=PATH, check=True)
     # push to master (no need to force push)
-    subprocess.run(["git", "push", "origin", "master"], cwd=PATH)
+    subprocess.run(["git", "push", "origin", "master"], cwd=PATH, check=True)
     # remove temp branch
-    subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH)
+    subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH, check=True)
     # push removal of temp branch
-    subprocess.run(["git", "push", "origin", "--delete", new_branch], cwd=PATH)
+    subprocess.run(
+        ["git", "push", "origin", "--delete", new_branch], cwd=PATH, check=True
+    )
 
 
 def rm_branch(branch):
     current_branch = get_current_branch()
     assert current_branch == branch != "master", (current_branch, branch)
-    subprocess.run(["git", "checkout", "master"], cwd=PATH)
-    subprocess.run(["git", "branch", "-D", branch], cwd=PATH)
-    subprocess.run(["git", "push", "origin", "--delete", branch], cwd=PATH)
+    subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
+    subprocess.run(["git", "branch", "-D", branch], cwd=PATH, check=True)
+    subprocess.run(["git", "push", "origin", "--delete", branch], cwd=PATH, check=True)
 
 
 def main():
-    import argparse
-
     p = argparse.ArgumentParser()
     # command update
     s = p.add_subparsers(dest="command")
