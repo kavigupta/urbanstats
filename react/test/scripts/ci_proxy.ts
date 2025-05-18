@@ -35,7 +35,7 @@ export async function startProxy(): Promise<void> {
 
     app.use(
         express.static('test/density-db'),
-        proxy('http://168.235.82.243', { // Contacts the proxy in react/ci_proxy
+        proxy('http://168.235.89.26', { // Contacts the proxy in /ci_proxy
             proxyReqOptDecorator(proxyReqOpts) {
                 return {
                     ...proxyReqOpts,
