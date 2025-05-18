@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=root
-ExecStart=python3 /root/urbanstats/react/ci_proxy/sync.py
+ExecStart=python3 /root/urbanstats/ci_proxy/sync.py
 
 [Install]
 WantedBy=multi-user.target
