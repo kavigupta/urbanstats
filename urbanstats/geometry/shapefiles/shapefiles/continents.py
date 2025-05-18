@@ -23,4 +23,5 @@ CONTINENTS = Shapefile(
     ),
     abbreviation="CONT",
     data_credit=COUNTRIES.data_credit,
+    include_in_syau=True,
 )

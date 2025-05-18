@@ -33,6 +33,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     subset_masks={"USA": SelfSubset()},
     abbreviation="JDIS",
     data_credit=data_credit,
+    include_in_syau=False,
 )
 
 
@@ -67,6 +68,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     subset_masks={"USA": SelfSubset()},
     abbreviation="JCIR",
     data_credit=data_credit,
+    include_in_syau=False,
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,

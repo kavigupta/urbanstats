@@ -272,6 +272,7 @@ def districts(
         end_date=lambda x: x["end_date"],
         start_date_overall=2023,
         end_date_overall=2032,
+        include_in_syau=False,
     )
 
 

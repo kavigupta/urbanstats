@@ -61,4 +61,5 @@ URBAN_CENTERS = Shapefile(
         linkText="GHSL",
         link="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php",
     ),
+    include_in_syau=True,
 )
