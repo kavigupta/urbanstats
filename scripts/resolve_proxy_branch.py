@@ -61,5 +61,5 @@ while True:
     print(f"HEADs equal! origin={densitydb_branch['commit']['sha']} ci_proxy={ci_proxy_hash}", file=sys.stderr)
     break
 
-print(f"ci_proxy_origin={ci_proxy_origin}")
-print(f"densitydb_branch_name={densitydb_branch['name']}")
+print(f"ci-proxy-origin={ci_proxy_origin}")
+print(f"densitydb-branch-name={densitydb_branch['name']}")
