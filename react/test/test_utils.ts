@@ -255,3 +255,12 @@ export async function clickMapElement(t: TestController, r: RegExp): Promise<voi
         cm(clickablePolygon)
     }, { dependencies: { clickablePolygon } })
 }
+
+export async function dataValues(): Promise<string[]> {
+    const selector = Selector('span').withAttribute('class', /testing-statistic-value/)
+    const values = [] as string[]
+    for (let i = 0; i < await selector.count; i++) {
+        values.push(await selector.nth(i).innerText)
+    }
+    return values
+}
