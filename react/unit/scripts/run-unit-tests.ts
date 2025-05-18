@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     const tests = testFiles.map(file => /unit\/(.+)\.ts/.exec(file)![1])
 
     if (options.proxy) {
-        await startProxy()
+        startProxy()
     }
 
     for (const test of tests) {
