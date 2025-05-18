@@ -3,8 +3,10 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { CheckboxSetting } from '../components/sidebar'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { buttonStyle, GenericShareButton } from '../quiz/quiz-result'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -54,6 +56,7 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
 }
 
 export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+    const [syauRequireEnter] = useSetting('syauRequireEnter')
     const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
@@ -90,8 +93,18 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         placeholder="Type a region name"
                         style={{ width: '86%' }}
                         onChange={(e) => {
+                            if (syauRequireEnter) {
+                                return
+                            }
                             if (attemptGuess(e.target.value)) {
                                 e.target.value = ''
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (syauRequireEnter && e.key === 'Enter') {
+                                if (attemptGuess(e.currentTarget.value)) {
+                                    e.currentTarget.value = ''
+                                }
                             }
                         }}
                     />
@@ -171,6 +184,14 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         Reset
                     </button>
                 </div>
+            </div>
+            <div style={{ marginBlockEnd: '1em' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
+                <CheckboxSetting
+                    name="Require pressing enter to formalize a guess"
+                    settingKey="syauRequireEnter"
+                    testId="syauRequireEnter"
+                />
             </div>
             <div style={{ marginBlockEnd: '1em' }} />
             <SYAUTable
