@@ -58,16 +58,15 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
       - name: Lint with pylint
-        run: python -m pylint --prefer-stubs=true urbanstats tests
+        run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
       - name: Check black
         run: |
-          python -m isort urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
-          python -m black urbanstats tests *.py scripts urbanstats-persistent-data legacy named_region_shapefiles
+          python -m isort $(git ls-files '*.py')
+          python -m black $(git ls-files '*.py')
            # allow all directories. This is needed because git complains about git repositories outside the user directory
           git config --global --add safe.directory '*'
           # check if there are any changes

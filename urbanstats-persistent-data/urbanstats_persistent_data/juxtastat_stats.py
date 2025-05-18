@@ -29,8 +29,16 @@ def table():
     )
     # juxtastat infinite
     c.execute(
-        """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats
-        (user integer, seed string, version integer, corrects BLOB, score integer, num_answers integer, time integer, PRIMARY KEY (user, seed, version))"""
+        """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats (
+            user integer,
+            seed string,
+            version integer,
+            corrects BLOB,
+            score integer,
+            num_answers integer,
+            time integer, 
+            PRIMARY KEY (user, seed, version)
+        )"""
     )
 
     # user to domain name
@@ -65,8 +73,21 @@ def table():
     # # correct1 to correct5 are the number of players who have answered each question correctly
     # # score0 to score5 are the number of players who have scored each score
     # c.execute(
-    #     """CREATE TABLE IF NOT EXISTS JuxtaStatDailyStats
-    #              (day integer PRIMARY KEY, total integer, correct1 integer, correct2 integer, correct3 integer, correct4 integer, correct5 integer, score0 integer, score1 integer, score2 integer, score3 integer, score4 integer, score5 integer)"""
+    #     """CREATE TABLE IF NOT EXISTS JuxtaStatDailyStats (
+    #           day integer PRIMARY KEY,
+    #           total integer,
+    #           correct1 integer,
+    #           correct2 integer,
+    #           correct3 integer,
+    #           correct4 integer,
+    #           correct5 integer,
+    #           score0 integer,
+    #           score1 integer,
+    #           score2 integer,
+    #           score3 integer,
+    #           score4 integer,
+    #           score5 integer
+    #     )"""
     # )
     conn.commit()
     return conn, c
@@ -337,8 +358,7 @@ def _compute_daily_score(date, quiz_kind, c, for_user):
     res = c.fetchone()
     if res is None:
         return dict(corrects=None)
-    else:
-        return dict(corrects=bitvector_to_corrects(res[0]))
+    return dict(corrects=bitvector_to_corrects(res[0]))
 
 
 def _infinite_results(c, for_user, seed, version):
