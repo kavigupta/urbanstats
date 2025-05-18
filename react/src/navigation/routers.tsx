@@ -3,6 +3,7 @@ import { ZodError } from 'zod'
 
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
+import { handleLoginCallback, LoginPanel } from '../components/LoginPanel'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
@@ -176,6 +177,11 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'error':
             return <ErrorScreen data={pageData} />
+        case 'login':
+            if (pageData.code !== undefined) {
+                void handleLoginCallback(pageData.code, pageData.state)
+            }
+            return <LoginPanel callbackUrl={pageData.callbackUrl} />
         case 'initialLoad':
             return (
                 <PageTemplate showFooter={false}>
