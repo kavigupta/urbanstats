@@ -118,8 +118,8 @@ jobs:
   resolve-proxy-branch:
     runs-on: ubuntu-22.04
     outputs:
-      ci_proxy_origin: ${{ steps.resolve-proxy-branch.outputs.ci-proxy-orign }}
-      densitydb_branch_name: ${{ steps.resolve-proxy-branch.outputs.densitydb-branch-name }}
+      ci-proxy-origin: ${{ steps.resolve-proxy-branch.outputs.ci-proxy-orign }}
+      densitydb-branch-name: ${{ steps.resolve-proxy-branch.outputs.densitydb-branch-name }}
     steps:
       - uses: actions/checkout@v4
       - id: resolve-proxy-branch
