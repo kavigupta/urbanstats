@@ -212,7 +212,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟥🟥🟥\n'
         + '\n'
-        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'washoe', '')
@@ -224,7 +224,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + 'https://soyoureanurbanist.org/#typ=County&universe=Nevada%2C+USA',
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'carson city', '')
@@ -241,7 +241,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'pershing', '')
@@ -256,7 +256,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'eureka', '')
@@ -268,6 +268,6 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩\n'
         + '\n'
-        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
 })
