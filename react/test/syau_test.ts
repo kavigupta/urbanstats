@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { withMockedClipboard } from './quiz_test_utils'
-import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 const syauInput = Selector('input[id="syau-input"]')
 
