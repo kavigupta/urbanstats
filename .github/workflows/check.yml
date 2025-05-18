@@ -131,7 +131,7 @@ jobs:
       - build-and-push-e2e-image
       - build-frontend
       - list-e2e-tests
-      - resolve_proxy_branch
+      - resolve-proxy-branch
     container:
       image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
