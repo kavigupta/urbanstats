@@ -8,7 +8,7 @@ server {
         if ($branch = "") {
             set $branch "master";
         }
-        root /root/urbanstats/react/ci_proxy/densitydb/repos/$branch;
+        root /root/urbanstats/ci_proxy/densitydb/repos/$branch;
         try_files $uri $uri/ =404;
     }
 }
