@@ -277,7 +277,7 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_r
         for resolution, glo in glo_by_resolution.items()
     }
     pop_by_resolution = {
-        glo[row_col_selected_by_resolution[resolution]]
+        resolution: glo[row_col_selected_by_resolution[resolution]]
         for resolution, glo in glo_by_resolution.items()
     }
 
@@ -297,12 +297,15 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_r
         }
         hists = {
             f"gpw_pw_density_histogram_{k}": produce_histogram(
-                dens, pop_by_resolution[k]
+                dens, pop_by_resolution[resolution_by_radius[k]]
             )
             for k, dens in dens_selected.items()
         }
         density = {
-            f"gpw_pw_density_{k}": np.nansum(pop * dens) / pop_sum_by_resolution[k]
+            f"gpw_pw_density_{k}": np.nansum(
+                pop_by_resolution[resolution_by_radius[k]] * dens
+            )
+            / pop_sum_by_resolution[resolution_by_radius[k]]
             for k, dens in dens_selected.items()
         }
     else:
