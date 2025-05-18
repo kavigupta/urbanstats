@@ -63,20 +63,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
       - name: allow all directories
-        run: |
-          # This is needed because git complains about git repositories outside the user directory
-          git config --global --add safe.directory '*'
+        # This is needed because git complains about git repositories outside the user directory
+        run: git config --global --add safe.directory '*'
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
-      - name: Check black
-        run: |
-          python -m isort $(git ls-files '*.py')
-          python -m black $(git ls-files '*.py')
-          # check if there are any changes
-          # if there are, print the diff and exit with an error
-          # this is needed because isort and black disagree on the formatting of some files, so we run both and check
-          # if there's a difference
-          bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+      - name: isort
+        run: python -m isort $(git ls-files '*.py')
+      - name: black
+        run: python -m black $(git ls-files '*.py')
+      - name: check if there are any changes
+        # if there are, print the diff and exit with an error
+        # this is needed because isort and black disagree on the formatting of some files, so we run both and check
+        # if there's a difference
+        run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
 
   test-python:
     runs-on: ubuntu-22.04
