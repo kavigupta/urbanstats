@@ -11,4 +11,4 @@ fi
 
 cd /root/urbanstats/react/ci_proxy
 
-npx tsx main.ts
+npx tsx sync.ts
