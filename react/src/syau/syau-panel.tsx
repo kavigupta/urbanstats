@@ -55,8 +55,34 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
     )
 }
 
-export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+function GuessInputField(props: { guessCallback: (query: string) => boolean }): ReactNode {
     const [syauRequireEnter] = useSetting('syauRequireEnter')
+    return (
+        <input
+            type="text"
+            id="syau-input"
+            placeholder="Type a region name"
+            style={{ width: '86%' }}
+            onChange={(e) => {
+                if (syauRequireEnter) {
+                    return
+                }
+                if (props.guessCallback(e.target.value)) {
+                    e.target.value = ''
+                }
+            }}
+            onKeyDown={(e) => {
+                if (syauRequireEnter && e.key === 'Enter') {
+                    if (props.guessCallback(e.currentTarget.value)) {
+                        e.currentTarget.value = ''
+                    }
+                }
+            }}
+        />
+    )
+}
+
+export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
     const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
@@ -87,27 +113,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
             <div style={{ margin: 'auto', width: '50%' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
                     <div style={{ width: '7%', height: '1.5em' }} />
-                    <input
-                        type="text"
-                        id="syau-input"
-                        placeholder="Type a region name"
-                        style={{ width: '86%' }}
-                        onChange={(e) => {
-                            if (syauRequireEnter) {
-                                return
-                            }
-                            if (attemptGuess(e.target.value)) {
-                                e.target.value = ''
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (syauRequireEnter && e.key === 'Enter') {
-                                if (attemptGuess(e.currentTarget.value)) {
-                                    e.currentTarget.value = ''
-                                }
-                            }
-                        }}
-                    />
+                    <GuessInputField guessCallback={attemptGuess} />
                     <div style={{ width: '2%', height: '1.5em' }} />
                     <div style={{ width: '5%', height: '1.5em', backgroundColor: indicatorColor }} />
                 </div>
