@@ -1,5 +1,6 @@
 import { CountsByUT } from '../components/countsByArticleType'
 import { forType } from '../components/load-article'
+import syau_suffixes from '../data/syau_suffixes'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
@@ -56,18 +57,8 @@ function removeSuffix(s: string, sxs: string[]): string {
 
 function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
     const chunksAll = longnames.map(computeMatchChunks)
-    const chunksFlat = chunksAll.flat()
-    const suffixCount = new Map<string, number>()
-    for (const chunk of chunksFlat) {
-        for (const suffix of suffixes(chunk)) {
-            suffixCount.set(suffix, (suffixCount.get(suffix) ?? 0) + 1)
-        }
-    }
     // list of suffixes that appear in at least 5% of flat chunks
-    const commonSuffixes = Array.from(suffixCount.entries())
-        .filter(([, count]) => count >= suffixFreqThresholdRaw && count >= suffixFreqThresholdPct * chunksFlat.length)
-        .map(([suffix]) => suffix)
-    // sort them by length, long to short
+    const commonSuffixes = syau_suffixes
     commonSuffixes.sort((a, b) => b.length - a.length)
     const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
     return chunksAllCleaned

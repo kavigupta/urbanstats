@@ -232,29 +232,29 @@ def build_urbanstats(
         )
 
     if not no_data:
-        # if not no_data_jsons:
-        #     create_article_gzips(
-        #         site_folder, shapefile_without_ordinals(), all_ordinals()
-        #     )
-        #     create_symlink_gzips(site_folder, compute_symlinks())
+        if not no_data_jsons:
+            create_article_gzips(
+                site_folder, shapefile_without_ordinals(), all_ordinals()
+            )
+            create_symlink_gzips(site_folder, compute_symlinks())
 
-        # if not no_index:
-        #     export_index(shapefile_without_ordinals(), site_folder)
+        if not no_index:
+            export_index(shapefile_without_ordinals(), site_folder)
 
-        # if not no_ordering:
-        #     table = shapefile_without_ordinals()
-        #     output_ordering(
-        #         site_folder,
-        #         all_ordinals(),
-        #         longname_to_type=dict(zip(table.longname, table.type)),
-        #     )
+        if not no_ordering:
+            table = shapefile_without_ordinals()
+            output_ordering(
+                site_folder,
+                all_ordinals(),
+                longname_to_type=dict(zip(table.longname, table.type)),
+            )
 
-        # full_consolidated_data(site_folder)
-        # output_boundaries(site_folder)
-        # export_centroids(site_folder, shapefiles, all_ordinals())
+        full_consolidated_data(site_folder)
+        output_boundaries(site_folder)
+        export_centroids(site_folder, shapefiles, all_ordinals())
 
-        # if not no_sitemap:
-        #     output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+        if not no_sitemap:
+            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
         with open("react/src/data/syau_suffixes.ts", "w") as f:
             output_typescript(
