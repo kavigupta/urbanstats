@@ -24,8 +24,8 @@ def strip_suffix(name: str, suffixes: Set[str]) -> str:
     """
     Strip the suffixes from a name. This is used to normalize the names in the database.
     """
-    for i in range(len(name)):
-        if name[i] != " ":
+    for i, name_i in enumerate(name):
+        if name_i != " ":
             continue
         suffix = name[i + 1 :]
         if suffix in suffixes:
@@ -99,8 +99,8 @@ def get_prefixes(name: str) -> Iterator[str]:
     """
     Get the prefixes of a name. Assume it has already been normalized.
     """
-    for i in range(len(name)):
-        if name[i] == " ":
+    for i, name_i in enumerate(name):
+        if name_i == " ":
             yield name[:i]
 
 
