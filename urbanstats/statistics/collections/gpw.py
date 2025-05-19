@@ -49,7 +49,8 @@ class GPWStatistics(InternationalStatistics):
         statistics_table = {}
 
         result, hists = compute_gpw_data_for_shapefile(
-            shapefile, resolution_by_radius={k: 1200 for k in GPW_RADII}
+            shapefile,
+            resolution_by_radius={k: 1200 if k <= 4 else 120 for k in GPW_RADII},
         )
         for k, rk in result.items():
             statistics_table[k] = rk
