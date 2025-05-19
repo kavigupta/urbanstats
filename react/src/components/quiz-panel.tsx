@@ -172,7 +172,7 @@ interface TodoQuiz {
     pageData: Extract<PageData, {
         kind: 'quiz'
     }>
-    descriptor: QuizPageDescriptor
+    newPageDescriptor: QuizPageDescriptor
 }
 
 export function OtherQuizzesButtons(): ReactNode {
@@ -199,13 +199,7 @@ export function OtherQuizzesButtons(): ReactNode {
         let cancel = false
 
         void (async () => {
-            const quizDatas = await Promise.all(otherQuizPages.map(async (pageDescriptor) => {
-                const { pageData } = await loadPageDescriptor(pageDescriptor, Settings.shared)
-                return {
-                    pageData: pageData as Extract<PageData, { kind: 'quiz' }>,
-                    descriptor: pageDescriptor,
-                }
-            }))
+            const quizDatas = await Promise.all(otherQuizPages.map(pageDescriptor => loadPageDescriptor(pageDescriptor, Settings.shared)))
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Prevents races
             if (!cancel) {
                 setTodoQuizzes(
@@ -238,14 +232,15 @@ export function OtherQuizzesButtons(): ReactNode {
                 style={otherQuizButtonStyle}
                 {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 } })}
             >
-                {currentQuizMode === 'infinite' ? 'Random ' : ''}
+                {currentQuizMode === 'infinite' ? 'Random' : 'Play'}
+                {' '}
                 Juxtastat Infinite
             </a>
             {todoQuizzes.map(quiz => (
                 <a
-                    key={quiz.descriptor.kind}
+                    key={quiz.pageData.quizDescriptor.kind}
                     style={otherQuizButtonStyle}
-                    {...navContext.link(quiz.descriptor, { scroll: { kind: 'position', top: 0 } })}
+                    {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
                 >
                     Play
                     {' '}
