@@ -16,7 +16,6 @@ type MatchChunks = string[]
 
 export interface SYAUData {
     longnames: string[]
-    commonSuffixes: string[]
     matchChunks: MatchChunks[]
     populations: number[]
     populationOrdinals: number[]
@@ -55,7 +54,7 @@ function removeSuffix(s: string, sxs: string[]): string {
     return s
 }
 
-function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
+function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
     const chunksAll = longnames.map(computeMatchChunks)
     const chunksFlat = chunksAll.flat()
     const suffixCount = new Map<string, number>()
@@ -71,7 +70,7 @@ function computeMatchChunksAll(longnames: string[]): [string[], MatchChunks[]] {
     // sort them by length, long to short
     commonSuffixes.sort((a, b) => b.length - a.length)
     const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
-    return [commonSuffixes.reverse(), chunksAllCleaned]
+    return chunksAllCleaned
 }
 
 export function onlyKeepAlpanumeric(s: string): string {
@@ -115,7 +114,7 @@ export async function loadSYAUData(
 
     const centroids = await loadCentroids(universe, typ, articleNames)
 
-    const [commonSuffixes, matchChunks] = computeMatchChunksAll(articleNames)
+    const matchChunks = computeMatchChunksAll(articleNames)
 
     const populationOrdinals = values.map((v, i) => [v, i] as [number, number])
         .sort((a, b) => b[0] - a[0])
@@ -126,7 +125,6 @@ export async function loadSYAUData(
 
     return {
         longnames: articleNames,
-        commonSuffixes,
         matchChunks,
         populations: values,
         populationOrdinals,
