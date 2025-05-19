@@ -42,7 +42,7 @@ async function main(): Promise<void> {
     }
 
     if (options.proxy) {
-        await startProxy()
+        startProxy()
     }
 
     const testcafe = await createTestCafe('localhost', 1337, 1338)

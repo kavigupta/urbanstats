@@ -1,7 +1,9 @@
 import functools
 import hashlib
 import json
+import logging
 
+# pylint: disable=import-error
 import flask
 from flask_cors import CORS
 
@@ -23,6 +25,9 @@ from .juxtastat_stats import (
     unfriend,
 )
 from .shorten import retreive_and_lengthen, shorten_and_save
+
+# pylint: enable=import-error
+
 
 app = flask.Flask("urbanstats-persistent-data")
 cors = CORS(app)
@@ -82,7 +87,7 @@ def get_authenticated_user(additional_required_params=()):
 
     required_params = ["user", "secureID"] + list(additional_required_params)
 
-    if not all([param in form for param in required_params]):
+    if not all(param in form for param in required_params):
         print("NEEDS PARAMS", required_params, "GOT", form.keys())
         return False, (
             flask.jsonify(
@@ -255,8 +260,6 @@ def juxtastat_infinite_results():
     print("INFINITE RESULTS FOR", res)
     return flask.jsonify(res)
 
-
-import logging
 
 logging.getLogger("flask_cors").level = logging.DEBUG
 

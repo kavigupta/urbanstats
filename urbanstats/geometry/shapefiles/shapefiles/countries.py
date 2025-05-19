@@ -41,4 +41,5 @@ COUNTRIES = Shapefile(
     },
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.data_credit,
+    include_in_syau=True,
 )
