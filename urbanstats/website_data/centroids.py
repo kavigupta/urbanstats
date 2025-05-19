@@ -8,16 +8,34 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
 
+def compute_internal_point(geo):
+    geo = geo.buffer(0)
+    centroid = geo.centroid
+    if geo.contains(centroid):
+        return centroid
+    if geo.geom_type == "MultiPolygon":
+        # If the geometry is a MultiPolygon, we want to find the largest
+        # polygon and compute the centroid of that one
+        geo = max(list(geo.geoms), key=lambda x: x.area)
+        centroid = geo.centroid
+        if geo.contains(centroid):
+            return centroid
+    return geo.representative_point()
+
+
 @permacache(
-    "urbanstats/website_data/centroids/compute_centroids_2",
+    "urbanstats/website_data/centroids/compute_centroids_4",
     key_function=dict(sf=lambda x: x.hash_key),
     multiprocess_safe=True,
 )
 def compute_centroids(sf):
     sf_fr = sf.load_file()
     sf_fr = sf_fr.set_index("longname")
-    centroids = sf_fr.centroid
-    return centroids
+    centroids = [
+        compute_internal_point(geo)
+        for geo in tqdm.tqdm(sf_fr.geometry.values, desc=f"centroids for {sf.hash_key}")
+    ]
+    return pd.Series(centroids, index=sf_fr.index)
 
 
 def compute_all_centroids(shapefiles):
