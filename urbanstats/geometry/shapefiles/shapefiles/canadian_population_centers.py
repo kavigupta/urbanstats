@@ -70,4 +70,5 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
         linkText="Canadian Census",
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpc_000a21a_e.zip",
     ),
+    include_in_syau=True,
 )

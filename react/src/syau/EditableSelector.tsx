@@ -2,7 +2,7 @@ import React, { ReactNode, useContext } from 'react'
 
 import { CountsByUT } from '../components/countsByArticleType'
 import { GenericSearchBox } from '../components/search-generic'
-import type_ordering_idx from '../data/type_ordering_idx'
+import syau_region_types from '../data/syau_region_types'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { useSubHeaderTextClass } from '../utils/responsive'
@@ -68,7 +68,7 @@ export function SelectUniverse(props: { typ?: string, universe?: string, counts:
 }
 
 export function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
-    const types = Object.keys(type_ordering_idx).filter(
+    const types = syau_region_types.filter(
         type => props.universe === undefined || populationColumns(props.counts, type, props.universe).length > 0,
     )
     const navContext = useContext(Navigator.Context)

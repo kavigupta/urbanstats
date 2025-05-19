@@ -41,4 +41,5 @@ USDA_COUNTY_TYPE = Shapefile(
         linkText="USDA",
         link="https://www.ers.usda.gov/data-products/county-typology-codes/",
     ),
+    include_in_syau=True,
 )
