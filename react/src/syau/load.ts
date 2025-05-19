@@ -9,10 +9,6 @@ import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
-const suffixFreqThresholdPct = 0.01
-// 4 means you can just have North South East West. Let's require at least 6
-const suffixFreqThresholdRaw = 6
-
 type MatchChunks = string[]
 
 export interface SYAUData {
@@ -35,16 +31,6 @@ function computeMatchChunks(longname: string): MatchChunks {
     const longnameParts = longname.split(/[-/]/).map(s => onlyKeepAlpanumeric(s).trim())
     // check if query is equal to any part of the longname
     return longnameParts
-}
-
-function suffixes(s: string): string[] {
-    // all suffixes of a string s; they must all begin with a space
-    const sxs = []
-    for (let i = 0; i < s.length; i++) {
-        if (s[i] === ' ')
-            sxs.push(s.slice(i))
-    }
-    return sxs
 }
 
 function removeSuffix(s: string, sxs: string[]): string {
