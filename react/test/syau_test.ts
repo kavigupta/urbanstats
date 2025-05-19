@@ -51,10 +51,23 @@ test('los-angeles', async (t) => {
 
 test('oakland', async (t) => {
     await addInputText(t, 'Oakland', 'land')
-    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
     await clearInputText(t)
     await addInputText(t, 'Oakland', '')
-    await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '8. Oakland city',
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
 })
 
 test('oakland-require-enter', async (t) => {
@@ -71,13 +84,26 @@ test('oakland-require-enter', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
     await t.click(Selector('[data-test-id=syauRequireEnter]'))
     await addInputText(t, 'Oakland', 'land')
-    await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '8. Oakland city',
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
 })
 
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
     await screencap(t)
-    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
     await addInputText(t, 'Oak', 'Oak')
     await screencap(t)
 })
@@ -182,13 +208,13 @@ test('tijuana-urban-center', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Tijuana Urban Center'])
 })
 
-// TODO reenable this
-// urbanstatsFixture('delaware-counties', '/syau.html#typ=County&universe=Delaware%2C+USA')
+urbanstatsFixture('delaware-counties', '/syau.html#typ=County&universe=Delaware%2C+USA')
 
-// test('sussex-delaware', async (t) => {
-//     await addInputText(t, 'sussex', '')
-//     await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
-// })
+test('sussex-delaware', async (t) => {
+    // This test makes sure that something with only 3 elements works properly.
+    await addInputText(t, 'sussex', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
+})
 
 urbanstatsFixture('canada-cma', '/syau.html#typ=CA+CMA&universe=Canada')
 test('toronto-cma', async (t) => {
@@ -227,7 +253,7 @@ test('more-precise-percentages', async (t) => {
         + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
-    await addInputText(t, 'carson city', '')
+    await addInputText(t, 'carson', '')
     await addInputText(t, 'elko', '')
     await addInputText(t, 'nye', '')
     await addInputText(t, 'douglas', '')
