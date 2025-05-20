@@ -1,14 +1,14 @@
 const value: Record<string, number[]> = {
-    'world__10M Person Circle': [
+    "world__10M Person Circle": [
         244,
-        76,
+        111
     ],
-    'world__5M Person Circle': [
+    "world__5M Person Circle": [
         122,
         122,
-        76,
+        111
     ],
-    'world__CA Census Subdivision': [
+    "world__CA Census Subdivision": [
         42,
         42,
         42,
@@ -16,13 +16,14 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'world__CA Population Center': [
+    "world__CA Population Center": [
         195,
-        125,
+        160
     ],
-    'world__CCD': [
+    "world__CCD": [
         6,
         6,
         6,
@@ -76,9 +77,15 @@ const value: Record<string, number[]> = {
         6,
         6,
         6,
-        2,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        1
     ],
-    'world__City': [
+    "world__City": [
         7,
         7,
         7,
@@ -124,49 +131,64 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'world__Congressional District (1910s)': [
+    "world__Congressional District (1880s)": [
+        336,
+        19
+    ],
+    "world__Congressional District (1910s)": [
         296,
-        24,
+        59
     ],
-    'world__Congressional District (1960s)': [
+    "world__Congressional District (1960s)": [
         195,
-        125,
+        160
     ],
-    'world__Congressional District (1990s)': [
+    "world__Congressional District (1980s)": [
+        333,
+        22
+    ],
+    "world__Congressional District (1990s)": [
         292,
-        28,
+        63
     ],
-    'world__County': [
+    "world__County": [
         63,
         63,
         63,
         63,
         63,
-        5,
+        40
     ],
-    'world__County Cross CD': [
+    "world__County Cross CD": [
         54,
         54,
         54,
         54,
         54,
-        50,
+        54,
+        31
     ],
-    'world__Hospital Service Area': [
+    "world__Hospital Service Area": [
         59,
         59,
         59,
         59,
         59,
-        25,
+        59,
+        1
     ],
-    'world__MSA': [
+    "world__MSA": [
         212,
-        108,
+        143
     ],
-    'world__Neighborhood': [
+    "world__Neighborhood": [
         13,
         13,
         13,
@@ -191,9 +213,12 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        8,
+        13,
+        13,
+        13,
+        4
     ],
-    'world__School District': [
+    "world__School District": [
         16,
         16,
         16,
@@ -214,8 +239,11 @@ const value: Record<string, number[]> = {
         16,
         16,
         16,
+        16,
+        16,
+        3
     ],
-    'world__State House District': [
+    "world__State House District": [
         42,
         42,
         42,
@@ -223,30 +251,32 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'world__State Senate District': [
+    "world__State Senate District": [
         103,
         103,
         103,
-        11,
+        46
     ],
-    'world__Subnational Region': [
+    "world__Subnational Region": [
         55,
         55,
         55,
         55,
         55,
-        45,
+        55,
+        25
     ],
-    'world__Urban Area': [
+    "world__Urban Area": [
         76,
         76,
         76,
         76,
-        16,
+        51
     ],
-    'world__Urban Center': [
+    "world__Urban Center": [
         20,
         20,
         20,
@@ -263,8 +293,10 @@ const value: Record<string, number[]> = {
         20,
         20,
         20,
+        20,
+        15
     ],
-    'world__ZIP': [
+    "world__ZIP": [
         7,
         7,
         7,
@@ -310,27 +342,32 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'Africa__Subnational Region': [
+    "Africa__Subnational Region": [
         213,
-        107,
+        142
     ],
-    'Africa__Urban Center': [
+    "Africa__Urban Center": [
         100,
         100,
         100,
-        20,
+        55
     ],
-    'Asia__5M Person Circle': [
+    "Asia__5M Person Circle": [
         203,
-        117,
+        152
     ],
-    'Asia__Subnational Region': [
+    "Asia__Subnational Region": [
         200,
-        120,
+        155
     ],
-    'Asia__Urban Center': [
+    "Asia__Urban Center": [
         36,
         36,
         36,
@@ -339,17 +376,18 @@ const value: Record<string, number[]> = {
         36,
         36,
         36,
-        32,
+        36,
+        31
     ],
-    'Europe__Subnational Region': [
+    "Europe__Subnational Region": [
         210,
-        110,
+        145
     ],
-    'Europe__Urban Center': [
+    "Europe__Urban Center": [
         205,
-        115,
+        150
     ],
-    'North America__CA Census Subdivision': [
+    "North America__CA Census Subdivision": [
         42,
         42,
         42,
@@ -357,13 +395,14 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'North America__CA Population Center': [
+    "North America__CA Population Center": [
         195,
-        125,
+        160
     ],
-    'North America__CCD': [
+    "North America__CCD": [
         6,
         6,
         6,
@@ -417,9 +456,15 @@ const value: Record<string, number[]> = {
         6,
         6,
         6,
-        2,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        1
     ],
-    'North America__City': [
+    "North America__City": [
         7,
         7,
         7,
@@ -465,49 +510,64 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'North America__Congressional District (1910s)': [
+    "North America__Congressional District (1880s)": [
+        336,
+        19
+    ],
+    "North America__Congressional District (1910s)": [
         296,
-        24,
+        59
     ],
-    'North America__Congressional District (1960s)': [
+    "North America__Congressional District (1960s)": [
         195,
-        125,
+        160
     ],
-    'North America__Congressional District (1990s)': [
+    "North America__Congressional District (1980s)": [
+        335,
+        20
+    ],
+    "North America__Congressional District (1990s)": [
         293,
-        27,
+        62
     ],
-    'North America__County': [
+    "North America__County": [
         63,
         63,
         63,
         63,
         63,
-        5,
+        40
     ],
-    'North America__County Cross CD': [
+    "North America__County Cross CD": [
         54,
         54,
         54,
         54,
         54,
-        50,
+        54,
+        31
     ],
-    'North America__Hospital Service Area': [
+    "North America__Hospital Service Area": [
         59,
         59,
         59,
         59,
         59,
-        25,
+        59,
+        1
     ],
-    'North America__MSA': [
+    "North America__MSA": [
         213,
-        107,
+        142
     ],
-    'North America__Neighborhood': [
+    "North America__Neighborhood": [
         13,
         13,
         13,
@@ -532,9 +592,12 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        8,
+        13,
+        13,
+        13,
+        4
     ],
-    'North America__School District': [
+    "North America__School District": [
         16,
         16,
         16,
@@ -555,8 +618,11 @@ const value: Record<string, number[]> = {
         16,
         16,
         16,
+        16,
+        16,
+        3
     ],
-    'North America__State House District': [
+    "North America__State House District": [
         42,
         42,
         42,
@@ -564,26 +630,27 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'North America__State Senate District': [
+    "North America__State Senate District": [
         105,
         105,
         105,
-        5,
+        40
     ],
-    'North America__Urban Area': [
+    "North America__Urban Area": [
         77,
         77,
         77,
         77,
-        12,
+        47
     ],
-    'North America__Urban Center': [
+    "North America__Urban Center": [
         289,
-        31,
+        66
     ],
-    'North America__ZIP': [
+    "North America__ZIP": [
         7,
         7,
         7,
@@ -629,13 +696,18 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'South America__Urban Center': [
+    "South America__Urban Center": [
         276,
-        44,
+        79
     ],
-    'Canada__CA Census Subdivision': [
+    "Canada__CA Census Subdivision": [
         42,
         42,
         42,
@@ -643,23 +715,26 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'Canada__CA Population Center': [
+    "Canada__CA Population Center": [
         195,
-        125,
+        160
     ],
-    'China__Urban Center': [
+    "China__Urban Center": [
         110,
         110,
-        100,
+        110,
+        25
     ],
-    'India__Urban Center': [
+    "India__Urban Center": [
         109,
         109,
-        102,
+        109,
+        28
     ],
-    'USA__CCD': [
+    "USA__CCD": [
         6,
         6,
         6,
@@ -713,9 +788,15 @@ const value: Record<string, number[]> = {
         6,
         6,
         6,
-        2,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        1
     ],
-    'USA__City': [
+    "USA__City": [
         7,
         7,
         7,
@@ -761,49 +842,64 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'USA__Congressional District (1910s)': [
+    "USA__Congressional District (1880s)": [
+        336,
+        19
+    ],
+    "USA__Congressional District (1910s)": [
         296,
-        24,
+        59
     ],
-    'USA__Congressional District (1960s)': [
+    "USA__Congressional District (1960s)": [
         195,
-        125,
+        160
     ],
-    'USA__Congressional District (1990s)': [
+    "USA__Congressional District (1980s)": [
+        333,
+        22
+    ],
+    "USA__Congressional District (1990s)": [
         292,
-        28,
+        63
     ],
-    'USA__County': [
+    "USA__County": [
         63,
         63,
         63,
         63,
         63,
-        5,
+        40
     ],
-    'USA__County Cross CD': [
+    "USA__County Cross CD": [
         54,
         54,
         54,
         54,
         54,
-        50,
+        54,
+        31
     ],
-    'USA__Hospital Service Area': [
+    "USA__Hospital Service Area": [
         59,
         59,
         59,
         59,
         59,
-        25,
+        59,
+        1
     ],
-    'USA__MSA': [
+    "USA__MSA": [
         212,
-        108,
+        143
     ],
-    'USA__Neighborhood': [
+    "USA__Neighborhood": [
         13,
         13,
         13,
@@ -828,9 +924,12 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        8,
+        13,
+        13,
+        13,
+        4
     ],
-    'USA__School District': [
+    "USA__School District": [
         16,
         16,
         16,
@@ -851,8 +950,11 @@ const value: Record<string, number[]> = {
         16,
         16,
         16,
+        16,
+        16,
+        3
     ],
-    'USA__State House District': [
+    "USA__State House District": [
         42,
         42,
         42,
@@ -860,22 +962,23 @@ const value: Record<string, number[]> = {
         42,
         42,
         42,
-        26,
+        42,
+        19
     ],
-    'USA__State Senate District': [
+    "USA__State Senate District": [
         103,
         103,
         103,
-        11,
+        46
     ],
-    'USA__Urban Area': [
+    "USA__Urban Area": [
         76,
         76,
         76,
         76,
-        16,
+        51
     ],
-    'USA__ZIP': [
+    "USA__ZIP": [
         7,
         7,
         7,
@@ -921,332 +1024,411 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        5,
+        7,
+        7,
+        7,
+        7,
+        7,
+        5
     ],
-    'Alabama, USA__ZIP': [
+    "Alabama, USA__City": [
+        337,
+        18
+    ],
+    "Alabama, USA__ZIP": [
         312,
-        8,
+        43
     ],
-    'Arizona, USA__Neighborhood': [
+    "Arizona, USA__Neighborhood": [
         256,
-        64,
+        99
     ],
-    'Arkansas, USA__CCD': [
+    "Arkansas, USA__CCD": [
         171,
-        149,
+        171,
+        13
     ],
-    'California, USA__City': [
+    "Arkansas, USA__City": [
+        320,
+        35
+    ],
+    "Arkansas, USA__ZIP": [
+        336,
+        19
+    ],
+    "California, USA__City": [
         125,
         125,
-        70,
+        105
     ],
-    'California, USA__Neighborhood': [
+    "California, USA__Neighborhood": [
         100,
         100,
         100,
-        20,
+        55
     ],
-    'California, USA__School District': [
+    "California, USA__School District": [
         205,
-        115,
+        150
     ],
-    'California, USA__ZIP': [
+    "California, USA__ZIP": [
         114,
         114,
-        92,
+        114,
+        13
     ],
-    'Florida, USA__City': [
+    "Florida, USA__City": [
         210,
-        110,
+        145
     ],
-    'Florida, USA__Neighborhood': [
+    "Florida, USA__Neighborhood": [
         159,
         159,
-        2,
+        37
     ],
-    'Florida, USA__ZIP': [
+    "Florida, USA__ZIP": [
         204,
-        116,
+        151
     ],
-    'Georgia, USA__City': [
+    "Georgia, USA__CCD": [
+        342,
+        13
+    ],
+    "Georgia, USA__City": [
         297,
-        23,
+        58
     ],
-    'Georgia, USA__ZIP': [
+    "Georgia, USA__ZIP": [
         273,
-        47,
+        82
     ],
-    'Illinois, USA__CCD': [
+    "Illinois, USA__CCD": [
         118,
         118,
-        84,
+        118,
+        1
     ],
-    'Illinois, USA__City': [
+    "Illinois, USA__City": [
         137,
         137,
-        46,
+        81
     ],
-    'Illinois, USA__School District': [
+    "Illinois, USA__School District": [
         232,
-        88,
+        123
     ],
-    'Illinois, USA__ZIP': [
+    "Illinois, USA__ZIP": [
         145,
         145,
-        30,
+        65
     ],
-    'Indiana, USA__CCD': [
+    "Indiana, USA__CCD": [
         198,
-        122,
+        157
     ],
-    'Indiana, USA__City': [
+    "Indiana, USA__City": [
         207,
-        113,
+        148
     ],
-    'Indiana, USA__Neighborhood': [
+    "Indiana, USA__Neighborhood": [
         299,
-        21,
+        56
     ],
-    'Indiana, USA__ZIP': [
+    "Indiana, USA__ZIP": [
         258,
-        62,
+        97
     ],
-    'Iowa, USA__CCD': [
+    "Iowa, USA__CCD": [
         121,
         121,
-        78,
+        113
     ],
-    'Iowa, USA__City': [
+    "Iowa, USA__City": [
         195,
-        125,
+        160
     ],
-    'Iowa, USA__ZIP': [
+    "Iowa, USA__ZIP": [
         214,
-        106,
+        141
     ],
-    'Kansas, USA__CCD': [
+    "Kansas, USA__CCD": [
         132,
         132,
-        56,
+        91
     ],
-    'Kansas, USA__City': [
+    "Kansas, USA__City": [
         270,
-        50,
+        85
     ],
-    'Kansas, USA__ZIP': [
+    "Kansas, USA__ZIP": [
         286,
-        34,
+        69
     ],
-    'Kentucky, USA__ZIP': [
+    "Kentucky, USA__ZIP": [
         262,
-        58,
+        93
     ],
-    'Michigan, USA__CCD': [
+    "Louisiana, USA__CCD": [
+        347,
+        8
+    ],
+    "Michigan, USA__CCD": [
         131,
         131,
-        58,
+        93
     ],
-    'Michigan, USA__City': [
+    "Michigan, USA__City": [
         269,
-        51,
+        86
     ],
-    'Michigan, USA__ZIP': [
+    "Michigan, USA__ZIP": [
         205,
-        115,
+        150
     ],
-    'Minnesota, USA__CCD': [
+    "Minnesota, USA__CCD": [
         73,
         73,
         73,
         73,
-        28,
+        63
     ],
-    'Minnesota, USA__City': [
+    "Minnesota, USA__City": [
         219,
-        101,
+        136
     ],
-    'Minnesota, USA__ZIP': [
+    "Minnesota, USA__ZIP": [
         226,
-        94,
+        129
     ],
-    'Missouri, USA__CCD': [
+    "Missouri, USA__CCD": [
         144,
         144,
-        32,
+        67
     ],
-    'Missouri, USA__City': [
+    "Missouri, USA__City": [
         186,
-        134,
+        169
     ],
-    'Missouri, USA__ZIP': [
+    "Missouri, USA__ZIP": [
         195,
-        125,
+        160
     ],
-    'Nebraska, USA__CCD': [
+    "Nebraska, USA__CCD": [
         169,
-        151,
+        169,
+        17
     ],
-    'New Jersey, USA__City': [
+    "Nebraska, USA__City": [
+        339,
+        16
+    ],
+    "Nebraska, USA__ZIP": [
+        343,
+        12
+    ],
+    "New Jersey, USA__CCD": [
+        354,
+        1
+    ],
+    "New Jersey, USA__City": [
         286,
-        34,
+        69
     ],
-    'New York, USA__CCD': [
+    "New Jersey, USA__ZIP": [
+        338,
+        17
+    ],
+    "New York, USA__CCD": [
         198,
-        122,
+        157
     ],
-    'New York, USA__City': [
+    "New York, USA__City": [
         155,
         155,
-        10,
+        45
     ],
-    'New York, USA__School District': [
+    "New York, USA__Neighborhood": [
+        354,
+        1
+    ],
+    "New York, USA__School District": [
         293,
-        27,
+        62
     ],
-    'New York, USA__ZIP': [
+    "New York, USA__ZIP": [
         113,
         113,
-        94,
+        113,
+        16
     ],
-    'North Carolina, USA__CCD': [
+    "North Carolina, USA__CCD": [
         193,
-        127,
+        162
     ],
-    'North Carolina, USA__City': [
+    "North Carolina, USA__City": [
         258,
-        62,
+        97
     ],
-    'North Carolina, USA__ZIP': [
+    "North Carolina, USA__Neighborhood": [
+        342,
+        13
+    ],
+    "North Carolina, USA__ZIP": [
         249,
-        71,
+        106
     ],
-    'North Dakota, USA__CCD': [
+    "North Dakota, USA__CCD": [
         114,
         114,
-        92,
+        114,
+        13
     ],
-    'Ohio, USA__CCD': [
+    "Ohio, USA__CCD": [
         126,
         126,
-        68,
+        103
     ],
-    'Ohio, USA__City': [
+    "Ohio, USA__City": [
         158,
         158,
-        4,
+        39
     ],
-    'Ohio, USA__ZIP': [
+    "Ohio, USA__School District": [
+        327,
+        28
+    ],
+    "Ohio, USA__ZIP": [
         168,
-        152,
+        168,
+        19
     ],
-    'Oklahoma, USA__City': [
+    "Oklahoma, USA__City": [
         237,
-        83,
+        118
     ],
-    'Oklahoma, USA__ZIP': [
+    "Oklahoma, USA__ZIP": [
         308,
-        12,
+        47
     ],
-    'Pennsylvania, USA__CCD': [
+    "Pennsylvania, USA__CCD": [
         78,
         78,
         78,
         78,
-        8,
+        43
     ],
-    'Pennsylvania, USA__City': [
+    "Pennsylvania, USA__City": [
         106,
         106,
         106,
-        2,
+        37
     ],
-    'Pennsylvania, USA__ZIP': [
+    "Pennsylvania, USA__ZIP": [
         112,
         112,
-        96,
+        112,
+        19
     ],
-    'South Dakota, USA__CCD': [
+    "South Dakota, USA__CCD": [
         151,
         151,
-        18,
+        53
     ],
-    'Tennessee, USA__CCD': [
+    "Tennessee, USA__CCD": [
         237,
-        83,
+        118
     ],
-    'Tennessee, USA__ZIP': [
+    "Tennessee, USA__Neighborhood": [
+        329,
+        26
+    ],
+    "Tennessee, USA__ZIP": [
         318,
-        2,
+        37
     ],
-    'Texas, USA__CCD': [
+    "Texas, USA__CCD": [
         232,
-        88,
+        123
     ],
-    'Texas, USA__City': [
+    "Texas, USA__City": [
         108,
         108,
-        104,
+        108,
+        31
     ],
-    'Texas, USA__Neighborhood': [
+    "Texas, USA__Neighborhood": [
         151,
         151,
-        18,
+        53
     ],
-    'Texas, USA__School District': [
+    "Texas, USA__School District": [
         196,
-        124,
+        159
     ],
-    'Texas, USA__ZIP': [
+    "Texas, USA__ZIP": [
         104,
         104,
         104,
-        8,
+        43
     ],
-    'Virginia, USA__City': [
+    "Virginia, USA__City": [
         298,
-        22,
+        57
     ],
-    'Virginia, USA__ZIP': [
+    "Virginia, USA__Neighborhood": [
+        337,
+        18
+    ],
+    "Virginia, USA__ZIP": [
         225,
-        95,
+        130
     ],
-    'Washington, USA__City': [
+    "Washington, USA__City": [
         313,
-        7,
+        42
     ],
-    'West Virginia, USA__ZIP': [
+    "Washington, USA__Neighborhood": [
+        351,
+        4
+    ],
+    "Washington, USA__ZIP": [
+        338,
+        17
+    ],
+    "West Virginia, USA__ZIP": [
         283,
-        37,
+        72
     ],
-    'Wisconsin, USA__CCD': [
+    "Wisconsin, USA__CCD": [
         106,
         106,
         106,
-        2,
+        37
     ],
-    'Wisconsin, USA__City': [
+    "Wisconsin, USA__City": [
         248,
-        72,
+        107
     ],
-    'Wisconsin, USA__ZIP': [
+    "Wisconsin, USA__ZIP": [
         259,
-        61,
+        96
     ],
-    'Puerto Rico, USA__CCD': [
+    "Puerto Rico, USA__CCD": [
         223,
-        97,
+        132
     ],
-    'British Columbia, Canada__CA Census Subdivision': [
+    "British Columbia, Canada__CA Census Subdivision": [
         312,
-        8,
+        43
     ],
-    'Quebec, Canada__CA Census Subdivision': [
+    "Quebec, Canada__CA Census Subdivision": [
         168,
-        152,
+        168,
+        19
     ],
-    'Saskatchewan, Canada__CA Census Subdivision': [
+    "Saskatchewan, Canada__CA Census Subdivision": [
         223,
-        97,
-    ],
+        132
+    ]
 }
 export default value
