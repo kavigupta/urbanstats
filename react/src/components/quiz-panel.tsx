@@ -167,6 +167,23 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     )
 }
 
+export function JuxtastatInfiniteButton(): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <a
+            style={{
+                ...buttonStyle(colors.hueColors.blue),
+                width: '30%',
+                textDecoration: 'none',
+            }}
+            {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 } })}
+        >
+            Random Juxtastat Infinite
+        </a>
+    )
+}
 type QuizPageDescriptor = Extract<PageDescriptor, { kind: 'quiz' }>
 interface TodoQuiz {
     pageData: Extract<PageData, {
@@ -189,6 +206,7 @@ export function OtherQuizzesButtons(): ReactNode {
     const otherQuizPages: QuizPageDescriptor[] = ([
         { kind: 'quiz', mode: undefined },
         { kind: 'quiz', mode: 'retro' },
+        { kind: 'quiz', mode: 'infinite' },
     ] as const).filter(({ mode }) => mode !== currentQuizMode)
 
     const [todoQuizzes, setTodoQuizzes] = useState<TodoQuiz[]>([])
@@ -204,7 +222,8 @@ export function OtherQuizzesButtons(): ReactNode {
             if (!cancel) {
                 setTodoQuizzes(
                     quizDatas.filter(q =>
-                        !q.pageData.quiz.isDone(
+                        q.newPageDescriptor.mode === 'infinite'
+                        || !q.pageData.quiz.isDone(
                             getCorrectPattern(QuizLocalStorage.shared.history.value, q.pageData.quizDescriptor.name))))
             }
         })()
@@ -218,35 +237,34 @@ export function OtherQuizzesButtons(): ReactNode {
         textDecoration: 'none',
     }
 
+    if (todoQuizzes.length === 0) {
+        return null
+    }
+
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'flex-center',
-            flexWrap: 'wrap',
-            gap: '1em',
-        }}
-        >
-            <a
-                style={otherQuizButtonStyle}
-                {...navContext.link({ kind: 'quiz', mode: 'infinite' }, { scroll: { kind: 'position', top: 0 } })}
+        <>
+            <div className="gap"></div>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'flex-center',
+                flexWrap: 'wrap',
+                gap: '1em',
+            }}
             >
-                {currentQuizMode === 'infinite' ? 'Random' : 'Play'}
-                {' '}
-                Juxtastat Infinite
-            </a>
-            {todoQuizzes.map(quiz => (
-                <a
-                    key={quiz.pageData.quizDescriptor.kind}
-                    style={otherQuizButtonStyle}
-                    {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
-                >
-                    Play
-                    {' '}
-                    { nameOfQuizKind(quiz.pageData.quizDescriptor.kind) }
-                </a>
-            ))}
-        </div>
+                {todoQuizzes.map(quiz => (
+                    <a
+                        key={quiz.pageData.quizDescriptor.kind}
+                        style={otherQuizButtonStyle}
+                        {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
+                    >
+                        Play
+                        {' '}
+                        { nameOfQuizKind(quiz.pageData.quizDescriptor.kind) }
+                    </a>
+                ))}
+            </div>
+        </>
     )
 }
