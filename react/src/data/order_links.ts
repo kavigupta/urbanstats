@@ -1,5 +1,5 @@
 const value: Record<string, number[]> = {
-    "world__overall": [
+    'world__overall': [
         2,
         2,
         2,
@@ -177,19 +177,19 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        1
+        1,
     ],
-    "world__5M Person Circle": [
+    'world__5M Person Circle': [
         316,
-        39
+        39,
     ],
-    "world__CA Census Subdivision": [
+    'world__CA Census Subdivision': [
         106,
         106,
         106,
-        37
+        37,
     ],
-    "world__CCD": [
+    'world__CCD': [
         11,
         11,
         11,
@@ -222,9 +222,9 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        3
+        3,
     ],
-    "world__City": [
+    'world__City': [
         13,
         13,
         13,
@@ -252,24 +252,24 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "world__County": [
+    'world__County': [
         159,
         159,
-        37
+        37,
     ],
-    "world__County Cross CD": [
+    'world__County Cross CD': [
         137,
         137,
-        81
+        81,
     ],
-    "world__Hospital Service Area": [
+    'world__Hospital Service Area': [
         149,
         149,
-        57
+        57,
     ],
-    "world__Neighborhood": [
+    'world__Neighborhood': [
         31,
         31,
         31,
@@ -281,9 +281,9 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        14
+        14,
     ],
-    "world__School District": [
+    'world__School District': [
         38,
         38,
         38,
@@ -293,28 +293,28 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        13
+        13,
     ],
-    "world__State House District": [
+    'world__State House District': [
         105,
         105,
         105,
-        40
+        40,
     ],
-    "world__State Senate District": [
+    'world__State Senate District': [
         267,
-        88
+        88,
     ],
-    "world__Subnational Region": [
+    'world__Subnational Region': [
         140,
         140,
-        75
+        75,
     ],
-    "world__Urban Area": [
+    'world__Urban Area': [
         195,
-        160
+        160,
     ],
-    "world__Urban Center": [
+    'world__Urban Center': [
         50,
         50,
         50,
@@ -322,9 +322,9 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        5
+        5,
     ],
-    "world__ZIP": [
+    'world__ZIP': [
         13,
         13,
         13,
@@ -352,37 +352,37 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "Africa__overall": [
+    'Africa__overall': [
         142,
         142,
-        71
+        71,
     ],
-    "Africa__Urban Center": [
+    'Africa__Urban Center': [
         257,
-        98
+        98,
     ],
-    "Asia__overall": [
+    'Asia__overall': [
         59,
         59,
         59,
         59,
         59,
         59,
-        1
+        1,
     ],
-    "Asia__Urban Center": [
+    'Asia__Urban Center': [
         89,
         89,
         89,
-        88
+        88,
     ],
-    "Europe__overall": [
+    'Europe__overall': [
         226,
-        129
+        129,
     ],
-    "North America__overall": [
+    'North America__overall': [
         2,
         2,
         2,
@@ -560,15 +560,15 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        1
+        1,
     ],
-    "North America__CA Census Subdivision": [
+    'North America__CA Census Subdivision': [
         106,
         106,
         106,
-        37
+        37,
     ],
-    "North America__CCD": [
+    'North America__CCD': [
         11,
         11,
         11,
@@ -601,9 +601,9 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        3
+        3,
     ],
-    "North America__City": [
+    'North America__City': [
         13,
         13,
         13,
@@ -631,24 +631,24 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "North America__County": [
+    'North America__County': [
         159,
         159,
-        37
+        37,
     ],
-    "North America__County Cross CD": [
+    'North America__County Cross CD': [
         137,
         137,
-        81
+        81,
     ],
-    "North America__Hospital Service Area": [
+    'North America__Hospital Service Area': [
         149,
         149,
-        57
+        57,
     ],
-    "North America__Neighborhood": [
+    'North America__Neighborhood': [
         31,
         31,
         31,
@@ -660,9 +660,9 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        14
+        14,
     ],
-    "North America__School District": [
+    'North America__School District': [
         38,
         38,
         38,
@@ -672,23 +672,23 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        13
+        13,
     ],
-    "North America__State House District": [
+    'North America__State House District': [
         106,
         106,
         106,
-        37
+        37,
     ],
-    "North America__State Senate District": [
+    'North America__State Senate District': [
         270,
-        85
+        85,
     ],
-    "North America__Urban Area": [
+    'North America__Urban Area': [
         196,
-        159
+        159,
     ],
-    "North America__ZIP": [
+    'North America__ZIP': [
         13,
         13,
         13,
@@ -716,38 +716,38 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "Canada__overall": [
+    'Canada__overall': [
         75,
         75,
         75,
         75,
-        55
+        55,
     ],
-    "Canada__CA Census Subdivision": [
+    'Canada__CA Census Subdivision': [
         106,
         106,
         106,
-        37
+        37,
     ],
-    "China__overall": [
+    'China__overall': [
         207,
-        148
+        148,
     ],
-    "China__Urban Center": [
+    'China__Urban Center': [
         284,
-        71
+        71,
     ],
-    "India__overall": [
+    'India__overall': [
         205,
-        150
+        150,
     ],
-    "India__Urban Center": [
+    'India__Urban Center': [
         282,
-        73
+        73,
     ],
-    "USA__overall": [
+    'USA__overall': [
         3,
         3,
         3,
@@ -866,9 +866,9 @@ const value: Record<string, number[]> = {
         3,
         3,
         3,
-        1
+        1,
     ],
-    "USA__CCD": [
+    'USA__CCD': [
         11,
         11,
         11,
@@ -901,9 +901,9 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        3
+        3,
     ],
-    "USA__City": [
+    'USA__City': [
         13,
         13,
         13,
@@ -931,24 +931,24 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "USA__County": [
+    'USA__County': [
         159,
         159,
-        37
+        37,
     ],
-    "USA__County Cross CD": [
+    'USA__County Cross CD': [
         137,
         137,
-        81
+        81,
     ],
-    "USA__Hospital Service Area": [
+    'USA__Hospital Service Area': [
         149,
         149,
-        57
+        57,
     ],
-    "USA__Neighborhood": [
+    'USA__Neighborhood': [
         31,
         31,
         31,
@@ -960,9 +960,9 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        14
+        14,
     ],
-    "USA__School District": [
+    'USA__School District': [
         38,
         38,
         38,
@@ -972,23 +972,23 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        13
+        13,
     ],
-    "USA__State House District": [
+    'USA__State House District': [
         105,
         105,
         105,
-        40
+        40,
     ],
-    "USA__State Senate District": [
+    'USA__State Senate District': [
         267,
-        88
+        88,
     ],
-    "USA__Urban Area": [
+    'USA__Urban Area': [
         195,
-        160
+        160,
     ],
-    "USA__ZIP": [
+    'USA__ZIP': [
         13,
         13,
         13,
@@ -1016,286 +1016,286 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        4
+        4,
     ],
-    "Alabama, USA__overall": [
+    'Alabama, USA__overall': [
         186,
-        169
+        169,
     ],
-    "Arizona, USA__overall": [
+    'Arizona, USA__overall': [
         214,
-        141
+        141,
     ],
-    "Arkansas, USA__overall": [
+    'Arkansas, USA__overall': [
         155,
         155,
-        45
+        45,
     ],
-    "California, USA__overall": [
+    'California, USA__overall': [
         61,
         61,
         61,
         61,
         61,
-        50
+        50,
     ],
-    "California, USA__City": [
+    'California, USA__City': [
         324,
-        31
+        31,
     ],
-    "California, USA__Neighborhood": [
+    'California, USA__Neighborhood': [
         258,
-        97
+        97,
     ],
-    "California, USA__ZIP": [
+    'California, USA__ZIP': [
         295,
-        60
+        60,
     ],
-    "Colorado, USA__overall": [
+    'Colorado, USA__overall': [
         213,
-        142
+        142,
     ],
-    "Florida, USA__overall": [
+    'Florida, USA__overall': [
         113,
         113,
         113,
-        16
+        16,
     ],
-    "Georgia, USA__overall": [
+    'Georgia, USA__overall': [
         131,
         131,
-        93
+        93,
     ],
-    "Illinois, USA__overall": [
+    'Illinois, USA__overall': [
         73,
         73,
         73,
         73,
-        63
+        63,
     ],
-    "Illinois, USA__CCD": [
+    'Illinois, USA__CCD': [
         305,
-        50
+        50,
     ],
-    "Indiana, USA__overall": [
+    'Indiana, USA__overall': [
         109,
         109,
         109,
-        28
+        28,
     ],
-    "Iowa, USA__overall": [
+    'Iowa, USA__overall': [
         105,
         105,
         105,
-        40
+        40,
     ],
-    "Iowa, USA__CCD": [
+    'Iowa, USA__CCD': [
         313,
-        42
+        42,
     ],
-    "Kansas, USA__overall": [
+    'Kansas, USA__overall': [
         122,
         122,
-        111
+        111,
     ],
-    "Kansas, USA__CCD": [
+    'Kansas, USA__CCD': [
         342,
-        13
+        13,
     ],
-    "Kentucky, USA__overall": [
+    'Kentucky, USA__overall': [
         171,
         171,
-        13
+        13,
     ],
-    "Louisiana, USA__overall": [
+    'Louisiana, USA__overall': [
         208,
-        147
+        147,
     ],
-    "Maine, USA__overall": [
+    'Maine, USA__overall': [
         283,
-        72
+        72,
     ],
-    "Maryland, USA__overall": [
+    'Maryland, USA__overall': [
         243,
-        112
+        112,
     ],
-    "Massachusetts, USA__overall": [
+    'Massachusetts, USA__overall': [
         204,
-        151
+        151,
     ],
-    "Michigan, USA__overall": [
+    'Michigan, USA__overall': [
         99,
         99,
         99,
-        58
+        58,
     ],
-    "Michigan, USA__CCD": [
+    'Michigan, USA__CCD': [
         340,
-        15
+        15,
     ],
-    "Minnesota, USA__overall": [
+    'Minnesota, USA__overall': [
         85,
         85,
         85,
         85,
-        15
+        15,
     ],
-    "Minnesota, USA__CCD": [
+    'Minnesota, USA__CCD': [
         187,
-        168
+        168,
     ],
-    "Mississippi, USA__overall": [
+    'Mississippi, USA__overall': [
         232,
-        123
+        123,
     ],
-    "Missouri, USA__overall": [
+    'Missouri, USA__overall': [
         96,
         96,
         96,
-        67
+        67,
     ],
-    "Montana, USA__overall": [
+    'Montana, USA__overall': [
         271,
-        84
+        84,
     ],
-    "Nebraska, USA__overall": [
+    'Nebraska, USA__overall': [
         165,
         165,
-        25
+        25,
     ],
-    "New Jersey, USA__overall": [
+    'New Jersey, USA__overall': [
         160,
         160,
-        35
+        35,
     ],
-    "New Mexico, USA__overall": [
+    'New Mexico, USA__overall': [
         297,
-        58
+        58,
     ],
-    "New York, USA__overall": [
+    'New York, USA__overall': [
         69,
         69,
         69,
         69,
         69,
-        10
+        10,
     ],
-    "New York, USA__ZIP": [
+    'New York, USA__ZIP': [
         293,
-        62
+        62,
     ],
-    "North Carolina, USA__overall": [
+    'North Carolina, USA__overall': [
         115,
         115,
         115,
-        10
+        10,
     ],
-    "North Dakota, USA__overall": [
+    'North Dakota, USA__overall': [
         166,
         166,
-        23
+        23,
     ],
-    "North Dakota, USA__CCD": [
+    'North Dakota, USA__CCD': [
         296,
-        59
+        59,
     ],
-    "Ohio, USA__overall": [
+    'Ohio, USA__overall': [
         78,
         78,
         78,
         78,
-        43
+        43,
     ],
-    "Ohio, USA__CCD": [
+    'Ohio, USA__CCD': [
         327,
-        28
+        28,
     ],
-    "Oklahoma, USA__overall": [
+    'Oklahoma, USA__overall': [
         153,
         153,
-        49
+        49,
     ],
-    "Oregon, USA__overall": [
+    'Oregon, USA__overall': [
         269,
-        86
+        86,
     ],
-    "Pennsylvania, USA__overall": [
+    'Pennsylvania, USA__overall': [
         58,
         58,
         58,
         58,
         58,
         58,
-        7
+        7,
     ],
-    "Pennsylvania, USA__CCD": [
+    'Pennsylvania, USA__CCD': [
         200,
-        155
+        155,
     ],
-    "Pennsylvania, USA__City": [
+    'Pennsylvania, USA__City': [
         274,
-        81
+        81,
     ],
-    "Pennsylvania, USA__ZIP": [
+    'Pennsylvania, USA__ZIP': [
         290,
-        65
+        65,
     ],
-    "South Carolina, USA__overall": [
+    'South Carolina, USA__overall': [
         245,
-        110
+        110,
     ],
-    "South Dakota, USA__overall": [
+    'South Dakota, USA__overall': [
         187,
-        168
+        168,
     ],
-    "Tennessee, USA__overall": [
+    'Tennessee, USA__overall': [
         141,
         141,
-        73
+        73,
     ],
-    "Texas, USA__overall": [
+    'Texas, USA__overall': [
         56,
         56,
         56,
         56,
         56,
         56,
-        19
+        19,
     ],
-    "Texas, USA__City": [
+    'Texas, USA__City': [
         279,
-        76
+        76,
     ],
-    "Texas, USA__ZIP": [
+    'Texas, USA__ZIP': [
         268,
-        87
+        87,
     ],
-    "Virginia, USA__overall": [
+    'Virginia, USA__overall': [
         129,
         129,
-        97
+        97,
     ],
-    "Washington, USA__overall": [
+    'Washington, USA__overall': [
         178,
-        177
+        177,
     ],
-    "West Virginia, USA__overall": [
+    'West Virginia, USA__overall': [
         262,
-        93
+        93,
     ],
-    "Wisconsin, USA__overall": [
+    'Wisconsin, USA__overall': [
         100,
         100,
         100,
-        55
+        55,
     ],
-    "Wisconsin, USA__CCD": [
+    'Wisconsin, USA__CCD': [
         273,
-        82
+        82,
     ],
-    "Quebec, Canada__overall": [
+    'Quebec, Canada__overall': [
         308,
-        47
-    ]
+        47,
+    ],
 }
 export default value
