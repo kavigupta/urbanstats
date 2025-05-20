@@ -351,3 +351,29 @@ add in a sitemap and a full page index
 1328    order
 1457    data
 4100    total
+
+bunch of changes up to and including 3 arcseconds
+
+15	consolidated
+16	scripts
+20	sitemaps
+26	centroids
+32	index
+75	quiz_sampling_info
+1133	shape
+1360	order
+1471	data
+4155	total
+
+add more radii (#1053)
+
+16      consolidated
+16      scripts
+20      sitemaps
+26      centroids
+32      index
+75      quiz_sampling_info
+1133    shape
+1508    order
+1512    data
+4343    total
