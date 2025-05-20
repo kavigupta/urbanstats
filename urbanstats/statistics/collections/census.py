@@ -219,7 +219,7 @@ class CensusChange(USAStatistics):
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
-    version = 0
+    version = 1
 
     def year(self):
         return 2020
@@ -283,35 +283,35 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 6
+    version = 7
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 7
+    version = 8
 
     def year(self):
         return 2000
 
 
 class CensusChange2010(CensusChange):
-    version = 0
+    version = 1
 
     def year(self):
         return 2010
 
 
 class CensusChange2000(CensusChange):
-    version = 0
+    version = 1
 
     def year(self):
         return 2000
 
 
 @permacache(
-    "urbanstats/statistics/collections/aggregate_basics_of_year_3",
+    "urbanstats/statistics/collections/aggregate_basics_of_year_4",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregate_basics_of_year(shapefile, year):
