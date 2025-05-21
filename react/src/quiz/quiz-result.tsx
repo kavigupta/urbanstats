@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
-import { JuxtastatInfiniteButton } from '../components/quiz-panel'
+import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
 import { Statistic } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
@@ -157,6 +157,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 <UserId />
                 <ExportImport />
             </div>
+            <OtherQuizzesButtons />
         </div>
     )
 }

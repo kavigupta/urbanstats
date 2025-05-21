@@ -317,6 +317,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 // Only use one await per block (or use overlapping promises), so that resources may be loaded in parallel to improve performance
+export async function loadPageDescriptor(newDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, settings: Settings): Promise<{ pageData: Extract<PageData, { kind: 'quiz' }>, newPageDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, effects: () => void }>
+export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }>
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article': {

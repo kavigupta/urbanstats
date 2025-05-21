@@ -315,3 +315,7 @@ export function infiniteQuiz(seed: string, version: number): QuizQuestionsModel 
         uniqueKey: uniqueKey(),
     }
 }
+
+export function getCorrectPattern(history: QuizHistory, name: QuizDescriptor['name']): boolean[] {
+    return (history[name] ?? { choices: [], correct_pattern: [] }).correct_pattern.map(correct => correct ? true : false)
+}
