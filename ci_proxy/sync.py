@@ -2,6 +2,7 @@ import re
 import shutil
 from pathlib import Path
 from subprocess import PIPE, run
+from shlex import quote
 
 # Git repo must be manually initialized
 # Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
@@ -14,8 +15,23 @@ def repo_path(for_branch=None):
     return path if for_branch is None else path / for_branch
 
 
+def clone(branch):
+    run(
+        # If we don't quote here, someone could push a funky branch name and potentially RCE
+        f"git clone --branch {quote(branch)} {quote(str(bare_repo))} {quote(str(repo_path(branch)))} 2>&1 | tr '\r' '\n'",
+        check=True,
+        shell=True,
+    )
+
+
 print("Updating and pruning from remotes...")
-run(["git", "remote", "update", "--prune"], cwd=bare_repo, check=True)
+run(
+    # Replace returns so we can see output in logs
+    "git remote update --prune 2>&1 | tr '\r' '\n'",
+    cwd=bare_repo,
+    check=True,
+    shell=True,
+)
 branches_output = run(
     ["git", "branch"], cwd=bare_repo, stdout=PIPE, text=True, check=True
 ).stdout
@@ -49,19 +65,13 @@ for branch in branches:
             print(f"{branch}: Deleting {branch_path} ...")
             shutil.rmtree(branch_path)
             print(f"{branch}: Cloning new copy to {branch_path} ...")
-            run(
-                ["git", "clone", "--branch", branch, str(bare_repo), str(branch_path)],
-                check=True,
-            )
+            clone(branch)
             print(f"{branch}: Done")
         else:
             print(f"{branch}: heads same. Nothing to do")
     else:
         print(f"{branch}: Does not exist. Cloning...")
-        run(
-            ["git", "clone", "--branch", branch, str(bare_repo), str(branch_path)],
-            check=True,
-        )
+        clone(branch)
         print(f"{branch}: Done")
 
 # Remove branches that no longer exist
