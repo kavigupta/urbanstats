@@ -1,8 +1,8 @@
 import re
 import shutil
 from pathlib import Path
-from subprocess import PIPE, run
 from shlex import quote
+from subprocess import PIPE, run
 
 # Git repo must be manually initialized
 # Use command `git clone --mirror https://github.com/densitydb/densitydb.github.io.git densitydb/densitydb.github.io`
