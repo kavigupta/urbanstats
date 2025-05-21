@@ -21,6 +21,7 @@ def clone(branch):
         f"git clone --branch {quote(branch)} {quote(str(bare_repo))} {quote(str(repo_path(branch)))} 2>&1 | tr '\r' '\n'",
         check=True,
         shell=True,
+        bufsize=0,
     )
 
 
@@ -31,6 +32,7 @@ run(
     cwd=bare_repo,
     check=True,
     shell=True,
+    bufsize=0,
 )
 branches_output = run(
     ["git", "branch"], cwd=bare_repo, stdout=PIPE, text=True, check=True
