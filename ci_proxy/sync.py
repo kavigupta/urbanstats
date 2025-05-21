@@ -39,18 +39,20 @@ for branch in branches:
             check=True,
         ).stdout.strip()
         origin_head = run(
-            ["git", "rev-parse", f"origin/{branch}"],
-            cwd=branch_path,
+            ["git", "rev-parse", branch],
+            cwd=bare_repo,
             stdout=PIPE,
             text=True,
             check=True,
         ).stdout.strip()
         print(f"{branch}: current_head={current_head} origin_head={origin_head}")
         if current_head != origin_head:
-            print(f"{branch}: heads different. Resetting...")
+            print(f"{branch}: heads different.")
+            print(f"{branch}: Deleting {branch_path} ...")
+            shutil.rmtree(branch_path)
+            print(f"{branch}: Cloning new copy to {branch_path} ...")
             run(
-                ["git", "reset", "--hard", f"origin/{branch}"],
-                cwd=branch_path,
+                ["git", "clone", "--branch", branch, str(bare_repo), str(branch_path)],
                 check=True,
             )
             print(f"{branch}: Done")
