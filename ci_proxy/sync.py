@@ -28,9 +28,7 @@ print("Current Branches", branches)
 for branch in branches:
     branch_path = repo_path(branch)
     if branch_path.exists():
-        print(f"{branch}: Exists. Fetching...")
-        run(["git", "fetch"], cwd=branch_path, check=True)
-        print(f"{branch}: Done")
+        print(f"{branch}: Exists.")
         current_head = run(
             ["git", "rev-parse", "HEAD"],
             cwd=branch_path,
