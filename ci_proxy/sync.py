@@ -15,10 +15,10 @@ def repo_path(for_branch=None):
     return path if for_branch is None else path / for_branch
 
 
-def clone(branch):
+def clone(clone_branch):
     run(
         # If we don't quote here, someone could push a funky branch name and potentially RCE
-        f"git clone --branch {quote(branch)} {quote(str(bare_repo))} {quote(str(repo_path(branch)))} 2>&1 | tr '\r' '\n'",
+        f"git clone --branch {quote(clone_branch)} {quote(str(bare_repo))} {quote(str(repo_path(clone_branch)))} 2>&1 | tr '\r' '\n'",
         check=True,
         shell=True,
         bufsize=0,
