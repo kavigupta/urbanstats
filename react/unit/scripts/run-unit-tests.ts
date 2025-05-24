@@ -33,12 +33,20 @@ if (options.proxy) {
 const testStream = run({
     files: testFiles,
     concurrency: options.parallel,
+    isolation: 'process'
 })
 
 testStream.compose(spec).pipe(process.stdout)
 
 testStream.on('test:summary', (event) => {
-    if (!event.success) {
-        process.exitCode = 1
+    if (event.file === undefined) {
+        // Use a timeout so that we print the summary before exiting
+        setTimeout(() => {
+            if (event.success) {
+                process.exit(0)
+            } else {
+                process.exit(1)
+            }
+        }, 0)
     }
 })
