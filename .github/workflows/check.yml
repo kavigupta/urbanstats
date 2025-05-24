@@ -206,7 +206,8 @@ jobs:
       - name: Run tests
         run: |
           npm run test:unit -- \
-            --proxy=true
+            --proxy=true \
+            --test='unit/*.test.ts'
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
