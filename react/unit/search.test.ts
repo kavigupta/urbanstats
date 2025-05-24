@@ -1,5 +1,5 @@
-import { test } from 'uvu'
-import * as assert from 'uvu/assert'
+import assert from 'assert/strict'
+import { test } from 'node:test'
 
 import './util/fetch'
 import { createIndex, SearchResult } from '../src/search'
@@ -11,7 +11,7 @@ const computeFirstResult = (query: string): SearchResult => search({ unnormalize
 // We curry based on testFn so we can use test.only, test.skip, etc
 const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
     testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.is(computeFirstResult(query).longname, result)
+        assert.equal(computeFirstResult(query).longname, result)
     })
 }
 
@@ -38,5 +38,3 @@ firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspellin
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
-
-test.run()
