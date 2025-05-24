@@ -33,7 +33,7 @@ if (options.proxy) {
 const testStream = run({
     files: testFiles,
     concurrency: options.parallel,
-    isolation: 'process'
+    isolation: 'process',
 })
 
 testStream.compose(spec).pipe(process.stdout)
@@ -44,7 +44,8 @@ testStream.on('test:summary', (event) => {
         setTimeout(() => {
             if (event.success) {
                 process.exit(0)
-            } else {
+            }
+            else {
                 process.exit(1)
             }
         }, 0)
