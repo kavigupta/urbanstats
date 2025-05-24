@@ -97,7 +97,7 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error',
                 // Good tool for writing these https://typescript-eslint.io/play/
-                'ExportNamedDeclaration:not([declaration])', 
+                'ExportNamedDeclaration:not([declaration])',
                 'MemberExpression[object.name=location][property.name=reload]',
                 'MemberExpression[property.name=replaceState]',
                 'MemberExpression[property.name=pushState]',
