@@ -61,7 +61,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const expandedSettings = useSettings(dataByArticleStat[0].filter(row => row.extraStat !== undefined).map(row => rowExpandedKey(row.statpath)))
 
-    const numExpandedExtras = Object.values(expandedSettings).filter(v => v).length
+    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
@@ -74,14 +75,18 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const leftMarginPercent = transpose ? 0.24 : 0.18
     const numColumns = transpose ? dataByArticleStat[0].length : props.articles.length
-    const columnWidth = (columnIndex: number): number => {
-        const baseWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
-        const isExpanded = transpose ? expandedSettings[rowExpandedKey(dataByArticleStat[0][columnIndex].statpath)] : false
-        return isExpanded ? 2 * baseWidth : baseWidth
+    const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
+
+    const expandedColumnWidth = (columnIndex: number): number => {
+        return transpose && expandedByStatIndex[columnIndex] ? 2 * columnWidth : columnWidth
     }
 
     const leftSpacerCell = (): ReactNode => {
         return <div style={{ width: `${leftMarginPercent * 100}%` }}></div>
+    }
+
+    const transposeHistogramSpacer = (columnIndex: number): ReactNode => {
+        return transpose && expandedByStatIndex[columnIndex] ? <div style={{ width: `${columnWidth}%` }}></div> : null
     }
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
@@ -142,7 +147,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         <div
                             key={i}
                             style={{
-                                width: `${columnWidth(i)}%`,
+                                width: `${expandedColumnWidth(i)}%`,
                                 height: barHeight,
                                 backgroundColor: backgroundColor(i),
                             }}
@@ -158,7 +163,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             <ComparisonColorBar key="color" highlightIndex={undefined} />,
             <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} />,
             ...Array.from({ length: numColumns })
-                .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth(index)} />),
+                .map((_, columnIndex) => [
+                    <StatisticHeaderCells key={columnIndex} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} />,
+                    transposeHistogramSpacer(columnIndex),
+                ]),
         ]
     }
 
@@ -176,8 +184,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
-    const valueCells = (articleIndex: number, statIndex: number, width: number): ReactNode => {
-        return (
+    const valueCells = (articleIndex: number, statIndex: number): ReactNode => {
+        return [
             <StatisticRowCells
                 key={`${names[articleIndex]}${dataByArticleStat[articleIndex][statIndex].statpath}`}
                 row={dataByArticleStat[articleIndex][statIndex]}
@@ -193,9 +201,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         longnames: names.map((value, index) => index === articleIndex ? x : value),
                     }, { history: 'push', scroll: { kind: 'none' } })
                 }}
-                totalWidth={width}
-            />
-        )
+                totalWidth={columnWidth}
+            />,
+            transposeHistogramSpacer(statIndex),
+        ]
     }
 
     const normalTableContents = (): ReactNode => {
@@ -204,7 +213,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {bars(articleIndex => color(colors.hueColors, articleIndex))}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
-                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth(articleIndex)))}
+                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth))}
                 </div>
                 {bars(articleIndex => color(colors.hueColors, articleIndex))}
 
@@ -215,14 +224,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {
                     dataByStatArticle.map((articlesStatData, statIndex) => {
                         const plotProps = articlesStatData.map((row, articleIdx) => ({ ...row, color: color(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
-                        const expanded = expandedSettings[rowExpandedKey(articlesStatData[0].statpath)] ?? false
                         return (
-                            <WithPlot key={articlesStatData[0].statpath} plotProps={plotProps} expanded={expanded}>
+                            <WithPlot key={articlesStatData[0].statpath} plotProps={plotProps} expanded={expandedByStatIndex[statIndex]}>
                                 <TableRowContainer index={statIndex}>
                                     <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
                                     {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false)}
                                     {dataByStatArticle[statIndex].map((_, articleIndex) => {
-                                        return valueCells(articleIndex, statIndex, columnWidth(articleIndex))
+                                        return valueCells(articleIndex, statIndex)
                                     })}
                                 </TableRowContainer>
                             </WithPlot>
@@ -238,7 +246,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const transposeTableContents = (): ReactNode => {
         return (
             <>
-                {bars(statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined)}
+                {bars(
+                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
+                )}
                 <div style={{
                     display: 'flex',
                     flexDirection: 'row' }}
@@ -246,7 +256,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {leftSpacerCell()}
                     {
                         dataByStatArticle.map((_, statIndex) => {
-                            return statName(statIndex, columnWidth(statIndex), true)
+                            return statName(statIndex, expandedColumnWidth(statIndex), true)
                         })
                     }
                 </div>
@@ -262,7 +272,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
                             <ComparisonColorBar highlightIndex={articleIndex} />
                             { dataByArticleStat[articleIndex].map((_, statIndex) => {
-                                return valueCells(articleIndex, statIndex, columnWidth(statIndex))
+                                return valueCells(articleIndex, statIndex)
                             })}
                         </TableRowContainer>
                     )
