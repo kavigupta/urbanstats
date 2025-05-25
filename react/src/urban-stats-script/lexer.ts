@@ -175,7 +175,7 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     idx++
     while (true) {
         if (idx >= input.length) {
-            return [idx, { token: { type: 'error', value: 'Unterminated string' }, lineIdx: lineNo, startIdx: start, endIdx: idx }]
+            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { lineIdx: lineNo, startIdx: start, endIdx: idx } }]
         }
         if (input[idx] === '"') {
             idx++
@@ -196,7 +196,7 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         result = resultObj as string
     }
     catch {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, lineIdx: lineNo, startIdx: start, endIdx: idx }]
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, location: { lineIdx: lineNo, startIdx: start, endIdx: idx } }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
