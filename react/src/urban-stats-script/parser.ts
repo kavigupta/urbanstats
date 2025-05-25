@@ -13,6 +13,7 @@ type UrbanStatsASTArg = (
 type UrbanStatsASTLHS = (
      { type: 'constant', value: Decorated<number | string> }
      | { type: 'identifier', name: Decorated<string> }
+     | { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> }
 
 )
 
@@ -58,6 +59,8 @@ function locationOf(node: UrbanStatsAST): LocInfo | undefined {
             return node.value.location
         case 'identifier':
             return node.name.location
+        case 'attribute':
+            return unify(node.name.location, locationOf(node.expr))
         case 'function':
             return unify(locationOf(node.fn), ...node.args.map(locationOf))
         case 'infixSequence':
@@ -88,6 +91,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(const ${node.value.node})`
         case 'identifier':
             return `(id ${node.name.node})`
+        case 'attribute':
+            return `(attr ${toSExp(node.expr)} ${node.name.node})`
         case 'function':
             return `(fn ${[node.fn, ...node.args].map(toSExp).join(' ')})`
         case 'infixSequence':
@@ -109,6 +114,18 @@ class ParseState {
         this.index = 0
     }
 
+    skipEOL(): boolean {
+        if (this.index >= this.tokens.length) {
+            return false
+        }
+        const token = this.tokens[this.index]
+        if (token.token.type === 'operator' && token.token.value === 'EOL') {
+            this.index++
+            return true
+        }
+        return false
+    }
+
     consumeTokenOfType(type: string, ...values: (string | number)[]): boolean {
         if (this.index >= this.tokens.length) {
             return false
@@ -117,6 +134,12 @@ class ParseState {
         if (token.token.type === type && (values.length === 0 || values.includes(token.token.value))) {
             this.index++
             return true
+        }
+        if (this.skipEOL()) {
+            if (this.consumeTokenOfType(type, ...values)) {
+                return true
+            }
+            this.index-- // backtrack
         }
         return false
     }
@@ -134,6 +157,7 @@ class ParseState {
     }
 
     parseSingleExpression(): UrbanStatsASTExpression | ParseError {
+        while (this.skipEOL()) {}
         if (this.index >= this.tokens.length) {
             return { type: 'error', message: 'Unexpected end of input', location: this.tokens[this.index - 1].location }
         }
@@ -227,17 +251,36 @@ class ParseState {
             return fn
         }
         while (true) {
+            let done = true
             const args = this.parseParenthesizedArgs()
-            if (args === undefined) {
+            if (args !== undefined) {
+                done = false
+                if (args.type === 'error') {
+                    return args
+                }
+                fn = {
+                    type: 'function',
+                    fn,
+                    args: args.args,
+                }
+            }
+            if (this.consumeOperator('.')) {
+                done = false
+                if (!this.consumeIdentifier()) {
+                    return { type: 'error', message: 'Expected identifier after .', location: this.tokens[this.index - 1].location }
+                }
+                const token = this.tokens[this.index - 1]
+                if (token.token.type !== 'identifier') {
+                    throw new Error('Expected identifier token')
+                }
+                fn = {
+                    type: 'attribute',
+                    expr: fn,
+                    name: { node: token.token.value, location: token.location },
+                }
+            }
+            if (done) {
                 break
-            }
-            if (args.type === 'error') {
-                return args
-            }
-            fn = {
-                type: 'function',
-                fn,
-                args: args.args,
             }
         }
         return fn
@@ -276,6 +319,7 @@ class ParseState {
         switch (expr.type) {
             case 'identifier':
             case 'constant':
+            case 'attribute':
                 return expr
             case 'function':
             case 'infixSequence':
@@ -353,16 +397,14 @@ class ParseState {
         const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             const statement = this.parseStatement()
-            if (!this.consumeOperator('EOL', ';')) {
-                return { type: 'error', message: 'Expected end of line or ; after', location: this.tokens[this.index - 1].location }
-            }
             if (statement.type === 'error') {
                 return statement
             }
+            if (!this.consumeOperator('EOL', ';')) {
+                return { type: 'error', message: 'Expected end of line or ; after', location: this.tokens[this.index - 1].location }
+            }
+            while (this.skipEOL()) {}
             statements.push(statement)
-        }
-        if (this.index < this.tokens.length) {
-            return { type: 'error', message: 'Unexpected tokens at end of input', location: this.tokens[this.index].location }
         }
         return { type: 'statements', result: statements }
     }
@@ -370,5 +412,9 @@ class ParseState {
 
 export function parse(tokens: AnnotatedToken[]): { type: 'statements', result: UrbanStatsASTStatement[] } | ParseError {
     const state = new ParseState(tokens)
-    return state.parseStatements()
+    const stmts = state.parseStatements()
+    if (state.index < state.tokens.length) {
+        return { type: 'error', message: 'Unexpected tokens at end of input', location: state.tokens[state.index].location }
+    }
+    return stmts
 }

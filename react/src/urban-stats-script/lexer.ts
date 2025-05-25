@@ -1,8 +1,8 @@
 export const infixOperators = [
     '+', '-', '*', '**', '/', '==', '!=', '<', '>', '<=', '>=', '&', '|',
 ]
-const operators = [...infixOperators, '=', ',', ';']
-const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;'
+const operators = [...infixOperators, '=', ',', ';', '.']
+const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
 interface NumericToken { type: 'number', value: number }
 interface IdentifierToken { type: 'identifier', value: string }

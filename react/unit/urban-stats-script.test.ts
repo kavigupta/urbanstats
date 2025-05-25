@@ -111,10 +111,19 @@ void test('various lexes', (): void => {
 function parseAndRender(input: string): string[] {
     const res = parse(lex(input))
     if (res.type === 'error') {
-        return [`(error ${res.message})`]
+        return [`(error ${res.message} at ${res.location.lineIdx}:${res.location.startIdx})`]
     }
     return res.result.map(toSExp)
 }
+
+const multiRegression = `
+if (pw_density_1km < 1000) {
+    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)
+} else {
+    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population, allow_intercept=false)
+}
+regr.w0 = regr.w0 * 2; regr.w0
+`
 
 void test('basic parsing', (): void => {
     assert.deepStrictEqual(
@@ -197,19 +206,46 @@ void test('basic parsing', (): void => {
             '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
         ],
     )
+    const ifStmtS = '(if (infix (>) ((id x) (const 2))) (assign (id y) (const 3)) (assign (id y) (const 4)))'
     assert.deepStrictEqual(
         parseAndRender('if (x > 2) { y = 3 } else { y = 4 }'),
+        [ifStmtS],
+    )
+    const multiLineIf = `
+    if (x > 2) {
+        y = 3
+    } else {
+        y = 4
+    }
+    `
+    assert.deepStrictEqual(
+        parseAndRender(multiLineIf),
+        [ifStmtS],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x.y'),
         [
-            '(if (infix (>) ((id x) (const 2))) (assign (id y) (const 3)) (assign (id y) (const 4)))',
+            '(expr (attr (id x) y))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f.z(2).y(3)'),
+        [
+            '(expr (fn (attr (fn (attr (id f) z) (const 2)) y) (const 3)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender(multiRegression),
+        [
+            [
+                '(if',
+                '(infix (<) ((id pw_density_1km) (const 1000)))',
+                '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
+                '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population)) (named allow_intercept (id false))))'//
+                + ')',
+            ].join(' '),
+            '(assign (attr (id regr) w0) (infix (*) ((attr (id regr) w0) (const 2))))',
+            '(expr (attr (id regr) w0))',
         ],
     )
 })
-
-const multiRegression = `
-if (pw_density_1km < 1000) {
-    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)
-} else {
-    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population, allow_intercept=false)
-}
-regr.w0 = regr.w0 * 2; regr.w0
-`
