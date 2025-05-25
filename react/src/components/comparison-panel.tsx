@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -59,7 +59,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const maxColumns = mobileLayout ? 4 : 6
 
     let widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
-    let heightRows = 1 * rows[0].length + 1
+    let heightRows = 1.5 * rows[0].length + 1
 
     const transpose = widthColumns > maxColumns && widthColumns > heightRows
 
@@ -72,7 +72,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const cell = (kind: 'left' | 'leftWithoutBar' | 'contents', i: number, contents: React.ReactNode): ReactNode => {
         if (kind !== 'contents') {
             return (
-                <div key={i} style={{ width: `${(leftMarginPercent - (kind === 'leftWithoutBar' ? leftBarMargin : 0)) * 100}%` }}>
+                <div key={i} style={{ width: `${(leftMarginPercent - (kind === 'leftWithoutBar' ? leftBarMargin * 2 : 0)) * 100}%` }}>
                     {contents}
                 </div>
             )
@@ -126,6 +126,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             universe: currentUniverse,
                             longnames: names.map((value, index) => index === i ? x : value),
                         }, { scroll: { kind: 'none' } })}
+                    manipulationJustify={transpose ? 'center' : 'flex-end'}
                 />
             </div>,
         ),
@@ -232,7 +233,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         })
                     }
                 </div>
-                {bars()}
 
                 <TableHeaderContainer>
                     <ComparisonHeaders onlyColumns={onlyColumns} length={rows[0].length} statNameOverride="Region" leftMarginPercent={leftMarginPercent} />
@@ -241,8 +241,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {props.articles.map((article, i) => {
                     return (
                         <TableRowContainer key={article.longname} index={i}>
-                            <ComparisonColorBar key="color" highlightIndex={i} />
+                            <ComparisonColorBar highlightIndex={i} />
                             {headings[i]}
+                            <ComparisonColorBar highlightIndex={i} />
                             { rows[i].map((row, rowIdx) => {
                                 const highlightIndex = getHighlightIndex(rows.map(r => r[rowIdx]))
 
@@ -479,7 +480,13 @@ function ManipulationButton({ color: buttonColor, onClick, text }: { color: stri
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { longname: string, includeDelete: boolean, onDelete: () => void, onReplace: (q: string) => ReturnType<Navigator['link']> }): ReactNode {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify }: {
+    longname: string
+    includeDelete: boolean
+    onDelete: () => void
+    onReplace: (q: string) => ReturnType<Navigator['link']>
+    manipulationJustify: CSSProperties['justifyContent']
+}): ReactNode {
     const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
     const currentUniverse = useUniverse()
@@ -487,7 +494,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace }: { long
 
     const manipulationButtons = (
         <div style={{ height: manipulationButtonHeight }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', height: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
                 <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" />
                 {!includeDelete
                     ? null
