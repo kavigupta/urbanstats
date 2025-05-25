@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016 Presidential Election",
+      "stat_path": "2016 Presidential Election-margin",
+      "question": "!FULL Which voted more for Clinton in the 2016 presidential election?",
+      "longname_a": "Jackson County, Missouri, USA",
+      "longname_b": "El Paso County, Colorado, USA",
+      "stat_a": 0.1750504355571556,
+      "stat_b": -0.22327660407463368
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Pulaski County, Arkansas, USA",
+      "longname_b": "Mobile County, Alabama, USA",
+      "stat_a": 0.14254615704225596,
+      "stat_b": 0.08100279899372735
+    },
+    "a_ease": 0.30857142857142855,
+    "b_ease": 0.7094064949608063
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Angola",
+      "longname_b": "Turkmenistan",
+      "stat_a": 33410938.0,
+      "stat_b": 6257365.0
+    },
+    "b": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Quebec, Canada",
+      "longname_b": "Newfoundland and Labrador, Canada",
+      "stat_a": 0.053118961294539274,
+      "stat_b": 0.03759617747559992
+    },
+    "a_ease": 0.6908328340323547,
+    "b_ease": 0.28989751098096633
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utilities %",
+      "stat_path": "industry_utilities",
+      "question": "higher % of workers employed in the utilities industry!TOOLTIP electrical power generation, transmission, and distribution; natural gas distribution; water, sewage, and other systems",
+      "longname_a": "Toronto Population Center, ON, Canada",
+      "longname_b": "Calgary Population Center, AB, Canada",
+      "stat_a": 0.0027762507540787535,
+      "stat_b": 0.009488892235113833
+    },
+    "b": {
+      "stat_column": "Black %",
+      "stat_path": "black",
+      "question": "higher % of people who are Black",
+      "longname_a": "Springfield MO Media Market, USA",
+      "longname_b": "Seattle-Tacoma WA Media Market, USA",
+      "stat_a": 0.018589848819734606,
+      "stat_b": 0.04780263259301982
+    },
+    "a_ease": 0.6562150055991042,
+    "b_ease": 0.23098278734036645
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in fall",
+      "stat_path": "mean_high_temp_fall_4",
+      "question": "higher mean daily high temperature in fall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Washoe County, Nevada, USA",
+      "longname_b": "Washtenaw County, Michigan, USA",
+      "stat_a": 56.43587479181961,
+      "stat_b": 51.904874229566445
+    },
+    "b": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Placer County, California, USA",
+      "longname_b": "Pierce County, Washington, USA",
+      "stat_a": 0.23867621806969436,
+      "stat_b": 0.25903288568906135
+    },
+    "a_ease": 0.8661740558292282,
+    "b_ease": 0.4647418101054969
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Lancaster MSA, PA, USA",
+      "longname_b": "Cincinnati MSA, OH-KY-IN, USA",
+      "stat_a": 0.030726526469969692,
+      "stat_b": -0.04555130992647814
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kalimantan Timur, Indonesia",
+      "longname_b": "Donets'ka oblast, Ukraine",
+      "stat_a": 3455.887451171875,
+      "stat_b": 1749.4073486328125
+    },
+    "a_ease": 0.3760262725779967,
+    "b_ease": 0.8431746031746031
+  }
+]
