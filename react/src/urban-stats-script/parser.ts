@@ -26,6 +26,7 @@ type UrbanStatsASTExpression = (
 type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
     | { type: 'expression', value: UrbanStatsASTExpression }
+    | { type: 'statements', result: UrbanStatsASTStatement[] }
     | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
@@ -69,6 +70,8 @@ function locationOf(node: UrbanStatsAST): LocInfo | undefined {
             return unify(locationOf(node.lhs), locationOf(node.value))
         case 'expression':
             return locationOf(node.value)
+        case 'statements':
+            return unify(...node.result.map(locationOf))
         case 'if':
             const branches = [locationOf(node.condition), locationOf(node.then)]
             if (node.else) {
@@ -101,6 +104,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(assign ${toSExp(node.lhs)} ${toSExp(node.value)})`
         case 'expression':
             return `(expr ${toSExp(node.value)})`
+        case 'statements':
+            return `(statements ${node.result.map(toSExp).join(' ')})`
         case 'if':
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
     }
@@ -393,7 +398,7 @@ class ParseState {
         return { type: 'expression', value: expr }
     }
 
-    parseStatements(): { type: 'statements', result: UrbanStatsASTStatement[] } | ParseError {
+    parseStatements(): UrbanStatsASTStatement | ParseError {
         const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             const statement = this.parseStatement()
@@ -406,11 +411,14 @@ class ParseState {
             while (this.skipEOL()) {}
             statements.push(statement)
         }
+        if (statements.length === 1) {
+            return statements[0]
+        }
         return { type: 'statements', result: statements }
     }
 }
 
-export function parse(tokens: AnnotatedToken[]): { type: 'statements', result: UrbanStatsASTStatement[] } | ParseError {
+export function parse(tokens: AnnotatedToken[]): UrbanStatsASTStatement | ParseError {
     const state = new ParseState(tokens)
     const stmts = state.parseStatements()
     if (state.index < state.tokens.length) {

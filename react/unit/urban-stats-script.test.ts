@@ -108,12 +108,12 @@ void test('various lexes', (): void => {
     ])
 })
 
-function parseAndRender(input: string): string[] {
+function parseAndRender(input: string): string {
     const res = parse(lex(input))
     if (res.type === 'error') {
-        return [`(error ${res.message} at ${res.location.lineIdx}:${res.location.startIdx})`]
+        return `(error ${JSON.stringify(res.message)} at ${res.location.lineIdx}:${res.location.startIdx})`
     }
-    return res.result.map(toSExp)
+    return toSExp(res)
 }
 
 const multiRegression = `
@@ -129,87 +129,59 @@ void test('basic parsing', (): void => {
     assert.deepStrictEqual(
         parse(lex('x = 2')),
         {
-            type: 'statements',
-            result: [
-                {
-                    type: 'assignment',
-                    lhs: { type: 'identifier', name: { node: 'x', location: { lineIdx: 0, startIdx: 0, endIdx: 1 } } },
-                    value: { type: 'constant', value: { node: 2, location: { lineIdx: 0, startIdx: 4, endIdx: 5 } } },
-                },
-            ],
+            type: 'assignment',
+            lhs: { type: 'identifier', name: { node: 'x', location: { lineIdx: 0, startIdx: 0, endIdx: 1 } } },
+            value: { type: 'constant', value: { node: 2, location: { lineIdx: 0, startIdx: 4, endIdx: 5 } } },
         },
     )
     assert.deepStrictEqual(
         parseAndRender('x = 2; y = x'),
-        [
-            '(assign (id x) (const 2))',
-            '(assign (id y) (id x))',
-        ],
+        '(statements (assign (id x) (const 2)) (assign (id y) (id x)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x'),
-        [
-            '(expr (id x))',
-        ],
+        '(expr (id x))',
     )
     assert.deepStrictEqual(
         parseAndRender('abc()'),
-        [
-            '(expr (fn (id abc)))',
-        ],
+        '(expr (fn (id abc)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y)'),
-        [
-            '(expr (fn (id x) (id y)))',
-        ],
+        '(expr (fn (id x) (id y)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y, z)'),
-        [
-            '(expr (fn (id x) (id y) (id z)))',
-        ],
+        '(expr (fn (id x) (id y) (id z)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y, z=2)'),
-        [
-            '(expr (fn (id x) (id y) (named z (const 2))))',
-        ],
+        '(expr (fn (id x) (id y) (named z (const 2))))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y, z=2, y)'),
-        [
-            '(expr (fn (id x) (id y) (named z (const 2)) (id y)))',
-        ],
+        '(expr (fn (id x) (id y) (named z (const 2)) (id y)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y, f())'),
-        [
-            '(expr (fn (id x) (id y) (fn (id f))))',
-        ],
+        '(expr (fn (id x) (id y) (fn (id f))))',
     )
     assert.deepStrictEqual(
         parseAndRender('x(y)(z)'),
-        [
-            '(expr (fn (fn (id x) (id y)) (id z)))',
-        ],
+        '(expr (fn (fn (id x) (id y)) (id z)))',
     )
     assert.deepStrictEqual(
         parseAndRender('x + y + z'),
-        [
-            '(expr (infix (+ +) ((id x) (id y) (id z))))',
-        ],
+        '(expr (infix (+ +) ((id x) (id y) (id z))))',
     )
     assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
-        [
-            '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
-        ],
+        '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
     )
     const ifStmtS = '(if (infix (>) ((id x) (const 2))) (assign (id y) (const 3)) (assign (id y) (const 4)))'
     assert.deepStrictEqual(
         parseAndRender('if (x > 2) { y = 3 } else { y = 4 }'),
-        [ifStmtS],
+        ifStmtS,
     )
     const multiLineIf = `
     if (x > 2) {
@@ -220,23 +192,19 @@ void test('basic parsing', (): void => {
     `
     assert.deepStrictEqual(
         parseAndRender(multiLineIf),
-        [ifStmtS],
+        ifStmtS,
     )
     assert.deepStrictEqual(
         parseAndRender('x.y'),
-        [
-            '(expr (attr (id x) y))',
-        ],
+        '(expr (attr (id x) y))',
     )
     assert.deepStrictEqual(
         parseAndRender('f.z(2).y(3)'),
-        [
-            '(expr (fn (attr (fn (attr (id f) z) (const 2)) y) (const 3)))',
-        ],
+        '(expr (fn (attr (fn (attr (id f) z) (const 2)) y) (const 3)))',
     )
     assert.deepStrictEqual(
         parseAndRender(multiRegression),
-        [
+        `(statements ${[
             [
                 '(if',
                 '(infix (<) ((id pw_density_1km) (const 1000)))',
@@ -246,6 +214,6 @@ void test('basic parsing', (): void => {
             ].join(' '),
             '(assign (attr (id regr) w0) (infix (*) ((attr (id regr) w0) (const 2))))',
             '(expr (attr (id regr) w0))',
-        ],
+        ].join(' ')})`,
     )
 })
