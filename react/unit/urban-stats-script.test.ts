@@ -2,6 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { lex } from '../src/urban-stats-script/lexer'
+import { parse, toSExp } from '../src/urban-stats-script/parser'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
@@ -71,4 +72,144 @@ void test('various lexes', (): void => {
         0.5,
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('x = 2; x = 3'), [
+        'x',
+        '=',
+        2,
+        ';',
+        'x',
+        '=',
+        3,
+        ['EOL', ''],
+    ])
+    assert.deepStrictEqual(shortFormLex('f(f(x))'), [
+        'f',
+        '(',
+        'f',
+        '(',
+        'x',
+        ')',
+        ')',
+        ['EOL', ''],
+    ])
+    assert.deepStrictEqual(shortFormLex('x(y, z=f(x))'), [
+        'x',
+        '(',
+        'y',
+        ',',
+        'z',
+        '=',
+        'f',
+        '(',
+        'x',
+        ')',
+        ')',
+        ['EOL', ''],
+    ])
 })
+
+function parseAndRender(input: string): string[] {
+    const res = parse(lex(input))
+    if (res.type === 'error') {
+        return [`(error ${res.message})`]
+    }
+    return res.result.map(toSExp)
+}
+
+void test('basic parsing', (): void => {
+    assert.deepStrictEqual(
+        parse(lex('x = 2')),
+        {
+            type: 'statements',
+            result: [
+                {
+                    type: 'assignment',
+                    lhs: { type: 'identifier', name: { node: 'x', location: { lineIdx: 0, startIdx: 0, endIdx: 1 } } },
+                    value: { type: 'constant', value: { node: 2, location: { lineIdx: 0, startIdx: 4, endIdx: 5 } } },
+                },
+            ],
+        },
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x = 2; y = x'),
+        [
+            '(assign (id x) (const 2))',
+            '(assign (id y) (id x))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x'),
+        [
+            '(expr (id x))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('abc()'),
+        [
+            '(expr (fn (id abc)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y)'),
+        [
+            '(expr (fn (id x) (id y)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y, z)'),
+        [
+            '(expr (fn (id x) (id y) (id z)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y, z=2)'),
+        [
+            '(expr (fn (id x) (id y) (named z (const 2))))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y, z=2, y)'),
+        [
+            '(expr (fn (id x) (id y) (named z (const 2)) (id y)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y, f())'),
+        [
+            '(expr (fn (id x) (id y) (fn (id f))))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x(y)(z)'),
+        [
+            '(expr (fn (fn (id x) (id y)) (id z)))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x + y + z'),
+        [
+            '(expr (infix (+ +) ((id x) (id y) (id z))))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
+        [
+            '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
+        ],
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x > 2) { y = 3 } else { y = 4 }'),
+        [
+            '(if (infix (>) ((id x) (const 2))) (assign (id y) (const 3)) (assign (id y) (const 4)))',
+        ],
+    )
+})
+
+const multiRegression = `
+if (pw_density_1km < 1000) {
+    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)
+} else {
+    regr = linear_regression(y=commute_transit, x0=commute_car, weight=population, allow_intercept=false)
+}
+regr.w0 = regr.w0 * 2; regr.w0
+`
