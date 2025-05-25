@@ -22,10 +22,9 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { WithPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticName } from './table'
 
 const leftBarMargin = 0.02
-const leftMarginPercent = 0.18
 const barHeight = '5px'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
@@ -41,46 +40,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         overallWidth: tableRef.current!.offsetWidth * 2,
         elementsToRender: [tableRef.current!, mapRef.current!],
     })
-
-    const leftMargin = (): number => {
-        return 100 * leftMarginPercent
-    }
-
-    const cell = (isLeft: boolean, i: number, contents: React.ReactNode): ReactNode => {
-        if (isLeft) {
-            return (
-                <div key={i} style={{ width: `${leftMargin()}%` }}>
-                    {contents}
-                </div>
-            )
-        }
-        const width = `${each(props.articles)}%`
-        return (
-            <div key={i} style={{ width }}>
-                {contents}
-            </div>
-        )
-    }
-
-    const bars = (): ReactNode => {
-        return (
-            <div style={{ display: 'flex' }}>
-                {cell(true, 0, <div></div>)}
-                {props.articles.map(
-                    (data, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                width: `${each(props.articles)}%`,
-                                height: barHeight,
-                                backgroundColor: color(colors.hueColors, i),
-                            }}
-                        />
-                    ),
-                )}
-            </div>
-        )
-    }
 
     const settings = useSettings(groupYearKeys())
 
@@ -99,7 +58,32 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const maxColumns = mobileLayout ? 4 : 6
 
-    const widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
+    let widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
+    let heightRows = 1 * rows[0].length + 1
+
+    const transpose = widthColumns > maxColumns && widthColumns > heightRows
+
+    if (transpose) {
+        ([widthColumns, heightRows] = [heightRows, widthColumns])
+    }
+
+    const leftMarginPercent = transpose ? 0.24 : 0.18
+
+    const cell = (kind: 'left' | 'leftWithoutBar' | 'contents', i: number, contents: React.ReactNode): ReactNode => {
+        if (kind !== 'contents') {
+            return (
+                <div key={i} style={{ width: `${(leftMarginPercent - (kind === 'leftWithoutBar' ? leftBarMargin : 0)) * 100}%` }}>
+                    {contents}
+                </div>
+            )
+        }
+        const width = `${each({ length: (transpose ? rows[0] : props.articles).length, leftMarginPercent })}%`
+        return (
+            <div key={i} style={{ width }}>
+                {contents}
+            </div>
+        )
+    }
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
         if (widthColumns > maxColumns) {
@@ -122,6 +106,172 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const currentUniverse = useUniverse()
 
     const navContext = useContext(Navigator.Context)
+
+    const headings = props.articles.map(
+        (data, i) => cell(transpose ? 'leftWithoutBar' : 'contents', transpose ? 0 : i,
+            <div>
+                <HeadingDisplay
+                    longname={data.longname}
+                    includeDelete={props.articles.length > 1}
+                    onDelete={() => {
+                        void navContext.navigate({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: names.filter((_, index) => index !== i),
+                        }, { history: 'push', scroll: { kind: 'none' } })
+                    }}
+                    onReplace={x =>
+                        navContext.link({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: names.map((value, index) => index === i ? x : value),
+                        }, { scroll: { kind: 'none' } })}
+                />
+            </div>,
+        ),
+    )
+
+    const normalTableContents = (): ReactNode => {
+        const bars = (): ReactNode => {
+            return (
+                <div style={{ display: 'flex' }}>
+                    {cell('left', 0, <div></div>)}
+                    {props.articles.map(
+                        (data, i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    width: `${each({ length: props.articles.length, leftMarginPercent })}%`,
+                                    height: barHeight,
+                                    backgroundColor: color(colors.hueColors, i),
+                                }}
+                            />
+                        ),
+                    )}
+                </div>
+            )
+        }
+        return (
+            <>
+                {bars()}
+                <div style={{ display: 'flex' }}>
+                    {cell('left', 0, <div></div>)}
+                    {headings}
+                </div>
+                {bars()}
+
+                <TableHeaderContainer>
+                    <ComparisonHeaders onlyColumns={onlyColumns} length={props.articles.length} leftMarginPercent={leftMarginPercent} />
+                </TableHeaderContainer>
+
+                {
+                    rows[0].map((_, rowIdx) => (
+                        <ComparisonRowBody
+                            key={rows[0][rowIdx].statpath}
+                            index={rowIdx}
+                            rows={rows.map(row => row[rowIdx])}
+                            articles={props.articles}
+                            names={names}
+                            onlyColumns={onlyColumns}
+                            blankColumns={validOrdinals[rowIdx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
+                            leftMarginPercent={leftMarginPercent}
+                        />
+                    ),
+                    )
+                }
+            </>
+        )
+    }
+
+    const comparisonHeadStyle = useComparisonHeadStyle()
+
+    const transposeTableContents = (): ReactNode => {
+        const bars = (): ReactNode => {
+            return (
+                <div style={{ display: 'flex' }}>
+                    {cell('left', 0, <div></div>)}
+                    {rows[0].map(
+                        (_, i) => {
+                            const highlightIndex = getHighlightIndex(rows.map(r => r[i]))
+                            return (
+                                <div
+                                    key={i}
+                                    style={{
+                                        width: `${each({ length: rows[0].length, leftMarginPercent })}%`,
+                                        height: barHeight,
+                                        backgroundColor: highlightIndex !== undefined ? color(colors.hueColors, highlightIndex) : undefined,
+                                    }}
+                                />
+                            )
+                        },
+                    )}
+                </div>
+            )
+        }
+        return (
+            <>
+                {bars()}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row' }}
+                >
+                    {cell('left', 0, <div></div>)}
+                    {
+                        rows[0].map((data, i) => {
+                            const statRows = rows.map(row => row[i])
+                            return cell('contents', i,
+                                <div style={comparisonHeadStyle}>
+                                    <StatisticName
+                                        row={statRows.find(row => row.extraStat !== undefined) ?? statRows[0]} // So that we show the expand if there's a least one extra
+                                        longname={names[0]}
+                                        currentUniverse={currentUniverse}
+                                        center={true}
+                                    />
+                                </div>,
+                            )
+                        })
+                    }
+                </div>
+                {bars()}
+
+                <TableHeaderContainer>
+                    <ComparisonHeaders onlyColumns={onlyColumns} length={rows[0].length} statNameOverride="Region" leftMarginPercent={leftMarginPercent} />
+                </TableHeaderContainer>
+
+                {props.articles.map((article, i) => {
+                    return (
+                        <TableRowContainer key={article.longname} index={i}>
+                            <ComparisonColorBar key="color" highlightIndex={i} />
+                            {headings[i]}
+                            { rows[i].map((row, rowIdx) => {
+                                const highlightIndex = getHighlightIndex(rows.map(r => r[rowIdx]))
+
+                                return (
+                                    <StatisticRowCells
+                                        key={names[i]}
+                                        row={row}
+                                        longname={names[i]}
+                                        onlyColumns={onlyColumns}
+                                        blankColumns={validOrdinals[rowIdx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
+                                        simpleOrdinals={true}
+                                        statisticStyle={highlightIndex === i ? { backgroundColor: mixWithBackground(color(colors.hueColors, i), colors.mixPct / 100, colors.background) } : {}}
+                                        onNavigate={(x) => {
+                                            void navContext.navigate({
+                                                kind: 'comparison',
+                                                universe: navContext.universe,
+                                                longnames: names.map((value, index) => index === i ? x : value),
+                                            }, { history: 'push', scroll: { kind: 'none' } })
+                                        }}
+                                        totalWidth={each({ length: rows[0].length, leftMarginPercent })}
+                                    />
+                                )
+                            })}
+                        </TableRowContainer>
+                    )
+                })}
+            </>
+        )
+    }
 
     return (
         <>
@@ -156,53 +306,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                     {maybeScroll(
                         <div ref={tableRef}>
-                            {bars()}
-                            <div style={{ display: 'flex' }}>
-                                {cell(true, 0, <div></div>)}
-                                {props.articles.map(
-                                    (data, i) => cell(false, i,
-                                        <div>
-                                            <HeadingDisplay
-                                                longname={data.longname}
-                                                includeDelete={props.articles.length > 1}
-                                                onDelete={() => {
-                                                    void navContext.navigate({
-                                                        kind: 'comparison',
-                                                        universe: currentUniverse,
-                                                        longnames: names.filter((_, index) => index !== i),
-                                                    }, { history: 'push', scroll: { kind: 'none' } })
-                                                }}
-                                                onReplace={x =>
-                                                    navContext.link({
-                                                        kind: 'comparison',
-                                                        universe: currentUniverse,
-                                                        longnames: names.map((value, index) => index === i ? x : value),
-                                                    }, { scroll: { kind: 'none' } })}
-                                            />
-                                        </div>,
-                                    ),
-                                )}
-                            </div>
-                            {bars()}
-
-                            <TableHeaderContainer>
-                                <ComparisonHeaders onlyColumns={onlyColumns} length={props.articles.length} />
-                            </TableHeaderContainer>
-
-                            {
-                                rows[0].map((_, rowIdx) => (
-                                    <ComparisonRowBody
-                                        key={rows[0][rowIdx].statpath}
-                                        index={rowIdx}
-                                        rows={rows.map(row => row[rowIdx])}
-                                        articles={props.articles}
-                                        names={names}
-                                        onlyColumns={onlyColumns}
-                                        blankColumns={validOrdinals[rowIdx] ? [] : ['statistic_ordinal', 'statistic_percentile']}
-                                    />
-                                ),
-                                )
-                            }
+                            {transpose ? transposeTableContents() : normalTableContents()}
                             <ArticleWarnings />
                         </div>,
                     )}
@@ -235,17 +339,18 @@ function color(colors: HueColors, i: number): string {
     return colorCycle[i % colorCycle.length]
 }
 
-function each({ length }: { length: number }): number {
+function each({ length, leftMarginPercent }: { length: number, leftMarginPercent: number }): number {
     return 100 * (1 - leftMarginPercent) / length
 }
 
-function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, index }: {
+function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, index, leftMarginPercent }: {
     rows: ArticleRow[]
     articles: Article[]
     names: string[]
     onlyColumns: ColumnIdentifier[]
     blankColumns: ColumnIdentifier[]
     index: number
+    leftMarginPercent: number
 }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(rowExpandedKey(rows[0].statpath))
@@ -258,22 +363,15 @@ function ComparisonRowBody({ rows, articles, names, onlyColumns, blankColumns, i
                     names={names}
                     onlyColumns={onlyColumns}
                     blankColumns={blankColumns}
+                    leftMarginPercent={leftMarginPercent}
                 />
             </TableRowContainer>
         </WithPlot>
     )
 }
 
-function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
-    names: string[]
-    rows: ArticleRow[]
-    onlyColumns: ColumnIdentifier[]
-    blankColumns: ColumnIdentifier[]
-}): ReactNode {
-    const colors = useColors()
-    const navContext = useContext(Navigator.Context)
-
-    const highlightIndex = rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
+function getHighlightIndex(rows: ArticleRow[]): number | undefined {
+    return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
         }
@@ -282,6 +380,19 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
         }
         return x > arr[iMax] ? i : iMax
     }, undefined)
+}
+
+function ComparisonCells({ names, rows, onlyColumns, blankColumns, leftMarginPercent }: {
+    names: string[]
+    rows: ArticleRow[]
+    onlyColumns: ColumnIdentifier[]
+    blankColumns: ColumnIdentifier[]
+    leftMarginPercent: number
+}): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    const highlightIndex = getHighlightIndex(rows)
 
     return [
         <ComparisonColorBar key="color" highlightIndex={highlightIndex} />,
@@ -309,18 +420,18 @@ function ComparisonCells({ names, rows, onlyColumns, blankColumns }: {
                         longnames: names.map((value, index) => index === i ? x : value),
                     }, { history: 'push', scroll: { kind: 'none' } })
                 }}
-                totalWidth={each(rows)}
+                totalWidth={each({ length: rows.length, leftMarginPercent })}
             />
         )),
     ]
 }
 
-function ComparisonHeaders({ onlyColumns, length }: { onlyColumns: ColumnIdentifier[], length: number }): ReactNode {
+function ComparisonHeaders({ onlyColumns, length, statNameOverride, leftMarginPercent }: { onlyColumns: ColumnIdentifier[], length: number, statNameOverride?: string, leftMarginPercent: number }): ReactNode {
     return [
         <ComparisonColorBar key="color" highlightIndex={undefined} />,
-        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} />,
+        <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} />,
         ...Array.from({ length })
-            .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={each({ length })} />),
+            .map((_, index) => <StatisticHeaderCells key={index} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={each({ length, leftMarginPercent })} />),
     ]
 }
 

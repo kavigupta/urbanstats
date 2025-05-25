@@ -90,7 +90,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[] }): ReactNode {
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string }): ReactNode {
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
@@ -106,7 +106,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             widthPercentage: 31,
             content: (
                 <span className="serif value" key="statistic">
-                    Statistic
+                    {props.statNameOverride ?? 'Statistic'}
                 </span>
             ),
             style: { textAlign: 'center' },
@@ -427,10 +427,11 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
-function StatisticName(props: {
+export function StatisticName(props: {
     row: ArticleRow
     longname: string
     currentUniverse: string
+    center?: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -481,6 +482,7 @@ function StatisticName(props: {
                 display: 'flex',
                 alignItems: 'center',
                 flexDirection: 'row',
+                justifyContent: props.center ? 'center' : undefined,
             }}
             >
                 {...paddedElements}
