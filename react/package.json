@@ -7,8 +7,8 @@
     "dev": "NODE_ENV=development rspack --mode=development",
     "prod": "NODE_ENV=production rspack --mode=production",
     "watch": "./watch.sh",
-    "lint": "eslint . --fix --ignore-pattern=src/data --cache",
-    "lint:ci": "eslint . --ignore-pattern=src/data",
+    "lint": "eslint . --fix --ignore-pattern=src/data --cache --max-warnings=0",
+    "lint:ci": "eslint . --ignore-pattern=src/data --max-warnings=0",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
     "test:unit": "tsx unit/scripts/run-unit-tests.ts"
   },

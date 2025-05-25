@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { loadPageDescriptor, PageData, PageDescriptor } from '../navigation/PageDescriptor'
@@ -203,15 +203,13 @@ export function OtherQuizzesButtons(): ReactNode {
     const { current } = navContext.usePageState()
     const currentQuizMode = current.descriptor.kind === 'quiz' ? current.descriptor.mode : 'notAQuiz'
 
-    const otherQuizPages: QuizPageDescriptor[] = ([
+    const otherQuizPages: QuizPageDescriptor[] = useMemo(() => ([
         { kind: 'quiz', mode: undefined },
         { kind: 'quiz', mode: 'retro' },
         { kind: 'quiz', mode: 'infinite' },
-    ] as const).filter(({ mode }) => mode !== currentQuizMode)
+    ] as const).filter(({ mode }) => mode !== currentQuizMode), [currentQuizMode])
 
     const [todoQuizzes, setTodoQuizzes] = useState<TodoQuiz[]>([])
-
-    const fetchKey = JSON.stringify(otherQuizPages)
 
     useEffect(() => {
         let cancel = false
@@ -229,7 +227,7 @@ export function OtherQuizzesButtons(): ReactNode {
         })()
 
         return () => { cancel = true }
-    }, [fetchKey])
+    }, [otherQuizPages])
 
     const otherQuizButtonStyle: CSSProperties = {
         ...buttonStyle(colors.hueColors.blue),
