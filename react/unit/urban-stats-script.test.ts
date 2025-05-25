@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { lex } from '../src/urban-stats-script/lexer'
 
-void test('basic lexing with indices', (): Promise<void> => {
+void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
         { token: { type: 'number', value: 1 }, location: { lineIdx: 0, startIdx: 0, endIdx: 1 } },
         { token: { type: 'number', value: 23 }, location: { lineIdx: 0, startIdx: 2, endIdx: 4 } },
@@ -27,7 +27,6 @@ void test('basic lexing with indices', (): Promise<void> => {
         { token: { type: 'bracket', value: ')' }, location: { lineIdx: 0, startIdx: 17, endIdx: 18 } },
         { token: { type: 'operator', value: 'EOL' }, location: { lineIdx: 0, startIdx: 18, endIdx: 18 } },
     ])
-    return Promise.resolve()
 })
 
 function shortFormLex(input: string): (string | number | [string | number, string])[] {
@@ -47,7 +46,7 @@ function shortFormLex(input: string): (string | number | [string | number, strin
     return result
 }
 
-void test('various lexes', (): Promise<void> => {
+void test('various lexes', (): void => {
     assert.deepStrictEqual(shortFormLex('1 23 3.3'), [1, 23, 3.3, ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('"abc"'), [['abc', '"abc"'], ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('"abc\\""'), [['abc"', '"abc\\""'], ['EOL', '']])
@@ -72,5 +71,4 @@ void test('various lexes', (): Promise<void> => {
         0.5,
         ['EOL', ''],
     ])
-    return Promise.resolve()
 })
