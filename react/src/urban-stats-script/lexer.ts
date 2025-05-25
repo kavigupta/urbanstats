@@ -9,11 +9,15 @@ interface BracketToken { type: 'bracket', value: string }
 interface ErrorToken { type: 'error', value: string }
 type Token = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken | ErrorToken
 
-interface AnnotatedToken {
-    token: Token
+export interface LocInfo {
     lineIdx: number
     startIdx: number
     endIdx: number
+}
+
+export interface AnnotatedToken {
+    token: Token
+    location: LocInfo
 }
 
 interface GenericLexer {
@@ -74,9 +78,11 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         if ('()[]{}'.includes(char)) {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
-                lineIdx: lineNo,
-                startIdx: idx,
-                endIdx: idx + 1,
+                location: {
+                    lineIdx: lineNo,
+                    startIdx: idx,
+                    endIdx: idx + 1,
+                },
             }
             tokens.push(token)
             idx++
@@ -103,9 +109,11 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         }
         tokens.push({
             token: { type: 'error', value: `Unexpected character: ${char}` },
-            lineIdx: lineNo,
-            startIdx: idx,
-            endIdx: idx + 1,
+            location: {
+                lineIdx: lineNo,
+                startIdx: idx,
+                endIdx: idx + 1,
+            },
         })
         idx++
     }
@@ -121,9 +129,11 @@ export function lex(input: string): AnnotatedToken[] {
         tokens.push(...lineTokens)
         tokens.push({
             token: { type: 'operator', value: 'EOL' },
-            lineIdx: i,
-            startIdx: line.length,
-            endIdx: line.length,
+            location: {
+                lineIdx: i,
+                startIdx: line.length,
+                endIdx: line.length,
+            },
         })
     }
     return tokens
@@ -145,9 +155,11 @@ function lexGeneric(
     }
     const token: AnnotatedToken = {
         token: lexer.parse(input.slice(start, idx)),
-        lineIdx: lineNo,
-        startIdx: start,
-        endIdx: idx,
+        location: {
+            lineIdx: lineNo,
+            startIdx: start,
+            endIdx: idx,
+        },
     }
     return [idx, token]
 }
@@ -185,9 +197,11 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
-        lineIdx: lineNo,
-        startIdx: start,
-        endIdx: idx,
+        location: {
+            lineIdx: lineNo,
+            startIdx: start,
+            endIdx: idx,
+        },
     }
     return [idx, token]
 }
