@@ -1,8 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { Context } from '../src/urban-stats-script/interpreter'
 import { lex } from '../src/urban-stats-script/lexer'
 import { parse, toSExp } from '../src/urban-stats-script/parser'
+import { broadcastApply, locateType, USSRawValue, renderType, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
@@ -215,5 +217,205 @@ void test('basic parsing', (): void => {
             '(assign (attr (id regr) w0) (infix (*) ((attr (id regr) w0) (const 2))))',
             '(expr (attr (id regr) w0))',
         ].join(' ')})`,
+    )
+})
+
+const numType = { type: 'number' } satisfies USSType
+const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
+const numMatrixType = { type: 'vector', elementType: numVectorType } satisfies USSType
+const multiObjType = { type: 'object', properties: { a: numType, b: numVectorType } } satisfies USSType
+const multiObjVectorType = {
+    type: 'vector',
+    elementType: multiObjType,
+} satisfies USSType
+
+const testFnType = { type: 'function', posArgs: [numType], namedArgs: { a: numType }, returnType: numType } satisfies USSType
+
+const testFn1: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
+const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
+
+void test('broadcasting-locate-type', (): void => {
+    assert.deepStrictEqual(
+        locateType(
+            { type: numType, value: 1 },
+            t => t.type === 'number',
+            'number',
+        ),
+        { type: 'success', result: [[], numType, 1] },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            { type: numVectorType, value: [1, 2, 3] },
+            t => t.type === 'number',
+            'number',
+        ),
+        { type: 'success', result: [[3], numType, [1, 2, 3]] },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            { type: numMatrixType, value: [[1, 2], [3, 4]] },
+            t => t.type === 'number',
+            'number',
+        ),
+        { type: 'success', result: [[2, 2], numType, [[1, 2], [3, 4]]] },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            { type: numMatrixType, value: [[1, 2], [3, 4]] },
+            t => t.type === 'vector' && t.elementType.type === 'number',
+            'vector of number',
+        ),
+        { type: 'success', result: [[2], numVectorType, [[1, 2], [3, 4]]] },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            { type: multiObjType, value: new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            t => t.type === 'number',
+            'number',
+        ),
+        { type: 'error', message: 'Expected a vector, or vector of number but got {a: number, b: number}' },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            { type: multiObjType, value: new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
+            'object with properties {a: number, b: number}',
+        ),
+        {
+            type: 'success',
+            result: [
+                [3],
+                { type: 'object', properties: { a: numType, b: numType } },
+                [
+                    new Map<string, USSValue>([['a', 1], ['b', 1]]),
+                    new Map<string, USSValue>([['a', 1], ['b', 2]]),
+                    new Map<string, USSValue>([['a', 1], ['b', 3]]),
+                ],
+            ],
+        },
+    )
+    assert.deepStrictEqual(
+        locateType(
+            {
+                type: multiObjVectorType,
+                value: [
+                    new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]),
+                    new Map<string, USSValue>([['a', 6], ['b', [4, 5, 6]]]),
+                ],
+            },
+            t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
+            'object with properties {a: number, b: number}',
+        ),
+        {
+            type: 'success',
+            result: [
+                [2, 3],
+                { type: 'object', properties: { a: numType, b: numType } },
+                [
+                    [
+                        new Map<string, USSValue>([['a', 1], ['b', 1]]),
+                        new Map<string, USSValue>([['a', 1], ['b', 2]]),
+                        new Map<string, USSValue>([['a', 1], ['b', 3]]),
+                    ],
+                    [
+                        new Map<string, USSValue>([['a', 6], ['b', 4]]),
+                        new Map<string, USSValue>([['a', 6], ['b', 5]]),
+                        new Map<string, USSValue>([['a', 6], ['b', 6]]),
+                    ],
+                ],
+            ],
+        },
+    )
+})
+
+void test('broadcasting-apply', (): void => {
+    assert.deepStrictEqual(
+        broadcastApply(
+            { type: testFnType, value: testFn1 },
+            [
+                { type: numType, value: 10 },
+            ],
+            [
+                ['a', { type: numType, value: 3 }],
+            ],
+            {} as Context, // Context is not used in this test, so we can pass an empty object
+        ),
+        { type: 'success', result: { type: numType, value: 10 * 10 + 3 } },
+    )
+    assert.deepStrictEqual(
+        broadcastApply(
+            { type: testFnType, value: testFn1 },
+            [
+                { type: numVectorType, value: [10, 20, 30] },
+            ],
+            [
+                ['a', { type: numType, value: 3 }],
+            ],
+            {} as Context,
+        ),
+        {
+            type: 'success',
+            result: {
+                type: numVectorType,
+                value: [10 * 10 + 3, 20 * 20 + 3, 30 * 30 + 3],
+            },
+        },
+    )
+    assert.deepStrictEqual(
+        broadcastApply(
+            { type: testFnType, value: testFn1 },
+            [
+                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+            ],
+            [
+                ['a', { type: numType, value: 3 }],
+            ],
+            {} as Context,
+        ),
+        {
+            type: 'success',
+            result: {
+                type: numMatrixType,
+                value: [[10 * 10 + 3, 20 * 20 + 3], [30 * 30 + 3, 40 * 40 + 3]],
+            },
+        },
+    )
+    assert.deepStrictEqual(
+        broadcastApply(
+            { type: testFnType, value: testFn1 },
+            [
+                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+            ],
+            [
+                ['a', { type: numVectorType, value: [3, 4] }],
+            ],
+            {} as Context,
+        ),
+        {
+            type: 'success',
+            result: {
+                type: numMatrixType,
+                value: [[10 * 10 + 3, 20 * 20 + 4], [30 * 30 + 3, 40 * 40 + 4]],
+            },
+        },
+    )
+    assert.deepStrictEqual(
+        broadcastApply(
+            { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] },
+            [
+                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+            ],
+            [
+                ['a', { type: numVectorType, value: [3, 4] }],
+            ],
+            {} as Context,
+        ),
+        {
+            type: 'success',
+            result: {
+                type: numMatrixType,
+                value: [[10 * 10 + 3, 20 * 20 * 20 + 4], [30 * 30 + 3, 40 * 40 * 40 + 4]],
+            },
+        },
     )
 })
