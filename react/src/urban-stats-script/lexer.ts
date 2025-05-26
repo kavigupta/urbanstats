@@ -91,7 +91,7 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         throw new Error('Input contains new line characters')
     }
     let idx = 0
-    while (idx < input.length) {
+    lex: while (idx < input.length) {
         const char = input[idx]
         if (char === ' ') {
             idx++
@@ -110,18 +110,13 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             idx++
             continue
         }
-        let done = false
         for (const lexer of [numberLexer, identifierLexer, operatorLexer]) {
             let token
             [idx, token] = lexGeneric(input, idx, lineNo, lexer)
             if (token !== undefined) {
                 tokens.push(token)
-                done = true
-                break
+                continue lex
             }
-        }
-        if (done) {
-            continue
         }
         let token
         [idx, token] = lexString(input, idx, lineNo)
