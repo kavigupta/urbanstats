@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useMemo } from 'react'
+import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 // imort Observable plot
 import { useColors } from '../page_template/colors'
@@ -31,11 +31,11 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    const settingsElement = (plotRef: React.RefObject<HTMLDivElement>): ReactElement => (
-        <HistogramSettings plotRef={plotRef} shortnames={props.histograms.map(h => h.shortname)} />
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
-    const plotSpec = useMemo(
+    const plotSpec = useCallback(
         () => {
             const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
@@ -72,7 +72,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
 
 function HistogramSettings(props: {
     shortnames: string[]
-    plotRef: React.RefObject<HTMLDivElement>
+    makePlot: () => HTMLElement
 }): ReactNode {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
@@ -82,25 +82,29 @@ function HistogramSettings(props: {
         <div
             className="serif"
             style={{
-                backgroundColor: colors.background, padding: '0.5em', border: `1px solid ${colors.textMain}`,
-                display: 'flex', gap: '0.5em',
+                backgroundColor: colors.background,
+                padding: '0.5em',
+                border: `1px solid ${colors.textMain}`,
+                display: 'flex',
+                gap: '0.5em',
             }}
         >
             <img
                 src="/download.png"
-                onClick={() => {
-                    if (props.plotRef.current) {
-                        void createScreenshot(
-                            {
-                                path: `${props.shortnames.join('_')}_histogram`,
-                                overallWidth: props.plotRef.current.offsetWidth * 2,
-                                elementsToRender: [props.plotRef.current],
-                                heightMultiplier: 1.2,
-                            },
-                            universe,
-                            colors,
-                        )
-                    }
+                onClick={async () => {
+                    const plot = props.makePlot()
+                    document.body.appendChild(plot)
+                    await createScreenshot(
+                        {
+                            path: `${props.shortnames.join('_')}_histogram`,
+                            overallWidth: plot.offsetWidth * 2,
+                            elementsToRender: [plot],
+                            heightMultiplier: 1.2,
+                        },
+                        universe,
+                        colors,
+                    )
+                    plot.remove()
                 }}
                 width="20"
                 height="20"
@@ -225,10 +229,14 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
         }
     }
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
+
+    const axis = Plot.axisX
+    const grid = Plot.gridX
+
     return [
         [
-            Plot.axisX(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
-            Plot.gridX(xKeypoints),
+            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
+            grid(xKeypoints),
         ],
         x => `${renderNumberHighlyRounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${useImperial ? 'mi' : 'km'}²`,
     ]
@@ -244,9 +252,12 @@ function yAxis(maxValue: number): (Plot.CompoundMark | Plot.RuleY)[] {
     const maxValueRounded = Math.ceil(maxValue / tickGap) * tickGap
     const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
 
+    const axis = Plot.axisY
+    const grid = Plot.gridY
+
     return [
-        Plot.axisY(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
-        Plot.gridY(yKeypoints),
+        axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
+        grid(yKeypoints),
     ]
 }
 
@@ -307,7 +318,7 @@ function createHistogramMarks(
     const seriesSingle = dovetailSequences(series)
 
     const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
-    const tip = Plot.tip(maxSequences(series), Plot.pointerX({
+    const tip = Plot.tip(maxSequences(series), (Plot.pointerX)({
         x: 'xidx', y: 'y',
         title: (d: { names: string[], xidx: number, ys: number[] }) => {
             let result = `Density: ${renderX(d.xidx)}\n`

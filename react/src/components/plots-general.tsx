@@ -1,7 +1,9 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, useEffect, useRef } from 'react'
+import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
 
 import { useScreenshotMode } from './screenshot'
+
+import './plots.css'
 
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
@@ -12,53 +14,57 @@ interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: DetailedPlotSpec
-    settingsElement: (plotRef: React.RefObject<HTMLDivElement>) => ReactElement
+    plotSpec: () => DetailedPlotSpec
+    settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const plotRef = useRef<HTMLDivElement>(null)
+
+    const plotSpec = props.plotSpec
+
+    const plotConfig = useCallback((): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec()
+        const result: Plot.PlotOptions = {
+            marks,
+            x: {
+                label: xlabel,
+            },
+            y: {
+                label: ylabel,
+                domain: ydomain,
+            },
+            grid: false,
+            width: 1000,
+            style: {
+                fontSize: '1em',
+                fontFamily: 'Jost, Arial, sans-serif',
+            },
+            marginTop: 80,
+            marginBottom: 40,
+            marginLeft: 80,
+            color: legend,
+        }
+        return result
+    }, [plotSpec])
+
     useEffect(() => {
         if (plotRef.current) {
-            const { marks, xlabel, ylabel, ydomain, legend } = props.plotSpec
-            // y grid marks
-            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plotConfig = {
-                marks,
-                x: {
-                    label: xlabel,
-                },
-                y: {
-                    label: ylabel,
-                    domain: ydomain,
-                },
-                grid: false,
-                width: 1000,
-                style: {
-                    fontSize: '1em',
-                    fontFamily: 'Jost, Arial, sans-serif',
-                },
-                marginTop: 80,
-                marginBottom: 40,
-                marginLeft: 80,
-                color: legend,
-            }
-            const plot = Plot.plot(plotConfig)
+            const plot = Plot.plot(plotConfig())
             plotRef.current.innerHTML = ''
             plotRef.current.appendChild(plot)
         }
-    }, [props.plotSpec])
+    }, [props.plotSpec, plotConfig])
 
     const screenshotMode = useScreenshotMode()
 
     // put a button panel in the top right corner
     return (
-        <div style={{ width: '100%', position: 'relative' }}>
+        <>
             <div
-                className="histogram-svg-panel"
+                className="histogram-svg-panel" // tied to CSS
                 ref={plotRef}
                 style={
                     {
                         width: '100%',
-                        // height: "20em"
                     }
                 }
             >
@@ -67,9 +73,16 @@ export function PlotComponent(props: {
                 ? undefined
                 : (
                         <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            {props.settingsElement(plotRef)}
+                            {props.settingsElement(() => {
+                                const plot = Plot.plot(plotConfig())
+                                const div = document.createElement('div')
+                                div.style.width = '1000px'
+                                div.style.height = '500px'
+                                div.appendChild(plot)
+                                return div
+                            })}
                         </div>
                     )}
-        </div>
+        </>
     )
 }

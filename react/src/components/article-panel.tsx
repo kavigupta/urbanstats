@@ -18,7 +18,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
-import { WithPlot } from './plots'
+import { RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
@@ -133,7 +133,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
     const navContext = useContext(Navigator.Context)
 
     return (
-        <WithPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
+        <>
             <TableRowContainer index={props.index}>
                 <StatisticRowCells
                     totalWidth={100}
@@ -149,6 +149,13 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                     simpleOrdinals={simpleOrdinals}
                 />
             </TableRowContainer>
-        </WithPlot>
+            {expanded
+                ? (
+                        <div style={{ width: '100%', position: 'relative' }}>
+                            <RenderedPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} />
+                        </div>
+                    )
+                : null}
+        </>
     )
 }
