@@ -47,6 +47,7 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
         <PlotComponent
             plotSpec={() => plotSpec}
             settingsElement={settingsElement}
+            transpose={false}
         />
     )
 }

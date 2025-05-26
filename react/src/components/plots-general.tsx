@@ -14,15 +14,16 @@ interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: () => DetailedPlotSpec
+    plotSpec: (transpose: boolean) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
+    transpose: boolean
 }): ReactElement {
     const plotRef = useRef<HTMLDivElement>(null)
 
     const plotSpec = props.plotSpec
 
-    const plotConfig = useCallback((): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec()
+    const plotConfig = useCallback((transpose: boolean): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transpose)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -33,28 +34,41 @@ export function PlotComponent(props: {
                 domain: ydomain,
             },
             grid: false,
-            width: 1000,
+            width: transpose ? undefined : 1000,
+            height: transpose ? 1000 : undefined,
             style: {
-                fontSize: '1em',
+                fontSize: transpose ? '2em' : '1em',
                 fontFamily: 'Jost, Arial, sans-serif',
             },
             marginTop: 80,
-            marginBottom: 40,
+            marginBottom: transpose ? 80 : 40,
             marginLeft: 80,
             color: legend,
+        }
+        if (transpose) {
+            result.x = {
+                label: ylabel,
+                domain: ydomain,
+            }
+            result.y = {
+                label: xlabel,
+                reverse: true,
+            }
         }
         return result
     }, [plotSpec])
 
     useEffect(() => {
         if (plotRef.current) {
-            const plot = Plot.plot(plotConfig())
+            const plot = Plot.plot(plotConfig(props.transpose))
             plotRef.current.innerHTML = ''
             plotRef.current.appendChild(plot)
         }
-    }, [props.plotSpec, plotConfig])
+    }, [props.plotSpec, props.transpose, plotConfig])
 
     const screenshotMode = useScreenshotMode()
+
+    const transposeTopMargin = '35px'
 
     // put a button panel in the top right corner
     return (
@@ -65,6 +79,9 @@ export function PlotComponent(props: {
                 style={
                     {
                         width: '100%',
+                        height: props.transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
+                        position: props.transpose ? 'relative' : undefined,
+                        top: props.transpose ? transposeTopMargin : undefined,
                     }
                 }
             >
@@ -72,9 +89,9 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
+                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0, left: props.transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
-                                const plot = Plot.plot(plotConfig())
+                                const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')
                                 div.style.width = '1000px'
                                 div.style.height = '500px'

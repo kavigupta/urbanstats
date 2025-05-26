@@ -62,15 +62,31 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const expandedSettings = useSettings(dataByArticleStat[0].filter(row => row.extraStat !== undefined).map(row => rowExpandedKey(row.statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    const widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
+    let widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
+    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
-    const leftMarginPercent = 0.18
-    const numColumns = props.articles.length
-    const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns)
+    const transpose = widthColumns > maxColumns && widthColumns > widthTransposeColumns
+
+    if (transpose) {
+        ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
+    }
+
+    const leftMarginPercent = transpose ? 0.24 : 0.18
+    const numColumns = transpose ? dataByArticleStat[0].length : props.articles.length
+    const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
+
+    const expandedColumnWidth = (columnIndex: number): number => {
+        return transpose && expandedByStatIndex[columnIndex] ? 2 * columnWidth : columnWidth
+    }
 
     const leftSpacerCell = (): ReactNode => {
         return <div style={{ width: `${leftMarginPercent * 100}%` }}></div>
+    }
+
+    const transposeHistogramSpacer = (columnIndex: number): ReactNode => {
+        return transpose && expandedByStatIndex[columnIndex] ? <div key={`spacer_${columnIndex}`} style={{ width: `${columnWidth}%` }}></div> : null
     }
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
@@ -116,7 +132,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             universe: currentUniverse,
                             longnames: names.map((value, index) => index === articleIndex ? x : value),
                         }, { scroll: { kind: 'none' } })}
-                    manipulationJustify="flex-end"
+                    manipulationJustify={transpose ? 'center' : 'flex-end'}
                 />
             </div>
         )
@@ -131,7 +147,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         <div
                             key={i}
                             style={{
-                                width: `${columnWidth}%`,
+                                width: `${expandedColumnWidth(i)}%`,
                                 height: barHeight,
                                 backgroundColor: backgroundColor(i),
                             }}
@@ -149,6 +165,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             ...Array.from({ length: numColumns })
                 .map((_, columnIndex) => [
                     <StatisticHeaderCells key={columnIndex} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} />,
+                    transposeHistogramSpacer(columnIndex),
                 ]),
         ]
     }
@@ -186,6 +203,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 }}
                 totalWidth={columnWidth}
             />,
+            transposeHistogramSpacer(statIndex),
         ]
     }
 
@@ -219,7 +237,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 {expandedByStatIndex[statIndex]
                                     ? (
                                             <div style={{ width: '100%', position: 'relative' }}>
-                                                <RenderedPlot plotProps={plotProps(statIndex)} />
+                                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={false} />
                                             </div>
                                         )
                                     : null}
@@ -232,6 +250,59 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const comparisonHeadStyle = useComparisonHeadStyle()
+
+    const transposeTableContents = (): ReactNode => {
+        return (
+            <>
+                {bars(
+                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
+                )}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row' }}
+                >
+                    {leftSpacerCell()}
+                    {
+                        dataByStatArticle.map((_, statIndex) => {
+                            return statName(statIndex, expandedColumnWidth(statIndex), true)
+                        })
+                    }
+                </div>
+
+                <div style={{ position: 'relative' }}>
+
+                    <TableHeaderContainer>
+                        {comparisonHeaders('Region')}
+                    </TableHeaderContainer>
+
+                    {props.articles.map((article, articleIndex) => {
+                        return (
+                            <TableRowContainer key={article.longname} index={articleIndex}>
+                                <ComparisonColorBar highlightIndex={articleIndex} />
+                                {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
+                                <ComparisonColorBar highlightIndex={articleIndex} />
+                                { dataByArticleStat[articleIndex].map((_, statIndex) => {
+                                    return valueCells(articleIndex, statIndex)
+                                })}
+                            </TableRowContainer>
+                        )
+                    })}
+                    {dataByStatArticle.map((rows, statIndex) => {
+                        if (!expandedByStatIndex[statIndex]) {
+                            return null
+                        }
+                        // Must account for other expanded columns
+                        const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
+                        return (
+                            <div key={rows[0].statpath} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
+                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={true} />
+                            </div>
+                        )
+                    })}
+                </div>
+            </>
+        )
+    }
 
     return (
         <>
@@ -266,7 +337,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                     {maybeScroll(
                         <div ref={tableRef}>
-                            {normalTableContents()}
+                            {transpose ? transposeTableContents() : normalTableContents()}
                             <ArticleWarnings />
                         </div>,
                     )}
