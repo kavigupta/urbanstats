@@ -203,11 +203,11 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     }
     let result: string
     try {
-        const resultObj: object = JSON.parse(input.slice(start, idx)) as object
+        const resultObj = JSON.parse(input.slice(start, idx))
         if (typeof resultObj !== 'string') {
             throw new Error(`Invalid string: ${input.slice(start, idx)}`)
         }
-        result = resultObj as string
+        result = resultObj
     }
     catch {
         return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, location: { lineIdx: lineNo, startIdx: start, endIdx: idx } }]
