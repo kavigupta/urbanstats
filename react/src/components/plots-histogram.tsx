@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useMemo } from 'react'
+import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 // imort Observable plot
 import { useColors } from '../page_template/colors'
@@ -31,12 +31,12 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    const settingsElement = (plotRef: React.RefObject<HTMLDivElement>): ReactElement => (
-        <HistogramSettings plotRef={plotRef} shortnames={props.histograms.map(h => h.shortname)} transpose={props.transpose} />
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} transpose={props.transpose} />
     )
 
-    const plotSpec = useMemo(
-        () => {
+    const plotSpec = useCallback(
+        (transpose: boolean) => {
             const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
@@ -44,11 +44,11 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
-            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, props.transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, props.transpose)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose)
             marks.push(
                 ...xAxisMarks,
-                ...yAxis(maxValue, props.transpose),
+                ...yAxis(maxValue, transpose),
             )
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = `Density (/${useImperial ? 'mi' : 'km'}²)`
@@ -56,10 +56,10 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
             const legend = props.histograms.length === 1
                 ? undefined
-                : { legend: false, range: colors, domain: shortnames }
+                : { legend: !transpose, range: colors, domain: shortnames }
             return { marks, xlabel, ylabel, ydomain, legend }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, props.transpose],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial],
     )
 
     return (
@@ -73,7 +73,7 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
 
 function HistogramSettings(props: {
     shortnames: string[]
-    plotRef: React.RefObject<HTMLDivElement>
+    makePlot: () => HTMLElement
     transpose: boolean
 }): ReactNode {
     const universe = useUniverse()
@@ -96,19 +96,20 @@ function HistogramSettings(props: {
         >
             <img
                 src="/download.png"
-                onClick={() => {
-                    if (props.plotRef.current) {
-                        void createScreenshot(
-                            {
-                                path: `${props.shortnames.join('_')}_histogram`,
-                                overallWidth: props.plotRef.current.offsetWidth * 2,
-                                elementsToRender: [props.plotRef.current],
-                                heightMultiplier: 1.2,
-                            },
-                            universe,
-                            colors,
-                        )
-                    }
+                onClick={async () => {
+                    const plot = props.makePlot()
+                    document.body.appendChild(plot)
+                    await createScreenshot(
+                        {
+                            path: `${props.shortnames.join('_')}_histogram`,
+                            overallWidth: plot.offsetWidth * 2,
+                            elementsToRender: [plot],
+                            heightMultiplier: 1.2,
+                        },
+                        universe,
+                        colors,
+                    )
+                    plot.remove()
                 }}
                 width="20"
                 height="20"
