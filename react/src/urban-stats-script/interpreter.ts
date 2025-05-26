@@ -7,7 +7,8 @@ type Effect = undefined
 export interface Context {
     effect: (eff: Effect) => void
     error: (msg: string, location: LocInfo) => Error
-    env: Record<string, USSValue>
+    get: (name: string) => USSValue | undefined
+    set: (name: string, value: USSValue) => void
 }
 
 function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
@@ -30,8 +31,9 @@ function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
             }
         case 'identifier':
             const varName = expr.name.node
-            if (varName in env.env) {
-                return env.env[varName]
+            const res = env.get(varName)
+            if (res !== undefined) {
+                return res
             }
             throw env.error(`Undefined variable: ${varName}`, expr.name.location)
         case 'attribute':
