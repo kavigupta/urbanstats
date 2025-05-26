@@ -358,8 +358,8 @@ function createHistogramMarks(
     else {
         marks.push(
             Plot.rectY(seriesSingle, {
-                x1: 'xidx_left',
-                x2: 'xidx_right',
+                x1: 'xidxLeft',
+                x2: 'xidxRight',
                 y: 'y',
                 fill: color,
             }),
