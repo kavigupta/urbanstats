@@ -86,7 +86,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const transposeHistogramSpacer = (columnIndex: number): ReactNode => {
-        return transpose && expandedByStatIndex[columnIndex] ? <div style={{ width: `${columnWidth}%` }}></div> : null
+        return transpose && expandedByStatIndex[columnIndex] ? <div key={`spacer_${columnIndex}`} style={{ width: `${columnWidth}%` }}></div> : null
     }
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
