@@ -5,7 +5,7 @@ interface Decorated<T> {
     location: LocInfo
 }
 
-type UrbanStatsASTArg = (
+export type UrbanStatsASTArg = (
     { type: 'unnamed', value: UrbanStatsASTExpression }
     | { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression }
 )
@@ -17,7 +17,7 @@ type UrbanStatsASTLHS = (
 
 )
 
-type UrbanStatsASTExpression = (
+export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
     | { type: 'infixSequence', operators: Decorated<string>[], expressions: UrbanStatsASTExpression[] }
@@ -50,7 +50,7 @@ function unify(...locations: (LocInfo | undefined)[]): LocInfo | undefined {
     return { lineIdx: definedLocations[0].lineIdx, startIdx: start, endIdx: end }
 }
 
-function locationOf(node: UrbanStatsAST): LocInfo | undefined {
+export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
     switch (node.type) {
         case 'unnamed':
             return undefined
@@ -79,6 +79,14 @@ function locationOf(node: UrbanStatsAST): LocInfo | undefined {
             }
             return unify(...branches)
     }
+}
+
+export function locationOfExpr(expr: UrbanStatsASTExpression): LocInfo {
+    const loc = locationOf(expr)
+    if (loc === undefined) {
+        throw new Error('Location is undefined; this should not happen')
+    }
+    return loc
 }
 
 export function toSExp(node: UrbanStatsAST): string {
@@ -217,11 +225,7 @@ class ParseState {
             return expr
         }
         if (exprOrName.type !== 'identifier') {
-            const location = locationOf(exprOrName)
-            if (location === undefined) {
-                throw new Error('Location is undefined; this should not happen')
-            }
-            return { type: 'error', message: 'Expected identifier for named argument', location }
+            return { type: 'error', message: 'Expected identifier for named argument', location: locationOfExpr(exprOrName) }
         }
         return {
             type: 'named',
@@ -328,11 +332,7 @@ class ParseState {
                 return expr
             case 'function':
             case 'infixSequence':
-                const location = locationOf(expr)
-                if (location === undefined) {
-                    throw new Error('Location is undefined; this should not happen')
-                }
-                return { type: 'error', message: 'Invalid LHS expression', location }
+                return { type: 'error', message: 'Invalid LHS expression', location: locationOfExpr(expr) }
         }
     }
 
