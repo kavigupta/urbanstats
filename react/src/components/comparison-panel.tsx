@@ -59,7 +59,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const maxColumns = mobileLayout ? 4 : 6
 
-    const expandedSettings = useSettings(dataByArticleStat[0].filter(row => row.extraStat !== undefined).map(row => rowExpandedKey(row.statpath)))
+    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
 
