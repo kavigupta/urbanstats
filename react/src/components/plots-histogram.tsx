@@ -357,12 +357,19 @@ function createHistogramMarks(
     }
     else {
         marks.push(
-            Plot.rectY(seriesSingle, {
-                x1: 'xidxLeft',
-                x2: 'xidxRight',
-                y: 'y',
-                fill: color,
-            }),
+            (transpose
+                ? Plot.rectX(seriesSingle, {
+                    y1: 'xidxLeft',
+                    y2: 'xidxRight',
+                    x: 'y',
+                    fill: color,
+                })
+                : Plot.rectY(seriesSingle, {
+                    x1: 'xidxLeft',
+                    x2: 'xidxRight',
+                    y: 'y',
+                    fill: color,
+                })),
         )
     }
     marks.push(tip)
