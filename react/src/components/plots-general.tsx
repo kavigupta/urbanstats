@@ -3,6 +3,8 @@ import React, { ReactElement, useEffect, useRef } from 'react'
 
 import { useScreenshotMode } from './screenshot'
 
+import './plots.css'
+
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
     xlabel: string
@@ -14,14 +16,13 @@ interface DetailedPlotSpec {
 export function PlotComponent(props: {
     plotSpec: DetailedPlotSpec
     settingsElement: (plotRef: React.RefObject<HTMLDivElement>) => ReactElement
+    transpose: boolean
 }): ReactElement {
     const plotRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (plotRef.current) {
             const { marks, xlabel, ylabel, ydomain, legend } = props.plotSpec
-            // y grid marks
-            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plotConfig = {
+            const plotConfig: Plot.PlotOptions = {
                 marks,
                 x: {
                     label: xlabel,
@@ -31,35 +32,49 @@ export function PlotComponent(props: {
                     domain: ydomain,
                 },
                 grid: false,
-                width: 1000,
+                width: props.transpose ? undefined : 1000,
+                height: props.transpose ? 800 : undefined,
                 style: {
                     fontSize: '1em',
-                    // font-family: 'Jost', 'Arial', sans-serif;
                     fontFamily: 'Jost|Arial|sans-serif',
                 },
-                marginTop: 80,
+                marginTop: props.transpose ? 40 : 80,
                 marginBottom: 40,
-                marginLeft: 80,
+                marginLeft: props.transpose ? 40 : 80,
                 color: legend,
+            }
+            if (props.transpose) {
+                plotConfig.x = {
+                    label: ylabel,
+                    domain: ydomain,
+                }
+                plotConfig.y = {
+                    label: xlabel,
+                    reverse: true,
+                }
             }
             const plot = Plot.plot(plotConfig)
             plotRef.current.innerHTML = ''
             plotRef.current.appendChild(plot)
         }
-    }, [props.plotSpec])
+    }, [props.plotSpec, props.transpose])
 
     const screenshotMode = useScreenshotMode()
 
+    const transposeTopMargin = '35px'
+
     // put a button panel in the top right corner
     return (
-        <div style={{ width: '100%', position: 'relative' }}>
+        <>
             <div
-                className="histogram-svg-panel"
+                className="histogram-svg-panel" // tied to CSS
                 ref={plotRef}
                 style={
                     {
                         width: '100%',
-                        // height: "20em"
+                        height: props.transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
+                        position: props.transpose ? 'relative' : undefined,
+                        top: props.transpose ? transposeTopMargin : undefined,
                     }
                 }
             >
@@ -67,10 +82,10 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
+                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0, left: props.transpose ? 0 : undefined }}>
                             {props.settingsElement(plotRef)}
                         </div>
                     )}
-        </div>
+        </>
     )
 }

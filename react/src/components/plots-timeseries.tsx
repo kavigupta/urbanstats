@@ -15,6 +15,7 @@ export interface TimeSeriesPlotProps {
 export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNode {
     // TODO this is largely unfinished. We need to make several improvements to this component
     // for it to be production-ready.
+    // Including working with transposed comparisons
     const settingsElement = (): ReactElement => <div></div>
 
     const plotSpec = useMemo(
@@ -46,6 +47,7 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
         <PlotComponent
             plotSpec={plotSpec}
             settingsElement={settingsElement}
+            transpose={false}
         />
     )
 }

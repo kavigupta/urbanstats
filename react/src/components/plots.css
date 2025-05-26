@@ -1,0 +1,7 @@
+.histogram-svg-panel figure {
+    margin: 0;
+}
+
+.histogram-svg-panel svg {
+    max-height: 100%;
+}

@@ -150,7 +150,11 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                 />
             </TableRowContainer>
             {expanded
-                ? <RenderedPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} />
+                ? (
+                        <div style={{ width: '100%', position: 'relative' }}>
+                            <RenderedPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} transpose={false} />
+                        </div>
+                    )
                 : null}
         </>
     )

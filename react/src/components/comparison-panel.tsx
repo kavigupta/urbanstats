@@ -19,7 +19,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
-import { RenderedPlot } from './plots'
+import { PlotProps, RenderedPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticName } from './table'
@@ -207,6 +207,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         ]
     }
 
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: color(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
+
     const normalTableContents = (): ReactNode => {
         return (
             <>
@@ -223,7 +225,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                 {
                     dataByStatArticle.map((articlesStatData, statIndex) => {
-                        const plotProps = articlesStatData.map((row, articleIdx) => ({ ...row, color: color(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
                         return (
                             <div key={articlesStatData[0].statpath}>
                                 <TableRowContainer index={statIndex}>
@@ -234,7 +235,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                     })}
                                 </TableRowContainer>
                                 {expandedByStatIndex[statIndex]
-                                    ? <RenderedPlot plotProps={plotProps} />
+                                    ? (
+                                            <div style={{ width: '100%', position: 'relative' }}>
+                                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={false} />
+                                            </div>
+                                        )
                                     : null}
                             </div>
                         )
@@ -264,22 +269,37 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     }
                 </div>
 
-                <TableHeaderContainer>
-                    {comparisonHeaders('Region')}
-                </TableHeaderContainer>
+                <div style={{ position: 'relative' }}>
 
-                {props.articles.map((article, articleIndex) => {
-                    return (
-                        <TableRowContainer key={article.longname} index={articleIndex}>
-                            <ComparisonColorBar highlightIndex={articleIndex} />
-                            {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
-                            <ComparisonColorBar highlightIndex={articleIndex} />
-                            { dataByArticleStat[articleIndex].map((_, statIndex) => {
-                                return valueCells(articleIndex, statIndex)
-                            })}
-                        </TableRowContainer>
-                    )
-                })}
+                    <TableHeaderContainer>
+                        {comparisonHeaders('Region')}
+                    </TableHeaderContainer>
+
+                    {props.articles.map((article, articleIndex) => {
+                        return (
+                            <TableRowContainer key={article.longname} index={articleIndex}>
+                                <ComparisonColorBar highlightIndex={articleIndex} />
+                                {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
+                                <ComparisonColorBar highlightIndex={articleIndex} />
+                                { dataByArticleStat[articleIndex].map((_, statIndex) => {
+                                    return valueCells(articleIndex, statIndex)
+                                })}
+                            </TableRowContainer>
+                        )
+                    })}
+                    {dataByStatArticle.map((rows, statIndex) => {
+                        if (!expandedByStatIndex[statIndex]) {
+                            return null
+                        }
+                        // Must account for other expanded columns
+                        const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
+                        return (
+                            <div key={rows[0].statpath} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
+                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={true} />
+                            </div>
+                        )
+                    })}
+                </div>
             </>
         )
     }
