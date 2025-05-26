@@ -1,6 +1,25 @@
-export const infixOperators = [
-    '+', '-', '*', '**', '/', '==', '!=', '<', '>', '<=', '>=', '&', '|',
-]
+export const infixOperatorsPrecedence = new Map<string, number>([
+    // E
+    ['**', 1000],
+    // MD
+    ['*', 900],
+    ['/', 900],
+    // AS
+    ['+', 800],
+    ['-', 800],
+    // Comparators
+    ['==', 700],
+    ['!=', 700],
+    ['<', 700],
+    ['>', 700],
+    ['<=', 700],
+    ['>=', 700],
+    // Logic
+    ['&', 600],
+    ['|', 600],
+])
+
+export const infixOperators = [...infixOperatorsPrecedence.keys()]
 const operators = [...infixOperators, '=', ',', ';', '.']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 

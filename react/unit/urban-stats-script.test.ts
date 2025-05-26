@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { Context } from '../src/urban-stats-script/interpreter'
 import { lex } from '../src/urban-stats-script/lexer'
 import { parse, toSExp } from '../src/urban-stats-script/parser'
-import { broadcastApply, locateType, USSRawValue, renderType, USSType, USSValue } from '../src/urban-stats-script/types-values'
+import { broadcastApply, locateType, USSRawValue, renderType, USSType } from '../src/urban-stats-script/types-values'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
@@ -269,7 +269,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: multiObjType, value: new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            { type: multiObjType, value: new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]) },
             t => t.type === 'number',
             'number',
         ),
@@ -277,7 +277,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: multiObjType, value: new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            { type: multiObjType, value: new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]) },
             t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
             'object with properties {a: number, b: number}',
         ),
@@ -287,9 +287,9 @@ void test('broadcasting-locate-type', (): void => {
                 [3],
                 { type: 'object', properties: { a: numType, b: numType } },
                 [
-                    new Map<string, USSValue>([['a', 1], ['b', 1]]),
-                    new Map<string, USSValue>([['a', 1], ['b', 2]]),
-                    new Map<string, USSValue>([['a', 1], ['b', 3]]),
+                    new Map<string, USSRawValue>([['a', 1], ['b', 1]]),
+                    new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
+                    new Map<string, USSRawValue>([['a', 1], ['b', 3]]),
                 ],
             ],
         },
@@ -299,8 +299,8 @@ void test('broadcasting-locate-type', (): void => {
             {
                 type: multiObjVectorType,
                 value: [
-                    new Map<string, USSValue>([['a', 1], ['b', [1, 2, 3]]]),
-                    new Map<string, USSValue>([['a', 6], ['b', [4, 5, 6]]]),
+                    new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]),
+                    new Map<string, USSRawValue>([['a', 6], ['b', [4, 5, 6]]]),
                 ],
             },
             t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
@@ -313,14 +313,14 @@ void test('broadcasting-locate-type', (): void => {
                 { type: 'object', properties: { a: numType, b: numType } },
                 [
                     [
-                        new Map<string, USSValue>([['a', 1], ['b', 1]]),
-                        new Map<string, USSValue>([['a', 1], ['b', 2]]),
-                        new Map<string, USSValue>([['a', 1], ['b', 3]]),
+                        new Map<string, USSRawValue>([['a', 1], ['b', 1]]),
+                        new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
+                        new Map<string, USSRawValue>([['a', 1], ['b', 3]]),
                     ],
                     [
-                        new Map<string, USSValue>([['a', 6], ['b', 4]]),
-                        new Map<string, USSValue>([['a', 6], ['b', 5]]),
-                        new Map<string, USSValue>([['a', 6], ['b', 6]]),
+                        new Map<string, USSRawValue>([['a', 6], ['b', 4]]),
+                        new Map<string, USSRawValue>([['a', 6], ['b', 5]]),
+                        new Map<string, USSRawValue>([['a', 6], ['b', 6]]),
                     ],
                 ],
             ],

@@ -404,3 +404,21 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
         },
     }
 }
+
+export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
+    /**
+     * Broadcasts a function to the given arguments. The function itself can be a vector, but the types
+     * of the functions must all be the same.
+     *
+     * Broadcasting works by expanding values to the largest vector size, and then zippering the computation
+     * across the vectors. The last axes are always preferentially aligned, i.e.,
+     *
+     * [f, g]([[1, 2], [3, 4]]) => [[f(1), g(3)], [f(2), g(4)]]
+     *
+     * If the function cannot be broadcast to the arguments, an error is returned.
+     */
+
+    const posArgs = args.filter(x => x.type === 'unnamed').map(x => x.value)
+    const kwArgs = args.filter(x => x.type === 'named').map(x => [x.name, x.value] satisfies [string, USSValue])
+    return broadcastApply(fn, posArgs, kwArgs, ctx)
+}
