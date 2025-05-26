@@ -96,3 +96,15 @@ test('histogram-ordering', async (t) => {
     await screencap(t)
     await downloadOrCheckHistogram(t, 'histogram-ordering')
 })
+
+urbanstatsFixture('bar histogram test', `${target}/article.html?longname=Santa+Clarita+city%2C+California%2C+USA&s=6TunChoK92PzC9tD`)
+
+test('histogram-bar', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('bar histogram comparison test', `${target}/comparison.html?longnames=%5B"China"%2C"USA"%5D&s=2EoPvrZ42dy2gxh`)
+
+test('histogram-bar-comparison', async (t) => {
+    await screencap(t)
+})
