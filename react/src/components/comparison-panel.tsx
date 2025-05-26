@@ -174,7 +174,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         // So that we show the expand if there's a least one extra
         const nameRow = dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
         return (
-            <div key={nameRow.statpath} className="serif value" style={{ width: `${width}%`, padding: '1px' }}>
+            <div key={nameRow.statpath} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: center ? 'center' : undefined }}>
                 <StatisticName
                     row={nameRow}
                     longname={names[0]}
