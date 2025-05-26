@@ -10,16 +10,7 @@ interface PlotProps {
     color: string
 }
 
-export function WithPlot(props: { children: React.ReactNode, plotProps: PlotProps[], expanded: boolean }): ReactNode {
-    return (
-        <div className="plot">
-            {props.children}
-            {props.expanded ? <RenderedPlot plotProps={props.plotProps} /> : null}
-        </div>
-    )
-}
-
-function RenderedPlot({ plotProps }: { plotProps: PlotProps[] }): ReactNode {
+export function RenderedPlot({ plotProps }: { plotProps: PlotProps[] }): ReactNode {
     const type = plotProps.reduce<undefined | 'histogram' | 'time_series'>((result, plot) => {
         if (result === undefined) {
             return plot.extraStat?.type

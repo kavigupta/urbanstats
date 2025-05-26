@@ -19,7 +19,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
-import { WithPlot } from './plots'
+import { RenderedPlot } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticName } from './table'
@@ -225,7 +225,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     dataByStatArticle.map((articlesStatData, statIndex) => {
                         const plotProps = articlesStatData.map((row, articleIdx) => ({ ...row, color: color(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
                         return (
-                            <WithPlot key={articlesStatData[0].statpath} plotProps={plotProps} expanded={expandedByStatIndex[statIndex]}>
+                            <div key={articlesStatData[0].statpath}>
                                 <TableRowContainer index={statIndex}>
                                     <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
                                     {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false)}
@@ -233,7 +233,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         return valueCells(articleIndex, statIndex)
                                     })}
                                 </TableRowContainer>
-                            </WithPlot>
+                                {expandedByStatIndex[statIndex]
+                                    ? <RenderedPlot plotProps={plotProps} />
+                                    : null}
+                            </div>
                         )
                     })
                 }
