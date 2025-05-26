@@ -35,14 +35,14 @@ export function PlotComponent(props: {
             },
             grid: false,
             width: transpose ? undefined : 1000,
-            height: transpose ? 800 : undefined,
+            height: transpose ? 1000 : undefined,
             style: {
-                fontSize: '1em',
-                fontFamily: 'Jost|Arial|sans-serif',
+                fontSize: transpose ? '2em' : '1em',
+                fontFamily: 'Jost, Arial, sans-serif',
             },
-            marginTop: transpose ? 40 : 80,
-            marginBottom: 40,
-            marginLeft: transpose ? 40 : 80,
+            marginTop: 80,
+            marginBottom: transpose ? 80 : 40,
+            marginLeft: 80,
             color: legend,
         }
         if (transpose) {
