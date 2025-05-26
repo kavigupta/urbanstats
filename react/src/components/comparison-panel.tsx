@@ -20,6 +20,7 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { PlotProps, RenderedPlot } from './plots'
+import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticName } from './table'
@@ -251,6 +252,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const transposeTableContents = (): ReactNode => {
+        const someExpanded = expandedByStatIndex.some(e => e)
+        const headerHeight = transposeSettingsHeight
+        const contentHeight = '379.5px'
+
         return (
             <>
                 {bars(
@@ -268,7 +273,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     }
                 </div>
 
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
 
                     <TableHeaderContainer>
                         {comparisonHeaders('Region')}
@@ -276,7 +281,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                     {props.articles.map((article, articleIndex) => {
                         return (
-                            <TableRowContainer key={article.longname} index={articleIndex}>
+                            <TableRowContainer key={article.longname} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <ComparisonColorBar highlightIndex={articleIndex} />
                                 {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
                                 <ComparisonColorBar highlightIndex={articleIndex} />

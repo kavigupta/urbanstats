@@ -71,6 +71,8 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
     )
 }
 
+export const transposeSettingsHeight = '30.5px'
+
 function HistogramSettings(props: {
     shortnames: string[]
     makePlot: () => HTMLElement
@@ -89,7 +91,7 @@ function HistogramSettings(props: {
                 border: props.transpose ? undefined : `1px solid ${colors.textMain}`,
                 display: 'flex',
                 gap: '0.5em',
-                height: props.transpose ? '30.5px' : undefined,
+                height: props.transpose ? transposeSettingsHeight : undefined,
                 alignItems: props.transpose ? 'center' : undefined,
                 justifyContent: props.transpose ? 'center' : undefined,
             }}

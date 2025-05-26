@@ -532,12 +532,13 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
     )
 }
 
-export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {
+export function TableRowContainer({ children, index, minHeight }: { children: React.ReactNode, index: number, minHeight?: string }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...tableRowStyle,
         backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
         alignItems: 'last baseline',
+        minHeight,
     }
     return (
         <div
