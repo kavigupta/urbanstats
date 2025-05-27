@@ -17,6 +17,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHead
 import { TransposeContext, useTranspose } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
+import { Icon } from './Icon'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, Polygons } from './map'
@@ -117,7 +118,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const heading = (articleIndex: number, width: number): ReactNode => {
         return (
-            <div key={props.articles[articleIndex].longname} style={{ width: `${width}%` }}>
+            <div key={`heading_${articleIndex}`} style={{ width: `${width}%` }}>
                 <HeadingDisplay
                     longname={props.articles[articleIndex].longname}
                     includeDelete={props.articles.length > 1}
@@ -147,7 +148,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {Array.from({ length: numColumns }).map(
                     (_, i) => (
                         <div
-                            key={i}
+                            key={`bar_${i}`}
                             style={{
                                 width: `${expandedColumnWidth(i)}%`,
                                 height: barHeight,
@@ -166,7 +167,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} />,
             ...Array.from({ length: numColumns })
                 .map((_, columnIndex) => [
-                    <StatisticHeaderCells key={columnIndex} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} />,
+                    <StatisticHeaderCells key={`headerCells_${columnIndex}`} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} />,
                     transposeHistogramSpacer(columnIndex),
                 ]),
         ]
@@ -176,7 +177,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         // So that we show the expand if there's a least one extra
         const nameRow = dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
         return (
-            <div key={nameRow.statpath} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: center ? 'center' : undefined }}>
+            <div key={`statName_${nameRow.statpath}`} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: center ? 'center' : undefined }}>
                 <StatisticName
                     row={nameRow}
                     longname={names[0]}
@@ -190,7 +191,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const valueCells = (articleIndex: number, statIndex: number): ReactNode => {
         return [
             <StatisticRowCells
-                key={`${names[articleIndex]}${dataByArticleStat[articleIndex][statIndex].statpath}`}
+                key={`rowCells_${articleIndex}_${statIndex}`}
                 row={dataByArticleStat[articleIndex][statIndex]}
                 longname={names[articleIndex]}
                 onlyColumns={onlyColumns}
@@ -229,7 +230,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {
                     dataByStatArticle.map((articlesStatData, statIndex) => {
                         return (
-                            <div key={articlesStatData[0].statpath}>
+                            <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
                                     <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
                                     {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false)}
@@ -280,13 +281,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         {comparisonHeaders('Region')}
                     </TableHeaderContainer>
 
-                    {props.articles.map((article, articleIndex) => {
+                    {props.articles.map((_, articleIndex) => {
                         return (
-                            <TableRowContainer key={article.longname} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
+                            <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <ComparisonColorBar highlightIndex={articleIndex} />
                                 {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
                                 <ComparisonColorBar highlightIndex={articleIndex} />
-                                { dataByArticleStat[articleIndex].map((_, statIndex) => {
+                                { dataByArticleStat[articleIndex].map((stat, statIndex) => {
                                     return valueCells(articleIndex, statIndex)
                                 })}
                             </TableRowContainer>
@@ -299,7 +300,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         // Must account for other expanded columns
                         const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
                         return (
-                            <div key={rows[0].statpath} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
+                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
                                 <RenderedPlot plotProps={plotProps(statIndex)} />
                             </div>
                         )
@@ -413,7 +414,11 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
 
 const manipulationButtonHeight = '24px'
 
-function ManipulationButton({ color: buttonColor, onClick, text }: { color: string, onClick: () => void, text: string }): ReactNode {
+function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
+    const isMobile = useMobileLayout()
+    const isTranspose = useTranspose()
+    const colors = useColors()
+
     return (
         <div
             style={{
@@ -428,7 +433,7 @@ function ManipulationButton({ color: buttonColor, onClick, text }: { color: stri
             className={`serif manipulation-button-${text}`}
             onClick={onClick}
         >
-            {text}
+            {!(isMobile && isTranspose) ? text : <Icon src={image} size={manipulationButtonHeight} color={colors.textMain} />}
         </div>
     )
 }
@@ -445,22 +450,16 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     const currentUniverse = useUniverse()
     const comparisonHeadStyle = useComparisonHeadStyle()
 
-    const isMobile = useMobileLayout()
-    const transpose = useTranspose()
-
-    const replaceText = isMobile && transpose ? '↩\ufe0e' : 'replace'
-    const deleteText = isMobile && transpose ? '✗\ufe0e' : 'delete'
-
     const manipulationButtons = (
         <div style={{ height: manipulationButtonHeight }}>
             <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
-                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text={replaceText} />
+                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" image="/replace.png" />
                 {!includeDelete
                     ? null
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text={deleteText} />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" image="/close.png" />
                             </>
                         )}
                 <div style={{ width: '5px' }} />
@@ -515,7 +514,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
     zoomButton(i: number, buttonColor: string, onClick: () => void): ReactNode {
         return (
             <div
-                key={i}
+                key={`zoomButton_${i}`}
                 style={{
                     display: 'inline-block', width: '2em', height: '2em',
                     backgroundColor: buttonColor, borderRadius: '50%', marginLeft: '5px', marginRight: '5px',
