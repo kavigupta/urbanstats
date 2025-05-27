@@ -264,3 +264,11 @@ urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?l
 test('renders scrolling transpose comparision', async (t) => {
     await screencap(t)
 })
+
+urbanstatsFixture('mobile transpose', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%5D&s=2EoPvra9nrE8zYq`, async (t) => {
+    await t.resizeWindow(400, 800)
+})
+
+test('renders mobile transpose correctly', async (t) => {
+    await screencap(t)
+})
