@@ -85,7 +85,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
                         <div style={{ width: '70%' }}>
-                            <ComparisonSearchBox longname={article.longname} />
+                            <ComparisonSearchBox longname={article.longname} type={article.articleType} />
                         </div>
                     </div>
 
@@ -99,7 +99,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     )
 }
 
-function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
+function ComparisonSearchBox({ longname, type }: { longname: string, type: string }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
     return (
@@ -112,6 +112,7 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
                 longnames: [longname, x],
             }, { scroll: { kind: 'position', top: 0 } })}
             autoFocus={false}
+            prioritizeArticleType={type}
         />
     )
 }
