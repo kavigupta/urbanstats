@@ -6,6 +6,7 @@ import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
+import { useTranspose } from '../utils/transpose'
 
 import { PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
@@ -36,7 +37,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
     )
 
     const plotSpec = useCallback(
-        () => {
+        (transpose: boolean) => {
             const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
@@ -44,11 +45,11 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
-            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose)
             marks.push(
                 ...xAxisMarks,
-                ...yAxis(maxValue),
+                ...yAxis(maxValue, transpose),
             )
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = `Density (/${useImperial ? 'mi' : 'km'}²)`
@@ -56,7 +57,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
             const legend = props.histograms.length === 1
                 ? undefined
-                : { legend: true, range: colors, domain: shortnames }
+                : { legend: !transpose, range: colors, domain: shortnames }
             return { marks, xlabel, ylabel, ydomain, legend }
         },
         [props.histograms, binMin, binSize, relative, histogramType, useImperial],
@@ -70,6 +71,8 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
     )
 }
 
+export const transposeSettingsHeight = '30.5px'
+
 function HistogramSettings(props: {
     shortnames: string[]
     makePlot: () => HTMLElement
@@ -77,16 +80,21 @@ function HistogramSettings(props: {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
     const colors = useColors()
+    const transpose = useTranspose()
+
     // dropdown for histogram type
     return (
         <div
             className="serif"
             style={{
-                backgroundColor: colors.background,
-                padding: '0.5em',
-                border: `1px solid ${colors.textMain}`,
+                backgroundColor: transpose ? undefined : colors.background,
+                padding: transpose ? undefined : '0.5em',
+                border: transpose ? undefined : `1px solid ${colors.textMain}`,
                 display: 'flex',
                 gap: '0.5em',
+                height: transpose ? transposeSettingsHeight : undefined,
+                alignItems: transpose ? 'center' : undefined,
+                justifyContent: transpose ? 'center' : undefined,
             }}
         >
             <img
@@ -120,7 +128,7 @@ function HistogramSettings(props: {
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>
             </select>
-            <CheckboxSetting name="Relative Histograms" settingKey="histogram_relative" testId="histogram_relative" />
+            <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
         </div>
     )
 }
@@ -217,7 +225,7 @@ function maxSequences(series: { values: { xidx: number, y: number, name: string 
     return seriesMax
 }
 
-function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: boolean): [Plot.Markish[], (x: number) => string] {
+function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: boolean, transpose: boolean): [Plot.Markish[], (x: number) => string] {
     const xKeypoints: number[] = []
     for (const xidx of xidxs) {
         let lastDigit = xidx % 10
@@ -230,9 +238,12 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     }
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
 
-    const axis = Plot.axisX
-    const grid = Plot.gridX
-
+    let axis = Plot.axisX
+    let grid = Plot.gridX
+    if (transpose) {
+        axis = Plot.axisY
+        grid = Plot.gridY
+    }
     return [
         [
             axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
@@ -242,7 +253,7 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     ]
 }
 
-function yAxis(maxValue: number): (Plot.CompoundMark | Plot.RuleY)[] {
+function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.RuleY)[] {
     const minNYTicks = 5
     const idealTickGap = maxValue / minNYTicks
     const log10TickGapTimes3 = Math.floor(Math.log10(idealTickGap) * 3)
@@ -251,9 +262,14 @@ function yAxis(maxValue: number): (Plot.CompoundMark | Plot.RuleY)[] {
     const tickGap = tickGapMantissa * tickGapOom
     const maxValueRounded = Math.ceil(maxValue / tickGap) * tickGap
     const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
+        .filter((_, i) => !transpose || i % 2 === 0) // If transpose, remove every other keypoint
 
-    const axis = Plot.axisY
-    const grid = Plot.gridY
+    let axis = Plot.axisY
+    let grid = Plot.gridY
+    if (transpose) {
+        axis = Plot.axisX
+        grid = Plot.gridX
+    }
 
     return [
         axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
@@ -313,13 +329,14 @@ function createHistogramMarks(
     histogramType: HistogramType, relative: boolean,
     renderX: (x: number) => string,
     renderY: (y: number) => string,
+    transpose: boolean,
 ): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
 
     const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
-    const tip = Plot.tip(maxSequences(series), (Plot.pointerX)({
-        x: 'xidx', y: 'y',
+    const tip = Plot.tip(maxSequences(series), (transpose ? Plot.pointerY : Plot.pointerX)({
+        x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y',
         title: (d: { names: string[], xidx: number, ys: number[] }) => {
             let result = `Density: ${renderX(d.xidx)}\n`
             if (d.names.length > 1) {
@@ -336,18 +353,25 @@ function createHistogramMarks(
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
         marks.push(
             ...series.map(s => Plot.line(s.values, {
-                x: 'xidx', y: 'y', stroke: color, strokeWidth: 4,
+                x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: color, strokeWidth: 4,
             })),
         )
     }
     else {
         marks.push(
-            Plot.rectY(seriesSingle, {
-                x1: 'xidxLeft',
-                x2: 'xidxRight',
-                y: 'y',
-                fill: color,
-            }),
+            (transpose
+                ? Plot.rectX(seriesSingle, {
+                    y1: 'xidxLeft',
+                    y2: 'xidxRight',
+                    x: 'y',
+                    fill: color,
+                })
+                : Plot.rectY(seriesSingle, {
+                    x1: 'xidxLeft',
+                    x2: 'xidxRight',
+                    y: 'y',
+                    fill: color,
+                })),
         )
     }
     marks.push(tip)
