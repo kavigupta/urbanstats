@@ -395,13 +395,15 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
             style={{
                 width: `${100 * leftBarMargin}%`,
                 alignSelf: 'stretch',
+                position: 'relative',
             }}
         >
             <div style={{
                 backgroundColor: highlightIndex === undefined ? colors.background : color(colors.hueColors, highlightIndex),
                 height: '100%',
                 width: '50%',
-                margin: 'auto',
+                left: '25%',
+                position: 'absolute',
             }}
             />
         </div>
