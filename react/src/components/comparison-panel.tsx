@@ -134,6 +134,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             longnames: names.map((value, index) => index === articleIndex ? x : value),
                         }, { scroll: { kind: 'none' } })}
                     manipulationJustify={transpose ? 'center' : 'flex-end'}
+                    transpose={transpose}
                 />
             </div>
         )
@@ -432,28 +433,34 @@ function ManipulationButton({ color: buttonColor, onClick, text }: { color: stri
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify }: {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, transpose }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
     onReplace: (q: string) => ReturnType<Navigator['link']>
     manipulationJustify: CSSProperties['justifyContent']
+    transpose: boolean
 }): ReactNode {
     const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
     const currentUniverse = useUniverse()
     const comparisonHeadStyle = useComparisonHeadStyle()
 
+    const isMobile = useMobileLayout()
+
+    const replaceText = isMobile && transpose ? '↩\ufe0e' : 'replace'
+    const deleteText = isMobile && transpose ? '✗\ufe0e' : 'delete'
+
     const manipulationButtons = (
         <div style={{ height: manipulationButtonHeight }}>
             <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
-                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" />
+                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text={replaceText} />
                 {!includeDelete
                     ? null
                     : (
                             <>
                                 <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text={deleteText} />
                             </>
                         )}
                 <div style={{ width: '5px' }} />
