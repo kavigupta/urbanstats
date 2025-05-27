@@ -109,7 +109,7 @@ test('histogram-bar-comparison', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=6hgmnU5N4P2LtHo`)
+urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=SAaYfgWFPJQ2WHM3`)
 
 test('histogram-transpose-download', async (t) => {
     await downloadHistogram(t, 0)
