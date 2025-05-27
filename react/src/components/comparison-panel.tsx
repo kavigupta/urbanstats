@@ -14,6 +14,7 @@ import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
+import { TransposeContext, useTranspose } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
@@ -134,7 +135,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             longnames: names.map((value, index) => index === articleIndex ? x : value),
                         }, { scroll: { kind: 'none' } })}
                     manipulationJustify={transpose ? 'center' : 'flex-end'}
-                    transpose={transpose}
                 />
             </div>
         )
@@ -240,7 +240,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 {expandedByStatIndex[statIndex]
                                     ? (
                                             <div style={{ width: '100%', position: 'relative' }}>
-                                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={false} />
+                                                <RenderedPlot plotProps={plotProps(statIndex)} />
                                             </div>
                                         )
                                     : null}
@@ -300,7 +300,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
                         return (
                             <div key={rows[0].statpath} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
-                                <RenderedPlot plotProps={plotProps(statIndex)} transpose={true} />
+                                <RenderedPlot plotProps={plotProps(statIndex)} />
                             </div>
                         )
                     })}
@@ -310,7 +310,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     return (
-        <>
+        <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
             <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={props.universes}>
                 <div>
@@ -357,7 +357,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     </div>
                 </div>
             </PageTemplate>
-        </>
+        </TransposeContext.Provider>
     )
 }
 
@@ -433,13 +433,12 @@ function ManipulationButton({ color: buttonColor, onClick, text }: { color: stri
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, transpose }: {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
     onReplace: (q: string) => ReturnType<Navigator['link']>
     manipulationJustify: CSSProperties['justifyContent']
-    transpose: boolean
 }): ReactNode {
     const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
@@ -447,6 +446,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     const comparisonHeadStyle = useComparisonHeadStyle()
 
     const isMobile = useMobileLayout()
+    const transpose = useTranspose()
 
     const replaceText = isMobile && transpose ? '↩\ufe0e' : 'replace'
     const deleteText = isMobile && transpose ? '✗\ufe0e' : 'delete'

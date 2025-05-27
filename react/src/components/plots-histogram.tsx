@@ -6,6 +6,7 @@ import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
+import { useTranspose } from '../utils/transpose'
 
 import { PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
@@ -20,7 +21,7 @@ interface HistogramProps {
     universeTotal: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[], transpose: boolean }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
     const [histogramType] = useSetting('histogram_type')
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -32,7 +33,7 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
         }
     }
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} transpose={props.transpose} />
+        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
     const plotSpec = useCallback(
@@ -66,7 +67,6 @@ export function Histogram(props: { histograms: HistogramProps[], transpose: bool
         <PlotComponent
             plotSpec={plotSpec}
             settingsElement={settingsElement}
-            transpose={props.transpose}
         />
     )
 }
@@ -76,24 +76,25 @@ export const transposeSettingsHeight = '30.5px'
 function HistogramSettings(props: {
     shortnames: string[]
     makePlot: () => HTMLElement
-    transpose: boolean
 }): ReactNode {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
     const colors = useColors()
+    const transpose = useTranspose()
+
     // dropdown for histogram type
     return (
         <div
             className="serif"
             style={{
-                backgroundColor: props.transpose ? undefined : colors.background,
-                padding: props.transpose ? undefined : '0.5em',
-                border: props.transpose ? undefined : `1px solid ${colors.textMain}`,
+                backgroundColor: transpose ? undefined : colors.background,
+                padding: transpose ? undefined : '0.5em',
+                border: transpose ? undefined : `1px solid ${colors.textMain}`,
                 display: 'flex',
                 gap: '0.5em',
-                height: props.transpose ? transposeSettingsHeight : undefined,
-                alignItems: props.transpose ? 'center' : undefined,
-                justifyContent: props.transpose ? 'center' : undefined,
+                height: transpose ? transposeSettingsHeight : undefined,
+                alignItems: transpose ? 'center' : undefined,
+                justifyContent: transpose ? 'center' : undefined,
             }}
         >
             <img
@@ -127,7 +128,7 @@ function HistogramSettings(props: {
                 <option value="Line (cumulative)">Line (cumulative)</option>
                 <option value="Bar">Bar</option>
             </select>
-            <CheckboxSetting name={props.transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
+            <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
         </div>
     )
 }

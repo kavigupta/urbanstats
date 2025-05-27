@@ -10,7 +10,7 @@ export interface PlotProps {
     color: string
 }
 
-export function RenderedPlot({ plotProps, transpose }: { plotProps: PlotProps[], transpose: boolean }): ReactNode {
+export function RenderedPlot({ plotProps }: { plotProps: PlotProps[] }): ReactNode {
     const type = plotProps.reduce<undefined | 'histogram' | 'time_series'>((result, plot) => {
         if (result === undefined) {
             return plot.extraStat?.type
@@ -39,7 +39,6 @@ export function RenderedPlot({ plotProps, transpose }: { plotProps: PlotProps[],
                             ]
                         },
                     )}
-                    transpose={transpose}
                 />
             )
         case 'time_series':
