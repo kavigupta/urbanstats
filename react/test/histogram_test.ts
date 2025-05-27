@@ -114,3 +114,33 @@ urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?l
 test('histogram-transpose-download', async (t) => {
     await downloadHistogram(t, 0)
 })
+
+urbanstatsFixture('transpose histograms', `${target}/comparison.html?longnames=%5B"China"%2C"USA"%2C"Japan"%2C"Indonesia"%5D&s=2EoPvrZ42d9b5wf`)
+
+test('transpose-histograms', async (t) => {
+    // Capture all kinds of transposed histograms
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+
+    const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
+
+    await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Line (cumulative)'))
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+
+    await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Bar'))
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+})
