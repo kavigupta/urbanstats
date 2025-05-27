@@ -259,7 +259,7 @@ test('renders transpose comparision', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=6hgmnU5N4P2LtHo`)
+urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B"Santa+Clarita+city%2C+California%2C+USA"%2C"Santa+Clara+city%2C+California%2C+USA"%2C"Boston+city%2C+Massachusetts%2C+USA"%2C"San+Francisco+city%2C+California%2C+USA"%2C"Denver+city%2C+Colorado%2C+USA"%5D&s=8gkGqBdgQkNpHJZ`)
 
 test('renders scrolling transpose comparision', async (t) => {
     await screencap(t)
