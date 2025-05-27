@@ -11,7 +11,7 @@ const computeFirstResult = (query: string, prioritizeType: string | undefined): 
     unnormalizedPattern: query,
     maxResults: 10,
     showHistoricalCDs: false,
-    prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined
+    prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined,
 })[0]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
