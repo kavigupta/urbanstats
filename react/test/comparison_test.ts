@@ -90,7 +90,7 @@ test('comparison-3-editable-number-third', async (t) => {
     const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(2)
     await t
         .click(editableNumber)
-    // select all and delete
+        // select all and delete
         .pressKey('ctrl+a')
         .typeText(editableNumber, '3')
         .pressKey('enter')
@@ -250,5 +250,17 @@ test('renders successfully', async (t) => {
 urbanstatsFixture('comparison with heterogenous data sources', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22Canada%22%2C%22Australia%22%5D&s=k32AgBaCktXf8M`)
 
 test('renders us canada austrailia successfully', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
+
+test('renders transpose comparision', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=6hgmnU5N4P2LtHo`)
+
+test('renders scrolling transpose comparision', async (t) => {
     await screencap(t)
 })
