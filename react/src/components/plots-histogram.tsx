@@ -261,6 +261,7 @@ function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.
     const tickGap = tickGapMantissa * tickGapOom
     const maxValueRounded = Math.ceil(maxValue / tickGap) * tickGap
     const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
+        .filter((_, i) => !transpose || i % 2 === 0) // If transpose, remove every other keypoint
 
     let axis = Plot.axisY
     let grid = Plot.gridY
