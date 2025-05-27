@@ -275,7 +275,7 @@ test('renders mobile transpose correctly', async (t) => {
 
 urbanstatsFixture('transpose with duplicate', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%2C%22Texas%2C+USA%22%5D&s=k32AgBaBU3tCGR`)
 
-test.only('removing duplicate does not glitch out', async (t) => {
+test('removing duplicate does not glitch out', async (t) => {
     await t.click(Selector('.manipulation-button-delete').nth(3))
     await screencap(t)
 })
