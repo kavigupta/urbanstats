@@ -65,7 +65,6 @@ interface Result {
     normalizedPriorityType: 1 | 0 // Is this a priority type? 0 if true
 }
 
-// Should sum to 1
 const weights = {
     match: 5,
     position: 5,
