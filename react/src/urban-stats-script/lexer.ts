@@ -1,25 +1,30 @@
-export const infixOperatorsPrecedence = new Map<string, number>([
+interface Operator {
+    precedence: number
+    fn: (a: number, b: number) => number
+}
+
+export const infixOperatorMap = new Map<string, Operator>([
     // E
-    ['**', 1000],
+    ['**', { precedence: 1000, fn: (a: number, b: number): number => Math.pow(a, b) }],
     // MD
-    ['*', 900],
-    ['/', 900],
+    ['*', { precedence: 900, fn: (a: number, b: number): number => a * b }],
+    ['/', { precedence: 900, fn: (a: number, b: number): number => a / b }],
     // AS
-    ['+', 800],
-    ['-', 800],
+    ['+', { precedence: 800, fn: (a: number, b: number): number => a + b }],
+    ['-', { precedence: 800, fn: (a: number, b: number): number => a - b }],
     // Comparators
-    ['==', 700],
-    ['!=', 700],
-    ['<', 700],
-    ['>', 700],
-    ['<=', 700],
-    ['>=', 700],
+    ['==', { precedence: 700, fn: (a: number, b: number): number => a === b ? 1 : 0 }],
+    ['!=', { precedence: 700, fn: (a: number, b: number): number => a !== b ? 1 : 0 }],
+    ['<', { precedence: 700, fn: (a: number, b: number): number => a < b ? 1 : 0 }],
+    ['>', { precedence: 700, fn: (a: number, b: number): number => a > b ? 1 : 0 }],
+    ['<=', { precedence: 700, fn: (a: number, b: number): number => a <= b ? 1 : 0 }],
+    ['>=', { precedence: 700, fn: (a: number, b: number): number => a >= b ? 1 : 0 }],
     // Logic
-    ['&', 600],
-    ['|', 600],
+    ['&', { precedence: 600, fn: (a: number, b: number): number => a & b }],
+    ['|', { precedence: 600, fn: (a: number, b: number): number => a | b }],
 ])
 
-export const infixOperators = [...infixOperatorsPrecedence.keys()]
+export const infixOperators = [...infixOperatorMap.keys()]
 const operators = [...infixOperators, '=', ',', ';', '.']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 

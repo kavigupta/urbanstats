@@ -1,17 +1,25 @@
-import { infixOperatorsPrecedence, LocInfo } from './lexer'
+import { infixOperatorMap, LocInfo } from './lexer'
 import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression } from './parser'
-import { broadcastApply, broadcastCall, USSRawValue, USSValue, ValueArg } from './types-values'
+import { broadcastApply, broadcastCall, renderType, USSRawValue, USSValue, ValueArg } from './types-values'
 
-type Effect = undefined
+export type Effect = undefined
+
+export class InterpretationError extends Error {
+    constructor(message: string, public location: LocInfo) {
+        super(message)
+        this.name = 'InterpretationError'
+        this.location = location
+    }
+}
 
 export interface Context {
     effect: (eff: Effect) => void
-    error: (msg: string, location: LocInfo) => Error
+    error: (msg: string, location: LocInfo) => InterpretationError
     get: (name: string) => USSValue | undefined
     set: (name: string, value: USSValue) => void
 }
 
-function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
+export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
     switch (expr.type) {
         case 'constant':
             const value = expr.value.node
@@ -39,7 +47,11 @@ function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
         case 'attribute':
             const obj = evaluate(expr.expr, env)
             const attr = expr.name.node
-            return attrLookup(obj, attr, expr.name.location)
+            const lookupResult = attrLookup(obj, attr)
+            if (lookupResult.type === 'error') {
+                throw env.error(`Attribute ${attr} not found in object of type ${renderType(obj.type)}`, locationOfExpr(expr))
+            }
+            return lookupResult.value
         case 'function':
             const func = evaluate(expr.fn, env)
             const args = expr.args.map(arg => evaluateArg(arg, env))
@@ -70,15 +82,50 @@ function evaluateArg(arg: UrbanStatsASTArg, env: Context): ValueArg {
     }
 }
 
-function attrLookup(obj: USSValue, attr: string, location: LocInfo): USSValue {
-    // if (obj.type === 'object') {
-    if (obj instanceof Map) {
-        if (obj.has(attr)) {
-            return obj.get(attr) as USSValue
+function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSValue } | { type: 'error' } {
+    const type = obj.type
+    if (type.type === 'object') {
+        const val = obj.value
+        if (!(val instanceof Map)) {
+            throw new Error(`Expected object type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
         }
-        throw new Error(`Attribute ${attr} not found in object at ${JSON.stringify(location)}`)
+        if (type.properties[attr] === undefined) {
+            return {
+                type: 'error',
+            }
+        }
+        if (val.has(attr)) {
+            return {
+                type: 'success',
+                value: {
+                    type: type.properties[attr],
+                    value: val.get(attr)!,
+                },
+            }
+        }
+        throw new Error(`Attribute ${attr} not found in object; expected one of ${Array.from(val.keys())} at ${JSON.stringify(obj.value)}`)
     }
-    throw new Error(`Cannot access attribute ${attr} of non-object type at ${JSON.stringify(location)}`)
+    if (type.type === 'vector') {
+        const val = obj.value
+        if (!(val instanceof Array)) {
+            throw new Error(`Expected vector type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
+        }
+        const resultsOrErr = val.map(x => attrLookup({ value: x, type: type.elementType }, attr))
+        if (resultsOrErr.some(r => r.type === 'error')) {
+            return { type: 'error' }
+        }
+        const results = resultsOrErr.map(r => (r as { type: 'success', value: USSValue }).value)
+        const rawValue = results.map(r => r.value)
+        const typ = results[0].type
+        return {
+            type: 'success',
+            value: {
+                type: { type: 'vector', elementType: typ },
+                value: rawValue,
+            },
+        }
+    }
+    return { type: 'error' }
 }
 
 function evaluateInfixSequence(elements: USSValue[], operators: string[], env: Context, errLoc: LocInfo): USSValue {
@@ -88,11 +135,11 @@ function evaluateInfixSequence(elements: USSValue[], operators: string[], env: C
     if (elements.length === 1) {
         return elements[0]
     }
-    const maxPrecedence = Math.max(...operators.map(op => infixOperatorsPrecedence.get(op) ?? 0))
+    const maxPrecedence = Math.max(...operators.map(op => infixOperatorMap.get(op)?.precedence ?? 0))
     if (maxPrecedence === 0) {
         throw new Error(`No valid operator found in infix sequence`)
     }
-    const firstOp = operators.findIndex(op => infixOperatorsPrecedence.get(op) === maxPrecedence)
+    const firstOp = operators.findIndex(op => infixOperatorMap.get(op)?.precedence === maxPrecedence)
     if (firstOp === -1) {
         throw new Error(`No valid operator found in infix sequence`)
     }
@@ -131,8 +178,9 @@ function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: strin
 }
 
 function directEvaluateBinaryOperator(operator: string, left: number, right: number): number {
-    if (operator === '+') {
-        return left + right
+    const op = infixOperatorMap.get(operator)
+    if (!op) {
+        throw new Error(`Unknown operator: ${operator}`)
     }
-    throw new Error(`Unsupported operator: ${operator}`)
+    return op.fn(left, right)
 }

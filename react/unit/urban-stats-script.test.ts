@@ -1,10 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Context } from '../src/urban-stats-script/interpreter'
-import { lex } from '../src/urban-stats-script/lexer'
-import { parse, toSExp } from '../src/urban-stats-script/parser'
-import { broadcastApply, locateType, USSRawValue, renderType, USSType } from '../src/urban-stats-script/types-values'
+import { Context, Effect, evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { lex, LocInfo } from '../src/urban-stats-script/lexer'
+import { parse, toSExp, UrbanStatsASTExpression } from '../src/urban-stats-script/parser'
+import { broadcastApply, locateType, USSRawValue, renderType, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
@@ -234,6 +234,36 @@ const testFnType = { type: 'function', posArgs: [numType], namedArgs: { a: numTy
 const testFn1: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
 const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
 
+const testObjType = {
+    type: 'object',
+    properties: {
+        u: numType,
+        v: numType,
+    },
+} satisfies USSType
+
+const multiArgFnType = {
+    type: 'function',
+    posArgs: [numType, numVectorType],
+    namedArgs: { a: numType, b: testObjType },
+    returnType: numVectorType,
+} satisfies USSType
+
+function testFnMultiArg(ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue {
+    const x = posArgs[0] as number
+    const y = posArgs[1] as number[]
+    const a = namedArgs.a as number
+    const b = namedArgs.b as Map<string, USSRawValue>
+    return [
+        x,
+        y.reduce((acc, val) => acc + val, 0),
+        y.reduce((acc, val) => acc + val * val, 0),
+        a,
+        b.get('u') as number,
+        b.get('v') as number,
+    ]
+}
+
 void test('broadcasting-locate-type', (): void => {
     assert.deepStrictEqual(
         locateType(
@@ -417,5 +447,115 @@ void test('broadcasting-apply', (): void => {
                 value: [[10 * 10 + 3, 20 * 20 * 20 + 4], [30 * 30 + 3, 40 * 40 * 40 + 4]],
             },
         },
+    )
+})
+
+function testingContext(effectsOut: Effect[], errorsOut: { msg: string, location: LocInfo }[], env: Map<string, USSValue>): Context {
+    return {
+        effect: (eff: Effect): void => {
+            effectsOut.push(eff)
+        },
+        error: (msg: string, location: LocInfo): InterpretationError => {
+            errorsOut.push({ msg, location })
+            return new InterpretationError(msg, location)
+        },
+        get: (name: string): USSValue | undefined => env.get(name),
+        set: (name: string, value: USSValue): void => {
+            env.set(name, value)
+        },
+    }
+}
+
+function parseExpr(input: string): UrbanStatsASTExpression {
+    const lexed = lex(input)
+    const parsed = parse(lexed)
+    if (parsed.type !== 'expression') {
+        throw new Error(`Expected an expression, but got ${JSON.stringify(parsed)}`)
+    }
+    return parsed.value
+}
+
+void test('evaluate basic expressions', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 + 2'), emptyCtx),
+        { type: numType, value: 4 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 * 3 + 4'), emptyCtx),
+        { type: numType, value: 10 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 * 3 + 4 * 5'), emptyCtx),
+        { type: numType, value: 26 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2'), emptyCtx),
+        { type: numType, value: 62 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyCtx),
+        { type: numType, value: 55 },
+    )
+    env.set('x', { type: numVectorType, value: [1, 2, 3] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('x + 1'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 4] },
+    )
+    env.set('y', { type: numMatrixType, value: [[10, 20, 30], [40, 50, 60]] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('y + x'), emptyCtx),
+        { type: numMatrixType, value: [[11, 22, 33], [41, 52, 63]] },
+    )
+    env.set('testFn1', { type: testFnType, value: testFn1 })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFn1(2, a=3)'), emptyCtx),
+        { type: numType, value: 2 * 2 + 3 },
+    )
+    env.set('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFns(2, a=3)'), emptyCtx),
+        { type: numVectorType, value: [2 * 2 + 3, 2 * 2 * 2 + 3] },
+    )
+    env.set('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2, testFn1] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFns(2, a=x)'), emptyCtx),
+        { type: numVectorType, value: [2 * 2 + 1, 2 * 2 * 2 + 2, 2 * 2 + 3] }, // x is [1, 2, 3], so the last one is 2 * 2 + 3
+    )
+    env.set('testFnMultiArg', { type: multiArgFnType, value: testFnMultiArg })
+    env.set('obj', {
+        type: testObjType,
+        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
+    })
+    env.set('y', { type: numVectorType, value: [1, 2, 3] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=obj)'), emptyCtx),
+        {
+            type: numVectorType,
+            value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('obj.u'), emptyCtx),
+        { type: numType, value: 401 },
+    )
+
+    assert.throws(
+        () => evaluate(parseExpr('obj.x'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Attribute x not found in object of type {u: number, v: number}'
+        },
+    )
+    env.set('objs', {
+        type: { type: 'vector', elementType: testObjType },
+        value: [
+            new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
+            new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
+        ],
+    })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('objs.u'), emptyCtx),
+        { type: numVectorType, value: [101, 301] },
     )
 })
