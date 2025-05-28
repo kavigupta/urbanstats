@@ -1,123 +1,112 @@
 import geojsonExtent from '@mapbox/geojson-extent'
-import 'maplibre-gl/dist/maplibre-gl.css'
-import type maplibregl from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 
 import { Feature } from './utils/protos'
 import { loadShapeFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- Dynamic return type of exports
-export default function mapPartition(maplib: typeof maplibregl) {
-    function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
-        if (poly.geometry === 'multipolygon') {
-            const polys = poly.multipolygon.polygons
-            const coords = polys.map(
-                multiPoly => multiPoly.rings.map(
-                    ring => ring.coords.map(
-                        coordinate => [coordinate.lon, coordinate.lat],
-                    ),
-                ),
-            )
-            return {
-                type: 'MultiPolygon',
-                coordinates: coords,
-            }
-        }
-        else {
-            const coords = poly.polygon.rings.map(
+export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
+    if (poly.geometry === 'multipolygon') {
+        const polys = poly.multipolygon.polygons
+        const coords = polys.map(
+            multiPoly => multiPoly.rings.map(
                 ring => ring.coords.map(
                     coordinate => [coordinate.lon, coordinate.lat],
                 ),
-            )
-            return {
-                type: 'Polygon',
-                coordinates: coords,
-            }
-        }
-    }
-
-    function boundingBox(geo: GeoJSON.Geometry): maplibregl.LngLatBounds {
-        const bbox = geojsonExtent(geo)
-        return new maplib.LngLatBounds(
-            new maplib.LngLat(bbox[0], bbox[1]),
-            new maplib.LngLat(bbox[2], bbox[3]),
+            ),
         )
-    }
-
-    function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
-        return boxes.reduce((result, box) => result.extend(box), new maplib.LngLatBounds())
-    }
-
-    // Area of bounds in EPSG:3857 projection
-    function area(bounds: maplibregl.LngLatBounds): number {
-        const sw = maplib.MercatorCoordinate.fromLngLat(bounds.getSouthWest())
-        const ne = maplib.MercatorCoordinate.fromLngLat(bounds.getNorthEast())
-        // Handle wrapping by normalizing x difference
-        let dx = ne.x - sw.x
-        if (dx < 0) {
-            dx += 1 // Web Mercator x wraps at 1
+        return {
+            type: 'MultiPolygon',
+            coordinates: coords,
         }
-        return Math.abs(dx * (ne.y - sw.y))
     }
-
-    function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
-        return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
-    }
-
-    /**
-     * indexPartitions(2) -> [[0, 1]], [[0], [1]]
-     * indexPartitions(3) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
-     */
-    function* indexPartitions(upperBound: number, index = 0, current: number[][] = []): Generator<number[][], void> {
-        if (index === upperBound) {
-            yield current
-            return
+    else {
+        const coords = poly.polygon.rings.map(
+            ring => ring.coords.map(
+                coordinate => [coordinate.lon, coordinate.lat],
+            ),
+        )
+        return {
+            type: 'Polygon',
+            coordinates: coords,
         }
+    }
+}
 
-        if (current.length === 0) {
-            yield* indexPartitions(upperBound, index + 1, [[index]])
-            return
-        }
+export function boundingBox(geo: GeoJSON.Geometry): maplibregl.LngLatBounds {
+    const bbox = geojsonExtent(geo)
+    return new maplibregl.LngLatBounds(
+        new maplibregl.LngLat(bbox[0], bbox[1]),
+        new maplibregl.LngLat(bbox[2], bbox[3]),
+    )
+}
 
-        for (let i = 0; i < current.length; i++) {
-            const newPartition = current.map((subset, j) =>
-                i === j ? [...subset, index] : subset,
-            )
-            yield* indexPartitions(upperBound, index + 1, newPartition)
-        }
+export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
+    return boxes.reduce((result, box) => result.extend(box), new maplibregl.LngLatBounds())
+}
 
-        yield* indexPartitions(upperBound, index + 1, [...current, [index]])
+// Area of bounds in EPSG:3857 projection
+function area(bounds: maplibregl.LngLatBounds): number {
+    const sw = maplibregl.MercatorCoordinate.fromLngLat(bounds.getSouthWest())
+    const ne = maplibregl.MercatorCoordinate.fromLngLat(bounds.getNorthEast())
+    // Handle wrapping by normalizing x difference
+    let dx = ne.x - sw.x
+    if (dx < 0) {
+        dx += 1 // Web Mercator x wraps at 1
+    }
+    return Math.abs(dx * (ne.y - sw.y))
+}
+
+function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
+    return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
+}
+
+/**
+ * indexPartitions(2) -> [[0, 1]], [[0], [1]]
+ * indexPartitions(3) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
+ */
+function* indexPartitions(upperBound: number, index = 0, current: number[][] = []): Generator<number[][], void> {
+    if (index === upperBound) {
+        yield current
+        return
     }
 
-    /**
-     * Given many regions to be compared, determine how best to split them into multiple maps
-     *
-     * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
-     *
-     * Otherwise, weigh multiple groupings to determine the best one
-     */
-    async function partitionLongnames(longnames: string[], maxPartitions: number): Promise<string[][]> {
-        const fillThreshold = 0.05
+    if (current.length === 0) {
+        yield* indexPartitions(upperBound, index + 1, [[index]])
+        return
+    }
 
-        const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
+    for (let i = 0; i < current.length; i++) {
+        const newPartition = current.map((subset, j) =>
+            i === j ? [...subset, index] : subset,
+        )
+        yield* indexPartitions(upperBound, index + 1, newPartition)
+    }
 
-        for (const partitions of indexPartitions(boundingBoxes.length)) {
-            if (partitions.length > maxPartitions) {
-                break
-            }
-            if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
-                return partitions.map(partition => partition.map(index => longnames[index]))
-            }
+    yield* indexPartitions(upperBound, index + 1, [...current, [index]])
+}
+
+/**
+ * Given many regions to be compared, determine how best to split them into multiple maps
+ *
+ * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
+ *
+ * Otherwise, weigh multiple groupings to determine the best one
+ */
+export async function partitionLongnames(longnames: string[], maxPartitions: number): Promise<string[][]> {
+    const fillThreshold = 0.05
+
+    const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
+
+    for (const partitions of indexPartitions(boundingBoxes.length)) {
+        if (partitions.length > maxPartitions) {
+            break
         }
-
-        // Give up
-        return [longnames]
+        if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
+            return partitions.map(partition => partition.map(index => longnames[index]))
+        }
     }
 
-    return {
-        geometry,
-        boundingBox,
-        extendBoxes,
-        partitionLongnames,
-    }
+    // Give up
+    return [longnames]
 }

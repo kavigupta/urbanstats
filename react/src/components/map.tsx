@@ -3,7 +3,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode } from 'react'
 
-import mapPartition from '../map-partition'
+import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -15,8 +15,6 @@ import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
-
-const { geometry, boundingBox, extendBoxes } = mapPartition(maplibregl)
 
 export const defaultMapPadding = 20
 
@@ -145,10 +143,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
-        })
-
-        map.setProjection({
-            type: 'equirec',
         })
 
         map.addControl(new CustomAttributionControl(this.startShowingAttribution()))

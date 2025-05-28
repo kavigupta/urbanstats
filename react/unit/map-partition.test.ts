@@ -1,12 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import mapPartition from '../src/map-partition'
+import { partitionLongnames } from '../src/map-partition'
 import './util/fetch'
-
-import maplibregl from 'maplibre-gl'
-
-const { partitionLongnames } = mapPartition(maplibregl)
 
 void test('far away neighborhoods', async () => {
     assert.deepEqual(
