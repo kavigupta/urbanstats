@@ -98,12 +98,17 @@ function* indexPartitions(upperBound: number, maxPartitions: number, index = 0, 
  */
 export async function partitionLongnames(longnames: string[], maxPartitions: number): Promise<string[][]> {
     const fillThreshold = 0.05
+    let iterationLimit = 10_000
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
     for (const partitions of indexPartitions(boundingBoxes.length, maxPartitions)) {
         if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
             return partitions.map(partition => partition.map(index => longnames[index]))
+        }
+        iterationLimit--;
+        if (iterationLimit === 0) {
+            break
         }
     }
 

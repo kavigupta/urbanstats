@@ -33,3 +33,33 @@ void test('3 cities', async () => {
         [['San Francisco city, California, USA', 'San Jose city, California, USA'], ['New York city, New York, USA']],
     )
 })
+
+const manyPlaces = [
+    'Shannon Colony CDP, South Dakota, USA',
+    'Ruso city, North Dakota, USA',
+    'Pueblo East CDP, Texas, USA',
+    'Ivanof Bay CDP, Alaska, USA',
+    'Hobart Bay CDP, Alaska, USA',
+    'Graniteville CDP, California, USA',
+    'Caribou CDP, California, USA',
+    'Ardmore CDP, South Dakota, USA',
+    'Willow Canyon CDP, Arizona, USA',
+    'Whitestone Logging Camp CDP, Alaska, USA',
+    'Toyei CDP, Arizona, USA',
+    'Topock CDP, Arizona, USA',
+    'Orland Colony CDP, South Dakota, USA',
+    'Nabesna CDP, Alaska, USA',
+    'Monowi village, Nebraska, USA',
+    'Milford Colony CDP, Montana, USA',
+    'Las Haciendas CDP, Texas, USA',
+    'Huron Colony CDP, South Dakota, USA',
+    'Hillsview town, South Dakota, USA',
+    'Bijou Hills CDP, South Dakota, USA',
+]
+
+void test('does not run forever', async () => {
+    assert.deepEqual(
+        await partitionLongnames(manyPlaces, 3),
+        [manyPlaces],
+    )
+})
