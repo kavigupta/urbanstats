@@ -1,9 +1,9 @@
-import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
-import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import maplibregl from 'maplibre-gl'
 import React, { ReactNode } from 'react'
 
+import mapPartition from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -15,6 +15,8 @@ import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
+
+const { geometry, boundingBox, extendBoxes } = mapPartition(maplibregl)
 
 export const defaultMapPadding = 20
 
@@ -143,6 +145,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
+        })
+
+        map.setProjection({
+            type: 'equirec',
         })
 
         map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
@@ -375,38 +381,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
-        // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
-        let geometry: GeoJSON.Geometry
-        if (poly.geometry === 'multipolygon') {
-            const polys = poly.multipolygon.polygons
-            const coords = polys.map(
-                multiPoly => multiPoly.rings.map(
-                    ring => ring.coords.map(
-                        coordinate => [coordinate.lon, coordinate.lat],
-                    ),
-                ),
-            )
-            geometry = {
-                type: 'MultiPolygon',
-                coordinates: coords,
-            }
-        }
-        else {
-            const coords = poly.polygon.rings.map(
-                ring => ring.coords.map(
-                    coordinate => [coordinate.lon, coordinate.lat],
-                ),
-            )
-            geometry = {
-                type: 'Polygon',
-                coordinates: coords,
-            }
-        }
         const geojson = {
             type: 'Feature' as const,
             properties: { name, notClickable, ...style },
-            geometry,
+            geometry: geometry(poly),
         }
         return geojson
     }
@@ -484,16 +463,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
-        const bounds = new maplibregl.LngLatBounds()
-
-        for (const polygon of items) {
-            const bbox = geojsonExtent(polygon)
-            bounds.extend(new maplibregl.LngLatBounds(
-                new maplibregl.LngLat(bbox[0], bbox[1]),
-                new maplibregl.LngLat(bbox[2], bbox[3]),
-            ))
-        }
-        this.map?.fitBounds(bounds, { padding: defaultMapPadding, ...options })
+        this.map?.fitBounds(extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))), { padding: defaultMapPadding, ...options })
     }
 
     zoomToAll(padding: number = 0): void {
