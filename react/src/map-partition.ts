@@ -72,7 +72,7 @@ function* indexPartitions(upperBound: number, index = 0, current: number[][] = [
     }
 
     if (current.length === 0) {
-        yield* indexPartitions(upperBound, index + 1, [[index]])
+        yield * indexPartitions(upperBound, index + 1, [[index]])
         return
     }
 
@@ -80,10 +80,10 @@ function* indexPartitions(upperBound: number, index = 0, current: number[][] = [
         const newPartition = current.map((subset, j) =>
             i === j ? [...subset, index] : subset,
         )
-        yield* indexPartitions(upperBound, index + 1, newPartition)
+        yield * indexPartitions(upperBound, index + 1, newPartition)
     }
 
-    yield* indexPartitions(upperBound, index + 1, [...current, [index]])
+    yield * indexPartitions(upperBound, index + 1, [...current, [index]])
 }
 
 /**

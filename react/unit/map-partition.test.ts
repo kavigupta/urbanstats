@@ -24,12 +24,12 @@ void test('neighboring states', async () => {
     )
 })
 
-void test('3 states', async () => {
+void test('3 cities', async () => {
     assert.deepEqual(
         await partitionLongnames(
-            ['California, USA', 'Oregon, USA', 'New York, USA'],
+            ['San Francisco city, California, USA', 'San Jose city, California, USA', 'New York city, New York, USA'],
             3,
         ),
-        [['California, USA', 'Oregon, USA'], ['New York, USA']],
+        [['San Francisco city, California, USA', 'San Jose city, California, USA'], ['New York city, New York, USA']],
     )
 })
