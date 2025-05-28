@@ -62,17 +62,18 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
 }
 
 /**
- * indexPartitions(2) -> [[0, 1]], [[0], [1]]
- * indexPartitions(3) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
+ * indexPartitions(2, inf) -> [[0, 1]], [[0], [1]]
+ * indexPartitions(3, inf) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
+ * indexPartitions(3, 2) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]]
  */
-function* indexPartitions(upperBound: number, index = 0, current: number[][] = []): Generator<number[][], void> {
+function* indexPartitions(upperBound: number, maxPartitions: number, index = 0, current: number[][] = []): Generator<number[][], void> {
     if (index === upperBound) {
         yield current
         return
     }
 
     if (current.length === 0) {
-        yield * indexPartitions(upperBound, index + 1, [[index]])
+        yield* indexPartitions(upperBound, maxPartitions, index + 1, [[index]])
         return
     }
 
@@ -80,10 +81,12 @@ function* indexPartitions(upperBound: number, index = 0, current: number[][] = [
         const newPartition = current.map((subset, j) =>
             i === j ? [...subset, index] : subset,
         )
-        yield * indexPartitions(upperBound, index + 1, newPartition)
+        yield* indexPartitions(upperBound, maxPartitions, index + 1, newPartition)
     }
 
-    yield * indexPartitions(upperBound, index + 1, [...current, [index]])
+    if (current.length < maxPartitions) {
+        yield* indexPartitions(upperBound, maxPartitions, index + 1, [...current, [index]])
+    }
 }
 
 /**
@@ -98,10 +101,7 @@ export async function partitionLongnames(longnames: string[], maxPartitions: num
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
-    for (const partitions of indexPartitions(boundingBoxes.length)) {
-        if (partitions.length > maxPartitions) {
-            break
-        }
+    for (const partitions of indexPartitions(boundingBoxes.length, maxPartitions)) {
         if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
             return partitions.map(partition => partition.map(index => longnames[index]))
         }
