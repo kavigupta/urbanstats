@@ -3,8 +3,7 @@ import { test } from 'node:test'
 
 import { partitionLongnames } from '../src/map-partition'
 import './util/fetch'
-import './util/localStorage'
-import { uniform } from '../src/navigation/random'
+import { indexPartitions } from '../src/utils/partition'
 
 void test('far away neighborhoods', async () => {
     assert.deepEqual(
@@ -98,11 +97,8 @@ void test('handles many places', async () => {
     )
 })
 
-void test('does not run forever', async () => {
-    const random = await uniform()
-    const randomPlaces = await Promise.all(Array.from({ length: 3000 }, random))
-    assert.deepEqual(
-        await partitionLongnames(randomPlaces),
-        [randomPlaces.map((_, i) => i)],
-    )
+void test('index partitions fails safe due to time limit', () => {
+    assert.throws(() => {
+        for (const [] of indexPartitions(100, () => true)) { }
+    }, { message: 'out of time' })
 })

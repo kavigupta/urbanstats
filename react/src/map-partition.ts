@@ -2,6 +2,7 @@ import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
 import { min } from 'mathjs'
 
+import { indexPartitions } from './utils/partition'
 import { Feature } from './utils/protos'
 import { loadShapeFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
@@ -60,48 +61,6 @@ function area(bounds: maplibregl.LngLatBounds): number {
 
 function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
     return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
-}
-
-/**
- * indexPartitions(2, () => true) -> [[0, 1]], [[0], [1]]
- * indexPartitions(3, () => true) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
- * indexPartitions(3, p => p.every(i => Math.abs(p[0] - i) < 2)) -> [[0, 1], [2]], [[0], [1, 2]], [[0], [1], [2]]
- *
- * `goodPartition` is a filter function that reduces the search space if a partition could not possibly become valid by adding more elements with a higher index
- *
- * This function has a built-in time limit, and will stop generating if it starts taking too long
- */
-function indexPartitions(upperBound: number, goodPartition: (partition: number[]) => boolean): Generator<number[][], void> {
-    const timeLimit = Date.now() + 500
-
-    function* helper(index: number, current: number[][]): Generator<number[][], void> {
-        if (Date.now() > timeLimit) {
-            throw new Error('out of time')
-        }
-
-        if (index === upperBound) {
-            yield current
-            return
-        }
-
-        if (current.length === 0) {
-            yield* helper(index + 1, [[index]])
-            return
-        }
-
-        for (let i = 0; i < current.length; i++) {
-            if (goodPartition([...current[i], index])) {
-                const newPartition = current.map((subset, j) =>
-                    i === j ? [...subset, index] : subset,
-                )
-                yield* helper(index + 1, newPartition)
-            }
-        }
-
-        yield* helper(index + 1, [...current, [index]])
-    }
-
-    return helper(0, [])
 }
 
 /**
