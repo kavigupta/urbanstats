@@ -71,7 +71,7 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
  * Otherwise, weigh multiple groupings to determine the best one
  */
 export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
-    const fillThreshold = 0.05
+    const fillThreshold = 0.1
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
