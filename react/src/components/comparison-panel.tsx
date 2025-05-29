@@ -116,6 +116,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const navContext = useContext(Navigator.Context)
 
+    const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
+
     const heading = (articleIndex: number, width: number): ReactNode => {
         return (
             <div key={`heading_${articleIndex}`} style={{ width: `${width}%` }}>
@@ -136,6 +138,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             longnames: names.map((value, index) => index === articleIndex ? x : value),
                         }, { scroll: { kind: 'none' } })}
                     manipulationJustify={transpose ? 'center' : 'flex-end'}
+                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                 />
             </div>
         )
@@ -335,6 +338,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                         longnames: [...names, x],
                                     }, { scroll: { kind: 'none' } })}
                                 autoFocus={false}
+                                prioritizeArticleType={sharedTypeOfAllArticles}
                             />
                         </div>
                     </div>
@@ -438,12 +442,13 @@ function ManipulationButton({ color: buttonColor, onClick, text, image }: { colo
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify }: {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
     onReplace: (q: string) => ReturnType<Navigator['link']>
     manipulationJustify: CSSProperties['justifyContent']
+    sharedTypeOfAllArticles: string | undefined
 }): ReactNode {
     const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
@@ -498,6 +503,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
                                 setIsEditing(false)
                             }}
                             link={onReplace}
+                            prioritizeArticleType={sharedTypeOfAllArticles}
                         />
                     )
                 : null}

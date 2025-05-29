@@ -8,6 +8,7 @@ import {
     waitForPageLoaded,
     pageDescriptorKind,
     waitForSelectedSearchResult,
+    createComparison,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -96,4 +97,8 @@ test('on mobile, closes the sidebar when you search', async (t) => {
         .typeText(searchField, 'Santa Rosa, CA')
     await t.click(Selector('div').withExactText('Santa Rosa city, California, USA'))
     await t.expect(Selector('.sidebar_mobile').exists).notOk()
+})
+
+test('when adding another article for comparison, should prioritize regions of the same type', async (t) => {
+    await createComparison(t, 'san jose', 'San Jose city, California, USA')
 })

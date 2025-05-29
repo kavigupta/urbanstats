@@ -1,17 +1,23 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
 import { createIndex, SearchResult } from '../src/search'
 
 const search = await createIndex(undefined)
 
-const computeFirstResult = (query: string): SearchResult => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
+const computeFirstResult = (query: string, prioritizeType: string | undefined): SearchResult => search({
+    unnormalizedPattern: query,
+    maxResults: 10,
+    showHistoricalCDs: false,
+    prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined,
+})[0]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
-const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
-    testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.equal(computeFirstResult(query).longname, result)
+const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string, prioritizeType?: string): void => {
+    testFn(`First result for '${query}' ${prioritizeType !== undefined ? `(Prioritizing ${prioritizeType}) ` : ''}is '${result}'`, () => {
+        assert.equal(computeFirstResult(query, prioritizeType).longname, result)
     })
 }
 
@@ -38,3 +44,7 @@ firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspellin
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
 firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
+
+firstResult(test)('san jose', 'San Jose city, California, USA', 'City')
+firstResult(test)('london', 'London Population Center, ON, Canada', 'CA Population Center')
+firstResult(test)('berlin', 'Berlin Urban Center, Germany', 'Urban Center')
