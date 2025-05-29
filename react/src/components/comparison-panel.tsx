@@ -584,6 +584,7 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
                             {...props}
                             longnames={partition.map(index => props.longnames[index])}
                             colors={partition.map(index => props.colors[index])}
+                            isOnlyMap={props.mapPartitions.length === 1}
                         />
                     </div>
                 )
@@ -593,7 +594,7 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
-class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
+class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[], isOnlyMap: boolean }> {
     override buttons(): ReactNode {
         return <ComparisonMapButtons map={this} />
     }
@@ -626,6 +627,10 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
     override mapDidRender(): Promise<void> {
         this.zoomToAll()
         return Promise.resolve()
+    }
+
+    override startShowingAttribution(): boolean {
+        return this.props.isOnlyMap
     }
 }
 
