@@ -25,9 +25,9 @@ export async function checkTextboxes(t: TestController, txts: string[]): Promise
     await withHamburgerMenu(t, async () => {
         for (const txt of txts) {
             const checkbox = Selector('div.checkbox-setting:not([inert] *)')
-            // filter for label
+                // filter for label
                 .filter(node => node.querySelector('label')!.innerText === txt, { txt })
-            // find checkbox
+                // find checkbox
                 .find('input')
             await t.click(checkbox)
         }
@@ -129,7 +129,7 @@ function screenshotPath(t: TestController): string {
 export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
     await prepForImage(t, { hover: fullPage, wait })
     return t.takeScreenshot({
-    // include the browser name in the screenshot path
+        // include the browser name in the screenshot path
         path: screenshotPath(t),
         fullPage,
     })
@@ -222,8 +222,10 @@ export async function safeReload(t: TestController): Promise<void> {
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
 
-export async function waitForSelectedSearchResult(t: TestController): Promise<void> {
-    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok({ timeout: 10000 })
+export async function waitForSelectedSearchResult(t: TestController): Promise<string> {
+    const selectedSearchResult = Selector('[data-test-id=selected-search-result]')
+    await t.expect(selectedSearchResult.exists).ok({ timeout: 10000 })
+    return await selectedSearchResult.textContent
 }
 
 export async function doSearch(t: TestController, searchTerm: string): Promise<void> {
@@ -232,12 +234,15 @@ export async function doSearch(t: TestController, searchTerm: string): Promise<v
     await t.pressKey('enter')
 }
 
-export async function createComparison(t: TestController, searchTerm: string): Promise<void> {
-    const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...')
+export async function createComparison(t: TestController, searchTerm: string, expectResult?: string): Promise<void> {
+    const otherRegion = Selector('input[placeholder="Other region..."],input[placeholder="Name"]')
     await t
         .click(otherRegion)
         .typeText(otherRegion, searchTerm)
-    await waitForSelectedSearchResult(t)
+    const result = await waitForSelectedSearchResult(t)
+    if (expectResult !== undefined) {
+        await t.expect(result).eql(expectResult)
+    }
     await t.pressKey('enter')
 }
 
