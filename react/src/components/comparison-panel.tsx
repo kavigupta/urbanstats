@@ -629,8 +629,8 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         return Promise.resolve()
     }
 
-    override startShowingAttribution(): boolean {
-        return this.props.isLastMap
+    override attribution(): 'none' | 'startShowing' {
+        return this.props.isLastMap ? 'startShowing' : 'none'
     }
 }
 

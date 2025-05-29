@@ -128,8 +128,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
-    startShowingAttribution(): boolean {
-        return true
+    attribution(): 'none' | 'startHidden' | 'startShowing' {
+        return 'startShowing'
     }
 
     override async componentDidMount(): Promise<void> {
@@ -145,7 +145,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             attributionControl: false,
         })
 
-        map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
+        if (this.attribution() !== 'none') {
+            map.addControl(new CustomAttributionControl(this.attribution() === 'startShowing'))
+        }
 
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
