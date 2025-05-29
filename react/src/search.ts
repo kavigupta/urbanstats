@@ -62,25 +62,30 @@ interface Result {
     normalizedPositionScore: number // The absolute difference in position where tokens were found. Lower is better ([0, 1] where 0 is all tokens are in the right place, and 1 is all tokens are maximally distant in this result)
     normalizedTokensWithIncompleteMatch: number // The number of tokens in the query that do NOT match "completely" (are the same length) with their tokens in the haystack. These matches may still have errors. ([0, 1], lower is better, where 0 means all tokens in the query match completely, and 1 means no tokens in the query match completely)
     normalizedTokenSwapOrOverlap: number // The number of search tokens that are out-of-order or overlap with another token when they are matched against the haystack tokens ([0, 1], where 0 is no tokens are swapped or overlapped, and 1 is all tokens are swapped or overlapped)
+    normalizedPriorityType: 1 | 0 // Is this a priority type? 0 if true
 }
 
-// Should sum to 1
 const weights = {
-    match: 1 / 3,
-    position: 1 / 3,
-    priority: 1 / 15,
-    population: 2 / 15,
-    incompleteMatches: 1 / 15,
-    swapOverlap: 1 / 15,
+    match: 5,
+    position: 5,
+    priority: 1,
+    population: 2,
+    incompleteMatches: 1,
+    swapOverlap: 1,
+    priorityType: 0.25,
 }
+
+const sumOfWeights = Object.values(weights).reduce((total, value) => total + value, 0)
+const normalizedWeights = Object.fromEntries(Object.entries(weights).map(([key, value]) => [key, value / sumOfWeights]))
 
 function combinedScore(result: Result): number {
-    return (result.normalizedMatchScore * weights.match)
-        + (result.normalizedPositionScore * weights.position)
-        + (result.normalizedPriority * weights.priority)
-        + (result.normalizedPopulationRank * weights.population)
-        + (result.normalizedTokensWithIncompleteMatch * weights.incompleteMatches)
-        + (result.normalizedTokenSwapOrOverlap * weights.swapOverlap)
+    return (result.normalizedMatchScore * normalizedWeights.match)
+        + (result.normalizedPositionScore * normalizedWeights.position)
+        + (result.normalizedPriority * normalizedWeights.priority)
+        + (result.normalizedPopulationRank * normalizedWeights.population)
+        + (result.normalizedTokensWithIncompleteMatch * normalizedWeights.incompleteMatches)
+        + (result.normalizedTokenSwapOrOverlap * normalizedWeights.swapOverlap)
+        + (result.normalizedPriorityType * normalizedWeights.priorityType)
 }
 
 function compareSearchResults(a: Result, b: Result): number {
@@ -101,9 +106,10 @@ export interface SearchParams {
     unnormalizedPattern: string
     maxResults: number
     showHistoricalCDs: boolean
+    prioritizeTypeIndex?: number
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs }: SearchParams): SearchResult[] {
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs, prioritizeTypeIndex }: SearchParams): SearchResult[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -157,6 +163,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: 0,
             normalizedTokenSwapOrOverlap: 0,
+            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
         }, results[results.length - 1]) > 0) {
             continue
         }
@@ -203,6 +210,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
                 normalizedPopulationRank,
                 normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
                 normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
+                normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
             }, results[results.length - 1]) > 0) {
                 continue entries
             }
@@ -221,6 +229,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
             normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
+            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
         }
 
         let spliceIndex: number | undefined

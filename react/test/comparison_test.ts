@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -20,11 +20,19 @@ test('comparison-3-mobile-heterogenous', async (t) => {
     await screencap(t)
 })
 
+test('comparison-heterogenous-search', async (t) => {
+    await createComparison(t, 'pasadena c cd', 'Pasadena city, California, USA') // Would be pasadena city otherwise
+})
+
 urbanstatsFixture('comparison test homogenous (2)', comparisonPage([upperSGV, swSGV]))
 
 test('comparison-2-mobile', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
+})
+
+test('comparison-homogenous-search', async (t) => {
+    await createComparison(t, 'pasadena c cd', pasadena) // Would be pasadena city otherwise
 })
 
 urbanstatsFixture('comparison test homogenous (3)', comparisonPage([upperSGV, pasadena, swSGV]))
