@@ -16,6 +16,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
+import type { MapPartitioner } from '../map-partition'
 import type { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -162,7 +163,16 @@ export type ExceptionalPageDescriptor = PageDescriptor
 
 export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | {
+        kind: 'comparison'
+        articles: Article[]
+        universe: string
+        universes: string[]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
+        statPaths: StatPath[][]
+        mapPartitioner: MapPartitioner
+        comparisonPanel: typeof ComparisonPanel
+    }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -365,10 +375,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [articles, countsByArticleType, panel] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitioner] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
             // intersection of all the data.universes
@@ -392,6 +403,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
+                    mapPartitioner,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,

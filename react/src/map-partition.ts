@@ -89,6 +89,8 @@ function* indexPartitions(upperBound: number, maxPartitions: number, index = 0, 
     }
 }
 
+export type MapPartitioner = (maxPartitions: number) => number[][]
+
 /**
  * Given many regions to be compared, determine how best to split them into multiple maps
  *
@@ -96,21 +98,31 @@ function* indexPartitions(upperBound: number, maxPartitions: number, index = 0, 
  *
  * Otherwise, weigh multiple groupings to determine the best one
  */
-export async function partitionLongnames(longnames: string[], maxPartitions: number): Promise<string[][]> {
+export async function partitionLongnames(longnames: string[]): Promise<MapPartitioner> {
     const fillThreshold = 0.05
-    const timeLimit = Date.now() + 500
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
-    for (const partitions of indexPartitions(boundingBoxes.length, maxPartitions)) {
-        if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
-            return partitions.map(partition => partition.map(index => longnames[index]))
-        }
-        if (Date.now() > timeLimit) {
-            break
-        }
-    }
+    const cache = new Map<number, number[][]>()
 
-    // Give up
-    return [longnames]
+    return (maxPartitions: number): number[][] => {
+        if (cache.has(maxPartitions)) {
+            return cache.get(maxPartitions)!
+        }
+
+        const timeLimit = Date.now() + 500
+
+        for (const partitions of indexPartitions(boundingBoxes.length, maxPartitions)) {
+            if (partitions.every(partition => proportionFilled(partition.map(index => boundingBoxes[index])) > fillThreshold)) {
+                cache.set(maxPartitions, partitions)
+                return partitions
+            }
+            if (Date.now() > timeLimit) {
+                break
+            }
+        }
+
+        // Give up
+        return [longnames.map((_, i) => i)]
+    }
 }

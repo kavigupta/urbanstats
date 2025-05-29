@@ -1,8 +1,9 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useContext, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef } from 'react'
 
+import { MapPartitioner } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
 import { HueColors } from '../page_template/color-themes'
@@ -30,7 +31,7 @@ import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHe
 const leftBarMargin = 0.02
 const barHeight = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitioner: MapPartitioner }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -354,10 +355,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     <div className="gap"></div>
 
                     <div ref={mapRef}>
-                        <ComparisonMap
+                        <ComparisonMultiMap
                             longnames={props.articles.map(x => x.longname)}
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
+                            mapPartitioner={props.mapPartitioner}
                         />
                     </div>
                 </div>
@@ -507,6 +509,52 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
                         />
                     )
                 : null}
+        </div>
+    )
+}
+
+function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colors: string[], mapPartitioner: MapPartitioner }): ReactNode {
+    const partitions = props.mapPartitioner(useMobileLayout() ? 2 : 3)
+
+    const partitionedLongNames = partitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
+
+    const maps = useRef<(ComparisonMap | null)[]>([])
+
+    // Want to re-zoom the maps when the partitioning changes
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            for (const map of maps.current) {
+                if (map !== null) {
+                    try {
+                        map.zoomToAll()
+                    }
+                    catch (e) {
+                        // Sometimes this fails if the map isn't ready
+                        console.warn(e)
+                    }
+                }
+            }
+        }, 0)
+        return () => { clearTimeout(timeout) }
+    }, [partitionedLongNames])
+
+    // Will get filled up on render immediately after
+    maps.current = Array<null>(partitions.length).fill(null)
+
+    return (
+        <div style={{ display: 'flex', width: '100%' }}>
+            {partitions.map((partition, partitionIndex) => {
+                return (
+                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / partitions.length}%` }}>
+                        <ComparisonMap
+                            ref={map => maps.current[partitionIndex] = map}
+                            {...props}
+                            longnames={partition.map(index => props.longnames[index])}
+                            colors={partition.map(index => props.colors[index])}
+                        />
+                    </div>
+                )
+            })}
         </div>
     )
 }
