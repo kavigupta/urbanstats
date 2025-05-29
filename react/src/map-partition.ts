@@ -1,10 +1,10 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
+import { min } from 'mathjs'
 
 import { Feature } from './utils/protos'
 import { loadShapeFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
-import { min } from "mathjs"
 
 export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
     if (poly.geometry === 'multipolygon') {
@@ -63,14 +63,22 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
 }
 
 /**
- * indexPartitions(2, inf) -> [[0, 1]], [[0], [1]]
- * indexPartitions(3, inf) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
- * indexPartitions(3, 2) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]]
+ * indexPartitions(2, () => true) -> [[0, 1]], [[0], [1]]
+ * indexPartitions(3, () => true) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
+ * indexPartitions(3, p => p.every(i => Math.abs(p[0] - i) < 2)) -> [[0, 1], [2]], [[0], [1, 2]], [[0], [1], [2]]
  *
- * `goodPartition` is a filter function that reduces the search space if a partition could not possibly become valid by adding more elements
+ * `goodPartition` is a filter function that reduces the search space if a partition could not possibly become valid by adding more elements with a higher index
+ *
+ * This function has a built-in time limit, and will stop generating if it starts taking too long
  */
-function indexPartitions(upperBound: number, maxPartitions: number, goodPartition: (partition: number[]) => boolean): Generator<number[][], void> {
+function indexPartitions(upperBound: number, goodPartition: (partition: number[]) => boolean): Generator<number[][], void> {
+    const timeLimit = Date.now() + 500
+
     function* helper(index: number, current: number[][]): Generator<number[][], void> {
+        if (Date.now() > timeLimit) {
+            throw new Error('out of time')
+        }
+
         if (index === upperBound) {
             yield current
             return
@@ -90,15 +98,11 @@ function indexPartitions(upperBound: number, maxPartitions: number, goodPartitio
             }
         }
 
-        if (current.length < maxPartitions) {
-            yield* helper(index + 1, [...current, [index]])
-        }
+        yield* helper(index + 1, [...current, [index]])
     }
 
     return helper(0, [])
 }
-
-export type MapPartitioner = (maxPartitions: number) => number[][]
 
 /**
  * Given many regions to be compared, determine how best to split them into multiple maps
@@ -107,7 +111,7 @@ export type MapPartitioner = (maxPartitions: number) => number[][]
  *
  * Otherwise, weigh multiple groupings to determine the best one
  */
-export async function partitionLongnames(longnames: string[]): Promise<MapPartitioner> {
+export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
     const fillThreshold = 0.05
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
@@ -119,25 +123,21 @@ export async function partitionLongnames(longnames: string[]): Promise<MapPartit
         .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
         .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
 
-    const cache = new Map<number, number[][]>()
-
-    return (maxPartitions: number): number[][] => {
-        if (cache.has(maxPartitions)) {
-            return cache.get(maxPartitions)!
-        }
-
-        for (const partitions of indexPartitions(sortedBoundingBoxes.length, maxPartitions, partition => proportionFilled(partition.map(index => sortedBoundingBoxes[index][1])) > fillThreshold)) {
+    try {
+        for (const partitions of indexPartitions(sortedBoundingBoxes.length, partition => proportionFilled(partition.map(index => sortedBoundingBoxes[index][1])) > fillThreshold)) {
             // Only iterates over good partitions
 
             // Un-sort the indices
             // Also re-sort the partitions by the unsorted indices
             const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
                 .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
-            cache.set(maxPartitions, unsortedPartitions)
             return unsortedPartitions
         }
-
-        // Give up
-        return [longnames.map((_, i) => i)]
     }
+    catch (e) {
+        console.warn('Error partitioning maps', e)
+    }
+
+    // Give up
+    return [longnames.map((_, i) => i)]
 }

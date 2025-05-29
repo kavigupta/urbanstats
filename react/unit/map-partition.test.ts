@@ -3,31 +3,61 @@ import { test } from 'node:test'
 
 import { partitionLongnames } from '../src/map-partition'
 import './util/fetch'
+import './util/localStorage'
+import { uniform } from '../src/navigation/random'
 
 void test('far away neighborhoods', async () => {
     assert.deepEqual(
-        (await partitionLongnames(
+        await partitionLongnames(
             ['Cal Young Neighborhood, Eugene City, Oregon, USA', 'Hollywood Neighborhood, Los Angeles City, California, USA'],
-        ))(2),
+        ),
         [[0], [1]],
     )
 })
 
 void test('neighboring states', async () => {
     assert.deepEqual(
-        (await partitionLongnames(
+        await partitionLongnames(
             ['California, USA', 'Oregon, USA'],
-        ))(2),
+        ),
         [[0, 1]],
     )
 })
 
 void test('3 cities', async () => {
     assert.deepEqual(
-        (await partitionLongnames(
+        await partitionLongnames(
             ['San Francisco city, California, USA', 'San Jose city, California, USA', 'New York city, New York, USA'],
-        ))(3),
+        ),
         [[0, 1], [2]],
+    )
+})
+
+void test('different order, same partitioning', async () => {
+    assert.deepEqual(
+        await partitionLongnames(
+            ['San Francisco city, California, USA', 'New York city, New York, USA', 'San Jose city, California, USA'],
+        ),
+        [[0, 2], [1]],
+    )
+})
+
+void test('all close together', async () => {
+    // All Bay Area cities, should be grouped together
+    assert.deepEqual(
+        await partitionLongnames(
+            ['San Francisco city, California, USA', 'Oakland city, California, USA', 'San Jose city, California, USA'],
+        ),
+        [[0, 1, 2]],
+    )
+})
+
+void test('single place', async () => {
+    assert.deepEqual(
+        await partitionLongnames(
+            ['San Francisco city, California, USA'],
+        ),
+        [[0]],
     )
 })
 
@@ -54,9 +84,25 @@ const manyPlaces = [
     'Bijou Hills CDP, South Dakota, USA',
 ]
 
-void test('does not run forever', async () => {
+void test('handles many places', async () => {
     assert.deepEqual(
-        (await partitionLongnames(manyPlaces))(3),
-        [manyPlaces.map((_, i) => i)],
+        await partitionLongnames(manyPlaces),
+        [
+            [0], [1], [2, 16],
+            [3], [4, 9], [5],
+            [6], [7], [8],
+            [10], [11], [12],
+            [13], [14], [15],
+            [17], [18], [19],
+        ],
+    )
+})
+
+void test('does not run forever', async () => {
+    const random = await uniform()
+    const randomPlaces = await Promise.all(Array.from({ length: 3000 }, random))
+    assert.deepEqual(
+        await partitionLongnames(randomPlaces),
+        [randomPlaces.map((_, i) => i)],
     )
 })

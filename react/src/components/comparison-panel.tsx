@@ -3,7 +3,6 @@ import './article.css'
 
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef } from 'react'
 
-import { MapPartitioner } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
 import { HueColors } from '../page_template/color-themes'
@@ -31,7 +30,7 @@ import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHe
 const leftBarMargin = 0.02
 const barHeight = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitioner: MapPartitioner }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -359,7 +358,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             longnames={props.articles.map(x => x.longname)}
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
-                            mapPartitioner={props.mapPartitioner}
+                            mapPartitions={props.mapPartitions}
                         />
                     </div>
                 </div>
@@ -513,10 +512,8 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     )
 }
 
-function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colors: string[], mapPartitioner: MapPartitioner }): ReactNode {
-    const partitions = props.mapPartitioner(useMobileLayout() ? 2 : 3)
-
-    const partitionedLongNames = partitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
+function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
+    const partitionedLongNames = props.mapPartitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
 
     const maps = useRef<(ComparisonMap | null)[]>([])
 
@@ -539,13 +536,13 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
     }, [partitionedLongNames])
 
     // Will get filled up on render immediately after
-    maps.current = Array<null>(partitions.length).fill(null)
+    maps.current = Array<null>(props.mapPartitions.length).fill(null)
 
     return (
         <div style={{ display: 'flex', width: '100%' }}>
-            {partitions.map((partition, partitionIndex) => {
+            {props.mapPartitions.map((partition, partitionIndex) => {
                 return (
-                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / partitions.length}%` }}>
+                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / props.mapPartitions.length}%` }}>
                         <ComparisonMap
                             ref={map => maps.current[partitionIndex] = map}
                             {...props}

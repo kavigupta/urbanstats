@@ -16,7 +16,6 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
-import type { MapPartitioner } from '../map-partition'
 import type { MapSettings } from '../mapper/settings'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -170,7 +169,7 @@ export type PageData =
         universes: string[]
         rows: (settings: StatGroupSettings) => ArticleRow[][]
         statPaths: StatPath[][]
-        mapPartitioner: MapPartitioner
+        mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
@@ -375,7 +374,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [articles, countsByArticleType, panel, mapPartitioner] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
@@ -403,7 +402,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
-                    mapPartitioner,
+                    mapPartitions,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
