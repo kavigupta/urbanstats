@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -538,11 +538,47 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
     // Will get filled up on render immediately after
     maps.current = Array<null>(props.mapPartitions.length).fill(null)
 
-    return (
-        <div style={{ display: 'flex', width: '100%' }}>
-            {props.mapPartitions.map((partition, partitionIndex) => {
+    /*
+     If mobile, make 2 columns, if one at the end, use full width
+
+     If desktop, make 3 columns, if 4 at the end, make 4, if 2 at the end, make 2 (there will never be 1 at the end because that's 4)
+     */
+    const isMobile = useMobileLayout()
+    const rows: [number, number[]][][] = useMemo(() => {
+        const slice = (from: number, to: number): [number, number[]][] => {
+            return props.mapPartitions.slice(from, to).map((partition, sliceIndex) => [from + sliceIndex, partition])
+        }
+
+        if (isMobile) {
+            const result: [number, number[]][][] = []
+            for (let i = 0; i < props.mapPartitions.length; i += 2) {
+                result.push(slice(i, i + 2))
+            }
+            return result
+        }
+        else {
+            const result: [number, number[]][][] = []
+            for (let i = 0; i < props.mapPartitions.length; i += 3) {
+                if (props.mapPartitions.length - i === 4) {
+                    result.push(
+                        slice(i, i + 2),
+                        slice(i + 2, i + 4),
+                    )
+                    i += 1
+                }
+                else {
+                    result.push(slice(i, i + 3))
+                }
+            }
+            return result
+        }
+    }, [isMobile, props.mapPartitions])
+
+    return rows.map((row, rowIndex) => (
+        <div key={rowIndex} style={{ display: 'flex', width: '100%' }}>
+            {row.map(([partitionIndex, partition]) => {
                 return (
-                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / props.mapPartitions.length}%` }}>
+                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / row.length}%` }}>
                         <ComparisonMap
                             ref={map => maps.current[partitionIndex] = map}
                             {...props}
@@ -553,7 +589,7 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
                 )
             })}
         </div>
-    )
+    ))
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
