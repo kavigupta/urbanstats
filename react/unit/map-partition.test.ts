@@ -9,7 +9,7 @@ void test('far away neighborhoods', async () => {
         (await partitionLongnames(
             ['Cal Young Neighborhood, Eugene City, Oregon, USA', 'Hollywood Neighborhood, Los Angeles City, California, USA'],
         ))(2),
-        [['Cal Young Neighborhood, Eugene City, Oregon, USA'], ['Hollywood Neighborhood, Los Angeles City, California, USA']],
+        [[0], [1]],
     )
 })
 
@@ -18,7 +18,7 @@ void test('neighboring states', async () => {
         (await partitionLongnames(
             ['California, USA', 'Oregon, USA'],
         ))(2),
-        [['California, USA', 'Oregon, USA']],
+        [[0, 1]],
     )
 })
 
@@ -27,7 +27,7 @@ void test('3 cities', async () => {
         (await partitionLongnames(
             ['San Francisco city, California, USA', 'San Jose city, California, USA', 'New York city, New York, USA'],
         ))(3),
-        [['San Francisco city, California, USA', 'San Jose city, California, USA'], ['New York city, New York, USA']],
+        [[0, 1], [2]],
     )
 })
 
@@ -57,6 +57,6 @@ const manyPlaces = [
 void test('does not run forever', async () => {
     assert.deepEqual(
         (await partitionLongnames(manyPlaces))(3),
-        [manyPlaces],
+        [manyPlaces.map((_, i) => i)],
     )
 })
