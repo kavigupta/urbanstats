@@ -478,25 +478,24 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
     return (
-        <div className="map-container-for-testing">
-            <div
-                id={props.id}
-                style={{
-                    background: colors.background,
-                    height: props.height,
-                    width: '100%',
-                    position: 'relative',
-                    border: `1px solid ${colors.borderNonShadow}`,
-                    borderRadius: '5px',
-                }}
+        <div
+            id={props.id}
+            style={{
+                background: colors.background,
+                height: props.height,
+                width: '100%',
+                position: 'relative',
+                border: `1px solid ${colors.borderNonShadow}`,
+                borderRadius: '5px',
+                backgroundColor: colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
+            }}
+        >
+            {/* place this on the right of the map */}
+            <div style={
+                { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
+            }
             >
-                {/* place this on the right of the map */}
-                <div style={
-                    { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-                }
-                >
-                    {props.buttons}
-                </div>
+                {props.buttons}
             </div>
         </div>
     )
