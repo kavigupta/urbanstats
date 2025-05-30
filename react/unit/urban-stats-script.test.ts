@@ -498,6 +498,10 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyCtx),
         { type: numType, value: 55 },
     )
+})
+void test('evaluate basic variable expressions', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
     env.set('x', { type: numVectorType, value: [1, 2, 3] })
     assert.deepStrictEqual(
         evaluate(parseExpr('x + 1'), emptyCtx),
@@ -508,6 +512,60 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('y + x'), emptyCtx),
         { type: numMatrixType, value: [[11, 22, 33], [41, 52, 63]] },
     )
+})
+
+void test('evaluate attr accesses', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    env.set('obj', {
+        type: testObjType,
+        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
+    })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('obj.u'), emptyCtx),
+        { type: numType, value: 401 },
+    )
+
+    assert.throws(
+        () => evaluate(parseExpr('obj.x'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Attribute x not found in object of type {u: number, v: number}'
+        },
+    )
+    env.set('objs', {
+        type: { type: 'vector', elementType: testObjType },
+        value: [
+            new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
+            new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
+        ],
+    })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('objs.u'), emptyCtx),
+        { type: numVectorType, value: [101, 301] },
+    )
+    env.set('objs2', {
+        type: { type: 'vector', elementType: { type: 'vector', elementType: testObjType } },
+        value: [
+            [
+                new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
+                new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
+            ],
+            [
+                new Map<string, USSRawValue>([['u', 501], ['v', 602]]),
+                new Map<string, USSRawValue>([['u', 701], ['v', 802]]),
+            ],
+        ],
+    })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('objs2.u'), emptyCtx),
+        { type: { type: 'vector', elementType: numVectorType }, value: [[101, 301], [501, 701]] },
+    )
+})
+
+void test('evaluate function calls', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    env.set('x', { type: numVectorType, value: [1, 2, 3] })
     env.set('testFn1', { type: testFnType, value: testFn1 })
     assert.deepStrictEqual(
         evaluate(parseExpr('testFn1(2, a=3)'), emptyCtx),
@@ -536,26 +594,27 @@ void test('evaluate basic expressions', (): void => {
             value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
         },
     )
-    assert.deepStrictEqual(
-        evaluate(parseExpr('obj.u'), emptyCtx),
-        { type: numType, value: 401 },
-    )
-
-    assert.throws(
-        () => evaluate(parseExpr('obj.x'), emptyCtx),
-        (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Attribute x not found in object of type {u: number, v: number}'
-        },
-    )
     env.set('objs', {
-        type: { type: 'vector', elementType: testObjType },
-        value: [
-            new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
-            new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
-        ],
+        type: {
+            type: 'object',
+            properties: {
+                u: numType,
+                v: numVectorType,
+            },
+        } satisfies USSType,
+        value: new Map<string, USSRawValue>([
+            ['u', 100],
+            ['v', [200, 300]],
+        ]),
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('objs.u'), emptyCtx),
-        { type: numVectorType, value: [101, 301] },
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objs)'), emptyCtx),
+        {
+            type: numMatrixType,
+            value: [
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
+            ],
+        },
     )
 })
