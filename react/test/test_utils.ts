@@ -92,11 +92,11 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
-            }
-        }
+        // for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
+        //     if (x instanceof HTMLElement) {
+        //         x.style.visibility = 'hidden'
+        //     }
+        // }
         const currentVersion = document.getElementById('current-version')
         if (currentVersion !== null) {
             currentVersion.innerHTML = '&lt;VERSION&gt;'
