@@ -162,7 +162,16 @@ export type ExceptionalPageDescriptor = PageDescriptor
 
 export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | {
+        kind: 'comparison'
+        articles: Article[]
+        universe: string
+        universes: string[]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
+        statPaths: StatPath[][]
+        mapPartitions: number[][]
+        comparisonPanel: typeof ComparisonPanel
+    }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -365,10 +374,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [articles, countsByArticleType, panel] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
             // intersection of all the data.universes
@@ -392,6 +402,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
+                    mapPartitions,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
