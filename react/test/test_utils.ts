@@ -92,7 +92,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
+        for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
             if (x instanceof HTMLElement) {
                 x.style.visibility = 'hidden'
             }
