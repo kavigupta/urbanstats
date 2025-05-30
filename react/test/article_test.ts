@@ -49,7 +49,7 @@ test('editable-number', async (t) => {
     const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
     await t
         .click(editableNumber)
-    // select all and delete
+        // select all and delete
         .pressKey('ctrl+a')
         .typeText(editableNumber, '3')
         .pressKey('enter')
@@ -304,9 +304,9 @@ test('when navigating to next media market that is two lines, maintains relative
     await t.expect(after.pointerPosition).eql(before.pointerPosition)
 })
 
-test('when navigating to next media market that is two lines vai map click, maintains relative position of map', async (t) => {
+test('when navigating to next media market that is two lines via map click, maintains relative position of map', async (t) => {
     const scrollPosition = ClientFunction(() => window.scrollY)
-    const mapPosition = ClientFunction(() => document.querySelector('.map-container-for-testing')!.getBoundingClientRect().top)
+    const mapPosition = ClientFunction(() => document.querySelector('.maplibregl-canvas-container')!.getBoundingClientRect().top)
     // scroll down to bottom of the map
     await t.scrollIntoView(Selector('a').withExactText('North America'))
 
