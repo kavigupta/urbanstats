@@ -21,13 +21,13 @@ export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
     | { type: 'infixSequence', operators: Decorated<string>[], expressions: UrbanStatsASTExpression[] }
+    | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
 type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
     | { type: 'expression', value: UrbanStatsASTExpression }
     | { type: 'statements', result: UrbanStatsASTStatement[] }
-    | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
 type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
@@ -296,6 +296,10 @@ class ParseState {
     }
 
     parseExpression(): UrbanStatsASTExpression | ParseError {
+        if (this.consumeIdentifier('if')) {
+            return this.parseIfExpression()
+        }
+
         // return this.parseFunctionalExpression()
         const operators: Decorated<string>[] = []
         const expressions: UrbanStatsASTExpression[] = []
@@ -332,54 +336,12 @@ class ParseState {
                 return expr
             case 'function':
             case 'infixSequence':
+            case 'if':
                 return { type: 'error', message: 'Invalid LHS expression', location: locationOfExpr(expr) }
         }
     }
 
     parseStatement(): UrbanStatsASTStatement | ParseError {
-        if (this.consumeIdentifier('if')) {
-            if (!this.consumeBracket('(')) {
-                return { type: 'error', message: 'Expected opening bracket ( after if', location: this.tokens[this.index - 1].location }
-            }
-            const condition = this.parseExpression()
-            if (condition.type === 'error') {
-                return condition
-            }
-            if (!this.consumeBracket(')')) {
-                return { type: 'error', message: 'Expected closing bracket ) after if condition', location: this.tokens[this.index - 1].location }
-            }
-            if (!this.consumeBracket('{')) {
-                return { type: 'error', message: 'Expected opening bracket { after if condition', location: this.tokens[this.index - 1].location }
-            }
-            const then = this.parseStatement()
-            if (then.type === 'error') {
-                return then
-            }
-            if (!this.consumeBracket('}')) {
-                return { type: 'error', message: 'Expected closing bracket } after if then statement', location: this.tokens[this.index - 1].location }
-            }
-            let elseBranch: UrbanStatsASTStatement | undefined = undefined
-            if (this.consumeIdentifier('else')) {
-                if (!this.consumeBracket('{')) {
-                    return { type: 'error', message: 'Expected opening bracket { after else', location: this.tokens[this.index - 1].location }
-                }
-                const eb = this.parseStatement()
-                if (eb.type === 'error') {
-                    return eb
-                }
-                elseBranch = eb
-                if (!this.consumeBracket('}')) {
-                    return { type: 'error', message: 'Expected closing bracket } after else statement', location: this.tokens[this.index - 1].location }
-                }
-            }
-            return {
-                type: 'if',
-                condition,
-                then,
-                else: elseBranch,
-            }
-        }
-
         const expr = this.parseExpression()
         if (expr.type === 'error') {
             return expr
@@ -396,6 +358,49 @@ class ParseState {
             return { type: 'assignment', lhs, value }
         }
         return { type: 'expression', value: expr }
+    }
+
+    parseIfExpression(): UrbanStatsASTExpression | ParseError {
+        if (!this.consumeBracket('(')) {
+            return { type: 'error', message: 'Expected opening bracket ( after if', location: this.tokens[this.index - 1].location }
+        }
+        const condition = this.parseExpression()
+        if (condition.type === 'error') {
+            return condition
+        }
+        if (!this.consumeBracket(')')) {
+            return { type: 'error', message: 'Expected closing bracket ) after if condition', location: this.tokens[this.index - 1].location }
+        }
+        if (!this.consumeBracket('{')) {
+            return { type: 'error', message: 'Expected opening bracket { after if condition', location: this.tokens[this.index - 1].location }
+        }
+        const then = this.parseStatement()
+        if (then.type === 'error') {
+            return then
+        }
+        if (!this.consumeBracket('}')) {
+            return { type: 'error', message: 'Expected closing bracket } after if then statement', location: this.tokens[this.index - 1].location }
+        }
+        let elseBranch: UrbanStatsASTStatement | undefined = undefined
+        if (this.consumeIdentifier('else')) {
+            if (!this.consumeBracket('{')) {
+                return { type: 'error', message: 'Expected opening bracket { after else', location: this.tokens[this.index - 1].location }
+            }
+            const eb = this.parseStatement()
+            if (eb.type === 'error') {
+                return eb
+            }
+            elseBranch = eb
+            if (!this.consumeBracket('}')) {
+                return { type: 'error', message: 'Expected closing bracket } after else statement', location: this.tokens[this.index - 1].location }
+            }
+        }
+        return {
+            type: 'if',
+            condition,
+            then,
+            else: elseBranch,
+        }
     }
 
     parseStatements(): UrbanStatsASTStatement | ParseError {
