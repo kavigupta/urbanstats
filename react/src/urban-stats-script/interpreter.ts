@@ -15,8 +15,7 @@ export class InterpretationError extends Error {
 export interface Context {
     effect: (eff: Effect) => void
     error: (msg: string, location: LocInfo) => InterpretationError
-    get: (name: string) => USSValue | undefined
-    set: (name: string, value: USSValue) => void
+    variables: Map<string, USSValue>
 }
 
 export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
@@ -39,7 +38,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             }
         case 'identifier':
             const varName = expr.name.node
-            const res = env.get(varName)
+            const res = env.variables.get(varName)
             if (res !== undefined) {
                 return res
             }

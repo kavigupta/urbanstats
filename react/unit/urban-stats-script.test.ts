@@ -459,10 +459,7 @@ function testingContext(effectsOut: Effect[], errorsOut: { msg: string, location
             errorsOut.push({ msg, location })
             return new InterpretationError(msg, location)
         },
-        get: (name: string): USSValue | undefined => env.get(name),
-        set: (name: string, value: USSValue): void => {
-            env.set(name, value)
-        },
+        variables: env,
     }
 }
 
