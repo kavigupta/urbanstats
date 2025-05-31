@@ -19,7 +19,7 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
     }
 }
 
-export function locateTypeVector(
+function locateTypeVector(
     value: USSValue & { type: USSVectorType },
     predicate: (t: USSType) => boolean,
     predicateDescriptor: string,
@@ -50,7 +50,7 @@ export function locateTypeVector(
     return { type: 'success', result: [[prefixes.length, ...prefixes[0]], types[0], values] }
 }
 
-export function locateTypeObject(
+function locateTypeObject(
     value: USSValue & { type: USSObjectType },
     predicate: (t: USSType) => boolean,
     predicateDescriptor: string,
@@ -114,11 +114,11 @@ export function locateTypeObject(
     }, predicate, predicateDescriptor)
 }
 
-export type TypeLocationSuccess = [number[], USSType, USSRawValue]
+type TypeLocationSuccess = [number[], USSType, USSRawValue]
 
-export type TypeLocationResult = { type: 'success', result: TypeLocationSuccess } | BroadcastError
+type TypeLocationResult = { type: 'success', result: TypeLocationSuccess } | BroadcastError
 
-export function locateFunctionAndArguments(
+function locateFunctionAndArguments(
     fn: USSValue,
     posArgs: USSValue[],
     kwArgs: [string, USSValue][],
@@ -167,12 +167,12 @@ export function locateFunctionAndArguments(
     }
 }
 
-export interface BroadcastError {
+interface BroadcastError {
     type: 'error'
     message: string
 }
 
-export function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {
+function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {
     /**
      * Expands the dimensions of the given values to the largest vector size, aligning the last axes.
      * This is used to prepare the values for broadcasting.
@@ -204,7 +204,7 @@ export function expandDims(values: TypeLocationSuccess[], descriptors: string[])
     return { type: 'success', result: newValues }
 }
 
-export function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRawValue {
+function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRawValue {
     /**
      * Expands the dimensions of the given raw value to the given dimensions.
      * This is used to prepare the values for broadcasting.
@@ -218,7 +218,7 @@ export function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRaw
     )
 }
 
-export function mapSeveral(
+function mapSeveral(
     fn: USSRawValue,
     posArgs: USSRawValue[],
     argumentNames: string[],
@@ -264,7 +264,7 @@ export function mapSeveral(
     })
 }
 
-export function nestedVectorType(type: USSType, depth: number): USSType {
+function nestedVectorType(type: USSType, depth: number): USSType {
     if (depth === 0) {
         return type
     }
