@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { Context, evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
     const env = new Map<string, USSValue>()
@@ -28,6 +28,10 @@ void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyCtx),
         { type: numType, value: 55 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 > 3'), emptyCtx),
+        { type: boolType, value: false },
     )
 })
 void test('evaluate basic variable expressions', (): void => {

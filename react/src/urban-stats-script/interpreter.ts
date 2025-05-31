@@ -178,14 +178,12 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
 }
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
+    const operatorObj = infixOperatorMap.get(operator)
+    if (operatorObj?.binary === undefined) {
+        throw env.error(`Unknown operator: ${operator}`, errLoc)
+    }
     const res = broadcastApply(
-        {
-            type: { type: 'function', posArgs: [{ type: 'number' }, { type: 'number' }], namedArgs: {}, returnType: { type: 'number' } },
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
-            value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
-                return directEvaluateBinaryOperator(operator, posArgs[0] as number, posArgs[1] as number)
-            },
-        },
+        operatorObj.binary,
         [left, right],
         [],
         env,
@@ -194,12 +192,4 @@ function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: strin
         throw env.error(res.message, errLoc)
     }
     return res.result
-}
-
-function directEvaluateBinaryOperator(operator: string, left: number, right: number): number {
-    const op = infixOperatorMap.get(operator)
-    if (!op) {
-        throw new Error(`Unknown operator: ${operator}`)
-    }
-    return op.fn(left, right)
 }

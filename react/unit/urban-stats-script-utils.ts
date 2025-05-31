@@ -4,6 +4,7 @@ import { parse, UrbanStatsASTExpression } from '../src/urban-stats-script/parser
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
+export const boolType = { type: 'boolean' } satisfies USSType
 export const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
 export const numMatrixType = { type: 'vector', elementType: numVectorType } satisfies USSType
 export const multiObjType = { type: 'object', properties: { a: numType, b: numVectorType } } satisfies USSType
@@ -12,7 +13,7 @@ export const multiObjVectorType = {
     elementType: multiObjType,
 } satisfies USSType
 
-export const testFnType = { type: 'function', posArgs: [numType], namedArgs: { a: numType }, returnType: numType } satisfies USSType
+export const testFnType = { type: 'function', posArgs: [{ type: 'concrete', value: numType }], namedArgs: { a: { type: 'concrete', value: numType } }, returnType: { type: 'concrete', value: numType } } satisfies USSType
 
 export const testFn1: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
 export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
@@ -27,9 +28,9 @@ export const testObjType = {
 
 export const multiArgFnType = {
     type: 'function',
-    posArgs: [numType, numVectorType],
-    namedArgs: { a: numType, b: testObjType },
-    returnType: numVectorType,
+    posArgs: [{ type: 'concrete', value: numType }, { type: 'concrete', value: numVectorType }],
+    namedArgs: { a: { type: 'concrete', value: numType }, b: { type: 'concrete', value: testObjType } },
+    returnType: { type: 'concrete', value: numVectorType },
 } satisfies USSType
 
 export function testFnMultiArg(ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue {

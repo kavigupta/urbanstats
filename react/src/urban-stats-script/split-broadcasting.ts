@@ -131,7 +131,9 @@ function defaultValueForType(type: USSType): USSRawValue {
         case 'object':
             return new Map<string, USSRawValue>(Object.entries(type.properties).map(([k, v]) => [k, defaultValueForType(v)]))
         case 'function':
-            return () => defaultValueForType(type.returnType) // Default function returns undefined
+            return () => {
+                throw new Error(`no default value for function type ${renderType(type)}`)
+            }
     }
 }
 

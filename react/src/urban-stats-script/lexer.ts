@@ -1,28 +1,60 @@
+import { Context } from './interpreter'
+import { USSRawValue, USSValue } from './types-values'
+
 interface Operator {
     precedence: number
-    fn: (a: number, b: number) => number
+    binary?: USSValue
+}
+
+function numericBinaryOperator(fn: (a: number, b: number) => number): USSValue {
+    return {
+        type: { type: 'function', posArgs: [{ type: 'anyPrimitive' }, { type: 'anyPrimitive' }], namedArgs: {}, returnType: { type: 'inferFromPrimitive' } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
+        value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
+            return fn(posArgs[0] as number, posArgs[1] as number)
+        },
+    }
+}
+
+function numericComparisonOperator(fn: (a: number, b: number) => boolean): USSValue {
+    return {
+        type: { type: 'function', posArgs: [{ type: 'anyPrimitive' }, { type: 'anyPrimitive' }], namedArgs: {}, returnType: { type: 'inferFromPrimitive' } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
+        value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
+            return fn(posArgs[0] as number, posArgs[1] as number)
+        },
+    }
+}
+
+function booleanBinaryOperator(fn: (a: boolean, b: boolean) => boolean): USSValue {
+    return {
+        type: { type: 'function', posArgs: [{ type: 'anyPrimitive' }, { type: 'anyPrimitive' }], namedArgs: {}, returnType: { type: 'inferFromPrimitive' } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
+        value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
+            return fn(posArgs[0] as boolean, posArgs[1] as boolean)
+        },
+    }
 }
 
 export const infixOperatorMap = new Map<string, Operator>([
     // E
-    ['**', { precedence: 1000, fn: (a: number, b: number): number => Math.pow(a, b) }],
+    ['**', { precedence: 1000, binary: numericBinaryOperator((a, b) => Math.pow(a, b)) }],
     // MD
-    ['*', { precedence: 900, fn: (a: number, b: number): number => a * b }],
-    ['/', { precedence: 900, fn: (a: number, b: number): number => a / b }],
+    ['*', { precedence: 900, binary: numericBinaryOperator((a, b) => a * b) }],
+    ['/', { precedence: 900, binary: numericBinaryOperator((a, b) => a / b) }],
     // AS
-    ['+', { precedence: 800, fn: (a: number, b: number): number => a + b }],
-    ['-', { precedence: 800, fn: (a: number, b: number): number => a - b }],
+    ['+', { precedence: 800, binary: numericBinaryOperator((a, b) => a + b) }],
+    ['-', { precedence: 800, binary: numericBinaryOperator((a, b) => a - b) }],
     // Comparators
-    ['==', { precedence: 700, fn: (a: number, b: number): number => a === b ? 1 : 0 }],
-    ['!=', { precedence: 700, fn: (a: number, b: number): number => a !== b ? 1 : 0 }],
-    ['<', { precedence: 700, fn: (a: number, b: number): number => a < b ? 1 : 0 }],
-    ['>', { precedence: 700, fn: (a: number, b: number): number => a > b ? 1 : 0 }],
-    ['<=', { precedence: 700, fn: (a: number, b: number): number => a <= b ? 1 : 0 }],
-    ['>=', { precedence: 700, fn: (a: number, b: number): number => a >= b ? 1 : 0 }],
+    ['==', { precedence: 700, binary: numericComparisonOperator((a, b) => a === b) }],
+    ['!=', { precedence: 700, binary: numericComparisonOperator((a, b) => a !== b) }],
+    ['<', { precedence: 700, binary: numericComparisonOperator((a, b) => a < b) }],
+    ['>', { precedence: 700, binary: numericComparisonOperator((a, b) => a > b) }],
+    ['<=', { precedence: 700, binary: numericComparisonOperator((a, b) => a <= b) }],
+    ['>=', { precedence: 700, binary: numericComparisonOperator((a, b) => a >= b) }],
     // Logic
-    ['&', { precedence: 600, fn: (a: number, b: number): number => a & b }],
-    // Logic
-    ['|', { precedence: 500, fn: (a: number, b: number): number => a | b }],
+    ['&', { precedence: 600, binary: booleanBinaryOperator((a, b) => a && b) }],
+    ['|', { precedence: 500, binary: booleanBinaryOperator((a, b) => a || b) }],
 ])
 
 export const infixOperators = [...infixOperatorMap.keys()]

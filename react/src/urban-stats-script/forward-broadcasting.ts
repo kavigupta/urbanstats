@@ -1,5 +1,5 @@
 import { Context } from './interpreter'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType } from './types-values'
 
 export function locateType(value: USSValue, predicate: (t: USSType) => boolean, predicateDescriptor: string): TypeLocationResult {
     if (predicate(value.type)) {
@@ -146,7 +146,7 @@ function locateFunctionAndArguments(
     }
     const posArgsLocated: TypeLocationSuccess[] = []
     for (let i = 0; i < fnType.posArgs.length; i++) {
-        const posArgLocated = locateType(posArgs[i], t => renderType(t) === renderType(fnType.posArgs[i]), `positional argument ${i + 1} of type ${renderType(fnType.posArgs[i])}`)
+        const posArgLocated = locateType(posArgs[i], t => unifyFunctionArgType(fnType.posArgs[i], t), `positional argument ${i + 1} of type ${renderArgumentType(fnType.posArgs[i])}`)
         if (posArgLocated.type === 'error') {
             return posArgLocated
         }
@@ -155,7 +155,7 @@ function locateFunctionAndArguments(
 
     const kwArgsLocated: TypeLocationSuccess[] = []
     for (const [name, value] of kwArgs) {
-        const kwArgLocated = locateType(value, t => renderType(t) === renderType(fnType.namedArgs[name]), `named argument ${name} of type ${renderType(fnType.namedArgs[name])}`)
+        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name], t), `named argument ${name} of type ${renderArgumentType(fnType.namedArgs[name])}`)
         if (kwArgLocated.type === 'error') {
             return kwArgLocated
         }
@@ -314,13 +314,36 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
     )
 
     // console.log('resulting', resulting, 'fnLocated', fnLocated, 'posArgsLocated', posArgsLocated, 'kwArgsLocated', kwArgsLocated)
+    const returnTypeOrInfer = (fnLocated[1] as USSFunctionType).returnType
+    const returnType = returnTypeOrInfer.type === 'inferFromPrimitive' ? getPrimitiveType(resulting, depth) : returnTypeOrInfer.value
     return {
         type: 'success',
         result: {
-            type: nestedVectorType((fnLocated[1] as USSFunctionType).returnType, depth),
+            type: nestedVectorType(returnType, depth),
             value: resulting,
         },
     }
+}
+
+function getPrimitiveType(value: USSRawValue, depth: number): USSType {
+    if (depth === 0) {
+        if (typeof value === 'number') {
+            return { type: 'number' }
+        }
+        if (typeof value === 'string') {
+            return { type: 'string' }
+        }
+        if (typeof value === 'boolean') {
+            return { type: 'boolean' }
+        }
+        if (value === null) {
+            return { type: 'null' }
+        }
+    }
+    if (!Array.isArray(value)) {
+        throw new Error(`Expected a primitive value, but got ${typeof value}`)
+    }
+    return getPrimitiveType(value[0], depth - 1)
 }
 
 export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
