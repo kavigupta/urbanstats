@@ -1,8 +1,9 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
 import { Context } from '../src/urban-stats-script/interpreter'
-import { broadcastApply, locateType, USSRawValue, renderType } from '../src/urban-stats-script/types-values'
+import { USSRawValue, renderType } from '../src/urban-stats-script/types-values'
 
 import { multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
 
