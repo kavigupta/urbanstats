@@ -794,12 +794,13 @@ void test('merge values via masks', (): void => {
         ),
         { type: 'success', value: { type: stringVectorType, value: ['a', 'b', 'x', 'c', 'y'] } },
     )
+    const nullValue: USSValue = { type: { type: 'null' }, value: null } satisfies USSValue
     // default values
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
                 { type: numVectorType, value: [100, 200, 300] },
-                undefined,
+                nullValue,
             ],
             {
                 type: numVectorType,
@@ -812,7 +813,7 @@ void test('merge values via masks', (): void => {
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                undefined,
+                nullValue,
                 { type: stringVectorType, value: ['hi', 'bye'] },
             ],
             {
@@ -825,13 +826,27 @@ void test('merge values via masks', (): void => {
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
-            [undefined, undefined],
+            [nullValue, nullValue],
             {
                 type: numVectorType,
                 value: [2, 2, 3, 2, 3],
             },
             [2, 3],
         ),
-        { type: 'success', value: undefined },
+        { type: 'success', value: nullValue },
     )
 })
+
+// void test('evaluate if expressions', (): void => {
+//     const env = new Map<string, USSValue>()
+//     const emptyCtx: Context = testingContext([], [], env)
+//     env.set('x', { type: numType, value: 3 })
+//     assert.deepStrictEqual(
+//         evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), emptyCtx),
+//         { type: numType, value: 1 },
+//     )
+//     assert.deepStrictEqual(
+//         evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), emptyCtx),
+//         { type: numType, value: 2 },
+//     )
+// })

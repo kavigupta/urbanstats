@@ -10,21 +10,21 @@ export type UrbanStatsASTArg = (
     | { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression }
 )
 
-type UrbanStatsASTLHS = (
-     { type: 'constant', value: Decorated<number | string> }
-     | { type: 'identifier', name: Decorated<string> }
+export type UrbanStatsASTLHS = (
+     { type: 'identifier', name: Decorated<string> }
      | { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> }
 
 )
 
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS
+    | { type: 'constant', value: Decorated<number | string> }
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
     | { type: 'infixSequence', operators: Decorated<string>[], expressions: UrbanStatsASTExpression[] }
     | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
-type UrbanStatsASTStatement = (
+export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
     | { type: 'expression', value: UrbanStatsASTExpression }
     | { type: 'statements', result: UrbanStatsASTStatement[] }
@@ -331,9 +331,9 @@ class ParseState {
     checkLHS(expr: UrbanStatsASTExpression): UrbanStatsASTLHS | ParseError {
         switch (expr.type) {
             case 'identifier':
-            case 'constant':
             case 'attribute':
                 return expr
+            case 'constant':
             case 'function':
             case 'infixSequence':
             case 'if':

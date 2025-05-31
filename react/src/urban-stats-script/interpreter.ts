@@ -1,6 +1,6 @@
 import { infixOperatorMap, LocInfo } from './lexer'
-import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression } from './parser'
-import { broadcastApply, broadcastCall, renderType, USSRawValue, USSValue, ValueArg } from './types-values'
+import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
+import { broadcastApply, broadcastCall, renderType, splitMask, USSRawValue, USSValue, ValueArg } from './types-values'
 
 export type Effect = undefined
 
@@ -62,6 +62,53 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
         case 'infixSequence':
             const elements = expr.expressions.map(e => evaluate(e, env))
             return evaluateInfixSequence(elements, expr.operators.map(x => x.node), env, locationOfExpr(expr))
+        case 'if':
+            const condition = evaluate(expr.condition, env)
+            return splitMask(env, condition, (v: USSValue, subEnv: Context): USSValue => {
+                if (v.type.type !== 'boolean') {
+                    throw env.error(`Condition in if statement must be a boolean, but got ${renderType(v.type)}`, locationOfExpr(expr.condition))
+                }
+                if (v.value) {
+                    return execute(expr.then, subEnv)
+                }
+                if (expr.else === undefined) {
+                    return {
+                        type: { type: 'null' },
+                        value: null,
+                    }
+                }
+                return execute(expr.else, subEnv)
+            }, locationOfExpr(expr))
+    }
+}
+
+export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
+    switch (expr.type) {
+        case 'assignment':
+            const value = evaluate(expr.value, env)
+            evaluateLHS(expr.lhs, value, env)
+            return value
+        case 'expression':
+            return evaluate(expr.value, env)
+        case 'statements':
+            let result: USSValue = execute(expr.result[0], env)
+            for (const statement of expr.result.slice(1)) {
+                result = execute(statement, env)
+            }
+            return result
+    }
+}
+
+export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context): void {
+    switch (lhs.type) {
+        case 'identifier':
+            const varName = lhs.name.node
+            env.variables.set(varName, value)
+            return
+        case 'attribute':
+            // const obj = evaluate(lhs.expr, env)
+            // const attr = lhs.name.node
+            throw new Error('not implemented: attribute assignment')
     }
 }
 
