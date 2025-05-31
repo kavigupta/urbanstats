@@ -37,10 +37,14 @@ export type USSType = (
     | USSFunctionType
 )
 
-export type USSRawValue = (
+export type USSPrimitiveRawValue = (
     number |
     string |
-    boolean |
+    boolean
+)
+
+export type USSRawValue = (
+    USSPrimitiveRawValue |
     USSRawValue[] |
     Map<string, USSRawValue> |
     (
@@ -72,6 +76,9 @@ export function renderType(type: USSType): string {
     }
     if (type.type === 'object') {
         return `{${Object.entries(type.properties).map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
+    }
+    if (type.type === 'null') {
+        return 'null'
     }
     return `(${type.posArgs.map(renderType).join(', ')}; ${Object.entries(type.namedArgs).map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}) -> ${renderType(type.returnType)}`
 }
@@ -169,7 +176,7 @@ function locateTypeObject(
         const newRawValue = new Map<string, USSRawValue>()
         for (const k of rawValue.keys()) {
             if (!toBroadcast.includes(k)) {
-                newRawValue.set(k, rawValue.get(k)!)
+                newRawValue.set(k, rawValue.get(k))
                 continue
             }
             const subValue = rawValue.get(k)
@@ -421,4 +428,137 @@ export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { t
     const posArgs = args.filter(x => x.type === 'unnamed').map(x => x.value)
     const kwArgs = args.filter(x => x.type === 'named').map(x => [x.name, x.value] satisfies [string, USSValue])
     return broadcastApply(fn, posArgs, kwArgs, ctx)
+}
+
+function repeatMany(value: USSValue, count: number): USSValue & { type: USSVectorType } {
+    return {
+        type: { type: 'vector', elementType: value.type },
+        value: Array.from({ length: count }, () => value.value),
+    }
+}
+
+export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
+    /**
+     * Indexes the value using the mask. The mask is expected to be a vector of numbers, strings, or booleans.
+     * If the mask is not a valid mask, an error is returned.
+     */
+    const valueType = value.type
+    const maskType = mask.type
+    switch (maskType.type) {
+        case 'boolean':
+        case 'number':
+        case 'string':
+            const retval = mask.value === reference ? [value.value] : []
+            return { type: 'success', value: { type: { type: 'vector', elementType: valueType }, value: retval } }
+        case 'vector':
+            const maskVector = mask.value as USSRawValue[]
+            if (valueType.type !== 'vector') {
+                return indexMask(repeatMany(value, maskVector.length), mask, reference)
+            }
+            const valueVector = value.value as USSRawValue[]
+            if (maskVector.length !== valueVector.length) {
+                return { type: 'error', message: `Mask length ${maskVector.length} does not match value length ${valueVector.length}` }
+            }
+            let referenceType: USSType | undefined = undefined
+            const results: USSRawValue[] = []
+            for (let i = 0; i < maskVector.length; i++) {
+                const resultsOrErr = indexMask(
+                    { type: valueType.elementType, value: valueVector[i] },
+                    { type: maskType.elementType, value: maskVector[i] },
+                    reference,
+                )
+                if (resultsOrErr.type === 'error') {
+                    return resultsOrErr
+                }
+                results.push(...(resultsOrErr.value.value as USSRawValue[]))
+                referenceType = resultsOrErr.value.type.elementType
+            }
+            if (referenceType === undefined) {
+                return { type: 'error', message: `Mask is empty, cannot index value ${renderType(maskType)}` }
+            }
+            return { type: 'success', value: { type: { type: 'vector', elementType: referenceType }, value: results } }
+        case 'object':
+            return { type: 'error', message: `Cannot index with an object mask, got ${renderType(maskType)}` }
+        case 'function':
+            return { type: 'error', message: `Cannot index with a function mask, got ${renderType(maskType)}` }
+    }
+}
+
+function index(v: USSValue, i: number): USSValue {
+    const valueType = v.type
+    if (valueType.type === 'vector') {
+        const valueVector = v.value as USSRawValue[]
+        if (i < 0 || i >= valueVector.length) {
+            throw new Error(`Index ${i} out of bounds for vector of length ${valueVector.length}`)
+        }
+        return { type: valueType.elementType, value: valueVector[i] }
+    }
+    return v // If the value is not a vector, we just return it as is; broadcasting
+}
+
+function defaultValueForType(type: USSType): USSRawValue {
+    switch (type.type) {
+        case 'number':
+            return 0
+        case 'string':
+            return ''
+        case 'boolean':
+            return false
+        case 'vector':
+            return []
+        case 'object':
+            return new Map<string, USSRawValue>(Object.entries(type.properties).map(([k, v]) => [k, defaultValueForType(v)]))
+        case 'function':
+            return () => defaultValueForType(type.returnType) // Default function returns undefined
+    }
+}
+
+export function mergeValuesViaMasks(
+    values: (USSValue | undefined)[],
+    mask: USSValue,
+    references: USSPrimitiveRawValue[],
+): { type: 'success', value: USSValue | undefined } | { type: 'error', message: string } {
+    if (values.length !== references.length) {
+        throw new Error(`Expected the number of values (${values.length}) to match the number of references (${references.length})`)
+    }
+    const mType = mask.type
+    if (mType.type !== 'vector') {
+        return { type: 'error', message: `Expected a vector mask, but got ${renderType(mType)}` }
+    }
+    if (mType.elementType.type !== 'boolean' && mType.elementType.type !== 'number' && mType.elementType.type !== 'string') {
+        return { type: 'error', message: `Cannot condition on a mask of type ${renderType(mType)}` }
+    }
+    const maskVector = mask.value as USSPrimitiveRawValue[]
+    const indices = Array.from({ length: values.length }, () => 0)
+    const result: (USSValue | undefined)[] = []
+    for (let i = 0; i < maskVector.length; i++) {
+        const whichValue = references.indexOf(maskVector[i])
+        if (whichValue === -1) {
+            return { type: 'error', message: `Reference ${references[i]} not found in mask ${maskVector.map(x => JSON.stringify(x)).join(', ')}` }
+        }
+        // console.log(whichValue)
+        // console.log('values', values[whichValue])
+        // console.log('indices', indices[whichValue])
+        result.push(values[whichValue] === undefined ? undefined : index(values[whichValue], indices[whichValue]))
+        indices[whichValue]++
+    }
+    const types = result.filter(x => x !== undefined).map(x => x.type)
+    if (types.length === 0) {
+        return { type: 'success', value: undefined }
+    }
+    const firstType = types[0]
+    if (types.some(x => renderType(x) !== renderType(firstType))) {
+        const uniqueTypeReprs = Array.from(new Set(types.map(renderType))).sort()
+        return { type: 'error', message: `Cannot merge values of different types: ${uniqueTypeReprs.join(', ')}` }
+    }
+    const finalRes = result.map(
+        x => x ? x.value : defaultValueForType(firstType),
+    )
+    return {
+        type: 'success',
+        value: {
+            type: { type: 'vector', elementType: types[0] },
+            value: finalRes,
+        },
+    }
 }
