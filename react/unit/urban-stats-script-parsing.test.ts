@@ -175,6 +175,22 @@ void test('basic parsing', (): void => {
         '(expr (+ (+ (id x) (id y)) (id z)))',
     )
     assert.deepStrictEqual(
+        parseAndRender('x + y - z'),
+        '(expr (- (+ (id x) (id y)) (id z)))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x + y * z'),
+        '(expr (+ (id x) (* (id y) (id z))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x + y ** (a + b)'),
+        '(expr (+ (id x) (** (id y) (+ (id a) (id b)))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('u | x + y < z & a > b'),
+        parseAndRender('u | (((x + y) < z) & (a > b))'),
+    )
+    assert.deepStrictEqual(
         parseAndRender('/ z'),
         '(error "Cannot parse token: /" at 0:0)',
     )

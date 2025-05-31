@@ -21,7 +21,8 @@ export const infixOperatorMap = new Map<string, Operator>([
     ['>=', { precedence: 700, fn: (a: number, b: number): number => a >= b ? 1 : 0 }],
     // Logic
     ['&', { precedence: 600, fn: (a: number, b: number): number => a & b }],
-    ['|', { precedence: 600, fn: (a: number, b: number): number => a | b }],
+    // Logic
+    ['|', { precedence: 500, fn: (a: number, b: number): number => a | b }],
 ])
 
 export const infixOperators = [...infixOperatorMap.keys()]
