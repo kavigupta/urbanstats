@@ -1,7 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { USSType, USSValue, indexMask, mergeValuesViaMasks } from '../src/urban-stats-script/types-values'
+import { indexMask, mergeValuesViaMasks } from '../src/urban-stats-script/split-broadcasting'
+import { USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 import { numMatrixType, numType, numVectorType } from './urban-stats-script-utils'
 
