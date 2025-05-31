@@ -1,4 +1,4 @@
-import { AnnotatedToken, infixOperators, LocInfo } from './lexer'
+import { AnnotatedToken, infixOperatorMap, infixOperators, LocInfo } from './lexer'
 
 interface Decorated<T> {
     node: T
@@ -20,7 +20,7 @@ export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS
     | { type: 'constant', value: Decorated<number | string> }
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
-    | { type: 'infixSequence', operators: Decorated<string>[], expressions: UrbanStatsASTExpression[] }
+    | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
     | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
@@ -32,6 +32,8 @@ export type UrbanStatsASTStatement = (
 
 type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
 interface ParseError { type: 'error', message: string, location: LocInfo }
+
+type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
 function unify(...locations: (LocInfo | undefined)[]): LocInfo | undefined {
     const definedLocations = locations.filter((loc): loc is LocInfo => loc !== undefined)
@@ -64,8 +66,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
             return unify(node.name.location, locationOf(node.expr))
         case 'function':
             return unify(locationOf(node.fn), ...node.args.map(locationOf))
-        case 'infixSequence':
-            return unify(...node.operators.map(x => x.location), ...node.expressions.map(locationOf))
+        case 'binaryOperator':
+            return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
         case 'assignment':
             return unify(locationOf(node.lhs), locationOf(node.value))
         case 'expression':
@@ -106,8 +108,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(attr ${toSExp(node.expr)} ${node.name.node})`
         case 'function':
             return `(fn ${[node.fn, ...node.args].map(toSExp).join(' ')})`
-        case 'infixSequence':
-            return `(infix (${node.operators.map(x => x.node).join(' ')}) (${node.expressions.map(toSExp).join(' ')}))`
+        case 'binaryOperator':
+            return `(${node.operator.node} ${toSExp(node.left)} ${toSExp(node.right)})`
         case 'assignment':
             return `(assign ${toSExp(node.lhs)} ${toSExp(node.value)})`
         case 'expression':
@@ -300,7 +302,7 @@ class ParseState {
             return this.parseIfExpression()
         }
 
-        const operatorExpSequence: ({ type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression)[] = []
+        const operatorExpSequence: USSInfixSequenceElement[] = []
         // State Machine with states expressionOrUnaryOperator; binaryOperator
         let state: 'expressionOrUnaryOperator' | 'binaryOperator' = 'expressionOrUnaryOperator'
         loop: while (true) {
@@ -333,15 +335,56 @@ class ParseState {
                 }
             }
         }
-        const expressions: UrbanStatsASTExpression[] = operatorExpSequence.filter(x => x.type !== 'operator')
-        const operators: Decorated<string>[] = operatorExpSequence.filter(x => x.type === 'operator').map(op => op.value)
-        if (expressions.length === 1) {
-            return expressions[0]
+        return this.parseInfixSequence(operatorExpSequence)
+    }
+
+    parseInfixSequence(operatorExpSequence: USSInfixSequenceElement[]): UrbanStatsASTExpression | ParseError {
+        if (operatorExpSequence.length === 0) {
+            return { type: 'error', message: 'Expected expression', location: this.tokens[this.index - 1].location }
         }
-        return {
-            type: 'infixSequence',
-            operators,
-            expressions,
+        if (operatorExpSequence.length === 1) {
+            if (operatorExpSequence[0].type === 'operator') {
+                return { type: 'error', message: `Unexpected operator ${operatorExpSequence[0].value.node}`, location: operatorExpSequence[0].value.location }
+            }
+            return operatorExpSequence[0]
+        }
+        // Get the highest precedence operator
+        const precedences = operatorExpSequence.map(x => x.type === 'operator' ? infixOperatorMap.get(x.value.node)?.precedence ?? 0 : 0)
+        const maxPrecedence = Math.max(...precedences)
+        if (maxPrecedence === 0) {
+            return { type: 'error', message: 'No valid operator found in infix sequence', location: this.tokens[this.index - 1].location }
+        }
+        const index = precedences.findIndex(p => p === maxPrecedence)
+        if (index === -1) {
+            throw new Error('No operator found with maximum precedence; this should not happen')
+        }
+        return this.parseInfixSequence(this.resolveOperator(operatorExpSequence, index))
+    }
+
+    resolveOperator(operatorExpSequence: USSInfixSequenceElement[], index: number): USSInfixSequenceElement[] {
+        if (operatorExpSequence[index].type !== 'operator') {
+            throw new Error(`Expected operator at index ${index}, but found expression: ${JSON.stringify(operatorExpSequence[index])}`)
+        }
+        if (operatorExpSequence[index + 1].type === 'operator') {
+            return this.resolveOperator(operatorExpSequence, index + 1)
+        }
+        switch (operatorExpSequence[index].operatorType) {
+            case 'unary': {
+                throw new Error('not implemented yet')
+            }
+            case 'binary': {
+                // Split the sequence into left and right parts
+                const left = operatorExpSequence[index - 1]
+                const right = operatorExpSequence[index + 1]
+                if (left.type === 'operator' || right.type === 'operator') {
+                    throw new Error('unreachable: left or right should not be an operator')
+                }
+                return [
+                    ...operatorExpSequence.slice(0, index - 1),
+                    { type: 'binaryOperator', operator: operatorExpSequence[index].value, left, right },
+                    ...operatorExpSequence.slice(index + 2),
+                ]
+            }
         }
     }
 
@@ -352,7 +395,7 @@ class ParseState {
                 return expr
             case 'constant':
             case 'function':
-            case 'infixSequence':
+            case 'binaryOperator':
             case 'if':
                 return { type: 'error', message: 'Invalid LHS expression', location: locationOfExpr(expr) }
         }

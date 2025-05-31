@@ -61,9 +61,10 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 throw env.error(broadcastResult.message, locationOfExpr(expr))
             }
             return broadcastResult.result
-        case 'infixSequence':
-            const elements = expr.expressions.map(e => evaluate(e, env))
-            return evaluateInfixSequence(elements, expr.operators.map(x => x.node), env, locationOfExpr(expr))
+        case 'binaryOperator':
+            const left = evaluate(expr.left, env)
+            const right = evaluate(expr.right, env)
+            return evaluateBinaryOperator(left, right, expr.operator.node, env, locationOfExpr(expr))
         case 'if':
             const condition = evaluate(expr.condition, env)
             return splitMask(env, condition, (v: USSValue, subEnv: Context): USSValue => {
@@ -174,36 +175,6 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
         }
     }
     return { type: 'error' }
-}
-
-function evaluateInfixSequence(elements: USSValue[], operators: string[], env: Context, errLoc: LocInfo): USSValue {
-    if (elements.length !== operators.length + 1) {
-        throw new Error(`Invalid infix sequence: ${elements.length} elements and ${operators.length} operators`)
-    }
-    if (elements.length === 1) {
-        return elements[0]
-    }
-    const maxPrecedence = Math.max(...operators.map(op => infixOperatorMap.get(op)?.precedence ?? 0))
-    if (maxPrecedence === 0) {
-        throw new Error(`No valid operator found in infix sequence`)
-    }
-    const firstOp = operators.findIndex(op => infixOperatorMap.get(op)?.precedence === maxPrecedence)
-    if (firstOp === -1) {
-        throw new Error(`No valid operator found in infix sequence`)
-    }
-    const left = elements[firstOp]
-    const right = elements[firstOp + 1]
-    const operator = operators[firstOp]
-    const newElements = [
-        ...elements.slice(0, firstOp),
-        evaluateBinaryOperator(left, right, operator, env, errLoc),
-        ...elements.slice(firstOp + 2),
-    ]
-    const newOperators = [
-        ...operators.slice(0, firstOp),
-        ...operators.slice(firstOp + 1),
-    ]
-    return evaluateInfixSequence(newElements, newOperators, env, errLoc)
 }
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {

@@ -172,7 +172,7 @@ void test('basic parsing', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('x + y + z'),
-        '(expr (infix (+ +) ((id x) (id y) (id z))))',
+        '(expr (+ (+ (id x) (id y)) (id z)))',
     )
     assert.deepStrictEqual(
         parseAndRender('/ z'),
@@ -186,7 +186,7 @@ void test('basic parsing', (): void => {
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
         '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
     )
-    const ifStmtS = '(expr (if (infix (>) ((id x) (const 2))) (assign (id y) (const 3)) (assign (id y) (const 4))))'
+    const ifStmtS = '(expr (if (> (id x) (const 2)) (assign (id y) (const 3)) (assign (id y) (const 4))))'
     assert.deepStrictEqual(
         parseAndRender('if (x > 2) { y = 3 } else { y = 4 }'),
         ifStmtS,
@@ -215,12 +215,12 @@ void test('basic parsing', (): void => {
         `(statements ${[
             [
                 '(expr (if',
-                '(infix (<) ((id pw_density_1km) (const 1000)))',
+                '(< (id pw_density_1km) (const 1000))',
                 '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
                 '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population)) (named allow_intercept (id false))))'//
                 + '))',
             ].join(' '),
-            '(assign (attr (id regr) w0) (infix (*) ((attr (id regr) w0) (const 2))))',
+            '(assign (attr (id regr) w0) (* (attr (id regr) w0) (const 2)))',
             '(expr (attr (id regr) w0))',
         ].join(' ')})`,
     )
