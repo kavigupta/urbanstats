@@ -204,16 +204,21 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     if (uniqueValueArray.length === 0) {
         throw env.error(`Conditional mask must have at least one unique value, but got none`, errLoc)
     }
+    const maskType = mask.type
     if (uniqueValueArray.length === 1) {
         // if there is only one unique value, we can just return the result of the function
-        return fn({ type: mask.type, value: uniqueValueArray[0] }, env)
+        return fn({ type: maskType, value: uniqueValueArray[0] }, env)
+    }
+    if (maskType.type !== 'vector') {
+        throw new Error('unreachable')
     }
     const outEnvsValues = uniqueValueArray.map((value) => {
         const subEnv = indexMaskIntoContext(env, mask, value)
         if (subEnv.type === 'error') {
             throw env.error(`Error indexing mask into context: ${subEnv.message}`, errLoc)
         }
-        return [fn({ type: mask.type, value }, subEnv.value), subEnv.value] satisfies [USSValue, Context]
+        const result = fn({ type: maskType.elementType, value }, subEnv.value)
+        return [result, subEnv.value] satisfies [USSValue, Context]
     })
     const newVars = new Map<string, USSValue>()
     const allKeys = new Set<string>()
