@@ -66,6 +66,8 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
+// TODO: Attribution should be a prop, so it can be updated and control re-added
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
