@@ -17,7 +17,9 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
         type: 'error',
         message: `Expected a vector, or vector of ${predicateDescriptor} but got ${renderType(value.type)}`,
     }
-} export function locateTypeVector(
+}
+
+export function locateTypeVector(
     value: USSValue & { type: USSVectorType },
     predicate: (t: USSType) => boolean,
     predicateDescriptor: string,
@@ -46,7 +48,9 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
         }
     }
     return { type: 'success', result: [[prefixes.length, ...prefixes[0]], types[0], values] }
-} export function locateTypeObject(
+}
+
+export function locateTypeObject(
     value: USSValue & { type: USSObjectType },
     predicate: (t: USSType) => boolean,
     predicateDescriptor: string,
@@ -109,8 +113,11 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
         },
     }, predicate, predicateDescriptor)
 }
+
 export type TypeLocationSuccess = [number[], USSType, USSRawValue]
+
 export type TypeLocationResult = { type: 'success', result: TypeLocationSuccess } | BroadcastError
+
 export function locateFunctionAndArguments(
     fn: USSValue,
     posArgs: USSValue[],
@@ -159,10 +166,12 @@ export function locateFunctionAndArguments(
         result: [fnLocated, posArgsLocated, kwArgsLocated],
     }
 }
+
 export interface BroadcastError {
     type: 'error'
     message: string
 }
+
 export function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {
     /**
      * Expands the dimensions of the given values to the largest vector size, aligning the last axes.
@@ -194,6 +203,7 @@ export function expandDims(values: TypeLocationSuccess[], descriptors: string[])
     })
     return { type: 'success', result: newValues }
 }
+
 export function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRawValue {
     /**
      * Expands the dimensions of the given raw value to the given dimensions.
@@ -207,6 +217,7 @@ export function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRaw
         Array.from({ length: dims[dims.length - 1] }, () => rawValue),
     )
 }
+
 export function mapSeveral(
     fn: USSRawValue,
     posArgs: USSRawValue[],
@@ -252,6 +263,7 @@ export function mapSeveral(
         )
     })
 }
+
 export function nestedVectorType(type: USSType, depth: number): USSType {
     if (depth === 0) {
         return type
@@ -261,6 +273,7 @@ export function nestedVectorType(type: USSType, depth: number): USSType {
         elementType: nestedVectorType(type, depth - 1),
     }
 }
+
 export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [string, USSValue][], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
     /**
      * Broadcasts a function to the given arguments. The function itself can be a vector, but the types
@@ -309,6 +322,7 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
         },
     }
 }
+
 export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
     /**
      * Broadcasts a function to the given arguments. The function itself can be a vector, but the types
