@@ -300,24 +300,41 @@ class ParseState {
             return this.parseIfExpression()
         }
 
-        // return this.parseFunctionalExpression()
-        const operators: Decorated<string>[] = []
-        const expressions: UrbanStatsASTExpression[] = []
-        while (true) {
-            const expr = this.parseFunctionalExpression()
-            if (expr.type === 'error') {
-                return expr
+        const operatorExpSequence: ({ type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression)[] = []
+        // State Machine with states expressionOrUnaryOperator; binaryOperator
+        let state: 'expressionOrUnaryOperator' | 'binaryOperator' = 'expressionOrUnaryOperator'
+        loop: while (true) {
+            switch (state) {
+                case 'expressionOrUnaryOperator': {
+                    const expr = this.parseFunctionalExpression()
+                    if (expr.type === 'error') {
+                        return expr
+                    }
+                    operatorExpSequence.push(expr)
+                    state = 'binaryOperator'
+                }
+                    break
+                case 'binaryOperator': {
+                    if (this.consumeOperator(...infixOperators)) {
+                        const operator = this.tokens[this.index - 1]
+                        if (operator.token.type !== 'operator') {
+                            throw new Error('Expected operator token')
+                        }
+                        operatorExpSequence.push({
+                            type: 'operator',
+                            operatorType: 'binary',
+                            value: { node: operator.token.value, location: operator.location },
+                        })
+                        state = 'expressionOrUnaryOperator'
+                    }
+                    else {
+                        break loop
+                    }
+                }
             }
-            expressions.push(expr)
-            if (!this.consumeOperator(...infixOperators)) {
-                break
-            }
-            const operator = this.tokens[this.index - 1]
-            if (operator.token.type !== 'operator') {
-                throw new Error('Expected operator token')
-            }
-            operators.push({ node: operator.token.value, location: operator.location })
         }
+        const expressions: UrbanStatsASTExpression[] = operatorExpSequence.filter(x => x.type !== 'operator')
+        const operators: Decorated<string>[] = operatorExpSequence.filter(x => x.type === 'operator').map(op => op.value)
         if (expressions.length === 1) {
             return expressions[0]
         }
@@ -427,7 +444,7 @@ export function parse(tokens: AnnotatedToken[]): UrbanStatsASTStatement | ParseE
     const state = new ParseState(tokens)
     const stmts = state.parseStatements()
     if (state.index < state.tokens.length) {
-        return { type: 'error', message: 'Unexpected tokens at end of input', location: state.tokens[state.index].location }
+        return { type: 'error', message: `Cannot parse token: ${state.tokens[state.index].token.value}`, location: state.tokens[state.index].location }
     }
     return stmts
 }

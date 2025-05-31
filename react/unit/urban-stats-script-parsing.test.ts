@@ -175,6 +175,14 @@ void test('basic parsing', (): void => {
         '(expr (infix (+ +) ((id x) (id y) (id z))))',
     )
     assert.deepStrictEqual(
+        parseAndRender('/ z'),
+        '(error "Cannot parse token: /" at 0:0)',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x + y + / z'),
+        '(error "Cannot parse token: /" at 0:8)',
+    )
+    assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
         '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
     )
