@@ -141,7 +141,8 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
         if (!(val instanceof Map)) {
             throw new Error(`Expected object type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
         }
-        if (type.properties[attr] === undefined) {
+        const aT = type.properties.get(attr)
+        if (aT === undefined) {
             return {
                 type: 'error',
             }
@@ -150,7 +151,7 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
             return {
                 type: 'success',
                 value: {
-                    type: type.properties[attr],
+                    type: aT,
                     value: val.get(attr)!,
                 },
             }

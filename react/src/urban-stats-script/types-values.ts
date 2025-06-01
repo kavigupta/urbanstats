@@ -22,7 +22,7 @@ interface USSNullType {
 
 export interface USSObjectType {
     type: 'object'
-    properties: Record<string, USSType>
+    properties: Map<string, USSType>
 }
 
 export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
@@ -91,7 +91,7 @@ export function renderType(type: USSType): string {
         return `[${renderType(type.elementType)}]`
     }
     if (type.type === 'object') {
-        return `{${Object.entries(type.properties).map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
+        return `{${[...type.properties.entries()].map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
     }
     if (type.type === 'null') {
         return 'null'

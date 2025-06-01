@@ -164,10 +164,10 @@ void test('evaluate function calls', (): void => {
     env.set('objs', {
         type: {
             type: 'object',
-            properties: {
-                u: numType,
-                v: numVectorType,
-            },
+            properties: new Map<string, USSType>([
+                ['u', numType],
+                ['v', numVectorType],
+            ]),
         } satisfies USSType,
         value: new Map<string, USSRawValue>([
             ['u', 100],

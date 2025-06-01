@@ -8,7 +8,13 @@ export const boolType = { type: 'boolean' } satisfies USSType
 export const stringType = { type: 'string' } satisfies USSType
 export const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
 export const numMatrixType = { type: 'vector', elementType: numVectorType } satisfies USSType
-export const multiObjType = { type: 'object', properties: { a: numType, b: numVectorType } } satisfies USSType
+export const multiObjType = {
+    type: 'object',
+    properties: new Map<string, USSType>([
+        ['a', numType],
+        ['b', numVectorType],
+    ]),
+} satisfies USSType
 export const multiObjVectorType = {
     type: 'vector',
     elementType: multiObjType,
@@ -21,10 +27,10 @@ export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], named
 
 export const testObjType = {
     type: 'object',
-    properties: {
-        u: numType,
-        v: numType,
-    },
+    properties: new Map<string, USSType>([
+        ['u', numType],
+        ['v', numType],
+    ]),
 } satisfies USSType
 
 export const multiArgFnType = {

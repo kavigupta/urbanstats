@@ -51,14 +51,14 @@ void test('broadcasting-locate-type', (): void => {
     assert.deepStrictEqual(
         locateType(
             { type: multiObjType, value: new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]) },
-            t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
+            t => renderType(t) === renderType({ type: 'object', properties: new Map([['a', numType], ['b', numType]]) }),
             'object with properties {a: number, b: number}',
         ),
         {
             type: 'success',
             result: [
                 [3],
-                { type: 'object', properties: { a: numType, b: numType } },
+                { type: 'object', properties: new Map([['a', numType], ['b', numType]]) },
                 [
                     new Map<string, USSRawValue>([['a', 1], ['b', 1]]),
                     new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
@@ -76,14 +76,14 @@ void test('broadcasting-locate-type', (): void => {
                     new Map<string, USSRawValue>([['a', 6], ['b', [4, 5, 6]]]),
                 ],
             },
-            t => renderType(t) === renderType({ type: 'object', properties: { a: numType, b: numType } }),
+            t => renderType(t) === renderType({ type: 'object', properties: new Map([['a', numType], ['b', numType]]) }),
             'object with properties {a: number, b: number}',
         ),
         {
             type: 'success',
             result: [
                 [2, 3],
-                { type: 'object', properties: { a: numType, b: numType } },
+                { type: 'object', properties: new Map([['a', numType], ['b', numType]]) },
                 [
                     [
                         new Map<string, USSRawValue>([['a', 1], ['b', 1]]),

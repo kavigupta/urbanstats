@@ -10,7 +10,7 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
     if (overallType.type === 'vector') {
         return locateTypeVector(value as USSValue & { type: USSVectorType }, predicate, predicateDescriptor)
     }
-    if (overallType.type === 'object' && Object.values(overallType.properties).some(t => t.type === 'vector')) {
+    if (overallType.type === 'object' && [...overallType.properties.values()].some(t => t.type === 'vector')) {
         return locateTypeObject(value as USSValue & { type: USSObjectType }, predicate, predicateDescriptor)
     }
     return {
@@ -55,7 +55,7 @@ function locateTypeObject(
     predicate: (t: USSType) => boolean,
     predicateDescriptor: string,
 ): TypeLocationResult {
-    const toBroadcast = Object.entries(value.type.properties).filter(([, t]) => t.type === 'vector').map(([k]) => k)
+    const toBroadcast = [...value.type.properties.entries()].filter(([, t]) => t.type === 'vector').map(([k]) => k)
     if (toBroadcast.length === 0) {
         throw new Error(`Expected an object with at least one vector property, but got ${renderType(value.type)}`)
     }
@@ -98,8 +98,8 @@ function locateTypeObject(
             type: 'vector',
             elementType: {
                 type: 'object',
-                properties: Object.fromEntries(
-                    Object.entries(value.type.properties).map(
+                properties: new Map(
+                    [...value.type.properties.entries()].map(
                         ([k, t]) => [
                             k,
                             (toBroadcast.includes(k)
