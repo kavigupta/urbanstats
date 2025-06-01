@@ -65,6 +65,12 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyCtx),
         { type: boolType, value: true },
     )
+    assert.throws(
+        () => evaluate(parseExpr('2(3)'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got number'
+        },
+    )
 })
 void test('evaluate basic variable expressions', (): void => {
     const env = new Map<string, USSValue>()
@@ -182,6 +188,48 @@ void test('evaluate function calls', (): void => {
                 [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
                 [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
             ],
+        },
+    )
+    env.set('objsBoth', {
+        type: {
+            type: 'object',
+            properties: new Map<string, USSType>([
+                ['u', numVectorType],
+                ['v', numVectorType],
+            ]),
+        } satisfies USSType,
+        value: new Map<string, USSRawValue>([
+            ['u', [100, 101]],
+            ['v', [200, 300]],
+        ]),
+    })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBoth)'), emptyCtx),
+        {
+            type: numMatrixType,
+            value: [
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 101, 300],
+            ],
+        },
+    )
+    env.set('objsBothRagged', {
+        type: {
+            type: 'object',
+            properties: new Map<string, USSType>([
+                ['u', numVectorType],
+                ['v', numVectorType],
+            ]),
+        } satisfies USSType,
+        value: new Map<string, USSRawValue>([
+            ['u', [100, 101]],
+            ['v', [200]],
+        ]),
+    })
+    assert.throws(
+        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Object properties u, v have different lengths (2, 1), cannot be broadcasted'
         },
     )
 })

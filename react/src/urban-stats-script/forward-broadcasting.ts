@@ -74,7 +74,7 @@ function locateTypeObject(
     if (firstDims.some(x => x !== firstDims[0])) {
         return {
             type: 'error',
-            message: `Object properties ${toBroadcast.join(', ')} have different lengths, cannot be broadcasted`,
+            message: `Object properties ${toBroadcast.join(', ')} have different lengths (${firstDims.join(', ')}), cannot be broadcasted`,
         }
     }
     const newRawValues: Map<string, USSRawValue>[] = []
