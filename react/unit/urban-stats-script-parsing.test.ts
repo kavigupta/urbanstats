@@ -293,4 +293,8 @@ void test('basic parsing', (): void => {
         parseAndRender(multiLineIfBody),
         '(expr (if (> (id x) (const 2)) (statements (assign (id y) (const 3)) (assign (id z) (const 2))) (assign (id y) (const 4))))',
     )
+    assert.deepStrictEqual(
+        parseAndRender('if (x) {}'),
+        '(expr (if (id x) (statements )))',
+    )
 })

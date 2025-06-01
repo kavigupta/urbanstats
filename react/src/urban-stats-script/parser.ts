@@ -22,7 +22,7 @@ export type UrbanStatsASTExpression = (
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
     | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
     | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
-    | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
+    | { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
 export type UrbanStatsASTStatement = (
@@ -42,9 +42,9 @@ function unify(...locations: (LocInfo | undefined)[]): LocInfo | undefined {
         return undefined
     }
     const startLine = definedLocations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
-    const endLine = definedLocations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), Number.MIN_VALUE)
+    const endLine = definedLocations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
     const startCol = definedLocations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
-    const endCol = definedLocations.reduce((max, loc) => Math.max(max, loc.end.colIdx), Number.MIN_VALUE)
+    const endCol = definedLocations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
     return {
         start: { lineIdx: startLine, colIdx: startCol },
         end: { lineIdx: endLine, colIdx: endCol },
@@ -76,11 +76,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
         case 'statements':
             return unify(...node.result.map(locationOf))
         case 'if':
-            const branches = [locationOf(node.condition), locationOf(node.then)]
-            if (node.else) {
-                branches.push(locationOf(node.else))
-            }
-            return unify(...branches)
+            return node.entireLoc
     }
 }
 
@@ -447,6 +443,7 @@ class ParseState {
     }
 
     parseIfExpression(): UrbanStatsASTExpression | ParseError {
+        const ifToken = this.tokens[this.index - 1]
         if (!this.consumeBracket('(')) {
             return { type: 'error', message: 'Expected opening bracket ( after if', location: this.tokens[this.index - 1].location }
         }
@@ -475,8 +472,10 @@ class ParseState {
             }
             elseBranch = eb
         }
+        const lastToken = this.tokens[this.index - 1]
         return {
             type: 'if',
+            entireLoc: unify(ifToken.location, lastToken.location)!,
             condition,
             then,
             else: elseBranch,

@@ -8,10 +8,23 @@ import { renderType, USSValue, ValueArg } from './types-values'
 
 export type Effect = undefined
 
+function renderLocInfo(loc: LocInfo): string {
+    if (loc.start.lineIdx === loc.end.lineIdx) {
+        if (loc.start.colIdx + 1 === loc.end.colIdx) {
+            // Single character location
+            return `${loc.start.lineIdx + 1}:${loc.start.colIdx + 1}`
+        }
+        return `${loc.start.lineIdx + 1}:${loc.start.colIdx + 1}-${loc.end.colIdx}`
+    }
+    return `${loc.start.lineIdx + 1}:${loc.start.colIdx + 1} - ${loc.end.lineIdx + 1}:${loc.end.colIdx}`
+}
+
 export class InterpretationError extends Error {
+    public shortMessage: string
     constructor(message: string, public location: LocInfo) {
-        super(message)
+        super(`${message} at ${renderLocInfo(location)}`)
         this.name = 'InterpretationError'
+        this.shortMessage = message
         this.location = location
     }
 }
@@ -99,6 +112,12 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
         case 'expression':
             return evaluate(expr.value, env)
         case 'statements':
+            if (expr.result.length === 0) {
+                return {
+                    type: { type: 'null' },
+                    value: null,
+                }
+            }
             let result: USSValue = execute(expr.result[0], env)
             for (const statement of expr.result.slice(1)) {
                 result = execute(statement, env)
@@ -193,7 +212,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
     const operatorObj = expressionOperatorMap.get(operator)
-    assert (operatorObj?.binary !== undefined, `Unknown operator: ${operator}`, errLoc)
+    assert (operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
     const res = broadcastApply(
         operatorObj.binary(operator, errLoc),
         [left, right],
