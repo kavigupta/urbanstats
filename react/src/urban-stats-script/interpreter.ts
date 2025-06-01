@@ -1,3 +1,5 @@
+import { assert } from '../utils/defensive'
+
 import { broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
@@ -112,8 +114,6 @@ export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context
             env.variables.set(varName, value)
             return
         case 'attribute':
-            // const obj = evaluate(lhs.expr, env)
-            // const attr = lhs.name.node
             throw new Error('not implemented: attribute assignment')
     }
 }
@@ -138,31 +138,26 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
     const type = obj.type
     if (type.type === 'object') {
         const val = obj.value
-        if (!(val instanceof Map)) {
-            throw new Error(`Expected object type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
-        }
+        assert(val instanceof Map, `Expected object type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
         const aT = type.properties.get(attr)
         if (aT === undefined) {
             return {
                 type: 'error',
             }
         }
-        if (val.has(attr)) {
-            return {
-                type: 'success',
-                value: {
-                    type: aT,
-                    value: val.get(attr)!,
-                },
-            }
+        const content = val.get(attr)
+        assert(content !== undefined, `Expected attribute ${attr} to be defined in object, but got undefined at ${JSON.stringify(obj.value)}`)
+        return {
+            type: 'success',
+            value: {
+                type: aT,
+                value: val.get(attr)!,
+            },
         }
-        throw new Error(`Attribute ${attr} not found in object; expected one of ${Array.from(val.keys())} at ${JSON.stringify(obj.value)}`)
     }
     if (type.type === 'vector') {
         const val = obj.value
-        if (!(val instanceof Array)) {
-            throw new Error(`Expected vector type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
-        }
+        assert(val instanceof Array, `Expected vector type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
         const resultsOrErr = val.map(x => attrLookup({ value: x, type: type.elementType }, attr))
         if (resultsOrErr.some(r => r.type === 'error')) {
             return { type: 'error' }
@@ -183,9 +178,7 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
 
 function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
     const operatorObj = expressionOperatorMap.get(operator)
-    if (operatorObj?.unary === undefined) {
-        throw env.error(`Unknown operator: ${operator}`, errLoc)
-    }
+    assert(operatorObj?.unary !== undefined, `Unknown operator: ${operator}`)
     const res = broadcastApply(
         operatorObj.unary(operator, errLoc),
         [operand],
@@ -200,9 +193,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
     const operatorObj = expressionOperatorMap.get(operator)
-    if (operatorObj?.binary === undefined) {
-        throw env.error(`Unknown operator: ${operator}`, errLoc)
-    }
+    assert (operatorObj?.binary !== undefined, `Unknown operator: ${operator}`, errLoc)
     const res = broadcastApply(
         operatorObj.binary(operator, errLoc),
         [left, right],

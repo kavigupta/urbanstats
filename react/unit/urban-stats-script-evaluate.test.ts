@@ -71,6 +71,18 @@ void test('evaluate basic expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got number'
         },
     )
+    assert.throws(
+        () => evaluate(parseExpr('2 + "3"'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Invalid types for operator +: number and string'
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('+ "2"'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string'
+        },
+    )
 })
 void test('evaluate basic variable expressions', (): void => {
     const env = new Map<string, USSValue>()
@@ -84,6 +96,36 @@ void test('evaluate basic variable expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('y + x'), emptyCtx),
         { type: numMatrixType, value: [[11, 22, 33], [41, 52, 63]] },
+    )
+    env.set('z', { type: numVectorType, value: [10, 20, 30, 40] })
+    assert.throws(
+        () => evaluate(parseExpr('y + z'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Incompatibility between the shape of positional argument 2 (4) and the shape of positional argument 1 (2, 3)'
+        },
+    )
+    env.set('s', { type: { type: 'vector', elementType: stringType }, value: ['hello'] })
+    assert.throws(
+        () => evaluate(parseExpr('+ s'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string'
+        },
+    )
+    env.set('obj', {
+        type: testObjType,
+        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
+    })
+    assert.throws(
+        () => evaluate(parseExpr('obj + 1'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Expected positional argument 1 to be a any (or vector thereof) but got {u: number, v: number}'
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('+ obj'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Expected positional argument 1 to be a any (or vector thereof) but got {u: number, v: number}'
+        },
     )
 })
 
@@ -132,6 +174,12 @@ void test('evaluate attr accesses', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('objs2.u'), emptyCtx),
         { type: { type: 'vector', elementType: numVectorType }, value: [[101, 301], [501, 701]] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('objs2.a'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Attribute a not found in object of type [[{u: number, v: number}]]'
+        },
     )
 })
 
@@ -254,6 +302,12 @@ void test('evaluate if expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), emptyCtx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('if (xs) { ys = xs + 1 } else { ys = xs - 2 }'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Condition in if statement must be a boolean, but got number'
+        },
     )
 })
 
