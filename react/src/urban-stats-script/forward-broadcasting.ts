@@ -1,3 +1,5 @@
+import { assert } from '../utils/defensive'
+
 import { Context } from './interpreter'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
 
@@ -61,18 +63,12 @@ function locateTypeObject(
     predicateDescriptor: PredicateDescriptor,
 ): TypeLocationResult {
     const toBroadcast = [...value.type.properties.entries()].filter(([, t]) => t.type === 'vector').map(([k]) => k)
-    if (toBroadcast.length === 0) {
-        throw new Error(`Expected an object with at least one vector property, but got ${renderType(value.type)}`)
-    }
+    assert(toBroadcast.length !== 0, `Expected an object with at least one vector property, but got ${renderType(value.type)}`)
     const rawValue = value.value as Map<string, USSRawValue>
     const firstDims = toBroadcast.map((k) => {
         const subValue = rawValue.get(k)
-        if (subValue === undefined) {
-            throw new Error(`Expected object to have property ${k}, but it is undefined`)
-        }
-        if (typeof subValue !== 'object' || !Array.isArray(subValue)) {
-            throw new Error(`Expected object property ${k} to be a vector, but got ${typeof subValue}`)
-        }
+        assert(subValue !== undefined, `Expected object to have property ${k}, but it is undefined`)
+        assert(typeof subValue === 'object' && Array.isArray(subValue), `Expected object property ${k} to be a vector, but got ${typeof subValue}`)
         return subValue.length
     })
     if (firstDims.some(x => x !== firstDims[0])) {
@@ -90,9 +86,7 @@ function locateTypeObject(
                 continue
             }
             const subValue = rawValue.get(k)
-            if (subValue === undefined || !Array.isArray(subValue)) {
-                throw new Error(`Expected object to have property ${k} as a vector, but it is undefined or not a vector`)
-            }
+            assert(subValue !== undefined && Array.isArray(subValue), `Expected object to have property ${k} as a vector, but it is undefined or not a vector`)
             newRawValue.set(k, subValue[i])
         }
         newRawValues.push(newRawValue)
@@ -134,9 +128,7 @@ function locateFunctionAndArguments(
     }
     const fnLocated = fnLocatedOrError.result
     const fnType = fnLocated[1]
-    if (fnType.type !== 'function') {
-        throw new Error(`Expected a function type, but got ${renderType(fnType)}`)
-    }
+    assert(fnType.type === 'function', `Expected a function type, but got ${renderType(fnType)}`)
     if (fnType.posArgs.length !== posArgs.length) {
         return {
             type: 'error',
@@ -235,27 +227,19 @@ function mapSeveral(
      * The function is expected to be a function that takes the positional and keyword arguments.
      */
     if (depth === 0) {
-        if (typeof fn !== 'function') {
-            throw new Error(`Expected a function, but got ${typeof fn}`)
-        }
+        assert(typeof fn === 'function', `Expected a function, but got ${typeof fn}`)
         return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>) => USSRawValue)(
             ctx, posArgs, Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v])),
         )
     }
-    if (!Array.isArray(fn)) {
-        throw new Error(`Expected an array of functions, but got ${typeof fn}`)
-    }
+    assert(Array.isArray(fn), `Expected an array of functions, but got ${typeof fn}`)
     return Array.from({ length: fn.length }, (_, i) => {
         const posArgsI = posArgs.map((x) => {
-            if (!Array.isArray(x)) {
-                throw new Error(`Expected an array of positional arguments, but got ${typeof x}`)
-            }
+            assert(Array.isArray(x), `Expected an array of positional arguments, but got ${typeof x}`)
             return x[i]
         })
         const kwArgsI = kwArgs.map((x) => {
-            if (!Array.isArray(x)) {
-                throw new Error(`Expected an array of keyword arguments, but got ${typeof x}`)
-            }
+            assert(Array.isArray(x), `Expected an array of keyword arguments, but got ${typeof x}`)
             return x[i]
         })
         return mapSeveral(
