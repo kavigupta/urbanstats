@@ -186,16 +186,21 @@ void test('evaluate function calls', (): void => {
     )
 })
 
-// void test('evaluate if expressions', (): void => {
-//     const env = new Map<string, USSValue>()
-//     const emptyCtx: Context = testingContext([], [], env)
-//     env.set('x', { type: numType, value: 3 })
-//     assert.deepStrictEqual(
-//         evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), emptyCtx),
-//         { type: numType, value: 1 },
-//     )
-//     assert.deepStrictEqual(
-//         evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), emptyCtx),
-//         { type: numType, value: 2 },
-//     )
-// })
+void test('evaluate if expressions', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    env.set('x', { type: numType, value: 3 })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), emptyCtx),
+        { type: numType, value: 1 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), emptyCtx),
+        { type: numType, value: 2 },
+    )
+    env.set('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { xs + 1 } else { xs - 2 }'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+    )
+})
