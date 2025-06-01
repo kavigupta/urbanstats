@@ -1,3 +1,5 @@
+import { assert } from '../utils/defensive'
+
 import { AnnotatedToken, expressionOperatorMap, infixOperators, lex, LocInfo, unaryOperators } from './lexer'
 
 interface Decorated<T> {
@@ -19,7 +21,7 @@ export type UrbanStatsASTLHS = (
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS
     | { type: 'constant', value: Decorated<number | string> }
-    | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
+    | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo }
     | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
     | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
     | { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
@@ -28,7 +30,7 @@ export type UrbanStatsASTExpression = (
 export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
     | { type: 'expression', value: UrbanStatsASTExpression }
-    | { type: 'statements', result: UrbanStatsASTStatement[] }
+    | { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement[] }
 )
 
 type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
@@ -36,25 +38,22 @@ interface ParseError { type: 'error', message: string, location: LocInfo }
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
-function unify(...locations: (LocInfo | undefined)[]): LocInfo | undefined {
-    const definedLocations = locations.filter((loc): loc is LocInfo => loc !== undefined)
-    if (definedLocations.length === 0) {
-        return undefined
-    }
-    const startLine = definedLocations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
-    const endLine = definedLocations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
-    const startCol = definedLocations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
-    const endCol = definedLocations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
+function unify(...locations: LocInfo[]): LocInfo {
+    assert(locations.length > 0, 'At least one location must be provided for unification')
+    const startLine = locations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
+    const endLine = locations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
+    const startCol = locations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
+    const endCol = locations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
     return {
         start: { lineIdx: startLine, colIdx: startCol },
         end: { lineIdx: endLine, colIdx: endCol },
     }
 }
 
-export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
+export function locationOf(node: UrbanStatsAST): LocInfo {
     switch (node.type) {
         case 'unnamed':
-            return undefined
+            return locationOf(node.value)
         case 'named':
             return unify(node.name.location, locationOf(node.value))
         case 'constant':
@@ -64,7 +63,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
         case 'attribute':
             return unify(node.name.location, locationOf(node.expr))
         case 'function':
-            return unify(locationOf(node.fn), ...node.args.map(locationOf))
+            return node.entireLoc
         case 'unaryOperator':
             return unify(node.operator.location, locationOf(node.expr))
         case 'binaryOperator':
@@ -74,18 +73,10 @@ export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
         case 'expression':
             return locationOf(node.value)
         case 'statements':
-            return unify(...node.result.map(locationOf))
+            return node.entireLoc
         case 'if':
             return node.entireLoc
     }
-}
-
-export function locationOfExpr(expr: UrbanStatsASTExpression): LocInfo {
-    const loc = locationOf(expr)
-    if (loc === undefined) {
-        throw new Error('Location is undefined; this should not happen')
-    }
-    return loc
 }
 
 export function toSExp(node: UrbanStatsAST): string {
@@ -226,7 +217,7 @@ class ParseState {
             return expr
         }
         if (exprOrName.type !== 'identifier') {
-            return { type: 'error', message: 'Expected identifier for named argument', location: locationOfExpr(exprOrName) }
+            return { type: 'error', message: 'Expected identifier for named argument', location: locationOf(exprOrName) }
         }
         return {
             type: 'named',
@@ -235,14 +226,16 @@ class ParseState {
         }
     }
 
-    parseParenthesizedArgs(): { type: 'args', args: UrbanStatsASTArg[] } | ParseError | undefined {
+    parseParenthesizedArgs(): { type: 'args', args: [UrbanStatsASTArg[], LocInfo] } | ParseError | undefined {
         if (!this.consumeBracket('(')) {
             return undefined
         }
+        const startLoc = this.tokens[this.index - 1].location
         const args: UrbanStatsASTArg[] = []
         while (true) {
             if (this.consumeBracket(')')) {
-                return { type: 'args', args }
+                const endLoc = this.tokens[this.index - 1].location
+                return { type: 'args', args: [args, unify(startLoc, endLoc)] }
             }
             if (args.length > 0 && !this.consumeOperator(',')) {
                 return { type: 'error', message: `Expected comma , or closing bracket ); instead received ${this.tokens[this.index].token.value}`, location: this.tokens[this.index].location }
@@ -271,7 +264,8 @@ class ParseState {
                 fn = {
                     type: 'function',
                     fn,
-                    args: args.args,
+                    entireLoc: unify(locationOf(fn), args.args[1]),
+                    args: args.args[0],
                 }
             }
             if (this.consumeOperator('.')) {
@@ -419,7 +413,7 @@ class ParseState {
             case 'unaryOperator':
             case 'binaryOperator':
             case 'if':
-                return { type: 'error', message: 'Invalid LHS expression', location: locationOfExpr(expr) }
+                return { type: 'error', message: 'Invalid LHS expression', location: locationOf(expr) }
         }
     }
 
@@ -475,7 +469,7 @@ class ParseState {
         const lastToken = this.tokens[this.index - 1]
         return {
             type: 'if',
-            entireLoc: unify(ifToken.location, lastToken.location)!,
+            entireLoc: unify(ifToken.location, lastToken.location),
             condition,
             then,
             else: elseBranch,
@@ -504,7 +498,12 @@ class ParseState {
         if (statements.length === 1) {
             return statements[0]
         }
-        return { type: 'statements', result: statements }
+        const entireLoc: LocInfo = statements.length > 0
+            ? unify(...statements.map(locationOf))
+            : this.index > 0
+                ? this.tokens[this.index - 1].location
+                : { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } }
+        return { type: 'statements', result: statements, entireLoc }
     }
 }
 

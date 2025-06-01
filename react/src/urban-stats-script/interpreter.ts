@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
-import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
+import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
 import { renderType, USSValue, ValueArg } from './types-values'
 
@@ -65,7 +65,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const attr = expr.name.node
             const lookupResult = attrLookup(obj, attr)
             if (lookupResult.type === 'error') {
-                throw env.error(`Attribute ${attr} not found in object of type ${renderType(obj.type)}`, locationOfExpr(expr))
+                throw env.error(`Attribute ${attr} not found in object of type ${renderType(obj.type)}`, locationOf(expr))
             }
             return lookupResult.value
         case 'function':
@@ -73,21 +73,21 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const args = expr.args.map(arg => evaluateArg(arg, env))
             const broadcastResult = broadcastCall(func, args, env)
             if (broadcastResult.type === 'error') {
-                throw env.error(broadcastResult.message, locationOfExpr(expr))
+                throw env.error(broadcastResult.message, locationOf(expr))
             }
             return broadcastResult.result
         case 'unaryOperator':
             const operand = evaluate(expr.expr, env)
-            return evaluateUnaryOperator(operand, expr.operator.node, env, locationOfExpr(expr))
+            return evaluateUnaryOperator(operand, expr.operator.node, env, locationOf(expr))
         case 'binaryOperator':
             const left = evaluate(expr.left, env)
             const right = evaluate(expr.right, env)
-            return evaluateBinaryOperator(left, right, expr.operator.node, env, locationOfExpr(expr))
+            return evaluateBinaryOperator(left, right, expr.operator.node, env, locationOf(expr))
         case 'if':
             const condition = evaluate(expr.condition, env)
             return splitMask(env, condition, (v: USSValue, subEnv: Context): USSValue => {
                 if (v.type.type !== 'boolean') {
-                    throw env.error(`Condition in if statement must be a boolean, but got ${renderType(v.type)}`, locationOfExpr(expr.condition))
+                    throw env.error(`Condition in if statement must be a boolean, but got ${renderType(v.type)}`, locationOf(expr.condition))
                 }
                 if (v.value) {
                     return execute(expr.then, subEnv)
@@ -99,7 +99,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                     }
                 }
                 return execute(expr.else, subEnv)
-            }, locationOfExpr(expr))
+            }, locationOf(expr))
     }
 }
 

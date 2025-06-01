@@ -68,7 +68,7 @@ void test('evaluate basic expressions', (): void => {
     assert.throws(
         () => evaluate(parseExpr('2(3)'), emptyCtx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got number at 1:1'
+            return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got number at 1:1-4'
         },
     )
     assert.throws(
@@ -278,7 +278,7 @@ void test('evaluate function calls', (): void => {
     assert.throws(
         () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), emptyCtx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Object properties u, v have different lengths (2, 1), cannot be broadcasted at 1:1-42'
+            return err instanceof InterpretationError && err.message === 'Object properties u, v have different lengths (2, 1), cannot be broadcasted at 1:1-43'
         },
     )
 })
@@ -362,9 +362,9 @@ void test('evaluate if expressions mutations', (): void => {
         { type: { type: 'null' }, value: null },
     )
     assert.throws(
-        () => evaluate(parseExpr('(if (1 == 1) { })()'), emptyCtx),
+        () => evaluate(parseExpr('2 + (if (1 == 1) { })() + 3'), emptyCtx),
         function (err: Error): boolean {
-            return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got null at 1:2-16'
+            return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got null at 1:6-23'
         },
     )
 })
