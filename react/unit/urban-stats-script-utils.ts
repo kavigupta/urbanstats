@@ -63,8 +63,7 @@ export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, l
 }
 
 export function parseExpr(input: string): UrbanStatsASTExpression {
-    const lexed = lex(input)
-    const parsed = parse(lexed)
+    const parsed = parse(input)
     if (parsed.type !== 'expression') {
         throw new Error(`Expected an expression, but got ${JSON.stringify(parsed)}`)
     }

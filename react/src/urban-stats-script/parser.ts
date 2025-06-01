@@ -1,4 +1,4 @@
-import { AnnotatedToken, expressionOperatorMap, infixOperators, LocInfo } from './lexer'
+import { AnnotatedToken, expressionOperatorMap, infixOperators, lex, LocInfo, unaryOperators } from './lexer'
 
 interface Decorated<T> {
     node: T
@@ -21,6 +21,7 @@ export type UrbanStatsASTExpression = (
     | { type: 'constant', value: Decorated<number | string> }
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[] }
     | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
+    | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
     | { type: 'if', condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
@@ -108,6 +109,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(attr ${toSExp(node.expr)} ${node.name.node})`
         case 'function':
             return `(fn ${[node.fn, ...node.args].map(toSExp).join(' ')})`
+        case 'unaryOperator':
+            return `(${node.operator.node} ${toSExp(node.expr)})`
         case 'binaryOperator':
             return `(${node.operator.node} ${toSExp(node.left)} ${toSExp(node.right)})`
         case 'assignment':
@@ -308,12 +311,26 @@ class ParseState {
         loop: while (true) {
             switch (state) {
                 case 'expressionOrUnaryOperator': {
-                    const expr = this.parseFunctionalExpression()
-                    if (expr.type === 'error') {
-                        return expr
+                    if (this.consumeOperator(...unaryOperators)) {
+                        const operator = this.tokens[this.index - 1]
+                        if (operator.token.type !== 'operator') {
+                            throw new Error('Expected operator token')
+                        }
+                        operatorExpSequence.push({
+                            type: 'operator',
+                            operatorType: 'unary',
+                            value: { node: operator.token.value, location: operator.location },
+                        })
+                        continue
                     }
-                    operatorExpSequence.push(expr)
-                    state = 'binaryOperator'
+                    else {
+                        const expr = this.parseFunctionalExpression()
+                        if (expr.type === 'error') {
+                            return expr
+                        }
+                        operatorExpSequence.push(expr)
+                        state = 'binaryOperator'
+                    }
                 }
                     break
                 case 'binaryOperator': {
@@ -370,7 +387,15 @@ class ParseState {
         }
         switch (operatorExpSequence[index].operatorType) {
             case 'unary': {
-                throw new Error('not implemented yet')
+                const expr = operatorExpSequence[index + 1]
+                if (expr.type === 'operator') {
+                    return this.resolveOperator(operatorExpSequence, index + 1)
+                }
+                return [
+                    ...operatorExpSequence.slice(0, index),
+                    { type: 'unaryOperator', operator: operatorExpSequence[index].value, expr },
+                    ...operatorExpSequence.slice(index + 2),
+                ]
             }
             case 'binary': {
                 // Split the sequence into left and right parts
@@ -395,6 +420,7 @@ class ParseState {
                 return expr
             case 'constant':
             case 'function':
+            case 'unaryOperator':
             case 'binaryOperator':
             case 'if':
                 return { type: 'error', message: 'Invalid LHS expression', location: locationOfExpr(expr) }
@@ -483,11 +509,20 @@ class ParseState {
     }
 }
 
-export function parse(tokens: AnnotatedToken[]): UrbanStatsASTStatement | ParseError {
+export function parse(code: string): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+    const tokens = lex(code)
+    const lexErrors = tokens.filter(token => token.token.type === 'error')
+    if (lexErrors.length > 0) {
+        return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', message: `Unrecognized token: ${token.token.value}`, location: token.location })) }
+    }
     const state = new ParseState(tokens)
     const stmts = state.parseStatements()
+    if (stmts.type === 'error') {
+        return { type: 'error', errors: [stmts] }
+    }
     if (state.index < state.tokens.length) {
-        return { type: 'error', message: `Cannot parse token: ${state.tokens[state.index].token.value}`, location: state.tokens[state.index].location }
+        const error = { type: 'error', message: `Cannot parse token: ${state.tokens[state.index].token.value}`, location: state.tokens[state.index].location } satisfies ParseError
+        return { type: 'error', errors: [error] }
     }
     return stmts
 }

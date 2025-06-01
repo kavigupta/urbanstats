@@ -109,9 +109,10 @@ void test('various lexes', (): void => {
 })
 
 function parseAndRender(input: string): string {
-    const res = parse(lex(input))
+    const res = parse(input)
     if (res.type === 'error') {
-        return `(error ${JSON.stringify(res.message)} at ${res.location.lineIdx}:${res.location.startIdx})`
+        const renderedErrors = res.errors.map(err => `(error ${JSON.stringify(err.message)} at ${err.location.lineIdx}:${err.location.startIdx})`)
+        return `(errors ${renderedErrors.join(' ')})`
     }
     return toSExp(res)
 }
@@ -127,7 +128,7 @@ regr.w0 = regr.w0 * 2; regr.w0
 
 void test('basic parsing', (): void => {
     assert.deepStrictEqual(
-        parse(lex('x = 2')),
+        parse('x = 2'),
         {
             type: 'assignment',
             lhs: { type: 'identifier', name: { node: 'x', location: { lineIdx: 0, startIdx: 0, endIdx: 1 } } },
@@ -192,12 +193,49 @@ void test('basic parsing', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('/ z'),
-        '(error "Cannot parse token: /" at 0:0)',
+        '(errors (error "Unexpected operator /" at 0:0))',
     )
     assert.deepStrictEqual(
         parseAndRender('x + y + / z'),
-        '(error "Cannot parse token: /" at 0:8)',
+        '(errors (error "Unexpected operator /" at 0:8))',
     )
+    assert.deepStrictEqual(
+        parseAndRender('x + -y'),
+        '(expr (+ (id x) (- (id y))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x + -y * z'),
+        parseAndRender('x + (- (y * z))'),
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x * -y + z'),
+        parseAndRender('x * (- y) + z'),
+    )
+    assert.deepStrictEqual(
+        parseAndRender('--y'),
+        '(errors (error "Unrecognized token: Invalid operator: --" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('- -y'),
+        parseAndRender('(- (- y))'),
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x * - -y + z'),
+        parseAndRender(' x * (- (- y)) + z'),
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x * - - - +y + z'),
+        parseAndRender(' x * (- (- (- (+y)))) + z'),
+    )
+    assert.deepStrictEqual(
+        parseAndRender('! x > 0'),
+        parseAndRender(' ! (x > 0)'),
+    )
+
+    // assert.deepStrictEqual(
+    //     parseAndRender('(x * ----y) + z'),
+    //     parseAndRender('x * (-(-(-(- y)))) + z'),
+    // )
     assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
         '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
