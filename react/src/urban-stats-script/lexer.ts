@@ -89,7 +89,12 @@ export const infixOperatorMap = new Map<string, Operator>([
     ['*', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]) }],
     ['/', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]) }],
     // AS
-    ['+', { precedence: 800, binary: binaryOperator([numericBinaryOperation((a, b) => a + b)]) }],
+    ['+', { precedence: 800,
+        binary: binaryOperator([
+            numericBinaryOperation((a, b) => a + b),
+            { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
+        ]),
+    }],
     ['-', { precedence: 800, binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]) }],
     // Comparators
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency

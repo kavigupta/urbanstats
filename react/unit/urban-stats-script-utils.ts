@@ -5,6 +5,7 @@ import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-
 
 export const numType = { type: 'number' } satisfies USSType
 export const boolType = { type: 'boolean' } satisfies USSType
+export const stringType = { type: 'string' } satisfies USSType
 export const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
 export const numMatrixType = { type: 'vector', elementType: numVectorType } satisfies USSType
 export const multiObjType = { type: 'object', properties: { a: numType, b: numVectorType } } satisfies USSType

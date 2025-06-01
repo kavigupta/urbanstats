@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { Context, evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
     const env = new Map<string, USSValue>()
@@ -32,6 +32,30 @@ void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('2 > 3'), emptyCtx),
         { type: boolType, value: false },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('12 > 3'), emptyCtx),
+        { type: boolType, value: true },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('"12" > "3"'), emptyCtx),
+        { type: boolType, value: false },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('"abc" + "def"'), emptyCtx),
+        { type: stringType, value: 'abcdef' },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('"abc" + "def" + "ghi"'), emptyCtx),
+        { type: stringType, value: 'abcdefghi' },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 + 3 > 4'), emptyCtx),
+        { type: boolType, value: true },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyCtx),
+        { type: boolType, value: true },
     )
 })
 void test('evaluate basic variable expressions', (): void => {
