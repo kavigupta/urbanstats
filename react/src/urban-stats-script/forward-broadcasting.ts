@@ -1,7 +1,12 @@
 import { Context } from './interpreter'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
 
-export function locateType(value: USSValue, predicate: (t: USSType) => boolean, predicateDescriptor: string): TypeLocationResult {
+interface PredicateDescriptor {
+    role: string
+    typeDesc: string
+}
+
+export function locateType(value: USSValue, predicate: (t: USSType) => boolean, predicateDescriptor: PredicateDescriptor): TypeLocationResult {
     if (predicate(value.type)) {
         // cast is safe because we checked the type
         return { type: 'success', result: [[], value.type, value.value] }
@@ -15,14 +20,14 @@ export function locateType(value: USSValue, predicate: (t: USSType) => boolean, 
     }
     return {
         type: 'error',
-        message: `Expected a vector, or vector of ${predicateDescriptor} but got ${renderType(value.type)}`,
+        message: `Expected ${predicateDescriptor.role} to be a ${predicateDescriptor.typeDesc} (or vector thereof) but got ${renderType(value.type)}`,
     }
 }
 
 function locateTypeVector(
     value: USSValue & { type: USSVectorType },
     predicate: (t: USSType) => boolean,
-    predicateDescriptor: string,
+    predicateDescriptor: PredicateDescriptor,
 ): TypeLocationResult {
     const subtypesOrErrors = (value as { type: USSVectorType, value: USSRawValue[] }).value.map(fn => locateType({
         type: value.type.elementType,
@@ -38,10 +43,10 @@ function locateTypeVector(
     if (prefixes.some(x => JSON.stringify(x) !== JSON.stringify(prefixes[0]))) {
         return {
             type: 'error',
-            message: `Ragged array cannot be broadcasted`,
+            message: `Jagged vector (nested vector where not all are the same length) cannot be broadcasted`,
         }
     }
-    if (types.some(x => JSON.stringify(x) !== JSON.stringify(types[0]))) {
+    if (types.some(x => renderType(x) !== renderType(types[0]))) {
         return {
             type: 'error',
             message: `Array of different types cannot be broadcasted: ${types.map(renderType).join(', ')}`,
@@ -53,7 +58,7 @@ function locateTypeVector(
 function locateTypeObject(
     value: USSValue & { type: USSObjectType },
     predicate: (t: USSType) => boolean,
-    predicateDescriptor: string,
+    predicateDescriptor: PredicateDescriptor,
 ): TypeLocationResult {
     const toBroadcast = [...value.type.properties.entries()].filter(([, t]) => t.type === 'vector').map(([k]) => k)
     if (toBroadcast.length === 0) {
@@ -123,7 +128,7 @@ function locateFunctionAndArguments(
     posArgs: USSValue[],
     kwArgs: [string, USSValue][],
 ): { type: 'success', result: [TypeLocationSuccess, TypeLocationSuccess[], TypeLocationSuccess[]] } | BroadcastError {
-    const fnLocatedOrError = locateType(fn, t => t.type === 'function', 'function')
+    const fnLocatedOrError = locateType(fn, t => t.type === 'function', { role: 'function', typeDesc: 'function' })
     if (fnLocatedOrError.type === 'error') {
         return fnLocatedOrError
     }
@@ -141,12 +146,12 @@ function locateFunctionAndArguments(
     if (JSON.stringify(Object.keys(fnType.namedArgs).sort()) !== JSON.stringify(kwArgs.map(x => x[0]).sort())) {
         return {
             type: 'error',
-            message: `Function expects arguments named ${Object.keys(fnType.namedArgs).join(', ')}, but received ${kwArgs.map(x => x[0]).join(', ')}`,
+            message: `Function expects arguments named ${Object.keys(fnType.namedArgs).join(', ')}, but received [${kwArgs.map(x => x[0]).join(', ')}]`,
         }
     }
     const posArgsLocated: TypeLocationSuccess[] = []
     for (let i = 0; i < fnType.posArgs.length; i++) {
-        const posArgLocated = locateType(posArgs[i], t => unifyFunctionArgType(fnType.posArgs[i], t), `positional argument ${i + 1} of type ${renderArgumentType(fnType.posArgs[i])}`)
+        const posArgLocated = locateType(posArgs[i], t => unifyFunctionArgType(fnType.posArgs[i], t), { role: `positional argument ${i + 1}`, typeDesc: renderArgumentType(fnType.posArgs[i]) })
         if (posArgLocated.type === 'error') {
             return posArgLocated
         }
@@ -155,7 +160,7 @@ function locateFunctionAndArguments(
 
     const kwArgsLocated: TypeLocationSuccess[] = []
     for (const [name, value] of kwArgs) {
-        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name], t), `named argument ${name} of type ${renderArgumentType(fnType.namedArgs[name])}`)
+        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name], t), { role: `named argument ${name}`, typeDesc: renderArgumentType(fnType.namedArgs[name]) })
         if (kwArgLocated.type === 'error') {
             return kwArgLocated
         }
@@ -192,7 +197,7 @@ function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { typ
         if (!prefix.every((x, j) => x === maximalExpansionSize[j + off])) {
             return {
                 type: 'error',
-                message: `Cannot broadcast ${descriptors[i]} with prefix ${prefix.join(', ')} to shaape ${maximalExpansionSize.join(', ')} of ${descriptors[maximalExpansionIdx]}`,
+                message: `Incompatibility between the shape of ${descriptors[i]} (${prefix.join(', ')}) and the shape of ${descriptors[maximalExpansionIdx]} (${maximalExpansionSize.join(', ')})`,
             }
         }
     }
@@ -292,7 +297,7 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
     }
     let [fnLocated, posArgsLocated, kwArgsLocated] = result.result
     let allTogether = [fnLocated, ...posArgsLocated, ...kwArgsLocated]
-    const descriptors = ['function', ...posArgsLocated.map((x, i) => `positional argument ${i + 1}`), ...kwArgsLocated.map(x => `named argument ${x[0]}`)]
+    const descriptors = ['function', ...posArgsLocated.map((x, i) => `positional argument ${i + 1}`), ...kwArgs.map(x => `named argument ${x[0]}`)]
     const allTogetherOrErr = expandDims(allTogether, descriptors)
     if (allTogetherOrErr.type === 'error') {
         return allTogetherOrErr
