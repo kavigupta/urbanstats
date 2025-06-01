@@ -324,7 +324,6 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     }
     let result: string
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- we check on the next line
         const resultObj: unknown = JSON.parse(input.slice(start, idx))
         if (typeof resultObj !== 'string') {
             throw new Error(`Invalid string: ${input.slice(start, idx)}`)
