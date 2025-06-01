@@ -41,16 +41,14 @@ function unify(...locations: (LocInfo | undefined)[]): LocInfo | undefined {
     if (definedLocations.length === 0) {
         return undefined
     }
-    const start = definedLocations.reduce((min, loc) => Math.min(min, loc.startIdx), Number.MAX_VALUE)
-    const end = definedLocations.reduce((max, loc) => Math.max(max, loc.endIdx), Number.MIN_VALUE)
-
-    if (definedLocations.some(loc => loc.lineIdx !== definedLocations[0].lineIdx)) {
-        // TODO!! handle multiple lines
-        // log here to fail lint so we fix this
-        console.log('Warning: multiple lines in unify')
-        throw new Error('Multiple lines in unify')
+    const startLine = definedLocations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
+    const endLine = definedLocations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), Number.MIN_VALUE)
+    const startCol = definedLocations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
+    const endCol = definedLocations.reduce((max, loc) => Math.max(max, loc.end.colIdx), Number.MIN_VALUE)
+    return {
+        start: { lineIdx: startLine, colIdx: startCol },
+        end: { lineIdx: endLine, colIdx: endCol },
     }
-    return { lineIdx: definedLocations[0].lineIdx, startIdx: start, endIdx: end }
 }
 
 export function locationOf(node: UrbanStatsAST): LocInfo | undefined {

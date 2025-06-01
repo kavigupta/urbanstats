@@ -152,10 +152,14 @@ interface BracketToken { type: 'bracket', value: string }
 interface ErrorToken { type: 'error', value: string }
 type Token = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken | ErrorToken
 
-export interface LocInfo {
+interface SingleLocation {
     lineIdx: number
-    startIdx: number
-    endIdx: number
+    colIdx: number
+}
+
+export interface LocInfo {
+    start: SingleLocation
+    end: SingleLocation
 }
 
 export interface AnnotatedToken {
@@ -222,9 +226,8 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
                 location: {
-                    lineIdx: lineNo,
-                    startIdx: idx,
-                    endIdx: idx + 1,
+                    start: { lineIdx: lineNo, colIdx: idx },
+                    end: { lineIdx: lineNo, colIdx: idx + 1 },
                 },
             }
             tokens.push(token)
@@ -248,9 +251,8 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         tokens.push({
             token: { type: 'error', value: `Unexpected character: ${char}` },
             location: {
-                lineIdx: lineNo,
-                startIdx: idx,
-                endIdx: idx + 1,
+                start: { lineIdx: lineNo, colIdx: idx },
+                end: { lineIdx: lineNo, colIdx: idx + 1 },
             },
         })
         idx++
@@ -268,9 +270,8 @@ export function lex(input: string): AnnotatedToken[] {
         tokens.push({
             token: { type: 'operator', value: 'EOL' },
             location: {
-                lineIdx: i,
-                startIdx: line.length,
-                endIdx: line.length,
+                start: { lineIdx: i, colIdx: line.length },
+                end: { lineIdx: i, colIdx: line.length },
             },
         })
     }
@@ -294,9 +295,8 @@ function lexGeneric(
     const token: AnnotatedToken = {
         token: lexer.parse(input.slice(start, idx)),
         location: {
-            lineIdx: lineNo,
-            startIdx: start,
-            endIdx: idx,
+            start: { lineIdx: lineNo, colIdx: start },
+            end: { lineIdx: lineNo, colIdx: idx },
         },
     }
     return [idx, token]
@@ -310,7 +310,7 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     idx++
     while (true) {
         if (idx >= input.length) {
-            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { lineIdx: lineNo, startIdx: start, endIdx: idx } }]
+            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
         }
         if (input[idx] === '"') {
             idx++
@@ -331,14 +331,13 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         result = resultObj
     }
     catch {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, location: { lineIdx: lineNo, startIdx: start, endIdx: idx } }]
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
         location: {
-            lineIdx: lineNo,
-            startIdx: start,
-            endIdx: idx,
+            start: { lineIdx: lineNo, colIdx: start },
+            end: { lineIdx: lineNo, colIdx: idx },
         },
     }
     return [idx, token]

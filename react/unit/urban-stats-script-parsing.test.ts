@@ -6,27 +6,27 @@ import { parse, toSExp } from '../src/urban-stats-script/parser'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
-        { token: { type: 'number', value: 1 }, location: { lineIdx: 0, startIdx: 0, endIdx: 1 } },
-        { token: { type: 'number', value: 23 }, location: { lineIdx: 0, startIdx: 2, endIdx: 4 } },
-        { token: { type: 'number', value: 3.3 }, location: { lineIdx: 0, startIdx: 5, endIdx: 8 } },
-        { token: { type: 'operator', value: 'EOL' }, location: { lineIdx: 0, startIdx: 8, endIdx: 8 } },
+        { token: { type: 'number', value: 1 }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } },
+        { token: { type: 'number', value: 23 }, location: { start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 4 } } },
+        { token: { type: 'number', value: 3.3 }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 8 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 8 }, end: { lineIdx: 0, colIdx: 8 } } },
     ])
     assert.deepStrictEqual(lex('"abc"'), [
-        { token: { type: 'string', value: 'abc' }, location: { lineIdx: 0, startIdx: 0, endIdx: 5 } },
-        { token: { type: 'operator', value: 'EOL' }, location: { lineIdx: 0, startIdx: 5, endIdx: 5 } },
+        { token: { type: 'string', value: 'abc' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 5 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 5 } } },
     ])
     assert.deepStrictEqual(lex('"abc\\""'), [
-        { token: { type: 'string', value: 'abc"' }, location: { lineIdx: 0, startIdx: 0, endIdx: 7 } },
-        { token: { type: 'operator', value: 'EOL' }, location: { lineIdx: 0, startIdx: 7, endIdx: 7 } },
+        { token: { type: 'string', value: 'abc"' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 7 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 7 }, end: { lineIdx: 0, colIdx: 7 } } },
     ])
     assert.deepStrictEqual(lex('f(2, "abc \\" 3.5")'), [
-        { token: { type: 'identifier', value: 'f' }, location: { lineIdx: 0, startIdx: 0, endIdx: 1 } },
-        { token: { type: 'bracket', value: '(' }, location: { lineIdx: 0, startIdx: 1, endIdx: 2 } },
-        { token: { type: 'number', value: 2 }, location: { lineIdx: 0, startIdx: 2, endIdx: 3 } },
-        { token: { type: 'operator', value: ',' }, location: { lineIdx: 0, startIdx: 3, endIdx: 4 } },
-        { token: { type: 'string', value: 'abc " 3.5' }, location: { lineIdx: 0, startIdx: 5, endIdx: 17 } },
-        { token: { type: 'bracket', value: ')' }, location: { lineIdx: 0, startIdx: 17, endIdx: 18 } },
-        { token: { type: 'operator', value: 'EOL' }, location: { lineIdx: 0, startIdx: 18, endIdx: 18 } },
+        { token: { type: 'identifier', value: 'f' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } },
+        { token: { type: 'bracket', value: '(' }, location: { start: { lineIdx: 0, colIdx: 1 }, end: { lineIdx: 0, colIdx: 2 } } },
+        { token: { type: 'number', value: 2 }, location: { start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 3 } } },
+        { token: { type: 'operator', value: ',' }, location: { start: { lineIdx: 0, colIdx: 3 }, end: { lineIdx: 0, colIdx: 4 } } },
+        { token: { type: 'string', value: 'abc " 3.5' }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 17 } } },
+        { token: { type: 'bracket', value: ')' }, location: { start: { lineIdx: 0, colIdx: 17 }, end: { lineIdx: 0, colIdx: 18 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 18 }, end: { lineIdx: 0, colIdx: 18 } } },
     ])
 })
 
@@ -35,7 +35,10 @@ function shortFormLex(input: string): (string | number | [string | number, strin
     const lexedTokens = lex(input)
     const result: (string | number | [string | number, string])[] = []
     for (const token of lexedTokens) {
-        const original = lines[token.location.lineIdx].slice(token.location.startIdx, token.location.endIdx)
+        if (token.location.start.lineIdx !== token.location.end.lineIdx) {
+            throw new Error(`Unexpected multi-line token: ${JSON.stringify(token)}`)
+        }
+        const original = lines[token.location.start.lineIdx].slice(token.location.start.colIdx, token.location.end.colIdx)
         const valueStr = token.token.value.toString()
         if (original !== valueStr) {
             result.push([token.token.value, original])
@@ -111,7 +114,7 @@ void test('various lexes', (): void => {
 function parseAndRender(input: string): string {
     const res = parse(input)
     if (res.type === 'error') {
-        const renderedErrors = res.errors.map(err => `(error ${JSON.stringify(err.message)} at ${err.location.lineIdx}:${err.location.startIdx})`)
+        const renderedErrors = res.errors.map(err => `(error ${JSON.stringify(err.message)} at ${err.location.start.lineIdx}:${err.location.start.colIdx})`)
         return `(errors ${renderedErrors.join(' ')})`
     }
     return toSExp(res)
@@ -131,8 +134,8 @@ void test('basic parsing', (): void => {
         parse('x = 2'),
         {
             type: 'assignment',
-            lhs: { type: 'identifier', name: { node: 'x', location: { lineIdx: 0, startIdx: 0, endIdx: 1 } } },
-            value: { type: 'constant', value: { node: 2, location: { lineIdx: 0, startIdx: 4, endIdx: 5 } } },
+            lhs: { type: 'identifier', name: { node: 'x', location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } } },
+            value: { type: 'constant', value: { node: 2, location: { start: { lineIdx: 0, colIdx: 4 }, end: { lineIdx: 0, colIdx: 5 } } } },
         },
     )
     assert.deepStrictEqual(
