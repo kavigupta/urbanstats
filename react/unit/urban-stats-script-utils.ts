@@ -1,5 +1,5 @@
 import { Context, Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { lex, LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse, UrbanStatsASTExpression } from '../src/urban-stats-script/parser'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 

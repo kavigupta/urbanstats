@@ -203,4 +203,39 @@ void test('evaluate if expressions', (): void => {
         evaluate(parseExpr('if (xs <= 2) { xs + 1 } else { xs - 2 }'), emptyCtx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+})
+
+void test('evaluate if expressions mutations', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    emptyCtx.variables.set('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 } else { ys = xs - 2 }'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('ys'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+    )
+    emptyCtx.variables.set('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('ys'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 300, 400, 500, 600] }, // ys is mutated only for the first two elements
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { zs = xs + 1 }'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('zs'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
 })

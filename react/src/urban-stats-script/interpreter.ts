@@ -2,7 +2,7 @@ import { broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
-import { renderType, USSRawValue, USSValue, ValueArg } from './types-values'
+import { renderType, USSValue, ValueArg } from './types-values'
 
 export type Effect = undefined
 
