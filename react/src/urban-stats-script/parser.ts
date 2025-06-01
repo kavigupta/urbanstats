@@ -1,4 +1,4 @@
-import { AnnotatedToken, infixOperatorMap, infixOperators, LocInfo } from './lexer'
+import { AnnotatedToken, expressionOperatorMap, infixOperators, LocInfo } from './lexer'
 
 interface Decorated<T> {
     node: T
@@ -349,7 +349,7 @@ class ParseState {
             return operatorExpSequence[0]
         }
         // Get the highest precedence operator
-        const precedences = operatorExpSequence.map(x => x.type === 'operator' ? infixOperatorMap.get(x.value.node)?.precedence ?? 0 : 0)
+        const precedences = operatorExpSequence.map(x => x.type === 'operator' ? expressionOperatorMap.get(x.value.node)?.precedence ?? 0 : 0)
         const maxPrecedence = Math.max(...precedences)
         if (maxPrecedence === 0) {
             return { type: 'error', message: 'No valid operator found in infix sequence', location: this.tokens[this.index - 1].location }

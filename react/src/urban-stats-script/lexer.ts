@@ -82,7 +82,7 @@ function booleanOperation(fn: (a: boolean, b: boolean) => boolean): BinaryOperat
     }
 }
 
-export const infixOperatorMap = new Map<string, Operator>([
+export const expressionOperatorMap = new Map<string, Operator>([
     // E
     ['**', { precedence: 1000, binary: binaryOperator([numericBinaryOperation((a, b) => Math.pow(a, b))]) }],
     // MD
@@ -110,8 +110,8 @@ export const infixOperatorMap = new Map<string, Operator>([
     ['|', { precedence: 500, binary: binaryOperator([booleanOperation((a, b) => a || b)]) }],
 ])
 
-export const infixOperators = [...infixOperatorMap.keys()]
-const operators = [...infixOperators, '=', ',', ';', '.']
+export const infixOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.binary !== undefined).map(([op]) => op)
+const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
 interface NumericToken { type: 'number', value: number }

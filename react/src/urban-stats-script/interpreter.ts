@@ -1,5 +1,5 @@
 import { broadcastApply, broadcastCall } from './forward-broadcasting'
-import { infixOperatorMap, LocInfo } from './lexer'
+import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOfExpr, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
 import { renderType, USSRawValue, USSValue, ValueArg } from './types-values'
@@ -178,7 +178,7 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
 }
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
-    const operatorObj = infixOperatorMap.get(operator)
+    const operatorObj = expressionOperatorMap.get(operator)
     if (operatorObj?.binary === undefined) {
         throw env.error(`Unknown operator: ${operator}`, errLoc)
     }
