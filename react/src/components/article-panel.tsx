@@ -18,7 +18,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
-import { WithPlot } from './plots'
+import { RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
@@ -85,7 +85,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
                         <div style={{ width: '70%' }}>
-                            <ComparisonSearchBox longname={article.longname} />
+                            <ComparisonSearchBox longname={article.longname} type={article.articleType} />
                         </div>
                     </div>
 
@@ -99,7 +99,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     )
 }
 
-function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
+function ComparisonSearchBox({ longname, type }: { longname: string, type: string }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
     return (
@@ -112,6 +112,7 @@ function ComparisonSearchBox({ longname }: { longname: string }): ReactNode {
                 longnames: [longname, x],
             }, { scroll: { kind: 'position', top: 0 } })}
             autoFocus={false}
+            prioritizeArticleType={type}
         />
     )
 }
@@ -133,7 +134,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
     const navContext = useContext(Navigator.Context)
 
     return (
-        <WithPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} expanded={expanded ?? false}>
+        <>
             <TableRowContainer index={props.index}>
                 <StatisticRowCells
                     totalWidth={100}
@@ -149,6 +150,13 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                     simpleOrdinals={simpleOrdinals}
                 />
             </TableRowContainer>
-        </WithPlot>
+            {expanded
+                ? (
+                        <div style={{ width: '100%', position: 'relative' }}>
+                            <RenderedPlot plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} />
+                        </div>
+                    )
+                : null}
+        </>
     )
 }
