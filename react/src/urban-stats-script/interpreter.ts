@@ -61,6 +61,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 throw env.error(broadcastResult.message, locationOfExpr(expr))
             }
             return broadcastResult.result
+        case 'unaryOperator':
+            const operand = evaluate(expr.expr, env)
+            return evaluateUnaryOperator(operand, expr.operator.node, env, locationOfExpr(expr))
         case 'binaryOperator':
             const left = evaluate(expr.left, env)
             const right = evaluate(expr.right, env)
@@ -175,6 +178,23 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
         }
     }
     return { type: 'error' }
+}
+
+function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
+    const operatorObj = expressionOperatorMap.get(operator)
+    if (operatorObj?.unary === undefined) {
+        throw env.error(`Unknown operator: ${operator}`, errLoc)
+    }
+    const res = broadcastApply(
+        operatorObj.unary(operator, errLoc),
+        [operand],
+        [],
+        env,
+    )
+    if (res.type === 'error') {
+        throw env.error(res.message, errLoc)
+    }
+    return res.result
 }
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {

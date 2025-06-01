@@ -67,6 +67,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo | undefined {
             return unify(node.name.location, locationOf(node.expr))
         case 'function':
             return unify(locationOf(node.fn), ...node.args.map(locationOf))
+        case 'unaryOperator':
+            return unify(node.operator.location, locationOf(node.expr))
         case 'binaryOperator':
             return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
         case 'assignment':

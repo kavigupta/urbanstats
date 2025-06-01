@@ -30,6 +30,14 @@ void test('evaluate basic expressions', (): void => {
         { type: numType, value: 55 },
     )
     assert.deepStrictEqual(
+        evaluate(parseExpr('2 ** -10'), emptyCtx),
+        { type: numType, value: 1 / 1024 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('-2 ** 10'), emptyCtx),
+        { type: numType, value: -1024 },
+    )
+    assert.deepStrictEqual(
         evaluate(parseExpr('2 > 3'), emptyCtx),
         { type: boolType, value: false },
     )
