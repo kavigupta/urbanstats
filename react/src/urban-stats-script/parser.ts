@@ -462,26 +462,20 @@ class ParseState {
         if (!this.consumeBracket('{')) {
             return { type: 'error', message: 'Expected opening bracket { after if condition', location: this.tokens[this.index - 1].location }
         }
-        const then = this.parseStatement()
+        const then = this.parseStatements(() => this.consumeBracket('}'))
         if (then.type === 'error') {
             return then
-        }
-        if (!this.consumeBracket('}')) {
-            return { type: 'error', message: 'Expected closing bracket } after if then statement', location: this.tokens[this.index - 1].location }
         }
         let elseBranch: UrbanStatsASTStatement | undefined = undefined
         if (this.consumeIdentifier('else')) {
             if (!this.consumeBracket('{')) {
                 return { type: 'error', message: 'Expected opening bracket { after else', location: this.tokens[this.index - 1].location }
             }
-            const eb = this.parseStatement()
+            const eb = this.parseStatements(() => this.consumeBracket('}'))
             if (eb.type === 'error') {
                 return eb
             }
             elseBranch = eb
-            if (!this.consumeBracket('}')) {
-                return { type: 'error', message: 'Expected closing bracket } after else statement', location: this.tokens[this.index - 1].location }
-            }
         }
         return {
             type: 'if',
@@ -491,18 +485,24 @@ class ParseState {
         }
     }
 
-    parseStatements(): UrbanStatsASTStatement | ParseError {
+    parseStatements(end: () => boolean = () => false): UrbanStatsASTStatement | ParseError {
         const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
+            if (end()) {
+                break
+            }
             const statement = this.parseStatement()
             if (statement.type === 'error') {
                 return statement
+            }
+            statements.push(statement)
+            if (end()) {
+                break
             }
             if (!this.consumeOperator('EOL', ';')) {
                 return { type: 'error', message: 'Expected end of line or ; after', location: this.tokens[this.index - 1].location }
             }
             while (this.skipEOL()) {}
-            statements.push(statement)
         }
         if (statements.length === 1) {
             return statements[0]

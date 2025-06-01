@@ -238,4 +238,16 @@ void test('evaluate if expressions mutations', (): void => {
         evaluate(parseExpr('zs'), emptyCtx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('if (xs <= 2) { as = xs + 1; bs = as ** 2 }'), emptyCtx),
+        { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('as'), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('bs'), emptyCtx),
+        { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
+    )
 })

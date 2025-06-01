@@ -278,4 +278,16 @@ void test('basic parsing', (): void => {
             '(expr (attr (id regr) w0))',
         ].join(' ')})`,
     )
+    const multiLineIfBody = `
+    if (x > 2) {
+        y = 3
+        z = 2
+    } else {
+        y = 4
+    }
+    `
+    assert.deepStrictEqual(
+        parseAndRender(multiLineIfBody),
+        '(expr (if (> (id x) (const 2)) (statements (assign (id y) (const 3)) (assign (id z) (const 2))) (assign (id y) (const 4))))',
+    )
 })
