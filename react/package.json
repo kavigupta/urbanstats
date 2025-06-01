@@ -10,7 +10,8 @@
     "lint": "eslint . --fix --ignore-pattern=src/data --cache --max-warnings=0",
     "lint:ci": "eslint . --ignore-pattern=src/data --max-warnings=0",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
-    "test:unit": "c8 --reporter=text --reporter=clover tsx unit/scripts/run-unit-tests.ts"
+    "test:unit": "c8 --reporter=text --reporter=clover tsx unit/scripts/run-unit-tests.ts",
+    "test:ciunit": "tsx unit/scripts/run-unit-tests.ts"
   },
   "keywords": [],
   "author": "",
