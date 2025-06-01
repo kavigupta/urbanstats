@@ -117,3 +117,24 @@ export type ValueArg = (
     { type: 'unnamed', value: USSValue } |
     { type: 'named', name: string, value: USSValue }
 )
+
+export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType {
+    if (depth === 0) {
+        if (typeof value === 'number') {
+            return { type: 'number' }
+        }
+        if (typeof value === 'string') {
+            return { type: 'string' }
+        }
+        if (typeof value === 'boolean') {
+            return { type: 'boolean' }
+        }
+        if (value === null) {
+            return { type: 'null' }
+        }
+    }
+    if (!Array.isArray(value)) {
+        throw new Error(`Expected a primitive value, but got ${typeof value}`)
+    }
+    return getPrimitiveType(value[0], depth - 1)
+}

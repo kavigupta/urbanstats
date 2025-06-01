@@ -1,5 +1,5 @@
 import { Context } from './interpreter'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
 
 export function locateType(value: USSValue, predicate: (t: USSType) => boolean, predicateDescriptor: string): TypeLocationResult {
     if (predicate(value.type)) {
@@ -323,27 +323,6 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
             value: resulting,
         },
     }
-}
-
-function getPrimitiveType(value: USSRawValue, depth: number): USSType {
-    if (depth === 0) {
-        if (typeof value === 'number') {
-            return { type: 'number' }
-        }
-        if (typeof value === 'string') {
-            return { type: 'string' }
-        }
-        if (typeof value === 'boolean') {
-            return { type: 'boolean' }
-        }
-        if (value === null) {
-            return { type: 'null' }
-        }
-    }
-    if (!Array.isArray(value)) {
-        throw new Error(`Expected a primitive value, but got ${typeof value}`)
-    }
-    return getPrimitiveType(value[0], depth - 1)
 }
 
 export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {

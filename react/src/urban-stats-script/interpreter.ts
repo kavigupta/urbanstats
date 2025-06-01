@@ -183,7 +183,7 @@ function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: strin
         throw env.error(`Unknown operator: ${operator}`, errLoc)
     }
     const res = broadcastApply(
-        operatorObj.binary,
+        operatorObj.binary(operator, errLoc),
         [left, right],
         [],
         env,
