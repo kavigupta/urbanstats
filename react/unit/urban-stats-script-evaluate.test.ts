@@ -421,4 +421,10 @@ void test('evaluate objects', (): void => {
         evaluate(parseExpr('{a: 1, b: 2}.a'), emptyCtx),
         { type: numType, value: 1 },
     )
+    assert.throws(
+        () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:1-20'
+        },
+    )
 })
