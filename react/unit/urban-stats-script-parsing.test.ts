@@ -418,3 +418,26 @@ void test('object literal', (): void => {
         '(errors (error "Expected identifier for object field name" at 0:16))',
     )
 })
+
+void test('vector literal', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('[1, 2, 3]'),
+        '(expr (vector (const 1) (const 2) (const 3)))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('[[2]]'),
+        '(expr (vector (vector (const 2))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('[[]]'),
+        '(expr (vector (vector )))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('[1, 2, 3'),
+        '(errors (error "Expected comma , or closing bracket ] after vector element" at 0:8))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('[1, 2, 3*]'),
+        '(errors (error "Unexpected bracket ]" at 0:9))',
+    )
+})

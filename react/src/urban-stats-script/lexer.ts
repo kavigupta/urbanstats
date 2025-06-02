@@ -150,7 +150,7 @@ interface NumericToken { type: 'number', value: number }
 interface IdentifierToken { type: 'identifier', value: string }
 interface StringToken { type: 'string', value: string }
 interface OperatorToken { type: 'operator', value: string }
-interface BracketToken { type: 'bracket', value: '(' | ')' | '{' | '}' }
+interface BracketToken { type: 'bracket', value: '(' | ')' | '{' | '}' | '[' | ']' }
 interface ErrorToken { type: 'error', value: string }
 type NonErrorToken = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken
 type Token = NonErrorToken | ErrorToken
@@ -223,7 +223,7 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             idx++
             continue
         }
-        if (char === '(' || char === ')' || char === '{' || char === '}') {
+        if (char === '(' || char === ')' || char === '{' || char === '}' || char === '[' || char === ']') {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
                 location: {

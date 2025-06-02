@@ -4,7 +4,7 @@ import { broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
-import { renderType, USSRawValue, USSType, USSValue, ValueArg } from './types-values'
+import { renderType, unifyType, USSRawValue, USSType, USSValue, ValueArg } from './types-values'
 
 export type Effect = undefined
 
@@ -83,6 +83,19 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const left = evaluate(expr.left, env)
             const right = evaluate(expr.right, env)
             return evaluateBinaryOperator(left, right, expr.operator.node, env, locationOf(expr))
+        case 'vectorLiteral':
+            const elements = expr.elements.map(e => evaluate(e, env))
+            let elementType = { type: 'elementOfEmptyVector' } as USSType | { type: 'elementOfEmptyVector' }
+            for (const e of elements) {
+                elementType = unifyType(elementType, e.type, () => {
+                    assert(elementType.type !== 'elementOfEmptyVector', `Unreachable: elementType should not be elementOfEmptyVector at ${JSON.stringify(e.value)}`)
+                    return env.error(`vector literal contains heterogenous types ${renderType(elementType)} and ${renderType(e.type)}`, locationOf(expr))
+                })
+            }
+            return {
+                type: { type: 'vector', elementType },
+                value: elements.map(e => e.value),
+            }
         case 'objectLiteral':
             const ts = new Map<string, USSType>()
             const vs = new Map<string, USSRawValue>()
@@ -195,7 +208,10 @@ function attrLookup(obj: USSValue, attr: string): { type: 'success', value: USSV
     if (type.type === 'vector') {
         const val = obj.value
         assert(val instanceof Array, `Expected vector type because of ${renderType(type)}, but got ${typeof val} at ${JSON.stringify(obj.value)}`)
-        const resultsOrErr = val.map(x => attrLookup({ value: x, type: type.elementType }, attr))
+        const resultsOrErr = val.map((x) => {
+            assert(type.elementType.type !== 'elementOfEmptyVector', `Unreachable: elementType should not be elementOfEmptyVector at ${JSON.stringify(obj.value)}`)
+            return attrLookup({ value: x, type: type.elementType }, attr)
+        })
         if (resultsOrErr.some(r => r.type === 'error')) {
             return { type: 'error' }
         }

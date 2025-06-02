@@ -31,8 +31,15 @@ function locateTypeVector(
     predicate: (t: USSType) => boolean,
     predicateDescriptor: PredicateDescriptor,
 ): TypeLocationResult {
+    const t = value.type.elementType
+    if (t.type === 'elementOfEmptyVector') {
+        return {
+            type: 'error',
+            message: `${predicateDescriptor.role} is an empty vector whose type cannot be inferred`,
+        }
+    }
     const subtypesOrErrors = (value as { type: USSVectorType, value: USSRawValue[] }).value.map(fn => locateType({
-        type: value.type.elementType,
+        type: t,
         value: fn,
     }, predicate, predicateDescriptor))
     if (subtypesOrErrors.some(x => x.type === 'error')) {
@@ -91,23 +98,31 @@ function locateTypeObject(
         }
         newRawValues.push(newRawValue)
     }
+    const r: [string, USSType][] = []
+    for (const [k, t] of value.type.properties.entries()) {
+        if (!toBroadcast.includes(k)) {
+            r.push([k, t])
+            continue
+        }
+        assert(t.type === 'vector', `Expected object property ${k} to be a vector, but got ${renderType(t)}`)
+        if (t.elementType.type === 'elementOfEmptyVector') {
+            return {
+                type: 'error',
+                message: `Cannot broadcast object property ${k} because its type is an empty vector with no inferred type`,
+            }
+        }
+        r.push([
+            k,
+            t.elementType,
+        ])
+    }
     return locateType({
         value: newRawValues,
         type: {
             type: 'vector',
             elementType: {
                 type: 'object',
-                properties: new Map(
-                    [...value.type.properties.entries()].map(
-                        ([k, t]) => [
-                            k,
-                            (toBroadcast.includes(k)
-                                ? (t as USSVectorType).elementType
-                                : t
-                            ) satisfies USSType,
-                        ],
-                    ),
-                ),
+                properties: new Map(r),
             },
         },
     }, predicate, predicateDescriptor)

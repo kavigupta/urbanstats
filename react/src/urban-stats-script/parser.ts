@@ -25,6 +25,7 @@ export type UrbanStatsASTExpression = (
     | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
     | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
     | { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] }
+    | { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] }
     | { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
@@ -72,6 +73,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
         case 'objectLiteral':
             return node.entireLoc
+        case 'vectorLiteral':
+            return node.entireLoc
         case 'assignment':
             return unify(locationOf(node.lhs), locationOf(node.value))
         case 'expression':
@@ -105,6 +108,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(${node.operator.node} ${toSExp(node.expr)})`
         case 'binaryOperator':
             return `(${node.operator.node} ${toSExp(node.left)} ${toSExp(node.right)})`
+        case 'vectorLiteral':
+            return `(vector ${node.elements.map(toSExp).join(' ')})`
         case 'objectLiteral':
             return `(object ${node.properties.map(([key, value]) => `(${key} ${toSExp(value)})`).join(' ')})`
         case 'assignment':
@@ -221,6 +226,26 @@ class ParseState {
                             type: 'objectLiteral',
                             entireLoc: unify(startLoc, endLoc),
                             properties,
+                        }
+                    case '[':
+                        this.index++
+                        const vectorStartLoc = token.location
+                        const elements: UrbanStatsASTExpression[] = []
+                        while (!this.consumeBracket(']')) {
+                            if (elements.length > 0 && !this.consumeOperator(',')) {
+                                return { type: 'error', message: 'Expected comma , or closing bracket ] after vector element', location: this.tokens[this.index].location }
+                            }
+                            const element = this.parseExpression()
+                            if (element.type === 'error') {
+                                return element
+                            }
+                            elements.push(element)
+                        }
+                        const vectorEndLoc = this.tokens[this.index - 1].location
+                        return {
+                            type: 'vectorLiteral',
+                            entireLoc: unify(vectorStartLoc, vectorEndLoc),
+                            elements,
                         }
                 }
                 return { type: 'error', message: `Unexpected bracket ${token.token.value}`, location: token.location }
@@ -416,6 +441,7 @@ class ParseState {
             case 'function':
             case 'unaryOperator':
             case 'binaryOperator':
+            case 'vectorLiteral':
             case 'objectLiteral':
             case 'if':
                 return { type: 'error', message: 'Cannot assign to this expression', location: locationOf(expr) }

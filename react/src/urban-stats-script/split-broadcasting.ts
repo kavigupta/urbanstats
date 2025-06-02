@@ -1,6 +1,8 @@
+import { assert } from '../utils/defensive'
+
 import { Context } from './interpreter'
 import { LocInfo } from './lexer'
-import { renderType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
+import { renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
     const t = mask.type
@@ -12,7 +14,12 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
             collectIn.add(mask.value as USSPrimitiveRawValue)
             return true
         case 'vector':
-            const results = (mask.value as USSRawValue[]).map(x => collectUniqueMaskValues(collectIn, { type: t.elementType, value: x }))
+            const et = t.elementType
+            if (et.type === 'elementOfEmptyVector') {
+                // If the mask is an empty vector, we can just return true
+                return true
+            }
+            const results = (mask.value as USSRawValue[]).map(x => collectUniqueMaskValues(collectIn, { type: et, value: x }))
             return results.every(x => x)
         case 'object':
         case 'function':
@@ -51,9 +58,11 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
             if (maskVector.length !== valueVector.length) {
                 return { type: 'error', message: `Mask length ${maskVector.length} does not match value length ${valueVector.length}` }
             }
-            let referenceType: USSType | undefined = undefined
+            let referenceType: USSType | undefined | { type: 'elementOfEmptyVector' } = undefined
             const results: USSRawValue[] = []
             for (let i = 0; i < maskVector.length; i++) {
+                assert(valueType.elementType.type !== 'elementOfEmptyVector', `Value element type cannot be elementOfEmptyVector, got ${renderType(valueType)}`)
+                assert(maskType.elementType.type !== 'elementOfEmptyVector', `Mask element type cannot be elementOfEmptyVector, got ${renderType(maskType)}`)
                 const resultsOrErr = indexMask(
                     { type: valueType.elementType, value: valueVector[i] },
                     { type: maskType.elementType, value: maskVector[i] },
@@ -63,7 +72,8 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                     return resultsOrErr
                 }
                 results.push(...(resultsOrErr.value.value as USSRawValue[]))
-                referenceType = resultsOrErr.value.type.elementType
+                const elt = resultsOrErr.value.type.elementType
+                referenceType = referenceType === undefined ? elt : unifyType(referenceType, elt, () => new Error('Should be unreachable'))
             }
             if (referenceType === undefined) {
                 return { type: 'error', message: `Mask is empty, cannot index value ${renderType(maskType)}` }
@@ -111,6 +121,7 @@ function index(v: USSValue, i: number): USSValue {
         if (i < 0 || i >= valueVector.length) {
             throw new Error(`Index ${i} out of bounds for vector of length ${valueVector.length}`)
         }
+        assert(valueType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
         return { type: valueType.elementType, value: valueVector[i] }
     }
     return v // If the value is not a vector, we just return it as is; broadcasting
@@ -219,6 +230,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         if (subEnv.type === 'error') {
             throw env.error(`Error indexing mask into context: ${subEnv.message}`, errLoc)
         }
+        assert(maskType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
         const result = fn({ type: maskType.elementType, value }, subEnv.value)
         return [result, subEnv.value] satisfies [USSValue, Context]
     })

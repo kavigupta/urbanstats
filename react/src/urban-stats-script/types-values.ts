@@ -1,3 +1,5 @@
+import { assert } from '../utils/defensive'
+
 import { Context } from './interpreter'
 
 interface USSNumberType {
@@ -13,7 +15,7 @@ interface USSBooleanType {
 
 export interface USSVectorType {
     type: 'vector'
-    elementType: USSType
+    elementType: USSType | { type: 'elementOfEmptyVector' }
 }
 
 interface USSNullType {
@@ -88,7 +90,7 @@ export function renderType(type: USSType): string {
         return 'boolean'
     }
     if (type.type === 'vector') {
-        return `[${renderType(type.elementType)}]`
+        return `[${type.elementType.type === 'elementOfEmptyVector' ? '' : renderType(type.elementType)}]`
     }
     if (type.type === 'object') {
         return `{${[...type.properties.entries()].map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
@@ -137,4 +139,45 @@ export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType
         throw new Error(`Expected a primitive value, but got ${typeof value}`)
     }
     return getPrimitiveType(value[0], depth - 1)
+}
+
+export function unifyType(
+    a: USSType | { type: 'elementOfEmptyVector' },
+    b: USSType | { type: 'elementOfEmptyVector' },
+    error: () => Error,
+): USSType | { type: 'elementOfEmptyVector' } {
+    if (a.type === 'elementOfEmptyVector') {
+        return b
+    }
+    if (b.type === 'elementOfEmptyVector') {
+        return a
+    }
+    if (renderType(a) === renderType(b)) {
+        return a
+    }
+    if (a.type === 'vector' && b.type === 'vector') {
+        return {
+            type: 'vector',
+            elementType: unifyType(a.elementType, b.elementType, error),
+        }
+    }
+    if (a.type === 'object' && b.type === 'object') {
+        if (JSON.stringify([...a.properties.keys()].sort()) !== JSON.stringify([...b.properties.keys()].sort())) {
+            throw error()
+        }
+        const properties = new Map<string, USSType>()
+        for (const [key, type] of a.properties) {
+            properties.set(key, type)
+        }
+        for (const [key, type] of b.properties) {
+            const res = unifyType(properties.get(key)!, type, error)
+            assert(res.type !== 'elementOfEmptyVector', `Unreachable`)
+            properties.set(key, res)
+        }
+        return {
+            type: 'object',
+            properties,
+        }
+    }
+    throw error()
 }

@@ -239,6 +239,22 @@ void test('evaluate function calls', (): void => {
             ],
         },
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: [200, 300]})'), emptyCtx),
+        {
+            type: numMatrixType,
+            value: [
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
+            ],
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: []})'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Cannot broadcast object property v because its type is an empty vector with no inferred type at 1:1-44'
+        },
+    )
     env.set('objsBoth', {
         type: {
             type: 'object',
@@ -425,6 +441,88 @@ void test('evaluate objects', (): void => {
         () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), emptyCtx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:1-20'
+        },
+    )
+})
+
+void test('evaluate vectors', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    // assert.deepStrictEqual(
+    //     evaluate(parseExpr('[1, 2]'), emptyCtx),
+    //     { type: numVectorType, value: [1, 2] },
+    // )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[]'), emptyCtx),
+        { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[]]'), emptyCtx),
+        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[]] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('[1, [2, 3]]'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'vector literal contains heterogenous types number and [number] at 1:1-11'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[1, 2, 3], [4]]'), emptyCtx),
+        { type: numMatrixType, value: [[1, 2, 3], [4]] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[1, 2, 3], []]'), emptyCtx),
+        { type: numMatrixType, value: [[1, 2, 3], []] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[[1, 2, 3]], []]'), emptyCtx),
+        { type: { type: 'vector', elementType: numMatrixType }, value: [[[1, 2, 3]], []] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[], []]'), emptyCtx),
+        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[], []] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[], [[]]]'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } } },
+            value: [[], [[]]],
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('[] + [1]'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'positional argument 1 is an empty vector whose type cannot be inferred at 1:1-8'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{a: []}.a'), emptyCtx),
+        { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('[{a: []}, {b: [1]}]'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'vector literal contains heterogenous types {a: []} and {b: [number]} at 1:1-19'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[{a: []}, {a: [1]}]'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'number' } }]]) } },
+            value: [
+                new Map<string, USSRawValue>([['a', []]]),
+                new Map<string, USSRawValue>([['a', [1]]]),
+            ],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[{a: []}, {a: []}]'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }]]) } },
+            value: [
+                new Map<string, USSRawValue>([['a', []]]),
+                new Map<string, USSRawValue>([['a', []]]),
+            ],
         },
     )
 })
