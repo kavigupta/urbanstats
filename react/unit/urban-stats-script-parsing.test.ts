@@ -331,7 +331,7 @@ void test('basic parsing', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('if (x*)'),
-        '(errors (error "Unexpected closing bracket )" at 0:6))',
+        '(errors (error "Unexpected bracket )" at 0:6))',
     )
     assert.deepStrictEqual(
         parseAndRender('2 + 3 = 4'),

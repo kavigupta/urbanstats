@@ -1,6 +1,6 @@
 import { assert } from '../utils/defensive'
 
-import { AnnotatedToken, expressionOperatorMap, infixOperators, lex, LocInfo, unaryOperators } from './lexer'
+import { AnnotatedTokenWithValue, expressionOperatorMap, infixOperators, lex, LocInfo, unaryOperators } from './lexer'
 
 interface Decorated<T> {
     node: T
@@ -114,9 +114,9 @@ export function toSExp(node: UrbanStatsAST): string {
 }
 
 class ParseState {
-    tokens: AnnotatedToken[]
+    tokens: AnnotatedTokenWithValue[]
     index: number
-    constructor(tokens: AnnotatedToken[]) {
+    constructor(tokens: AnnotatedTokenWithValue[]) {
         this.tokens = tokens
         this.index = 0
     }
@@ -178,28 +178,21 @@ class ParseState {
                 this.index++
                 return { type: 'identifier', name: { node: token.token.value, location: token.location } }
             case 'bracket':
-                if (token.token.value === '(') {
-                    this.index++
-                    const expr = this.parseExpression()
-                    if (expr.type === 'error') {
+                switch (token.token.value) {
+                    case '(':
+                        this.index++
+                        const expr = this.parseExpression()
+                        if (expr.type === 'error') {
+                            return expr
+                        }
+                        if (!this.consumeBracket(')')) {
+                            return { type: 'error', message: 'Expected closing bracket ) to match this one', location: token.location }
+                        }
                         return expr
-                    }
-                    if (!this.consumeBracket(')')) {
-                        return { type: 'error', message: 'Expected closing bracket ) to match this one', location: token.location }
-                    }
-                    return expr
                 }
-                else if (token.token.value === ')') {
-                    return { type: 'error', message: 'Unexpected closing bracket )', location: token.location }
-                }
-                else {
-                    return { type: 'error', message: `Unexpected bracket ${token.token.value}`, location: token.location }
-                }
+                return { type: 'error', message: `Unexpected bracket ${token.token.value}`, location: token.location }
             case 'operator':
                 return { type: 'error', message: `Unexpected operator ${token.token.value}`, location: token.location }
-            case 'error':
-                this.index++
-                return { type: 'error', message: `Error: ${token.token.value}`, location: token.location }
         }
     }
 

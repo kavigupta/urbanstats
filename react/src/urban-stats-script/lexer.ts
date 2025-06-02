@@ -148,9 +148,10 @@ interface NumericToken { type: 'number', value: number }
 interface IdentifierToken { type: 'identifier', value: string }
 interface StringToken { type: 'string', value: string }
 interface OperatorToken { type: 'operator', value: string }
-interface BracketToken { type: 'bracket', value: string }
+interface BracketToken { type: 'bracket', value: '(' | ')' | '{' | '}' }
 interface ErrorToken { type: 'error', value: string }
-type Token = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken | ErrorToken
+type NonErrorToken = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken
+type Token = NonErrorToken | ErrorToken
 
 interface SingleLocation {
     lineIdx: number
@@ -166,6 +167,8 @@ export interface AnnotatedToken {
     token: Token
     location: LocInfo
 }
+
+export type AnnotatedTokenWithValue = AnnotatedToken & { token: NonErrorToken }
 
 interface GenericLexer {
     firstToken: (ch: string) => boolean
@@ -222,7 +225,7 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             idx++
             continue
         }
-        if ('()[]{}'.includes(char)) {
+        if (char === '(' || char === ')' || char === '{' || char === '}') {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
                 location: {
