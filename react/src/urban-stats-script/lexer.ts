@@ -1,3 +1,5 @@
+import { assert } from '../utils/defensive'
+
 import { Context } from './interpreter'
 import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
 
@@ -188,9 +190,7 @@ const numberLexer: GenericLexer = {
     innerToken: (ch: string): boolean => isDigit(ch) || ch === '.',
     parse: (string: string): Token => {
         const value = parseFloat(string)
-        if (isNaN(value)) {
-            return { type: 'error', value: `Invalid number: ${string}` }
-        }
+        assert(!isNaN(value), `Invalid number: ${string}`)
         return { type: 'number', value }
     },
 }
@@ -215,9 +215,7 @@ const operatorLexer: GenericLexer = {
 function lexLine(input: string, lineNo: number): AnnotatedToken[] {
     const tokens: AnnotatedToken[] = []
     // one line
-    if (input.includes('\n')) {
-        throw new Error('Input contains new line characters')
-    }
+    assert(!input.includes('\n'), 'Input contains new line characters')
     let idx = 0
     lex: while (idx < input.length) {
         const char = input[idx]
@@ -328,13 +326,11 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     let result: string
     try {
         const resultObj: unknown = JSON.parse(input.slice(start, idx))
-        if (typeof resultObj !== 'string') {
-            throw new Error(`Invalid string: ${input.slice(start, idx)}`)
-        }
+        assert(typeof resultObj === 'string', `Invalid string: ${input.slice(start, idx)}`)
         result = resultObj
     }
-    catch {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}` }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
+    catch (e) {
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },

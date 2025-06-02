@@ -109,6 +109,21 @@ void test('various lexes', (): void => {
         ')',
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('$'), [
+        ['Invalid operator: $', '$'],
+        ['EOL', ''],
+    ])
+    assert.deepStrictEqual(shortFormLex('€'), [
+        ['Unexpected character: €', '€'],
+        ['EOL', ''],
+    ])
+    assert.deepStrictEqual(shortFormLex('x = "ab'), ['x', '=', ['Unterminated string', '"ab'], ['EOL', '']])
+    assert.deepStrictEqual(shortFormLex('x = "a\\c"'), [
+        'x',
+        '=',
+        ['Invalid string: "a\\c": SyntaxError: Bad escaped character in JSON at position 3 (line 1 column 4)', '"a\\c"'],
+        ['EOL', ''],
+    ])
 })
 
 function parseAndRender(input: string): string {
