@@ -15,7 +15,6 @@ import { Footer, Header, Help } from './quiz-components'
 interface MapProps extends MapGenericProps {
     longname: string
     color: string
-    attribution: boolean
 }
 
 class Map extends MapGeneric<MapProps> {
@@ -31,10 +30,6 @@ class Map extends MapGeneric<MapProps> {
             ],
             zoomIndex: 0,
         })
-    }
-
-    override attribution(): 'startHidden' | 'none' {
-        return this.props.attribution ? 'startHidden' : 'none'
     }
 }
 
@@ -194,7 +189,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
                     longname={props.question[`longname_${letter}`]}
                     basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
-                    attribution={letter === 'b'}
+                    attribution={letter === 'b' ? 'startHidden' : 'none'}
                 />
             )}
         />

@@ -512,7 +512,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     )
 }
 
-function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
+function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
     const partitionedLongNames = props.mapPartitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
 
     const maps = useRef<(ComparisonMap | null)[]>([])
@@ -584,7 +584,7 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
                             {...props}
                             longnames={partition.map(index => props.longnames[index])}
                             colors={partition.map(index => props.colors[index])}
-                            isLastMap={partitionIndex === props.mapPartitions.length - 1}
+                            attribution={partitionIndex === props.mapPartitions.length - 1 ? 'startHidden' : 'none'}
                         />
                     </div>
                 )
@@ -594,7 +594,7 @@ function ComparisonMultiMap(props: MapGenericProps & { longnames: string[], colo
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
-class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[], isLastMap: boolean }> {
+class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
     override buttons(): ReactNode {
         return <ComparisonMapButtons map={this} />
     }
@@ -627,10 +627,6 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
     override mapDidRender(): Promise<void> {
         this.zoomToAll()
         return Promise.resolve()
-    }
-
-    override attribution(): 'none' | 'startShowing' {
-        return this.props.isLastMap ? 'startShowing' : 'none'
     }
 }
 

@@ -21,6 +21,7 @@ export const defaultMapPadding = 20
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
+    attribution: 'none' | 'startHidden' | 'startVisible'
 }
 
 export interface Polygon {
@@ -66,8 +67,6 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
-// TODO: Attribution should be a prop, so it can be updated and control re-added
-
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -78,6 +77,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private exist_this_time: string[] = []
     protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
+    private attributionControl: CustomAttributionControl | undefined
 
     constructor(props: P) {
         super(props)
@@ -130,10 +130,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
-    attribution(): 'none' | 'startHidden' | 'startShowing' {
-        return 'startShowing'
-    }
-
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -146,10 +142,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
         })
-
-        if (this.attribution() !== 'none') {
-            map.addControl(new CustomAttributionControl(this.attribution() === 'startShowing'))
-        }
 
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
@@ -294,6 +286,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance('Loading map...')
         this.setState({ loading: true })
+
+        if (this.attributionControl !== undefined) {
+            this.map!.removeControl(this.attributionControl)
+            this.attributionControl = undefined
+        }
+
+        if (this.props.attribution !== 'none') {
+            this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
+            this.map!.addControl(this.attributionControl)
+        }
 
         this.exist_this_time = []
 

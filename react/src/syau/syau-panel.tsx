@@ -129,6 +129,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 notGuessedColor={jColors.incorrect}
                 voroniHighlightColor={colors.hueColors.blue}
                 height={600}
+                attribution="startVisible"
             />
             <div style={{ marginBlockEnd: '1em' }} />
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
