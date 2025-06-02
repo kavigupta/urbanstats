@@ -368,3 +368,57 @@ void test('evaluate if expressions mutations', (): void => {
         },
     )
 })
+
+void test('evaluate objects', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{ a: 1, b: 2 }'), emptyCtx),
+        {
+            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType]]) },
+            value: new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{ a: 1, b: 2, c: "hello" }'), emptyCtx),
+        {
+            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType], ['c', stringType]]) },
+            value: new Map<string, USSRawValue>([['a', 1], ['b', 2], ['c', 'hello']]),
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{}'), emptyCtx),
+        {
+            type: {
+                type: 'object',
+                properties: new Map<string, USSType>([
+                ]),
+            },
+            value: new Map<string, USSRawValue>(),
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{ a: 1, b: 2, c: "hello", d: { e: 3 } }'), emptyCtx),
+        {
+            type: {
+                type: 'object',
+                properties: new Map<string, USSType>([
+                    ['a', numType],
+                    ['b', numType],
+                    ['c', stringType],
+                    ['d', { type: 'object', properties: new Map<string, USSType>([['e', numType]]) }],
+                ]),
+            },
+            value: new Map<string, USSRawValue>([
+                ['a', 1],
+                ['b', 2],
+                ['c', 'hello'],
+                ['d', new Map<string, USSRawValue>([['e', 3]])],
+            ]),
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{a: 1, b: 2}.a'), emptyCtx),
+        { type: numType, value: 1 },
+    )
+})

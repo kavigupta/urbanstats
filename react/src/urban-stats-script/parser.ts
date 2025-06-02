@@ -24,6 +24,7 @@ export type UrbanStatsASTExpression = (
     | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo }
     | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
     | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
+    | { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] }
     | { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
 )
 
@@ -69,6 +70,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return unify(node.operator.location, locationOf(node.expr))
         case 'binaryOperator':
             return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
+        case 'objectLiteral':
+            return node.entireLoc
         case 'assignment':
             return unify(locationOf(node.lhs), locationOf(node.value))
         case 'expression':
@@ -102,6 +105,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(${node.operator.node} ${toSExp(node.expr)})`
         case 'binaryOperator':
             return `(${node.operator.node} ${toSExp(node.left)} ${toSExp(node.right)})`
+        case 'objectLiteral':
+            return `(object ${node.properties.map(([key, value]) => `(${key} ${toSExp(value)})`).join(' ')})`
         case 'assignment':
             return `(assign ${toSExp(node.lhs)} ${toSExp(node.value)})`
         case 'expression':
@@ -189,6 +194,34 @@ class ParseState {
                             return { type: 'error', message: 'Expected closing bracket ) to match this one', location: token.location }
                         }
                         return expr
+                    case '{':
+                        this.index++
+                        const startLoc = token.location
+                        const properties: [string, UrbanStatsASTExpression][] = []
+                        while (!this.consumeBracket('}')) {
+                            if (properties.length > 0 && !this.consumeOperator(',')) {
+                                return { type: 'error', message: `Expected comma , or closing bracket } after object field name; instead received ${this.tokens[this.index].token.value}`, location: this.tokens[this.index].location }
+                            }
+                            if (!this.consumeIdentifier()) {
+                                return { type: 'error', message: 'Expected identifier for object field name', location: this.tokens[this.index - 1].location }
+                            }
+                            const keyToken = this.tokens[this.index - 1]
+                            assert(keyToken.token.type === 'identifier', `Expected identifier token, but got ${keyToken.token.type}`)
+                            if (!this.consumeOperator(':')) {
+                                return { type: 'error', message: `Expected : token after object field name`, location: keyToken.location }
+                            }
+                            const value = this.parseExpression()
+                            if (value.type === 'error') {
+                                return value
+                            }
+                            properties.push([keyToken.token.value, value])
+                        }
+                        const endLoc = this.tokens[this.index - 1].location
+                        return {
+                            type: 'objectLiteral',
+                            entireLoc: unify(startLoc, endLoc),
+                            properties,
+                        }
                 }
                 return { type: 'error', message: `Unexpected bracket ${token.token.value}`, location: token.location }
             case 'operator':
@@ -383,6 +416,7 @@ class ParseState {
             case 'function':
             case 'unaryOperator':
             case 'binaryOperator':
+            case 'objectLiteral':
             case 'if':
                 return { type: 'error', message: 'Cannot assign to this expression', location: locationOf(expr) }
         }

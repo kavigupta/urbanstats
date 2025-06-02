@@ -143,7 +143,7 @@ export const expressionOperatorMap = new Map<string, Operator>([
 
 export const unaryOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.unary !== undefined).map(([op]) => op)
 export const infixOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.binary !== undefined).map(([op]) => op)
-const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.']
+const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
 interface NumericToken { type: 'number', value: number }

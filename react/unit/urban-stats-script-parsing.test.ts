@@ -395,3 +395,26 @@ void test('parse errors (other)', (): void => {
         '(errors (error "Expected identifier after the dot" at 0:1))',
     )
 })
+
+void test('object literal', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('{ a: 1, b: 2 }'),
+        '(expr (object (a (const 1)) (b (const 2))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('{ a: 1 b'),
+        '(errors (error "Expected comma , or closing bracket } after object field name; instead received b" at 0:7))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('{ a: 1, b }'),
+        '(errors (error "Expected : token after object field name" at 0:8))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('{ a: 1, 2: b }'),
+        '(errors (error "Expected identifier for object field name" at 0:6))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('{ a: 1, b: {a: 1, 2: b} }'),
+        '(errors (error "Expected identifier for object field name" at 0:16))',
+    )
+})

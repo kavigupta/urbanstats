@@ -4,7 +4,7 @@ import { broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
-import { renderType, USSValue, ValueArg } from './types-values'
+import { renderType, USSRawValue, USSType, USSValue, ValueArg } from './types-values'
 
 export type Effect = undefined
 
@@ -83,6 +83,24 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const left = evaluate(expr.left, env)
             const right = evaluate(expr.right, env)
             return evaluateBinaryOperator(left, right, expr.operator.node, env, locationOf(expr))
+        case 'objectLiteral':
+            const ts = new Map<string, USSType>()
+            const vs = new Map<string, USSRawValue>()
+            for (const [name, e] of expr.properties) {
+                const v = evaluate(e, env)
+                if (ts.has(name)) {
+                    throw env.error(`Duplicate property name: ${name}`, locationOf(e))
+                }
+                ts.set(name, v.type)
+                vs.set(name, v.value)
+            }
+            return {
+                type: {
+                    type: 'object',
+                    properties: ts,
+                },
+                value: vs,
+            }
         case 'if':
             const condition = evaluate(expr.condition, env)
             return splitMask(env, condition, (v: USSValue, subEnv: Context): USSValue => {
