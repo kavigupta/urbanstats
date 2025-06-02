@@ -297,4 +297,56 @@ void test('basic parsing', (): void => {
         parseAndRender('if (x) {}'),
         '(expr (if (id x) (statements )))',
     )
+    assert.deepStrictEqual(
+        parseAndRender('if'),
+        '(errors (error "Expected opening bracket ( after if" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x'),
+        '(errors (error "Expected closing bracket ) after if condition" at 0:4))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x)'),
+        '(errors (error "Expected opening bracket { after if condition" at 0:5))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { y = 2 '),
+        '(errors (error "Expected } after if block" at 0:15))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('(if (x) { y = 2 )'),
+        '(errors (error "Expected } after if block" at 0:14))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { y = 2 } else'),
+        '(errors (error "Expected opening bracket { after else" at 0:17))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { y = 2 } else { x = 3'),
+        '(errors (error "Expected } after else block" at 0:29))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender(''),
+        '(errors (error "Unexpected end of input" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x*)'),
+        '(errors (error "Unexpected closing bracket )" at 0:6))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('2 + 3 = 4'),
+        '(errors (error "Cannot assign to this expression" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f(xy) = 4'),
+        '(errors (error "Cannot assign to this expression" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x = 2 +'),
+        '(errors (error "Unexpected end of input" at 0:7))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x = (2'),
+        '(errors (error "Expected closing bracket ) to match this one" at 0:4))',
+    )
 })

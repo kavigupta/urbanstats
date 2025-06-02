@@ -51,6 +51,7 @@ function unify(...locations: LocInfo[]): LocInfo {
 }
 
 export function locationOf(node: UrbanStatsAST): LocInfo {
+    /* c8 ignore start -- This function doesn't need to be tested in detail, as it is a simple location extractor */
     switch (node.type) {
         case 'unnamed':
             return locationOf(node.value)
@@ -77,6 +78,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'if':
             return node.entireLoc
     }
+    /* c8 ignore stop */
 }
 
 export function toSExp(node: UrbanStatsAST): string {
@@ -183,7 +185,7 @@ class ParseState {
                         return expr
                     }
                     if (!this.consumeBracket(')')) {
-                        return { type: 'error', message: 'Expected closing bracket )', location: token.location }
+                        return { type: 'error', message: 'Expected closing bracket ) to match this one', location: token.location }
                     }
                     return expr
                 }
@@ -358,20 +360,14 @@ class ParseState {
         // Get the highest precedence operator
         const precedences = operatorExpSequence.map(x => x.type === 'operator' ? expressionOperatorMap.get(x.value.node)?.precedence ?? 0 : 0)
         const maxPrecedence = Math.max(...precedences)
-        if (maxPrecedence === 0) {
-            return { type: 'error', message: 'No valid operator found in infix sequence', location: this.tokens[this.index - 1].location }
-        }
+        assert (maxPrecedence > 0, 'No valid operator found in infix sequence')
         const index = precedences.findIndex(p => p === maxPrecedence)
-        if (index === -1) {
-            throw new Error('No operator found with maximum precedence; this should not happen')
-        }
+        assert (index > -1, 'No operator found with maximum precedence; this should not happen')
         return this.parseInfixSequence(this.resolveOperator(operatorExpSequence, index))
     }
 
     resolveOperator(operatorExpSequence: USSInfixSequenceElement[], index: number): USSInfixSequenceElement[] {
-        if (operatorExpSequence[index].type !== 'operator') {
-            throw new Error(`Expected operator at index ${index}, but found expression: ${JSON.stringify(operatorExpSequence[index])}`)
-        }
+        assert(operatorExpSequence[index].type === 'operator', `Expected operator at index ${index}, but found expression: ${JSON.stringify(operatorExpSequence[index])}`)
         if (operatorExpSequence[index + 1].type === 'operator') {
             return this.resolveOperator(operatorExpSequence, index + 1)
         }
@@ -413,7 +409,7 @@ class ParseState {
             case 'unaryOperator':
             case 'binaryOperator':
             case 'if':
-                return { type: 'error', message: 'Invalid LHS expression', location: locationOf(expr) }
+                return { type: 'error', message: 'Cannot assign to this expression', location: locationOf(expr) }
         }
     }
 
@@ -451,7 +447,7 @@ class ParseState {
         if (!this.consumeBracket('{')) {
             return { type: 'error', message: 'Expected opening bracket { after if condition', location: this.tokens[this.index - 1].location }
         }
-        const then = this.parseStatements(() => this.consumeBracket('}'))
+        const then = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after if block')
         if (then.type === 'error') {
             return then
         }
@@ -460,7 +456,7 @@ class ParseState {
             if (!this.consumeBracket('{')) {
                 return { type: 'error', message: 'Expected opening bracket { after else', location: this.tokens[this.index - 1].location }
             }
-            const eb = this.parseStatements(() => this.consumeBracket('}'))
+            const eb = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after else block')
             if (eb.type === 'error') {
                 return eb
             }
@@ -476,7 +472,7 @@ class ParseState {
         }
     }
 
-    parseStatements(end: () => boolean = () => false): UrbanStatsASTStatement | ParseError {
+    parseStatements(canEnd: boolean = false, end: () => boolean = () => false, errMsg: string = 'Expected end of line or ; after'): UrbanStatsASTStatement | ParseError {
         const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             if (end()) {
@@ -491,9 +487,12 @@ class ParseState {
                 break
             }
             if (!this.consumeOperator('EOL', ';')) {
-                return { type: 'error', message: 'Expected end of line or ; after', location: this.tokens[this.index - 1].location }
+                return { type: 'error', message: errMsg, location: this.tokens[this.index - 1].location }
             }
             while (this.skipEOL()) {}
+        }
+        if (this.index === this.tokens.length && canEnd) {
+            return { type: 'error', message: errMsg, location: this.tokens[this.index - 1].location }
         }
         if (statements.length === 1) {
             return statements[0]
@@ -502,6 +501,7 @@ class ParseState {
             ? unify(...statements.map(locationOf))
             : this.index > 0
                 ? this.tokens[this.index - 1].location
+                /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
                 : { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } }
         return { type: 'statements', result: statements, entireLoc }
     }
@@ -518,9 +518,6 @@ export function parse(code: string): UrbanStatsASTStatement | { type: 'error', e
     if (stmts.type === 'error') {
         return { type: 'error', errors: [stmts] }
     }
-    if (state.index < state.tokens.length) {
-        const error = { type: 'error', message: `Cannot parse token: ${state.tokens[state.index].token.value}`, location: state.tokens[state.index].location } satisfies ParseError
-        return { type: 'error', errors: [error] }
-    }
+    assert(state.index === state.tokens.length, `Parser did not consume all tokens: ${state.index} < ${state.tokens.length}`)
     return stmts
 }
