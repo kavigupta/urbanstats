@@ -197,9 +197,6 @@ class ParseState {
     }
 
     parseArg(): UrbanStatsASTArg | ParseError {
-        if (this.index >= this.tokens.length) {
-            return { type: 'error', message: 'Unexpected end of input', location: this.tokens[this.index - 1].location }
-        }
         const exprOrName = this.parseExpression()
         if (exprOrName.type === 'error') {
             return exprOrName
@@ -266,12 +263,10 @@ class ParseState {
             if (this.consumeOperator('.')) {
                 done = false
                 if (!this.consumeIdentifier()) {
-                    return { type: 'error', message: 'Expected identifier after .', location: this.tokens[this.index - 1].location }
+                    return { type: 'error', message: 'Expected identifier after the dot', location: this.tokens[this.index - 1].location }
                 }
                 const token = this.tokens[this.index - 1]
-                if (token.token.type !== 'identifier') {
-                    throw new Error('Expected identifier token')
-                }
+                assert(token.token.type === 'identifier', `Expected identifier token, but got ${token.token.type}`)
                 fn = {
                     type: 'attribute',
                     expr: fn,
@@ -298,9 +293,7 @@ class ParseState {
                 case 'expressionOrUnaryOperator': {
                     if (this.consumeOperator(...unaryOperators)) {
                         const operator = this.tokens[this.index - 1]
-                        if (operator.token.type !== 'operator') {
-                            throw new Error('Expected operator token')
-                        }
+                        assert(operator.token.type === 'operator', 'Expected operator token')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'unary',
@@ -321,9 +314,7 @@ class ParseState {
                 case 'binaryOperator': {
                     if (this.consumeOperator(...infixOperators)) {
                         const operator = this.tokens[this.index - 1]
-                        if (operator.token.type !== 'operator') {
-                            throw new Error('Expected operator token')
-                        }
+                        assert(operator.token.type === 'operator', 'Expected operator token')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'binary',
@@ -341,13 +332,9 @@ class ParseState {
     }
 
     parseInfixSequence(operatorExpSequence: USSInfixSequenceElement[]): UrbanStatsASTExpression | ParseError {
-        if (operatorExpSequence.length === 0) {
-            return { type: 'error', message: 'Expected expression', location: this.tokens[this.index - 1].location }
-        }
+        assert(operatorExpSequence.length !== 0, 'Expected expression')
         if (operatorExpSequence.length === 1) {
-            if (operatorExpSequence[0].type === 'operator') {
-                return { type: 'error', message: `Unexpected operator ${operatorExpSequence[0].value.node}`, location: operatorExpSequence[0].value.location }
-            }
+            assert(operatorExpSequence[0].type !== 'operator', `Unexpected operator ${JSON.stringify(operatorExpSequence[0])} at beginning of infix sequence`)
             return operatorExpSequence[0]
         }
         // Get the highest precedence operator
@@ -361,18 +348,15 @@ class ParseState {
 
     resolveOperator(operatorExpSequence: USSInfixSequenceElement[], index: number): USSInfixSequenceElement[] {
         assert(operatorExpSequence[index].type === 'operator', `Expected operator at index ${index}, but found expression: ${JSON.stringify(operatorExpSequence[index])}`)
-        if (operatorExpSequence[index + 1].type === 'operator') {
+        const next = operatorExpSequence[index + 1]
+        if (next.type === 'operator') {
             return this.resolveOperator(operatorExpSequence, index + 1)
         }
         switch (operatorExpSequence[index].operatorType) {
             case 'unary': {
-                const expr = operatorExpSequence[index + 1]
-                if (expr.type === 'operator') {
-                    return this.resolveOperator(operatorExpSequence, index + 1)
-                }
                 return [
                     ...operatorExpSequence.slice(0, index),
-                    { type: 'unaryOperator', operator: operatorExpSequence[index].value, expr },
+                    { type: 'unaryOperator', operator: operatorExpSequence[index].value, expr: next },
                     ...operatorExpSequence.slice(index + 2),
                 ]
             }
@@ -380,9 +364,7 @@ class ParseState {
                 // Split the sequence into left and right parts
                 const left = operatorExpSequence[index - 1]
                 const right = operatorExpSequence[index + 1]
-                if (left.type === 'operator' || right.type === 'operator') {
-                    throw new Error('unreachable: left or right should not be an operator')
-                }
+                assert(left.type !== 'operator' && right.type !== 'operator', 'unreachable: left or right should not be an operator')
                 return [
                     ...operatorExpSequence.slice(0, index - 1),
                     { type: 'binaryOperator', operator: operatorExpSequence[index].value, left, right },
@@ -506,7 +488,7 @@ export function parse(code: string): UrbanStatsASTStatement | { type: 'error', e
     if (lexErrors.length > 0) {
         return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', message: `Unrecognized token: ${token.token.value}`, location: token.location })) }
     }
-    const state = new ParseState(tokens)
+    const state = new ParseState(tokens as AnnotatedTokenWithValue[]) // we checked for errors above, so this cast is safe
     const stmts = state.parseStatements()
     if (stmts.type === 'error') {
         return { type: 'error', errors: [stmts] }

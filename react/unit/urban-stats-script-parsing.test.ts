@@ -220,7 +220,7 @@ void test('basic parsing', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('- -y'),
-        parseAndRender('(- (- y))'),
+        '(expr (- (- (id y))))',
     )
     assert.deepStrictEqual(
         parseAndRender('x * - -y + z'),
@@ -297,6 +297,9 @@ void test('basic parsing', (): void => {
         parseAndRender('if (x) {}'),
         '(expr (if (id x) (statements )))',
     )
+})
+
+void test('parse errors in if', (): void => {
     assert.deepStrictEqual(
         parseAndRender('if'),
         '(errors (error "Expected opening bracket ( after if" at 0:0))',
@@ -325,6 +328,9 @@ void test('basic parsing', (): void => {
         parseAndRender('if (x) { y = 2 } else { x = 3'),
         '(errors (error "Expected } after else block" at 0:29))',
     )
+})
+
+void test('parse errors (other)', (): void => {
     assert.deepStrictEqual(
         parseAndRender(''),
         '(errors (error "Unexpected end of input" at 0:0))',
@@ -348,5 +354,29 @@ void test('basic parsing', (): void => {
     assert.deepStrictEqual(
         parseAndRender('x = (2'),
         '(errors (error "Expected closing bracket ) to match this one" at 0:4))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f('),
+        '(errors (error "Unexpected end of input" at 0:2))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f(2,'),
+        '(errors (error "Unexpected end of input" at 0:4))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f(a=3 *'),
+        '(errors (error "Unexpected end of input" at 0:7))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f(a*2=3)'),
+        '(errors (error "Expected identifier for named argument" at 0:2))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('f(a=2 c)'),
+        '(errors (error "Expected comma , or closing bracket ); instead received c" at 0:6))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('x.2'),
+        '(errors (error "Expected identifier after the dot" at 0:1))',
     )
 })
