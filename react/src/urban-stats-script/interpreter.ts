@@ -71,7 +71,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
         case 'function':
             const func = evaluate(expr.fn, env)
             const args = expr.args.map(arg => evaluateArg(arg, env))
-            const broadcastResult = broadcastCall(func, args, env)
+            const broadcastResult = broadcastCall(func, args, env, locationOf(expr))
             if (broadcastResult.type === 'error') {
                 throw env.error(broadcastResult.message, locationOf(expr))
             }
@@ -243,6 +243,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
         [operand],
         [],
         env,
+        errLoc,
     )
     if (res.type === 'error') {
         throw env.error(res.message, errLoc)
@@ -258,6 +259,7 @@ function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: strin
         [left, right],
         [],
         env,
+        errLoc,
     )
     if (res.type === 'error') {
         throw env.error(res.message, errLoc)

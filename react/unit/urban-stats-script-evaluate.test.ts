@@ -83,6 +83,14 @@ void test('evaluate basic expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string at 1:1-5'
         },
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] + 1'), emptyCtx),
+        { type: numMatrixType, value: [[2, 2, 3, 3, 4, 4]] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyCtx),
+        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }, value: [[true, true, false, false, false, false]] },
+    )
 })
 
 void test('evaluate basic variable expressions', (): void => {
@@ -358,6 +366,151 @@ void test('evaluate if expressions', (): void => {
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-32'
         },
+    )
+})
+
+void test('more if expressions', (): void => {
+    // same as above but everything is nested
+    const codeWNested = `
+        x = [[1, 2, 3, 4, 5, 6]]
+        if ([[1, 1, 2, 2, 3, 3]] == 1) {
+            y = x + 1
+        }
+        y
+        `
+    assert.throws(
+        () => execute(parseProgram(codeWNested), testingContext([], [], new Map<string, USSValue>())),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Error merging values for variable x: Cannot condition on a mask of type [[boolean]] at 3:9 - 5:10'
+        },
+    )
+    // same as above but the mask's second dimensions don't line up
+    const codeWIncompatibleNested = `
+        x = [[1, 2, 3, 4, 5, 6]]
+        if ([[1, 1, 2, 2, 3]] == 1) {
+            y = x + 1
+        }
+        y
+        `
+    assert.throws(
+        () => execute(parseProgram(codeWIncompatibleNested), testingContext([], [], new Map<string, USSValue>())),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-34'
+        },
+    )
+    // does not define y
+    const codeWithNull = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = if (1 == 0) { }
+        }
+        y
+        `
+    assert.throws(
+        () => execute(parseProgram(codeWithNull), testingContext([], [], new Map<string, USSValue>())),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Undefined variable: y at 5:9'
+        },
+    )
+    // does define y as a vector of null
+    const codeWithDefinedNull = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = [if (1 == 0) { }, if (1 == 0) { }]
+        }
+        y
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWithDefinedNull), testingContext([], [], new Map<string, USSValue>())),
+        { type: { type: 'vector', elementType: { type: 'null' } }, value: [null, null, null, null, null] },
+    )
+    // define y as a vector of booleans
+    const codeWithDefinedBool = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = 1 == 1
+        }
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWithDefinedBool), testingContext([], [], new Map<string, USSValue>())),
+        { type: { type: 'vector', elementType: boolType }, value: [true, true, false, false, false] },
+    )
+    // define y as a vector of vectors of numbers
+    const codeWithDefinedNumVector = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = [[1, 2], [3, 4]]
+        }
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWithDefinedNumVector), testingContext([], [], new Map<string, USSValue>())),
+        { type: numMatrixType, value: [[1, 2], [3, 4], [], [], []] },
+    )
+    // define y as an object
+    const codeWithDefinedObject = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = { a: 1, b: 2 }
+        }
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWithDefinedObject), testingContext([], [], new Map<string, USSValue>())),
+        {
+            type: {
+                type: 'vector',
+                elementType: {
+                    type: 'object',
+                    properties: new Map<string, USSType>([['a', numType], ['b', numType]]),
+                },
+            },
+            value: [
+                new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
+                new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
+                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
+                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
+                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
+            ],
+        },
+    )
+    {
+        // define y as a function
+        const codeWithDefinedFunction = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = sin
+        }
+        `
+        const result = execute(parseProgram(codeWithDefinedFunction), testingContext([], [], new Map<string, USSValue>([
+            ['sin', { type: testFnType, value: testFn1 }],
+        ])))
+        assert.deepStrictEqual(result.type, { type: 'vector', elementType: testFnType })
+        const v = result.value as USSRawValue[]
+        assert.deepStrictEqual(v[0], testFn1)
+        assert.deepStrictEqual(v[1], testFn1)
+        assert.throws(
+            () => {
+                (v[2] as ((ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => void))(
+                    testingContext([], [], new Map<string, USSValue>()),
+                    [],
+                    {},
+                )
+            },
+            (err: Error): boolean => {
+                return err.message === 'no default value for function type (number; a: number) -> number'
+            },
+        )
+        const codeWithDefinedFunction2 = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = sin
+        }
+        y(2, a=3)
+        `
+        assert.throws(
+            () => execute(parseProgram(codeWithDefinedFunction2), testingContext([], [], new Map<string, USSValue>([
+                ['sin', { type: testFnType, value: testFn1 }],
+            ]))),
+            (err: Error): boolean => {
+                return err instanceof InterpretationError && err.message === 'Error while executing function: Error: no default value for function type (number; a: number) -> number at 5:9-17'
+            },
+        )
+    }
+    assert.deepStrictEqual(
+        execute(parseProgram('if ([2, 1] == 1) { 2 } else { "2" }'), testingContext([], [], new Map<string, USSValue>())),
+        { type: { type: 'null' }, value: null },
     )
 })
 

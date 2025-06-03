@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { Context } from './interpreter'
 import { LocInfo } from './lexer'
-import { renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
+import { getPrimitiveType, renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
     const t = mask.type
@@ -75,14 +75,14 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                 const elt = resultsOrErr.value.type.elementType
                 referenceType = referenceType === undefined ? elt : unifyType(referenceType, elt, () => new Error('Should be unreachable'))
             }
-            if (referenceType === undefined) {
-                return { type: 'error', message: `Mask is empty, cannot index value ${renderType(maskType)}` }
-            }
+            assert(referenceType !== undefined, 'already handled empty vector case')
             return { type: 'success', value: { type: { type: 'vector', elementType: referenceType }, value: results } }
+        /* c8 ignore start */
+        // If we reach here, it means the mask is not a valid mask. We checked for this earlier.
         case 'object':
-            return { type: 'error', message: `Cannot index with an object mask, got ${renderType(maskType)}` }
         case 'function':
-            return { type: 'error', message: `Cannot index with a function mask, got ${renderType(maskType)}` }
+            throw new Error('this case was already handled earlier, should not be reachable')
+        /* c8 ignore stop */
     }
 }
 
@@ -118,9 +118,7 @@ function index(v: USSValue, i: number): USSValue {
     const valueType = v.type
     if (valueType.type === 'vector') {
         const valueVector = v.value as USSRawValue[]
-        if (i < 0 || i >= valueVector.length) {
-            throw new Error(`Index ${i} out of bounds for vector of length ${valueVector.length}`)
-        }
+        assert (i >= 0 && i < valueVector.length, `Index ${i} out of bounds for vector of length ${valueVector.length}`)
         assert(valueType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
         return { type: valueType.elementType, value: valueVector[i] }
     }
@@ -153,9 +151,7 @@ export function mergeValuesViaMasks(
     mask: USSValue & { type: USSVectorType },
     references: USSPrimitiveRawValue[],
 ): { type: 'success', value: USSValue } | { type: 'error', message: string } {
-    if (values.length !== references.length) {
-        throw new Error(`Expected the number of values (${values.length}) to match the number of references (${references.length})`)
-    }
+    assert (values.length === references.length, `Expected the number of values (${values.length}) to match the number of references (${references.length})`)
     const mType = mask.type
     if (mType.elementType.type !== 'boolean' && mType.elementType.type !== 'number' && mType.elementType.type !== 'string') {
         return { type: 'error', message: `Cannot condition on a mask of type ${renderType(mType)}` }
@@ -215,7 +211,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     const maskType = mask.type
     if (uniqueValueArray.length === 1) {
         // if there is only one unique value, we can just return the result of the function
-        return fn({ type: maskType, value: uniqueValueArray[0] }, env)
+        return fn({ type: getPrimitiveType(uniqueValueArray[0]), value: uniqueValueArray[0] }, env)
     }
     assert(maskType.type === 'vector', 'unreachable')
     const outEnvsValues = uniqueValueArray.map((value) => {
@@ -224,7 +220,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
             throw env.error(`Conditional error: ${subEnv.message}`, errLocCondition)
         }
         assert(maskType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
-        const result = fn({ type: maskType.elementType, value }, subEnv.value)
+        const result = fn({ type: getPrimitiveType(value), value }, subEnv.value)
         return [result, subEnv.value] satisfies [USSValue, Context]
     })
     const newVars = new Map<string, USSValue>()
@@ -254,7 +250,8 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         uniqueValueArray,
     )
     if (mergedValues.type === 'error') {
-        throw env.error(`Error merging values: ${mergedValues.message}`, errLocIf)
+        // If the types do not match, return null
+        return { type: { type: 'null' }, value: null }
     }
     return mergedValues.value
 }

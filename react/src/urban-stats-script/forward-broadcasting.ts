@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
-import { Context } from './interpreter'
+import { Context, InterpretationError } from './interpreter'
+import { LocInfo } from './lexer'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
 
 interface PredicateDescriptor {
@@ -239,16 +240,27 @@ function mapSeveral(
     argumentNames: string[],
     kwArgs: USSRawValue[],
     depth: number,
-    ctx: Context): USSRawValue {
+    ctx: Context,
+    locInfo: LocInfo,
+): USSRawValue {
     /**
      * Maps the given function to the positional and keyword arguments, returning a new value.
      * The function is expected to be a function that takes the positional and keyword arguments.
      */
     if (depth === 0) {
         assert(typeof fn === 'function', `Expected a function, but got ${typeof fn}`)
-        return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>) => USSRawValue)(
-            ctx, posArgs, Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v])),
-        )
+        const kw = Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v]))
+        try {
+            return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>) => USSRawValue)(
+                ctx, posArgs, kw,
+            )
+        }
+        catch (e) {
+            if (e instanceof InterpretationError) {
+                throw e
+            }
+            throw ctx.error(`Error while executing function: ${e}`, locInfo)
+        }
     }
     assert(Array.isArray(fn), `Expected an array of functions, but got ${typeof fn}`)
     return Array.from({ length: fn.length }, (_, i) => {
@@ -267,6 +279,7 @@ function mapSeveral(
             kwArgsI,
             depth - 1,
             ctx,
+            locInfo,
         )
     })
 }
@@ -281,7 +294,12 @@ function nestedVectorType(type: USSType, depth: number): USSType {
     }
 }
 
-export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [string, USSValue][], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
+export function broadcastApply(
+    fn: USSValue, posArgs: USSValue[],
+    kwArgs: [string, USSValue][],
+    ctx: Context,
+    locInfo: LocInfo,
+): { type: 'success', result: USSValue } | BroadcastError {
     /**
      * Broadcasts a function to the given arguments. The function itself can be a vector, but the types
      * of the functions must all be the same.
@@ -318,6 +336,7 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
         kwArgsLocated.map(x => x[2]),
         depth,
         ctx,
+        locInfo,
     )
 
     // console.log('resulting', resulting, 'fnLocated', fnLocated, 'posArgsLocated', posArgsLocated, 'kwArgsLocated', kwArgsLocated)
@@ -332,7 +351,7 @@ export function broadcastApply(fn: USSValue, posArgs: USSValue[], kwArgs: [strin
     }
 }
 
-export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { type: 'success', result: USSValue } | BroadcastError {
+export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context, locInfo: LocInfo): { type: 'success', result: USSValue } | BroadcastError {
     /**
      * Broadcasts a function to the given arguments. The function itself can be a vector, but the types
      * of the functions must all be the same.
@@ -346,5 +365,5 @@ export function broadcastCall(fn: USSValue, args: ValueArg[], ctx: Context): { t
      */
     const posArgs = args.filter(x => x.type === 'unnamed').map(x => x.value)
     const kwArgs = args.filter(x => x.type === 'named').map(x => [x.name, x.value] satisfies [string, USSValue])
-    return broadcastApply(fn, posArgs, kwArgs, ctx)
+    return broadcastApply(fn, posArgs, kwArgs, ctx, locInfo)
 }

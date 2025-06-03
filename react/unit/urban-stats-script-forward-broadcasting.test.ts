@@ -3,6 +3,7 @@ import { test } from 'node:test'
 
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
 import { Context } from '../src/urban-stats-script/interpreter'
+import { LocInfo } from '../src/urban-stats-script/lexer'
 import { USSRawValue, USSType, renderType } from '../src/urban-stats-script/types-values'
 
 import { multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
@@ -102,6 +103,10 @@ void test('broadcasting-locate-type', (): void => {
 })
 
 void test('broadcasting-apply', (): void => {
+    const locInfo: LocInfo = {
+        start: { lineIdx: 1, colIdx: 1 },
+        end: { lineIdx: 1, colIdx: 1 },
+    } satisfies LocInfo
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -112,6 +117,7 @@ void test('broadcasting-apply', (): void => {
                 ['a', { type: numType, value: 3 }],
             ],
             {} as Context, // Context is not used in this test, so we can pass an empty object
+            locInfo,
         ),
         { type: 'success', result: { type: numType, value: 10 * 10 + 3 } },
     )
@@ -125,6 +131,7 @@ void test('broadcasting-apply', (): void => {
                 ['a', { type: numType, value: 3 }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'success',
@@ -144,6 +151,7 @@ void test('broadcasting-apply', (): void => {
                 ['a', { type: numType, value: 3 }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'success',
@@ -163,6 +171,7 @@ void test('broadcasting-apply', (): void => {
                 ['a', { type: numVectorType, value: [3, 4] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'success',
@@ -182,6 +191,7 @@ void test('broadcasting-apply', (): void => {
                 ['a', { type: numVectorType, value: [3, 4] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'success',
@@ -194,6 +204,10 @@ void test('broadcasting-apply', (): void => {
 })
 
 void test('jagged array', (): void => {
+    const locInfo: LocInfo = {
+        start: { lineIdx: 1, colIdx: 1 },
+        end: { lineIdx: 1, colIdx: 1 },
+    } satisfies LocInfo
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn2 },
@@ -204,6 +218,7 @@ void test('jagged array', (): void => {
                 ['a', { type: numType, value: 3 }],
             ],
             {} as Context,
+            locInfo,
         ),
         { type: 'error', message: 'Jagged vector (nested vector where not all are the same length) cannot be broadcasted' },
     )
@@ -221,6 +236,7 @@ void test('jagged array', (): void => {
             ],
             [],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'success',
@@ -233,12 +249,17 @@ void test('jagged array', (): void => {
 })
 
 void test('wrong number of arguments', (): void => {
+    const locInfo: LocInfo = {
+        start: { lineIdx: 1, colIdx: 1 },
+        end: { lineIdx: 1, colIdx: 1 },
+    } satisfies LocInfo
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
             [],
             [],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -254,6 +275,7 @@ void test('wrong number of arguments', (): void => {
             [
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -271,6 +293,7 @@ void test('wrong number of arguments', (): void => {
                 ['b', { type: numType, value: 4 }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -280,6 +303,10 @@ void test('wrong number of arguments', (): void => {
 })
 
 void test('wrong argument type', (): void => {
+    const locInfo: LocInfo = {
+        start: { lineIdx: 1, colIdx: 1 },
+        end: { lineIdx: 1, colIdx: 1 },
+    } satisfies LocInfo
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -290,6 +317,7 @@ void test('wrong argument type', (): void => {
                 ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -306,6 +334,7 @@ void test('wrong argument type', (): void => {
                 ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -322,6 +351,7 @@ void test('wrong argument type', (): void => {
                 ['a', { type: stringType, value: 'hi' }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -331,6 +361,10 @@ void test('wrong argument type', (): void => {
 })
 
 void test('bad-shape-broadcasting', (): void => {
+    const locInfo: LocInfo = {
+        start: { lineIdx: 1, colIdx: 1 },
+        end: { lineIdx: 1, colIdx: 1 },
+    } satisfies LocInfo
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -341,6 +375,7 @@ void test('bad-shape-broadcasting', (): void => {
                 ['a', { type: numVectorType, value: [1, 2] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
@@ -357,6 +392,7 @@ void test('bad-shape-broadcasting', (): void => {
                 ['a', { type: numVectorType, value: [1, 2] }],
             ],
             {} as Context,
+            locInfo,
         ),
         {
             type: 'error',
