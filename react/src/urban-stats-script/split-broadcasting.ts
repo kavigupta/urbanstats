@@ -241,7 +241,10 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         newVars.set(k, merged.value)
     }
     for (const [k, v] of newVars.entries()) {
-        env.assignVariable(k, v)
+        const err = env.assignVariable(k, v)
+        if (err !== undefined) {
+            throw env.error(`Error assigning variable ${k}: ${err}`, errLocIf)
+        }
     }
     const mergedValues = mergeValuesViaMasks(
         outEnvsValues.map(([v]) => v),

@@ -1,4 +1,5 @@
 /* c8 ignore start */
+import { defaultConstants } from '../src/urban-stats-script/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
@@ -65,6 +66,7 @@ export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, l
             errorsOut.push({ msg, location })
             return error
         },
+        defaultConstants,
         env,
     )
 }
@@ -75,6 +77,7 @@ export function emptyContext(): Context {
         (msg: string, location: LocInfo) => {
             return new InterpretationError(msg, location)
         },
+        defaultConstants,
         new Map<string, USSValue>(),
     )
 }

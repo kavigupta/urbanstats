@@ -162,7 +162,10 @@ export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context
     switch (lhs.type) {
         case 'identifier':
             const varName = lhs.name.node
-            env.assignVariable(varName, value)
+            const err = env.assignVariable(varName, value)
+            if (err !== undefined) {
+                throw env.error(err, locationOf(lhs))
+            }
             return
         case 'attribute':
             const obj = evaluate(lhs.expr, env)

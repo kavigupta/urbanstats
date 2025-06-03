@@ -772,3 +772,16 @@ void test('mutate objects', (): void => {
         },
     )
 })
+
+void test('constants', (): void => {
+    assert.deepStrictEqual(
+        evaluate(parseExpr('pi'), emptyContext()),
+        { type: numType, value: Math.PI },
+    )
+    assert.throws(
+        () => execute(parseProgram('pi = 3.14'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Cannot assign to constant "pi" at 1:1-2'
+        },
+    )
+})
