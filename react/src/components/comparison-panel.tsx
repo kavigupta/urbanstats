@@ -358,6 +358,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             longnames={props.articles.map(x => x.longname)}
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
+                            attribution="startVisible"
                         />
                     </div>
                 </div>

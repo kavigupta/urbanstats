@@ -31,10 +31,6 @@ class Map extends MapGeneric<MapProps> {
             zoomIndex: 0,
         })
     }
-
-    override startShowingAttribution(): boolean {
-        return false
-    }
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (
@@ -193,6 +189,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
                     longname={props.question[`longname_${letter}`]}
                     basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
+                    attribution="startHidden"
                 />
             )}
         />
