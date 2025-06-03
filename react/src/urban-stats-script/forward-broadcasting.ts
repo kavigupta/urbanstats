@@ -55,12 +55,15 @@ function locateTypeVector(
             message: `Jagged vector (nested vector where not all are the same length) cannot be broadcasted`,
         }
     }
+    /* c8 ignore start */
+    // I don't think this can happen, but let's be safe
     if (types.some(x => renderType(x) !== renderType(types[0]))) {
         return {
             type: 'error',
             message: `Array of different types cannot be broadcasted: ${types.map(renderType).join(', ')}`,
         }
     }
+    /* c8 ignore stop */
     return { type: 'success', result: [[prefixes.length, ...prefixes[0]], types[0], values] }
 }
 
