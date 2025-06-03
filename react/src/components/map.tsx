@@ -1,6 +1,6 @@
 import { GeoJSON2SVG } from 'geojson2svg'
-import 'maplibre-gl/dist/maplibre-gl.css'
 import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
@@ -463,7 +463,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
-        this.map?.fitBounds(extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))), { padding: defaultMapPadding, ...options })
+        this.map?.fitBounds(
+            extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
+            { padding: defaultMapPadding, ...options },
+        )
     }
 
     zoomToAll(padding: number = 0): void {
