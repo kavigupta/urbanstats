@@ -150,16 +150,13 @@ function defaultValueForType(type: USSType): USSRawValue {
 
 export function mergeValuesViaMasks(
     values: USSValue[],
-    mask: USSValue,
+    mask: USSValue & { type: USSVectorType },
     references: USSPrimitiveRawValue[],
 ): { type: 'success', value: USSValue } | { type: 'error', message: string } {
     if (values.length !== references.length) {
         throw new Error(`Expected the number of values (${values.length}) to match the number of references (${references.length})`)
     }
     const mType = mask.type
-    if (mType.type !== 'vector') {
-        return { type: 'error', message: `Expected a vector mask, but got ${renderType(mType)}` }
-    }
     if (mType.elementType.type !== 'boolean' && mType.elementType.type !== 'number' && mType.elementType.type !== 'string') {
         return { type: 'error', message: `Cannot condition on a mask of type ${renderType(mType)}` }
     }
@@ -168,9 +165,7 @@ export function mergeValuesViaMasks(
     const result: (USSValue | undefined)[] = []
     for (let i = 0; i < maskVector.length; i++) {
         const whichValue = references.indexOf(maskVector[i])
-        if (whichValue === -1) {
-            return { type: 'error', message: `Reference ${references[i]} not found in mask ${maskVector.map(x => JSON.stringify(x)).join(', ')}` }
-        }
+        assert (whichValue !== -1, `Reference ${references[i]} not found in mask ${maskVector.map(x => JSON.stringify(x)).join(', ')}`)
         // special case null values.
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
         indices[whichValue]++
@@ -222,9 +217,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         // if there is only one unique value, we can just return the result of the function
         return fn({ type: maskType, value: uniqueValueArray[0] }, env)
     }
-    if (maskType.type !== 'vector') {
-        throw new Error('unreachable')
-    }
+    assert(maskType.type === 'vector', 'unreachable')
     const outEnvsValues = uniqueValueArray.map((value) => {
         const subEnv = indexMaskIntoContext(env, mask, value)
         if (subEnv.type === 'error') {
@@ -243,7 +236,8 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     }
     for (const k of allKeys) {
         const values = outEnvsValues.map(([, subEnv]) => subEnv.variables.get(k) ?? { type: { type: 'null' }, value: null } satisfies USSValue)
-        const merged = mergeValuesViaMasks(values, mask, uniqueValueArray)
+        assert(mask.type.type === 'vector', 'unreachable')
+        const merged = mergeValuesViaMasks(values, mask as USSValue & { type: USSVectorType }, uniqueValueArray)
         if (merged.type === 'error') {
             throw env.error(`Error merging values for variable ${k}: ${merged.message}`, errLocIf)
         }
@@ -256,7 +250,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     env.variables = newVars
     const mergedValues = mergeValuesViaMasks(
         outEnvsValues.map(([v]) => v),
-        mask,
+        mask as USSValue & { type: USSVectorType },
         uniqueValueArray,
     )
     if (mergedValues.type === 'error') {

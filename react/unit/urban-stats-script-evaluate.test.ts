@@ -1,10 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Context, evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { Context, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
     const env = new Map<string, USSValue>()
@@ -331,6 +331,32 @@ void test('evaluate if expressions', (): void => {
         () => evaluate(parseExpr('if ([]) { 1 } else { 2 }'), emptyCtx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional mask must have at least one unique value, but got none at 1:5-6'
+        },
+    )
+    // basic indexing
+    const codeWLiteral = `
+        x = [1, 2, 3, 4, 5, 6]
+        if ([1, 1, 2, 2, 3, 3] == 1) {
+            y = x + 1
+        }
+        y
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWLiteral), emptyCtx),
+        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+    )
+    // incompatbile sizes
+    const codeWIncompatible = `
+        x = [1, 2, 3, 4, 5, 6]
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = x + 1
+        }
+        y
+        `
+    assert.throws(
+        () => execute(parseProgram(codeWIncompatible), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-32'
         },
     )
 })

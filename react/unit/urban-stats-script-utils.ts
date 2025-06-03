@@ -1,6 +1,6 @@
 import { Context, Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
-import { parse, UrbanStatsASTExpression } from '../src/urban-stats-script/parser'
+import { parse, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../src/urban-stats-script/parser'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
@@ -74,4 +74,12 @@ export function parseExpr(input: string): UrbanStatsASTExpression {
         throw new Error(`Expected an expression, but got ${JSON.stringify(parsed)}`)
     }
     return parsed.value
+}
+
+export function parseProgram(input: string): UrbanStatsASTStatement {
+    const parsed = parse(input)
+    if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression') {
+        throw new Error(`Expected an assignment or statements, but got ${JSON.stringify(parsed)}`)
+    }
+    return parsed
 }
