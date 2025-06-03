@@ -205,7 +205,7 @@ jobs:
       - uses: ./.github/actions/node_modules
       - name: Run tests
         run: |
-          npm run test:ciunit -- \
+          npm run test:unit:ci -- \
             --proxy=true \
             --test='unit/*.test.ts'
         working-directory: react
