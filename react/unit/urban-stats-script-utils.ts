@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { Context, Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../src/urban-stats-script/parser'
@@ -83,3 +84,4 @@ export function parseProgram(input: string): UrbanStatsASTStatement {
     }
     return parsed
 }
+/* c8 ignore end */
