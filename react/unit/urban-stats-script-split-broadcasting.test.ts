@@ -250,6 +250,7 @@ void test('split mask testing', (): void => {
             },
             lengthFn,
             defaultLocInfo,
+            defaultLocInfo,
         ),
         { type: numVectorType, value: [5, 5, 5, 4, 4, 5, 5, 4, 4] },
     )
@@ -264,6 +265,7 @@ void test('split mask testing', (): void => {
                 return { type: numType, value: (ctx.variables.get('a')!.value as USSRawValue[]).length }
             },
             defaultLocInfo,
+            defaultLocInfo,
         ),
         { type: numType, value: 9 } satisfies USSValue,
     )
@@ -275,6 +277,7 @@ void test('split mask testing', (): void => {
                 value: [1, 2, 3, 4, 5, 6, 7, 8, 9],
             },
             lengthFn,
+            defaultLocInfo,
             defaultLocInfo,
         ),
         { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 1] } satisfies USSValue,
@@ -288,6 +291,7 @@ void test('split mask testing', (): void => {
             },
             lengthFn,
             defaultLocInfo,
+            defaultLocInfo,
         ),
         { type: numVectorType, value: [3, 2, 1, 3, 1, 3, 1, 1, 2] } satisfies USSValue,
     )
@@ -299,6 +303,7 @@ void test('split mask testing', (): void => {
                 value: [1, 1, 1, 1, 1, 1, 1, 1, 1],
             },
             lengthFn,
+            defaultLocInfo,
             defaultLocInfo,
         ),
         { type: numType, value: 9 } satisfies USSValue,

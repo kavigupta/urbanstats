@@ -116,21 +116,27 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             }
         case 'if':
             const condition = evaluate(expr.condition, env)
-            return splitMask(env, condition, (v: USSValue, subEnv: Context): USSValue => {
-                if (v.type.type !== 'boolean') {
-                    throw env.error(`Condition in if statement must be a boolean, but got ${renderType(v.type)}`, locationOf(expr.condition))
-                }
-                if (v.value) {
-                    return execute(expr.then, subEnv)
-                }
-                if (expr.else === undefined) {
-                    return {
-                        type: { type: 'null' },
-                        value: null,
+            return splitMask(
+                env,
+                condition,
+                (v: USSValue, subEnv: Context): USSValue => {
+                    if (v.type.type !== 'boolean') {
+                        throw env.error(`Condition in if statement must be a boolean, but got ${renderType(v.type)}`, locationOf(expr.condition))
                     }
-                }
-                return execute(expr.else, subEnv)
-            }, locationOf(expr))
+                    if (v.value) {
+                        return execute(expr.then, subEnv)
+                    }
+                    if (expr.else === undefined) {
+                        return {
+                            type: { type: 'null' },
+                            value: null,
+                        }
+                    }
+                    return execute(expr.else, subEnv)
+                },
+                locationOf(expr.condition),
+                locationOf(expr),
+            )
     }
 }
 

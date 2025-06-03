@@ -196,7 +196,7 @@ export function mergeValuesViaMasks(
     }
 }
 
-export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, subEnv: Context) => USSValue, errLoc: LocInfo): USSValue {
+export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, subEnv: Context) => USSValue, errLocCondition: LocInfo, errLocIf: LocInfo): USSValue {
     /**
      * Splits the mask into its unique values and applies the function to each value.
      * The function is expected to return a USSValue.
@@ -204,7 +204,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
      */
     const collectIn = new Set<USSPrimitiveRawValue>()
     if (!collectUniqueMaskValues(collectIn, mask)) {
-        throw env.error(`Conditional mask must be a vector of numbers, strings, or booleans, but got ${renderType(mask.type)}`, errLoc)
+        throw env.error(`Conditional mask must be a vector of numbers, strings, or booleans, but got ${renderType(mask.type)}`, errLocCondition)
     }
     const uniqueValueArray = Array.from(collectIn).sort((a, b) => {
         // stringify the values to compare them
@@ -215,7 +215,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         return 0
     })
     if (uniqueValueArray.length === 0) {
-        throw env.error(`Conditional mask must have at least one unique value, but got none`, errLoc)
+        throw env.error(`Conditional mask must have at least one unique value, but got none`, errLocCondition)
     }
     const maskType = mask.type
     if (uniqueValueArray.length === 1) {
@@ -228,7 +228,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     const outEnvsValues = uniqueValueArray.map((value) => {
         const subEnv = indexMaskIntoContext(env, mask, value)
         if (subEnv.type === 'error') {
-            throw env.error(`Error indexing mask into context: ${subEnv.message}`, errLoc)
+            throw env.error(`Conditional error: ${subEnv.message}`, errLocCondition)
         }
         assert(maskType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
         const result = fn({ type: maskType.elementType, value }, subEnv.value)
@@ -245,7 +245,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         const values = outEnvsValues.map(([, subEnv]) => subEnv.variables.get(k) ?? { type: { type: 'null' }, value: null } satisfies USSValue)
         const merged = mergeValuesViaMasks(values, mask, uniqueValueArray)
         if (merged.type === 'error') {
-            throw env.error(`Error merging values for variable ${k}: ${merged.message}`, errLoc)
+            throw env.error(`Error merging values for variable ${k}: ${merged.message}`, errLocIf)
         }
         if (merged.value.type.type === 'null') {
             // If the merged value is null, we don't add it to the new variables
@@ -260,7 +260,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         uniqueValueArray,
     )
     if (mergedValues.type === 'error') {
-        throw env.error(`Error merging values: ${mergedValues.message}`, errLoc)
+        throw env.error(`Error merging values: ${mergedValues.message}`, errLocIf)
     }
     return mergedValues.value
 }

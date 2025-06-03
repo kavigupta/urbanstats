@@ -326,6 +326,13 @@ void test('evaluate if expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Condition in if statement must be a boolean, but got number at 1:5-6'
         },
     )
+    // test conditioning on []
+    assert.throws(
+        () => evaluate(parseExpr('if ([]) { 1 } else { 2 }'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Conditional mask must have at least one unique value, but got none at 1:5-6'
+        },
+    )
 })
 
 void test('evaluate if expressions mutations', (): void => {
@@ -440,7 +447,7 @@ void test('evaluate objects', (): void => {
     assert.throws(
         () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), emptyCtx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:1-20'
+            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:5-16'
         },
     )
     // duplicate keys
