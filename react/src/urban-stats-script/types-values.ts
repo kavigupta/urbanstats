@@ -135,9 +135,7 @@ export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType
             return { type: 'null' }
         }
     }
-    if (!Array.isArray(value)) {
-        throw new Error(`Expected a primitive value, but got ${typeof value}`)
-    }
+    assert(Array.isArray(value), `Expected a primitive value, but got ${typeof value}`)
     return getPrimitiveType(value[0], depth - 1)
 }
 

@@ -83,6 +83,12 @@ void test('evaluate basic expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string at 1:1-5'
         },
     )
+    assert.throws(
+        () => evaluate(parseExpr('+ (if (1 == 0) {})'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Invalid type for operator +: null at 1:1-17'
+        },
+    )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] + 1'), emptyCtx),
         { type: numMatrixType, value: [[2, 2, 3, 3, 4, 4]] },
