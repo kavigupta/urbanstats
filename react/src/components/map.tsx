@@ -318,15 +318,21 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await this.addPolygons(map, polygons, zoomIndex)
 
         debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
-        await this.mapDidRender()
-        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
+        // Must do this before map render or zooms are incorrect (they try to zoom to previous regions)
         for (const [name] of this.state.polygonByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
                 this.state.polygonByName.delete(name)
             }
         }
+
+        debugPerformance(`Removed polygons; at ${Date.now() - timeBasis}ms`)
+
+        await this.mapDidRender()
+
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
+
         await this.updateSources(true)
     }
 
