@@ -11,7 +11,7 @@
     "lint:ci": "eslint . --ignore-pattern=src/data --max-warnings=0",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
     "test:unit": "c8 --reporter=text --reporter=clover tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
-    "test:ciunit": "tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts"
+    "test:unit:ci": "tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts"
   },
   "keywords": [],
   "author": "",
