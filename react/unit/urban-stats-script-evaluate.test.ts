@@ -5,140 +5,137 @@ import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 + 2'), emptyCtx),
+        evaluate(parseExpr('2 + 2'), emptyContext()),
         { type: numType, value: 4 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 * 3 + 4'), emptyCtx),
+        evaluate(parseExpr('2 * 3 + 4'), emptyContext()),
         { type: numType, value: 10 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 * 3 + 4 * 5'), emptyCtx),
+        evaluate(parseExpr('2 * 3 + 4 * 5'), emptyContext()),
         { type: numType, value: 26 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2'), emptyCtx),
+        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2'), emptyContext()),
         { type: numType, value: 62 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyCtx),
+        evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyContext()),
         { type: numType, value: 55 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 ** -10'), emptyCtx),
+        evaluate(parseExpr('2 ** -10'), emptyContext()),
         { type: numType, value: 1 / 1024 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('-2 ** 10'), emptyCtx),
+        evaluate(parseExpr('-2 ** 10'), emptyContext()),
         { type: numType, value: -1024 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 > 3'), emptyCtx),
+        evaluate(parseExpr('2 > 3'), emptyContext()),
         { type: boolType, value: false },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('12 > 3'), emptyCtx),
+        evaluate(parseExpr('12 > 3'), emptyContext()),
         { type: boolType, value: true },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('"12" > "3"'), emptyCtx),
+        evaluate(parseExpr('"12" > "3"'), emptyContext()),
         { type: boolType, value: false },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('"abc" + "def"'), emptyCtx),
+        evaluate(parseExpr('"abc" + "def"'), emptyContext()),
         { type: stringType, value: 'abcdef' },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('"abc" + "def" + "ghi"'), emptyCtx),
+        evaluate(parseExpr('"abc" + "def" + "ghi"'), emptyContext()),
         { type: stringType, value: 'abcdefghi' },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 + 3 > 4'), emptyCtx),
+        evaluate(parseExpr('2 + 3 > 4'), emptyContext()),
         { type: boolType, value: true },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyCtx),
+        evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyContext()),
         { type: boolType, value: true },
     )
     assert.throws(
-        () => evaluate(parseExpr('2(3)'), emptyCtx),
+        () => evaluate(parseExpr('2(3)'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got number at 1:1-4'
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('2 + "3"'), emptyCtx),
+        () => evaluate(parseExpr('2 + "3"'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Invalid types for operator +: number and string at 1:1-7'
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('+ "2"'), emptyCtx),
+        () => evaluate(parseExpr('+ "2"'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string at 1:1-5'
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('+ (if (1 == 0) {})'), emptyCtx),
+        () => evaluate(parseExpr('+ (if (1 == 0) {})'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: null at 1:1-17'
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] + 1'), emptyCtx),
+        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] + 1'), emptyContext()),
         { type: numMatrixType, value: [[2, 2, 3, 3, 4, 4]] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyCtx),
+        evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyContext()),
         { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }, value: [[true, true, false, false, false, false]] },
     )
 })
 
 void test('evaluate basic variable expressions', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
-    env.set('x', { type: numVectorType, value: [1, 2, 3] })
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('x', { type: numVectorType, value: [1, 2, 3] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('x + 1'), emptyCtx),
+        evaluate(parseExpr('x + 1'), ctx),
         { type: numVectorType, value: [2, 3, 4] },
     )
-    env.set('y', { type: numMatrixType, value: [[10, 20, 30], [40, 50, 60]] })
+    ctx.assignVariable('y', { type: numMatrixType, value: [[10, 20, 30], [40, 50, 60]] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('y + x'), emptyCtx),
+        evaluate(parseExpr('y + x'), ctx),
         { type: numMatrixType, value: [[11, 22, 33], [41, 52, 63]] },
     )
-    env.set('z', { type: numVectorType, value: [10, 20, 30, 40] })
+    ctx.assignVariable('z', { type: numVectorType, value: [10, 20, 30, 40] })
     assert.throws(
-        () => evaluate(parseExpr('y + z'), emptyCtx),
+        () => evaluate(parseExpr('y + z'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Incompatibility between the shape of positional argument 2 (4) and the shape of positional argument 1 (2, 3) at 1:1-5'
         },
     )
-    env.set('s', { type: { type: 'vector', elementType: stringType }, value: ['hello'] })
+    ctx.assignVariable('s', { type: { type: 'vector', elementType: stringType }, value: ['hello'] })
     assert.throws(
-        () => evaluate(parseExpr('+ s'), emptyCtx),
+        () => evaluate(parseExpr('+ s'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string at 1:1-3'
         },
     )
-    env.set('obj', {
+    ctx.assignVariable('obj', {
         type: testObjType,
         value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
     })
     assert.throws(
-        () => evaluate(parseExpr('obj + 1'), emptyCtx),
+        () => evaluate(parseExpr('obj + 1'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Expected positional argument 1 to be a any (or vector thereof) but got {u: number, v: number} at 1:1-7'
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('+ obj'), emptyCtx),
+        () => evaluate(parseExpr('+ obj'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Expected positional argument 1 to be a any (or vector thereof) but got {u: number, v: number} at 1:1-5'
         },
@@ -146,24 +143,23 @@ void test('evaluate basic variable expressions', (): void => {
 })
 
 void test('evaluate attr accesses', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
-    env.set('obj', {
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('obj', {
         type: testObjType,
         value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('obj.u'), emptyCtx),
+        evaluate(parseExpr('obj.u'), ctx),
         { type: numType, value: 401 },
     )
 
     assert.throws(
-        () => evaluate(parseExpr('obj.x'), emptyCtx),
+        () => evaluate(parseExpr('obj.x'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Attribute x not found in object of type {u: number, v: number} at 1:1-5'
         },
     )
-    env.set('objs', {
+    ctx.assignVariable('objs', {
         type: { type: 'vector', elementType: testObjType },
         value: [
             new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
@@ -171,10 +167,10 @@ void test('evaluate attr accesses', (): void => {
         ],
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('objs.u'), emptyCtx),
+        evaluate(parseExpr('objs.u'), ctx),
         { type: numVectorType, value: [101, 301] },
     )
-    env.set('objs2', {
+    ctx.assignVariable('objs2', {
         type: { type: 'vector', elementType: { type: 'vector', elementType: testObjType } },
         value: [
             [
@@ -188,11 +184,11 @@ void test('evaluate attr accesses', (): void => {
         ],
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('objs2.u'), emptyCtx),
+        evaluate(parseExpr('objs2.u'), ctx),
         { type: { type: 'vector', elementType: numVectorType }, value: [[101, 301], [501, 701]] },
     )
     assert.throws(
-        () => evaluate(parseExpr('objs2.a'), emptyCtx),
+        () => evaluate(parseExpr('objs2.a'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Attribute a not found in object of type {u: number, v: number} at 1:1-7'
         },
@@ -200,38 +196,37 @@ void test('evaluate attr accesses', (): void => {
 })
 
 void test('evaluate function calls', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
-    env.set('x', { type: numVectorType, value: [1, 2, 3] })
-    env.set('testFn1', { type: testFnType, value: testFn1 })
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('x', { type: numVectorType, value: [1, 2, 3] })
+    ctx.assignVariable('testFn1', { type: testFnType, value: testFn1 })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFn1(2, a=3)'), emptyCtx),
+        evaluate(parseExpr('testFn1(2, a=3)'), ctx),
         { type: numType, value: 2 * 2 + 3 },
     )
-    env.set('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] })
+    ctx.assignVariable('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFns(2, a=3)'), emptyCtx),
+        evaluate(parseExpr('testFns(2, a=3)'), ctx),
         { type: numVectorType, value: [2 * 2 + 3, 2 * 2 * 2 + 3] },
     )
-    env.set('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2, testFn1] })
+    ctx.assignVariable('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2, testFn1] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFns(2, a=x)'), emptyCtx),
+        evaluate(parseExpr('testFns(2, a=x)'), ctx),
         { type: numVectorType, value: [2 * 2 + 1, 2 * 2 * 2 + 2, 2 * 2 + 3] }, // x is [1, 2, 3], so the last one is 2 * 2 + 3
     )
-    env.set('testFnMultiArg', { type: multiArgFnType, value: testFnMultiArg })
-    env.set('obj', {
+    ctx.assignVariable('testFnMultiArg', { type: multiArgFnType, value: testFnMultiArg })
+    ctx.assignVariable('obj', {
         type: testObjType,
         value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
     })
-    env.set('y', { type: numVectorType, value: [1, 2, 3] })
+    ctx.assignVariable('y', { type: numVectorType, value: [1, 2, 3] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=obj)'), emptyCtx),
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=obj)'), ctx),
         {
             type: numVectorType,
             value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
         },
     )
-    env.set('objs', {
+    ctx.assignVariable('objs', {
         type: {
             type: 'object',
             properties: new Map<string, USSType>([
@@ -245,7 +240,7 @@ void test('evaluate function calls', (): void => {
         ]),
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objs)'), emptyCtx),
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objs)'), ctx),
         {
             type: numMatrixType,
             value: [
@@ -255,7 +250,7 @@ void test('evaluate function calls', (): void => {
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: [200, 300]})'), emptyCtx),
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: [200, 300]})'), ctx),
         {
             type: numMatrixType,
             value: [
@@ -265,12 +260,12 @@ void test('evaluate function calls', (): void => {
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: []})'), emptyCtx),
+        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: []})'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Cannot broadcast object property v because its type is an empty vector with no inferred type at 1:1-44'
         },
     )
-    env.set('objsBoth', {
+    ctx.assignVariable('objsBoth', {
         type: {
             type: 'object',
             properties: new Map<string, USSType>([
@@ -284,7 +279,7 @@ void test('evaluate function calls', (): void => {
         ]),
     })
     assert.deepStrictEqual(
-        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBoth)'), emptyCtx),
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBoth)'), ctx),
         {
             type: numMatrixType,
             value: [
@@ -293,7 +288,7 @@ void test('evaluate function calls', (): void => {
             ],
         },
     )
-    env.set('objsBothRagged', {
+    ctx.assignVariable('objsBothRagged', {
         type: {
             type: 'object',
             properties: new Map<string, USSType>([
@@ -307,7 +302,7 @@ void test('evaluate function calls', (): void => {
         ]),
     })
     assert.throws(
-        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), emptyCtx),
+        () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Object properties u, v have different lengths (2, 1), cannot be broadcasted at 1:1-43'
         },
@@ -315,35 +310,34 @@ void test('evaluate function calls', (): void => {
 })
 
 void test('evaluate if expressions', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
-    env.set('x', { type: numType, value: 3 })
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('x', { type: numType, value: 3 })
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), emptyCtx),
+        evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), ctx),
         { type: numType, value: 1 },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), emptyCtx),
+        evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), ctx),
         { type: numType, value: 2 },
     )
-    env.set('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    ctx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { xs + 1 } else { xs - 2 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { xs + 1 } else { xs - 2 }'), ctx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     assert.throws(
-        () => evaluate(parseExpr('if (xs) { ys = xs + 1 } else { ys = xs - 2 }'), emptyCtx),
+        () => evaluate(parseExpr('if (xs) { ys = xs + 1 } else { ys = xs - 2 }'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Condition in if statement must be a boolean, but got number at 1:5-6'
         },
     )
     // test conditioning on []
     assert.throws(
-        () => evaluate(parseExpr('if ([]) { 1 } else { 2 }'), emptyCtx),
+        () => evaluate(parseExpr('if ([]) { 1 } else { 2 }'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional mask must have at least one unique value, but got none at 1:5-6'
         },
@@ -357,7 +351,7 @@ void test('evaluate if expressions', (): void => {
         y
         `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWLiteral), emptyCtx),
+        execute(parseProgram(codeWLiteral), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     // incompatbile sizes
@@ -369,7 +363,7 @@ void test('evaluate if expressions', (): void => {
         y
         `
     assert.throws(
-        () => execute(parseProgram(codeWIncompatible), emptyCtx),
+        () => execute(parseProgram(codeWIncompatible), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-32'
         },
@@ -386,7 +380,7 @@ void test('more if expressions', (): void => {
         y
         `
     assert.throws(
-        () => execute(parseProgram(codeWNested), testingContext([], [], new Map<string, USSValue>())),
+        () => execute(parseProgram(codeWNested), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Error merging values for variable x: Cannot condition on a mask of type [[boolean]] at 3:9 - 5:10'
         },
@@ -400,7 +394,7 @@ void test('more if expressions', (): void => {
         y
         `
     assert.throws(
-        () => execute(parseProgram(codeWIncompatibleNested), testingContext([], [], new Map<string, USSValue>())),
+        () => execute(parseProgram(codeWIncompatibleNested), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-34'
         },
@@ -413,7 +407,7 @@ void test('more if expressions', (): void => {
         y
         `
     assert.throws(
-        () => execute(parseProgram(codeWithNull), testingContext([], [], new Map<string, USSValue>())),
+        () => execute(parseProgram(codeWithNull), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Undefined variable: y at 5:9'
         },
@@ -426,7 +420,7 @@ void test('more if expressions', (): void => {
         y
         `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWithDefinedNull), testingContext([], [], new Map<string, USSValue>())),
+        execute(parseProgram(codeWithDefinedNull), emptyContext()),
         { type: { type: 'vector', elementType: { type: 'null' } }, value: [null, null, null, null, null] },
     )
     // define y as a vector of booleans
@@ -436,7 +430,7 @@ void test('more if expressions', (): void => {
         }
         `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWithDefinedBool), testingContext([], [], new Map<string, USSValue>())),
+        execute(parseProgram(codeWithDefinedBool), emptyContext()),
         { type: { type: 'vector', elementType: boolType }, value: [true, true, false, false, false] },
     )
     // define y as a vector of vectors of numbers
@@ -446,7 +440,7 @@ void test('more if expressions', (): void => {
         }
         `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWithDefinedNumVector), testingContext([], [], new Map<string, USSValue>())),
+        execute(parseProgram(codeWithDefinedNumVector), emptyContext()),
         { type: numMatrixType, value: [[1, 2], [3, 4], [], [], []] },
     )
     // define y as an object
@@ -456,7 +450,7 @@ void test('more if expressions', (): void => {
         }
         `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWithDefinedObject), testingContext([], [], new Map<string, USSValue>())),
+        execute(parseProgram(codeWithDefinedObject), emptyContext()),
         {
             type: {
                 type: 'vector',
@@ -491,7 +485,7 @@ void test('more if expressions', (): void => {
         assert.throws(
             () => {
                 (v[2] as ((ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => void))(
-                    testingContext([], [], new Map<string, USSValue>()),
+                    emptyContext(),
                     [],
                     {},
                 )
@@ -516,62 +510,61 @@ void test('more if expressions', (): void => {
         )
     }
     assert.deepStrictEqual(
-        execute(parseProgram('if ([2, 1] == 1) { 2 } else { "2" }'), testingContext([], [], new Map<string, USSValue>())),
+        execute(parseProgram('if ([2, 1] == 1) { 2 } else { "2" }'), emptyContext()),
         { type: { type: 'null' }, value: null },
     )
 })
 
 void test('evaluate if expressions mutations', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
-    emptyCtx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 } else { ys = xs - 2 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 } else { ys = xs - 2 }'), ctx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('ys'), emptyCtx),
+        evaluate(parseExpr('ys'), ctx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
     )
-    emptyCtx.assignVariable('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
+    ctx.assignVariable('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('ys'), emptyCtx),
+        evaluate(parseExpr('ys'), ctx),
         { type: numVectorType, value: [2, 3, 300, 400, 500, 600] }, // ys is mutated only for the first two elements
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { zs = xs + 1 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { zs = xs + 1 }'), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('zs'), emptyCtx),
+        evaluate(parseExpr('zs'), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (xs <= 2) { as = xs + 1; bs = as ** 2 }'), emptyCtx),
+        evaluate(parseExpr('if (xs <= 2) { as = xs + 1; bs = as ** 2 }'), ctx),
         { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('as'), emptyCtx),
+        evaluate(parseExpr('as'), ctx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('bs'), emptyCtx),
+        evaluate(parseExpr('bs'), ctx),
         { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (0 == 1) { 2 }'), emptyCtx),
+        evaluate(parseExpr('if (0 == 1) { 2 }'), ctx),
         { type: { type: 'null' }, value: null },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('if (1 == 1) { }'), emptyCtx),
+        evaluate(parseExpr('if (1 == 1) { }'), ctx),
         { type: { type: 'null' }, value: null },
     )
     assert.throws(
-        () => evaluate(parseExpr('2 + (if (1 == 1) { })() + 3'), emptyCtx),
+        () => evaluate(parseExpr('2 + (if (1 == 1) { })() + 3'), ctx),
         function (err: Error): boolean {
             return err instanceof InterpretationError && err.message === 'Expected function to be a function (or vector thereof) but got null at 1:6-23'
         },
@@ -579,24 +572,23 @@ void test('evaluate if expressions mutations', (): void => {
 })
 
 void test('evaluate objects', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
+    const ctx: Context = emptyContext()
     assert.deepStrictEqual(
-        evaluate(parseExpr('{ a: 1, b: 2 }'), emptyCtx),
+        evaluate(parseExpr('{ a: 1, b: 2 }'), ctx),
         {
             type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType]]) },
             value: new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('{ a: 1, b: 2, c: "hello" }'), emptyCtx),
+        evaluate(parseExpr('{ a: 1, b: 2, c: "hello" }'), ctx),
         {
             type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType], ['c', stringType]]) },
             value: new Map<string, USSRawValue>([['a', 1], ['b', 2], ['c', 'hello']]),
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('{}'), emptyCtx),
+        evaluate(parseExpr('{}'), ctx),
         {
             type: {
                 type: 'object',
@@ -607,7 +599,7 @@ void test('evaluate objects', (): void => {
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('{ a: 1, b: 2, c: "hello", d: { e: 3 } }'), emptyCtx),
+        evaluate(parseExpr('{ a: 1, b: 2, c: "hello", d: { e: 3 } }'), ctx),
         {
             type: {
                 type: 'object',
@@ -627,83 +619,82 @@ void test('evaluate objects', (): void => {
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('{a: 1, b: 2}.a'), emptyCtx),
+        evaluate(parseExpr('{a: 1, b: 2}.a'), ctx),
         { type: numType, value: 1 },
     )
     assert.throws(
-        () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), emptyCtx),
+        () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:5-16'
         },
     )
     // duplicate keys
-    assert.throws(() => evaluate(parseExpr('{ a: 1, a: 2 }'), emptyCtx), (err: Error): boolean => {
+    assert.throws(() => evaluate(parseExpr('{ a: 1, a: 2 }'), ctx), (err: Error): boolean => {
         return err instanceof InterpretationError && err.message === 'Duplicate key a in object literal at 1:12'
     })
 })
 
 void test('evaluate vectors', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
+    const ctx: Context = emptyContext()
     // assert.deepStrictEqual(
-    //     evaluate(parseExpr('[1, 2]'), emptyCtx),
+    //     evaluate(parseExpr('[1, 2]'), ctx),
     //     { type: numVectorType, value: [1, 2] },
     // )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[]'), emptyCtx),
+        evaluate(parseExpr('[]'), ctx),
         { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[]]'), emptyCtx),
+        evaluate(parseExpr('[[]]'), ctx),
         { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[]] },
     )
     assert.throws(
-        () => evaluate(parseExpr('[1, [2, 3]]'), emptyCtx),
+        () => evaluate(parseExpr('[1, [2, 3]]'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'vector literal contains heterogenous types number and [number] at 1:1-11'
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[1, 2, 3], [4]]'), emptyCtx),
+        evaluate(parseExpr('[[1, 2, 3], [4]]'), ctx),
         { type: numMatrixType, value: [[1, 2, 3], [4]] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[1, 2, 3], []]'), emptyCtx),
+        evaluate(parseExpr('[[1, 2, 3], []]'), ctx),
         { type: numMatrixType, value: [[1, 2, 3], []] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[[1, 2, 3]], []]'), emptyCtx),
+        evaluate(parseExpr('[[[1, 2, 3]], []]'), ctx),
         { type: { type: 'vector', elementType: numMatrixType }, value: [[[1, 2, 3]], []] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[], []]'), emptyCtx),
+        evaluate(parseExpr('[[], []]'), ctx),
         { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[], []] },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[[], [[]]]'), emptyCtx),
+        evaluate(parseExpr('[[], [[]]]'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } } },
             value: [[], [[]]],
         },
     )
     assert.throws(
-        () => evaluate(parseExpr('[] + [1]'), emptyCtx),
+        () => evaluate(parseExpr('[] + [1]'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'positional argument 1 is an empty vector whose type cannot be inferred at 1:1-8'
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('{a: []}.a'), emptyCtx),
+        evaluate(parseExpr('{a: []}.a'), ctx),
         { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
     )
     assert.throws(
-        () => evaluate(parseExpr('[{a: []}, {b: [1]}]'), emptyCtx),
+        () => evaluate(parseExpr('[{a: []}, {b: [1]}]'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'vector literal contains heterogenous types {a: []} and {b: [number]} at 1:1-19'
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[{a: []}, {a: [1]}]'), emptyCtx),
+        evaluate(parseExpr('[{a: []}, {a: [1]}]'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'number' } }]]) } },
             value: [
@@ -713,7 +704,7 @@ void test('evaluate vectors', (): void => {
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('[{a: []}, {a: []}]'), emptyCtx),
+        evaluate(parseExpr('[{a: []}, {a: []}]'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }]]) } },
             value: [
@@ -725,50 +716,49 @@ void test('evaluate vectors', (): void => {
 })
 
 void test('mutate objects', (): void => {
-    const env = new Map<string, USSValue>()
-    const emptyCtx: Context = testingContext([], [], env)
+    const ctx: Context = emptyContext()
     assert.deepStrictEqual(
-        execute(parseProgram('a = {x: 1}; a.x = 2; a'), emptyCtx),
+        execute(parseProgram('a = {x: 1}; a.x = 2; a'), ctx),
         {
             type: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) },
             value: new Map<string, USSRawValue>([['x', 2]]),
         },
     )
     assert.throws(
-        () => execute(parseProgram('a = {x: 1}; a.y = 2; a'), emptyCtx),
+        () => execute(parseProgram('a = {x: 1}; a.y = 2; a'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Attribute y not found in object of type {x: number} at 1:13-15'
         },
     )
     assert.throws(
-        () => execute(parseProgram('a = {x: 1}; a.x = "2"; a'), emptyCtx),
+        () => execute(parseProgram('a = {x: 1}; a.x = "2"; a'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Type mismatch: expected number but got string for attribute x in object of type {x: number} at 1:13-15'
         },
     )
     assert.deepStrictEqual(
-        execute(parseProgram('a = [{x: 1}]; a.x = [2]; a'), emptyCtx),
+        execute(parseProgram('a = [{x: 1}]; a.x = [2]; a'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
             value: [new Map<string, USSRawValue>([['x', 2]])],
         },
     )
     assert.deepStrictEqual(
-        execute(parseProgram('a = [{x: 1}]; a.x = 2; a'), emptyCtx),
+        execute(parseProgram('a = [{x: 1}]; a.x = 2; a'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
             value: [new Map<string, USSRawValue>([['x', 2]])],
         },
     )
     assert.deepStrictEqual(
-        execute(parseProgram('a = [{x: 1}]; [a].x = 2; a'), emptyCtx),
+        execute(parseProgram('a = [{x: 1}]; [a].x = 2; a'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
             value: [new Map<string, USSRawValue>([['x', 2]])],
         },
     )
     assert.deepStrictEqual(
-        execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3, 4]; a'), emptyCtx),
+        execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3, 4]; a'), ctx),
         {
             type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
             value: [new Map<string, USSRawValue>([['x', 2]]), new Map<string, USSRawValue>([['x', 3]]), new Map<string, USSRawValue>([['x', 4]])],
@@ -776,7 +766,7 @@ void test('mutate objects', (): void => {
     )
     // size mismatch
     assert.throws(
-        () => execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3]; a'), emptyCtx),
+        () => execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3]; a'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Expected vector of length 3 but got 2 for attribute x in object of type [{x: number}] at 1:31-33'
         },
