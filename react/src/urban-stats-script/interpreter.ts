@@ -102,7 +102,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             for (const [name, e] of expr.properties) {
                 const v = evaluate(e, env)
                 if (ts.has(name)) {
-                    throw env.error(`Duplicate property name: ${name}`, locationOf(e))
+                    throw env.error(`Duplicate key ${name} in object literal`, locationOf(e))
                 }
                 ts.set(name, v.type)
                 vs.set(name, v.value)
