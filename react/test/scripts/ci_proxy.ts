@@ -7,6 +7,7 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
+/* c8 ignore start */
 import express from 'express'
 import proxy from 'express-http-proxy'
 import { z } from 'zod'
@@ -37,3 +38,4 @@ export function startProxy(): void {
 
     app.listen(8000)
 }
+/* c8 ignore stop */
