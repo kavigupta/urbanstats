@@ -220,7 +220,7 @@ function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { typ
     return { type: 'success', result: newValues }
 }
 
-function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRawValue {
+export function addAdditionalDims(dims: number[], rawValue: USSRawValue): USSRawValue {
     /**
      * Expands the dimensions of the given raw value to the given dimensions.
      * This is used to prepare the values for broadcasting.

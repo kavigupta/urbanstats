@@ -193,7 +193,7 @@ void test('evaluate attr accesses', (): void => {
     assert.throws(
         () => evaluate(parseExpr('objs2.a'), emptyCtx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Attribute a not found in object of type [[{u: number, v: number}]] at 1:1-7'
+            return err instanceof InterpretationError && err.message === 'Attribute a not found in object of type {u: number, v: number} at 1:1-7'
         },
     )
 })
@@ -719,6 +719,65 @@ void test('evaluate vectors', (): void => {
                 new Map<string, USSRawValue>([['a', []]]),
                 new Map<string, USSRawValue>([['a', []]]),
             ],
+        },
+    )
+})
+
+void test('mutate objects', (): void => {
+    const env = new Map<string, USSValue>()
+    const emptyCtx: Context = testingContext([], [], env)
+    assert.deepStrictEqual(
+        execute(parseProgram('a = {x: 1}; a.x = 2; a'), emptyCtx),
+        {
+            type: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) },
+            value: new Map<string, USSRawValue>([['x', 2]]),
+        },
+    )
+    assert.throws(
+        () => execute(parseProgram('a = {x: 1}; a.y = 2; a'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Attribute y not found in object of type {x: number} at 1:13-15'
+        },
+    )
+    assert.throws(
+        () => execute(parseProgram('a = {x: 1}; a.x = "2"; a'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Type mismatch: expected number but got string for attribute x in object of type {x: number} at 1:13-15'
+        },
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('a = [{x: 1}]; a.x = [2]; a'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
+            value: [new Map<string, USSRawValue>([['x', 2]])],
+        },
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('a = [{x: 1}]; a.x = 2; a'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
+            value: [new Map<string, USSRawValue>([['x', 2]])],
+        },
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('a = [{x: 1}]; [a].x = 2; a'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
+            value: [new Map<string, USSRawValue>([['x', 2]])],
+        },
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3, 4]; a'), emptyCtx),
+        {
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
+            value: [new Map<string, USSRawValue>([['x', 2]]), new Map<string, USSRawValue>([['x', 3]]), new Map<string, USSRawValue>([['x', 4]])],
+        },
+    )
+    // size mismatch
+    assert.throws(
+        () => execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3]; a'), emptyCtx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Expected vector of length 3 but got 2 for attribute x in object of type [{x: number}] at 1:31-33'
         },
     )
 })
