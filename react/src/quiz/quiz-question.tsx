@@ -189,7 +189,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
                     longname={props.question[`longname_${letter}`]}
                     basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
-                    attribution="startHidden"
+                    attribution={letter === 'b' ? 'startHidden' : 'none'}
                 />
             )}
         />
