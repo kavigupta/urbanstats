@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useContext, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -30,7 +30,7 @@ import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHe
 const leftBarMargin = 0.02
 const barHeight = '5px'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -354,11 +354,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     <div className="gap"></div>
 
                     <div ref={mapRef}>
-                        <ComparisonMap
+                        <ComparisonMultiMap
                             longnames={props.articles.map(x => x.longname)}
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
-                            attribution="startVisible"
+                            mapPartitions={props.mapPartitions}
                         />
                     </div>
                 </div>
@@ -510,6 +510,91 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
                 : null}
         </div>
     )
+}
+
+function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
+    const partitionedLongNames = props.mapPartitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
+
+    const maps = useRef<(ComparisonMap | null)[]>([])
+
+    // Want to re-zoom the maps when the partitioning changes
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            for (const map of maps.current) {
+                if (map !== null) {
+                    try {
+                        map.zoomToAll()
+                    }
+                    catch (e) {
+                        // Sometimes this fails if the map isn't ready
+                        console.warn(e)
+                    }
+                }
+            }
+        }, 0)
+        return () => { clearTimeout(timeout) }
+    }, [partitionedLongNames])
+
+    // Will get filled up on render immediately after
+    maps.current = Array<null>(props.mapPartitions.length).fill(null)
+
+    /*
+     If mobile, make 2 columns, if one at the end, use full width
+
+     If desktop, make 3 columns, if 4 at the end, make 4, if 2 at the end, make 2 (there will never be 1 at the end because that's 4)
+     */
+    const isMobile = useMobileLayout()
+    const rows: [number, number[]][][] = useMemo(() => {
+        const slice = (from: number, to: number): [number, number[]][] => {
+            return props.mapPartitions.slice(from, to).map((partition, sliceIndex) => [from + sliceIndex, partition])
+        }
+
+        if (isMobile) {
+            const result: [number, number[]][][] = []
+            for (let i = 0; i < props.mapPartitions.length; i += 2) {
+                result.push(slice(i, i + 2))
+            }
+            return result
+        }
+        else {
+            const result: [number, number[]][][] = []
+            for (let i = 0; i < props.mapPartitions.length; i += 3) {
+                if (props.mapPartitions.length - i === 4) {
+                    result.push(
+                        slice(i, i + 2),
+                        slice(i + 2, i + 4),
+                    )
+                    i += 1
+                }
+                else {
+                    result.push(slice(i, i + 3))
+                }
+            }
+            return result
+        }
+    }, [isMobile, props.mapPartitions])
+
+    return rows.map((row, rowIndex) => (
+        <div key={rowIndex} style={{ display: 'flex', width: '100%' }}>
+            {row.map(([partitionIndex, partition]) => {
+                return (
+                    <div key={partitionIndex} style={{ position: 'relative', width: `${100 / row.length}%` }}>
+                        <ComparisonMap
+                            ref={map => maps.current[partitionIndex] = map}
+                            {...props}
+                            longnames={partition.map(index => props.longnames[index])}
+                            colors={partition.map(index => props.colors[index])}
+                            attribution={
+                                props.mapPartitions.length === 1
+                                    ? 'startVisible'
+                                    : partitionIndex === props.mapPartitions.length - 1 ? 'startHidden' : 'none'
+                            }
+                        />
+                    </div>
+                )
+            })}
+        </div>
+    ))
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
