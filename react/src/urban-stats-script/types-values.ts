@@ -1,6 +1,6 @@
 import { assert } from '../utils/defensive'
 
-import { Context } from './interpreter'
+import { Context } from './context'
 
 interface USSNumberType {
     type: 'number'

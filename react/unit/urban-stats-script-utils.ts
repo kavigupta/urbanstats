@@ -1,5 +1,6 @@
 /* c8 ignore start */
-import { Context, Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { Context } from '../src/urban-stats-script/context'
+import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../src/urban-stats-script/parser'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
@@ -57,16 +58,25 @@ export function testFnMultiArg(ctx: Context, posArgs: USSRawValue[], namedArgs: 
 }
 
 export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, location: LocInfo }[], env: Map<string, USSValue>): Context {
-    return {
-        effect: (eff: Effect): void => {
-            effectsOut.push(eff)
-        },
-        error: (msg: string, location: LocInfo): InterpretationError => {
+    return new Context(
+        (eff: Effect) => effectsOut.push(eff),
+        (msg: string, location: LocInfo) => {
+            const error = new InterpretationError(msg, location)
             errorsOut.push({ msg, location })
+            return error
+        },
+        env,
+    )
+}
+
+export function emptyContext(): Context {
+    return new Context(
+        () => { /* no-op */ },
+        (msg: string, location: LocInfo) => {
             return new InterpretationError(msg, location)
         },
-        variables: env,
-    }
+        new Map<string, USSValue>(),
+    )
 }
 
 export function parseExpr(input: string): UrbanStatsASTExpression {

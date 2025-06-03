@@ -1,5 +1,6 @@
 import { assert } from '../utils/defensive'
 
+import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
 import { expressionOperatorMap, LocInfo } from './lexer'
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
@@ -29,12 +30,6 @@ export class InterpretationError extends Error {
     }
 }
 
-export interface Context {
-    effect: (eff: Effect) => void
-    error: (msg: string, location: LocInfo) => InterpretationError
-    variables: Map<string, USSValue>
-}
-
 export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
     switch (expr.type) {
         case 'constant':
@@ -55,7 +50,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             }
         case 'identifier':
             const varName = expr.name.node
-            const res = env.variables.get(varName)
+            const res = env.getVariable(varName)
             if (res !== undefined) {
                 return res
             }
@@ -167,7 +162,7 @@ export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context
     switch (lhs.type) {
         case 'identifier':
             const varName = lhs.name.node
-            env.variables.set(varName, value)
+            env.assignVariable(varName, value)
             return
         case 'attribute':
             const obj = evaluate(lhs.expr, env)

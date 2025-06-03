@@ -1,12 +1,12 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { Context } from '../src/urban-stats-script/context'
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
-import { Context } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { USSRawValue, USSType, renderType } from '../src/urban-stats-script/types-values'
 
-import { multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
+import { emptyContext, multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
 
 void test('broadcasting-locate-type', (): void => {
     assert.deepStrictEqual(
@@ -116,7 +116,7 @@ void test('broadcasting-apply', (): void => {
             [
                 ['a', { type: numType, value: 3 }],
             ],
-            {} as Context, // Context is not used in this test, so we can pass an empty object
+            emptyContext(),
             locInfo,
         ),
         { type: 'success', result: { type: numType, value: 10 * 10 + 3 } },
@@ -130,7 +130,7 @@ void test('broadcasting-apply', (): void => {
             [
                 ['a', { type: numType, value: 3 }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -150,7 +150,7 @@ void test('broadcasting-apply', (): void => {
             [
                 ['a', { type: numType, value: 3 }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -170,7 +170,7 @@ void test('broadcasting-apply', (): void => {
             [
                 ['a', { type: numVectorType, value: [3, 4] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -190,7 +190,7 @@ void test('broadcasting-apply', (): void => {
             [
                 ['a', { type: numVectorType, value: [3, 4] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -217,7 +217,7 @@ void test('jagged array', (): void => {
             [
                 ['a', { type: numType, value: 3 }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         { type: 'error', message: 'Jagged vector (nested vector where not all are the same length) cannot be broadcasted' },
@@ -235,7 +235,7 @@ void test('jagged array', (): void => {
                 { type: numMatrixType, value: [[10], [10, 20]] },
             ],
             [],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -258,7 +258,7 @@ void test('wrong number of arguments', (): void => {
             { type: testFnType, value: testFn1 },
             [],
             [],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -274,7 +274,7 @@ void test('wrong number of arguments', (): void => {
             ],
             [
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -292,7 +292,7 @@ void test('wrong number of arguments', (): void => {
                 ['a', { type: numType, value: 3 }],
                 ['b', { type: numType, value: 4 }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -316,7 +316,7 @@ void test('wrong argument type', (): void => {
             [
                 ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -333,7 +333,7 @@ void test('wrong argument type', (): void => {
             [
                 ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -350,7 +350,7 @@ void test('wrong argument type', (): void => {
             [
                 ['a', { type: stringType, value: 'hi' }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -374,7 +374,7 @@ void test('bad-shape-broadcasting', (): void => {
             [
                 ['a', { type: numVectorType, value: [1, 2] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {
@@ -391,7 +391,7 @@ void test('bad-shape-broadcasting', (): void => {
             [
                 ['a', { type: numVectorType, value: [1, 2] }],
             ],
-            {} as Context,
+            emptyContext(),
             locInfo,
         ),
         {

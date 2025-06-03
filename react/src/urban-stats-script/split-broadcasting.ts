@@ -1,6 +1,6 @@
 import { assert } from '../utils/defensive'
 
-import { Context } from './interpreter'
+import { Context } from './context'
 import { LocInfo } from './lexer'
 import { getPrimitiveType, renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
@@ -98,7 +98,7 @@ export function indexMaskIntoContext(
      * The reference is used to determine which values to keep in the context.
      */
     const newEnv = new Map<string, USSValue>()
-    for (const [key, value] of env.variables.entries()) {
+    for (const [key, value] of env.variableEntries()) {
         const indexed = indexMask(value, mask, reference)
         if (indexed.type === 'error') {
             return { type: 'error', message: `Error indexing variable ${key}: ${indexed.message}` }
@@ -107,10 +107,7 @@ export function indexMaskIntoContext(
     }
     return {
         type: 'success',
-        value: {
-            ...env,
-            variables: newEnv,
-        },
+        value: env.evolveVariables(newEnv),
     }
 }
 
@@ -226,12 +223,12 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     const newVars = new Map<string, USSValue>()
     const allKeys = new Set<string>()
     for (const [, subEnv] of outEnvsValues) {
-        for (const k of subEnv.variables.keys()) {
+        for (const [k] of subEnv.variableEntries()) {
             allKeys.add(k)
         }
     }
     for (const k of allKeys) {
-        const values = outEnvsValues.map(([, subEnv]) => subEnv.variables.get(k) ?? { type: { type: 'null' }, value: null } satisfies USSValue)
+        const values = outEnvsValues.map(([, subEnv]) => subEnv.getVariable(k) ?? { type: { type: 'null' }, value: null } satisfies USSValue)
         assert(mask.type.type === 'vector', 'unreachable')
         const merged = mergeValuesViaMasks(values, mask as USSValue & { type: USSVectorType }, uniqueValueArray)
         if (merged.type === 'error') {
@@ -243,7 +240,9 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         }
         newVars.set(k, merged.value)
     }
-    env.variables = newVars
+    for (const [k, v] of newVars.entries()) {
+        env.assignVariable(k, v)
+    }
     const mergedValues = mergeValuesViaMasks(
         outEnvsValues.map(([v]) => v),
         mask as USSValue & { type: USSVectorType },

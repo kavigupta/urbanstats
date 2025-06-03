@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
-import { Context, InterpretationError } from './interpreter'
+import { Context } from './context'
+import { InterpretationError } from './interpreter'
 import { LocInfo } from './lexer'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
 

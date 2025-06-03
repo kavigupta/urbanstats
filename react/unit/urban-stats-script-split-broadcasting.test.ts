@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Context } from '../src/urban-stats-script/interpreter'
+import { Context } from '../src/urban-stats-script/context'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
@@ -231,7 +231,7 @@ void test('merge values via masks', (): void => {
 
 void test('split mask testing', (): void => {
     const lengthFn = (value: USSValue, ctx: Context): USSValue => {
-        return { type: numType, value: (ctx.variables.get('a')!.value as USSRawValue[]).length }
+        return { type: numType, value: (ctx.getVariable('a')!.value as USSRawValue[]).length }
     }
     const basicContext = (): Context => testingContext([], [], new Map(
         [
@@ -262,7 +262,7 @@ void test('split mask testing', (): void => {
                 value: 2,
             },
             (value: USSValue, ctx: Context): USSValue => {
-                return { type: numType, value: (ctx.variables.get('a')!.value as USSRawValue[]).length }
+                return { type: numType, value: (ctx.getVariable('a')!.value as USSRawValue[]).length }
             },
             defaultLocInfo,
             defaultLocInfo,

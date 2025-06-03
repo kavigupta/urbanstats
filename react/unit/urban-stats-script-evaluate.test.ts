@@ -1,7 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Context, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { Context } from '../src/urban-stats-script/context'
+import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 import { boolType, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
@@ -523,7 +524,7 @@ void test('more if expressions', (): void => {
 void test('evaluate if expressions mutations', (): void => {
     const env = new Map<string, USSValue>()
     const emptyCtx: Context = testingContext([], [], env)
-    emptyCtx.variables.set('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    emptyCtx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 } else { ys = xs - 2 }'), emptyCtx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
@@ -532,7 +533,7 @@ void test('evaluate if expressions mutations', (): void => {
         evaluate(parseExpr('ys'), emptyCtx),
         { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
     )
-    emptyCtx.variables.set('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
+    emptyCtx.assignVariable('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), emptyCtx),
         { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
