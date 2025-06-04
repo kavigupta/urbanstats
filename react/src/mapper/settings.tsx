@@ -32,7 +32,7 @@ export interface RegressionDescriptor {
 export type ColorStatDescriptor = (
     { type: 'single', value: string, variables?: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
     |
-    { type: 'function', value: 'Function', variables: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression: string }
+    { type: 'function', value: 'Function', uss: string }
 )
 
 export interface LineStyle {
@@ -103,72 +103,6 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
         }
     }
     return addTo as T
-}
-
-function parseRegression(nameToIndex: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
-    const independentFn = parseColorStat(nameToIndex, regr.independent ?? undefined)
-    const dependentFns = regr.dependents.map(dependent => parseColorStat(nameToIndex, dependent ?? undefined))
-    const dependentNames = regr.var_coefficients
-    const interceptName = regr.var_intercept
-    const residualName = regr.var_residue
-    const weightByPopulation = regr.weight_by_population
-
-    return new Regression(
-        independentFn,
-        dependentFns,
-        dependentNames,
-        interceptName,
-        residualName,
-        weightByPopulation,
-        nameToIndex.get('Population')!,
-    )
-}
-
-export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorStat: ColorStatDescriptor | undefined): ColorStat {
-    if (colorStat === undefined) {
-        return new InvalidColorStat()
-    }
-    const type = colorStat.type
-    if (type === 'single') {
-        const value = colorStat.value
-        if (nameToIndex.has(value)) {
-            return new SingleColorStat(nameToIndex.get(value)!, value)
-        }
-        return new InvalidColorStat()
-    }
-    else {
-        const variables = colorStat.variables.map((variable) => {
-            return {
-                name: variable.name,
-                expr: parseColorStat(nameToIndex, variable.expr),
-            }
-        })
-        const regressions = (colorStat.regressions ?? []).map(regr => parseRegression(nameToIndex, regr))
-        return new FunctionColorStat(colorStat.name, variables, regressions, colorStat.expression)
-    }
-}
-
-class SingleColorStat implements ColorStat {
-    constructor(private readonly _index: number, private readonly _name: string) {
-    }
-
-    name(): string {
-        return this._name
-    }
-
-    compute(statistics_for_geography: StatisticsForGeography): number[] {
-        return statistics_for_geography.map(statistics => statistics.stats[this._index])
-    }
-}
-
-class InvalidColorStat implements ColorStat {
-    name(): string {
-        return '[Invalid]'
-    }
-
-    compute(statistics_for_geography: StatisticsForGeography): number[] {
-        return statistics_for_geography.map(() => 0)
-    }
 }
 
 function ConstantParametersSelector({ ramp, setRamp }: { ramp: ConstantRampDescriptor, setRamp: (newValue: ConstantRampDescriptor) => void }): ReactNode {
