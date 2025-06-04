@@ -4,10 +4,9 @@ import { useColors } from '../page_template/colors'
 import { StatName } from '../page_template/statistic-tree'
 
 import { DataListSelector } from './DataListSelector'
-import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
+import { FilterSelector, USSColorStat, StatisticSelector } from './function'
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
-import { Regression } from './regression'
 import { settingNameStyle, useSettingSubNameStyle } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
@@ -30,9 +29,9 @@ export interface RegressionDescriptor {
 /* eslint-enable no-restricted-syntax */
 
 export type ColorStatDescriptor = (
-    { type: 'single', value: string, variables?: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
+    { type: 'single', value: string, name?: string, uss: string }
     |
-    { type: 'function', value: 'Function', uss: string }
+    { type: 'function', value: 'Function', name?: string, uss?: string }
 )
 
 export interface LineStyle {
@@ -70,8 +69,8 @@ export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
             function: {
                 type: 'function',
                 value: 'Function',
-                expression: '',
-                variables: [],
+                name: '',
+                uss: '',
             },
         },
         color_stat: undefined,
@@ -103,6 +102,49 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
         }
     }
     return addTo as T
+}
+
+export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorStat: ColorStatDescriptor | undefined): ColorStat {
+    if (colorStat === undefined) {
+        return new InvalidColorStat()
+    }
+    const type = colorStat.type
+    if (type === 'single') {
+        const value = colorStat.value
+        if (nameToIndex.has(value)) {
+            return new SingleColorStat(nameToIndex.get(value)!, value)
+        }
+        return new InvalidColorStat()
+    }
+    else {
+        if (colorStat.uss === undefined) {
+            return new InvalidColorStat()
+        }
+        return new USSColorStat(nameToIndex, colorStat.name, colorStat.uss)
+    }
+}
+
+class SingleColorStat implements ColorStat {
+    constructor(private readonly _index: number, private readonly _name: string) {
+    }
+
+    name(): string {
+        return this._name
+    }
+
+    compute(statistics_for_geography: StatisticsForGeography): number[] {
+        return statistics_for_geography.map(statistics => statistics.stats[this._index])
+    }
+}
+
+class InvalidColorStat implements ColorStat {
+    name(): string {
+        return '[Invalid]'
+    }
+
+    compute(statistics_for_geography: StatisticsForGeography): number[] {
+        return statistics_for_geography.map(() => 0)
+    }
 }
 
 function ConstantParametersSelector({ ramp, setRamp }: { ramp: ConstantRampDescriptor, setRamp: (newValue: ConstantRampDescriptor) => void }): ReactNode {

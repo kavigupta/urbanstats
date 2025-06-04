@@ -4,9 +4,13 @@ import React, { ReactNode } from 'react'
 import { CheckboxSettingCustom } from '../components/sidebar'
 import { useColors } from '../page_template/colors'
 import { StatName } from '../page_template/statistic-tree'
+import { defaultConstants } from '../urban-stats-script/constants'
+import { Context } from '../urban-stats-script/context'
+import { Effect, execute, InterpretationError } from '../urban-stats-script/interpreter'
+import { parse } from '../urban-stats-script/parser'
+import { renderType } from '../urban-stats-script/types-values'
 
 import { DataListSelector } from './DataListSelector'
-import { Regression } from './regression'
 import { ColorStat, ColorStatDescriptor, FilterSettings, RegressionDescriptor, StatisticsForGeography } from './settings'
 
 interface VariableDescriptor {
@@ -14,39 +18,76 @@ interface VariableDescriptor {
     expr: ColorStatDescriptor | undefined
 }
 
-interface Variable {
-    name: string
-    expr: ColorStat
-}
-
-export class FunctionColorStat implements ColorStat {
-    constructor(private readonly _name: string | undefined, private readonly _variables: Variable[], private readonly _regressions: Regression[], private readonly _expr: string) {
+export class USSColorStat implements ColorStat {
+    constructor(private readonly _nameToIndex: ReadonlyMap<string, number>, private readonly _name: string | undefined, private readonly _uss: string) {
     }
 
     name(): string {
         return this._name ?? '[Unnamed function]'
     }
 
-    compute(statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>): number[] {
-        let variables = { ...vars }
-        for (const variable of this._variables) {
-            variables[variable.name] = variable.expr.compute(statistics_for_geography)
-        }
-        if (this._expr === '') {
-            return statistics_for_geography.map(() => 0)
-        }
-        for (const regression of this._regressions) {
-            const out = regression.compute(statistics_for_geography, variables)
-            variables = { ...variables, ...out }
-        }
-        return statistics_for_geography.map((_, i) => {
-            const expr = Parser.parse(this._expr)
-            const statVars: Value = {}
-            for (const key of Object.keys(variables)) {
-                statVars[key] = variables[key][i]
+    compute(statistics_for_geography: StatisticsForGeography): number[] {
+        // let variables = { ...vars }
+        // for (const variable of this._variables) {
+        //     variables[variable.name] = variable.expr.compute(statistics_for_geography)
+        // }
+        // if (this._expr === '') {
+        //     return statistics_for_geography.map(() => 0)
+        // }
+        // for (const regression of this._regressions) {
+        //     const out = regression.compute(statistics_for_geography, variables)
+        //     variables = { ...variables, ...out }
+        // }
+        // return statistics_for_geography.map((_, i) => {
+        //     const expr = Parser.parse(this._expr)
+        //     const statVars: Value = {}
+        //     for (const key of Object.keys(variables)) {
+        //         statVars[key] = variables[key][i]
+        //     }
+        //     return expr.evaluate(statVars) as number
+        // })
+        const ctx = new Context(
+            (eff: Effect) => { },
+            (msg, loc) => { return new InterpretationError(msg, loc) },
+            defaultConstants,
+            new Map(),
+        )
+        const remapNames = new Map<string, string>(
+            [
+                ['Population', 'population'],
+                ['PW Density (r=1km)', 'pw_density_1km'],
+            ],
+        )
+        for (const [name, index] of this._nameToIndex.entries()) {
+            const id = remapNames.get(name)
+            if (id === undefined) {
+                continue
             }
-            return expr.evaluate(statVars) as number
-        })
+            ctx.assignVariable(id, {
+                type: { type: 'vector', elementType: { type: 'number' } },
+                value: statistics_for_geography.map(stat => stat.stats[index]),
+            })
+        }
+
+        let result
+        try {
+            const stmts = parse(this._uss)
+            if (stmts.type === 'error') {
+                console.error('Error parsing USS expression:', stmts.errors)
+                return statistics_for_geography.map(() => NaN)
+            }
+            result = execute(stmts, ctx)
+        }
+        catch (e) {
+            console.error('Error parsing USS expression:', e)
+            return statistics_for_geography.map(() => NaN)
+        }
+        // TODO do this properly via a parameter
+        if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
+            console.error('USS expression did not return a vector of numbers or booleans:', result)
+            return statistics_for_geography.map(() => NaN)
+        }
+        return result.value as number[]
     }
 }
 
@@ -246,73 +287,19 @@ function RegressionSelector(props: { regression: RegressionDescriptor, setRegres
     )
 }
 
-function VariableSelector(props: { variable: VariableDescriptor, setVariable: (newValue: VariableDescriptor) => void, deleteVariable: () => void, names: readonly StatName[] }): ReactNode {
-    const colors = useColors()
-    const variable = props.variable
-    const namesFull = ['', ...props.names]
-    const initialValue = variable.expr !== undefined && namesFull.includes(variable.expr.value) ? variable.expr.value : ''
-    return (
-        <div style={{ display: 'flex' }}>
-            {/* Button that deletes this variable */}
-            <button onClick={() => { props.deleteVariable() }}>
-                -
-            </button>
-            <div style={{ width: '0.5em' }} />
-            <div style={{ width: '50%' }}>
-                <input
-                    type="text"
-                    style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-                    placeholder='Name, e.g., "a"'
-                    value={variable.name}
-                    onChange={(e) => {
-                        props.setVariable({
-                            ...variable,
-                            name: e.target.value,
-                        })
-                    }}
-                />
-            </div>
-            <div style={{ width: '0.5em' }} />
-            <select
-                onChange={(e) => {
-                    props.setVariable({
-                        ...variable,
-                        expr: {
-                            ...variable.expr,
-                            type: 'single',
-                            value: e.target.value,
-                        },
-                    })
-                }}
-                style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-                value={initialValue}
-            >
-                {
-                    namesFull.map((name, i) => (
-                        <option key={i} value={name}>{name}</option>
-                    ))
-                }
-            </select>
-        </div>
-    )
-}
-
 export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string }): ReactNode {
     const colors = useColors()
     const func = props.function
-    if (func.variables === undefined) {
-        func.variables = []
-    }
     const expression = (
         <input
             type="text"
             style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
             placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
-            value={func.expression}
+            value={func.uss}
             onChange={(e) => {
                 props.setFunction({
                     ...func,
-                    expression: e.target.value,
+                    uss: e.target.value,
                 })
             }}
         />
@@ -342,98 +329,8 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, setFunc
                             />
                         )
             }
-            <VariablesSelector
-                getVariables={() => func.variables ?? []}
-                setVariables={(variables) => {
-                    props.setFunction({
-                        ...func,
-                        variables,
-                    })
-                }}
-                names={props.names}
-            />
-            <div style={{ marginBottom: '0.25em' }} />
-            <RegressionsSelector
-                getRegressions={() => func.regressions ?? []}
-                setRegressions={(regressions) => {
-                    props.setFunction({
-                        ...func,
-                        regressions,
-                    })
-                }}
-                names={props.names}
-            />
-            <div style={{ marginBottom: '0.25em' }} />
             {expression}
         </div>
-    )
-}
-
-function VariablesSelector({ getVariables: getVariables, setVariables: setVariables, names }: { getVariables: () => VariableDescriptor[], setVariables: (newValue: VariableDescriptor[]) => void, names: readonly StatName[] },
-): ReactNode {
-    return (
-        <>
-            {
-                getVariables().map((variable: VariableDescriptor, i: number) => (
-                    <VariableSelector
-                        key={i}
-                        variable={variable}
-                        setVariable={(v: VariableDescriptor) => { setVariables(getVariables().map((v2, j) => i === j ? v : v2)) }}
-                        deleteVariable={() => { setVariables(getVariables().filter((v2, j) => i !== j)) }}
-                        names={names}
-                    />
-                ))
-            }
-            {/* Add a variable button */}
-            <div style={{ width: '100%' }}>
-                <button
-                    onClick={() => {
-                        setVariables([...getVariables(), {
-                            name: '',
-                            expr: undefined,
-                        }])
-                    }}
-                >
-                    Add Variable
-                </button>
-            </div>
-        </>
-    )
-}
-
-function RegressionsSelector({ getRegressions, setRegressions, names }: { getRegressions: () => RegressionDescriptor[], setRegressions: (newValue: RegressionDescriptor[]) => void, names: readonly StatName[] }): ReactNode {
-    const gr: () => RegressionDescriptor[] = () => getRegressions()
-
-    return (
-        <>
-            {
-                gr().map((regression, i) => (
-                    <RegressionSelector
-                        key={i}
-                        regression={regression}
-                        setRegression={(r) => {
-                            setRegressions(gr().map((r2, j) => i === j ? r : r2))
-                        }}
-                        deleteRegression={() => { setRegressions(gr().filter((r2, j) => i !== j)) }}
-                        names={names}
-                    />
-                ))
-            }
-            {/* Add a regression button */}
-            <div style={{ width: '100%' }}>
-                <button
-                    onClick={() => {
-                        setRegressions([...gr(), {
-                            independent: undefined, dependents: [undefined],
-                            var_residue: '', var_intercept: '', var_coefficients: [''],
-                            weight_by_population: false,
-                        }])
-                    }}
-                >
-                    Add Regression
-                </button>
-            </div>
-        </>
     )
 }
 
@@ -492,14 +389,13 @@ export function StatisticSelector({ statistic, setStatistic, names, overallName,
                                 ...statistic,
                                 type: 'single',
                                 value: name,
+                                uss: '',
                             }
                         : {
                                 ...statistic,
                                 type: 'function',
                                 value: 'Function',
-                                variables: [],
-                                expression: '',
-                                name: '',
+                                uss: '',
                             },
                     )
                 }}
