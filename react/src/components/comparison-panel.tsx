@@ -585,9 +585,7 @@ function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { long
                             longnames={partition.map(index => props.longnames[index])}
                             colors={partition.map(index => props.colors[index])}
                             attribution={
-                                props.mapPartitions.length === 1
-                                    ? 'startVisible'
-                                    : partitionIndex === props.mapPartitions.length - 1 ? 'startHidden' : 'none'
+                                partitionIndex === props.mapPartitions.length - 1 ? 'startVisible' : 'none'
                             }
                         />
                     </div>
