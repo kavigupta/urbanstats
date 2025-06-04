@@ -192,6 +192,7 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
     const params = Object.fromEntries(url.searchParams.entries())
+    const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
     switch (url.pathname) {
         case '/article.html':
             return { kind: 'article', ...articleSchemaFromParams.parse(params) }
@@ -206,10 +207,9 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/index.html':
             return { kind: 'index' }
         case '/quiz.html':
-            const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
         case '/syau.html':
-            return { kind: 'syau', ...syauSchema.parse(params) }
+            return { kind: 'syau', ...syauSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
@@ -296,10 +296,19 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             return quizResult
         case 'syau':
             pathname = '/syau.html'
-            searchParams = {
+            // same situation as the quiz
+            const hashParamsSYAU = {
                 typ: pageDescriptor.typ,
                 universe: pageDescriptor.universe,
             }
+            const hashParamsString = Object.entries(hashParamsSYAU)
+                .flatMap(([key, value]) => value !== undefined ? [[key, value]] : [])
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&')
+            if (hashParamsString.length > 0) {
+                hash = `#${hashParamsString}`
+            }
+            searchParams = {}
             break
         case 'mapper':
             pathname = '/mapper.html'
