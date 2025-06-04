@@ -97,7 +97,7 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error',
                 // Good tool for writing these https://typescript-eslint.io/play/
-                'ExportNamedDeclaration:not([declaration])', 
+                'ExportNamedDeclaration:not([declaration])',
                 'MemberExpression[object.name=location][property.name=reload]',
                 'MemberExpression[property.name=replaceState]',
                 'MemberExpression[property.name=pushState]',
@@ -135,6 +135,7 @@ export default tseslint.config(
             }],
             "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful
             '@typescript-eslint/no-inferrable-types': 'off',
+            '@stylistic/yield-star-spacing': ['error', { before: false, after: true }]
         },
     },
     {

@@ -162,7 +162,16 @@ export type ExceptionalPageDescriptor = PageDescriptor
 
 export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | {
+        kind: 'comparison'
+        articles: Article[]
+        universe: string
+        universes: string[]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
+        statPaths: StatPath[][]
+        mapPartitions: number[][]
+        comparisonPanel: typeof ComparisonPanel
+    }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -326,6 +335,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 // Only use one await per block (or use overlapping promises), so that resources may be loaded in parallel to improve performance
+export async function loadPageDescriptor(newDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, settings: Settings): Promise<{ pageData: Extract<PageData, { kind: 'quiz' }>, newPageDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, effects: () => void }>
+export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }>
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
         case 'article': {
@@ -372,10 +383,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [articles, countsByArticleType, panel] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
             // intersection of all the data.universes
@@ -399,6 +411,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
+                    mapPartitions,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,

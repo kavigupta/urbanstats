@@ -314,6 +314,8 @@ def build_urbanstats(
     shutil.copy("icons/main/life.png", f"{site_folder}/")
     shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")
+    shutil.copy("icons/main/replace.png", f"{site_folder}/")
+    shutil.copy("icons/main/close.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

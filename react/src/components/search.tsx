@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactElement, ReactNode, useMemo, useRef } from 'react'
 
+import type_ordering_idx from '../data/type_ordering_idx'
 import { Navigator } from '../navigation/Navigator'
 import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
@@ -15,6 +16,7 @@ export function SearchBox(props: {
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
+    prioritizeArticleType?: string
 }): ReactNode {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
@@ -32,10 +34,14 @@ export function SearchBox(props: {
             if (searchWorker.current === undefined) {
                 searchWorker.current = cacheKey.then(createSearchWorker)
             }
-            const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
+            const result = await (await searchWorker.current)({
+                unnormalizedPattern: sq,
+                maxResults: 10,
+                showHistoricalCDs,
+                prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined })
             return result
         }
-    }, [searchWorker, cacheKey, showHistoricalCDs])
+    }, [searchWorker, cacheKey, showHistoricalCDs, props.prioritizeArticleType])
 
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a

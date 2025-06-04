@@ -54,7 +54,7 @@ while True:
             f"Status code from CI proxy for {request_url}: {response.status_code}",
             file=sys.stderr,
         )
-        sleep(3)
+        sleep(10)
         continue
     ci_proxy_hash = response.text.strip()
     if ci_proxy_hash != densitydb_branch["commit"]["sha"]:
@@ -62,7 +62,7 @@ while True:
             f"HEADs not equal: origin={densitydb_branch['commit']['sha']} ci_proxy={ci_proxy_hash}",
             file=sys.stderr,
         )
-        sleep(3)
+        sleep(10)
         continue
 
     print(

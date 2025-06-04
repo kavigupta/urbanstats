@@ -248,7 +248,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     )
 
     function hexToDec(hex: string): string {
-    // https://stackoverflow.com/a/53751162/1549476
+        // https://stackoverflow.com/a/53751162/1549476
         if (hex.length % 2) { hex = `0${hex}` }
 
         const bn = BigInt(`0x${hex}`)
@@ -495,7 +495,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
     )
 
     test('import quiz progress', async (t) => {
-    // Write the file to upload
+        // Write the file to upload
         const tempfile = `${tempfileName()}.json`
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
@@ -641,7 +641,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
     )
 
     test('import quiz progress with numbers', async (t) => {
-    // Write the file to upload
+        // Write the file to upload
         const tempfile = `${tempfileName()}.json`
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDateNumbers, null, 2))
 
@@ -667,7 +667,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
     )
 
     test('quiz results go to compare pages', async (t) => {
-    // only using the image tests because the links are not stable across versions
+        // only using the image tests because the links are not stable across versions
         await t.click(Selector('a').withText(/Colorado, USA/))
         await screencap(t)
         await ClientFunction(() => { history.back() })()

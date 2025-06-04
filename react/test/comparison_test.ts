@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -20,11 +20,19 @@ test('comparison-3-mobile-heterogenous', async (t) => {
     await screencap(t)
 })
 
+test('comparison-heterogenous-search', async (t) => {
+    await createComparison(t, 'pasadena c cd', 'Pasadena city, California, USA') // Would be pasadena city otherwise
+})
+
 urbanstatsFixture('comparison test homogenous (2)', comparisonPage([upperSGV, swSGV]))
 
 test('comparison-2-mobile', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
+})
+
+test('comparison-homogenous-search', async (t) => {
+    await createComparison(t, 'pasadena c cd', pasadena) // Would be pasadena city otherwise
 })
 
 urbanstatsFixture('comparison test homogenous (3)', comparisonPage([upperSGV, pasadena, swSGV]))
@@ -90,7 +98,7 @@ test('comparison-3-editable-number-third', async (t) => {
     const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(2)
     await t
         .click(editableNumber)
-    // select all and delete
+        // select all and delete
         .pressKey('ctrl+a')
         .typeText(editableNumber, '3')
         .pressKey('enter')
@@ -252,3 +260,60 @@ urbanstatsFixture('comparison with heterogenous data sources', `${target}/compar
 test('renders us canada austrailia successfully', async (t) => {
     await screencap(t)
 })
+
+urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
+
+test('renders transpose comparision', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B"Santa+Clarita+city%2C+California%2C+USA"%2C"Santa+Clara+city%2C+California%2C+USA"%2C"Boston+city%2C+Massachusetts%2C+USA"%2C"San+Francisco+city%2C+California%2C+USA"%2C"Denver+city%2C+Colorado%2C+USA"%5D&s=8gkGqBdgQkNpHJZ`)
+
+test('renders scrolling transpose comparision', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('mobile transpose', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%5D&s=2EoPvra9nrE8zYq`, async (t) => {
+    await t.resizeWindow(400, 800)
+})
+
+test('renders mobile transpose correctly', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('transpose with duplicate', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%2C%22Texas%2C+USA%22%5D&s=k32AgBaBU3tCGR`)
+
+test('removing duplicate does not glitch out', async (t) => {
+    await t.click(Selector('.manipulation-button-delete').nth(3))
+    await screencap(t)
+})
+
+urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']))
+
+for (const platform of ['desktop', 'mobile']) {
+    test(`comparison-add-many-cities-${platform}`, async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
+        }
+
+        await screencap(t)
+
+        const citiesToAdd = [
+            'New York city, New York, USA',
+            'Denver city, Colorado, USA',
+            'Anchorage municipality, Alaska, USA',
+            'Houston city, Texas, USA',
+            'Miami city, Florida, USA',
+            'Chicago city, Illinois, USA',
+        ]
+        for (const city of citiesToAdd) {
+            const input = Selector('input').withAttribute('placeholder', 'Name')
+            await t
+                .click(input)
+                .typeText(input, city)
+            await waitForSelectedSearchResult(t)
+            await t.pressKey('enter')
+            await screencap(t)
+        }
+    })
+}

@@ -1,22 +1,22 @@
-import { test } from 'uvu'
-import * as assert from 'uvu/assert'
+import assert from 'assert/strict'
+import { test } from 'node:test'
 
 import './util/fetch'
 import './util/localStorage'
 import { byPopulation, uniform } from '../src/navigation/random'
 
 function assertNoSpecials(article: string): void {
-    assert.not.match(article, /.*\s(\(19\d\d|201\d|2021\)), USA$/)
-    assert.not.match(article, /.*PC,.*/)
+    assert.doesNotMatch(article, /.*\s(\(19\d\d|201\d|2021\)), USA$/)
+    assert.doesNotMatch(article, /.*PC,.*/)
 }
 
 function assertNoSyminks(article: string): void {
-    assert.not.match(article, /United States of America/)
+    assert.doesNotMatch(article, /United States of America/)
 }
 
 const repeats = 500_000
 
-test('uniform', async () => {
+void test('uniform', async () => {
     const getArticle = await uniform()
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
@@ -25,7 +25,7 @@ test('uniform', async () => {
     }
 })
 
-test('by-pop', async () => {
+void test('by-pop', async () => {
     const getArticle = await byPopulation(false)
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
@@ -34,7 +34,7 @@ test('by-pop', async () => {
     }
 })
 
-test('by-pop-usa-only', async () => {
+void test('by-pop-usa-only', async () => {
     const getArticle = await byPopulation(true)
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
@@ -43,5 +43,3 @@ test('by-pop-usa-only', async () => {
         assert.match(article, /.*USA.*/)
     }
 })
-
-test.run()

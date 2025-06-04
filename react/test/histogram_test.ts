@@ -96,3 +96,51 @@ test('histogram-ordering', async (t) => {
     await screencap(t)
     await downloadOrCheckHistogram(t, 'histogram-ordering')
 })
+
+urbanstatsFixture('bar histogram test', `${target}/article.html?longname=Santa+Clarita+city%2C+California%2C+USA&s=6TunChoK92PzC9tD`)
+
+test('histogram-bar', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('bar histogram comparison test', `${target}/comparison.html?longnames=%5B"China"%2C"USA"%5D&s=2EoPvrZ42dy2gxh`)
+
+test('histogram-bar-comparison', async (t) => {
+    await screencap(t)
+})
+
+urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=SAaYfgWFPJQ2WHM3`)
+
+test('histogram-transpose-download', async (t) => {
+    await downloadHistogram(t, 0)
+})
+
+urbanstatsFixture('transpose histograms', `${target}/comparison.html?longnames=%5B"China"%2C"USA"%2C"Japan"%2C"Indonesia"%5D&s=2EoPvrZ42d9b5wf`)
+
+test('transpose-histograms', async (t) => {
+    // Capture all kinds of transposed histograms
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+
+    const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
+
+    await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Line (cumulative)'))
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+
+    await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Bar'))
+
+    await screencap(t)
+
+    await t.click('[data-test-id=histogram_relative]')
+
+    await screencap(t)
+})

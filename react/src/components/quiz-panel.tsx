@@ -1,13 +1,15 @@
-import React, { ReactNode, useContext, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
+import { loadPageDescriptor, PageData, PageDescriptor } from '../navigation/PageDescriptor'
 import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
+import { Settings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
-import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizLocalStorage, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { buttonStyle, QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
@@ -68,7 +70,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                         Juxtastat generation has been updated, so infinite Juxtastat you are trying to access is no longer available.
                     </div>
                     <div style={{ height: '1.5em' }} />
-                    <JuxtastatInfiniteButton />
+                    <OtherQuizzesButtons />
                 </div>
             </PageTemplate>
         )
@@ -76,7 +78,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
 
     const todaysQuizHistory = quizHistory[props.quizDescriptor.name] ?? { choices: [], correct_pattern: [] }
 
-    const quizDone = props.todaysQuiz.isDone(todaysQuizHistory.correct_pattern.map(correct => correct ? true : false))
+    const quizDone = props.todaysQuiz.isDone(getCorrectPattern(quizHistory, props.quizDescriptor.name))
     const questionsExpected = quizDone ? todaysQuizHistory.choices.length : todaysQuizHistory.choices.length + 1
     const missing = questionsExpected - questions.length
     const waiting = waitingForTime || waitingForNextQuestion || missing > 0
@@ -180,5 +182,87 @@ export function JuxtastatInfiniteButton(): ReactNode {
         >
             Random Juxtastat Infinite
         </a>
+    )
+}
+type QuizPageDescriptor = Extract<PageDescriptor, { kind: 'quiz' }>
+interface TodoQuiz {
+    pageData: Extract<PageData, {
+        kind: 'quiz'
+    }>
+    newPageDescriptor: QuizPageDescriptor
+}
+
+export function OtherQuizzesButtons(): ReactNode {
+    /**
+     * Show users other quizzes they haven't completed yet (and Juxtastat Infinite)
+     */
+
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    const { current } = navContext.usePageState()
+    const currentQuizMode = current.descriptor.kind === 'quiz' ? current.descriptor.mode : 'notAQuiz'
+
+    const otherQuizPages: QuizPageDescriptor[] = useMemo(() => ([
+        { kind: 'quiz', mode: undefined },
+        { kind: 'quiz', mode: 'retro' },
+        { kind: 'quiz', mode: 'infinite' },
+    ] as const).filter(({ mode }) => mode !== currentQuizMode), [currentQuizMode])
+
+    const [todoQuizzes, setTodoQuizzes] = useState<TodoQuiz[]>([])
+
+    useEffect(() => {
+        let cancel = false
+
+        void (async () => {
+            const quizDatas = await Promise.all(otherQuizPages.map(pageDescriptor => loadPageDescriptor(pageDescriptor, Settings.shared)))
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Prevents races
+            if (!cancel) {
+                setTodoQuizzes(
+                    quizDatas.filter(q =>
+                        q.newPageDescriptor.mode === 'infinite'
+                        || !q.pageData.quiz.isDone(
+                            getCorrectPattern(QuizLocalStorage.shared.history.value, q.pageData.quizDescriptor.name))))
+            }
+        })()
+
+        return () => { cancel = true }
+    }, [otherQuizPages])
+
+    const otherQuizButtonStyle: CSSProperties = {
+        ...buttonStyle(colors.hueColors.blue),
+        width: '30%',
+        textDecoration: 'none',
+    }
+
+    if (todoQuizzes.length === 0) {
+        return null
+    }
+
+    return (
+        <>
+            <div className="gap"></div>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'flex-center',
+                flexWrap: 'wrap',
+                gap: '1em',
+            }}
+            >
+                {todoQuizzes.map(quiz => (
+                    <a
+                        key={quiz.pageData.quizDescriptor.kind}
+                        style={otherQuizButtonStyle}
+                        {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
+                    >
+                        Play
+                        {' '}
+                        { nameOfQuizKind(quiz.pageData.quizDescriptor.kind) }
+                    </a>
+                ))}
+            </div>
+        </>
     )
 }

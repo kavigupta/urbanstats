@@ -3,7 +3,7 @@
 FROM python:3.10
 
 # 😭
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
 
 RUN pip3 install --upgrade pip virtualenv
@@ -12,7 +12,7 @@ RUN pip3 cache purge
 RUN dpkg --add-architecture i386
 RUN apt-get -y update
 
-RUN apt-get -y install chromium=133.*
+RUN apt-get -y install chromium=136.*
 RUN apt-get -y install xvfb
 
 RUN apt-get -y install sqlite3

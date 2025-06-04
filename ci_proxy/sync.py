@@ -1,6 +1,7 @@
 import re
 import shutil
 from pathlib import Path
+from shlex import quote
 from subprocess import PIPE, run
 
 # Git repo must be manually initialized
@@ -14,8 +15,25 @@ def repo_path(for_branch=None):
     return path if for_branch is None else path / for_branch
 
 
+def clone(clone_branch):
+    run(
+        # If we don't quote here, someone could push a funky branch name and potentially RCE
+        f"git clone --branch {quote(clone_branch)} {quote(str(bare_repo))} {quote(str(repo_path(clone_branch)))} 2>&1 | tr '\r' '\n'",
+        check=True,
+        shell=True,
+        bufsize=0,
+    )
+
+
 print("Updating and pruning from remotes...")
-run(["git", "remote", "update", "--prune"], cwd=bare_repo, check=True)
+run(
+    # Replace returns so we can see output in logs
+    "git remote update --prune 2>&1 | tr '\r' '\n'",
+    cwd=bare_repo,
+    check=True,
+    shell=True,
+    bufsize=0,
+)
 branches_output = run(
     ["git", "branch"], cwd=bare_repo, stdout=PIPE, text=True, check=True
 ).stdout
@@ -28,9 +46,7 @@ print("Current Branches", branches)
 for branch in branches:
     branch_path = repo_path(branch)
     if branch_path.exists():
-        print(f"{branch}: Exists. Fetching...")
-        run(["git", "fetch"], cwd=branch_path, check=True)
-        print(f"{branch}: Done")
+        print(f"{branch}: Exists.")
         current_head = run(
             ["git", "rev-parse", "HEAD"],
             cwd=branch_path,
@@ -39,29 +55,25 @@ for branch in branches:
             check=True,
         ).stdout.strip()
         origin_head = run(
-            ["git", "rev-parse", f"origin/{branch}"],
-            cwd=branch_path,
+            ["git", "rev-parse", branch],
+            cwd=bare_repo,
             stdout=PIPE,
             text=True,
             check=True,
         ).stdout.strip()
         print(f"{branch}: current_head={current_head} origin_head={origin_head}")
         if current_head != origin_head:
-            print(f"{branch}: heads different. Resetting...")
-            run(
-                ["git", "reset", "--hard", f"origin/{branch}"],
-                cwd=branch_path,
-                check=True,
-            )
+            print(f"{branch}: heads different.")
+            print(f"{branch}: Deleting {branch_path} ...")
+            shutil.rmtree(branch_path)
+            print(f"{branch}: Cloning new copy to {branch_path} ...")
+            clone(branch)
             print(f"{branch}: Done")
         else:
             print(f"{branch}: heads same. Nothing to do")
     else:
         print(f"{branch}: Does not exist. Cloning...")
-        run(
-            ["git", "clone", "--branch", branch, str(bare_repo), str(branch_path)],
-            check=True,
-        )
+        clone(branch)
         print(f"{branch}: Done")
 
 # Remove branches that no longer exist

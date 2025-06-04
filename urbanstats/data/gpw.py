@@ -325,7 +325,7 @@ def select_points_in_shape(shape, glo, *, resolution):
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_6.91",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_7",
     key_function=dict(
         shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),

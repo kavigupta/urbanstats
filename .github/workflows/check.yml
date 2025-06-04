@@ -67,10 +67,8 @@ jobs:
         run: git config --global --add safe.directory '*'
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
-      - name: isort
-        run: python -m isort $(git ls-files '*.py')
-      - name: black
-        run: python -m black $(git ls-files '*.py')
+      - name: format
+        run: ./scripts/format-python.sh
       - name: check if there are any changes
         # if there are, print the diff and exit with an error
         # this is needed because isort and black disagree on the formatting of some files, so we run both and check
@@ -207,8 +205,9 @@ jobs:
       - uses: ./.github/actions/node_modules
       - name: Run tests
         run: |
-          npm run test:unit -- \
-            --proxy=true
+          npm run test:unit:ci -- \
+            --proxy=true \
+            --test='unit/*.test.ts'
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}

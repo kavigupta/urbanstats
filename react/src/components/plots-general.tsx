@@ -1,7 +1,11 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, useEffect, useRef } from 'react'
+import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
+
+import { useTranspose } from '../utils/transpose'
 
 import { useScreenshotMode } from './screenshot'
+
+import './plots.css'
 
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
@@ -12,54 +16,75 @@ interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: DetailedPlotSpec
-    settingsElement: (plotRef: React.RefObject<HTMLDivElement>) => ReactElement
+    plotSpec: (transpose: boolean) => DetailedPlotSpec
+    settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
+    const transpose = useTranspose()
+
     const plotRef = useRef<HTMLDivElement>(null)
+
+    const plotSpec = props.plotSpec
+
+    const plotConfig = useCallback((transposeConfig: boolean): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig)
+        const result: Plot.PlotOptions = {
+            marks,
+            x: {
+                label: xlabel,
+            },
+            y: {
+                label: ylabel,
+                domain: ydomain,
+            },
+            grid: false,
+            width: transposeConfig ? undefined : 1000,
+            height: transposeConfig ? 1000 : undefined,
+            style: {
+                fontSize: transposeConfig ? '2em' : '1em',
+                fontFamily: 'Jost, Arial, sans-serif',
+            },
+            marginTop: 80,
+            marginBottom: transposeConfig ? 80 : 40,
+            marginLeft: 80,
+            color: legend,
+        }
+        if (transposeConfig) {
+            result.x = {
+                label: ylabel,
+                domain: ydomain,
+            }
+            result.y = {
+                label: xlabel,
+                reverse: true,
+            }
+        }
+        return result
+    }, [plotSpec])
+
     useEffect(() => {
         if (plotRef.current) {
-            const { marks, xlabel, ylabel, ydomain, legend } = props.plotSpec
-            // y grid marks
-            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plotConfig = {
-                marks,
-                x: {
-                    label: xlabel,
-                },
-                y: {
-                    label: ylabel,
-                    domain: ydomain,
-                },
-                grid: false,
-                width: 1000,
-                style: {
-                    fontSize: '1em',
-                    // font-family: 'Jost', 'Arial', sans-serif;
-                    fontFamily: 'Jost|Arial|sans-serif',
-                },
-                marginTop: 80,
-                marginBottom: 40,
-                marginLeft: 80,
-                color: legend,
-            }
-            const plot = Plot.plot(plotConfig)
+            const plot = Plot.plot(plotConfig(transpose))
             plotRef.current.innerHTML = ''
             plotRef.current.appendChild(plot)
         }
-    }, [props.plotSpec])
+    }, [props.plotSpec, transpose, plotConfig])
 
     const screenshotMode = useScreenshotMode()
 
+    const transposeTopMargin = '35px'
+
     // put a button panel in the top right corner
     return (
-        <div style={{ width: '100%', position: 'relative' }}>
+        <>
             <div
-                className="histogram-svg-panel"
+                className="histogram-svg-panel" // tied to CSS
                 ref={plotRef}
                 style={
                     {
                         width: '100%',
-                        // height: "20em"
+                        height: transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
+                        position: transpose ? 'relative' : undefined,
+                        top: transpose ? transposeTopMargin : undefined,
                     }
                 }
             >
@@ -67,10 +92,17 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            {props.settingsElement(plotRef)}
+                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
+                            {props.settingsElement(() => {
+                                const plot = Plot.plot(plotConfig(false))
+                                const div = document.createElement('div')
+                                div.style.width = '1000px'
+                                div.style.height = '500px'
+                                div.appendChild(plot)
+                                return div
+                            })}
                         </div>
                     )}
-        </div>
+        </>
     )
 }
