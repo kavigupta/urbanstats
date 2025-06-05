@@ -29,6 +29,16 @@ class CensusCanada(CanadaStatistics):
             "sd_2021_canada": "Area-weighted Density [StatCan]",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "population_2021_canada": "population",
+            **{
+                f"density_2021_pw_{r}_canada": f"density_{r}km"
+                for r in RADII
+            },
+            "sd_2021_canada": "simple_density",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census")
 

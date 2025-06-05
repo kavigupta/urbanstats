@@ -81,6 +81,13 @@ class CensusCanadaIncomeIndividual(CensusCanadaSimple):
             "individual_income_above_100_cad": "Individual income > C$100k %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "individual_income_under_50cad": "income_under_50k",
+            "individual_income_50_to_100cad": "income_50k_to_100k",
+            "individual_income_above_100_cad": "income_over_100k",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
@@ -146,6 +153,13 @@ class CensusCanadaIncomeHousehold(CensusCanadaSimple):
             "household_income_above_100_cad": "Household income > C$100k %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "household_income_under_50cad": "income_under_50k",
+            "household_income_50_to_100cad": "income_50k_to_100k",
+            "household_income_above_100_cad": "income_over_100k",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
@@ -202,6 +216,11 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
     def name_for_each_statistic(self):
         return {
             "lico_at_canada": "LICO-AT %",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "lico_at_canada": "low_income",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -275,6 +294,13 @@ class CensusCanadaEducation(CensusCanadaSimple):
             "education_high_school_canada": "High school diploma [25-64] %",
             "education_ugrad_canada": "Bachelor's degree [25-64] %",
             "education_grad_canada": "Graduate degree [25-64] %",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "education_high_school_canada": "high_school",
+            "education_ugrad_canada": "undergrad",
+            "education_grad_canada": "graduate",
         }
 
     def explanation_page_for_each_statistic(self):

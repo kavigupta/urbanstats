@@ -20,6 +20,16 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2010_or_later": "% units built in 2010s+",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "year_built_1969_or_earlier": "built_pre_1970",
+            "year_built_1970_to_1979": "built_1970s",
+            "year_built_1980_to_1989": "built_1980s",
+            "year_built_1990_to_1999": "built_1990s",
+            "year_built_2000_to_2009": "built_2000s",
+            "year_built_2010_or_later": "built_2010_plus",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 

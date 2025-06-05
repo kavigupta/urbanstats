@@ -31,6 +31,21 @@ class SegregationStatistics(USAStatistics):
                 result[f"{k}_{year}"] = f"{v}"
         return {k: v + " %" for k, v in result.items()}
 
+    def varname_for_each_statistic(self):
+        result = {}
+        base_var_names = {
+            "homogeneity_250": "racial_homogeneity",
+            "segregation_250": "segregation",
+            "segregation_250_10": "local_segregation",
+        }
+        for k, v in base_var_names.items():
+            for year in 2000, 2010:
+                result[f"{k}_{year}"] = f"{v}_{year}"
+                result[f"{k}_diff_{year}"] = f"{v}_change_{year}_2020"
+            for year in (2020,):
+                result[f"{k}_{year}"] = f"{v}"
+        return result
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("segregation")
 

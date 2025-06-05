@@ -80,6 +80,26 @@ class CensusForPreviousYear(USAStatistics):
         )
         return {self.ysk(k): self.ysn(v) for k, v in result.items()}
 
+    def varname_for_each_statistic(self):
+        result = {}
+        result.update({"population": "population"})
+        result.update({f"ad_{k}": f"density_{k}km" for k in RADII})
+        result.update(
+            {
+                "sd": "simple_density",
+                "white": "white",
+                "hispanic": "hispanic",
+                "black": "black",
+                "asian": "asian",
+                "native": "native",
+                "hawaiian_pi": "hawaiian_pi",
+                "other / mixed": "other_mixed",
+                "housing_per_pop": "housing_per_adult",
+                "vacancy": "vacancy_rate",
+            }
+        )
+        return {self.ysk(k): v for k, v in result.items()}
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 
@@ -160,6 +180,13 @@ class CensusChange(USAStatistics):
         result.update(
             {k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"}
         )
+        return result
+
+    def varname_for_each_statistic(self):
+        year = self.year()
+        result = {}
+        result.update({f"population_change_{year}": "population_change"})
+        result.update({f"ad_{k}_change_{year}": f"density_{k}km_change" for k in RADII})
         return result
 
     def category_for_each_statistic(self):
