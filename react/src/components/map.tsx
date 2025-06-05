@@ -16,6 +16,8 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
+import { useScreenshotMode } from './screenshot'
+
 export const defaultMapPadding = 20
 
 export interface MapGenericProps {
@@ -490,17 +492,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
+    const screenshot = useScreenshotMode()
     return (
         <div
             id={props.id}
             style={{
-                background: colors.background,
                 height: props.height,
                 width: '100%',
                 position: 'relative',
                 border: `1px solid ${colors.borderNonShadow}`,
                 borderRadius: '5px',
-                backgroundColor: colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
+                backgroundColor: screenshot ? '#00ff00' : colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
             }}
         >
             {/* place this on the right of the map */}

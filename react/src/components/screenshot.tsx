@@ -72,27 +72,63 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
-    async function screencapElement(ref: HTMLElement): Promise<[string, number]> {
+    async function screencapElement(ref: HTMLElement): Promise<HTMLCanvasElement> {
+        /*
+         * Safari is flaky at rendering canvases the way `domtoimage` renders them.
+         * We work around this by rendering the canvases first, then excluding them from the element render.
+         * This way, the map looks nice + has rounded corners.
+         *
+         * If Safari supported alpha channel in canvases, we could just draw the element over the canvases, but Safari does not support alpha channel in canvases,
+         * so we expect the map to draw a bright green background when in screenshot mode so that we can color key it out.
+         */
         const scaleFactor = overallWidth / ref.offsetWidth
-        const link = await domtoimage.toPng(ref, {
+
+        const resultCanvas = document.createElement('canvas')
+
+        resultCanvas.width = ref.offsetWidth * scaleFactor
+        resultCanvas.height = ref.offsetHeight * scaleFactor * heightMultiplier
+
+        const resultContext = resultCanvas.getContext('2d')!
+
+        const canvases = Array.from(ref.querySelectorAll('canvas'))
+
+        for (const canvas of canvases) {
+            resultContext.drawImage(
+                canvas,
+                (canvas.getBoundingClientRect().left - ref.getBoundingClientRect().left) * scaleFactor,
+                (canvas.getBoundingClientRect().top - ref.getBoundingClientRect().top) * scaleFactor,
+            )
+        }
+
+        const refCanvas = await domtoimage.toCanvas(ref, {
             bgcolor: colors.background,
-            height: ref.offsetHeight * scaleFactor * heightMultiplier,
-            width: ref.offsetWidth * scaleFactor,
+            height: resultCanvas.height,
+            width: resultCanvas.width,
             style: {
                 transform: `scale(${scaleFactor})`,
                 transformOrigin: 'top left',
             },
+            filter: node => !(node instanceof HTMLCanvasElement),
         })
-        return [link, scaleFactor * ref.offsetHeight * heightMultiplier]
+
+        const refData = refCanvas.getContext('2d')!.getImageData(0, 0, refCanvas.width, refCanvas.height)
+
+        // Color key out pure green
+        for (let i = 0; i < refData.data.length; i += 4) {
+            if (refData.data[i] === 0 && refData.data[i + 1] === 255 && refData.data[i + 2] === 0) {
+                refData.data[i + 3] = 0
+            }
+        }
+
+        resultContext.drawImage(await window.createImageBitmap(refData), 0, 0)
+
+        return resultCanvas
     }
 
-    const pngLinks = []
-    const heights = []
+    const canvases = []
     for (const ref of config.elementsToRender) {
         try {
-            const [pngLink, height] = await screencapElement(ref)
-            pngLinks.push(pngLink)
-            heights.push(height)
+            canvases.push(await screencapElement(ref))
         }
         catch (e) {
             console.error(e)
@@ -114,28 +150,17 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const bannerHeight = banner.height * bannerScale
 
     canvas.width = padAround * 2 + overallWidth
-    canvas.height = padAround + padBetween * (pngLinks.length - 1) + heights.reduce((a, b) => a + b, 0) + bannerHeight
+    canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
 
     const ctx = canvas.getContext('2d')!
-    const imgs = []
 
-    for (const pngLink of pngLinks) {
-        const img = new Image()
-        img.src = pngLink
-        imgs.push(img)
-    }
     ctx.fillStyle = colors.background
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    for (const img of imgs) {
-        await new Promise<void>((resolve) => {
-            img.onload = () => { resolve() }
-        })
-    }
     let start = padAround
-    for (const img of imgs) {
-        ctx.drawImage(img, padAround, start)
-        start += img.height + padBetween
+    for (const elementCanvas of canvases) {
+        ctx.drawImage(elementCanvas, padAround, start)
+        start += elementCanvas.height + padBetween
     }
 
     start -= padBetween
