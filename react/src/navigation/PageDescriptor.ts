@@ -671,7 +671,7 @@ export function pageTitle(pageData: PageData): string {
                     return 'Juxtastat Infinite'
             }
         case 'syau':
-            return `So you're an urbanist...`
+            return `So you're an urbanist?`
         case 'article':
             return pageData.article.shortname
         case 'statistic':
