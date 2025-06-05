@@ -33,7 +33,7 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
     const subHeaderClass = useSubHeaderTextClass()
     return (
         <PageTemplate>
-            <div className={headerClass}>So you&apos;re an urbanist...</div>
+            <div className={headerClass}>So you&apos;re an urbanist?</div>
             <div className={subHeaderClass}>
                 Name every
                 <SelectType typ={props.typ} universe={props.universe} counts={props.counts} />
