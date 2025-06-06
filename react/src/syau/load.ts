@@ -9,11 +9,22 @@ import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
+let sortedSuffixes: string[] | undefined
+
+function sortedSuffixesList(): string[] {
+    if (sortedSuffixes === undefined) {
+        sortedSuffixes = syau_suffixes.slice().sort((a, b) => b.length - a.length)
+    }
+    return sortedSuffixes
+}
+
 type MatchChunks = string[]
+
+interface MatchInfo { original: MatchChunks, withoutSuffixes: MatchChunks }
 
 export interface SYAUData {
     longnames: string[]
-    matchChunks: MatchChunks[]
+    matchChunks: MatchInfo[]
     populations: number[]
     populationOrdinals: number[]
     longnameToIndex: Record<string, number>
@@ -41,12 +52,16 @@ function removeSuffix(s: string, sxs: string[]): string {
     return s
 }
 
-function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
+function computeMatchChunksAll(longnames: string[]): MatchInfo[] {
     const chunksAll = longnames.map(computeMatchChunks)
     // list of suffixes that appear in at least 5% of flat chunks
-    const commonSuffixes = syau_suffixes
-    commonSuffixes.sort((a, b) => b.length - a.length)
-    const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
+    const commonSuffixes = sortedSuffixesList()
+    const chunksAllCleaned = chunksAll.map((chunks) => {
+        return {
+            original: chunks,
+            withoutSuffixes: chunks.map(chunk => removeSuffix(chunk, commonSuffixes)),
+        }
+    })
     return chunksAllCleaned
 }
 
@@ -55,8 +70,24 @@ export function onlyKeepAlpanumeric(s: string): string {
     return s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 }
 
-export function confirmMatch(target: MatchChunks, query: string): boolean {
-    return target.includes(onlyKeepAlpanumeric(normalize(query)))
+export function confirmMatch(target: MatchInfo, query: string): boolean {
+    const cleanQuery = onlyKeepAlpanumeric(normalize(query))
+    if (cleanQuery === '') {
+        return false // empty query cannot match anything
+    }
+    if (target.withoutSuffixes.includes(cleanQuery)) {
+        return true // the actual query matches a chunk directly
+    }
+    for (let i = 0; i < target.withoutSuffixes.length; i++) {
+        const originalChunk = target.original[i]
+        const newChunk = target.withoutSuffixes[i]
+        if (originalChunk.startsWith(cleanQuery) && cleanQuery.length > newChunk.length) {
+            // the query matches the start of the original chunk, but the cleaned chunk is shorter
+            // this means that the query is a suffix of the original chunk
+            return true
+        }
+    }
+    return false // no match found
 }
 
 export async function loadSYAUData(

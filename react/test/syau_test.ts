@@ -152,6 +152,36 @@ test('round-down', async (t) => {
     await assertText(t, '4/1607 Cities named, which is 18% of the total population.')
 })
 
+test('suffix-normal', async (t) => {
+    await addInputText(t, 'huntington', '')
+    await t.expect(await allSyauPredictions()).eql([
+        '23. Huntington Beach city',
+        '169. Huntington Park city',
+    ])
+})
+
+test('suffix-works', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'huntington beach', 'huntington beach')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql([
+        '23. Huntington Beach city',
+    ])
+})
+
+urbanstatsFixture('california-counties', '/syau.html#typ=County&universe=California%2C+USA')
+
+test('los angeles with box checked', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'los angeles', 'los angeles')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['1. Los Angeles County'])
+})
+
 urbanstatsFixture('missouri-cities', '/syau.html#typ=City&universe=Missouri%2C+USA')
 
 test('o-fallon', async (t) => {
@@ -295,5 +325,16 @@ test('more-precise-percentages', async (t) => {
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩\n'
         + '\n'
         + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
+    ])
+})
+
+urbanstatsFixture('ca-ridings', '/syau.html#typ=CA%20Riding&universe=Canada')
+
+test('canada-ridings', async (t) => {
+    await addInputText(t, '-', '-')
+    await t.expect(await allSyauPredictions()).eql([])
+    await addInputText(t, 'madawaska', '')
+    await t.expect(await allSyauPredictions()).eql([
+        '329. Madawaska--Restigouche (Riding)',
     ])
 })
