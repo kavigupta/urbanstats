@@ -140,7 +140,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
 
         // Color key out pure green
         for (let i = 0; i < refData.data.length; i += 4) {
-            if (refData.data[i] === 0 && refData.data[i + 1] === 255 && refData.data[i + 2] === 0) {
+            if (refData.data[i] === colors.canvasKey.r && refData.data[i + 1] === colors.canvasKey.g && refData.data[i + 2] === colors.canvasKey.b) {
                 refData.data[i + 3] = 0
             }
         }

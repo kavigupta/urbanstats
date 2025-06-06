@@ -10,7 +10,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
-import { randomColor } from '../utils/color'
+import { randomColor, rgbToCss } from '../utils/color'
 import { isTesting } from '../utils/isTesting'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -503,7 +503,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 position: 'relative',
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: '5px',
-                backgroundColor: screenshot ? '#00ff00' : colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
+                backgroundColor: screenshot ? rgbToCss(colors.canvasKey) : colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
             }}
         >
             {/* place this on the right of the map */}
