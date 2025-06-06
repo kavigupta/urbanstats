@@ -33,10 +33,10 @@ class CensusCanada(CanadaStatistics):
         return {
             "population_2021_canada": "population",
             **{
-                f"density_2021_pw_{r}_canada": f"density_{r}km"
+                f"density_2021_pw_{r}_canada": f"density_pw_{format_radius(r)}_canada"
                 for r in RADII
             },
-            "sd_2021_canada": "simple_density",
+            "sd_2021_canada": "density_aw",
         }
 
     def explanation_page_for_each_statistic(self):

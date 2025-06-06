@@ -21,31 +21,35 @@ class OccupationStatistics(ACSStatisticsColection):
 
     def varname_for_each_statistic(self):
         return {
-            "occupation_architecture_and_engineering_occupations": "architects_engineers",
-            "occupation_computer_and_mathematical_occupations": "computer_math",
-            "occupation_life,_physical,_and_social_science_occupations": "scientists",
-            "occupation_arts,_design,_entertainment,_sports,_and_media_occupations": "arts_media",
-            "occupation_community_and_social_service_occupations": "social_service",
-            "occupation_educational_instruction,_and_library_occupations": "education",
-            "occupation_legal_occupations": "legal",
-            "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations": "health_practitioners",
-            "occupation_health_technologists_and_technicians": "health_technicians",
-            "occupation_business_and_financial_operations_occupations": "business_finance",
-            "occupation_management_occupations": "management",
-            "occupation_construction_and_extraction_occupations": "construction",
-            "occupation_farming,_fishing,_and_forestry_occupations": "agriculture",
-            "occupation_installation,_maintenance,_and_repair_occupations": "maintenance",
-            "occupation_material_moving_occupations": "material_moving",
-            "occupation_transportation_occupations": "transportation",
-            "occupation_office_and_administrative_support_occupations": "office_admin",
-            "occupation_sales_and_related_occupations": "sales",
-            "occupation_building_and_grounds_cleaning_and_maintenance_occupations": "cleaning_maintenance",
-            "occupation_food_preparation_and_serving_related_occupations": "food_service",
-            "occupation_healthcare_support_occupations": "healthcare_support",
-            "occupation_personal_care_and_service_occupations": "personal_care",
-            "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "firefighting",
-            "occupation_law_enforcement_workers_including_supervisors": "law_enforcement",
-            "occupation_production_occupations": "production"
+            k: "occupation_" + v
+            for k, v in {
+                "occupation_architecture_and_engineering_occupations": "architects_engineers",
+                "occupation_computer_and_mathematical_occupations": "computer_math",
+                "occupation_life,_physical,_and_social_science_occupations": "scientists",
+                "occupation_arts,_design,_entertainment,_sports,_and_media_occupations": "arts_media",
+                "occupation_community_and_social_service_occupations": "social_service",
+                "occupation_educational_instruction,_and_library_occupations": "education",
+                "occupation_legal_occupations": "legal",
+                "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations": "health_practitioners",
+                "occupation_health_technologists_and_technicians": "health_technicians",
+                "occupation_business_and_financial_operations_occupations": "business_finance",
+                "occupation_management_occupations": "management",
+                "occupation_construction_and_extraction_occupations": "construction",
+                "occupation_farming,_fishing,_and_forestry_occupations": "agriculture",
+                "occupation_installation,_maintenance,_and_repair_occupations": "maintenance",
+                "occupation_material_moving_occupations": "material_moving",
+                "occupation_transportation_occupations": "transportation",
+                "occupation_office_and_administrative_support_occupations": "office_admin",
+                "occupation_sales_and_related_occupations": "sales",
+                "occupation_building_and_grounds_cleaning_and_maintenance_occupations": "cleaning_maintenance",
+                "occupation_food_preparation_and_serving_related_occupations": "food_service",
+                "occupation_healthcare_support_occupations": "healthcare_support",
+                "occupation_personal_care_and_service_occupations": "personal_care",
+                "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors": "firefighting",
+                "occupation_law_enforcement_workers_including_supervisors": "law_enforcement",
+                "occupation_production_occupations": "production",
+            }.items()
+
         }
 
     def explanation_page_for_each_statistic(self):

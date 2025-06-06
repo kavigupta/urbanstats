@@ -25,7 +25,7 @@ class USFeatureDistanceStatistics(USAStatistics):
 
     def varname_for_each_statistic(self):
         return {
-            "park_percent_1km_v2": "park_percent_1km",
+            "park_percent_1km_v2": "park_1km",
             "within_Hospital_10": "hospital_within_10km",
             "mean_dist_Hospital_updated": "hospital_mean_dist",
             "within_Public School_2": "school_within_2km",

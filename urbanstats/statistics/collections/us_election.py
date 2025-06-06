@@ -12,8 +12,8 @@ class USElectionStatistics(USAStatistics):
 
     def varname_for_each_statistic(self):
         return {
-            **{(elect.name, "margin"): elect.name.lower().replace(" ", "_") + "_margin" for elect in vest_elections},
-            ("2016-2020 Swing", "margin"): "dem_swing_2016_2020",
+            **{(elect.name, "margin"): "pres_" + elect.name[:4].lower().replace(" ", "_") + "_margin" for elect in vest_elections},
+            ("2016-2020 Swing", "margin"): "pres_swing_2016_2020",
         }
 
     def explanation_page_for_each_statistic(self):

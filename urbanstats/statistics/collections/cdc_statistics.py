@@ -90,9 +90,9 @@ class CDCStatistics(USAStatistics):
             "CSMOKING_cdc_2": "smoking",
             "LPA_cdc_2": "no_physical_activity",
             "SLEEP_cdc_2": "insufficient_sleep",
-            "CHECKUP_cdc_2": "doctor_checkup",
-            "DENTAL_cdc_2": "dental_visit",
-            "CHOLSCREEN_cdc_2": "cholesterol_screening"
+            "CHECKUP_cdc_2": "doctor_checkup_last_year",
+            "DENTAL_cdc_2": "dental_visit_last_year",
+            "CHOLSCREEN_cdc_2": "cholesterol_screening_last_year",
         }
 
     def explanation_page_for_each_statistic(self):

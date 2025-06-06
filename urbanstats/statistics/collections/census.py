@@ -83,10 +83,10 @@ class CensusForPreviousYear(USAStatistics):
     def varname_for_each_statistic(self):
         result = {}
         result.update({"population": "population"})
-        result.update({f"ad_{k}": f"density_{k}km" for k in RADII})
+        result.update({f"ad_{k}": f"density_pw_{format_radius(k)}" for k in RADII})
         result.update(
             {
-                "sd": "simple_density",
+                "sd": "density_aw",
                 "white": "white",
                 "hispanic": "hispanic",
                 "black": "black",
@@ -186,7 +186,7 @@ class CensusChange(USAStatistics):
         year = self.year()
         result = {}
         result.update({f"population_change_{year}": "population_change"})
-        result.update({f"ad_{k}_change_{year}": f"density_{k}km_change" for k in RADII})
+        result.update({f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change" for k in RADII})
         return result
 
     def category_for_each_statistic(self):

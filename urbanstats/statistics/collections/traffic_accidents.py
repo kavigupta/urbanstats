@@ -26,10 +26,10 @@ class NHTSAAccidentStatistics(USAStatistics):
 
     def varname_for_each_statistic(self):
         return {
-            "traffic_fatalities_last_decade_per_capita": "fatalities_per_capita",
+            "traffic_fatalities_last_decade_per_capita": "traffic_fatalities_per_capita",
             "traffic_fatalities_ped_last_decade_per_capita": "ped_cyclist_fatalities_per_capita",
-            "traffic_fatalities_last_decade": "total_fatalities",
-            "traffic_fatalities_ped_last_decade": "total_ped_cyclist_fatalities",
+            "traffic_fatalities_last_decade": "traffic_fatalities",
+            "traffic_fatalities_ped_last_decade": "traffic_ped_cyclist_fatalities",
         }
 
     def explanation_page_for_each_statistic(self):
