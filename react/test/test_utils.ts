@@ -92,15 +92,17 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
     if (options.wait) {
         await t.wait(1000)
     }
-    await t.eval(() => {
-        // disable the map, so that we're not testing the tiles
-        if (options.hideMap) {
+    if (options.hideMap) {
+        await t.eval(() => {
+            // disable the map, so that we're not testing the tiles
             for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
                 if (x instanceof HTMLElement) {
                     x.style.visibility = 'hidden'
                 }
             }
-        }
+        })
+    }
+    await t.eval(() => {
         const currentVersion = document.getElementById('current-version')
         if (currentVersion !== null) {
             currentVersion.innerHTML = '&lt;VERSION&gt;'
