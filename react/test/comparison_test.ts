@@ -303,7 +303,9 @@ test('removing duplicate does not glitch out', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']))
+urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']), async (t) => {
+    await disableTestingUserAgent(t)
+})
 
 for (const platform of ['desktop', 'mobile']) {
     test(`comparison-add-many-cities-${platform}`, async (t) => {
@@ -329,6 +331,7 @@ for (const platform of ['desktop', 'mobile']) {
             await waitForSelectedSearchResult(t)
             await t.pressKey('enter')
             await screencap(t)
+            await downloadImage(t)
         }
     })
 }
