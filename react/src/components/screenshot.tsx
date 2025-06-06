@@ -4,6 +4,7 @@ import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
+import { isTesting } from '../utils/isTesting'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const screencapButton = (
@@ -102,16 +103,24 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
 
         const totalRefOffset = totalOffset(ref)
 
-        for (const canvas of canvases) {
+        for (const [index, canvas] of canvases.entries()) {
             const canvasOffset = totalOffset(canvas)
-            resultContext.drawImage(
-                canvas,
-                // Can't just use boudning box, because it gets weird with transforms (e.g. zoom)
-                (canvasOffset.left - totalRefOffset.left) * scaleFactor,
-                (canvasOffset.top - totalRefOffset.top) * scaleFactor,
-                canvas.offsetWidth * scaleFactor,
-                canvas.offsetHeight * scaleFactor,
-            )
+            // Can't just use boudning box, because it gets weird with transforms (e.g. zoom)
+            const x = (canvasOffset.left - totalRefOffset.left) * scaleFactor
+            const y = (canvasOffset.top - totalRefOffset.top) * scaleFactor
+            const w = canvas.offsetWidth * scaleFactor
+            const h = canvas.offsetHeight * scaleFactor
+
+            if (isTesting()) {
+                resultContext.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
+                resultContext.fillRect(x, y, w, h)
+            }
+            else {
+                resultContext.drawImage(
+                    canvas,
+                    x, y, w, h,
+                )
+            }
         }
 
         const refCanvas = await domtoimage.toCanvas(ref, {

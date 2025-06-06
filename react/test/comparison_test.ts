@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, disableTestingUserAgent } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -45,6 +45,11 @@ test('comparison-3-desktop', async (t) => {
 test('comparison-3-mobile', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
+})
+
+test('comparison-3-download', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await downloadImage(t)
 })
 
 test('comparison-3-add', async (t) => {
@@ -100,15 +105,6 @@ test('comparison-3-editable-number-third', async (t) => {
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([upperSGV, pasadena, chicago]))
-})
-
-urbanstatsFixture('comparison test homogenous (3) (high resolution)', comparisonPage([upperSGV, pasadena, swSGV]), async (t) => {
-    await disableTestingUserAgent(t)
-})
-
-test('comparison-3-download', async (t) => {
-    await t.resizeWindow(1400, 800)
-    await downloadImage(t)
 })
 
 urbanstatsFixture('plotted-across-180', `${target}/comparison.html?longnames=%5B%22England%2C+United+Kingdom%22%2C%22Alaska%2C+USA%22%2C%22Chukotskiy+avtonomnyy+okrug%2C+Russian+Federation%22%5D`)
@@ -265,9 +261,7 @@ test('renders us canada austrailia successfully', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`, async (t) => {
-    await disableTestingUserAgent(t)
-})
+urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
 
 test('renders transpose comparision', async (t) => {
     await screencap(t)
@@ -285,7 +279,6 @@ test('renders scrolling transpose comparision', async (t) => {
 
 urbanstatsFixture('mobile transpose', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%5D&s=2EoPvra9nrE8zYq`, async (t) => {
     await t.resizeWindow(400, 800)
-    await disableTestingUserAgent(t)
 })
 
 test('renders mobile transpose correctly', async (t) => {
@@ -303,9 +296,7 @@ test('removing duplicate does not glitch out', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']), async (t) => {
-    await disableTestingUserAgent(t)
-})
+urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']))
 
 for (const platform of ['desktop', 'mobile']) {
     test(`comparison-add-many-cities-${platform}`, async (t) => {
@@ -331,7 +322,6 @@ for (const platform of ['desktop', 'mobile']) {
             await waitForSelectedSearchResult(t)
             await t.pressKey('enter')
             await screencap(t)
-            await downloadImage(t)
         }
     })
 }

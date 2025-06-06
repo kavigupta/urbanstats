@@ -4,9 +4,7 @@
  * Use sparingly! Functionality under testing should diverge minimally.
  */
 export function isTesting(): boolean {
-    return navigator.userAgent.includes(testingUserAgent) && localStorage.getItem(skipTestingLocalStorageItemName) === null
+    return navigator.userAgent.includes(testingUserAgent)
 }
 
 export const testingUserAgent = 'urbanstats-e2e'
-
-export const skipTestingLocalStorageItemName = 'skipTesting'
