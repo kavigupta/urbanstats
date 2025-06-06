@@ -97,6 +97,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
                 canvas,
                 (canvas.getBoundingClientRect().left - ref.getBoundingClientRect().left) * scaleFactor,
                 (canvas.getBoundingClientRect().top - ref.getBoundingClientRect().top) * scaleFactor,
+                canvas.offsetWidth * scaleFactor,
+                canvas.offsetHeight * scaleFactor,
             )
         }
 
