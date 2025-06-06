@@ -68,6 +68,14 @@ export interface ScreencapElements {
     heightMultiplier?: number
 }
 
+function totalOffset(element: Element | null): { top: number, left: number } {
+    if (!(element instanceof HTMLElement)) {
+        return { top: 0, left: 0 }
+    }
+    const parentOffset = totalOffset(element.offsetParent)
+    return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
+}
+
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
@@ -92,11 +100,15 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
 
         const canvases = Array.from(ref.querySelectorAll('canvas'))
 
+        const totalRefOffset = totalOffset(ref)
+
         for (const canvas of canvases) {
+            const canvasOffset = totalOffset(canvas)
             resultContext.drawImage(
                 canvas,
-                (canvas.getBoundingClientRect().left - ref.getBoundingClientRect().left) * scaleFactor,
-                (canvas.getBoundingClientRect().top - ref.getBoundingClientRect().top) * scaleFactor,
+                // Can't just use boudning box, because it gets weird with transforms (e.g. zoom)
+                (canvasOffset.left - totalRefOffset.left) * scaleFactor,
+                (canvasOffset.top - totalRefOffset.top) * scaleFactor,
                 canvas.offsetWidth * scaleFactor,
                 canvas.offsetHeight * scaleFactor,
             )
