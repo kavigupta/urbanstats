@@ -265,10 +265,16 @@ test('renders us canada austrailia successfully', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
+urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`, async (t) => {
+    await disableTestingUserAgent(t)
+})
 
 test('renders transpose comparision', async (t) => {
     await screencap(t)
+})
+
+test('transpose screencap', async (t) => {
+    await downloadImage(t)
 })
 
 urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B"Santa+Clarita+city%2C+California%2C+USA"%2C"Santa+Clara+city%2C+California%2C+USA"%2C"Boston+city%2C+Massachusetts%2C+USA"%2C"San+Francisco+city%2C+California%2C+USA"%2C"Denver+city%2C+Colorado%2C+USA"%5D&s=8gkGqBdgQkNpHJZ`)
@@ -279,10 +285,15 @@ test('renders scrolling transpose comparision', async (t) => {
 
 urbanstatsFixture('mobile transpose', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%5D&s=2EoPvra9nrE8zYq`, async (t) => {
     await t.resizeWindow(400, 800)
+    await disableTestingUserAgent(t)
 })
 
 test('renders mobile transpose correctly', async (t) => {
     await screencap(t)
+})
+
+test('mobile transpose screencap', async (t) => {
+    await downloadImage(t)
 })
 
 urbanstatsFixture('transpose with duplicate', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%2C%22Texas%2C+USA%22%5D&s=k32AgBaBU3tCGR`)
