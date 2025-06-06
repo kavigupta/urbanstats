@@ -49,7 +49,6 @@ class OccupationStatistics(ACSStatisticsColection):
                 "occupation_law_enforcement_workers_including_supervisors": "law_enforcement",
                 "occupation_production_occupations": "production",
             }.items()
-
         }
 
     def explanation_page_for_each_statistic(self):

@@ -186,7 +186,12 @@ class CensusChange(USAStatistics):
         year = self.year()
         result = {}
         result.update({f"population_change_{year}": "population_change"})
-        result.update({f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change" for k in RADII})
+        result.update(
+            {
+                f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change"
+                for k in RADII
+            }
+        )
         return result
 
     def category_for_each_statistic(self):

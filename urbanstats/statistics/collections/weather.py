@@ -43,7 +43,7 @@ class USWeatherStatistics(USAStatistics):
             "wind_speed_over_10mph_4": "windy_days",
             "snowfall_4": "snowfall",
             "rainfall_4": "rainfall",
-            "hours_sunny_4": "sunny_hours"
+            "hours_sunny_4": "sunny_hours",
         }
 
     def explanation_page_for_each_statistic(self):
