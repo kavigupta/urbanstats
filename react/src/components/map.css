@@ -1,4 +1,14 @@
 .maplibregl-ctrl-attrib-inner {
     /* Fixes wrapping in map screenshots */
     white-space: nowrap;
+    overflow-x: scroll;
+    scrollbar-width: thin;
+}
+
+.maplibregl-ctrl-bottom-right {
+    width: 100%;
+}
+
+.maplibregl-ctrl-attrib {
+    max-width: 75%;
 }
