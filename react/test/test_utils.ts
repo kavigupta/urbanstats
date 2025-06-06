@@ -4,6 +4,8 @@ import path from 'path'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 
+import { skipTestingLocalStorageItemName } from '../src/utils/isTesting'
+
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
@@ -83,7 +85,7 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
     }
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean, hideMap: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
@@ -92,9 +94,11 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
+        if (options.hideMap) {
+            for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
+                if (x instanceof HTMLElement) {
+                    x.style.visibility = 'hidden'
+                }
             }
         }
         const currentVersion = document.getElementById('current-version')
@@ -127,7 +131,7 @@ function screenshotPath(t: TestController): string {
 }
 
 export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
-    await prepForImage(t, { hover: fullPage, wait })
+    await prepForImage(t, { hover: fullPage, wait, hideMap: true })
     return t.takeScreenshot({
         // include the browser name in the screenshot path
         path: screenshotPath(t),
@@ -136,7 +140,7 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
 }
 
 export async function grabDownload(t: TestController, button: Selector): Promise<void> {
-    await prepForImage(t, { hover: true, wait: true })
+    await prepForImage(t, { hover: true, wait: true, hideMap: false })
     await t
         .click(button)
     await t.wait(3000)
@@ -268,4 +272,12 @@ export async function dataValues(): Promise<string[]> {
         values.push(await selector.nth(i).innerText)
     }
     return values
+}
+
+export async function disableTestingUserAgent(t: TestController): Promise<void> {
+    const nameLocal = skipTestingLocalStorageItemName
+    await t.eval(() => {
+        localStorage.setItem(nameLocal, 'true')
+    }, { dependencies: { nameLocal } })
+    await safeReload(t)
 }

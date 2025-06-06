@@ -8,6 +8,7 @@ import {
     createComparison,
     waitForPageLoaded,
     clickMapElement,
+    disableTestingUserAgent,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -128,6 +129,16 @@ test('simple', async (t) => {
     await screencap(t)
 })
 
+test('create-comparison-from-article', async (t) => {
+    await createComparison(t, 'pasadena city california')
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage(['San Marino city, California, USA', 'Pasadena city, California, USA']))
+})
+
+urbanstatsFixture('shorter article test (full resolution)', `/article.html?longname=San+Marino+city%2C+California%2C+USA`, async (t) => {
+    await disableTestingUserAgent(t)
+})
+
 test('download-article', async (t) => {
     await downloadImage(t)
 })
@@ -135,12 +146,6 @@ test('download-article', async (t) => {
 test('download-article-dark', async (t) => {
     await t.click(Selector('.theme-setting').find('select')).click(Selector('option').withExactText('Dark Mode'))
     await downloadImage(t)
-})
-
-test('create-comparison-from-article', async (t) => {
-    await createComparison(t, 'pasadena city california')
-    await t.expect(getLocationWithoutSettings())
-        .eql(comparisonPage(['San Marino city, California, USA', 'Pasadena city, California, USA']))
 })
 
 // just area and compactness
