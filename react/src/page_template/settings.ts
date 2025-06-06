@@ -42,6 +42,7 @@ export type SettingsDictionary = {
     temperature_unit: TemperatureUnit
     mobile_article_pointers: MobileArticlePointers
     juxtastatCompactEmoji: boolean
+    syauRequireEnter: boolean
 }
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
@@ -97,6 +98,7 @@ export const defaultSettingsList = [
     ['temperature_unit', 'fahrenheit'],
     ['mobile_article_pointers', 'pointer_in_class'],
     ['juxtastatCompactEmoji', false],
+    ['syauRequireEnter', false],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

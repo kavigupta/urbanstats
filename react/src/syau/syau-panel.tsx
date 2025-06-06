@@ -3,8 +3,10 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { CheckboxSetting } from '../components/sidebar'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { buttonStyle, GenericShareButton } from '../quiz/quiz-result'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -31,7 +33,7 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
     const subHeaderClass = useSubHeaderTextClass()
     return (
         <PageTemplate>
-            <div className={headerClass}>So you&apos;re an urbanist...</div>
+            <div className={headerClass}>So you&apos;re an urbanist?</div>
             <div className={subHeaderClass}>
                 Name every
                 <SelectType typ={props.typ} universe={props.universe} counts={props.counts} />
@@ -50,6 +52,32 @@ export function SYAUPanel(props: { typ?: string, universe?: string, counts: Coun
                         )
             }
         </PageTemplate>
+    )
+}
+
+function GuessInputField(props: { guessCallback: (query: string) => boolean }): ReactNode {
+    const [syauRequireEnter] = useSetting('syauRequireEnter')
+    return (
+        <input
+            type="text"
+            id="syau-input"
+            placeholder="Type a region name"
+            style={{ width: '86%' }}
+            onChange={(e) => {
+                if (syauRequireEnter) {
+                    return
+                }
+                if (props.guessCallback(e.target.value)) {
+                    e.target.value = ''
+                }
+            }}
+            onKeyDown={(e) => {
+                if (syauRequireEnter && e.key === 'Enter') {
+                    props.guessCallback(e.currentTarget.value)
+                    e.currentTarget.value = ''
+                }
+            }}
+        />
     )
 }
 
@@ -84,17 +112,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
             <div style={{ margin: 'auto', width: '50%' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
                     <div style={{ width: '7%', height: '1.5em' }} />
-                    <input
-                        type="text"
-                        id="syau-input"
-                        placeholder="Type a region name"
-                        style={{ width: '86%' }}
-                        onChange={(e) => {
-                            if (attemptGuess(e.target.value)) {
-                                e.target.value = ''
-                            }
-                        }}
-                    />
+                    <GuessInputField guessCallback={attemptGuess} />
                     <div style={{ width: '2%', height: '1.5em' }} />
                     <div style={{ width: '5%', height: '1.5em', backgroundColor: indicatorColor }} />
                 </div>
@@ -149,11 +167,10 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                                     emoji,
                                     '',
                                 ]
-                                return Promise.resolve([
-                                    lines.join('\n'),
-                                    // TODO use the soyoureanurbanist.org link
-                                    document.location.href,
-                                ])
+                                // eslint-disable-next-line no-restricted-syntax -- Sharing
+                                const hash = window.location.hash
+                                const url = `https://soyoureanurbanist.org${hash === '' ? '' : `/${hash}`}`
+                                return Promise.resolve([lines.join('\n'), url])
                             }
                         }
                     />
@@ -172,6 +189,14 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                         Reset
                     </button>
                 </div>
+            </div>
+            <div style={{ marginBlockEnd: '1em' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
+                <CheckboxSetting
+                    name="Require pressing enter to formalize a guess"
+                    settingKey="syauRequireEnter"
+                    testId="syauRequireEnter"
+                />
             </div>
             <div style={{ marginBlockEnd: '1em' }} />
             <SYAUTable
