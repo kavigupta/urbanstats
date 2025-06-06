@@ -77,6 +77,8 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
+export const mapBorderWidth = 1
+
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
@@ -105,9 +107,9 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
 
         for (const [index, canvas] of canvases.entries()) {
             const canvasOffset = totalOffset(canvas)
-            // Can't just use boudning box, because it gets weird with transforms (e.g. zoom)
-            const x = (canvasOffset.left - totalRefOffset.left) * scaleFactor
-            const y = (canvasOffset.top - totalRefOffset.top) * scaleFactor
+            // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
+            const x = (canvasOffset.left - totalRefOffset.left + mapBorderWidth) * scaleFactor
+            const y = (canvasOffset.top - totalRefOffset.top + mapBorderWidth) * scaleFactor
             const w = canvas.offsetWidth * scaleFactor
             const h = canvas.offsetHeight * scaleFactor
 

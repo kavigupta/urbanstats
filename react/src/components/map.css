@@ -1,0 +1,4 @@
+.maplibregl-ctrl-attrib-inner {
+    /* Fixes wrapping in map screenshots */
+    white-space: nowrap;
+}

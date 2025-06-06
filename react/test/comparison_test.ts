@@ -322,6 +322,7 @@ for (const platform of ['desktop', 'mobile']) {
             await waitForSelectedSearchResult(t)
             await t.pressKey('enter')
             await screencap(t)
+            await downloadImage(t)
         }
     })
 }

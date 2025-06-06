@@ -1,6 +1,7 @@
 import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import './map.css'
 import React, { ReactNode } from 'react'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
@@ -16,7 +17,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { useScreenshotMode } from './screenshot'
+import { mapBorderWidth, useScreenshotMode } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -500,7 +501,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 height: props.height,
                 width: '100%',
                 position: 'relative',
-                border: `1px solid ${colors.borderNonShadow}`,
+                border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: '5px',
                 backgroundColor: screenshot ? '#00ff00' : colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
             }}
