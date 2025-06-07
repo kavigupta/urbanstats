@@ -4,7 +4,7 @@ from typing import Counter
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
 
-from ..utils import common_prefix, output_typescript
+from ..utils import output_typescript
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
 
@@ -75,26 +75,17 @@ def statistic_variables_info():
     assert set(internal_to_variable.keys()) == set(internal_statistic_names())
     internal_to_actual_variable = internal_to_variable.copy()
     multi_source = {}
-    for cat in statistics_tree.categories.values():
-        for group in cat.contents.values():
-            for by_year in group.by_year.values():
-                for stat in by_year:
-                    if len(stat.by_source) == 1:
-                        continue
-                    ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
-                    assert (
-                        len(set(ms_name)) == 1
-                    ), f"Multiple variable names for {stat}: {ms_name}"
-                    ms_name = ms_name[0]
-                    combo = []
-                    for source, s in sorted(
-                        stat.by_source.items(), key=lambda x: x[0].priority
-                    ):
-                        variable = ms_name + "_" + source.variable_suffix
-                        assert s in internal_to_actual_variable
-                        internal_to_actual_variable[s] = variable
-                        combo.append(variable)
-                    multi_source[ms_name] = combo
+    for stat in multi_source_statistics():
+        ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
+        assert len(set(ms_name)) == 1, f"Multiple variable names for {stat}: {ms_name}"
+        ms_name = ms_name[0]
+        combo = []
+        for source, s in sorted(stat.by_source.items(), key=lambda x: x[0].priority):
+            variable = ms_name + "_" + source.variable_suffix
+            assert s in internal_to_actual_variable
+            internal_to_actual_variable[s] = variable
+            combo.append(variable)
+        multi_source[ms_name] = combo
     internal_to_actual_list = [
         internal_to_actual_variable[stat] for stat in internal_statistic_names()
     ]
@@ -111,6 +102,16 @@ def statistic_variables_info():
         "multiSourceVariables": list(multi_source.items()),
     }
     return result
+
+
+def multi_source_statistics():
+    for cat in statistics_tree.categories.values():
+        for group in cat.contents.values():
+            for by_year in group.by_year.values():
+                for stat in by_year:
+                    if len(stat.by_source) == 1:
+                        continue
+                    yield stat
 
 
 def output_statistics_metadata():
