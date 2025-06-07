@@ -80,6 +80,27 @@ class CensusForPreviousYear(USAStatistics):
         )
         return {self.ysk(k): self.ysn(v) for k, v in result.items()}
 
+    def varname_for_each_statistic(self):
+        result = {}
+        result.update({"population": "population"})
+        result.update({f"ad_{k}": f"density_pw_{format_radius(k)}" for k in RADII})
+        result.update(
+            {
+                "sd": "density_aw",
+                "white": "white",
+                "hispanic": "hispanic",
+                "black": "black",
+                "asian": "asian",
+                "native": "native",
+                "hawaiian_pi": "hawaiian_pi",
+                "other / mixed": "other_mixed",
+                "housing_per_pop": "housing_per_adult",
+                "vacancy": "vacancy_rate",
+            }
+        )
+        for_each_stat = {self.ysk(k): self.ysk(v) for k, v in result.items()}
+        return for_each_stat
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
 
@@ -159,6 +180,18 @@ class CensusChange(USAStatistics):
         result.update({f"ad_1_change_{year}": ad_change[f"ad_1_change_{year}"]})
         result.update(
             {k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"}
+        )
+        return result
+
+    def varname_for_each_statistic(self):
+        year = self.year()
+        result = {}
+        result.update({f"population_change_{year}": f"population_change_{year}_2020"})
+        result.update(
+            {
+                f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change_{year}_2020"
+                for k in RADII
+            }
         )
         return result
 

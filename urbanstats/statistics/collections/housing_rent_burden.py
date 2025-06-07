@@ -16,6 +16,13 @@ class HousingRentBurden(ACSStatisticsColection):
             "rent_burden_over_40": "Rent/Income > 40%",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "rent_burden_under_20": "rent_under_20_percent",
+            "rent_burden_20_to_40": "rent_20_to_40_percent",
+            "rent_burden_over_40": "rent_over_40_percent",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 

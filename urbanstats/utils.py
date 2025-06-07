@@ -82,3 +82,12 @@ def cached_zarr_array(path, create_fn):
         with zarr.open(path, mode="w") as z:
             z.create_dataset("data", data=result)
     return zarr.open(path, mode="r")["data"]
+
+
+def common_prefix(strings):
+    """Find the common prefix of a list of strings."""
+    assert len(strings) > 0, "List of strings must not be empty."
+    for i in range(len(strings[0])):
+        if not all(s.startswith(strings[0][: i + 1]) for s in strings):
+            return strings[0][:i]
+    return strings[0]

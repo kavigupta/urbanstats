@@ -44,7 +44,7 @@ from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.sitemap import output_sitemap
-from urbanstats.website_data.syau import syau_regions
+from urbanstats.website_data.syau import get_suffixes_from_table, syau_regions
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
@@ -255,6 +255,13 @@ def build_urbanstats(
 
         if not no_sitemap:
             output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+
+        with open("react/src/data/syau_suffixes.ts", "w") as f:
+            output_typescript(
+                get_suffixes_from_table(shapefile_without_ordinals()),
+                f,
+                data_type="string[]",
+            )
 
     if not no_juxta:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")

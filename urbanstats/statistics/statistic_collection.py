@@ -35,6 +35,10 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
+    def varname_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to program-friendly variable names."""
+
+    @abstractmethod
     def explanation_page_for_each_statistic(self):
         pass
 
