@@ -215,6 +215,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     lineStyle={props.lineStyle}
                     basemap={props.basemap}
                     height={props.height}
+                    attribution="startVisible"
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>

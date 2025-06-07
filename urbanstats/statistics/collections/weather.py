@@ -25,6 +25,27 @@ class USWeatherStatistics(USAStatistics):
     def name_for_each_statistic(self):
         return {k: stat.display_name for k, stat in era5_statistics.items()}
 
+    def varname_for_each_statistic(self):
+        return {
+            "mean_high_temp_4": "high_temp",
+            "mean_high_temp_winter_4": "high_temp_winter",
+            "mean_high_temp_spring_4": "high_temp_spring",
+            "mean_high_temp_summer_4": "high_temp_summer",
+            "mean_high_temp_fall_4": "high_temp_fall",
+            "mean_high_heat_index_4": "high_heat_index",
+            "mean_high_dewpoint_4": "high_dewpoint",
+            "days_dewpoint_70_inf_4": "humid_days",
+            "days_dewpoint_50_70_4": "moderate_humidity_days",
+            "days_dewpoint_-inf_50_4": "dry_days",
+            "days_above_90_4": "hot_days",
+            "days_below_40_4": "cold_days",
+            "days_between_40_and_90_4": "moderate_temp_days",
+            "wind_speed_over_10mph_4": "windy_days",
+            "snowfall_4": "snowfall",
+            "rainfall_4": "rainfall",
+            "hours_sunny_4": "sunny_hours",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("weather")
 

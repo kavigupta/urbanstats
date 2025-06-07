@@ -4,10 +4,9 @@ import { useColors } from '../page_template/colors'
 import { StatName } from '../page_template/statistic-tree'
 
 import { DataListSelector } from './DataListSelector'
-import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
+import { FilterSelector, USSColorStat, StatisticSelector } from './function'
 import { RampColormapSelector } from './ramp-selector'
 import { ConstantRampDescriptor, RampDescriptor } from './ramps'
-import { Regression } from './regression'
 import { settingNameStyle, useSettingSubNameStyle } from './style'
 
 export type StatisticsForGeography = { stats: number[] }[]
@@ -30,9 +29,9 @@ export interface RegressionDescriptor {
 /* eslint-enable no-restricted-syntax */
 
 export type ColorStatDescriptor = (
-    { type: 'single', value: string, variables?: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression?: string }
+    { type: 'single', value: string, name?: string, uss: string }
     |
-    { type: 'function', value: 'Function', variables: { name: string, expr: (ColorStatDescriptor | undefined) }[], regressions?: RegressionDescriptor[], name?: string, expression: string }
+    { type: 'function', value: 'Function', name?: string, uss?: string }
 )
 
 export interface LineStyle {
@@ -70,8 +69,8 @@ export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
             function: {
                 type: 'function',
                 value: 'Function',
-                expression: '',
-                variables: [],
+                name: '',
+                uss: '',
             },
         },
         color_stat: undefined,
@@ -105,25 +104,6 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
     return addTo as T
 }
 
-function parseRegression(nameToIndex: ReadonlyMap<string, number>, regr: RegressionDescriptor): Regression {
-    const independentFn = parseColorStat(nameToIndex, regr.independent ?? undefined)
-    const dependentFns = regr.dependents.map(dependent => parseColorStat(nameToIndex, dependent ?? undefined))
-    const dependentNames = regr.var_coefficients
-    const interceptName = regr.var_intercept
-    const residualName = regr.var_residue
-    const weightByPopulation = regr.weight_by_population
-
-    return new Regression(
-        independentFn,
-        dependentFns,
-        dependentNames,
-        interceptName,
-        residualName,
-        weightByPopulation,
-        nameToIndex.get('Population')!,
-    )
-}
-
 export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorStat: ColorStatDescriptor | undefined): ColorStat {
     if (colorStat === undefined) {
         return new InvalidColorStat()
@@ -137,14 +117,10 @@ export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorSt
         return new InvalidColorStat()
     }
     else {
-        const variables = colorStat.variables.map((variable) => {
-            return {
-                name: variable.name,
-                expr: parseColorStat(nameToIndex, variable.expr),
-            }
-        })
-        const regressions = (colorStat.regressions ?? []).map(regr => parseRegression(nameToIndex, regr))
-        return new FunctionColorStat(colorStat.name, variables, regressions, colorStat.expression)
+        if (colorStat.uss === undefined) {
+            return new InvalidColorStat()
+        }
+        return new USSColorStat(nameToIndex, colorStat.name, colorStat.uss)
     }
 }
 

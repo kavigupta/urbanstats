@@ -2,6 +2,7 @@ import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from 'math
 
 import { ColorStat, StatisticsForGeography } from './settings'
 
+// TODO remove this
 export class Regression {
     constructor(
         readonly independentFn: ColorStat, readonly dependentFns: ColorStat[], readonly dependentNames: string[],

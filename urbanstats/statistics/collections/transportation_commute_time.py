@@ -17,6 +17,14 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "transportation_commute_time_over_60": "Commute Time > 60 min %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "transportation_commute_time_under_15": "commute_time_under_15",
+            "transportation_commute_time_15_to_29": "commute_time_15_to_29",
+            "transportation_commute_time_30_to_59": "commute_time_30_to_59",
+            "transportation_commute_time_over_60": "commute_time_over_60",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 

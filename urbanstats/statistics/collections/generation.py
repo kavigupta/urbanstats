@@ -16,6 +16,16 @@ class GenerationStatistics(ACSStatisticsColection):
             "generation_genalpha": "Gen Alpha %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "generation_silent": "silent",
+            "generation_boomer": "boomer",
+            "generation_genx": "gen_x",
+            "generation_millenial": "millennial",
+            "generation_genz": "gen_z",
+            "generation_genalpha": "gen_alpha",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("generation")
 

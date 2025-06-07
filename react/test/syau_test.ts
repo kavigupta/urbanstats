@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { withMockedClipboard } from './quiz_test_utils'
-import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 const syauInput = Selector('input[id="syau-input"]')
 
@@ -40,7 +40,7 @@ async function assertText(t: TestController, expected: string): Promise<void> {
     await t.expect(text).eql(expected)
 }
 
-urbanstatsFixture('california-cities', '/syau.html?typ=City&universe=California%2C+USA')
+urbanstatsFixture('california-cities', '/syau.html#typ=City&universe=California%2C+USA')
 
 test('los-angeles', async (t) => {
     await addInputText(t, 'Los Angele')
@@ -51,16 +51,59 @@ test('los-angeles', async (t) => {
 
 test('oakland', async (t) => {
     await addInputText(t, 'Oakland', 'land')
-    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
     await clearInputText(t)
     await addInputText(t, 'Oakland', '')
-    await t.expect(await allSyauPredictions()).eql(['8. Oakland city', '421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '8. Oakland city',
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
+})
+
+test('oakland-require-enter', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'Oakland', 'Oakland')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+    await addInputText(t, 'San Francisc', 'San Francisc')
+    await t.selectText(syauInput).pressKey('enter')
+    // clears input, in this mode. Does not give a correct answer.
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'Oakland', 'land')
+    await t.expect(await allSyauPredictions()).eql([
+        '8. Oakland city',
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
 })
 
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
     await screencap(t)
-    await t.expect(await allSyauPredictions()).eql(['421. Oak Park CDP', '510. Oak Hills CDP'])
+    await t.expect(await allSyauPredictions()).eql([
+        '421. Oak Park CDP',
+        '510. Oak Hills CDP',
+        '604. Oak View CDP',
+        '1300. Oak Shores CDP',
+        '1436. Oak Run CDP',
+    ])
     await addInputText(t, 'Oak', 'Oak')
     await screencap(t)
 })
@@ -92,7 +135,7 @@ test('round-down', async (t) => {
         + '\n'
         + '🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=City&universe=California%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=City&universe=California,%20USA`,
     ])
     await assertText(t, '3/1607 Cities named, which is 7% of the total population.')
     await safeReload(t)
@@ -104,12 +147,42 @@ test('round-down', async (t) => {
         + '\n'
         + '🟩🟥🟥🟥🟥🟥🟥🟥🟥🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=City&universe=California%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=City&universe=California,%20USA`,
     ])
     await assertText(t, '4/1607 Cities named, which is 18% of the total population.')
 })
 
-urbanstatsFixture('missouri-cities', '/syau.html?typ=City&universe=Missouri%2C+USA')
+test('suffix-normal', async (t) => {
+    await addInputText(t, 'huntington', '')
+    await t.expect(await allSyauPredictions()).eql([
+        '23. Huntington Beach city',
+        '169. Huntington Park city',
+    ])
+})
+
+test('suffix-works', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'huntington beach', 'huntington beach')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql([
+        '23. Huntington Beach city',
+    ])
+})
+
+urbanstatsFixture('california-counties', '/syau.html#typ=County&universe=California%2C+USA')
+
+test('los angeles with box checked', async (t) => {
+    await t.click(Selector('[data-test-id=syauRequireEnter]'))
+    await addInputText(t, 'los angeles', 'los angeles')
+    await t.expect(await allSyauPredictions()).eql([])
+    await t.selectText(syauInput).pressKey('enter')
+    await t.expect(syauInput.value).eql('')
+    await t.expect(await allSyauPredictions()).eql(['1. Los Angeles County'])
+})
+
+urbanstatsFixture('missouri-cities', '/syau.html#typ=City&universe=Missouri%2C+USA')
 
 test('o-fallon', async (t) => {
     await addInputText(t, 'o', '')
@@ -123,7 +196,7 @@ test('o-fallon-smartquote', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['7. O\'Fallon city', '865. Chain-O-Lakes village'])
 })
 
-urbanstatsFixture('usa-urban-areas', '/syau.html?typ=Urban+Area&universe=USA')
+urbanstatsFixture('usa-urban-areas', '/syau.html#typ=Urban+Area&universe=USA')
 test('boise-ua', async (t) => {
     await addInputText(t, 'boise', '')
     await t.expect(await allSyauPredictions()).eql(['94. Boise City [Urban Area]'])
@@ -154,7 +227,7 @@ test('anaheim-ua', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['2. Los Angeles-Long Beach-Anaheim [Urban Area]'])
 })
 
-urbanstatsFixture('us-urban-centers', '/syau.html?typ=Urban+Center&universe=USA')
+urbanstatsFixture('us-urban-centers', '/syau.html#typ=Urban+Center&universe=USA')
 test('washington-dc-urban-center', async (t) => {
     await addInputText(t, 'washington dc', '')
     await t.expect(await allSyauPredictions()).eql(['10. Washington D.C. Urban Center'])
@@ -165,15 +238,15 @@ test('tijuana-urban-center', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Tijuana Urban Center'])
 })
 
-// TODO reenable this
-// urbanstatsFixture('delaware-counties', '/syau.html?typ=County&universe=Delaware%2C+USA')
+urbanstatsFixture('delaware-counties', '/syau.html#typ=County&universe=Delaware%2C+USA')
 
-// test('sussex-delaware', async (t) => {
-//     await addInputText(t, 'sussex', '')
-//     await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
-// })
+test('sussex-delaware', async (t) => {
+    // This test makes sure that something with only 3 elements works properly.
+    await addInputText(t, 'sussex', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Sussex County'])
+})
 
-urbanstatsFixture('canada-cma', '/syau.html?typ=CA+CMA&universe=Canada')
+urbanstatsFixture('canada-cma', '/syau.html#typ=CA+CMA&universe=Canada')
 test('toronto-cma', async (t) => {
     await addInputText(t, 'toronto', '')
     await t.expect(await allSyauPredictions()).eql(['1. Toronto CMA'])
@@ -184,7 +257,7 @@ test('montreal-cma', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['2. Montréal CMA'])
 })
 
-urbanstatsFixture('nevada-counties', '/syau.html?typ=County&universe=Nevada%2C+USA')
+urbanstatsFixture('nevada-counties', '/syau.html#typ=County&universe=Nevada%2C+USA')
 
 test('more-precise-percentages', async (t) => {
     await addInputText(t, 'clark', '')
@@ -195,7 +268,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟥🟥🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'washoe', '')
@@ -207,10 +280,10 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
-    await addInputText(t, 'carson city', '')
+    await addInputText(t, 'carson', '')
     await addInputText(t, 'elko', '')
     await addInputText(t, 'nye', '')
     await addInputText(t, 'douglas', '')
@@ -224,7 +297,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'pershing', '')
@@ -239,7 +312,7 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟥\n'
         + '\n'
-        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
     ])
     await safeReload(t)
     await addInputText(t, 'eureka', '')
@@ -251,6 +324,17 @@ test('more-precise-percentages', async (t) => {
         + '\n'
         + '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩\n'
         + '\n'
-        + `${target}/syau.html?typ=County&universe=Nevada%2C+USA`,
+        + `https://soyoureanurbanist.org/#typ=County&universe=Nevada,%20USA`,
+    ])
+})
+
+urbanstatsFixture('ca-ridings', '/syau.html#typ=CA%20Riding&universe=Canada')
+
+test('canada-ridings', async (t) => {
+    await addInputText(t, '-', '-')
+    await t.expect(await allSyauPredictions()).eql([])
+    await addInputText(t, 'madawaska', '')
+    await t.expect(await allSyauPredictions()).eql([
+        '329. Madawaska--Restigouche (Riding)',
     ])
 })

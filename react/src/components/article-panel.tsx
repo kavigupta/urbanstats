@@ -75,6 +75,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             related={article.related as NormalizeProto<IRelatedButtons>[]}
                             articleType={article.articleType}
                             basemap={{ type: 'osm' }}
+                            attribution="startVisible"
                         />
                     </div>
 

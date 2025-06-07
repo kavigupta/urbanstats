@@ -148,7 +148,9 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             )
         case 'comparison':
             return (
-                <pageData.comparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
+                <pageData.comparisonPanel
+                    {...pageData}
+                />
             )
         case 'statistic':
             return (

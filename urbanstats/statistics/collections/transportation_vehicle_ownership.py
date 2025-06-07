@@ -16,6 +16,13 @@ class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
             "vehicle_ownership_at_least_2": "Households With 2+ Vehicles %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "vehicle_ownership_none": "no_vehicle",
+            "vehicle_ownership_at_least_1": "one_plus_vehicles",
+            "vehicle_ownership_at_least_2": "two_plus_vehicles",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 

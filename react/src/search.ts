@@ -21,7 +21,7 @@ function debug(arg: unknown): void {
     }
 }
 
-const debugSearchPerformance: boolean = true
+const debugSearchPerformance: boolean = false
 
 export function debugPerformance(arg: unknown): void {
     if (debugSearchPerformance) {

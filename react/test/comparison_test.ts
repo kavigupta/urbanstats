@@ -287,3 +287,33 @@ test('removing duplicate does not glitch out', async (t) => {
     await t.click(Selector('.manipulation-button-delete').nth(3))
     await screencap(t)
 })
+
+urbanstatsFixture('comparison add many cities', comparisonPage(['Los Angeles city, California, USA']))
+
+for (const platform of ['desktop', 'mobile']) {
+    test(`comparison-add-many-cities-${platform}`, async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
+        }
+
+        await screencap(t)
+
+        const citiesToAdd = [
+            'New York city, New York, USA',
+            'Denver city, Colorado, USA',
+            'Anchorage municipality, Alaska, USA',
+            'Houston city, Texas, USA',
+            'Miami city, Florida, USA',
+            'Chicago city, Illinois, USA',
+        ]
+        for (const city of citiesToAdd) {
+            const input = Selector('input').withAttribute('placeholder', 'Name')
+            await t
+                .click(input)
+                .typeText(input, city)
+            await waitForSelectedSearchResult(t)
+            await t.pressKey('enter')
+            await screencap(t)
+        }
+    })
+}

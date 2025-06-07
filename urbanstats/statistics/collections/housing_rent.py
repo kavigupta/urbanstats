@@ -19,6 +19,16 @@ class HousingRent(ACSStatisticsColection):
             "rent_2br_over_1500": "2BR Rent > $1500 %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "rent_1br_under_750": "one_br_under_750",
+            "rent_1br_750_to_1500": "one_br_750_to_1500",
+            "rent_1br_over_1500": "one_br_over_1500",
+            "rent_2br_under_750": "two_br_under_750",
+            "rent_2br_750_to_1500": "two_br_750_to_1500",
+            "rent_2br_over_1500": "two_br_over_1500",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("housing-acs")
 

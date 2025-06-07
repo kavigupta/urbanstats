@@ -15,6 +15,15 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_worked_at_home": "Commute Work From Home %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "transportation_means_car": "commute_car",
+            "transportation_means_bike": "commute_bike",
+            "transportation_means_walk": "commute_walk",
+            "transportation_means_transit": "commute_transit",
+            "transportation_means_worked_at_home": "commute_work_from_home",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("transportation")
 
