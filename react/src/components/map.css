@@ -1,8 +1,8 @@
 .maplibregl-ctrl-attrib-inner {
     /* Fixes wrapping in map screenshots */
     white-space: nowrap;
-    overflow-x: scroll;
-    scrollbar-width: thin;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .maplibregl-ctrl-bottom-right {
@@ -10,5 +10,5 @@
 }
 
 .maplibregl-ctrl-attrib {
-    max-width: 75%;
+    max-width: calc(100% - 56px);
 }
