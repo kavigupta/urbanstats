@@ -98,7 +98,8 @@ class CensusForPreviousYear(USAStatistics):
                 "vacancy": "vacancy_rate",
             }
         )
-        return {self.ysk(k): v for k, v in result.items()}
+        for_each_stat = {self.ysk(k): self.ysk(v) for k, v in result.items()}
+        return for_each_stat
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
@@ -185,10 +186,10 @@ class CensusChange(USAStatistics):
     def varname_for_each_statistic(self):
         year = self.year()
         result = {}
-        result.update({f"population_change_{year}": "population_change"})
+        result.update({f"population_change_{year}": f"population_change_{year}_2020"})
         result.update(
             {
-                f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change"
+                f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change_{year}_2020"
                 for k in RADII
             }
         )

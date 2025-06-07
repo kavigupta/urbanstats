@@ -28,10 +28,10 @@ class GPWStatistics(InternationalStatistics):
         return {
             "gpw_population": "population",
             **{
-                f"gpw_pw_density_{k}": f"density_pw_{format_radius(k)}_ghs"
+                f"gpw_pw_density_{k}": f"density_pw_{format_radius(k)}"
                 for k in GPW_RADII
             },
-            "gpw_aw_density": "density_aw_ghs",
+            "gpw_aw_density": "density_aw",
         }
 
     def explanation_page_for_each_statistic(self):

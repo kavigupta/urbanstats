@@ -83,9 +83,9 @@ class CensusCanadaIncomeIndividual(CensusCanadaSimple):
 
     def varname_for_each_statistic(self):
         return {
-            "individual_income_under_50cad": "income_under_50k",
-            "individual_income_50_to_100cad": "income_50k_to_100k",
-            "individual_income_above_100_cad": "income_over_100k",
+            "individual_income_under_50cad": "individual_income_under_50k_cad",
+            "individual_income_50_to_100cad": "individual_income_50k_to_100k_cad",
+            "individual_income_above_100_cad": "individual_income_over_100k_cad",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -298,9 +298,9 @@ class CensusCanadaEducation(CensusCanadaSimple):
 
     def varname_for_each_statistic(self):
         return {
-            "education_high_school_canada": "high_school",
-            "education_ugrad_canada": "undergrad",
-            "education_grad_canada": "graduate",
+            "education_high_school_canada": "high_school_statcan",
+            "education_ugrad_canada": "undergrad_statcan",
+            "education_grad_canada": "graduate_statcan",
         }
 
     def explanation_page_for_each_statistic(self):

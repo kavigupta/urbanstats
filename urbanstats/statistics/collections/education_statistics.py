@@ -20,9 +20,9 @@ class EducationStatistics(ACSStatisticsColection):
 
     def varname_for_each_statistic(self):
         return {
-            "education_high_school": "high_school",
-            "education_ugrad": "undergrad",
-            "education_grad": "graduate",
+            "education_high_school": "high_school_us_census",
+            "education_ugrad": "undergrad_us_census",
+            "education_grad": "graduate_us_census",
             "education_field_stem": "stem_degree",
             "education_field_humanities": "humanities_degree",
             "education_field_business": "business_degree",

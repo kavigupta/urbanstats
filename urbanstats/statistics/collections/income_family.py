@@ -18,9 +18,9 @@ class IncomeFamily(ACSStatisticsColection):
 
     def varname_for_each_statistic(self):
         return {
-            "household_income_under_50k": "income_under_50k",
-            "household_income_50k_to_100k": "income_50k_to_100k",
-            "household_income_over_100k": "income_over_100k",
+            "household_income_under_50k": "household_income_under_50k_usd",
+            "household_income_50k_to_100k": "household_income_50k_to_100k_usd",
+            "household_income_over_100k": "household_income_over_100k_usd",
         }
 
     def explanation_page_for_each_statistic(self):

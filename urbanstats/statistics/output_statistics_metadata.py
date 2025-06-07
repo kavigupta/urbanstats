@@ -1,9 +1,10 @@
 import json
 from functools import lru_cache
+from typing import Counter
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
 
-from ..utils import output_typescript
+from ..utils import common_prefix, output_typescript
 from .collections_list import statistic_collections
 from .statistics_tree import statistics_tree
 
@@ -63,6 +64,55 @@ def get_explanation_page():
     return result
 
 
+def statistic_variables_info():
+    """
+    Create the metadata files for the statistics.
+    This is used to generate the TypeScript files that are used in the frontend.
+    """
+    internal_to_variable = {}
+    for statistic_collection in statistic_collections:
+        internal_to_variable.update(statistic_collection.varname_for_each_statistic())
+    assert set(internal_to_variable.keys()) == set(internal_statistic_names())
+    internal_to_actual_variable = internal_to_variable.copy()
+    multi_source = {}
+    for cat in statistics_tree.categories.values():
+        for group in cat.contents.values():
+            for by_year in group.by_year.values():
+                for stat in by_year:
+                    if len(stat.by_source) == 1:
+                        continue
+                    ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
+                    assert (
+                        len(set(ms_name)) == 1
+                    ), f"Multiple variable names for {stat}: {ms_name}"
+                    ms_name = ms_name[0]
+                    combo = []
+                    for source, s in sorted(
+                        stat.by_source.items(), key=lambda x: x[0].priority
+                    ):
+                        variable = ms_name + "_" + source.variable_suffix
+                        assert s in internal_to_actual_variable
+                        internal_to_actual_variable[s] = variable
+                        combo.append(variable)
+                    multi_source[ms_name] = combo
+    internal_to_actual_list = [
+        internal_to_actual_variable[stat] for stat in internal_statistic_names()
+    ]
+    duplicated = [
+        item for item, count in Counter(internal_to_actual_list).items() if count > 1
+    ]
+    if duplicated:
+        raise ValueError(
+            f"Duplicated variable names in statistics: {duplicated}. "
+            "This is likely due to multiple statistics having the same variable name."
+        )
+    result = {
+        "variableNames": internal_to_actual_list,
+        "multiSourceVariables": list(multi_source.items()),
+    }
+    return result
+
+
 def output_statistics_metadata():
     with open("react/src/data/statistic_name_list.ts", "w") as f:
         output_typescript(list(statistic_internal_to_display_name().values()), f)
@@ -81,6 +131,9 @@ def output_statistics_metadata():
         output_typescript(list(get_explanation_page().values()), f)
 
     export_statistics_tree("react/src/data/statistics_tree.ts")
+
+    with open("react/src/data/statistic_variables_info.ts", "w") as f:
+        output_typescript(statistic_variables_info(), f)
 
 
 def export_statistics_tree(path):
