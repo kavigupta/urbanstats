@@ -15,6 +15,33 @@ class IndustryStatistics(ACSStatisticsColection):
     def name_for_each_statistic(self):
         return industry.industry_display
 
+    def varname_for_each_statistic(self):
+        return {
+            k: "industry_" + v
+            for k, v in {
+                "industry_agriculture,_forestry,_fishing_and_hunting": "agriculture_forestry_fishing",
+                "industry_mining,_quarrying,_and_oil_and_gas_extraction": "mining_oil_gas",
+                "industry_utilities": "utilities",
+                "industry_construction": "construction",
+                "industry_manufacturing": "manufacturing",
+                "industry_wholesale_trade": "wholesale_trade",
+                "industry_retail_trade": "retail_trade",
+                "industry_transportation_and_warehousing": "transportation_warehousing",
+                "industry_information": "information",
+                "industry_finance_and_insurance": "finance_insurance",
+                "industry_real_estate_and_rental_and_leasing": "real_estate_rental",
+                "industry_professional,_scientific,_and_technical_services": "professional_scientific_technical",
+                "industry_management_of_companies_and_enterprises": "management",
+                "industry_administrative_and_support_and_waste_management_services": "admin_support_waste_mgmt",
+                "industry_educational_services": "education",
+                "industry_health_care_and_social_assistance": "healthcare_social",
+                "industry_arts,_entertainment,_and_recreation": "arts_entertainment",
+                "industry_accommodation_and_food_services": "accommodation_food",
+                "industry_other_services,_except_public_administration": "other_services",
+                "industry_public_administration": "public_admin",
+            }.items()
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("industry_and_occupation")
 

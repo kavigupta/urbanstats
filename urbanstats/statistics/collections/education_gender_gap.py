@@ -13,6 +13,13 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "female_hs_gap_4": "hs_gender_gap",
+            "female_ugrad_gap_4": "undergrad_gender_gap",
+            "female_grad_gap_4": "graduate_gender_gap",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
 

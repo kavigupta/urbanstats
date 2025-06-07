@@ -16,6 +16,13 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
             "language_other": "Other at Home %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "language_english_only": "english_only",
+            "language_spanish": "spanish",
+            "language_other": "other_languages",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("language")
 

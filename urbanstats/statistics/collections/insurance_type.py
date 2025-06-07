@@ -15,6 +15,13 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
             "insurance_coverage_private": "Private Insurance %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "insurance_coverage_none": "uninsured",
+            "insurance_coverage_govt": "public_insurance",
+            "insurance_coverage_private": "private_insurance",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("insurance")
 

@@ -15,6 +15,13 @@ class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
             "citizenship_not_citizen": "Non-citizen %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "citizenship_citizen_by_birth": "citizen_by_birth",
+            "citizenship_citizen_by_naturalization": "naturalized_citizen",
+            "citizenship_not_citizen": "non_citizen",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("citizenship")
 

@@ -16,6 +16,13 @@ class MarriageStatistics(ACSStatisticsColection):
             "marriage_divorced": "Divorced %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "marriage_never_married": "never_married",
+            "marriage_married_not_divorced": "married",
+            "marriage_divorced": "divorced",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("marriage")
 
