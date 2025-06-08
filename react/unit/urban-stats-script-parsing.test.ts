@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { lex } from '../src/urban-stats-script/lexer'
-import { parse, toSExp } from '../src/urban-stats-script/parser'
+import { allIdentifiers, parse, toSExp } from '../src/urban-stats-script/parser'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
@@ -439,5 +439,48 @@ void test('vector literal', (): void => {
     assert.deepStrictEqual(
         parseAndRender('[1, 2, 3*]'),
         '(errors (error "Unexpected bracket ]" at 0:9))',
+    )
+})
+
+function ids(code: string): Set<string> {
+    const res = parse(code)
+    if (res.type === 'error') {
+        throw new Error(`Parsing error: ${res.errors.map(err => err.message).join(', ')}`)
+    }
+    return allIdentifiers(res)
+}
+
+void test('collect identifiers', (): void => {
+    assert.deepStrictEqual(
+        ids('x = 2; y = x + 3; z = y * 4'),
+        new Set(['x', 'y', 'z']),
+    )
+    assert.deepStrictEqual(
+        ids('a.b = c'),
+        new Set(['a', 'c']),
+    )
+    assert.deepStrictEqual(
+        ids('a.b.c = d.e.f'),
+        new Set(['a', 'd']),
+    )
+    assert.deepStrictEqual(
+        ids('(2 + a).y = f(2)'),
+        new Set(['a', 'f']),
+    )
+    assert.deepStrictEqual(
+        ids('f(x, y=z)'),
+        new Set(['f', 'x', 'z']),
+    )
+    assert.deepStrictEqual(
+        ids('[a, b, {c: d, e: f}]'),
+        new Set(['a', 'b', 'd', 'f']),
+    )
+    assert.deepStrictEqual(
+        ids('if (x > 2) { y = 3 } else { z  = 4 }'),
+        new Set(['x', 'y', 'z']),
+    )
+    assert.deepStrictEqual(
+        ids('if (x > 2) { y = 3; z = 4 } else { if ([u].v) { a = -t } }'),
+        new Set(['x', 'y', 'z', 'u', 'a', 't']),
     )
 })
