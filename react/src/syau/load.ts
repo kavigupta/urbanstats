@@ -1,5 +1,6 @@
 import { CountsByUT } from '../components/countsByArticleType'
 import { forType } from '../components/load-article'
+import syau_suffixes from '../data/syau_suffixes'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
@@ -8,15 +9,22 @@ import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
-const suffixFreqThresholdPct = 0.01
-// 4 means you can just have North South East West. Let's require at least 6
-const suffixFreqThresholdRaw = 6
+let sortedSuffixes: string[] | undefined
+
+function sortedSuffixesList(): string[] {
+    if (sortedSuffixes === undefined) {
+        sortedSuffixes = syau_suffixes.slice().sort((a, b) => b.length - a.length)
+    }
+    return sortedSuffixes
+}
 
 type MatchChunks = string[]
 
+interface MatchInfo { original: MatchChunks, withoutSuffixes: MatchChunks }
+
 export interface SYAUData {
     longnames: string[]
-    matchChunks: MatchChunks[]
+    matchChunks: MatchInfo[]
     populations: number[]
     populationOrdinals: number[]
     longnameToIndex: Record<string, number>
@@ -36,40 +44,24 @@ function computeMatchChunks(longname: string): MatchChunks {
     return longnameParts
 }
 
-function suffixes(s: string): string[] {
-    // all suffixes of a string s; they must all begin with a space
-    const sxs = []
-    for (let i = 0; i < s.length; i++) {
-        if (s[i] === ' ')
-            sxs.push(s.slice(i))
-    }
-    return sxs
-}
-
 function removeSuffix(s: string, sxs: string[]): string {
     for (const suffix of sxs) {
-        if (s.endsWith(suffix))
-            return s.slice(0, s.length - suffix.length)
+        if (s.endsWith(` ${suffix}`))
+            return s.slice(0, s.length - suffix.length - 1)
     }
     return s
 }
 
-function computeMatchChunksAll(longnames: string[]): MatchChunks[] {
+function computeMatchChunksAll(longnames: string[]): MatchInfo[] {
     const chunksAll = longnames.map(computeMatchChunks)
-    const chunksFlat = chunksAll.flat()
-    const suffixCount = new Map<string, number>()
-    for (const chunk of chunksFlat) {
-        for (const suffix of suffixes(chunk)) {
-            suffixCount.set(suffix, (suffixCount.get(suffix) ?? 0) + 1)
-        }
-    }
     // list of suffixes that appear in at least 5% of flat chunks
-    const commonSuffixes = Array.from(suffixCount.entries())
-        .filter(([, count]) => count >= suffixFreqThresholdRaw && count >= suffixFreqThresholdPct * chunksFlat.length)
-        .map(([suffix]) => suffix)
-    // sort them by length, long to short
-    commonSuffixes.sort((a, b) => b.length - a.length)
-    const chunksAllCleaned = chunksAll.map(chunks => chunks.map(chunk => removeSuffix(chunk, commonSuffixes)))
+    const commonSuffixes = sortedSuffixesList()
+    const chunksAllCleaned = chunksAll.map((chunks) => {
+        return {
+            original: chunks,
+            withoutSuffixes: chunks.map(chunk => removeSuffix(chunk, commonSuffixes)),
+        }
+    })
     return chunksAllCleaned
 }
 
@@ -78,8 +70,24 @@ export function onlyKeepAlpanumeric(s: string): string {
     return s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 }
 
-export function confirmMatch(target: MatchChunks, query: string): boolean {
-    return target.includes(onlyKeepAlpanumeric(normalize(query)))
+export function confirmMatch(target: MatchInfo, query: string): boolean {
+    const cleanQuery = onlyKeepAlpanumeric(normalize(query))
+    if (cleanQuery === '') {
+        return false // empty query cannot match anything
+    }
+    if (target.withoutSuffixes.includes(cleanQuery)) {
+        return true // the actual query matches a chunk directly
+    }
+    for (let i = 0; i < target.withoutSuffixes.length; i++) {
+        const originalChunk = target.original[i]
+        const newChunk = target.withoutSuffixes[i]
+        if (originalChunk.startsWith(cleanQuery) && cleanQuery.length > newChunk.length) {
+            // the query matches the start of the original chunk, but the cleaned chunk is shorter
+            // this means that the query is a suffix of the original chunk
+            return true
+        }
+    }
+    return false // no match found
 }
 
 export async function loadSYAUData(

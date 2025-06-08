@@ -162,7 +162,16 @@ export type ExceptionalPageDescriptor = PageDescriptor
 
 export type PageData =
     { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], comparisonPanel: typeof ComparisonPanel }
+    | {
+        kind: 'comparison'
+        articles: Article[]
+        universe: string
+        universes: string[]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
+        statPaths: StatPath[][]
+        mapPartitions: number[][]
+        comparisonPanel: typeof ComparisonPanel
+    }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
@@ -183,6 +192,7 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
     const params = Object.fromEntries(url.searchParams.entries())
+    const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
     switch (url.pathname) {
         case '/article.html':
             return { kind: 'article', ...articleSchemaFromParams.parse(params) }
@@ -197,10 +207,9 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/index.html':
             return { kind: 'index' }
         case '/quiz.html':
-            const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
         case '/syau.html':
-            return { kind: 'syau', ...syauSchema.parse(params) }
+            return { kind: 'syau', ...syauSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
@@ -287,10 +296,19 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             return quizResult
         case 'syau':
             pathname = '/syau.html'
-            searchParams = {
+            // same situation as the quiz
+            const hashParamsSYAU = {
                 typ: pageDescriptor.typ,
                 universe: pageDescriptor.universe,
             }
+            const hashParamsString = Object.entries(hashParamsSYAU)
+                .flatMap(([key, value]) => value !== undefined ? [[key, value]] : [])
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&')
+            if (hashParamsString.length > 0) {
+                hash = `#${hashParamsString}`
+            }
+            searchParams = {}
             break
         case 'mapper':
             pathname = '/mapper.html'
@@ -365,10 +383,11 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [articles, countsByArticleType, panel] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
             // intersection of all the data.universes
@@ -392,6 +411,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
+                    mapPartitions,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -651,7 +671,7 @@ export function pageTitle(pageData: PageData): string {
                     return 'Juxtastat Infinite'
             }
         case 'syau':
-            return `So you're an urbanist...`
+            return `So you're an urbanist?`
         case 'article':
             return pageData.article.shortname
         case 'statistic':

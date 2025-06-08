@@ -30,6 +30,12 @@ class CensusCanadaSameAsUS(CanadaStatistics):
             for k, v in self.us_equivalent().name_for_each_statistic().items()
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            f"{k}_canada": self.us_equivalent().varname_for_each_statistic()[k]
+            for k in self.us_equivalent().name_for_each_statistic()
+        }
+
     def quiz_question_descriptors(self):
         return {
             f"{k}_canada": self.us_equivalent().quiz_question_descriptors()[k]

@@ -10,6 +10,11 @@ class IncomePoverty(ACSStatisticsColection):
             "poverty_below_line": "Poverty %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "poverty_below_line": "poverty",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 

@@ -1,9 +1,9 @@
-import geojsonExtent from '@mapbox/geojson-extent'
 import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
+import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -21,6 +21,7 @@ export const defaultMapPadding = 20
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
+    attribution: 'none' | 'startHidden' | 'startVisible'
 }
 
 export interface Polygon {
@@ -76,6 +77,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private exist_this_time: string[] = []
     protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
+    private attributionControl: CustomAttributionControl | undefined
 
     constructor(props: P) {
         super(props)
@@ -128,10 +130,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
-    startShowingAttribution(): boolean {
-        return true
-    }
-
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -144,8 +142,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
         })
-
-        map.addControl(new CustomAttributionControl(this.startShowingAttribution()))
 
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
@@ -291,6 +287,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance('Loading map...')
         this.setState({ loading: true })
 
+        if (this.attributionControl !== undefined) {
+            this.map!.removeControl(this.attributionControl)
+            this.attributionControl = undefined
+        }
+
+        if (this.props.attribution !== 'none') {
+            this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
+            this.map!.addControl(this.attributionControl)
+        }
+
         this.exist_this_time = []
 
         this.attachBasemap()
@@ -312,15 +318,21 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         await this.addPolygons(map, polygons, zoomIndex)
 
         debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
-        await this.mapDidRender()
-        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
+        // Must do this before map render or zooms are incorrect (they try to zoom to previous regions)
         for (const [name] of this.state.polygonByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
                 this.state.polygonByName.delete(name)
             }
         }
+
+        debugPerformance(`Removed polygons; at ${Date.now() - timeBasis}ms`)
+
+        await this.mapDidRender()
+
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
+
         await this.updateSources(true)
     }
 
@@ -375,38 +387,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
-        // https://stackoverflow.com/a/35970894/1549476
         const poly = await this.loadShape(name)
-        let geometry: GeoJSON.Geometry
-        if (poly.geometry === 'multipolygon') {
-            const polys = poly.multipolygon.polygons
-            const coords = polys.map(
-                multiPoly => multiPoly.rings.map(
-                    ring => ring.coords.map(
-                        coordinate => [coordinate.lon, coordinate.lat],
-                    ),
-                ),
-            )
-            geometry = {
-                type: 'MultiPolygon',
-                coordinates: coords,
-            }
-        }
-        else {
-            const coords = poly.polygon.rings.map(
-                ring => ring.coords.map(
-                    coordinate => [coordinate.lon, coordinate.lat],
-                ),
-            )
-            geometry = {
-                type: 'Polygon',
-                coordinates: coords,
-            }
-        }
         const geojson = {
             type: 'Feature' as const,
             properties: { name, notClickable, ...style },
-            geometry,
+            geometry: geometry(poly),
         }
         return geojson
     }
@@ -484,16 +469,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
-        const bounds = new maplibregl.LngLatBounds()
-
-        for (const polygon of items) {
-            const bbox = geojsonExtent(polygon)
-            bounds.extend(new maplibregl.LngLatBounds(
-                new maplibregl.LngLat(bbox[0], bbox[1]),
-                new maplibregl.LngLat(bbox[2], bbox[3]),
-            ))
-        }
-        this.map?.fitBounds(bounds, { padding: defaultMapPadding, ...options })
+        this.map?.fitBounds(
+            extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
+            { padding: defaultMapPadding, ...options },
+        )
     }
 
     zoomToAll(padding: number = 0): void {
