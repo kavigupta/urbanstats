@@ -200,7 +200,7 @@ void test('merge values via masks', (): void => {
             },
             [2, 3],
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200, 0, 300, 0] } },
+        { type: 'success', value: { type: numVectorType, value: [100, 200, NaN, 300, NaN] } },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
