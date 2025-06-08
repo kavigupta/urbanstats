@@ -18,6 +18,16 @@ class EducationStatistics(ACSStatisticsColection):
             "education_field_business": "Undergrad Business %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "education_high_school": "high_school_us_census",
+            "education_ugrad": "undergrad_us_census",
+            "education_grad": "graduate_us_census",
+            "education_field_stem": "stem_degree",
+            "education_field_humanities": "humanities_degree",
+            "education_field_business": "business_degree",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
 

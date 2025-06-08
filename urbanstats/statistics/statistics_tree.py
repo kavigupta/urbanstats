@@ -17,6 +17,7 @@ class Source:
     name: str
     is_default: bool
     priority: int
+    variable_suffix: str
 
     def json(self):
         return {"category": self.category, "name": self.name}
@@ -299,9 +300,19 @@ def just_2020_category_with_canada(cat_key, cat_name, *col_names, year=2020):
     }
 
 
-population_census = Source("Population", "US Census", is_default=True, priority=1)
-population_canada = Source("Population", "Canadian Census", is_default=True, priority=2)
-population_ghsl = Source("Population", "GHSL", is_default=False, priority=10)
+population_census = Source(
+    "Population", "US Census", is_default=True, priority=1, variable_suffix="us_census"
+)
+population_canada = Source(
+    "Population",
+    "Canadian Census",
+    is_default=True,
+    priority=2,
+    variable_suffix="statcan",
+)
+population_ghsl = Source(
+    "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
+)
 
 
 def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):

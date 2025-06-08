@@ -15,6 +15,13 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
             "birthplace_us_state": "Born in state of residence %",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "birthplace_non_us": "foreign_born",
+            "birthplace_us_not_state": "born_outside_state",
+            "birthplace_us_state": "born_in_state",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("birthplace")
 
