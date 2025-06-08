@@ -1,7 +1,6 @@
 import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import './map.css'
 import React, { ReactNode } from 'react'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
@@ -10,14 +9,14 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
-import { randomColor, rgbToCss } from '../utils/color'
+import { randomColor } from '../utils/color'
 import { isTesting } from '../utils/isTesting'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderWidth, useScreenshotMode } from './screenshot'
+import { mapBorderWidth } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -493,7 +492,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
-    const screenshot = useScreenshotMode()
     return (
         <div
             id={props.id}
@@ -503,7 +501,6 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 position: 'relative',
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: '5px',
-                backgroundColor: screenshot ? rgbToCss(colors.canvasKey) : colors.slightlyDifferentBackground, // Map is drawn over this normally, but we use it for testing map position
             }}
         >
             {/* place this on the right of the map */}

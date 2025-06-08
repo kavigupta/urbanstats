@@ -88,9 +88,6 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
          * Safari is flaky at rendering canvases the way `domtoimage` renders them.
          * We work around this by rendering the canvases first, then excluding them from the element render.
          * This way, the map looks nice + has rounded corners.
-         *
-         * If Safari supported alpha channel in canvases, we could just draw the element over the canvases, but Safari does not support alpha channel in canvases,
-         * so we expect the map to draw a bright green background when in screenshot mode so that we can color key it out.
          */
         const scaleFactor = overallWidth / ref.offsetWidth
 
@@ -126,7 +123,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         }
 
         const refCanvas = await domtoimage.toCanvas(ref, {
-            bgcolor: colors.background,
+            bgcolor: 'transparent',
             height: resultCanvas.height,
             width: resultCanvas.width,
             style: {
@@ -136,16 +133,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
             filter: node => !(node instanceof HTMLCanvasElement),
         })
 
-        const refData = refCanvas.getContext('2d')!.getImageData(0, 0, refCanvas.width, refCanvas.height)
-
-        // Color key out pure green
-        for (let i = 0; i < refData.data.length; i += 4) {
-            if (refData.data[i] === colors.canvasKey.r && refData.data[i + 1] === colors.canvasKey.g && refData.data[i + 2] === colors.canvasKey.b) {
-                refData.data[i + 3] = 0
-            }
-        }
-
-        resultContext.drawImage(await window.createImageBitmap(refData), 0, 0)
+        resultContext.drawImage(refCanvas, 0, 0)
 
         return resultCanvas
     }

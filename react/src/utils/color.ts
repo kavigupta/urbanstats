@@ -65,7 +65,3 @@ export function mixWithBackground(color: string, fraction: number, background: s
     const ramp: [number, string][] = [[0, color], [1, background]]
     return interpolateColor(ramp, fraction)
 }
-
-export function rgbToCss({ r, g, b }: { r: number, g: number, b: number }): string {
-    return `rgb(${r}, ${g}, ${b})`
-}

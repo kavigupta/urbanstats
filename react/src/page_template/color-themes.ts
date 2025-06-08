@@ -1,5 +1,4 @@
 import hueColors from '../data/hueColors'
-import { rgbToCss } from '../utils/color'
 
 export interface HueColors {
     blue: string
@@ -36,7 +35,6 @@ export interface Colors {
     mixPct: number
     hueColors: HueColors
     screenshotFooterUrl: string
-    canvasKey: { r: number, g: number, b: number }
 }
 
 export interface JuxtastatColors {
@@ -52,10 +50,6 @@ const defaultHueColors: HueColors = hueColors
 
 export type Theme = 'Light Mode' | 'Dark Mode'
 
-// Key colors are slightly off from this so the map borders look nice when keying
-const lightBorderNonShadow = { r: 204, g: 204, b: 204 }
-const darkBorderNonShadow = { r: 51, g: 51, b: 51 }
-
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
@@ -68,7 +62,7 @@ export const colorThemes: Record<Theme, Colors> = {
         textMainOpposite: '#ffffff',
         textPointer: '#222222',
         borderShadow: '#333333',
-        borderNonShadow: rgbToCss(lightBorderNonShadow),
+        borderNonShadow: '#cccccc',
         ordinalTextColor: '#444444',
         unselectedButton: '#e6e9ef',
         selectedButton: '#4e525a',
@@ -78,7 +72,6 @@ export const colorThemes: Record<Theme, Colors> = {
         mixPct: 70,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer.svg',
-        canvasKey: { r: lightBorderNonShadow.r, g: lightBorderNonShadow.g + 1, b: lightBorderNonShadow.b },
     },
     'Dark Mode': {
         background: '#00060f',
@@ -91,7 +84,7 @@ export const colorThemes: Record<Theme, Colors> = {
         textMainOpposite: '#000000',
         textPointer: '#dddddd',
         borderShadow: '#cccccc',
-        borderNonShadow: rgbToCss(darkBorderNonShadow),
+        borderNonShadow: '#333333',
         ordinalTextColor: '#bbbbbb',
         unselectedButton: '#303030',
         selectedButton: '#a2a6ae',
@@ -101,6 +94,5 @@ export const colorThemes: Record<Theme, Colors> = {
         mixPct: 50,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
-        canvasKey: { r: darkBorderNonShadow.r, g: darkBorderNonShadow.g + 1, b: darkBorderNonShadow.b },
     },
 }
