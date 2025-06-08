@@ -23,6 +23,12 @@ class ElevationHillinessStatistics(GeographicStatistics):
             "gridded_elevation": "PW Mean Elevation",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "gridded_hilliness": "hilliness",
+            "gridded_elevation": "elevation",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("elevation_hilliness")
 

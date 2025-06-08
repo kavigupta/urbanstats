@@ -13,6 +13,12 @@ class AreaAndCompactnessStatistics(GeographicStatistics):
             "compactness": "Compactness",
         }
 
+    def varname_for_each_statistic(self):
+        return {
+            "area": "area",
+            "compactness": "compactness",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("geography")
 

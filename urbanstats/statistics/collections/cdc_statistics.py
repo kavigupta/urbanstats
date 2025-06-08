@@ -65,6 +65,36 @@ class CDCStatistics(USAStatistics):
         out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
         return out
 
+    def varname_for_each_statistic(self):
+        return {
+            "GHLTH_cdc_2": "poor_health",
+            "PHLTH_cdc_2": "poor_physical_health",
+            "ARTHRITIS_cdc_2": "arthritis",
+            "CASTHMA_cdc_2": "asthma",
+            "BPHIGH_cdc_2": "high_blood_pressure",
+            "CANCER_cdc_2": "cancer",
+            "KIDNEY_cdc_2": "kidney_disease",
+            "COPD_cdc_2": "copd",
+            "CHD_cdc_2": "heart_disease",
+            "DIABETES_cdc_2": "diabetes",
+            "OBESITY_cdc_2": "obesity",
+            "STROKE_cdc_2": "stroke",
+            "DISABILITY_cdc_2": "any_disability",
+            "HEARING_cdc_2": "hearing_disability",
+            "VISION_cdc_2": "vision_disability",
+            "COGNITION_cdc_2": "cognitive_disability",
+            "MOBILITY_cdc_2": "mobility_disability",
+            "SELFCARE_cdc_2": "selfcare_disability",
+            "INDEPLIVE_cdc_2": "independent_living_disability",
+            "BINGE_cdc_2": "binge_drinking",
+            "CSMOKING_cdc_2": "smoking",
+            "LPA_cdc_2": "no_physical_activity",
+            "SLEEP_cdc_2": "insufficient_sleep",
+            "CHECKUP_cdc_2": "doctor_checkup_last_year",
+            "DENTAL_cdc_2": "dental_visit_last_year",
+            "CHOLSCREEN_cdc_2": "cholesterol_screening_last_year",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("health")
 
