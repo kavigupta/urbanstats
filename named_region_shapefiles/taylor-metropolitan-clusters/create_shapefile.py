@@ -1,0 +1,356 @@
+from functools import lru_cache
+import json
+import zipfile
+import PIL.Image
+import glob
+import re
+import tqdm
+from permacache import permacache
+
+import numpy as np
+import pandas as pd
+
+# 0_0 is 70N to 60N, 180W to 170W, and then it's y_x across the grid.
+
+degrees_each = 10
+cells_per_degree = 60 * 60 // 3  # 3 seconds per cell
+
+
+@lru_cache(None)
+def filenames():
+    by_y_x = {}
+
+    file_format = re.compile(r"(\d+)_(\d+)\.png")
+
+    zips = glob.glob("ucls*.zip")
+    for z in zips:
+        for f in zipfile.ZipFile(z).namelist():
+            m = file_format.match(f)
+            assert m, f
+            y, x = int(m.group(1)), int(m.group(2))
+            by_y_x[(y, x)] = z, f
+    return by_y_x
+
+
+def load_image(y, x):
+    z, f = filenames()[(y, x)]
+    with zipfile.ZipFile(z) as zf:
+        with zf.open(f) as file:
+            im = PIL.Image.open(file)
+            assert im.size == (
+                degrees_each * cells_per_degree,
+                degrees_each * cells_per_degree,
+            )
+            # return a numpy array (it is already rgb)
+            return np.array(im)
+
+
+def image_to_idxs(im_arr):
+    """
+    Taylor sent me this
+
+    fmatr[:, :, 0] = ((data & 2) << 6) | ((data & 16) << 2) | ((data & 128) >> 2) | ((data & 1024) >> 6) | ((data & 8192) >> 10)
+    fmatr[:, :, 1] = ((data & 1) << 7) | ((data & 8) << 3) | ((data & 64) >> 1) | ((data & 512) >> 5) | ((data & 4096) >> 9) | ((data & 32768) >> 13)
+    fmatr[:, :, 2] = ((data & 4) << 5) | ((data & 32) << 1) | ((data & 256) >> 3) | ((data & 2048) >> 7) | ((data & 16384) >> 11)
+
+    im_arr is fmatr. We need to convert it into data
+    """
+    data = np.zeros(im_arr.shape[:2], dtype=np.uint16)
+
+    # each element of the instructions array is [(image rgb channel, source bit (1, 2, 4, 8, ...), offset (signed int, + means <<, - means >>))]
+    instructions = [
+        (0, 2, 6),
+        (0, 16, 2),
+        (0, 128, -2),
+        (0, 1024, -6),
+        (0, 8192, -10),
+        (1, 1, 7),
+        (1, 8, 3),
+        (1, 64, -1),
+        (1, 512, -5),
+        (1, 4096, -9),
+        (1, 32768, -13),
+        (2, 4, 5),
+        (2, 32, 1),
+        (2, 256, -3),
+        (2, 2048, -7),
+        (2, 16384, -11),
+    ]
+
+    for channel, source_bit, offset in instructions:
+        # if source bit is 1024, source_bit_idx = 10
+        source_bit_idx = int(np.round(np.log2(source_bit)))
+        location_within_channel = source_bit_idx + offset
+        assert (
+            0 <= location_within_channel < 8
+        ), f"Invalid location {location_within_channel} for channel {channel} and source bit {source_bit}"
+
+        # isolate the image channel
+        channel_data = (im_arr[:, :, channel] >> location_within_channel) & 1
+        # shift it to the correct position in the data array
+        data |= channel_data.astype(np.uint16) << source_bit_idx
+
+    return data
+
+
+def image_idxs_to_arrays(y_overall, x_overall, data):
+    ys, xs = np.where(data > 0)
+    d = data[ys, xs]
+    ys = ys + y_overall * degrees_each * cells_per_degree
+    xs = xs + x_overall * degrees_each * cells_per_degree
+    return ys, xs, d
+
+
+@permacache("urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/load_idxs")
+def load_idxs(y, x):
+    im = load_image(y, x)
+    idxs = image_idxs_to_arrays(y, x, image_to_idxs(im))
+    return idxs
+
+
+def load_all_idxs():
+    all_idxs = []
+    for y, x in tqdm.tqdm(sorted(filenames().keys())):
+        idxs = load_idxs(y, x)
+        all_idxs.append(idxs)
+    return [np.concatenate(x) for x in zip(*all_idxs)]
+
+
+@permacache(
+    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/load_shapes_as_points_2"
+)
+def load_shapes_as_points():
+    print("Total files:", len(filenames()))
+
+    ys, xs, ranks = load_all_idxs()
+    assert len(ys) == len(xs) == len(ranks)
+    assert len(set(ranks)) == ranks.max()
+    print("Total shapes:", ranks.max())
+    ordering = np.argsort(ranks)
+    ys, xs, ranks = (
+        ys[ordering],
+        xs[ordering],
+        ranks[ordering],
+    )
+    breaks = np.where(np.diff(ranks) > 0)[0] + 1
+    shapes = []
+    for i, (start, end) in tqdm.tqdm(
+        list(enumerate(zip([0, *breaks], [*breaks, len(ys)])))
+    ):
+        assert (
+            i + 1 == ranks[start] == ranks[end - 1]
+        ), f"Rank mismatch at {i}: {ranks[start]} vs {ranks[end - 1]}"
+        shapes.append(
+            [
+                ys[start:end],
+                xs[start:end],
+            ]
+        )
+    return shapes
+
+
+def idx_to_latlon_topleft(y, x):
+    """
+    Convert y, x indices to latitude and longitude.
+    """
+    lat = 70 - (y / cells_per_degree)
+    lon = -180 + (x / cells_per_degree)
+    return lat, lon
+
+
+def idx_to_latlon_bottomright(y, x):
+    """
+    Convert y, x indices to latitude and longitude.
+    """
+    return idx_to_latlon_topleft(y + 1, x + 1)
+
+
+def encode_as_rows(lats, lons):
+    ordering = np.argsort(lons)
+    lats = lats[ordering]
+    lons = lons[ordering]
+    ordering = np.argsort(lats, kind="stable")
+    lats = lats[ordering]
+    lons = lons[ordering]
+    lat_breaks = np.where(np.diff(lats) > 0)[0] + 1
+    rows = []
+    for lat_start, lat_end in zip([0, *lat_breaks], [*lat_breaks, len(lats)]):
+        lon_breaks = np.where(np.diff(lons[lat_start:lat_end]) > 1)[0] + 1
+        for lon_start, lon_end in zip(
+            [0, *lon_breaks], [*lon_breaks, lat_end - lat_start]
+        ):
+            rows.append(
+                [
+                    lats[lat_start],
+                    lons[lat_start + lon_start],
+                    lons[lat_start + lon_end - 1],
+                ]
+            )
+    return rows
+
+
+@permacache(
+    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/convert_shape_to_shapefile"
+)
+def convert_shape_to_shapefile(lats, lons):
+    """
+    Convert a shape defined by latitude and longitude points to a shapefile format.
+    """
+    import shapely
+
+    # create one box per line
+    row_boxes = []
+    for lat, lon1, lon2 in encode_as_rows(lats, lons):
+        top_left_lat, top_left_lon = idx_to_latlon_topleft(lat, lon1)
+        bottom_right_lat, bottom_right_lon = idx_to_latlon_bottomright(lat, lon2)
+        row_boxes.append(
+            shapely.geometry.box(
+                minx=top_left_lon,
+                miny=bottom_right_lat,
+                maxx=bottom_right_lon,
+                maxy=top_left_lat,
+            )
+        )
+    # take the union of all boxes
+    shape = shapely.unary_union(row_boxes)
+    return shape
+
+
+# @permacache(
+#     "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/load_geonames"
+# )
+# def load_geonames():
+#     with zipfile.ZipFile("geonames/allCountries.zip") as f:
+#         geonames = pd.read_csv(
+#             f.open("allCountries.txt"),
+#             sep="\t",
+#             header=None,
+#             names=[
+#                 "geonameid",
+#                 "name",
+#                 "asciiname",
+#                 "alternatenames",
+#                 "latitude",
+#                 "longitude",
+#                 "feature_class",
+#                 "feature_code",
+#                 "country_code",
+#                 "cc2",
+#                 "admin1_code",
+#                 "admin2_code",
+#                 "admin3_code",
+#                 "admin4_code",
+#                 "population",
+#                 "elevation",
+#                 "dem",
+#                 "timezone",
+#                 "modification_date",
+#             ],
+#         )
+
+#     geonames = geonames[geonames.population > 0]
+#     return geonames.reset_index(drop=True)
+
+
+def create_shapefile():
+    shapes = load_shapes_as_points()
+    shapes = [convert_shape_to_shapefile(*s) for s in tqdm.tqdm(shapes)]
+
+    # Save the shapes to a file
+    import geopandas as gpd
+
+    gdf = gpd.GeoDataFrame(
+        dict(rank=np.arange(len(shapes)) + 1), geometry=shapes, crs="EPSG:4326"
+    )
+    return gdf
+
+
+@permacache(
+    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/get_wikidata_title_and_population"
+)
+def get_wikidata_title_and_population(tag):
+    # tag is something like "Q13942981"
+    # get the name in either English or the first language available
+    import requests
+
+    url = f"https://www.wikidata.org/wiki/Special:EntityData/{tag}.json"
+    response = requests.get(url)
+    data = response.json()
+    entities = data.get("entities", {})
+    if not entities:
+        return None
+    entity = next(iter(entities.values()))
+    title = get_label(entity)
+    if title is None:
+        return None
+    population = entity.get("claims", {}).get("P1082", [])
+    if population:
+        population = (
+            population[0]
+            .get("mainsnak", {})
+            .get("datavalue", {})
+            .get("value", {})
+            .get("amount")
+        )
+        if population is not None:
+            population = int(population.replace("+", "").replace("xsd:integer", ""))
+    else:
+        population = None
+    return title, population
+
+
+def get_label(entity):
+    labels = entity.get("labels", {})
+    # try to get the English label first
+    label = labels.get("en")
+    if label is not None:
+        return label.get("value")
+    return next(iter(labels.values())).get("value", None)
+
+
+def produce_name_based_on_wikidata(candidates):
+    """
+    Given a list of candidates, return the one with the highest population.
+    If there are multiple candidates with the same population, return the first one.
+    """
+    candidates = [tag for metatag, tag, *_ in candidates if metatag == "C"]
+    if not candidates:
+        return None
+    title_pops = [get_wikidata_title_and_population(tag) for tag in candidates]
+    title_pops = [x for x in title_pops if x is not None]
+    if not title_pops:
+        return None
+    title_pops = sorted(
+        title_pops, key=lambda x: (x[1] is not None, x[1]), reverse=True
+    )
+    return title_pops[0][0]
+
+
+zf = zipfile.ZipFile("uc_metadata.zip")
+table = pd.read_csv(zf.open("ucs_data.csv"))
+table = table[["id", "rank", "pop", "core"]]
+code = zf.open("name_candidates.txt").read().decode("latin-1")
+name_candidates = eval(code)
+
+with open("names_full.txt", "r") as f:
+    curated_names = eval(f.read())
+
+missing = {k: v for k, v in name_candidates.items() if k not in curated_names}
+
+for k, v in tqdm.tqdm(list(missing.items())):
+    try:
+        res = produce_name_based_on_wikidata(v)
+    except Exception as e:
+        print(f"Error processing {k}: {e}")
+        res = None
+
+# gn = load_geonames()
+
+import IPython
+
+IPython.embed()
+
+# if __name__ == "__main__":
+#     create_shapefile().to_file("shapefile/taylor_metropolitan_clusters.shp", driver="ESRI Shapefile")
+
+# Type of name entry; IIRC P is Geonames place, G is other Geonames entry, C is Wikidata city, M is Wikidata admin region, and I've prioritized P > G and C > M.
