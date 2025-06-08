@@ -556,3 +556,79 @@ export function parse(code: string): UrbanStatsASTStatement | { type: 'error', e
     assert(state.index === state.tokens.length, `Parser did not consume all tokens: ${state.index} < ${state.tokens.length}`)
     return stmts
 }
+
+function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression): UrbanStatsASTExpression[] {
+    const expressions: UrbanStatsASTExpression[] = []
+    function helper(n: UrbanStatsASTStatement | UrbanStatsASTExpression | UrbanStatsASTArg): boolean {
+        switch (n.type) {
+            case 'unnamed':
+                helper(n.value)
+                return true
+            case 'named':
+                expressions.push(n.value)
+                return true
+            case 'constant':
+            case 'identifier':
+                expressions.push(n)
+                return true
+            case 'attribute':
+                expressions.push(n)
+                helper(n.expr)
+                return true
+            case 'function':
+                expressions.push(n)
+                helper(n.fn)
+                n.args.forEach(helper)
+                return true
+            case 'unaryOperator':
+                expressions.push(n)
+                helper(n.expr)
+                return true
+            case 'binaryOperator':
+                expressions.push(n)
+                helper(n.left)
+                helper(n.right)
+                return true
+            case 'objectLiteral':
+                expressions.push(n)
+                n.properties.forEach(([key, value]) => {
+                    expressions.push({ type: 'constant', value: { node: key, location: n.entireLoc } })
+                    helper(value)
+                })
+                return true
+            case 'vectorLiteral':
+                expressions.push(n)
+                n.elements.forEach(helper)
+                return true
+            case 'assignment':
+                helper(n.lhs)
+                helper(n.value)
+                return true
+            case 'expression':
+                helper(n.value)
+                return true
+            case 'statements':
+                n.result.forEach(helper)
+                return true
+            case 'if':
+                helper(n.condition)
+                helper(n.then)
+                if (n.else) {
+                    helper(n.else)
+                }
+                return true
+        }
+    }
+    helper(node)
+    return expressions
+}
+
+export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
+    const identifiers = new Set<string>()
+    allExpressions(node).forEach((expr) => {
+        if (expr.type === 'identifier') {
+            identifiers.add(expr.name.node)
+        }
+    })
+    return identifiers
+}
