@@ -6,8 +6,8 @@ import { StatName } from '../page_template/statistic-tree'
 import { defaultConstants } from '../urban-stats-script/constants'
 import { Context } from '../urban-stats-script/context'
 import { execute, InterpretationError } from '../urban-stats-script/interpreter'
-import { parse } from '../urban-stats-script/parser'
-import { renderType } from '../urban-stats-script/types-values'
+import { allIdentifiers, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { renderType, USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 
 import { DataListSelector } from './DataListSelector'
@@ -22,49 +22,23 @@ export class USSColorStat implements ColorStat {
     }
 
     compute(statistics_for_geography: StatisticsForGeography): number[] {
-        // let variables = { ...vars }
-        // for (const variable of this._variables) {
-        //     variables[variable.name] = variable.expr.compute(statistics_for_geography)
-        // }
-        // if (this._expr === '') {
-        //     return statistics_for_geography.map(() => 0)
-        // }
-        // for (const regression of this._regressions) {
-        //     const out = regression.compute(statistics_for_geography, variables)
-        //     variables = { ...variables, ...out }
-        // }
-        // return statistics_for_geography.map((_, i) => {
-        //     const expr = Parser.parse(this._expr)
-        //     const statVars: Value = {}
-        //     for (const key of Object.keys(variables)) {
-        //         statVars[key] = variables[key][i]
-        //     }
-        //     return expr.evaluate(statVars) as number
-        // })
         const ctx = new Context(
             () => undefined,
             (msg, loc) => { return new InterpretationError(msg, loc) },
             defaultConstants,
             new Map(),
         )
-        statistic_variables_info.variableNames.forEach((name, index) => {
-            ctx.assignVariable(name, {
+
+        const getVariable = (name: string): USSValue | undefined => {
+            const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
+            if (index === -1) {
+                return undefined
+            }
+            return {
                 type: { type: 'vector', elementType: { type: 'number' } },
                 value: statistics_for_geography.map(stat => stat.stats[index]),
-            })
-        })
-
-        statistic_variables_info.multiSourceVariables.forEach((content) => {
-            const [name, subvars] = content
-            const indices = subvars.map(subvar => statistic_variables_info.variableNames.indexOf(subvar))
-            const value = statistics_for_geography.map((stat) => {
-                return firstNonNan(indices.map(i => stat.stats[i]))
-            })
-            ctx.assignVariable(name, {
-                type: { type: 'vector', elementType: { type: 'number' } },
-                value,
-            })
-        })
+            }
+        }
 
         let result
         try {
@@ -73,6 +47,7 @@ export class USSColorStat implements ColorStat {
                 console.error('Error parsing USS expression:', stmts.errors)
                 return statistics_for_geography.map(() => NaN)
             }
+            addVariablesToContext(ctx, stmts, getVariable)
             result = execute(stmts, ctx)
         }
         catch (e) {
@@ -86,6 +61,32 @@ export class USSColorStat implements ColorStat {
         }
         return result.value as number[]
     }
+}
+
+function addVariablesToContext(ctx: Context, code: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
+    const ids = allIdentifiers(code)
+    statistic_variables_info.variableNames.forEach((name) => {
+        if (!ids.has(name)) {
+            return
+        }
+        const va = getVariable(name)
+        if (va !== undefined) {
+            ctx.assignVariable(name, va)
+        }
+    })
+
+    statistic_variables_info.multiSourceVariables.forEach((content) => {
+        const [name, subvars] = content
+        if (!ids.has(name)) {
+            return
+        }
+        const values = subvars.map(subvar => (ctx.getVariable(subvar) ?? getVariable(subvar))!.value as number[])
+        const value = values[0].map((_, i) => firstNonNan(values.map(v => v[i]))) // take first non-NaN value
+        ctx.assignVariable(name, {
+            type: { type: 'vector', elementType: { type: 'number' } },
+            value,
+        })
+    })
 }
 
 export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string }): ReactNode {
