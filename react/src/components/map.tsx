@@ -16,7 +16,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderWidth } from './screenshot'
+import { mapBorderRadius, mapBorderWidth } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -500,7 +500,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: '100%',
                 position: 'relative',
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                borderRadius: '5px',
+                borderRadius: `${mapBorderRadius}px`,
             }}
         >
             {/* place this on the right of the map */}

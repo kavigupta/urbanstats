@@ -78,6 +78,7 @@ function totalOffset(element: Element | null): { top: number, left: number } {
 }
 
 export const mapBorderWidth = 1
+export const mapBorderRadius = 5
 
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overallWidth = config.overallWidth
@@ -87,7 +88,6 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         /*
          * Safari is flaky at rendering canvases the way `domtoimage` renders them.
          * We work around this by rendering the canvases first, then excluding them from the element render.
-         * This way, the map looks nice + has rounded corners.
          */
         const scaleFactor = overallWidth / ref.offsetWidth
 
@@ -110,6 +110,11 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
             const w = canvas.offsetWidth * scaleFactor
             const h = canvas.offsetHeight * scaleFactor
 
+            resultContext.save()
+            resultContext.beginPath()
+            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+            resultContext.clip()
+
             if (isTesting()) {
                 resultContext.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
                 resultContext.fillRect(x, y, w, h)
@@ -120,6 +125,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
                     x, y, w, h,
                 )
             }
+
+            resultContext.restore()
         }
 
         const refCanvas = await domtoimage.toCanvas(ref, {
