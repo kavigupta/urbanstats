@@ -1,14 +1,32 @@
-.maplibregl-ctrl-attrib-inner {
-    /* Fixes wrapping in map screenshots */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+/*
+ Keep the attribution control scaled with the map width, up to a certain maximum. 
+ */
 
 .maplibregl-ctrl-bottom-right {
     width: 100%;
 }
 
-.maplibregl-ctrl-attrib {
-    max-width: calc(100% - 56px);
+.maplibregl-ctrl-attrib.maplibregl-compact {
+    --ratio: 0.75;
+    max-width: calc(100% - (6vw * var(--ratio)));
+    min-height: calc(min(20px, 1.33vw * var(--ratio)));
+    padding-right: calc(min(24px, 2vw * var(--ratio)));
+}
+
+.maplibregl-ctrl-attrib-button {
+    background-size: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: unset;
+    height: unset;
+    right: 0;
+    aspect-ratio: 1;
+}
+
+.maplibregl-ctrl-attrib-inner {
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: calc(min(12px, 1vw * var(--ratio)));
+    line-height: calc(min(20px, 1.33vw * var(--ratio)));
 }
