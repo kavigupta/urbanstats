@@ -16,7 +16,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -492,6 +492,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
     const colors = useColors()
+    const isScreenshot = useScreenshotMode()
     return (
         <div
             id={props.id}
@@ -501,6 +502,9 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 position: 'relative',
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: `${mapBorderRadius}px`,
+                // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
+                // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
+                backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
             }}
         >
             {/* place this on the right of the map */}
