@@ -327,7 +327,7 @@ void test('evaluate if expressions', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     assert.throws(
         () => evaluate(parseExpr('if (xs) { ys = xs + 1 } else { ys = xs - 2 }'), ctx),
@@ -352,7 +352,7 @@ void test('evaluate if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWLiteral), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     // incompatbile sizes
     const codeWIncompatible = `
@@ -462,9 +462,9 @@ void test('more if expressions', (): void => {
             value: [
                 new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
                 new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
-                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
-                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
-                new Map<string, USSRawValue>([['a', 0], ['b', 0]]),
+                new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
+                new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
+                new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
             ],
         },
     )
@@ -529,7 +529,7 @@ void test('evaluate if expressions mutations', (): void => {
     ctx.assignVariable('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('ys'), ctx),
@@ -537,23 +537,23 @@ void test('evaluate if expressions mutations', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { zs = xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('zs'), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { as = xs + 1; bs = as ** 2 }'), ctx),
-        { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
+        { type: numVectorType, value: [4, 9, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('as'), ctx),
-        { type: numVectorType, value: [2, 3, 0, 0, 0, 0] },
+        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('bs'), ctx),
-        { type: numVectorType, value: [4, 9, 0, 0, 0, 0] },
+        { type: numVectorType, value: [4, 9, NaN, NaN, NaN, NaN] },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (0 == 1) { 2 }'), ctx),

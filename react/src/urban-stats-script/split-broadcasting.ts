@@ -125,7 +125,7 @@ function index(v: USSValue, i: number): USSValue {
 function defaultValueForType(type: USSType): USSRawValue {
     switch (type.type) {
         case 'number':
-            return 0
+            return NaN
         case 'string':
             return ''
         case 'boolean':
