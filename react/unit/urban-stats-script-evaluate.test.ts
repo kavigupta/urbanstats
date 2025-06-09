@@ -820,10 +820,10 @@ void test('constants', (): void => {
         },
     )
     assert.deepStrictEqual(
-        evaluate(parseExpr('toNumber(["1", "0.75", "3.14"])'), emptyContext()),
+        evaluate(parseExpr('toNumber(["1", "0.75", "3.14", "3m"])'), emptyContext()),
         {
             type: numVectorType,
-            value: [1, 0.75, 3.14],
+            value: [1, 0.75, 3.14, 3e6],
         },
     )
 })

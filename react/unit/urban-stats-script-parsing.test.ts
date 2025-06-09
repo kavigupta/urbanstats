@@ -124,6 +124,20 @@ void test('various lexes', (): void => {
         ['Invalid string: "a\\c": SyntaxError: Bad escaped character in JSON at position 3 (line 1 column 4)', '"a\\c"'],
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('x = 1e-3 + 1e+7 + 1e4 + 1k + 3m'), [
+        'x',
+        '=',
+        [1e-3, '1e-3'],
+        '+',
+        [1e7, '1e+7'],
+        '+',
+        [1e4, '1e4'],
+        '+',
+        [1e3, '1k'],
+        '+',
+        [3e6, '3m'],
+        ['EOL', ''],
+    ])
 })
 
 function parseAndRender(input: string): string {

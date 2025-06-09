@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
+import { parseNumber } from './lexer'
 import { USSRawValue, USSValue } from './types-values'
 
 type Constants = Map<string, USSValue>
@@ -37,7 +38,7 @@ const toNumberRaw = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<str
         return arg
     }
     if (typeof arg === 'string') {
-        const num = parseFloat(arg)
+        const num = parseNumber(arg)
         assert(!isNaN(num), `Expected a number or a string that can be converted to a number, got ${arg}`)
         return num
     }
