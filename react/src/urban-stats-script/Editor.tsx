@@ -1,4 +1,4 @@
-import React, { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
 import { emptyContext } from '../../unit/urban-stats-script-utils'
 import { Colors } from '../page_template/color-themes'
@@ -16,6 +16,8 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     const editorRef = useRef<HTMLPreElement>(null)
 
     const rangeRef = useRef<{ start: number, end: number } | undefined>()
+
+    const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
     function getRange(): { start: number, end: number } | undefined {
         const editor = editorRef.current!
@@ -86,12 +88,9 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         return () => { document.removeEventListener('selectionchange', listener) }
     }, [])
 
-    // start at the lowest state
-    const [global, setGlobal] = useState<Result>({ result: 'failure', errors: ['No input'] })
-
     useEffect(() => {
         const editor = editorRef.current!
-        const { html, result } = stringToHtml(props.script, colors)
+        const { html, result: newResult } = stringToHtml(props.script, colors)
         if (editor.innerHTML !== html) {
             const range = getRange()
             editor.innerHTML = html
@@ -99,7 +98,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                 setRange(range)
             }
         }
-        setGlobal(result)
+        setResult(newResult)
     }, [props.script, colors])
 
     const { setScript } = props
@@ -115,22 +114,24 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 
     return (
         <>
-            <InnerEditor editorRef={editorRef} caretColor={colors.textMain} />
-            <DisplayResult result={global} />
+            <InnerEditor editorRef={editorRef} colors={colors} />
+            <DisplayResult result={result} />
         </>
     )
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
-const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, caretColor: string }) {
+const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, colors: Colors }) {
     return (
         <pre
             style={{
                 padding: '10px',
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'monospace',
-                caretColor: props.caretColor,
+                caretColor: props.colors.textMain,
                 lineHeight: '175%',
+                border: `1px solid ${props.colors.borderShadow}`,
+                borderRadius: '5px',
             }}
             ref={props.editorRef}
             contentEditable="plaintext-only"
@@ -142,16 +143,23 @@ const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObjec
 
 function DisplayResult(props: { result: Result }): ReactNode {
     const colors = useColors()
+    const style: CSSProperties = {
+        color: colors.textMainOpposite,
+        padding: '5px',
+        borderRadius: '5px',
+    }
     if (props.result.result === 'success') {
         return (
-            <div style={{ backgroundColor: colors.hueColors.green }}>
-                {props.result.value?.toString()}
+            <div style={{ ...style, backgroundColor: colors.hueColors.green }}>
+                <ul>
+                    <li>{props.result.value?.toString()}</li>
+                </ul>
             </div>
         )
     }
     else {
         return (
-            <div style={{ backgroundColor: colors.hueColors.red }}>
+            <div style={{ ...style, backgroundColor: colors.hueColors.red }}>
                 <ul>
                     {props.result.errors.map((error, i) => <li key={i}>{error}</li>)}
                 </ul>
@@ -275,6 +283,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
                 style['text-decoration-color'] = colors.hueColors.red
                 style['text-decoration-style'] = 'wavy'
                 style['text-decoration-line'] = 'underline'
+                style['text-decoration-skip-ink'] = 'none'
 
                 title = token.value
                 break
