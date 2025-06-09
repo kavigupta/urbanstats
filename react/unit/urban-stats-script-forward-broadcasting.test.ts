@@ -279,7 +279,7 @@ void test('wrong number of arguments', (): void => {
         ),
         {
             type: 'error',
-            message: 'Function expects arguments named a, but received []',
+            message: 'Function expects named argument a, but it was not provided',
         },
     )
     assert.deepStrictEqual(
@@ -297,7 +297,7 @@ void test('wrong number of arguments', (): void => {
         ),
         {
             type: 'error',
-            message: 'Function expects arguments named a, but received [a, b]',
+            message: 'Function does not expect named argument b, but it was provided',
         },
     )
 })

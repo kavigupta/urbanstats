@@ -5,7 +5,7 @@ import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
@@ -305,6 +305,38 @@ void test('evaluate function calls', (): void => {
         () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Object properties u, v have different lengths (2, 1), cannot be broadcasted at 1:1-43'
+        },
+    )
+})
+
+void test('evaluate function calls with defaults', (): void => {
+    const newCtx: () => Context = (): Context => {
+        const ctx: Context = emptyContext()
+        ctx.assignVariable('testFnWithDefault', { type: testFnTypeWithDefault, value: testFnWithDefault })
+        return ctx
+    }
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault(100, a=3, b=2)'), newCtx()),
+        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 2 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault(100, a=3)'), newCtx()),
+        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 1 }, // b defaults to 1
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault([100, 200, 300], a=3)'), newCtx()),
+        { type: numVectorType, value: [100 * 100 * 100 + 3 + 10 * 1, 200 * 200 * 200 + 3 + 10 * 1, 300 * 300 * 300 + 3 + 10 * 1] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('testFnWithDefault(100, a=3, b=2, c=4)'), newCtx()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Function does not expect named argument c, but it was provided at 1:1-37'
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('testFnWithDefault(100, b=2)'), newCtx()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Function expects named argument a, but it was not provided at 1:1-27'
         },
     )
 })

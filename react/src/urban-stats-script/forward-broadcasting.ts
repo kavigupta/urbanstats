@@ -155,12 +155,32 @@ function locateFunctionAndArguments(
             message: `Function expects ${fnType.posArgs.length} positional arguments, but received ${posArgs.length}`,
         }
     }
-    if (JSON.stringify(Object.keys(fnType.namedArgs).sort()) !== JSON.stringify(kwArgs.map(x => x[0]).sort())) {
-        return {
-            type: 'error',
-            message: `Function expects arguments named ${Object.keys(fnType.namedArgs).join(', ')}, but received [${kwArgs.map(x => x[0]).join(', ')}]`,
+    for (const k of Object.keys(fnType.namedArgs)) {
+        if (!kwArgs.some(x => x[0] === k)) {
+            if (fnType.namedArgs[k].defaultValue !== undefined) {
+                assert(fnType.namedArgs[k].type.type === 'concrete', `Expected named argument ${k} to have a concrete type, but got ${renderType(fnType)}`)
+                kwArgs.push([k, { type: fnType.namedArgs[k].type.value, value: fnType.namedArgs[k].defaultValue } satisfies USSValue])
+            }
+            else {
+                return {
+                    type: 'error',
+                    message: `Function expects named argument ${k}, but it was not provided`,
+                }
+            }
         }
     }
+    for (const [name] of kwArgs) {
+        if (!Object.keys(fnType.namedArgs).includes(name)) {
+            return {
+                type: 'error',
+                message: `Function does not expect named argument ${name}, but it was provided`,
+            }
+        }
+    }
+    assert(
+        JSON.stringify(Object.keys(fnType.namedArgs).sort()) === JSON.stringify(kwArgs.map(x => x[0]).sort()),
+        `Function expects arguments named ${Object.keys(fnType.namedArgs).join(', ')}, but received [${kwArgs.map(x => x[0]).join(', ')}]`,
+    )
     const posArgsLocated: TypeLocationSuccess[] = []
     for (let i = 0; i < fnType.posArgs.length; i++) {
         const posArgLocated = locateType(posArgs[i], t => unifyFunctionArgType(fnType.posArgs[i], t), { role: `positional argument ${i + 1}`, typeDesc: renderArgumentType(fnType.posArgs[i]) })
