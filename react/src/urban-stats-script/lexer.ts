@@ -198,27 +198,41 @@ function isAlpha(ch: string): boolean {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
-export function parseNumber(input: string): number {
+export function parseNumber(input: string): number | undefined {
     if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
         const value = parseFloat(input)
-        assert(!isNaN(value), `Invalid number: ${input}`)
+        if (isNaN(value)) {
+            return
+        }
         return value
     }
     if (input.endsWith('k')) {
-        return parseNumber(input.slice(0, -1)) * 1000
+        const component = parseNumber(input.slice(0, -1))
+        if (component === undefined) {
+            return
+        }
+        return component * 1000
     }
     if (input.endsWith('m')) {
-        return parseNumber(input.slice(0, -1)) * 1000000
+        const component = parseNumber(input.slice(0, -1))
+        if (component === undefined) {
+            return
+        }
+        return component * 1000000
     }
-    throw new Error(`Invalid number format: ${input}`)
+    return
 }
 
 const numberLexer: GenericLexer = {
     firstToken: isDigit,
     innerToken: (ch: string): boolean => isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '+' || ch === '-' || ch === 'k' || ch === 'm',
     parse: (string: string): Token => {
-        return { type: 'number', value: parseNumber(string) }
+        const number = parseNumber(string)
+        if (number === undefined) {
+            return { type: 'error', value: `Invalid number format: ${string}` }
+        }
+        return { type: 'number', value: number }
     },
 }
 
