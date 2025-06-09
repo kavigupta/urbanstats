@@ -200,12 +200,12 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
     function shift(tokens: { location: LocInfo }[], line: number, offset: number, delta: number, kind: 'replace' | 'insertBefore'): void {
         for (const token of tokens) {
             for (const pos of ['start', 'end'] as const) {
-                if (token.location[pos].lineIdx === line) {
+                if (token.location.shifted[pos].lineIdx === line) {
                     if (
-                        (kind === 'replace' && token.location[pos].colIdx > offset)
-                        || (kind === 'insertBefore' && token.location[pos].colIdx >= offset)
+                        (kind === 'replace' && token.location.shifted[pos].colIdx > offset)
+                        || (kind === 'insertBefore' && token.location.shifted[pos].colIdx >= offset)
                     ) {
-                        token.location[pos].colIdx += delta
+                        token.location.shifted[pos].colIdx += delta
                     }
                 }
             }
@@ -300,7 +300,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
             continue
         }
         for (const pos of ['start', 'end'] as const) {
-            const loc = token.location[pos]
+            const loc = token.location.shifted[pos]
             const line = lines[loc.lineIdx]
             const tag = pos === 'start' ? span(token.token) : `</span>`
             lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
@@ -322,7 +322,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
         if (parsed.type === 'error') {
             for (const error of parsed.errors) {
                 for (const pos of ['start', 'end'] as const) {
-                    const loc = error.location[pos]
+                    const loc = error.location.shifted[pos]
                     const line = lines[loc.lineIdx]
                     const tag = pos === 'start' ? span(error) : `</span>`
                     lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
@@ -340,7 +340,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
                 if (e instanceof InterpretationError) {
                     result = { result: 'failure', errors: [e.message] }
                     for (const pos of ['start', 'end'] as const) {
-                        const loc = e.location[pos]
+                        const loc = e.location.shifted[pos]
                         const line = lines[loc.lineIdx]
                         const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
                         lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`

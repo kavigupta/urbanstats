@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { newLocation } from '../src/urban-stats-script/lexer'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
@@ -239,7 +239,7 @@ void test('split mask testing', (): void => {
             ['b', { type: numVectorType, value: [10, 30, 60, 20, 20, 10, 104, 389, 10] }],
         ],
     ))
-    const defaultLocInfo = { start: { lineIdx: 1, colIdx: 1 }, end: { lineIdx: 1, colIdx: 1 } } satisfies LocInfo
+    const defaultLocInfo = newLocation({ start: { lineIdx: 1, colIdx: 1 }, end: { lineIdx: 1, colIdx: 1 } })
     // basic mask testing
     assert.deepStrictEqual(
         splitMask(

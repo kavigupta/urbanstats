@@ -1,6 +1,6 @@
 import { assert } from '../utils/defensive'
 
-import { AnnotatedToken, AnnotatedTokenWithValue, expressionOperatorMap, infixOperators, lex, LocInfo, unaryOperators } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, BaseLocInfo, expressionOperatorMap, infixOperators, lex, LocInfo, newLocation, unaryOperators } from './lexer'
 
 interface Decorated<T> {
     node: T
@@ -40,7 +40,7 @@ export interface ParseError { type: 'error', value: string, location: LocInfo }
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
-function unify(...locations: LocInfo[]): LocInfo {
+function unifyBase(...locations: BaseLocInfo[]): BaseLocInfo {
     assert(locations.length > 0, 'At least one location must be provided for unification')
     const startLine = locations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
     const endLine = locations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
@@ -49,6 +49,13 @@ function unify(...locations: LocInfo[]): LocInfo {
     return {
         start: { lineIdx: startLine, colIdx: startCol },
         end: { lineIdx: endLine, colIdx: endCol },
+    }
+}
+
+function unify(...locations: LocInfo[]): LocInfo {
+    return {
+        ...unifyBase(...locations),
+        shifted: unifyBase(...locations.map(l => l.shifted)),
     }
 }
 
@@ -547,7 +554,7 @@ class ParseState {
             : this.index > 0
                 ? this.tokens[this.index - 1].location
                 /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-                : { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } }
+                : newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } })
         return { type: 'statements', result: statements, entireLoc }
     }
 }

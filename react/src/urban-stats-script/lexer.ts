@@ -115,14 +115,16 @@ export const expressionOperatorMap = new Map<string, Operator>([
     ['*', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]) }],
     ['/', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]) }],
     // AS
-    ['+', { precedence: 800,
+    ['+', {
+        precedence: 800,
         unary: unaryOperator([{ type: 'number', fn: x => x }]),
         binary: binaryOperator([
             numericBinaryOperation((a, b) => a + b),
             { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
         ]),
     }],
-    ['-', { precedence: 800,
+    ['-', {
+        precedence: 800,
         unary: unaryOperator([{ type: 'number', fn: x => -(x as number) }]),
         binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
     }],
@@ -160,9 +162,20 @@ interface SingleLocation {
     colIdx: number
 }
 
-export interface LocInfo {
+export interface BaseLocInfo {
     start: SingleLocation
     end: SingleLocation
+}
+
+export interface LocInfo extends BaseLocInfo {
+    shifted: BaseLocInfo
+}
+
+export function newLocation(loc: BaseLocInfo): LocInfo {
+    return {
+        ...loc,
+        shifted: { start: { ...loc.start }, end: { ...loc.end } },
+    }
 }
 
 export interface AnnotatedToken {
@@ -226,10 +239,10 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         if (char === '(' || char === ')' || char === '{' || char === '}' || char === '[' || char === ']') {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
-                location: {
+                location: newLocation({
                     start: { lineIdx: lineNo, colIdx: idx },
                     end: { lineIdx: lineNo, colIdx: idx + 1 },
-                },
+                }),
             }
             tokens.push(token)
             idx++
@@ -251,10 +264,10 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         }
         tokens.push({
             token: { type: 'error', value: `Unexpected character: ${char}` },
-            location: {
+            location: newLocation({
                 start: { lineIdx: lineNo, colIdx: idx },
                 end: { lineIdx: lineNo, colIdx: idx + 1 },
-            },
+            }),
         })
         idx++
     }
@@ -270,10 +283,10 @@ export function lex(input: string): AnnotatedToken[] {
         tokens.push(...lineTokens)
         tokens.push({
             token: { type: 'operator', value: 'EOL' },
-            location: {
+            location: newLocation({
                 start: { lineIdx: i, colIdx: line.length },
                 end: { lineIdx: i, colIdx: line.length },
-            },
+            }),
         })
     }
     return tokens
@@ -295,10 +308,10 @@ function lexGeneric(
     }
     const token: AnnotatedToken = {
         token: lexer.parse(input.slice(start, idx)),
-        location: {
+        location: newLocation({
             start: { lineIdx: lineNo, colIdx: start },
             end: { lineIdx: lineNo, colIdx: idx },
-        },
+        }),
     }
     return [idx, token]
 }
@@ -311,7 +324,7 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     idx++
     while (true) {
         if (idx >= input.length) {
-            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
+            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: newLocation({ start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } }) }]
         }
         if (input[idx] === '"') {
             idx++
@@ -330,14 +343,14 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         result = resultObj
     }
     catch (e) {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: newLocation({ start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } }) }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
-        location: {
+        location: newLocation({
             start: { lineIdx: lineNo, colIdx: start },
             end: { lineIdx: lineNo, colIdx: idx },
-        },
+        }),
     }
     return [idx, token]
 }
