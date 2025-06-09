@@ -10,16 +10,18 @@ import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError, parseTokens } from './parser'
 import { USSRawValue } from './types-values'
 
-export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
+interface Range { start: number, end: number }
+
+export function Editor({ script, setScript }: { script: string, setScript: (newScript: string) => void }): ReactNode {
     const colors = useColors()
 
     const editorRef = useRef<HTMLPreElement>(null)
 
-    const rangeRef = useRef<{ start: number, end: number } | undefined>()
+    const rangeRef = useRef<Range | undefined>()
 
     const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
-    function getRange(): { start: number, end: number } | undefined {
+    function getRange(): Range | undefined {
         const editor = editorRef.current!
         const selection = window.getSelection()
         if (selection?.rangeCount === 1) {
@@ -49,7 +51,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         return undefined
     }
 
-    function setRange({ start, end }: { start: number, end: number }): void {
+    function setRange({ start, end }: Range): void {
         const editor = editorRef.current!
 
         // Inverse of `positionInEditor`
@@ -90,7 +92,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 
     useEffect(() => {
         const editor = editorRef.current!
-        const { html, result: newResult } = stringToHtml(props.script, colors)
+        const { html, result: newResult } = stringToHtml(script, colors)
         if (editor.innerHTML !== html) {
             const range = getRange()
             editor.innerHTML = html
@@ -99,9 +101,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
             }
         }
         setResult(newResult)
-    }, [props.script, colors])
-
-    const { setScript } = props
+    }, [script, colors])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -111,6 +111,42 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
     }, [setScript])
+
+    useEffect(() => {
+        const editor = editorRef.current!
+        const listener = (e: KeyboardEvent): void => {
+            function editScript(newScript: string, newRange: Range): void {
+                const { html, result: newResult } = stringToHtml(newScript, colors)
+                setResult(newResult)
+                editor.innerHTML = html
+                setRange(newRange)
+                setScript(newScript)
+            }
+
+            if (e.key === 'Tab') {
+                e.preventDefault()
+                const range = getRange()
+                if (range !== undefined) {
+                    editScript(
+                        `${script.slice(0, range.start)}    ${script.slice(range.end)}`,
+                        { start: range.start + 4, end: range.start + 4 },
+                    )
+                }
+            }
+            else if (e.key === 'Backspace') {
+                const range = getRange()
+                if (range !== undefined && range.start === range.end && range.start >= 4 && script.slice(range.start - 4, range.start) === '    ') {
+                    e.preventDefault()
+                    editScript(
+                        `${script.slice(0, range.start - 4)}${script.slice(range.start)}`,
+                        { start: range.start - 4, end: range.start - 4 },
+                    )
+                }
+            }
+        }
+        editor.addEventListener('keydown', listener)
+        return () => { editor.removeEventListener('keydown', listener) }
+    }, [script, colors, setScript])
 
     return (
         <>
