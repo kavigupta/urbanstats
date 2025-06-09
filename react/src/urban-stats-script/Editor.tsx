@@ -1,11 +1,14 @@
-import React, { ReactNode, RefObject, useEffect, useRef } from 'react'
+import React, { ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
+import { emptyContext } from '../../unit/urban-stats-script-utils'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { DefaultMap } from '../utils/DefaultMap'
 
+import { execute, InterpretationError } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
-import { ParseError, parseTokens } from './parser'
+import { ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
+import { USSRawValue, USSValue } from './types-values'
 
 export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
     const colors = useColors()
@@ -86,16 +89,27 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         return () => { document.removeEventListener('selectionchange', listener) }
     }, [])
 
+    // start at the lowest state
+    const [global, setGlobal] = useState<Result>({ result: 'lexFailure' })
+
     useEffect(() => {
         const editor = editorRef.current!
-        const newScript = stringToHtml(props.script, colors)
-        if (editor.innerHTML !== newScript) {
+        const { html, result } = stringToHtml(props.script, colors)
+        if (editor.innerHTML !== html) {
             const range = getRange()
-            editor.innerHTML = newScript
+            editor.innerHTML = html
             if (range !== undefined) {
-                setRange(range) // TODO: mid token return doesn't work
+                setRange(range)
             }
         }
+        setGlobal((existing) => {
+            if (resultPriority[result.result] <= resultPriority[existing.result]) {
+                return result
+            }
+            else {
+                return existing
+            }
+        })
     }, [props.script, colors])
 
     useEffect(() => {
@@ -107,7 +121,12 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         return () => { editor.removeEventListener('input', listener) }
     }, [props.setScript])
 
-    return <InnerEditor editorRef={editorRef} caretColor={colors.textMain} />
+    return (
+        <>
+            <InnerEditor editorRef={editorRef} caretColor={colors.textMain} />
+            <DisplayResult result={global} />
+        </>
+    )
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
@@ -128,6 +147,28 @@ const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObjec
         />
     )
 })
+
+function DisplayResult(props: { result: Result }): ReactNode {
+    const colors = useColors()
+    if (props.result.result === 'success') {
+        return (
+            <div style={{ backgroundColor: colors.hueColors.green }}>
+                Success
+                {' '}
+                {props.result.value?.toString()}
+            </div>
+        )
+    }
+    else {
+        return (
+            <div style={{ backgroundColor: colors.hueColors.red }}>
+                {props.result.result}
+                {' '}
+                {props.result.globalError}
+            </div>
+        )
+    }
+}
 
 function htmlToString(html: string): string {
     const domParser = new DOMParser()
@@ -150,7 +191,11 @@ function escapeStringForHTML(string: string): string {
     return htmlReplacements.reduce((str, [find, replace]) => str.replaceAll(find, replace), string)
 }
 
-function stringToHtml(string: string, colors: Colors): string {
+type Result = { result: 'success', value: USSRawValue } | { result: 'lexFailure' | 'parseFailure' | 'execFailure', globalError?: string }
+
+const resultPriority = Object.fromEntries(['success', 'execFailure', 'parseFailure', 'lexFailure'].map((result, index) => [result, index])) as Record<Result['result'], number>
+
+function stringToHtml(string: string, colors: Colors): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -267,16 +312,48 @@ function stringToHtml(string: string, colors: Colors): string {
         }
     }
 
-    const parsed = parseTokens(lexTokens)
+    let result: Result
 
-    if (parsed.type === 'error') {
-        for (const error of parsed.errors) {
-            for (const pos of ['start', 'end'] as const) {
-                const loc = error.location[pos]
-                const line = lines[loc.lineIdx]
-                const tag = pos === 'start' ? span(error) : `</span>`
-                lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
-                shift(parsed.errors, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+    if (lexTokens.some(token => token.token.type === 'error')) {
+        result = { result: 'lexFailure' }
+    }
+    else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
+        result = { result: 'parseFailure', globalError: 'No input' }
+    }
+    else {
+        const parsed = parseTokens(lexTokens)
+
+        if (parsed.type === 'error') {
+            for (const error of parsed.errors) {
+                for (const pos of ['start', 'end'] as const) {
+                    const loc = error.location[pos]
+                    const line = lines[loc.lineIdx]
+                    const tag = pos === 'start' ? span(error) : `</span>`
+                    lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                    shift(parsed.errors, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+                }
+            }
+            result = { result: 'parseFailure' }
+        }
+        else {
+            try {
+                const executed = execute(parsed, emptyContext())
+                result = { result: 'success', value: executed.value }
+            }
+            catch (e) {
+                if (e instanceof InterpretationError) {
+                    result = { result: 'execFailure', globalError: e.message }
+                    for (const pos of ['start', 'end'] as const) {
+                        const loc = e.location[pos]
+                        const line = lines[loc.lineIdx]
+                        const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
+                        lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                    }
+                }
+                else {
+                    console.error('Unknown error while evaluating script', e)
+                    result = { result: 'execFailure', globalError: 'Unknown error' }
+                }
             }
         }
     }
@@ -284,5 +361,5 @@ function stringToHtml(string: string, colors: Colors): string {
     const html = lines.join('\n')
 
     console.log({ string, lines, html, lexResults: lexTokens })
-    return html
+    return { html, result }
 }
