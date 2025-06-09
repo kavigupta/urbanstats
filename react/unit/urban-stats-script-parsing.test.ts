@@ -138,6 +138,16 @@ void test('various lexes', (): void => {
         [3e6, '3m'],
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('2+'), [
+        [
+            'Invalid number format: 2+',
+            '2+',
+        ],
+        [
+            'EOL',
+            '',
+        ],
+    ])
 })
 
 function parseAndRender(input: string): string {
