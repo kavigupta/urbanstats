@@ -185,13 +185,17 @@ function isAlpha(ch: string): boolean {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
+export function parseNumber(input: string): number {
+    const value = parseFloat(input)
+    assert(!isNaN(value), `Invalid number: ${input}`)
+    return value
+}
+
 const numberLexer: GenericLexer = {
     firstToken: isDigit,
     innerToken: (ch: string): boolean => isDigit(ch) || ch === '.',
     parse: (string: string): Token => {
-        const value = parseFloat(string)
-        assert(!isNaN(value), `Invalid number: ${string}`)
-        return { type: 'number', value }
+        return { type: 'number', value: parseNumber(string) }
     },
 }
 

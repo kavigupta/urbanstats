@@ -472,11 +472,11 @@ void test('more if expressions', (): void => {
         // define y as a function
         const codeWithDefinedFunction = `
         if ([1, 1, 2, 2, 3] == 1) {
-            y = sin
+            y = f
         }
         `
         const result = execute(parseProgram(codeWithDefinedFunction), testingContext([], [], new Map<string, USSValue>([
-            ['sin', { type: testFnType, value: testFn1 }],
+            ['f', { type: testFnType, value: testFn1 }],
         ])))
         assert.deepStrictEqual(result.type, { type: 'vector', elementType: testFnType })
         const v = result.value as USSRawValue[]
@@ -496,13 +496,13 @@ void test('more if expressions', (): void => {
         )
         const codeWithDefinedFunction2 = `
         if ([1, 1, 2, 2, 3] == 1) {
-            y = sin
+            y = f
         }
         y(2, a=3)
         `
         assert.throws(
             () => execute(parseProgram(codeWithDefinedFunction2), testingContext([], [], new Map<string, USSValue>([
-                ['sin', { type: testFnType, value: testFn1 }],
+                ['f', { type: testFnType, value: testFn1 }],
             ]))),
             (err: Error): boolean => {
                 return err instanceof InterpretationError && err.message === 'Error while executing function: Error: no default value for function type (number; a: number) -> number at 5:9-17'
@@ -782,6 +782,48 @@ void test('constants', (): void => {
         () => execute(parseProgram('pi = 3.14'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Cannot assign to constant "pi" at 1:1-2'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('sqrt([4, 9, 16, -1])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [2, 3, 4, NaN],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber([1, 2, 3] == 2)'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [0, 1, 0],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toString([1, 2, 3] == 2)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: stringType },
+            value: ['false', 'true', 'false'],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber([1, 2, 3])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [1, 2, 3],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toString([1, 2, 3])'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: stringType },
+            value: ['1', '2', '3'],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber(["1", "0.75", "3.14"])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [1, 0.75, 3.14],
         },
     )
 })
