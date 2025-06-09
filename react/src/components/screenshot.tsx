@@ -4,6 +4,7 @@ import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
+import { isTesting } from '../utils/isTesting'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const screencapButton = (
@@ -68,31 +69,86 @@ export interface ScreencapElements {
     heightMultiplier?: number
 }
 
+function totalOffset(element: Element | null): { top: number, left: number } {
+    if (!(element instanceof HTMLElement)) {
+        return { top: 0, left: 0 }
+    }
+    const parentOffset = totalOffset(element.offsetParent)
+    return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
+}
+
+export const mapBorderWidth = 1
+export const mapBorderRadius = 5
+
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
-    async function screencapElement(ref: HTMLElement): Promise<[string, number]> {
+    async function screencapElement(ref: HTMLElement): Promise<HTMLCanvasElement> {
+        /*
+         * Safari is flaky at rendering canvases the way `domtoimage` renders them.
+         * We work around this by rendering the canvases first, then excluding them from the element render.
+         */
         const scaleFactor = overallWidth / ref.offsetWidth
-        const link = await domtoimage.toPng(ref, {
-            bgcolor: colors.background,
-            height: ref.offsetHeight * scaleFactor * heightMultiplier,
-            width: ref.offsetWidth * scaleFactor,
+
+        const resultCanvas = document.createElement('canvas')
+
+        resultCanvas.width = ref.offsetWidth * scaleFactor
+        resultCanvas.height = ref.offsetHeight * scaleFactor * heightMultiplier
+
+        const resultContext = resultCanvas.getContext('2d')!
+
+        const canvases = Array.from(ref.querySelectorAll('canvas'))
+
+        const totalRefOffset = totalOffset(ref)
+
+        for (const [index, canvas] of canvases.entries()) {
+            const canvasOffset = totalOffset(canvas)
+            // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
+            const x = (canvasOffset.left - totalRefOffset.left + mapBorderWidth) * scaleFactor
+            const y = (canvasOffset.top - totalRefOffset.top + mapBorderWidth) * scaleFactor
+            const w = canvas.offsetWidth * scaleFactor
+            const h = canvas.offsetHeight * scaleFactor
+
+            resultContext.save()
+            resultContext.beginPath()
+            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+            resultContext.clip()
+
+            if (isTesting()) {
+                resultContext.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
+                resultContext.fillRect(x, y, w, h)
+            }
+            else {
+                resultContext.drawImage(
+                    canvas,
+                    x, y, w, h,
+                )
+            }
+
+            resultContext.restore()
+        }
+
+        const refCanvas = await domtoimage.toCanvas(ref, {
+            bgcolor: 'transparent',
+            height: resultCanvas.height,
+            width: resultCanvas.width,
             style: {
                 transform: `scale(${scaleFactor})`,
                 transformOrigin: 'top left',
             },
+            filter: node => !(node instanceof HTMLCanvasElement),
         })
-        return [link, scaleFactor * ref.offsetHeight * heightMultiplier]
+
+        resultContext.drawImage(refCanvas, 0, 0)
+
+        return resultCanvas
     }
 
-    const pngLinks = []
-    const heights = []
+    const canvases = []
     for (const ref of config.elementsToRender) {
         try {
-            const [pngLink, height] = await screencapElement(ref)
-            pngLinks.push(pngLink)
-            heights.push(height)
+            canvases.push(await screencapElement(ref))
         }
         catch (e) {
             console.error(e)
@@ -114,28 +170,17 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const bannerHeight = banner.height * bannerScale
 
     canvas.width = padAround * 2 + overallWidth
-    canvas.height = padAround + padBetween * (pngLinks.length - 1) + heights.reduce((a, b) => a + b, 0) + bannerHeight
+    canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
 
     const ctx = canvas.getContext('2d')!
-    const imgs = []
 
-    for (const pngLink of pngLinks) {
-        const img = new Image()
-        img.src = pngLink
-        imgs.push(img)
-    }
     ctx.fillStyle = colors.background
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    for (const img of imgs) {
-        await new Promise<void>((resolve) => {
-            img.onload = () => { resolve() }
-        })
-    }
     let start = padAround
-    for (const img of imgs) {
-        ctx.drawImage(img, padAround, start)
-        start += img.height + padBetween
+    for (const elementCanvas of canvases) {
+        ctx.drawImage(elementCanvas, padAround, start)
+        start += elementCanvas.height + padBetween
     }
 
     start -= padBetween
