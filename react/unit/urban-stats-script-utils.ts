@@ -23,10 +23,22 @@ export const multiObjVectorType = {
     elementType: multiObjType,
 } satisfies USSType
 
-export const testFnType = { type: 'function', posArgs: [{ type: 'concrete', value: numType }], namedArgs: { a: { type: 'concrete', value: numType } }, returnType: { type: 'concrete', value: numType } } satisfies USSType
+export const testFnType = {
+    type: 'function',
+    posArgs: [{ type: 'concrete', value: numType }], namedArgs: { a: { type: { type: 'concrete', value: numType } } }, returnType: { type: 'concrete', value: numType } } satisfies USSType
 
 export const testFn1: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
 export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
+
+export const testFnTypeWithDefault = {
+    type: 'function',
+    posArgs: [{ type: 'concrete', value: numType }],
+    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: numType }, defaultValue: 1 } },
+    returnType: { type: 'concrete', value: numType },
+} satisfies USSType
+
+export const testFnWithDefault: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue =>
+    (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number) + 10 * (namedArgs.b as number)
 
 export const testObjType = {
     type: 'object',
@@ -39,7 +51,7 @@ export const testObjType = {
 export const multiArgFnType = {
     type: 'function',
     posArgs: [{ type: 'concrete', value: numType }, { type: 'concrete', value: numVectorType }],
-    namedArgs: { a: { type: 'concrete', value: numType }, b: { type: 'concrete', value: testObjType } },
+    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: testObjType } } },
     returnType: { type: 'concrete', value: numVectorType },
 } satisfies USSType
 

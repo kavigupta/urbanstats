@@ -5,7 +5,7 @@ import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testingContext, testObjType } from './urban-stats-script-utils'
+import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
 void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
@@ -309,6 +309,38 @@ void test('evaluate function calls', (): void => {
     )
 })
 
+void test('evaluate function calls with defaults', (): void => {
+    const newCtx: () => Context = (): Context => {
+        const ctx: Context = emptyContext()
+        ctx.assignVariable('testFnWithDefault', { type: testFnTypeWithDefault, value: testFnWithDefault })
+        return ctx
+    }
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault(100, a=3, b=2)'), newCtx()),
+        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 2 },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault(100, a=3)'), newCtx()),
+        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 1 }, // b defaults to 1
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('testFnWithDefault([100, 200, 300], a=3)'), newCtx()),
+        { type: numVectorType, value: [100 * 100 * 100 + 3 + 10 * 1, 200 * 200 * 200 + 3 + 10 * 1, 300 * 300 * 300 + 3 + 10 * 1] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('testFnWithDefault(100, a=3, b=2, c=4)'), newCtx()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Function does not expect named argument c, but it was provided at 1:1-37'
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('testFnWithDefault(100, b=2)'), newCtx()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Function expects named argument a, but it was not provided at 1:1-27'
+        },
+    )
+})
+
 void test('evaluate if expressions', (): void => {
     const ctx: Context = emptyContext()
     ctx.assignVariable('x', { type: numType, value: 3 })
@@ -472,11 +504,11 @@ void test('more if expressions', (): void => {
         // define y as a function
         const codeWithDefinedFunction = `
         if ([1, 1, 2, 2, 3] == 1) {
-            y = sin
+            y = f
         }
         `
         const result = execute(parseProgram(codeWithDefinedFunction), testingContext([], [], new Map<string, USSValue>([
-            ['sin', { type: testFnType, value: testFn1 }],
+            ['f', { type: testFnType, value: testFn1 }],
         ])))
         assert.deepStrictEqual(result.type, { type: 'vector', elementType: testFnType })
         const v = result.value as USSRawValue[]
@@ -496,13 +528,13 @@ void test('more if expressions', (): void => {
         )
         const codeWithDefinedFunction2 = `
         if ([1, 1, 2, 2, 3] == 1) {
-            y = sin
+            y = f
         }
         y(2, a=3)
         `
         assert.throws(
             () => execute(parseProgram(codeWithDefinedFunction2), testingContext([], [], new Map<string, USSValue>([
-                ['sin', { type: testFnType, value: testFn1 }],
+                ['f', { type: testFnType, value: testFn1 }],
             ]))),
             (err: Error): boolean => {
                 return err instanceof InterpretationError && err.message === 'Error while executing function: Error: no default value for function type (number; a: number) -> number at 5:9-17'
@@ -782,6 +814,48 @@ void test('constants', (): void => {
         () => execute(parseProgram('pi = 3.14'), emptyContext()),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Cannot assign to constant "pi" at 1:1-2'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('sqrt([4, 9, 16, -1])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [2, 3, 4, NaN],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber([1, 2, 3] == 2)'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [0, 1, 0],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toString([1, 2, 3] == 2)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: stringType },
+            value: ['false', 'true', 'false'],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber([1, 2, 3])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [1, 2, 3],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toString([1, 2, 3])'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: stringType },
+            value: ['1', '2', '3'],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('toNumber(["1", "0.75", "3.14", "3m"])'), emptyContext()),
+        {
+            type: numVectorType,
+            value: [1, 0.75, 3.14, 3e6],
         },
     )
 })

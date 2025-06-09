@@ -198,13 +198,27 @@ function isAlpha(ch: string): boolean {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
+export function parseNumber(input: string): number {
+    if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
+        // normal number format
+        const value = parseFloat(input)
+        assert(!isNaN(value), `Invalid number: ${input}`)
+        return value
+    }
+    if (input.endsWith('k')) {
+        return parseNumber(input.slice(0, -1)) * 1000
+    }
+    if (input.endsWith('m')) {
+        return parseNumber(input.slice(0, -1)) * 1000000
+    }
+    throw new Error(`Invalid number format: ${input}`)
+}
+
 const numberLexer: GenericLexer = {
     firstToken: isDigit,
-    innerToken: (ch: string): boolean => isDigit(ch) || ch === '.',
+    innerToken: (ch: string): boolean => isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '+' || ch === '-' || ch === 'k' || ch === 'm',
     parse: (string: string): Token => {
-        const value = parseFloat(string)
-        assert(!isNaN(value), `Invalid number: ${string}`)
-        return { type: 'number', value }
+        return { type: 'number', value: parseNumber(string) }
     },
 }
 
