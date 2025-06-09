@@ -266,7 +266,7 @@ def create_shapefile():
 
 
 @permacache(
-    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/get_wikidata_title_and_population"
+    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/get_wikidata_title_and_population",
 )
 def get_wikidata_title_and_population(tag):
     # tag is something like "Q13942981"
@@ -293,7 +293,7 @@ def get_wikidata_title_and_population(tag):
             .get("amount")
         )
         if population is not None:
-            population = int(population.replace("+", "").replace("xsd:integer", ""))
+            population = float(population.replace("+", "").replace("xsd:integer", ""))
     else:
         population = None
     return title, population
@@ -305,50 +305,78 @@ def get_label(entity):
     label = labels.get("en")
     if label is not None:
         return label.get("value")
-    return next(iter(labels.values())).get("value", None)
+    labels = list(labels.values())
+    if not labels:
+        return None
+    return labels[0].get("value", None)
 
 
-def produce_name_based_on_wikidata(candidates):
+def produce_name_based_on_wikidata(candidates_annotated):
     """
     Given a list of candidates, return the one with the highest population.
     If there are multiple candidates with the same population, return the first one.
     """
-    candidates = [tag for metatag, tag, *_ in candidates if metatag == "C"]
+    candidates = [tag for metatag, tag, *_ in candidates_annotated if metatag == "C"]
     if not candidates:
         return None
-    title_pops = [get_wikidata_title_and_population(tag) for tag in candidates]
-    title_pops = [x for x in title_pops if x is not None]
+    title_pops = [(tag, get_wikidata_title_and_population(tag)) for tag in candidates]
+    title_pops = [(tag, *x) for tag, x in title_pops if x is not None]
     if not title_pops:
         return None
-    title_pops = sorted(
-        title_pops, key=lambda x: (x[1] is not None, x[1]), reverse=True
-    )
-    return title_pops[0][0]
+
+    if not any(x[2] is not None for x in title_pops):
+        # if all populations are None, return the first, sorted by the tag (after Q)
+        title_pops = sorted(title_pops, key=lambda x: int(x[0][1:]))
+        return [title_pops[0][0]]
+
+    title_pops = [
+        (tag, title, pop) for tag, title, pop in title_pops if pop is not None
+    ]
+
+    title_pops = sorted(title_pops, key=lambda x: x[2], reverse=True)
+
+    return [title for tag, title, pop in title_pops]
 
 
-zf = zipfile.ZipFile("uc_metadata.zip")
-table = pd.read_csv(zf.open("ucs_data.csv"))
-table = table[["id", "rank", "pop", "core"]]
-code = zf.open("name_candidates.txt").read().decode("latin-1")
-name_candidates = eval(code)
+def load_metadata():
+    with zipfile.ZipFile("uc_metadata.zip") as zf:
+        table = pd.read_csv(zf.open("ucs_data.csv"))
+        table = table[["id", "rank", "pop", "core"]]
+        code = zf.open("name_candidates.txt").read().decode("latin-1")
+        name_candidates = eval(code)
 
-with open("names_full.txt", "r") as f:
-    curated_names = eval(f.read())
+    with open("names_full.txt", "r") as f:
+        curated_names = eval(f.read())
 
-missing = {k: v for k, v in name_candidates.items() if k not in curated_names}
+    return table, name_candidates, curated_names
 
-for k, v in tqdm.tqdm(list(missing.items())):
-    try:
+
+def process_curated_name(curated_names):
+    curated_names = sorted(curated_names, key=lambda x: int(x[2]), reverse=True)
+    curated_names = [x[1] for x in curated_names if x[0] == "P"]
+    return curated_names
+
+
+def main():
+    table, name_candidates, curated_names = load_metadata()
+    names = {}
+    missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
+    for ident in curated_names:
+        names[ident] = process_curated_name(curated_names[ident])
+
+    for k, v in tqdm.tqdm(list(missing().items())):
         res = produce_name_based_on_wikidata(v)
-    except Exception as e:
-        print(f"Error processing {k}: {e}")
-        res = None
+        if res is not None:
+            names[k] = res
+    import IPython
 
-# gn = load_geonames()
+    IPython.embed()
 
-import IPython
 
-IPython.embed()
+main()
+# main()
+# if __name__ == "__main__":
+#     main()
 
 # if __name__ == "__main__":
 #     create_shapefile().to_file("shapefile/taylor_metropolitan_clusters.shp", driver="ESRI Shapefile")
