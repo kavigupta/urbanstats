@@ -6,7 +6,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 
     useEffect(() => {
         const editor = editorRef.current!
-        const newScript = props.script === '' ? '<br>' : props.script
+        const newScript = stringToHtml(props.script)
         if (editor.innerHTML !== newScript) {
             editor.innerHTML = newScript
         }
@@ -15,8 +15,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            // Must sanitize all html tags, including <br>
-            props.setScript(editor.innerHTML.replace(/<.*?>/g, ''))
+            props.setScript(htmlToString(editor.innerHTML))
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
@@ -36,3 +35,28 @@ const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObjec
         />
     )
 })
+
+function htmlToString(html: string): string {
+    const domParser = new DOMParser()
+    const string = html
+        .replaceAll(/<.*?>/g, '')
+        .split('\n')
+        .map(line => domParser.parseFromString(line, 'text/html').documentElement.textContent)
+        .join('\n')
+    console.log({ html, string })
+    return string
+}
+
+function stringToHtml(string: string): string {
+    if (string === '') {
+        return '<br>'
+    }
+    const html = string
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('\'', '&#039;')
+    console.log({ string, html })
+    return html
+}
