@@ -1,4 +1,4 @@
-import React, { ReactNode, RefObject, useEffect, useMemo, useRef } from 'react'
+import React, { ReactNode, RefObject, useEffect, useRef } from 'react'
 import './uss.css'
 
 export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
@@ -25,6 +25,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     return <InnerEditor editorRef={editorRef} />
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
 const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement> }) {
     return (
         <pre
