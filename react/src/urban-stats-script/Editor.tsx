@@ -15,7 +15,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            // Must sanitize all html tags
+            // Must sanitize all html tags, including <br>
             props.setScript(editor.innerHTML.replace(/<.*?>/g, ''))
         }
         editor.addEventListener('input', listener)
