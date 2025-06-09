@@ -5,7 +5,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { execute, InterpretationError } from './interpreter'
+import { execute, InterpretationError, renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError, parseTokens } from './parser'
 import { USSRawValue } from './types-values'
@@ -87,7 +87,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     }, [])
 
     // start at the lowest state
-    const [global, setGlobal] = useState<Result>({ result: 'lexFailure' })
+    const [global, setGlobal] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -145,8 +145,6 @@ function DisplayResult(props: { result: Result }): ReactNode {
     if (props.result.result === 'success') {
         return (
             <div style={{ backgroundColor: colors.hueColors.green }}>
-                Success
-                {' '}
                 {props.result.value?.toString()}
             </div>
         )
@@ -154,9 +152,9 @@ function DisplayResult(props: { result: Result }): ReactNode {
     else {
         return (
             <div style={{ backgroundColor: colors.hueColors.red }}>
-                {props.result.result}
-                {' '}
-                {props.result.globalError}
+                <ul>
+                    {props.result.errors.map((error, i) => <li key={i}>{error}</li>)}
+                </ul>
             </div>
         )
     }
@@ -182,7 +180,7 @@ function escapeStringForHTML(string: string): string {
     return htmlReplacements.reduce((str, [find, replace]) => str.replaceAll(find, replace), string)
 }
 
-type Result = { result: 'success', value: USSRawValue } | { result: 'lexFailure' | 'parseFailure' | 'execFailure', globalError?: string }
+type Result = { result: 'success', value: USSRawValue } | { result: 'failure', errors: string[] }
 
 function stringToHtml(string: string, colors: Colors): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
@@ -304,10 +302,10 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
     let result: Result
 
     if (lexTokens.some(token => token.token.type === 'error')) {
-        result = { result: 'lexFailure' }
+        result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
     }
     else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
-        result = { result: 'parseFailure', globalError: 'No input' }
+        result = { result: 'failure', errors: ['No input'] }
     }
     else {
         const parsed = parseTokens(lexTokens)
@@ -322,7 +320,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
                     shift(parsed.errors, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
                 }
             }
-            result = { result: 'parseFailure' }
+            result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
         }
         else {
             try {
@@ -331,7 +329,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
             }
             catch (e) {
                 if (e instanceof InterpretationError) {
-                    result = { result: 'execFailure', globalError: e.shortMessage }
+                    result = { result: 'failure', errors: [e.message] }
                     for (const pos of ['start', 'end'] as const) {
                         const loc = e.location[pos]
                         const line = lines[loc.lineIdx]
@@ -342,7 +340,7 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
                 }
                 else {
                     console.error('Unknown error while evaluating script', e)
-                    result = { result: 'execFailure', globalError: 'Unknown error' }
+                    result = { result: 'failure', errors: ['Unknown error'] }
                 }
             }
         }
