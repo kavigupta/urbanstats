@@ -193,7 +193,12 @@ function escapeStringForHTML(string: string): string {
 
 type Result = { result: 'success', value: USSRawValue } | { result: 'lexFailure' | 'parseFailure' | 'execFailure', globalError?: string }
 
-const resultPriority = Object.fromEntries(['success', 'execFailure', 'parseFailure', 'lexFailure'].map((result, index) => [result, index])) as Record<Result['result'], number>
+const resultPriority = {
+    success: 0,
+    execFailure: 0,
+    parseFailure: 1,
+    lexFailure: 2,
+} as const
 
 function stringToHtml(string: string, colors: Colors): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
@@ -342,12 +347,13 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
             }
             catch (e) {
                 if (e instanceof InterpretationError) {
-                    result = { result: 'execFailure', globalError: e.message }
+                    result = { result: 'execFailure', globalError: e.shortMessage }
                     for (const pos of ['start', 'end'] as const) {
                         const loc = e.location[pos]
                         const line = lines[loc.lineIdx]
                         const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
                         lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                        shift([e], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
                     }
                 }
                 else {
