@@ -3,3 +3,15 @@
     white-space: pre-wrap;
     font-family: monospace;
 }
+
+.ussEditor .number {
+    color: blue;
+}
+
+.ussEditor .string {
+    color: green;
+}
+
+.ussEditor .error {
+    color: red
+}
