@@ -1,5 +1,10 @@
+"""
+Got the files ucls_* from Taylor via personal communication, as well as names_full.txt and uc_metadata.zip.
+"""
+
 from functools import lru_cache
 import json
+from typing import Counter
 import zipfile
 import PIL.Image
 import glob
@@ -216,42 +221,6 @@ def convert_shape_to_shapefile(lats, lons):
     return shape
 
 
-# @permacache(
-#     "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/load_geonames"
-# )
-# def load_geonames():
-#     with zipfile.ZipFile("geonames/allCountries.zip") as f:
-#         geonames = pd.read_csv(
-#             f.open("allCountries.txt"),
-#             sep="\t",
-#             header=None,
-#             names=[
-#                 "geonameid",
-#                 "name",
-#                 "asciiname",
-#                 "alternatenames",
-#                 "latitude",
-#                 "longitude",
-#                 "feature_class",
-#                 "feature_code",
-#                 "country_code",
-#                 "cc2",
-#                 "admin1_code",
-#                 "admin2_code",
-#                 "admin3_code",
-#                 "admin4_code",
-#                 "population",
-#                 "elevation",
-#                 "dem",
-#                 "timezone",
-#                 "modification_date",
-#             ],
-#         )
-
-#     geonames = geonames[geonames.population > 0]
-#     return geonames.reset_index(drop=True)
-
-
 def create_shapefile():
     shapes = load_shapes_as_points()
     shapes = [convert_shape_to_shapefile(*s) for s in tqdm.tqdm(shapes)]
@@ -327,7 +296,7 @@ def produce_name_based_on_wikidata(candidates_annotated):
     if not any(x[2] is not None for x in title_pops):
         # if all populations are None, return the first, sorted by the tag (after Q)
         title_pops = sorted(title_pops, key=lambda x: int(x[0][1:]))
-        return [title_pops[0][0]]
+        return [title_pops[0][1]]
 
     title_pops = [
         (tag, title, pop) for tag, title, pop in title_pops if pop is not None
@@ -357,8 +326,62 @@ def process_curated_name(curated_names):
     return curated_names
 
 
+def render_coord(coord, precision):
+    """
+    Render a coordinate as a string with the given precision.
+    """
+
+    def render_float(f):
+        return f"{f:.{precision}f}"
+
+    result = []
+    if coord.y < 0:
+        result.append("S")
+        result.append(render_float(-coord.y))
+    else:
+        result.append("N")
+        result.append(render_float(coord.y))
+    if coord.x < 0:
+        result.append("W")
+        result.append(render_float(-coord.x))
+    else:
+        result.append("E")
+        result.append(render_float(coord.x))
+    return "".join(result)
+
+
+def assign_coordinate_names(shp, missing):
+    centroids = {}
+    for ident in tqdm.tqdm(missing, desc="Computing centroids"):
+        centroids[ident] = shp.loc[ident].geometry.centroid
+    precisions = {name: 0 for name in centroids}
+    while True:
+        rendered = {
+            ident: render_coord(coord, precisions[ident])
+            for ident, coord in centroids.items()
+        }
+        count_rendered = Counter(rendered.values())
+        duplicate_names = {name for name, count in count_rendered.items() if count > 1}
+        if not duplicate_names:
+            return rendered
+        for ident in precisions:
+            if rendered[ident] in duplicate_names:
+                precisions[ident] += 1
+
+
+def load_shapefile_with_data(table):
+    shp = create_shapefile()
+    table = table.set_index("rank").loc[shp["rank"]]
+    for k in table:
+        shp[k] = table[k].values
+
+    shp = shp.set_index("id")
+    return shp
+
+
 def main():
     table, name_candidates, curated_names = load_metadata()
+
     names = {}
     missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
     for ident in curated_names:
@@ -367,18 +390,28 @@ def main():
     for k, v in tqdm.tqdm(list(missing().items())):
         res = produce_name_based_on_wikidata(v)
         if res is not None:
+            if re.match("^Q\\d+$", res[0]):
+                raise ValueError(
+                    f"Got a Wikidata tag {res[0]} instead of a name for {k}. This is unexpected."
+                )
             names[k] = res
-    import IPython
 
-    IPython.embed()
+    shp = load_shapefile_with_data(table)
+
+    coordinate_names = {
+        k: [v] for k, v in assign_coordinate_names(shp, name_candidates).items()
+    }
+
+    coordinate_names.update(names)
+
+    shp["names"] = shp.index.map(lambda x: json.dumps(coordinate_names[x]))
+    shp["name"] = shp.index.map(lambda x: "-".join(coordinate_names[x][:3]))
+
+    shp[[x for x in shp if x != "geometry"]].to_csv(
+        "output/taylor_metropolitan_clusters.csv"
+    )
+    shp.to_file("output/taylor_metropolitan_clusters.shp.zip", driver="ESRI Shapefile")
 
 
-main()
-# main()
-# if __name__ == "__main__":
-#     main()
-
-# if __name__ == "__main__":
-#     create_shapefile().to_file("shapefile/taylor_metropolitan_clusters.shp", driver="ESRI Shapefile")
-
-# Type of name entry; IIRC P is Geonames place, G is other Geonames entry, C is Wikidata city, M is Wikidata admin region, and I've prioritized P > G and C > M.
+if __name__ == "__main__":
+    main()
