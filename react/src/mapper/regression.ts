@@ -32,6 +32,7 @@ export class Regression {
         const xfilt = x.filter((_, i) => !isNan[i])
         const yfilt = y.filter((_, i) => !isNan[i])
         const sfgFilt = statistics_for_geography.filter((_, i) => !isNan[i])
+        const w = this.weightByPopulation ? sfgFilt.map(sfg => sfg.stats[this.populationIdx]) : undefined
 
         const awoFilt = x.map(row => [1, ...row])
 
@@ -40,10 +41,8 @@ export class Regression {
         // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
         let ATW = transpose(A)
 
-        if (this.weightByPopulation) {
-            // eslint-disable-next-line no-restricted-syntax -- W is a matrix
-            const W = sfgFilt.map(sfg => sfg.stats[this.populationIdx])
-            ATW = dotMultiply(ATW, W)
+        if (w !== undefined) {
+            ATW = dotMultiply(ATW, w)
         }
 
         const ata = multiply(ATW, A)
@@ -60,19 +59,21 @@ export class Regression {
 
         const preds = multiply(awoFilt, wsCol).map(pred => (pred as number[])[0])
 
+        const residuals = preds.map((pred, i) => y[i][0] - pred)
+
         const result: Record<string, number[]> = {}
         for (let i = 0; i < this.dependentNames.length; i++) {
             if (this.dependentNames[i] === '') {
                 continue
             }
-            result[this.dependentNames[i]] = preds.map(() => weights[i] as number)
+            result[this.dependentNames[i]] = residuals.map(() => weights[i] as number)
         }
         if (this.interceptName !== '') {
-            result[this.interceptName] = preds.map(() => intercept as number)
+            result[this.interceptName] = residuals.map(() => intercept as number)
         }
 
         if (this.residualName !== '') {
-            result[this.residualName] = preds.map((pred, i) => y[i][0] - pred)
+            result[this.residualName] = residuals
         }
 
         return result
