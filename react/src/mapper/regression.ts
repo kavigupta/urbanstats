@@ -14,7 +14,7 @@ export class Regression {
         const independent = this.independentFn.compute(statistics_for_geography, variables)
         const dependent = this.dependentFns.map(fn => fn.compute(statistics_for_geography, variables))
         const w = this.weightByPopulation ? statistics_for_geography.map(sfg => sfg.stats[this.populationIdx]) : undefined
-        const { residuals, weights, intercept } = creation(independent, dependent, w)
+        const { residuals, weights, intercept } = calculateRegression(independent, dependent, w)
 
         const result: Record<string, number[]> = {}
         for (let i = 0; i < this.dependentNames.length; i++) {
@@ -35,7 +35,7 @@ export class Regression {
     }
 }
 
-function creation(independent: number[], dependent: number[][], w: number[] | undefined): {
+function calculateRegression(independent: number[], dependent: number[][], w: number[] | undefined): {
     residuals: number[]
     weights: number[]
     intercept: number
