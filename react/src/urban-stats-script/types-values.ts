@@ -33,7 +33,7 @@ export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { typ
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, USSFunctionArgType>
+    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSRawValue }>
     returnType: USSFunctionReturnType
 }
 
@@ -98,7 +98,7 @@ export function renderType(type: USSType): string {
     if (type.type === 'null') {
         return 'null'
     }
-    return `(${type.posArgs.map(renderArgumentType).join(', ')}; ${Object.entries(type.namedArgs).map(([k, v]) => `${k}: ${renderArgumentType(v)}`).join(', ')}) -> ${renderReturnType(type.returnType)}`
+    return `(${type.posArgs.map(renderArgumentType).join(', ')}; ${Object.entries(type.namedArgs).map(([k, v]) => `${k}: ${renderKwargType(v)}`).join(', ')}) -> ${renderReturnType(type.returnType)}`
 }
 
 export function renderArgumentType(arg: USSFunctionArgType): string {
@@ -106,6 +106,14 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
         return renderType(arg.value)
     }
     return 'any'
+}
+
+export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSRawValue }): string {
+    const type = renderArgumentType(arg.type)
+    if (arg.defaultValue !== undefined) {
+        return `${type} = ${JSON.stringify(arg.defaultValue)}`
+    }
+    return type
 }
 
 function renderReturnType(ret: USSFunctionReturnType): string {

@@ -172,7 +172,7 @@ function locateFunctionAndArguments(
 
     const kwArgsLocated: TypeLocationSuccess[] = []
     for (const [name, value] of kwArgs) {
-        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name], t), { role: `named argument ${name}`, typeDesc: renderArgumentType(fnType.namedArgs[name]) })
+        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name].type, t), { role: `named argument ${name}`, typeDesc: renderArgumentType(fnType.namedArgs[name].type) })
         if (kwArgLocated.type === 'error') {
             return kwArgLocated
         }
