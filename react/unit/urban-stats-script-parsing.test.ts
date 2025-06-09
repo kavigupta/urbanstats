@@ -1,32 +1,32 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { lex } from '../src/urban-stats-script/lexer'
+import { lex, newLocation } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, toSExp } from '../src/urban-stats-script/parser'
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex('1 23 3.3'), [
-        { token: { type: 'number', value: 1 }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } },
-        { token: { type: 'number', value: 23 }, location: { start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 4 } } },
-        { token: { type: 'number', value: 3.3 }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 8 } } },
-        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 8 }, end: { lineIdx: 0, colIdx: 8 } } },
+        { token: { type: 'number', value: 1 }, location: newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } }) },
+        { token: { type: 'number', value: 23 }, location: newLocation({ start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 4 } }) },
+        { token: { type: 'number', value: 3.3 }, location: newLocation({ start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 8 } }) },
+        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { lineIdx: 0, colIdx: 8 }, end: { lineIdx: 0, colIdx: 8 } }) },
     ])
     assert.deepStrictEqual(lex('"abc"'), [
-        { token: { type: 'string', value: 'abc' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 5 } } },
-        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 5 } } },
+        { token: { type: 'string', value: 'abc' }, location: newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 5 } }) },
+        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 5 } }) },
     ])
     assert.deepStrictEqual(lex('"abc\\""'), [
-        { token: { type: 'string', value: 'abc"' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 7 } } },
-        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 7 }, end: { lineIdx: 0, colIdx: 7 } } },
+        { token: { type: 'string', value: 'abc"' }, location: newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 7 } }) },
+        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { lineIdx: 0, colIdx: 7 }, end: { lineIdx: 0, colIdx: 7 } }) },
     ])
     assert.deepStrictEqual(lex('f(2, "abc \\" 3.5")'), [
-        { token: { type: 'identifier', value: 'f' }, location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } },
-        { token: { type: 'bracket', value: '(' }, location: { start: { lineIdx: 0, colIdx: 1 }, end: { lineIdx: 0, colIdx: 2 } } },
-        { token: { type: 'number', value: 2 }, location: { start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 3 } } },
-        { token: { type: 'operator', value: ',' }, location: { start: { lineIdx: 0, colIdx: 3 }, end: { lineIdx: 0, colIdx: 4 } } },
-        { token: { type: 'string', value: 'abc " 3.5' }, location: { start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 17 } } },
-        { token: { type: 'bracket', value: ')' }, location: { start: { lineIdx: 0, colIdx: 17 }, end: { lineIdx: 0, colIdx: 18 } } },
-        { token: { type: 'operator', value: 'EOL' }, location: { start: { lineIdx: 0, colIdx: 18 }, end: { lineIdx: 0, colIdx: 18 } } },
+        { token: { type: 'identifier', value: 'f' }, location: newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } }) },
+        { token: { type: 'bracket', value: '(' }, location: newLocation({ start: { lineIdx: 0, colIdx: 1 }, end: { lineIdx: 0, colIdx: 2 } }) },
+        { token: { type: 'number', value: 2 }, location: newLocation({ start: { lineIdx: 0, colIdx: 2 }, end: { lineIdx: 0, colIdx: 3 } }) },
+        { token: { type: 'operator', value: ',' }, location: newLocation({ start: { lineIdx: 0, colIdx: 3 }, end: { lineIdx: 0, colIdx: 4 } }) },
+        { token: { type: 'string', value: 'abc " 3.5' }, location: newLocation({ start: { lineIdx: 0, colIdx: 5 }, end: { lineIdx: 0, colIdx: 17 } }) },
+        { token: { type: 'bracket', value: ')' }, location: newLocation({ start: { lineIdx: 0, colIdx: 17 }, end: { lineIdx: 0, colIdx: 18 } }) },
+        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { lineIdx: 0, colIdx: 18 }, end: { lineIdx: 0, colIdx: 18 } }) },
     ])
 })
 
@@ -163,8 +163,8 @@ void test('basic parsing', (): void => {
         parse('x = 2'),
         {
             type: 'assignment',
-            lhs: { type: 'identifier', name: { node: 'x', location: { start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } } } },
-            value: { type: 'constant', value: { node: 2, location: { start: { lineIdx: 0, colIdx: 4 }, end: { lineIdx: 0, colIdx: 5 } } } },
+            lhs: { type: 'identifier', name: { node: 'x', location: newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 1 } }) } },
+            value: { type: 'constant', value: { node: 2, location: newLocation({ start: { lineIdx: 0, colIdx: 4 }, end: { lineIdx: 0, colIdx: 5 } }) } },
         },
     )
     assert.deepStrictEqual(
@@ -343,7 +343,7 @@ void test('parse errors in if', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('if (x) { y = 2 '),
-        '(errors (error "Expected } after if block" at 0:15))',
+        '(errors (error "Expected } after if block" at 0:13))',
     )
     assert.deepStrictEqual(
         parseAndRender('(if (x) { y = 2 )'),
@@ -355,7 +355,7 @@ void test('parse errors in if', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('if (x) { y = 2 } else { x = 3'),
-        '(errors (error "Expected } after else block" at 0:29))',
+        '(errors (error "Expected } after else block" at 0:28))',
     )
 })
 
@@ -378,7 +378,7 @@ void test('parse errors (other)', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('x = 2 +'),
-        '(errors (error "Unexpected end of input" at 0:7))',
+        '(errors (error "Unexpected end of input" at 0:6))',
     )
     assert.deepStrictEqual(
         parseAndRender('x = (2'),
@@ -386,15 +386,15 @@ void test('parse errors (other)', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('f('),
-        '(errors (error "Unexpected end of input" at 0:2))',
+        '(errors (error "Unexpected end of input" at 0:1))',
     )
     assert.deepStrictEqual(
         parseAndRender('f(2,'),
-        '(errors (error "Unexpected end of input" at 0:4))',
+        '(errors (error "Unexpected end of input" at 0:3))',
     )
     assert.deepStrictEqual(
         parseAndRender('f(a=3 *'),
-        '(errors (error "Unexpected end of input" at 0:7))',
+        '(errors (error "Unexpected end of input" at 0:6))',
     )
     assert.deepStrictEqual(
         parseAndRender('f(a*2=3)'),
