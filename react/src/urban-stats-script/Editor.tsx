@@ -7,8 +7,8 @@ import { DefaultMap } from '../utils/DefaultMap'
 
 import { execute, InterpretationError } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
-import { ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
-import { USSRawValue, USSValue } from './types-values'
+import { ParseError, parseTokens } from './parser'
+import { USSRawValue } from './types-values'
 
 export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
     const colors = useColors()
@@ -29,7 +29,6 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 
                 // Traverse up the tree, counting text content of previous siblings along the way
                 function positionInEditor(node: Node, offset: number): number {
-                    console.log(node.nodeName, JSON.stringify(node.textContent), offset)
                     while (node !== editor) {
                         let sibling = node.previousSibling
                         while (sibling !== null) {
@@ -38,7 +37,6 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                         }
                         node = node.parentNode!
                     }
-                    console.log(offset)
                     return offset
                 }
 
@@ -64,7 +62,6 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                     node = node.nextSibling
                 }
             }
-            console.log(position, node.nodeName, JSON.stringify(node.textContent), position - offset)
             return [node, position - offset]
         }
 
@@ -102,24 +99,19 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                 setRange(range)
             }
         }
-        setGlobal((existing) => {
-            if (resultPriority[result.result] <= resultPriority[existing.result]) {
-                return result
-            }
-            else {
-                return existing
-            }
-        })
+        setGlobal(result)
     }, [props.script, colors])
+
+    const { setScript } = props
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            props.setScript(htmlToString(editor.innerHTML))
+            setScript(htmlToString(editor.innerHTML))
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [props.setScript])
+    }, [setScript])
 
     return (
         <>
@@ -175,7 +167,6 @@ function htmlToString(html: string): string {
     const string
         = domParser.parseFromString(html
             .replaceAll(/<.*?>/g, ''), 'text/html').documentElement.textContent!
-    console.log({ html, string })
     return string
 }
 
@@ -192,13 +183,6 @@ function escapeStringForHTML(string: string): string {
 }
 
 type Result = { result: 'success', value: USSRawValue } | { result: 'lexFailure' | 'parseFailure' | 'execFailure', globalError?: string }
-
-const resultPriority = {
-    success: 0,
-    execFailure: 0,
-    parseFailure: 1,
-    lexFailure: 2,
-} as const
 
 function stringToHtml(string: string, colors: Colors): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
@@ -366,6 +350,5 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
 
     const html = lines.join('\n')
 
-    console.log({ string, lines, html, lexResults: lexTokens })
     return { html, result }
 }
