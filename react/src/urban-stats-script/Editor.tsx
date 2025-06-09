@@ -4,7 +4,8 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { AnnotatedToken, lex } from './lexer'
+import { AnnotatedToken, lex, LocInfo } from './lexer'
+import { ParseError, parseTokens } from './parser'
 
 export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
     const colors = useColors()
@@ -23,19 +24,21 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                     return { start: 0, end: 0 }
                 }
 
+                // Traverse up the tree, counting text content of previous siblings along the way
                 function positionInEditor(node: Node, offset: number): number {
-                    let parentInEditor = node
-                    while (parentInEditor.parentNode !== editor) {
-                        parentInEditor = parentInEditor.parentNode!
+                    console.log(node.nodeName, JSON.stringify(node.textContent), offset)
+                    while (node !== editor) {
+                        let sibling = node.previousSibling
+                        while (sibling !== null) {
+                            offset += sibling.textContent?.length ?? 0
+                            sibling = sibling.previousSibling
+                        }
+                        node = node.parentNode!
                     }
-                    let result = offset
-                    let sibling = parentInEditor.previousSibling
-                    while (sibling !== null) {
-                        result += sibling.textContent?.length ?? 0
-                        sibling = sibling.previousSibling
-                    }
-                    return result
+                    console.log(offset)
+                    return offset
                 }
+
                 return { start: positionInEditor(range.startContainer, range.startOffset), end: positionInEditor(range.endContainer, range.endOffset) }
             }
         }
@@ -46,19 +49,20 @@ export function Editor(props: { script: string, setScript: (script: string) => v
     function setRange({ start, end }: { start: number, end: number }): void {
         const editor = editorRef.current!
 
+        // Inverse of `positionInEditor`
+        // Traverse down the tree, always keeping the text content behind us lte position
         function getContainerOffset(position: number): [Node, number] {
-            let total = 0
-            for (const span of Array.from(editor.childNodes)) {
-                const nodeLength = span.textContent?.length ?? 0
-                if (total + nodeLength >= position) {
-                    return [
-                        span.childNodes[0] ?? span, // the text node of the span
-                        position - total,
-                    ]
+            let node: Node = editor
+            let offset = 0
+            while (node.childNodes.length > 0) {
+                node = node.childNodes.item(0)
+                while (offset + (node.textContent?.length ?? 0) < position && node.nextSibling !== null) {
+                    offset += (node.textContent?.length ?? 0)
+                    node = node.nextSibling
                 }
-                total += nodeLength
             }
-            throw new Error()
+            console.log(position, node.nodeName, JSON.stringify(node.textContent), position - offset)
+            return [node, position - offset]
         }
 
         const selection = window.getSelection()!
@@ -89,7 +93,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
             const range = getRange()
             editor.innerHTML = newScript
             if (range !== undefined) {
-                setRange(range)
+                setRange(range) // TODO: mid token return doesn't work
             }
         }
     }, [props.script, colors])
@@ -103,21 +107,24 @@ export function Editor(props: { script: string, setScript: (script: string) => v
         return () => { editor.removeEventListener('input', listener) }
     }, [props.setScript])
 
-    return <InnerEditor editorRef={editorRef} />
+    return <InnerEditor editorRef={editorRef} caretColor={colors.textMain} />
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
-const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement> }) {
+const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, caretColor: string }) {
     return (
         <pre
             style={{
                 padding: '10px',
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'monospace',
+                caretColor: props.caretColor,
+                lineHeight: '175%',
             }}
             ref={props.editorRef}
             contentEditable="plaintext-only"
             dangerouslySetInnerHTML={{ __html: '' }}
+            spellCheck="false"
         />
     )
 })
@@ -131,15 +138,27 @@ function htmlToString(html: string): string {
     return string
 }
 
+const htmlReplacements: [string, string][] = [
+    ['&', '&amp;'],
+    ['<', '&lt;'],
+    ['>', '&gt;'],
+    ['"', '&quot;'],
+    ['\'', '&#039;'],
+]
+
+function escapeStringForHTML(string: string): string {
+    return htmlReplacements.reduce((str, [find, replace]) => str.replaceAll(find, replace), string)
+}
+
 function stringToHtml(string: string, colors: Colors): string {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
 
-    const lexResults = lex(string)
+    const lexTokens = lex(string)
 
-    function shiftLex(line: number, offset: number, delta: number, kind: 'replace' | 'insertBefore'): void {
-        for (const token of lexResults) {
+    function shift(tokens: { location: LocInfo }[], line: number, offset: number, delta: number, kind: 'replace' | 'insertBefore'): void {
+        for (const token of tokens) {
             for (const pos of ['start', 'end'] as const) {
                 if (token.location[pos].lineIdx === line) {
                     if (
@@ -160,23 +179,22 @@ function stringToHtml(string: string, colors: Colors): string {
         for (let line = 0; line < lines.length; line++) {
             let accumulatedDelta = 0
             lines[line] = lines[line].replaceAll(find, (_, offset: number) => {
-                shiftLex(line, offset + accumulatedDelta, delta, 'replace')
+                shift(lexTokens, line, offset + accumulatedDelta, delta, 'replace')
                 accumulatedDelta += delta
                 return replace
             })
         }
     }
 
-    replaceAll('&', '&amp;')
-    replaceAll('<', '&lt;')
-    replaceAll('>', '&gt;')
-    replaceAll('"', '&quot;')
-    replaceAll('\'', '&#039;')
+    for (const [find, replace] of htmlReplacements) {
+        replaceAll(find, replace)
+    }
 
     const brackets = new DefaultMap<string, number>(() => 0)
 
-    function span({ token }: AnnotatedToken): string {
-        let color = colors.textMain
+    function span(token: AnnotatedToken['token'] | ParseError): string {
+        const style: Record<string, string> = {}
+        let title: string | undefined
 
         switch (token.type) {
             case 'bracket':
@@ -196,7 +214,7 @@ function stringToHtml(string: string, colors: Colors): string {
                 if (token.value === '(' || token.value === '[' || token.value === '{') {
                     const level = Array.from(brackets.values()).reduce((sum, next) => sum + next, 0)
                     brackets.set(token.value, brackets.get(token.value) + 1)
-                    color = levelColor(level)
+                    style.color = levelColor(level)
                 }
                 else {
                     const openEquivalent = ({
@@ -205,44 +223,66 @@ function stringToHtml(string: string, colors: Colors): string {
                         '}': '{',
                     } as const)[token.value]
                     if (brackets.get(openEquivalent) === 0) {
-                        color = colors.hueColors.red
+                        style.color = colors.hueColors.red
                     }
                     else {
                         brackets.set(openEquivalent, brackets.get(openEquivalent) - 1)
                         const level = Array.from(brackets.values()).reduce((sum, next) => sum + next, 0)
-                        color = levelColor(level)
+                        style.color = levelColor(level)
                     }
                 }
                 break
             case 'number':
-                color = colors.hueColors.blue
+                style.color = colors.hueColors.blue
                 break
             case 'string':
-                color = colors.hueColors.green
+                style.color = colors.hueColors.green
                 break
             case 'error':
-                color = colors.hueColors.red
+                // Safari doesn't support the shorthand 🙄
+                style['text-decoration-color'] = colors.hueColors.red
+                style['text-decoration-style'] = 'wavy'
+                style['text-decoration-line'] = 'underline'
+
+                title = token.value
+                break
+            case 'operator':
+                style.color = colors.hueColors.orange
                 break
         }
-        return `<span style="color:${color};">`
+        return `<span style="${Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')}" ${title !== undefined ? `title="${escapeStringForHTML(title)}"` : ''}>`
     }
 
     // Insert lex spans
-    for (const token of lexResults) {
+    for (const token of lexTokens) {
         if (token.token.type === 'operator' && token.token.value === 'EOL') {
             continue
         }
         for (const pos of ['start', 'end'] as const) {
             const loc = token.location[pos]
             const line = lines[loc.lineIdx]
-            const tag = pos === 'start' ? span(token) : `</span>`
+            const tag = pos === 'start' ? span(token.token) : `</span>`
             lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
-            shiftLex(loc.lineIdx, loc.colIdx, tag.length, 'insertBefore')
+            shift(lexTokens, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+        }
+    }
+
+    const parsed = parseTokens(lexTokens)
+
+    if (parsed.type === 'error') {
+        for (const error of parsed.errors) {
+            for (const pos of ['start', 'end'] as const) {
+                const loc = error.location[pos]
+                const line = lines[loc.lineIdx]
+                const tag = pos === 'start' ? span(error) : `</span>`
+                lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                shift(parsed.errors, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+            }
         }
     }
 
     const html = lines.join('\n')
 
-    console.log({ string, lines, html, lexResults })
+    console.log({ string, lines, html, lexResults: lexTokens })
     return html
 }

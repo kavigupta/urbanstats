@@ -129,7 +129,7 @@ void test('various lexes', (): void => {
 function parseAndRender(input: string): string {
     const res = parse(input)
     if (res.type === 'error') {
-        const renderedErrors = res.errors.map(err => `(error ${JSON.stringify(err.message)} at ${err.location.start.lineIdx}:${err.location.start.colIdx})`)
+        const renderedErrors = res.errors.map(err => `(error ${JSON.stringify(err.value)} at ${err.location.start.lineIdx}:${err.location.start.colIdx})`)
         return `(errors ${renderedErrors.join(' ')})`
     }
     return toSExp(res)
@@ -445,7 +445,7 @@ void test('vector literal', (): void => {
 function ids(code: string): Set<string> {
     const res = parse(code)
     if (res.type === 'error') {
-        throw new Error(`Parsing error: ${res.errors.map(err => err.message).join(', ')}`)
+        throw new Error(`Parsing error: ${res.errors.map(err => err.value).join(', ')}`)
     }
     return allIdentifiers(res)
 }
