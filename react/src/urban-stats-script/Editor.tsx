@@ -1,9 +1,14 @@
 import React, { ReactNode, RefObject, useEffect, useRef } from 'react'
 
-import './uss.css'
-import { lex } from './lexer'
+import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
+import { DefaultMap } from '../utils/DefaultMap'
+
+import { AnnotatedToken, lex } from './lexer'
 
 export function Editor(props: { script: string, setScript: (script: string) => void }): ReactNode {
+    const colors = useColors()
+
     const editorRef = useRef<HTMLPreElement>(null)
 
     const rangeRef = useRef<{ start: number, end: number } | undefined>()
@@ -79,7 +84,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 
     useEffect(() => {
         const editor = editorRef.current!
-        const newScript = stringToHtml(props.script)
+        const newScript = stringToHtml(props.script, colors)
         if (editor.innerHTML !== newScript) {
             const range = getRange()
             editor.innerHTML = newScript
@@ -87,7 +92,7 @@ export function Editor(props: { script: string, setScript: (script: string) => v
                 setRange(range)
             }
         }
-    }, [props.script])
+    }, [props.script, colors])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -105,7 +110,11 @@ export function Editor(props: { script: string, setScript: (script: string) => v
 const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement> }) {
     return (
         <pre
-            className="ussEditor"
+            style={{
+                padding: '10px',
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'monospace',
+            }}
             ref={props.editorRef}
             contentEditable="plaintext-only"
             dangerouslySetInnerHTML={{ __html: '' }}
@@ -115,16 +124,14 @@ const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObjec
 
 function htmlToString(html: string): string {
     const domParser = new DOMParser()
-    const string = html
-        .replaceAll(/<.*?>/g, '')
-        .split('\n')
-        .map(line => domParser.parseFromString(line, 'text/html').documentElement.textContent)
-        .join('\n')
+    const string
+        = domParser.parseFromString(html
+            .replaceAll(/<.*?>/g, ''), 'text/html').documentElement.textContent!
     console.log({ html, string })
     return string
 }
 
-function stringToHtml(string: string): string {
+function stringToHtml(string: string, colors: Colors): string {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -166,6 +173,60 @@ function stringToHtml(string: string): string {
     replaceAll('"', '&quot;')
     replaceAll('\'', '&#039;')
 
+    const brackets = new DefaultMap<string, number>(() => 0)
+
+    function span({ token }: AnnotatedToken): string {
+        let color = colors.textMain
+
+        switch (token.type) {
+            case 'bracket':
+                function levelColor(level: number): string {
+                    switch (level % 3) {
+                        case 0:
+                            return colors.hueColors.yellow
+                        case 1:
+                            return colors.hueColors.pink
+                        case 2:
+                            return colors.hueColors.blue
+                        default:
+                            throw Error()
+                    }
+                }
+
+                if (token.value === '(' || token.value === '[' || token.value === '{') {
+                    const level = Array.from(brackets.values()).reduce((sum, next) => sum + next, 0)
+                    brackets.set(token.value, brackets.get(token.value) + 1)
+                    color = levelColor(level)
+                }
+                else {
+                    const openEquivalent = ({
+                        ')': '(',
+                        ']': '[',
+                        '}': '{',
+                    } as const)[token.value]
+                    if (brackets.get(openEquivalent) === 0) {
+                        color = colors.hueColors.red
+                    }
+                    else {
+                        brackets.set(openEquivalent, brackets.get(openEquivalent) - 1)
+                        const level = Array.from(brackets.values()).reduce((sum, next) => sum + next, 0)
+                        color = levelColor(level)
+                    }
+                }
+                break
+            case 'number':
+                color = colors.hueColors.blue
+                break
+            case 'string':
+                color = colors.hueColors.green
+                break
+            case 'error':
+                color = colors.hueColors.red
+                break
+        }
+        return `<span style="color:${color};">`
+    }
+
     // Insert lex spans
     for (const token of lexResults) {
         if (token.token.type === 'operator' && token.token.value === 'EOL') {
@@ -174,7 +235,7 @@ function stringToHtml(string: string): string {
         for (const pos of ['start', 'end'] as const) {
             const loc = token.location[pos]
             const line = lines[loc.lineIdx]
-            const tag = pos === 'start' ? `<span class="${token.token.type}">` : `</span>`
+            const tag = pos === 'start' ? span(token) : `</span>`
             lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
             shiftLex(loc.lineIdx, loc.colIdx, tag.length, 'insertBefore')
         }
