@@ -153,6 +153,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+    z.object({ kind: z.literal('editor') }),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -179,6 +180,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
+    | { kind: 'editor' }
     | {
         kind: 'error'
         error: unknown
@@ -216,6 +218,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/editor.html':
+            return { kind: 'editor' }
         default:
             throw new Error('404 not found')
     }
@@ -316,6 +320,10 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
             }
+            break
+        case 'editor':
+            pathname = '/editor.html'
+            searchParams = {}
             break
         case 'initialLoad':
         case 'error':
@@ -497,6 +505,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
         case 'index':
         case 'about':
+        case 'editor':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
 
         case 'dataCredit':
@@ -678,6 +687,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.statname
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'editor':
+            return 'Editor'
         case 'error':
             return 'Error'
     }
