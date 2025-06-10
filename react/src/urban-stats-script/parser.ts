@@ -94,6 +94,17 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
     /* c8 ignore stop */
 }
 
+export function locationOfLastExpression(node: UrbanStatsAST): LocInfo {
+    switch (node.type) {
+        case 'assignment':
+            return locationOf(node.value)
+        case 'statements':
+            return locationOfLastExpression(node.result[node.result.length - 1])
+        default:
+            return locationOf(node)
+    }
+}
+
 export function toSExp(node: UrbanStatsAST): string {
     /**
      * For testing purposes, we convert the AST to a simple S-expression format.

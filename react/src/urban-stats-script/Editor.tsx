@@ -1,18 +1,30 @@
 import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
-import { emptyContext } from '../../unit/urban-stats-script-utils'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { DefaultMap } from '../utils/DefaultMap'
 
-import { execute, InterpretationError, renderLocInfo } from './interpreter'
+import { InterpretationError, renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
-import { ParseError, parseTokens } from './parser'
-import { USSRawValue } from './types-values'
+import { locationOfLastExpression, ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
+import { USSRawValue, USSValue } from './types-values'
 
 interface Range { start: number, end: number }
 
-export function Editor({ script, setScript }: { script: string, setScript: (newScript: string) => void }): ReactNode {
+type Execute = (expr: UrbanStatsASTStatement) => USSValue
+
+export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
+
+export function Editor(
+    { script, setScript, execute, autocomplete = [], checkValue = () => ({ ok: true }) }:
+    {
+        script: string
+        setScript: (newScript: string) => void
+        execute: Execute
+        autocomplete?: string[]
+        checkValue?: ValueChecker
+    },
+): ReactNode {
     const colors = useColors()
 
     const editorRef = useRef<HTMLPreElement>(null)
@@ -92,7 +104,7 @@ export function Editor({ script, setScript }: { script: string, setScript: (newS
 
     useEffect(() => {
         const editor = editorRef.current!
-        const { html, result: newResult } = stringToHtml(script, colors)
+        const { html, result: newResult } = stringToHtml(script, colors, execute, checkValue)
         if (editor.innerHTML !== html) {
             const range = getRange()
             editor.innerHTML = html
@@ -101,7 +113,7 @@ export function Editor({ script, setScript }: { script: string, setScript: (newS
             }
         }
         setResult(newResult)
-    }, [script, colors])
+    }, [script, colors, execute, checkValue])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -116,7 +128,7 @@ export function Editor({ script, setScript }: { script: string, setScript: (newS
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
             function editScript(newScript: string, newRange: Range): void {
-                const { html, result: newResult } = stringToHtml(newScript, colors)
+                const { html, result: newResult } = stringToHtml(newScript, colors, execute, checkValue)
                 setResult(newResult)
                 editor.innerHTML = html
                 setRange(newRange)
@@ -146,7 +158,7 @@ export function Editor({ script, setScript }: { script: string, setScript: (newS
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, colors, setScript])
+    }, [script, colors, setScript, execute, checkValue])
 
     return (
         <>
@@ -226,7 +238,7 @@ function escapeStringForHTML(string: string): string {
 
 type Result = { result: 'success', value: USSRawValue } | { result: 'failure', errors: string[] }
 
-function stringToHtml(string: string, colors: Colors): { html: string, result: Result } {
+function stringToHtml(string: string, colors: Colors, execute: Execute, checkValue: ValueChecker): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -369,7 +381,11 @@ function stringToHtml(string: string, colors: Colors): { html: string, result: R
         }
         else {
             try {
-                const executed = execute(parsed, emptyContext())
+                const executed = execute(parsed)
+                const checkResult = checkValue(executed)
+                if (!checkResult.ok) {
+                    throw new InterpretationError(checkResult.problem, locationOfLastExpression(parsed))
+                }
                 result = { result: 'success', value: executed.value }
             }
             catch (e) {

@@ -1,11 +1,29 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useCallback, useState } from 'react'
 
+import { emptyContext } from '../../unit/urban-stats-script-utils'
 import { PageTemplate } from '../page_template/template'
 
-import { Editor } from './Editor'
+import { Editor, ValueChecker } from './Editor'
+import { execute } from './interpreter'
+import { UrbanStatsASTStatement } from './parser'
+import { renderType, USSValue } from './types-values'
 
 export function EditorPanel(): ReactNode {
     const [script, setScript] = useState(localStorage.getItem('editor-code') ?? '')
+
+    const exec = useCallback((expr: UrbanStatsASTStatement) => {
+        const value = execute(expr, emptyContext())
+        return value
+    }, [])
+
+    const checkValue = useCallback<ValueChecker>((result: USSValue) => {
+        if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
+            return { ok: false, problem: 'expression did not return a vector of numbers or booleans' }
+        }
+        else {
+            return { ok: true }
+        }
+    }, [])
 
     return (
         <PageTemplate>
@@ -15,6 +33,8 @@ export function EditorPanel(): ReactNode {
                     setScript(newScript)
                     localStorage.setItem('editor-code', newScript)
                 }}
+                execute={exec}
+                checkValue={checkValue}
             />
         </PageTemplate>
     )
