@@ -125,7 +125,7 @@ function regression(numRegressionDependentsMax: number): USSValue {
                 dependent,
                 independents,
                 w ?? undefined,
-                namedArgs.noIntercept,
+                namedArgs.noIntercept as boolean,
             )
             assert(weights.length === indices.length, `Expected ${indices.length} weights, got ${weights.length}`)
 
