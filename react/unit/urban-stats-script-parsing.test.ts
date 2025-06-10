@@ -109,6 +109,8 @@ void test('various lexes', (): void => {
         ')',
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('x.y'), ['x', '.', 'y', ['EOL', '']])
+    assert.deepStrictEqual(shortFormLex('2+3'), [2, '+', 3, ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('$'), [
         ['Invalid operator: $', '$'],
         ['EOL', ''],
@@ -139,10 +141,8 @@ void test('various lexes', (): void => {
         ['EOL', ''],
     ])
     assert.deepStrictEqual(shortFormLex('2+'), [
-        [
-            'Invalid number format: 2+',
-            '2+',
-        ],
+        2,
+        '+',
         [
             'EOL',
             '',
@@ -506,5 +506,9 @@ void test('collect identifiers', (): void => {
     assert.deepStrictEqual(
         ids('if (x > 2) { y = 3; z = 4 } else { if ([u].v) { a = -t } }'),
         new Set(['x', 'y', 'z', 'u', 'a', 't']),
+    )
+    assert.deepStrictEqual(
+        ids('regression(x1=x1+0, y=y)'),
+        new Set(['x1', 'y', 'regression']),
     )
 })
