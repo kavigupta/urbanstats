@@ -862,6 +862,7 @@ void test('constants', (): void => {
 })
 
 void test('regression', (): void => {
+    // to help generate these, see ./regression.py
     assert.deepStrictEqual(
         renderType(regressionResultType(3)),
         '{residuals: [number], m1: number, m2: number, m3: number, b: number, r2: number}',
