@@ -81,18 +81,6 @@ export function parseNumber(input: string): number | undefined {
     return
 }
 
-const numberLexer: GenericLexer = {
-    firstToken: isDigit,
-    innerToken: (ch: string): boolean => isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '+' || ch === '-' || ch === 'k' || ch === 'm',
-    parse: (string: string): Token => {
-        const number = parseNumber(string)
-        if (number === undefined) {
-            return { type: 'error', value: `Invalid number format: ${string}` }
-        }
-        return { type: 'number', value: number }
-    },
-}
-
 const identifierLexer: GenericLexer = {
     firstToken: isAlpha,
     innerToken: (ch: string): boolean => isAlpha(ch) || isDigit(ch),
@@ -133,7 +121,15 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             idx++
             continue
         }
-        for (const lexer of [numberLexer, identifierLexer, operatorLexer]) {
+        if (isDigit(char)) {
+            let token
+            [idx, token] = lexNumber(input, idx, lineNo)
+            if (token !== undefined) {
+                tokens.push(token)
+                continue
+            }
+        }
+        for (const lexer of [identifierLexer, operatorLexer]) {
             let token
             [idx, token] = lexGeneric(input, idx, lineNo, lexer)
             if (token !== undefined) {
@@ -238,4 +234,25 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         }),
     }
     return [idx, token]
+}
+
+function lexNumber(input: string, idx: number, lineNo: number): [number, AnnotatedToken | undefined] {
+    const numberFormat = /^\d+(\.\d+)?([eE][+-]?\d+|k|m)?/i
+    const match = numberFormat.exec(input.slice(idx))
+    if (!match) {
+        return [idx, undefined]
+    }
+    const numberStr = match[0]
+    const number = parseNumber(numberStr)
+    if (number === undefined) {
+        return [idx + numberStr.length, { token: { type: 'error', value: `Invalid number format: ${numberStr}` }, location: newLocation({ start: { lineIdx: lineNo, colIdx: idx }, end: { lineIdx: lineNo, colIdx: idx + numberStr.length } }) }]
+    }
+    const token: AnnotatedToken = {
+        token: { type: 'number', value: number },
+        location: newLocation({
+            start: { lineIdx: lineNo, colIdx: idx },
+            end: { lineIdx: lineNo, colIdx: idx + numberStr.length },
+        }),
+    }
+    return [idx + numberStr.length, token]
 }

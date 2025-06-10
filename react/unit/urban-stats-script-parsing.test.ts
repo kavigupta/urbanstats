@@ -109,6 +109,8 @@ void test('various lexes', (): void => {
         ')',
         ['EOL', ''],
     ])
+    assert.deepStrictEqual(shortFormLex('x.y'), ['x', '.', 'y', ['EOL', '']])
+    assert.deepStrictEqual(shortFormLex('2+3'), [2, '+', 3, ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('$'), [
         ['Invalid operator: $', '$'],
         ['EOL', ''],
@@ -139,10 +141,8 @@ void test('various lexes', (): void => {
         ['EOL', ''],
     ])
     assert.deepStrictEqual(shortFormLex('2+'), [
-        [
-            'Invalid number format: 2+',
-            '2+',
-        ],
+        2,
+        '+',
         [
             'EOL',
             '',
