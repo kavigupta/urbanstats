@@ -115,14 +115,16 @@ export const expressionOperatorMap = new Map<string, Operator>([
     ['*', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]) }],
     ['/', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]) }],
     // AS
-    ['+', { precedence: 800,
+    ['+', {
+        precedence: 800,
         unary: unaryOperator([{ type: 'number', fn: x => x }]),
         binary: binaryOperator([
             numericBinaryOperation((a, b) => a + b),
             { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
         ]),
     }],
-    ['-', { precedence: 800,
+    ['-', {
+        precedence: 800,
         unary: unaryOperator([{ type: 'number', fn: x => -(x as number) }]),
         binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
     }],
@@ -160,9 +162,20 @@ interface SingleLocation {
     colIdx: number
 }
 
-export interface LocInfo {
+export interface BaseLocInfo {
     start: SingleLocation
     end: SingleLocation
+}
+
+export interface LocInfo extends BaseLocInfo {
+    shifted: BaseLocInfo
+}
+
+export function newLocation(loc: BaseLocInfo): LocInfo {
+    return {
+        ...loc,
+        shifted: { start: { ...loc.start }, end: { ...loc.end } },
+    }
 }
 
 export interface AnnotatedToken {
@@ -185,27 +198,41 @@ function isAlpha(ch: string): boolean {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
-export function parseNumber(input: string): number {
+export function parseNumber(input: string): number | undefined {
     if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
         const value = parseFloat(input)
-        assert(!isNaN(value), `Invalid number: ${input}`)
+        if (isNaN(value)) {
+            return
+        }
         return value
     }
     if (input.endsWith('k')) {
-        return parseNumber(input.slice(0, -1)) * 1000
+        const component = parseNumber(input.slice(0, -1))
+        if (component === undefined) {
+            return
+        }
+        return component * 1000
     }
     if (input.endsWith('m')) {
-        return parseNumber(input.slice(0, -1)) * 1000000
+        const component = parseNumber(input.slice(0, -1))
+        if (component === undefined) {
+            return
+        }
+        return component * 1000000
     }
-    throw new Error(`Invalid number format: ${input}`)
+    return
 }
 
 const numberLexer: GenericLexer = {
     firstToken: isDigit,
     innerToken: (ch: string): boolean => isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '+' || ch === '-' || ch === 'k' || ch === 'm',
     parse: (string: string): Token => {
-        return { type: 'number', value: parseNumber(string) }
+        const number = parseNumber(string)
+        if (number === undefined) {
+            return { type: 'error', value: `Invalid number format: ${string}` }
+        }
+        return { type: 'number', value: number }
     },
 }
 
@@ -240,10 +267,10 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         if (char === '(' || char === ')' || char === '{' || char === '}' || char === '[' || char === ']') {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
-                location: {
+                location: newLocation({
                     start: { lineIdx: lineNo, colIdx: idx },
                     end: { lineIdx: lineNo, colIdx: idx + 1 },
-                },
+                }),
             }
             tokens.push(token)
             idx++
@@ -265,10 +292,10 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
         }
         tokens.push({
             token: { type: 'error', value: `Unexpected character: ${char}` },
-            location: {
+            location: newLocation({
                 start: { lineIdx: lineNo, colIdx: idx },
                 end: { lineIdx: lineNo, colIdx: idx + 1 },
-            },
+            }),
         })
         idx++
     }
@@ -284,10 +311,10 @@ export function lex(input: string): AnnotatedToken[] {
         tokens.push(...lineTokens)
         tokens.push({
             token: { type: 'operator', value: 'EOL' },
-            location: {
+            location: newLocation({
                 start: { lineIdx: i, colIdx: line.length },
                 end: { lineIdx: i, colIdx: line.length },
-            },
+            }),
         })
     }
     return tokens
@@ -309,10 +336,10 @@ function lexGeneric(
     }
     const token: AnnotatedToken = {
         token: lexer.parse(input.slice(start, idx)),
-        location: {
+        location: newLocation({
             start: { lineIdx: lineNo, colIdx: start },
             end: { lineIdx: lineNo, colIdx: idx },
-        },
+        }),
     }
     return [idx, token]
 }
@@ -325,7 +352,7 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
     idx++
     while (true) {
         if (idx >= input.length) {
-            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
+            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: newLocation({ start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } }) }]
         }
         if (input[idx] === '"') {
             idx++
@@ -344,14 +371,14 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         result = resultObj
     }
     catch (e) {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: { start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } } }]
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: newLocation({ start: { lineIdx: lineNo, colIdx: start }, end: { lineIdx: lineNo, colIdx: idx } }) }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
-        location: {
+        location: newLocation({
             start: { lineIdx: lineNo, colIdx: start },
             end: { lineIdx: lineNo, colIdx: idx },
-        },
+        }),
     }
     return [idx, token]
 }

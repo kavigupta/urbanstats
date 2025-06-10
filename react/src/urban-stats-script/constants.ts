@@ -47,7 +47,7 @@ const toNumber = {
         }
         if (typeof arg === 'string') {
             const num = parseNumber(arg)
-            assert(!isNaN(num), `Expected a number or a string that can be converted to a number, got ${arg}`)
+            assert(num !== undefined, `Expected a number or a string that can be converted to a number, got ${arg}`)
             return num
         }
         if (typeof arg === 'boolean') {
@@ -70,6 +70,7 @@ const toString = {
         const arg = posArgs[0]
         return String(arg)
     },
+
 } satisfies USSValue
 
 export function regressionResultType(numRegressionDependentsMax: number): USSType {

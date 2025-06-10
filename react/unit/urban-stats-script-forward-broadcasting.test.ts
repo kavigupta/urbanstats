@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { newLocation } from '../src/urban-stats-script/lexer'
 import { USSRawValue, USSType, renderType } from '../src/urban-stats-script/types-values'
 
 import { emptyContext, multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
@@ -103,10 +103,10 @@ void test('broadcasting-locate-type', (): void => {
 })
 
 void test('broadcasting-apply', (): void => {
-    const locInfo: LocInfo = {
+    const locInfo = newLocation({
         start: { lineIdx: 1, colIdx: 1 },
         end: { lineIdx: 1, colIdx: 1 },
-    } satisfies LocInfo
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -204,10 +204,10 @@ void test('broadcasting-apply', (): void => {
 })
 
 void test('jagged array', (): void => {
-    const locInfo: LocInfo = {
+    const locInfo = newLocation({
         start: { lineIdx: 1, colIdx: 1 },
         end: { lineIdx: 1, colIdx: 1 },
-    } satisfies LocInfo
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn2 },
@@ -249,10 +249,10 @@ void test('jagged array', (): void => {
 })
 
 void test('wrong number of arguments', (): void => {
-    const locInfo: LocInfo = {
+    const locInfo = newLocation({
         start: { lineIdx: 1, colIdx: 1 },
         end: { lineIdx: 1, colIdx: 1 },
-    } satisfies LocInfo
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -303,10 +303,10 @@ void test('wrong number of arguments', (): void => {
 })
 
 void test('wrong argument type', (): void => {
-    const locInfo: LocInfo = {
+    const locInfo = newLocation({
         start: { lineIdx: 1, colIdx: 1 },
         end: { lineIdx: 1, colIdx: 1 },
-    } satisfies LocInfo
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
@@ -361,10 +361,10 @@ void test('wrong argument type', (): void => {
 })
 
 void test('bad-shape-broadcasting', (): void => {
-    const locInfo: LocInfo = {
+    const locInfo = newLocation({
         start: { lineIdx: 1, colIdx: 1 },
         end: { lineIdx: 1, colIdx: 1 },
-    } satisfies LocInfo
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: testFnType, value: testFn1 },
