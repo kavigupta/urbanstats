@@ -587,6 +587,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 return true
             case 'named':
                 expressions.push(n.value)
+                helper(n.value)
                 return true
             case 'constant':
             case 'identifier':

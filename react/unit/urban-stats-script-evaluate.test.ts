@@ -988,6 +988,17 @@ void test('regression', (): void => {
         ),
     )
     assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(x1=x1+0, y=y)'), ctx).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [13.090909090909097, 8.181818181818187, 3.272727272727277, -1.6363636363636331, -6.545454545454543, -11.454545454545453, -16.363636363636367, -21.272727272727273, -26.18181818181818, 58.90909090909091]],
+                ['m1', 5.90909090909091],
+                ['r2', 0.3521],
+                ['b', -18],
+            ],
+        ),
+    )
+    assertEquivalentRegressionOutput(
         evaluate(parseExpr('regression(x1=x1, y=y, weight=w1)'), ctx).value,
         new Map<string, USSRawValue>(
             [

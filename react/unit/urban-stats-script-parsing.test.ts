@@ -507,4 +507,8 @@ void test('collect identifiers', (): void => {
         ids('if (x > 2) { y = 3; z = 4 } else { if ([u].v) { a = -t } }'),
         new Set(['x', 'y', 'z', 'u', 'a', 't']),
     )
+    assert.deepStrictEqual(
+        ids('regression(x1=x1+0, y=y)'),
+        new Set(['x1', 'y', 'regression']),
+    )
 })
