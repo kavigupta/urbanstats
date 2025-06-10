@@ -1,150 +1,7 @@
 import { assert } from '../utils/defensive'
 
-import { Context } from './context'
-import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
+import { expressionOperatorMap } from './operators'
 
-interface Operator {
-    precedence: number
-    unary?: (op: string, locInfo: LocInfo) => USSValue
-    binary?: (op: string, locInfo: LocInfo) => USSValue
-}
-
-interface UnaryOperation {
-    type: string
-    fn: (x: USSPrimitiveRawValue) => USSPrimitiveRawValue
-}
-
-interface BinaryOperation {
-    leftType: string
-    rightType: string
-    fn: (x: USSPrimitiveRawValue, y: USSPrimitiveRawValue) => USSPrimitiveRawValue
-}
-
-function unaryOperator(unos: UnaryOperation[]): (op: string, locInfo: LocInfo) => USSValue {
-    return (op, locInfo) => {
-        return {
-            type: { type: 'function', posArgs: [{ type: 'anyPrimitive' }], namedArgs: {}, returnType: { type: 'inferFromPrimitive' } },
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
-            value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
-                const argType = getPrimitiveType(posArgs[0]).type
-                for (const uno of unos) {
-                    if (uno.type === argType) {
-                        return uno.fn(posArgs[0] as USSPrimitiveRawValue)
-                    }
-                }
-                throw ctx.error(`Invalid type for operator ${op}: ${argType}`, locInfo)
-            },
-        }
-    }
-}
-
-function binaryOperator(bos: BinaryOperation[]): (op: string, locInfo: LocInfo) => USSValue {
-    return (op, locInfo) => {
-        return {
-            type: { type: 'function', posArgs: [{ type: 'anyPrimitive' }, { type: 'anyPrimitive' }], namedArgs: {}, returnType: { type: 'inferFromPrimitive' } },
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for type signature
-            value: (ctx: Context, posArgs: USSRawValue[], _namedArgs: Record<string, USSRawValue>): USSRawValue => {
-                const leftType = getPrimitiveType(posArgs[0]).type
-                const rightType = getPrimitiveType(posArgs[1]).type
-                for (const bo of bos) {
-                    if (bo.leftType === leftType && bo.rightType === rightType) {
-                        return bo.fn(posArgs[0] as USSPrimitiveRawValue, posArgs[1] as USSPrimitiveRawValue)
-                    }
-                }
-                throw ctx.error(`Invalid types for operator ${op}: ${leftType} and ${rightType}`, locInfo)
-            },
-        }
-    }
-}
-
-function numericBinaryOperation(fn: (a: number, b: number) => number): BinaryOperation {
-    return {
-        leftType: 'number',
-        rightType: 'number',
-        fn: (a, b) => fn(a as number, b as number),
-    }
-}
-
-function comparisonOperation(
-    fnNumber: (a: number, b: number) => boolean,
-    fnString: (a: string, b: string) => boolean,
-    fnBoolean: ((a: boolean, b: boolean) => boolean) | undefined = undefined,
-    fnNull: ((a: null, b: null) => boolean) | undefined = undefined,
-): BinaryOperation[] {
-    const bos = [
-        {
-            leftType: 'number',
-            rightType: 'number',
-            fn: (a, b) => fnNumber(a as number, b as number),
-        },
-        {
-            leftType: 'string',
-            rightType: 'string',
-            fn: (a, b) => fnString(a as string, b as string),
-        },
-    ] satisfies BinaryOperation[]
-    if (fnBoolean !== undefined) {
-        bos.push({
-            leftType: 'boolean',
-            rightType: 'boolean',
-            fn: (a, b) => fnBoolean(a as boolean, b as boolean),
-        })
-    }
-    if (fnNull !== undefined) {
-        bos.push({
-            leftType: 'null',
-            rightType: 'null',
-            fn: (a, b) => fnNull(a as null, b as null),
-        })
-    }
-    return bos
-}
-
-function booleanOperation(fn: (a: boolean, b: boolean) => boolean): BinaryOperation {
-    return {
-        leftType: 'boolean',
-        rightType: 'boolean',
-        fn: (a, b) => fn(a as boolean, b as boolean),
-    }
-}
-
-export const expressionOperatorMap = new Map<string, Operator>([
-    // E
-    ['**', { precedence: 1000, binary: binaryOperator([numericBinaryOperation((a, b) => Math.pow(a, b))]) }],
-    // MD
-    ['*', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]) }],
-    ['/', { precedence: 900, binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]) }],
-    // AS
-    ['+', {
-        precedence: 800,
-        unary: unaryOperator([{ type: 'number', fn: x => x }]),
-        binary: binaryOperator([
-            numericBinaryOperation((a, b) => a + b),
-            { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
-        ]),
-    }],
-    ['-', {
-        precedence: 800,
-        unary: unaryOperator([{ type: 'number', fn: x => -(x as number) }]),
-        binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
-    }],
-    // Comparators
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
-    ['==', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a === b, (a, b) => a === b, (a, b) => a === b, (a, b) => a === b)) }],
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
-    ['!=', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b)) }],
-    ['<', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a < b, (a, b) => a < b)) }],
-    ['>', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a > b, (a, b) => a > b)) }],
-    ['<=', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a <= b, (a, b) => a <= b)) }],
-    ['>=', { precedence: 700, binary: binaryOperator(comparisonOperation((a, b) => a >= b, (a, b) => a >= b)) }],
-    // Logic
-    ['!', { precedence: 650, unary: unaryOperator([{ type: 'boolean', fn: x => !(x as boolean) }]) }],
-    ['&', { precedence: 600, binary: binaryOperator([booleanOperation((a, b) => a && b)]) }],
-    ['|', { precedence: 500, binary: binaryOperator([booleanOperation((a, b) => a || b)]) }],
-])
-
-export const unaryOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.unary !== undefined).map(([op]) => op)
-export const infixOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.binary !== undefined).map(([op]) => op)
 const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
@@ -224,18 +81,6 @@ export function parseNumber(input: string): number | undefined {
     return
 }
 
-const numberLexer: GenericLexer = {
-    firstToken: isDigit,
-    innerToken: (ch: string): boolean => isDigit(ch) || ch === '.' || ch === 'e' || ch === 'E' || ch === '+' || ch === '-' || ch === 'k' || ch === 'm',
-    parse: (string: string): Token => {
-        const number = parseNumber(string)
-        if (number === undefined) {
-            return { type: 'error', value: `Invalid number format: ${string}` }
-        }
-        return { type: 'number', value: number }
-    },
-}
-
 const identifierLexer: GenericLexer = {
     firstToken: isAlpha,
     innerToken: (ch: string): boolean => isAlpha(ch) || isDigit(ch),
@@ -276,7 +121,15 @@ function lexLine(input: string, lineNo: number): AnnotatedToken[] {
             idx++
             continue
         }
-        for (const lexer of [numberLexer, identifierLexer, operatorLexer]) {
+        if (isDigit(char)) {
+            let token
+            [idx, token] = lexNumber(input, idx, lineNo)
+            if (token !== undefined) {
+                tokens.push(token)
+                continue
+            }
+        }
+        for (const lexer of [identifierLexer, operatorLexer]) {
             let token
             [idx, token] = lexGeneric(input, idx, lineNo, lexer)
             if (token !== undefined) {
@@ -381,4 +234,25 @@ function lexString(input: string, idx: number, lineNo: number): [number, Annotat
         }),
     }
     return [idx, token]
+}
+
+function lexNumber(input: string, idx: number, lineNo: number): [number, AnnotatedToken | undefined] {
+    const numberFormat = /^\d+(\.\d+)?([eE][+-]?\d+|k|m)?/i
+    const match = numberFormat.exec(input.slice(idx))
+    if (!match) {
+        return [idx, undefined]
+    }
+    const numberStr = match[0]
+    const number = parseNumber(numberStr)
+    if (number === undefined) {
+        return [idx + numberStr.length, { token: { type: 'error', value: `Invalid number format: ${numberStr}` }, location: newLocation({ start: { lineIdx: lineNo, colIdx: idx }, end: { lineIdx: lineNo, colIdx: idx + numberStr.length } }) }]
+    }
+    const token: AnnotatedToken = {
+        token: { type: 'number', value: number },
+        location: newLocation({
+            start: { lineIdx: lineNo, colIdx: idx },
+            end: { lineIdx: lineNo, colIdx: idx + numberStr.length },
+        }),
+    }
+    return [idx + numberStr.length, token]
 }
