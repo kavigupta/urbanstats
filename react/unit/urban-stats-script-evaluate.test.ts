@@ -1,9 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { regressionResultType, regressionType } from '../src/urban-stats-script/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
+import { renderType, USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
@@ -857,5 +858,155 @@ void test('constants', (): void => {
             type: numVectorType,
             value: [1, 0.75, 3.14, 3e6],
         },
+    )
+})
+
+void test('regression', (): void => {
+    assert.deepStrictEqual(
+        renderType(regressionResultType(3)),
+        '{residuals: [number], m1: number, m2: number, m3: number, b: number, r2: number}',
+    )
+    assert.deepStrictEqual(
+        renderType(regressionType(3)),
+        '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {residuals: [number], m1: number, m2: number, m3: number, b: number, r2: number}',
+    )
+
+    function assertEquivalentRegressionOutput(
+        actual: USSRawValue,
+        expected: Map<string, USSRawValue>,
+    ): void {
+        if (!(actual instanceof Map)) {
+            throw new Error(`Expected a Map for regression output, but got ${actual}`)
+        }
+        for (const [key, value] of actual.entries()) {
+            const expectedValue = expected.get(key)
+            if (expectedValue !== undefined) {
+                assert.strict(close(value, expectedValue), `Key ${key} has value ${value}, expected ${expectedValue}`)
+            }
+            else {
+                assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
+            }
+        }
+    }
+
+    function close(a: USSRawValue, b: USSRawValue): boolean {
+        if (typeof a === 'number' && typeof b === 'number') {
+            if (isNaN(a) && isNaN(b)) return true
+            return Math.abs(a - b) < 1e-3
+        }
+        if (Array.isArray(a) && Array.isArray(b)) {
+            if (a.length !== b.length) return false
+            for (let i = 0; i < a.length; i++) {
+                if (!close(a[i], b[i])) return false
+            }
+            return true
+        }
+        return a === b
+    }
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('regression(x1=[1, 2, 3], y=[4, 5, 6])'), emptyContext()),
+        {
+            type: regressionResultType(10),
+            value: new Map<string, USSRawValue>(
+                [
+                    ['residuals', [0, 0, 0]],
+                    ['m1', 1],
+                    ['m2', NaN],
+                    ['m3', NaN],
+                    ['m4', NaN],
+                    ['m5', NaN],
+                    ['m6', NaN],
+                    ['m7', NaN],
+                    ['m8', NaN],
+                    ['m9', NaN],
+                    ['m10', NaN],
+                    ['r2', 1],
+                    ['b', 3],
+                ],
+            ),
+        },
+    )
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(y=[2, 5, 6], x1=[1, 2, 3], x2=[1, 0, 0])'), emptyContext()).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [0, 0, 0]],
+                ['m1', 1],
+                ['m2', -2],
+                ['m3', NaN],
+                ['m4', NaN],
+                ['m5', NaN],
+                ['m6', NaN],
+                ['m7', NaN],
+                ['m8', NaN],
+                ['m9', NaN],
+                ['m10', NaN],
+                ['r2', 1],
+                ['b', 3],
+            ],
+        ),
+    )
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(y=[2, 5, 6], x1=[1, 2, 3], x3=[1, 0, 0])'), emptyContext()).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [0, 0, 0]],
+                ['m1', 1],
+                ['m3', -2],
+                ['r2', 1],
+                ['b', 3],
+            ],
+        ),
+    )
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(y=[4, 5, 6], x1=[1, 2, 3], noIntercept=true)'), emptyContext()).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [1.7142857142857144, 0.4285714285714288, -0.8571428571428568]],
+                ['m1', 2.28571429],
+                ['r2', -0.9285714285714286],
+                ['b', 0],
+            ],
+        ),
+    )
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('x1', { type: numVectorType, value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })
+    ctx.assignVariable('x2', { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2] })
+    ctx.assignVariable('y', { type: numVectorType, value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 100] })
+    ctx.assignVariable('w1', { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 2] })
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(x1=x1, y=y)'), ctx).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [13.090909090909097, 8.181818181818187, 3.272727272727277, -1.6363636363636331, -6.545454545454543, -11.454545454545453, -16.363636363636367, -21.272727272727273, -26.18181818181818, 58.90909090909091]],
+                ['m1', 5.90909090909091],
+                ['r2', 0.3521],
+                ['b', -18],
+            ],
+        ),
+    )
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(x1=x1, y=y, weight=w1)'), ctx).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [19.459459459459467, 12.162162162162168, 4.86486486486487, -2.432432432432428, -9.729729729729726, -17.027027027027025, -24.324324324324323, -31.62162162162162, -38.91891891891891, 43.78378378378378]],
+                ['m1', 8.2972973],
+                ['r2', 0.4685065790454792],
+                ['b', -26.756756756756765],
+            ],
+        ),
+    )
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(x1=x1, y=y, x2=x2, weight=w1)'), ctx).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [4.921874999999993, 3.515624999999993, 2.109374999999993, 0.7031249999999929, -0.7031250000000071, -2.109375000000007, -3.515625000000007, -4.921875000000007, -59.0625, 29.53125]],
+                ['m1', 2.40625],
+                ['m2', 52.734375],
+                ['r2', 0.6415187603457788],
+                ['b', -59.06249999999999],
+            ],
+        ),
     )
 })
