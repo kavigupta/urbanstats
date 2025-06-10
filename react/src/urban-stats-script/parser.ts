@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
-import { AnnotatedToken, AnnotatedTokenWithValue, BaseLocInfo, expressionOperatorMap, infixOperators, lex, LocInfo, newLocation, unaryOperators } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, BaseLocInfo, lex, LocInfo, newLocation } from './lexer'
+import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 interface Decorated<T> {
     node: T
