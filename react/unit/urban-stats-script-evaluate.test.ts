@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { regressionResultType, regressionType } from '../src/urban-stats-script/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { renderType, USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
+import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
@@ -1020,5 +1020,139 @@ void test('regression', (): void => {
                 ['b', -59.06249999999999],
             ],
         ),
+    )
+})
+
+void test('value rendering', () => {
+    // Numbers
+    assert.strictEqual(renderValue({ type: numType, value: 42 }), '42')
+    assert.strictEqual(renderValue({ type: numType, value: 3.14 }), '3.14')
+    assert.strictEqual(renderValue({ type: numType, value: NaN }), 'NaN')
+    assert.strictEqual(renderValue({ type: numType, value: Infinity }), 'Infinity')
+    assert.strictEqual(renderValue({ type: numType, value: -Infinity }), '-Infinity')
+
+    // Booleans
+    assert.strictEqual(renderValue({ type: boolType, value: true }), 'true')
+    assert.strictEqual(renderValue({ type: boolType, value: false }), 'false')
+
+    // Strings
+    assert.strictEqual(renderValue({ type: stringType, value: 'hello' }), '"hello"')
+    assert.strictEqual(renderValue({ type: stringType, value: '' }), '""')
+
+    // Null
+    assert.strictEqual(renderValue({ type: { type: 'null' }, value: null }), 'null')
+
+    // Vectors
+    assert.strictEqual(
+        renderValue({ type: numVectorType, value: [1, 2, 3] }),
+        `[
+    1,
+    2,
+    3
+]`,
+    )
+    assert.strictEqual(
+        renderValue({ type: { type: 'vector', elementType: stringType }, value: ['a', 'b'] }),
+        `[
+    "a",
+    "b"
+]`,
+    )
+    assert.strictEqual(
+        renderValue({ type: { type: 'vector', elementType: { type: 'null' } }, value: [null, null] }),
+        `[
+    null,
+    null
+]`,
+    )
+    assert.strictEqual(
+        renderValue({ type: { type: 'vector', elementType: numVectorType }, value: [[1, 2], [3, 4]] }),
+        `[
+    [
+        1,
+        2
+    ],
+    [
+        3,
+        4
+    ]
+]`,
+    )
+    assert.strictEqual(
+        renderValue({ type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] }),
+        `[]`,
+    )
+
+    // Objects
+    assert.strictEqual(
+        renderValue({
+            type: { type: 'object', properties: new Map([['a', numType], ['b', stringType]]) },
+            value: new Map([['a', 1], ['b', 'x']]),
+        }),
+        `{
+    a: 1,
+    b: "x"
+}`,
+    )
+    assert.strictEqual(
+        renderValue({
+            type: { type: 'object', properties: new Map([['a', numVectorType]]) },
+            value: new Map([['a', [1, 2]]]),
+        }),
+        `{
+    a: [
+        1,
+        2
+    ]
+}`,
+    )
+    assert.strictEqual(
+        renderValue({
+            type: { type: 'object', properties: new Map() },
+            value: new Map(),
+        }),
+        `{}`,
+    )
+
+    // Nested objects and vectors
+    assert.strictEqual(
+        renderValue({
+            type: { type: 'vector', elementType: { type: 'object', properties: new Map([['x', numType]]) } },
+            value: [new Map([['x', 1]]), new Map([['x', 2]])],
+        }),
+        `[
+    {
+        x: 1
+    },
+    {
+        x: 2
+    }
+]`,
+    )
+    assert.strictEqual(
+        renderValue({
+            type: { type: 'object', properties: new Map([['v', numVectorType]]) },
+            value: new Map([['v', [1, 2, 3]]]),
+        }),
+        `{
+    v: [
+        1,
+        2,
+        3
+    ]
+}`,
+    )
+
+    // Functions (should render as type string)
+    assert.strictEqual(
+        renderValue({ type: testFnType, value: testFn1 }),
+        '(number; a: number) -> number',
+    )
+    assert.strictEqual(
+        renderValue({ type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] }),
+        `[
+    (number; a: number) -> number,
+    (number; a: number) -> number
+]`,
     )
 })

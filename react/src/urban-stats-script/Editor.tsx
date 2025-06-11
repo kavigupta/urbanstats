@@ -7,7 +7,7 @@ import { DefaultMap } from '../utils/DefaultMap'
 import { InterpretationError, renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { locationOfLastExpression, ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
-import { USSRawValue, USSValue } from './types-values'
+import { renderValue, USSValue } from './types-values'
 
 interface Range { start: number, end: number }
 
@@ -15,14 +15,25 @@ type Execute = (expr: UrbanStatsASTStatement) => USSValue
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
 
+// If we do a different default every time, the component will keep outputting a new script and go into a loop
+const defaultCheckValue: ValueChecker = () => ({ ok: true })
+
 export function Editor(
-    { script, setScript, execute, autocomplete = [], checkValue = () => ({ ok: true }) }:
+    {
+        script,
+        setScript,
+        execute,
+        autocomplete = [],
+        checkValue = defaultCheckValue,
+        showOutput = true,
+    }:
     {
         script: string
         setScript: (newScript: string) => void
         execute: Execute
         autocomplete?: string[]
         checkValue?: ValueChecker
+        showOutput?: boolean
     },
 ): ReactNode {
     const colors = useColors()
@@ -162,24 +173,29 @@ export function Editor(
 
     return (
         <>
-            <InnerEditor editorRef={editorRef} colors={colors} />
-            <DisplayResult result={result} />
+            <InnerEditor editorRef={editorRef} colors={colors} error={result.result === 'failure'} />
+            <DisplayResult result={result} showOutput={showOutput} />
         </>
     )
 }
 
+const codeStyle: CSSProperties = {
+    whiteSpace: 'pre-wrap',
+    fontFamily: 'monospace',
+    lineHeight: '175%',
+}
+
 // eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
-const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, colors: Colors }) {
+const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, colors: Colors, error: boolean }) {
     return (
         <pre
             style={{
+                ...codeStyle,
                 padding: '10px',
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'monospace',
                 caretColor: props.colors.textMain,
-                lineHeight: '175%',
-                border: `1px solid ${props.colors.borderShadow}`,
+                border: `1px solid ${props.error ? props.colors.hueColors.red : props.colors.borderShadow}`,
                 borderRadius: '5px',
+                outlineColor: props.error ? props.colors.hueColors.red : undefined,
             }}
             ref={props.editorRef}
             contentEditable="plaintext-only"
@@ -189,28 +205,41 @@ const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObjec
     )
 })
 
-function DisplayResult(props: { result: Result }): ReactNode {
+function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNode {
     const colors = useColors()
     const style: CSSProperties = {
-        color: colors.textMainOpposite,
+        ...codeStyle,
         padding: '5px',
         borderRadius: '5px',
+        backgroundColor: colors.slightlyDifferentBackground,
+        color: colors.textMain,
     }
     if (props.result.result === 'success') {
-        return (
-            <div style={{ ...style, backgroundColor: colors.hueColors.green }}>
-                <ul>
-                    <li>{props.result.value?.toString()}</li>
-                </ul>
-            </div>
-        )
+        if (props.showOutput) {
+            return (
+                <div style={{ ...style, border: `2px solid ${colors.hueColors.green}` }}>
+                    <pre style={{
+                        marginInline: '1em',
+                    }}
+                    >
+                        {renderValue(props.result.value)}
+                    </pre>
+                </div>
+            )
+        }
+        else {
+            return null
+        }
     }
     else {
         return (
-            <div style={{ ...style, backgroundColor: colors.hueColors.red }}>
-                <ul>
-                    {props.result.errors.map((error, i) => <li key={i}>{error}</li>)}
-                </ul>
+            <div style={{ ...style, border: `2px solid ${colors.hueColors.red}` }}>
+                <pre style={{
+                    marginInline: '1em',
+                }}
+                >
+                    {props.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
+                </pre>
             </div>
         )
     }
@@ -236,7 +265,7 @@ function escapeStringForHTML(string: string): string {
     return htmlReplacements.reduce((str, [find, replace]) => str.replaceAll(find, replace), string)
 }
 
-type Result = { result: 'success', value: USSRawValue } | { result: 'failure', errors: string[] }
+type Result = { result: 'success', value: USSValue } | { result: 'failure', errors: string[] }
 
 function stringToHtml(string: string, colors: Colors, execute: Execute, checkValue: ValueChecker): { html: string, result: Result } {
     if (!string.endsWith('\n')) {
@@ -381,12 +410,12 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
         }
         else {
             try {
-                const executed = execute(parsed)
-                const checkResult = checkValue(executed)
+                const value = execute(parsed)
+                const checkResult = checkValue(value)
                 if (!checkResult.ok) {
                     throw new InterpretationError(checkResult.problem, locationOfLastExpression(parsed))
                 }
-                result = { result: 'success', value: executed.value }
+                result = { result: 'success', value }
             }
             catch (e) {
                 if (e instanceof InterpretationError) {

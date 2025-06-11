@@ -18,7 +18,7 @@ export function EditorPanel(): ReactNode {
 
     const checkValue = useCallback<ValueChecker>((result: USSValue) => {
         if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
-            return { ok: false, problem: 'expression did not return a vector of numbers or booleans' }
+            return { ok: false, problem: 'result is not a vector of numbers or booleans' }
         }
         else {
             return { ok: true }
@@ -34,7 +34,7 @@ export function EditorPanel(): ReactNode {
                     localStorage.setItem('editor-code', newScript)
                 }}
                 execute={exec}
-                checkValue={checkValue}
+                // checkValue={checkValue}
             />
         </PageTemplate>
     )
