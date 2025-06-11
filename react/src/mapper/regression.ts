@@ -51,6 +51,10 @@ export function calculateRegression(independent: number[], dependent: number[][]
     // transpose dependent
     const x = dependent[0].map((_, i) => dependent.map(row => row[i]))
 
+    if (w === undefined) {
+        w = Array(y.length).fill(1)
+    }
+
     // x: (N, K)
     // y: (N, 1)
     // filter nans
@@ -59,18 +63,19 @@ export function calculateRegression(independent: number[], dependent: number[][]
 
     const xfilt = x.filter((_, i) => !isNan[i])
     const yfilt = y.filter((_, i) => !isNan[i])
-    if (w !== undefined) {
-        w = w.filter((_, i) => !isNan[i])
-    }
+    w = w.filter((_, i) => !isNan[i])
 
     // eslint-disable-next-line no-restricted-syntax -- A is a matrix
     const A = noIntercept ? xfilt : xfilt.map(row => [1, ...row])
-    // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
-    let ATW = transpose(A)
 
-    if (w !== undefined) {
-        ATW = dotMultiply(ATW, w)
-    }
+    // From Parth Nobel
+    // Compute z = w^1/2 * y
+    // Compute M = w^1/2 .* A
+    // Compute Q, R = qr(M)
+    // Compute x = R^{-1} Q^T b
+
+    // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
+    const ATW = dotMultiply(transpose(A), w)
 
     const ata = multiply(ATW, A)
 
