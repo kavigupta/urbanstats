@@ -1,17 +1,16 @@
-import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { DefaultMap } from '../utils/DefaultMap'
 
+import { getRange, locationsEqual, Range, setRange, stringIndexToLocation } from './editor-utils'
 import { InterpretationError, renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex, LocInfo } from './lexer'
+import { AnnotatedToken, lex, LocInfo, SingleLocation } from './lexer'
 import { locationOfLastExpression, ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
 import { renderValue, USSValue } from './types-values'
 
 import '@fontsource/inconsolata/500.css'
-
-interface Range { start: number, end: number }
 
 type Execute = (expr: UrbanStatsASTStatement) => USSValue
 
@@ -19,13 +18,14 @@ export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, prob
 
 // If we do a different default every time, the component will keep outputting a new script and go into a loop
 const defaultCheckValue: ValueChecker = () => ({ ok: true })
+const defaultAutoCompleteValue: string[] = []
 
 export function Editor(
     {
         script,
         setScript,
         execute,
-        autocomplete = [],
+        autocomplete = defaultAutoCompleteValue,
         checkValue = defaultCheckValue,
         showOutput = true,
     }:
@@ -42,91 +42,42 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement>(null)
 
-    const rangeRef = useRef<Range | undefined>()
-
     const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
-    function getRange(): Range | undefined {
-        const editor = editorRef.current!
-        const selection = window.getSelection()
-        if (selection?.rangeCount === 1) {
-            const range = selection.getRangeAt(0)
-            if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
-                if (editor === range.startContainer || editor === range.endContainer) {
-                    return { start: 0, end: 0 }
-                }
-
-                // Traverse up the tree, counting text content of previous siblings along the way
-                function positionInEditor(node: Node, offset: number): number {
-                    while (node !== editor) {
-                        let sibling = node.previousSibling
-                        while (sibling !== null) {
-                            offset += sibling.textContent?.length ?? 0
-                            sibling = sibling.previousSibling
-                        }
-                        node = node.parentNode!
-                    }
-                    return offset
-                }
-
-                return { start: positionInEditor(range.startContainer, range.startOffset), end: positionInEditor(range.endContainer, range.endOffset) }
-            }
+    const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
+        let collapsedRangeIndex: number | undefined
+        if (newRange !== undefined && newRange.start === newRange.end) {
+            collapsedRangeIndex = newRange.start
         }
+        return stringToHtml(newScript, colors, execute, checkValue, {
+            collapsedRangeIndex,
+            options: () => autocomplete,
+            apply: () => undefined,
+        })
+    }, [colors, execute, checkValue, autocomplete])
 
-        return undefined
-    }
-
-    function setRange({ start, end }: Range): void {
+    const displayScript = useCallback(() => {
         const editor = editorRef.current!
-
-        // Inverse of `positionInEditor`
-        // Traverse down the tree, always keeping the text content behind us lte position
-        function getContainerOffset(position: number): [Node, number] {
-            let node: Node = editor
-            let offset = 0
-            while (node.childNodes.length > 0) {
-                node = node.childNodes.item(0)
-                while (offset + (node.textContent?.length ?? 0) < position && node.nextSibling !== null) {
-                    offset += (node.textContent?.length ?? 0)
-                    node = node.nextSibling
-                }
-            }
-            return [node, position - offset]
-        }
-
-        const selection = window.getSelection()!
-
-        selection.removeAllRanges()
-
-        const range = document.createRange()
-
-        range.setStart(...getContainerOffset(start))
-        range.setEnd(...getContainerOffset(end))
-
-        selection.addRange(range)
-    }
-
-    useEffect(() => {
-        const listener = (): void => {
-            rangeRef.current = getRange()
-        }
-        document.addEventListener('selectionchange', listener)
-        rangeRef.current = getRange()
-        return () => { document.removeEventListener('selectionchange', listener) }
-    }, [])
-
-    useEffect(() => {
-        const editor = editorRef.current!
-        const { html, result: newResult } = stringToHtml(script, colors, execute, checkValue)
+        const range = getRange(editor)
+        const { html, result: newResult } = renderScript(script, range)
         if (editor.innerHTML !== html) {
-            const range = getRange()
             editor.innerHTML = html
             if (range !== undefined) {
-                setRange(range)
+                setRange(editor, range)
             }
         }
         setResult(newResult)
-    }, [script, colors, execute, checkValue])
+    }, [renderScript, script])
+
+    useEffect(displayScript, [displayScript])
+
+    useEffect(() => {
+        const listener = (): void => {
+            displayScript()
+        }
+        document.addEventListener('selectionchange', listener)
+        return () => { document.removeEventListener('selectionchange', listener) }
+    }, [displayScript])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -141,16 +92,16 @@ export function Editor(
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
             function editScript(newScript: string, newRange: Range): void {
-                const { html, result: newResult } = stringToHtml(newScript, colors, execute, checkValue)
+                const { html, result: newResult } = renderScript(newScript, newRange)
                 setResult(newResult)
                 editor.innerHTML = html
-                setRange(newRange)
+                setRange(editor, newRange)
                 setScript(newScript)
             }
 
             if (e.key === 'Tab') {
                 e.preventDefault()
-                const range = getRange()
+                const range = getRange(editor)
                 if (range !== undefined) {
                     editScript(
                         `${script.slice(0, range.start)}    ${script.slice(range.end)}`,
@@ -159,7 +110,7 @@ export function Editor(
                 }
             }
             else if (e.key === 'Backspace') {
-                const range = getRange()
+                const range = getRange(editor)
                 if (range !== undefined && range.start === range.end && range.start >= 4 && script.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
@@ -171,7 +122,7 @@ export function Editor(
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, colors, setScript, execute, checkValue])
+    }, [script, setScript, renderScript])
 
     const error = result.result === 'failure'
 
@@ -240,9 +191,12 @@ function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNod
 
 function htmlToString(html: string): string {
     const domParser = new DOMParser()
-    const string
-        = domParser.parseFromString(html
-            .replaceAll(/<.*?>/g, ''), 'text/html').documentElement.textContent!
+    const string = domParser.parseFromString(
+        html
+            .replaceAll(/<div.+?\/div>/g, '') // Everything inside a div is an autocomplete box
+            .replaceAll(/<.*?>/g, ''),
+        'text/html',
+    ).documentElement.textContent!
     return string
 }
 
@@ -260,7 +214,26 @@ function escapeStringForHTML(string: string): string {
 
 type Result = { result: 'success', value: USSValue } | { result: 'failure', errors: string[] }
 
-function stringToHtml(string: string, colors: Colors, execute: Execute, checkValue: ValueChecker): { html: string, result: Result } {
+interface AutocompleteMenu {
+    action: (action: 'up' | 'down' | 'accept') => void
+    attachListeners: () => void // call once the returned html is rendered
+}
+
+function stringToHtml(
+    string: string,
+    colors: Colors,
+    execute: Execute,
+    checkValue: ValueChecker,
+    autocomplete: {
+        collapsedRangeIndex: number | undefined
+        options: (fragment: string) => string[]
+        apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
+    },
+): {
+        html: string
+        result: Result
+        autocomplete: AutocompleteMenu | undefined
+    } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -284,6 +257,12 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
 
     const lines = string.split('\n')
 
+    let autocompleteLocation: SingleLocation | undefined
+
+    if (autocomplete.collapsedRangeIndex !== undefined) {
+        autocompleteLocation = stringIndexToLocation(lines, autocomplete.collapsedRangeIndex)
+    }
+
     function replaceAll(find: string, replace: string): void {
         const delta = replace.length - find.length
         for (let line = 0; line < lines.length; line++) {
@@ -303,7 +282,7 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
     const brackets = new DefaultMap<string, number>(() => 0)
 
     function span(token: AnnotatedToken['token'] | ParseError): string {
-        const style: Record<string, string> = {}
+        const style: Record<string, string> = { position: 'relative' }
         let title: string | undefined
 
         switch (token.type) {
@@ -364,6 +343,17 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
         return `<span style="${Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')}" ${title !== undefined ? `title="${escapeStringForHTML(title)}"` : ''}>`
     }
 
+    let autocompleteMenu: AutocompleteMenu | undefined
+
+    function maybeAutocompleteMenu(token: AnnotatedToken): string {
+        if (autocompleteLocation !== undefined && token.token.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
+            return `<div contenteditable="false" style="position:absolute;top:100%;left:100%;user-select:none;">hi</div>`
+        }
+        else {
+            return ''
+        }
+    }
+
     // Insert lex spans
     for (const token of lexTokens) {
         if (token.token.type === 'operator' && token.token.value === 'EOL') {
@@ -372,7 +362,7 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
         for (const pos of ['start', 'end'] as const) {
             const loc = token.location.shifted[pos]
             const line = lines[loc.lineIdx]
-            const tag = pos === 'start' ? span(token.token) : `</span>`
+            const tag = pos === 'start' ? `${span(token.token)}${maybeAutocompleteMenu(token)}` : `</span>`
             lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
             shift(lexTokens, loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
         }
@@ -431,5 +421,5 @@ function stringToHtml(string: string, colors: Colors, execute: Execute, checkVal
 
     const html = lines.join('\n')
 
-    return { html, result }
+    return { html, result, autocomplete: autocompleteMenu }
 }

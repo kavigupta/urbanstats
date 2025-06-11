@@ -36,9 +36,8 @@ export function EditorPanel(): ReactNode {
                 script={script}
                 setScript={updateScript}
                 execute={exec}
-                // checkValue={checkValue}
             />
-            <Editor
+            {/* <Editor
                 script={script}
                 setScript={updateScript}
                 execute={exec}
@@ -49,7 +48,7 @@ export function EditorPanel(): ReactNode {
                 setScript={updateScript}
                 execute={exec}
                 showOutput={false}
-            />
+            /> */}
         </PageTemplate>
     )
 }
