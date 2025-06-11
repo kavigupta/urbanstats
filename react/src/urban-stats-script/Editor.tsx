@@ -171,11 +171,23 @@ export function Editor(
         return () => { editor.removeEventListener('keydown', listener) }
     }, [script, colors, setScript, execute, checkValue])
 
+    const error = result.result === 'failure'
+
     return (
-        <>
-            <InnerEditor editorRef={editorRef} colors={colors} error={result.result === 'failure'} />
+        <div style={{ margin: '2em' }}>
+            <pre
+                style={{
+                    ...codeStyle,
+                    caretColor: colors.textMain,
+                    border: `1px solid ${error ? colors.hueColors.red : (showOutput ? colors.hueColors.green : colors.borderShadow)}`,
+                    borderRadius: error || showOutput ? '5px 5px 0 0' : '5px',
+                }}
+                ref={editorRef}
+                contentEditable="plaintext-only"
+                spellCheck="false"
+            />
             <DisplayResult result={result} showOutput={showOutput} />
-        </>
+        </div>
     )
 }
 
@@ -183,48 +195,31 @@ const codeStyle: CSSProperties = {
     whiteSpace: 'pre-wrap',
     fontFamily: 'monospace',
     lineHeight: '175%',
+    margin: 0,
+    padding: '1em',
 }
-
-// eslint-disable-next-line no-restricted-syntax -- Needs to be capitalized to work with JSX
-const InnerEditor = React.memo(function InnerEditor(props: { editorRef: RefObject<HTMLPreElement>, colors: Colors, error: boolean }) {
-    return (
-        <pre
-            style={{
-                ...codeStyle,
-                padding: '10px',
-                caretColor: props.colors.textMain,
-                border: `1px solid ${props.error ? props.colors.hueColors.red : props.colors.borderShadow}`,
-                borderRadius: '5px',
-                outlineColor: props.error ? props.colors.hueColors.red : undefined,
-            }}
-            ref={props.editorRef}
-            contentEditable="plaintext-only"
-            dangerouslySetInnerHTML={{ __html: '' }}
-            spellCheck="false"
-        />
-    )
-})
 
 function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNode {
     const colors = useColors()
-    const style: CSSProperties = {
-        ...codeStyle,
-        padding: '5px',
-        borderRadius: '5px',
-        backgroundColor: colors.slightlyDifferentBackground,
-        color: colors.textMain,
+    function style(color: string): CSSProperties {
+        const border = `2px solid ${color}`
+        return {
+            ...codeStyle,
+            borderRadius: '0 0 5px 5px',
+            backgroundColor: colors.slightlyDifferentBackground,
+            color: colors.textMain,
+            borderTop: 'none',
+            borderRight: border,
+            borderBottom: border,
+            borderLeft: border,
+        }
     }
     if (props.result.result === 'success') {
         if (props.showOutput) {
             return (
-                <div style={{ ...style, border: `2px solid ${colors.hueColors.green}` }}>
-                    <pre style={{
-                        marginInline: '1em',
-                    }}
-                    >
-                        {renderValue(props.result.value)}
-                    </pre>
-                </div>
+                <pre style={style(colors.hueColors.green)}>
+                    {renderValue(props.result.value)}
+                </pre>
             )
         }
         else {
@@ -233,14 +228,9 @@ function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNod
     }
     else {
         return (
-            <div style={{ ...style, border: `2px solid ${colors.hueColors.red}` }}>
-                <pre style={{
-                    marginInline: '1em',
-                }}
-                >
-                    {props.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
-                </pre>
-            </div>
+            <pre style={style(colors.hueColors.red)}>
+                {props.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
+            </pre>
         )
     }
 }
