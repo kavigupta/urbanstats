@@ -68,6 +68,7 @@
   "dependencies": {
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
+    "@fontsource/inconsolata": "^5.2.6",
     "@fontsource/jost": "^5.0.18",
     "@mapbox/geojson-extent": "^1.0.1",
     "@observablehq/plot": "^0.6.16",

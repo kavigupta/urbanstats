@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
@@ -8,6 +8,8 @@ import { InterpretationError, renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { locationOfLastExpression, ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
 import { renderValue, USSValue } from './types-values'
+
+import '@fontsource/inconsolata/500.css'
 
 interface Range { start: number, end: number }
 
@@ -193,7 +195,8 @@ export function Editor(
 
 const codeStyle: CSSProperties = {
     whiteSpace: 'pre-wrap',
-    fontFamily: 'monospace',
+    fontFamily: 'Inconsolata, monospace',
+    fontWeight: 500,
     lineHeight: '175%',
     margin: 0,
     padding: '1em',
