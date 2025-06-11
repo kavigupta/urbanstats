@@ -16,14 +16,14 @@ export function EditorPanel(): ReactNode {
         return value
     }, [])
 
-    const checkValue = useCallback<ValueChecker>((result: USSValue) => {
-        if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
-            return { ok: false, problem: 'result is not a vector of numbers or booleans' }
-        }
-        else {
-            return { ok: true }
-        }
-    }, [])
+    // const checkValue = useCallback<ValueChecker>((result: USSValue) => {
+    //     if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
+    //         return { ok: false, problem: 'result is not a vector of numbers or booleans' }
+    //     }
+    //     else {
+    //         return { ok: true }
+    //     }
+    // }, [])
 
     return (
         <PageTemplate>

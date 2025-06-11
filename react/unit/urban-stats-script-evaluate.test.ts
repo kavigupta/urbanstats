@@ -1086,8 +1086,8 @@ void test('value rendering', () => {
     // Objects
     assert.strictEqual(
         renderValue({
-            type: { type: 'object', properties: new Map([['a', numType], ['b', stringType]]) },
-            value: new Map([['a', 1], ['b', 'x']]),
+            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', stringType]]) },
+            value: new Map<string, USSRawValue>([['a', 1], ['b', 'x']]),
         }),
         `{
     a: 1,
