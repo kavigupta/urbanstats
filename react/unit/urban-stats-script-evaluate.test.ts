@@ -227,6 +227,14 @@ void test('evaluate function calls', (): void => {
             value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
         },
     )
+    assert.deepStrictEqual(
+        // backwards obj
+        evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={v: 502, u: 401})'), ctx),
+        {
+            type: numVectorType,
+            value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
+        },
+    )
     ctx.assignVariable('objs', {
         type: {
             type: 'object',
@@ -865,11 +873,11 @@ void test('regression', (): void => {
     // to help generate these, see ./regression.py
     assert.deepStrictEqual(
         renderType(regressionResultType(3)),
-        '{residuals: [number], m1: number, m2: number, m3: number, b: number, r2: number}',
+        '{b: number, m1: number, m2: number, m3: number, r2: number, residuals: [number]}',
     )
     assert.deepStrictEqual(
         renderType(regressionType(3)),
-        '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {residuals: [number], m1: number, m2: number, m3: number, b: number, r2: number}',
+        '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {b: number, m1: number, m2: number, m3: number, r2: number, residuals: [number]}',
     )
 
     function assertEquivalentRegressionOutput(
