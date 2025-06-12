@@ -421,7 +421,7 @@ def near_substring(a, b):
 
 
 def duplicate_index(names):
-    for i in range(len(names) - 1, 0, -1):
+    for i in tqdm.trange(len(names) - 1, 0, -1, delay=5):
         for j in range(len(names)):
             if i == j:
                 continue
@@ -455,6 +455,34 @@ def deduplicate_names(names):
     return names
 
 
+def remove_suffixes(name):
+    for suffix in [
+        " township",
+        " urban area",
+        " new area",
+        " industrial area",
+        " management area",
+    ]:
+        if name.lower().endswith(suffix):
+            return name[: -len(suffix)]
+    return name
+
+
+def process_and_deduplicate_names(names):
+    """
+    Process names by deduplicating them and removing empty names.
+    """
+    names = [
+        name.replace(" township", "")
+        .replace(" town", "")
+        .replace(" city", "")
+        .replace(" urban area", "")
+        for name in names
+    ]
+
+    return deduplicate_names(names)
+
+
 def pull_non_city_geonames_for_missing(missing_names, curated_names):
     pulled_names = {}
     for ident in tqdm.tqdm(missing_names):
@@ -466,7 +494,7 @@ def pull_non_city_geonames_for_missing(missing_names, curated_names):
             continue
         names = [x[1] for x in cns]
         names.sort(key=stable_hash)
-        names = deduplicate_names(names)
+        names = process_and_deduplicate_names(names)
         if not names:
             continue
         pulled_names[ident] = names
@@ -483,6 +511,14 @@ def compute_coordinate_name(coord_name, geonames_for_missing):
     return f"{coord_name} ({namelist_to_name(geonames_for_missing)})"
 
 
+manual_overrides = {
+    9767: ["Reunion"],
+    16305: ["Sundance"],
+    17436: ["Rita Ranch"],
+    38488: ["Astumbo"],
+}
+
+
 def main():
     table, name_candidates, curated_names = load_metadata()
 
@@ -491,14 +527,14 @@ def main():
     missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
     for ident, cns in curated_names.items():
         cns = [x for x in cns if valid_ascii_name(x[1])]  # filter out empty names
-        cns_p = [x for x in cns if x[0] == "P"]
         cns_o = [x for x in cns if x[0] == "O"]
-        if cns_p:
-            names[ident] = process_curated_name(cns_p)
-            source[ident] = "Geonames"
-        elif cns_o:
+        cns_p = [x for x in cns if x[0] == "P"]
+        if cns_o:
             names[ident] = process_curated_name(cns_o)
             source[ident] = "OSM"
+        elif cns_p:
+            names[ident] = process_curated_name(cns_p)
+            source[ident] = "Geonames"
 
     print("No Geonames/OSM names:", len(missing()))
 
@@ -518,8 +554,13 @@ def main():
 
     print("No Geonames/OSM/wikidata names:", len(missing()))
 
-    for k in names:
-        new_names_k = deduplicate_names(names[k])
+    names.update(manual_overrides)
+    source.update({k: "Manual Override" for k in manual_overrides if k not in source})
+
+    print("No Geonames/OSM/wikidata/manual names:", len(missing()))
+
+    for k in tqdm.tqdm(names, desc="Deduplicating OSM/GeoNames names"):
+        new_names_k = process_and_deduplicate_names(names[k])
         assert (
             len(new_names_k) > 0
         ), f"Deduplicated names for {k} to an empty list: {names[k]}"

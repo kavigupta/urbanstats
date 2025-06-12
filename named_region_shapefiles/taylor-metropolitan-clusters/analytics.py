@@ -5,10 +5,13 @@ grouped = table[["pop", "source"]].groupby("source")
 
 pop, count = grouped["pop"].sum(), grouped["pop"].count()
 
+print(pop.index)
+
 sources = [
+    "OSM",
     "Geonames",
     "Wikidata",
-    "OSM",
+    "Manual Override",
     "Coordinates (with geonames backup)",
     "Coordinates (no geonames backup)",
 ]
@@ -23,3 +26,5 @@ for source in sources:
     print(f"Percentage of Total Count: {count[source]/count.sum():.2%}")
     print(f"Average Population: {pop[source]/count[source]/1000:.0f}k")
     print()
+
+# print(table[table.name.apply(lambda x: " township" in x.lower())])
