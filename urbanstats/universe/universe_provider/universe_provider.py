@@ -60,13 +60,12 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
         """
         if code.startswith("US"):
             return get_universe_name_for_state(us.states.lookup(code[2:]))
-        elif code.startswith("CA"):
+        if code.startswith("CA"):
             return province_abbr_to_province[code[2:]]
-        else:
-            return None
+        return None
 
     def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        assert self.countries == ("US",), f"Unexpected countries: {self.countries}"
+        assert self.countries == ("US", "CA"), f"Unexpected countries: {self.countries}"
         result = {}
         for longname, codes in zip(
             shapefile_table.longname, shapefile_table.subnationals_ISO_CODE

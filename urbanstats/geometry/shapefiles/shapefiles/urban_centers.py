@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
