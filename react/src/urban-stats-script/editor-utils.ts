@@ -126,11 +126,14 @@ export type Execute = (expr: UrbanStatsASTStatement) => USSValue
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
 
+export type Action = 'input' | 'select' | undefined
+
 export function stringToHtml(
     string: string,
     colors: Colors,
     execute: Execute,
     checkValue: ValueChecker,
+    lastAction: Action,
     autocomplete: {
         collapsedRangeIndex: number | undefined
         options: (fragment: string) => string[]
@@ -162,7 +165,7 @@ export function stringToHtml(
 
     let autocompleteLocation: SingleLocation | undefined
 
-    if (autocomplete.collapsedRangeIndex !== undefined) {
+    if (autocomplete.collapsedRangeIndex !== undefined && lastAction === 'input') {
         autocompleteLocation = stringIndexToLocation(lines, autocomplete.collapsedRangeIndex)
     }
 

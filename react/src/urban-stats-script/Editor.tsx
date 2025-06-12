@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useSta
 
 import { useColors } from '../page_template/colors'
 
-import { Execute, getRange, htmlToString, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
+import { Action, Execute, getRange, htmlToString, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
 import { renderValue } from './types-values'
 
 import '@fontsource/inconsolata/500.css'
@@ -37,17 +37,19 @@ export function Editor(
 
     const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
+    const [lastAction, setLastAction] = useState<Action>(undefined)
+
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
         let collapsedRangeIndex: number | undefined
         if (newRange !== undefined && newRange.start === newRange.end) {
             collapsedRangeIndex = newRange.start
         }
-        return stringToHtml(newScript, colors, execute, checkValue, {
+        return stringToHtml(newScript, colors, execute, checkValue, lastAction, {
             collapsedRangeIndex,
             options: () => autocomplete,
             apply: () => undefined,
         })
-    }, [colors, execute, checkValue, autocomplete])
+    }, [colors, execute, checkValue, autocomplete, lastAction])
 
     const displayScript = useCallback(() => {
         const editor = editorRef.current!
@@ -72,18 +74,19 @@ export function Editor(
                 inhibitRangeUpdateEvents.current--
             }
             else {
-                displayScript()
+                setLastAction('select') // Indirectly displays script
             }
         }
         document.addEventListener('selectionchange', listener)
         return () => {
             document.removeEventListener('selectionchange', listener)
         }
-    }, [displayScript])
+    }, [])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
+            setLastAction('input')
             setScript(htmlToString(editor.innerHTML))
         }
         editor.addEventListener('input', listener)
