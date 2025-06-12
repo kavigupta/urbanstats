@@ -314,15 +314,27 @@ def load_metadata():
         code = zf.open("name_candidates.txt").read().decode("latin-1")
         name_candidates = eval(code)
 
-    with open("names_full.txt", "r") as f:
-        curated_names = eval(f.read())
+    with zipfile.ZipFile("names_full.zip") as zf:
+        curated_names = eval(zf.open("names_full.txt", "r").read())
 
     return table, name_candidates, curated_names
 
 
+def parse_num_or_zero(s):
+    """
+    Parse a string as an integer, returning 0 if it is empty or not a number.
+    """
+    try:
+        return int(s)
+    except (ValueError, TypeError):
+        return 0
+
+
 def process_curated_name(curated_names):
-    curated_names = sorted(curated_names, key=lambda x: int(x[2]), reverse=True)
-    curated_names = [x[1] for x in curated_names if x[0] == "P"]
+    curated_names = sorted(
+        curated_names, key=lambda x: parse_num_or_zero(x[2]), reverse=True
+    )
+    curated_names = [x[1] for x in curated_names]
     return curated_names
 
 
@@ -379,22 +391,47 @@ def load_shapefile_with_data(table):
     return shp
 
 
+def valid_ascii_name(name):
+    """
+    Check if a name is valid ASCII.
+    """
+    return all(ord(c) < 128 for c in name) and name.strip() != ""
+
+
 def main():
     table, name_candidates, curated_names = load_metadata()
 
     names = {}
+    source = {}
     missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
-    for ident in curated_names:
-        names[ident] = process_curated_name(curated_names[ident])
+    for ident, cns in curated_names.items():
+        cns = [x for x in cns if valid_ascii_name(x[1])]  # filter out empty names
+        cns_p = [x for x in cns if x[0] == "P"]
+        cns_o = [x for x in cns if x[0] == "O"]
+        if cns_p:
+            names[ident] = process_curated_name(cns_p)
+            source[ident] = "Geonames"
+        elif cns_o:
+            names[ident] = process_curated_name(cns_o)
+            source[ident] = "OSM"
+
+    print("No Geonames/OSM names:", len(missing()))
 
     for k, v in tqdm.tqdm(list(missing().items())):
         res = produce_name_based_on_wikidata(v)
-        if res is not None:
-            if re.match("^Q\\d+$", res[0]):
-                raise ValueError(
-                    f"Got a Wikidata tag {res[0]} instead of a name for {k}. This is unexpected."
-                )
-            names[k] = res
+        if res is None:
+            continue
+        res = [x for x in res if valid_ascii_name(x)]
+        if not res:
+            continue
+        if re.match("^Q\\d+$", res[0]):
+            raise ValueError(
+                f"Got a Wikidata tag {res[0]} instead of a name for {k}. This is unexpected."
+            )
+        names[k] = res
+        source[k] = "Wikidata"
+
+    print("No Geonames/OSM/wikidata names:", len(missing()))
 
     shp = load_shapefile_with_data(table)
 
@@ -402,10 +439,14 @@ def main():
         k: [v] for k, v in assign_coordinate_names(shp, name_candidates).items()
     }
 
+    for ident in set(coordinate_names) - set(names):
+        source[ident] = "Coordinates"
+
     coordinate_names.update(names)
 
     shp["names"] = shp.index.map(lambda x: json.dumps(coordinate_names[x]))
     shp["name"] = shp.index.map(lambda x: "-".join(coordinate_names[x][:3]))
+    shp["source"] = shp.index.map(lambda x: source[x])
 
     shp[[x for x in shp if x != "geometry"]].to_csv(
         "output/taylor_metropolitan_clusters.csv"
