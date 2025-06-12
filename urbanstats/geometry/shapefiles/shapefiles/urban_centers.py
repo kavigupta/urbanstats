@@ -9,7 +9,6 @@ from urbanstats.universe.universe_provider.universe_provider import (
     UrbanCenterlikeStateUniverseProvider,
 )
 
-
 URBAN_CENTERS = Shapefile(
     hash_key="urban_centers_5",
     path=load_ghsl_urban_center,

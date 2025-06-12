@@ -4,10 +4,10 @@ from typing import Tuple
 
 import us
 
-from urbanstats.universe.universe_list import get_universe_name_for_state
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     province_abbr_to_province,
 )
+from urbanstats.universe.universe_list import get_universe_name_for_state
 
 
 class UniverseProvider(ABC):
