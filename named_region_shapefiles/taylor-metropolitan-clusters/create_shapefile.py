@@ -334,6 +334,11 @@ def process_curated_name(curated_names):
     curated_names = sorted(
         curated_names, key=lambda x: parse_num_or_zero(x[2]), reverse=True
     )
+    curated_names = [
+        x
+        for x in curated_names
+        if parse_num_or_zero(x[2]) >= parse_num_or_zero(curated_names[0][2]) / 2
+    ]
     curated_names = [x[1] for x in curated_names]
     return curated_names
 
