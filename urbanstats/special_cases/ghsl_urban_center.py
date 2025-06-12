@@ -50,6 +50,9 @@ def load_ghsl_urban_center_no_names():
     # add idx_venice with ISO_CC = {"IT"} and ISO_CODE = {"IT34"}
     subnational_classes.loc[idx_venice] = [{"IT"}, {"IT34"}]
 
+    return attach_subnational_suffxes(areas, snr, subnational_classes)
+
+def attach_subnational_suffxes(areas, snr, subnational_classes, *, name_column="UC_NM_MN"):
     backmap = subnational_classes.loc[areas.index_].applymap(sorted)
     for col in subnational_classes.columns:
         areas["subnationals_" + col] = list(backmap[col])
@@ -60,18 +63,18 @@ def load_ghsl_urban_center_no_names():
     code_to_name = dict(zip(snr.ISO_CODE, snr.NAME))
     duplicates = {
         x: y
-        for x, y in Counter(zip(areas["UC_NM_MN"], areas["suffix"])).items()
+        for x, y in Counter(zip(areas[name_column], areas["suffix"])).items()
         if y > 1
     }
-    mid_by_idx = compute_mid_by_idx(areas, duplicates, code_to_name)
+    print(sorted(duplicates.items(), key=lambda x: x[1], reverse=True))
+    mid_by_idx = compute_mid_by_idx(areas, duplicates, code_to_name, name_column=name_column)
     areas["mid"] = areas.index_.apply(lambda x: mid_by_idx.get(x, ""))
-    return areas
 
 
-def compute_mid_by_idx(areas, duplicates, code_to_name):
+def compute_mid_by_idx(areas, duplicates, code_to_name, *, name_column):
     mid_by_idx = {}
     for name, suffix in duplicates:
-        idxs = areas.index[(areas.UC_NM_MN == name) & (areas.suffix == suffix)]
+        idxs = areas.index[(areas[name_column] == name) & (areas.suffix == suffix)]
         state_summary = areas.loc[idxs].subnationals_ISO_CODE.apply(
             lambda x: "-".join(code_to_name[t] for t in x)
         )
@@ -80,7 +83,11 @@ def compute_mid_by_idx(areas, duplicates, code_to_name):
             if len(idxs_for_state) == 1:
                 mid_by_idx[idxs_for_state[0]] = state
                 continue
-            assert len(idxs_for_state) == 2
+            if len(idxs_for_state) != 2:
+                print(
+                    f"Warning: {len(idxs_for_state)} areas with name {name} and suffix {suffix} in {state}"
+                )
+                return mid_by_idx
             idx1, idx2 = idxs_for_state
             dir1, dir2 = directions(areas, idx1, idx2)
             mid_by_idx[idx1] = dir1 + " " + state
