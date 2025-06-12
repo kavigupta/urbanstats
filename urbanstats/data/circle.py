@@ -1,6 +1,7 @@
 from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
+import itertools
 from typing import List
 
 import geopandas as gpd
@@ -633,6 +634,20 @@ def to_cardinal_direction(angle_revolutions):
         0.8125: "South-Southeast",
         0.9375: "East-Southeast",
     }[angle_revolutions]
+
+
+def name_points_around_center(centroids):
+    centroids = np.array([centroids.x.values, centroids.y.values]).T
+    centroids = centroids - centroids.mean(axis=0)
+    angles = np.arctan2(centroids[:, 1], centroids[:, 0])
+    fractions_of_circle = (angles / (2 * np.pi)) % 1
+    centroids = centroids - centroids.mean(axis=0)
+    for log_subdivisions in itertools.count(2):
+        subdivisions = 2**log_subdivisions
+        rounded_fractions = np.round(fractions_of_circle * subdivisions) / subdivisions
+        rounded_fractions %= 1
+        if len(set(rounded_fractions)) == len(rounded_fractions):
+            return [to_cardinal_direction(fraction) for fraction in rounded_fractions]
 
 
 def compute_structure(rows):

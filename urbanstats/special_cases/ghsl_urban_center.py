@@ -52,7 +52,15 @@ def load_ghsl_urban_center_no_names():
 
     return attach_subnational_suffxes(areas, snr, subnational_classes)
 
-def attach_subnational_suffxes(areas, snr, subnational_classes, *, name_column="UC_NM_MN"):
+
+def attach_subnational_suffxes(
+    areas,
+    snr,
+    subnational_classes,
+    *,
+    name_column="UC_NM_MN",
+    more_general_direction=False
+):
     backmap = subnational_classes.loc[areas.index_].applymap(sorted)
     for col in subnational_classes.columns:
         areas["subnationals_" + col] = list(backmap[col])
@@ -66,12 +74,40 @@ def attach_subnational_suffxes(areas, snr, subnational_classes, *, name_column="
         for x, y in Counter(zip(areas[name_column], areas["suffix"])).items()
         if y > 1
     }
-    print(sorted(duplicates.items(), key=lambda x: x[1], reverse=True))
-    mid_by_idx = compute_mid_by_idx(areas, duplicates, code_to_name, name_column=name_column)
+    # print(sorted(duplicates.items(), key=lambda x: x[1], reverse=True))
+    mid_by_idx = compute_mid_by_idx(
+        areas,
+        duplicates,
+        code_to_name,
+        name_column=name_column,
+        more_general_direction=more_general_direction,
+    )
     areas["mid"] = areas.index_.apply(lambda x: mid_by_idx.get(x, ""))
 
 
-def compute_mid_by_idx(areas, duplicates, code_to_name, *, name_column):
+def compute_mid_names_for_state(
+    areas, idxs_for_state, state, *, more_general_direction
+):
+    if len(idxs_for_state) == 1:
+        return {idxs_for_state[0]: state}
+    if not more_general_direction:
+        assert len(idxs_for_state) == 2
+        idx1, idx2 = idxs_for_state
+        dir1, dir2 = directions(areas, idx1, idx2)
+        mid_by_idx = {}
+        mid_by_idx[idx1] = dir1 + " " + state
+        mid_by_idx[idx2] = dir2 + " " + state
+        return mid_by_idx
+    centroids = areas.geometry[idxs_for_state].centroid
+    from urbanstats.data.circle import name_points_around_center
+
+    names = name_points_around_center(centroids)
+    return {idx: state + ": " + name for idx, name in zip(idxs_for_state, names)}
+
+
+def compute_mid_by_idx(
+    areas, duplicates, code_to_name, *, name_column, more_general_direction
+):
     mid_by_idx = {}
     for name, suffix in duplicates:
         idxs = areas.index[(areas[name_column] == name) & (areas.suffix == suffix)]
@@ -80,18 +116,15 @@ def compute_mid_by_idx(areas, duplicates, code_to_name, *, name_column):
         )
         for state in set(state_summary):
             idxs_for_state = list(idxs[state_summary == state])
-            if len(idxs_for_state) == 1:
-                mid_by_idx[idxs_for_state[0]] = state
-                continue
-            if len(idxs_for_state) != 2:
-                print(
-                    f"Warning: {len(idxs_for_state)} areas with name {name} and suffix {suffix} in {state}"
+            mid_by_idx.update(
+                compute_mid_names_for_state(
+                    areas,
+                    idxs_for_state,
+                    state,
+                    more_general_direction=more_general_direction,
                 )
-                return mid_by_idx
-            idx1, idx2 = idxs_for_state
-            dir1, dir2 = directions(areas, idx1, idx2)
-            mid_by_idx[idx1] = dir1 + " " + state
-            mid_by_idx[idx2] = dir2 + " " + state
+            )
+
     return mid_by_idx
 
 
