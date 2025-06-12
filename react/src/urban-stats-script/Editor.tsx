@@ -33,6 +33,8 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement>(null)
 
+    const inhibitRangeUpdateEvents = useRef<number>(0)
+
     const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
 
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
@@ -54,6 +56,8 @@ export function Editor(
         if (editor.innerHTML !== html) {
             editor.innerHTML = html
             if (range !== undefined) {
+                // Otherwise, we get into a re-render loop
+                inhibitRangeUpdateEvents.current++
                 setRange(editor, range)
             }
         }
@@ -64,10 +68,17 @@ export function Editor(
 
     useEffect(() => {
         const listener = (): void => {
-            displayScript()
+            if (inhibitRangeUpdateEvents.current > 0) {
+                inhibitRangeUpdateEvents.current--
+            }
+            else {
+                displayScript()
+            }
         }
         document.addEventListener('selectionchange', listener)
-        return () => { document.removeEventListener('selectionchange', listener) }
+        return () => {
+            document.removeEventListener('selectionchange', listener)
+        }
     }, [displayScript])
 
     useEffect(() => {

@@ -83,13 +83,12 @@ export function setRange(editor: HTMLElement, { start, end }: Range): void {
 
     const selection = window.getSelection()!
 
-    selection.removeAllRanges()
-
     const range = document.createRange()
 
     range.setStart(...getContainerOffset(start))
     range.setEnd(...getContainerOffset(end))
 
+    selection.removeAllRanges()
     selection.addRange(range)
 }
 
@@ -137,11 +136,7 @@ export function stringToHtml(
         options: (fragment: string) => string[]
         apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
     },
-): {
-        html: string
-        result: Result
-        autocomplete: AutocompleteMenu | undefined
-    } {
+): { html: string, result: Result, autocomplete: AutocompleteMenu | undefined } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
