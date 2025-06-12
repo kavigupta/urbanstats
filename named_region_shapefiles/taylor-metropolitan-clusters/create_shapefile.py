@@ -10,7 +10,7 @@ import PIL.Image
 import glob
 import re
 import tqdm
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 import numpy as np
 import pandas as pd
@@ -398,6 +398,91 @@ def valid_ascii_name(name):
     return all(ord(c) < 128 for c in name) and name.strip() != ""
 
 
+def near_substring(a, b):
+    """
+    Define A to be a near substring of B if there exists a substring B'
+    of B such that len(B') = len(A) and editDist(A, B') <= 0.1 len(A)
+    """
+    from difflib import SequenceMatcher
+
+    if len(a) > len(b):
+        return False
+    if len(a) == 0:
+        return True  # empty string is a substring of anything
+    if len(b) == 0:
+        return False  # non-empty string cannot be a substring of an empty string
+
+    threshold = 0.1 * len(a)
+    for i in range(len(b) - len(a) + 1):
+        substring = b[i : i + len(a)]
+        if SequenceMatcher(None, a, substring).ratio() * len(a) >= len(a) - threshold:
+            return True
+    return False
+
+
+def duplicate_index(names):
+    for i in range(len(names) - 1, 0, -1):
+        for j in range(len(names)):
+            if i == j:
+                continue
+            a, b = names[i], names[j]
+            a_subset_b = near_substring(a, b)
+            b_subset_a = near_substring(b, a)
+            if not a_subset_b and not b_subset_a:
+                continue
+            return min(i, j), max(i, j)
+    return None
+
+
+@permacache(
+    "urbanstats/named_region_shapefiles/taylor-metropolitan-clusters/deduplicate_names_2"
+)
+def deduplicate_names(names):
+    """
+    Deduplicate names by checking if a name is a near substring of another.
+    If it is, remove the longer one. Consolidate these to the position of the earlier
+    one (higher priority) in the list.
+    """
+    names = names[:]
+    while True:
+        idxs = duplicate_index(names)
+        if idxs is None:
+            break
+        i, j = idxs
+        if len(names[i]) >= len(names[j]):
+            names[i] = names[j]
+        del names[j]
+    return names
+
+
+def pull_non_city_geonames_for_missing(missing_names, curated_names):
+    pulled_names = {}
+    for ident in tqdm.tqdm(missing_names):
+        if ident not in curated_names:
+            continue
+        cns = curated_names[ident]
+        cns = [x for x in cns if valid_ascii_name(x[1]) if x[0] == "G"]
+        if not cns:
+            continue
+        names = [x[1] for x in cns]
+        names.sort(key=stable_hash)
+        names = deduplicate_names(names)
+        if not names:
+            continue
+        pulled_names[ident] = names
+    return pulled_names
+
+
+def namelist_to_name(namelist):
+    return "-".join(namelist[:3])
+
+
+def compute_coordinate_name(coord_name, geonames_for_missing):
+    if geonames_for_missing is None:
+        return coord_name
+    return f"{coord_name} ({namelist_to_name(geonames_for_missing)})"
+
+
 def main():
     table, name_candidates, curated_names = load_metadata()
 
@@ -433,19 +518,36 @@ def main():
 
     print("No Geonames/OSM/wikidata names:", len(missing()))
 
+    for k in names:
+        new_names_k = deduplicate_names(names[k])
+        assert (
+            len(new_names_k) > 0
+        ), f"Deduplicated names for {k} to an empty list: {names[k]}"
+        # if new_names_k[:3] != names[k][:3]:
+        #     print(
+        #         f"Deduplicated names for {k} from {names[k][:3]} to {new_names_k[:3]}"
+        #     )
+        names[k] = new_names_k
+
+    geonames_for_missing = pull_non_city_geonames_for_missing(missing(), curated_names)
+
     shp = load_shapefile_with_data(table)
 
-    coordinate_names = {
-        k: [v] for k, v in assign_coordinate_names(shp, name_candidates).items()
-    }
+    coordinate_names = assign_coordinate_names(shp, name_candidates)
 
     for ident in set(coordinate_names) - set(names):
-        source[ident] = "Coordinates"
+        if ident in geonames_for_missing:
+            source[ident] = "Coordinates (with geonames backup)"
+        else:
+            source[ident] = "Coordinates (no geonames backup)"
+        names[ident] = [
+            compute_coordinate_name(
+                coordinate_names[ident], geonames_for_missing.get(ident, None)
+            )
+        ]
 
-    coordinate_names.update(names)
-
-    shp["names"] = shp.index.map(lambda x: json.dumps(coordinate_names[x]))
-    shp["name"] = shp.index.map(lambda x: "-".join(coordinate_names[x][:3]))
+    shp["names"] = shp.index.map(lambda x: json.dumps(names[x]))
+    shp["name"] = shp.index.map(lambda x: "-".join(names[x][:3]))
     shp["source"] = shp.index.map(lambda x: source[x])
 
     shp[[x for x in shp if x != "geometry"]].to_csv(

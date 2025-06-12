@@ -5,7 +5,13 @@ grouped = table[["pop", "source"]].groupby("source")
 
 pop, count = grouped["pop"].sum(), grouped["pop"].count()
 
-sources = ["Coordinates", "Geonames", "Wikidata", "OSM"]
+sources = [
+    "Geonames",
+    "Wikidata",
+    "OSM",
+    "Coordinates (with geonames backup)",
+    "Coordinates (no geonames backup)",
+]
 
 assert set(pop.index) == set(sources)
 
