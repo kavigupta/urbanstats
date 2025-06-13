@@ -1294,8 +1294,8 @@ const value: Record<string, number[]> = {
         82,
     ],
     'Quebec, Canada__overall': [
-        308,
-        47,
+        306,
+        49,
     ],
 }
 export default value
