@@ -4,9 +4,12 @@ server {
     listen 80;
 
     location / {
-        set $branch $http_x_branch;
+        set $branch "";
+        if ($host ~* "^([^.]+)\.staging\.urbanstats\.org$") {
+            set $branch $1;
+        }
         if ($branch = "") {
-            set $branch "master";
+            return 404;
         }
         root /root/urbanstats/ci_proxy/densitydb/repos/$branch;
         try_files $uri $uri/ =404;

@@ -12,27 +12,16 @@ import proxy from 'express-http-proxy'
 import { z } from 'zod'
 
 export function startProxy(): void {
-    const branch = z.string().min(1).parse(process.env.DENSITYDB_BRANCH_NAME)
     const ciProxyOrigin = z.string().min(1).parse(process.env.CI_PROXY_ORIGIN)
 
     // This is useful for debugging in case the proxy isn't working
-    console.warn('Proxy is using branch...', branch)
+    console.warn('Proxy is using origin...', ciProxyOrigin)
 
     const app = express()
 
     app.use(
         express.static('test/density-db'),
-        proxy(ciProxyOrigin, { // Contacts the proxy in react/ci_proxy
-            proxyReqOptDecorator(proxyReqOpts) {
-                return {
-                    ...proxyReqOpts,
-                    headers: {
-                        ...proxyReqOpts.headers,
-                        'x-branch': branch,
-                    },
-                }
-            },
-        }),
+        proxy(ciProxyOrigin), // Contacts the proxy in react/ci_proxy
     )
 
     app.listen(8000)
