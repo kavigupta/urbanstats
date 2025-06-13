@@ -648,6 +648,7 @@ def name_points_around_center(centroids):
         rounded_fractions %= 1
         if len(set(rounded_fractions)) == len(rounded_fractions):
             return [to_cardinal_direction(fraction) for fraction in rounded_fractions]
+    raise RuntimeError("unreachable")
 
 
 def compute_structure(rows):

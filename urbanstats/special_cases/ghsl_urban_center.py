@@ -23,6 +23,7 @@ def classify_areas_by_subnational_region(snr, areas):
 
 @permacache("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
 def load_ghsl_urban_center():
+    # pylint: disable=unsupported-assignment-operation
     areas = load_ghsl_urban_center_no_names()
     areas["shortname"] = (
         areas.UC_NM_MN
@@ -99,6 +100,7 @@ def compute_mid_names_for_state(
         mid_by_idx[idx2] = dir2 + " " + state
         return mid_by_idx
     centroids = areas.geometry[idxs_for_state].centroid
+    # pylint: disable=import-outside-toplevel
     from urbanstats.data.circle import name_points_around_center
 
     names = name_points_around_center(centroids)
@@ -129,9 +131,9 @@ def compute_mid_by_idx(
 
 
 def directions(areas, idx1, idx2):
-    # pylint: disable=no-else-return
     coord1, coord2 = areas.geometry[idx1].centroid, areas.geometry[idx2].centroid
     dlat, dlon = coord2.y - coord1.y, coord2.x - coord1.x
+    # pylint: disable=no-else-return
     if abs(dlat) > abs(dlon):
         if dlat > 0:
             return "Southern", "Northern"
