@@ -15,7 +15,7 @@ URBAN_CENTERS = Shapefile(
     shortname_extractor=lambda x: x["shortname"],
     longname_extractor=lambda x: x["longname"],
     additional_columns_to_keep=["subnationals_ISO_CODE"],
-    meta=dict(type="Urban Center", source="GHSL", type_category="International"),
+    meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
     filter=lambda x: True,
     special_data_sources=["international_gridded_data"],
     universe_provider=CombinedUniverseProvider(
