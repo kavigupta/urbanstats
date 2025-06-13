@@ -95,6 +95,17 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
     /* c8 ignore stop */
 }
 
+export function locationOfLastExpression(node: UrbanStatsAST): LocInfo {
+    switch (node.type) {
+        case 'assignment':
+            return locationOf(node.value)
+        case 'statements':
+            return locationOfLastExpression(node.result[node.result.length - 1])
+        default:
+            return locationOf(node)
+    }
+}
+
 export function toSExp(node: UrbanStatsAST): string {
     /**
      * For testing purposes, we convert the AST to a simple S-expression format.
@@ -181,20 +192,20 @@ class ParseState {
         return this.consumeTokenOfType('identifier', ...oneOfIdentifiers)
     }
 
-    maybeLastNonEOLToken(): AnnotatedTokenWithValue {
-        for (let i = this.index - 1; i >= 0; i--) {
+    maybeLastNonEOLToken(offset: number): AnnotatedTokenWithValue {
+        for (let i = this.index + offset; i >= 0; i--) {
             const token = this.tokens[i]
             if (token.token.type !== 'operator' || token.token.value !== 'EOL') {
                 return token
             }
         }
-        return this.tokens[this.index - 1]
+        return this.tokens[this.index + offset]
     }
 
     parseSingleExpression(): UrbanStatsASTExpression | ParseError {
         while (this.skipEOL()) { }
         if (this.index >= this.tokens.length) {
-            return { type: 'error', value: 'Unexpected end of input', location: this.maybeLastNonEOLToken().location }
+            return { type: 'error', value: 'Unexpected end of input', location: this.maybeLastNonEOLToken(-1).location }
         }
         const token = this.tokens[this.index]
         switch (token.token.type) {
@@ -226,7 +237,7 @@ class ParseState {
                                 return { type: 'error', value: `Expected comma , or closing bracket } after object field name; instead received ${this.tokens[this.index].token.value}`, location: this.tokens[this.index].location }
                             }
                             if (!this.consumeIdentifier()) {
-                                return { type: 'error', value: 'Expected identifier for object field name', location: this.maybeLastNonEOLToken().location }
+                                return { type: 'error', value: 'Expected identifier for object field name', location: this.maybeLastNonEOLToken(-1).location }
                             }
                             const keyToken = this.tokens[this.index - 1]
                             assert(keyToken.token.type === 'identifier', `Expected identifier token, but got ${keyToken.token.type}`)
@@ -251,7 +262,7 @@ class ParseState {
                         const elements: UrbanStatsASTExpression[] = []
                         while (!this.consumeBracket(']')) {
                             if (elements.length > 0 && !this.consumeOperator(',')) {
-                                return { type: 'error', value: 'Expected comma , or closing bracket ] after vector element', location: this.tokens[this.index].location }
+                                return { type: 'error', value: 'Expected comma , or closing bracket ] after vector element', location: this.maybeLastNonEOLToken(0).location }
                             }
                             const element = this.parseExpression()
                             if (element.type === 'error') {
@@ -339,7 +350,7 @@ class ParseState {
             if (this.consumeOperator('.')) {
                 done = false
                 if (!this.consumeIdentifier()) {
-                    return { type: 'error', value: 'Expected identifier after the dot', location: this.maybeLastNonEOLToken().location }
+                    return { type: 'error', value: 'Expected identifier after the dot', location: this.maybeLastNonEOLToken(-1).location }
                 }
                 const token = this.tokens[this.index - 1]
                 assert(token.token.type === 'identifier', `Expected identifier token, but got ${token.token.type}`)
@@ -488,17 +499,17 @@ class ParseState {
     parseIfExpression(): UrbanStatsASTExpression | ParseError {
         const ifToken = this.tokens[this.index - 1]
         if (!this.consumeBracket('(')) {
-            return { type: 'error', value: 'Expected opening bracket ( after if', location: this.maybeLastNonEOLToken().location }
+            return { type: 'error', value: 'Expected opening bracket ( after if', location: this.maybeLastNonEOLToken(-1).location }
         }
         const condition = this.parseExpression()
         if (condition.type === 'error') {
             return condition
         }
         if (!this.consumeBracket(')')) {
-            return { type: 'error', value: 'Expected closing bracket ) after if condition', location: this.maybeLastNonEOLToken().location }
+            return { type: 'error', value: 'Expected closing bracket ) after if condition', location: this.maybeLastNonEOLToken(-1).location }
         }
         if (!this.consumeBracket('{')) {
-            return { type: 'error', value: 'Expected opening bracket { after if condition', location: this.maybeLastNonEOLToken().location }
+            return { type: 'error', value: 'Expected opening bracket { after if condition', location: this.maybeLastNonEOLToken(-1).location }
         }
         const then = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after if block')
         if (then.type === 'error') {
@@ -507,7 +518,7 @@ class ParseState {
         let elseBranch: UrbanStatsASTStatement | undefined = undefined
         if (this.consumeIdentifier('else')) {
             if (!this.consumeBracket('{')) {
-                return { type: 'error', value: 'Expected opening bracket { after else', location: this.maybeLastNonEOLToken().location }
+                return { type: 'error', value: 'Expected opening bracket { after else', location: this.maybeLastNonEOLToken(-1).location }
             }
             const eb = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after else block')
             if (eb.type === 'error') {
@@ -540,12 +551,12 @@ class ParseState {
                 break
             }
             if (!this.consumeOperator('EOL', ';')) {
-                return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken().location }
+                return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken(-1).location }
             }
             while (this.skipEOL()) { }
         }
         if (this.index === this.tokens.length && canEnd) {
-            return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken().location }
+            return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken(-1).location }
         }
         if (statements.length === 1) {
             return statements[0]

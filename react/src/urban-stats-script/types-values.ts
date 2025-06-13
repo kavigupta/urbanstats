@@ -187,3 +187,37 @@ export function unifyType(
     }
     throw error()
 }
+
+export function renderValue(input: USSValue): string {
+    function helper(value: USSValue, indent: string): string {
+        const type = value.type
+        switch (type.type) {
+            case 'boolean':
+            case 'null':
+            case 'number':
+                return `${value.value}`
+            case 'string':
+                return `"${value.value}"`
+            case 'vector':
+                const vector = value.value as USSRawValue[]
+                if (vector.length === 0) {
+                    return `[]`
+                }
+                // USSType assertion is OK since we handle zero-length vectors above
+                return `[
+${vector.map(element => `${indent}    ${helper({ value: element, type: type.elementType as USSType }, `${indent}    `)}`).join(',\n')}
+${indent}]`
+            case 'object':
+                const map = value.value as Map<string, USSRawValue>
+                if (map.size === 0) {
+                    return `{}`
+                }
+                return `{
+${Array.from(map.entries()).map(([key, element]) => `${indent}    ${key}: ${helper({ value: element, type: type.properties.get(key)! }, `${indent}    `)}`).join(',\n')}
+${indent}}`
+            case 'function':
+                return renderType(type)
+        }
+    }
+    return helper(input, '')
+}

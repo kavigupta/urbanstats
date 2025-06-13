@@ -458,7 +458,7 @@ void test('vector literal', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('[1, 2, 3'),
-        '(errors (error "Expected comma , or closing bracket ] after vector element" at 0:8))',
+        '(errors (error "Expected comma , or closing bracket ] after vector element" at 0:7))',
     )
     assert.deepStrictEqual(
         parseAndRender('[1, 2, 3*]'),
