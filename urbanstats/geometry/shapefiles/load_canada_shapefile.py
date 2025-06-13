@@ -34,6 +34,10 @@ pruid_to_province_abbr = {
     "60": "YT",
 }
 
+province_abbr_to_province = {
+    pruid_to_province_abbr[k]: v for k, v in pruid_to_province.items()
+}
+
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",
