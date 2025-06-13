@@ -5,7 +5,7 @@ const value: Record<string, string> = {
     'Urban Area': 'Census',
     'ZIP': 'Small',
     'CCD': 'Census',
-    'City': 'US Subdivision',
+    'City': 'US City',
     'Neighborhood': 'Small',
     'Congressional District': 'Political',
     'State House District': 'Political',

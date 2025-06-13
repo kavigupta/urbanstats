@@ -220,6 +220,7 @@ type_category_order = {
     "US Subdivision": 0,
     "International": 0,
     "International City": 0,
+    "US City": 10,
     "Census": 20,
     "Small": 30,
     "Political": 40,

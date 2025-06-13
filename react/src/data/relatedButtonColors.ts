@@ -12,6 +12,10 @@ export default [
         'blue',
     ],
     [
+        'US City',
+        'blue',
+    ],
+    [
         'Census',
         'cyan',
     ],
