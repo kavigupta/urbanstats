@@ -1,3 +1,5 @@
+import assert from 'assert'
+
 import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from 'mathjs'
 
 import { ColorStat, StatisticsForGeography } from './settings'
@@ -13,68 +15,103 @@ export class Regression {
     compute(statistics_for_geography: StatisticsForGeography, variables: Record<string, number[]>): Record<string, number[]> {
         const independent = this.independentFn.compute(statistics_for_geography, variables)
         const dependent = this.dependentFns.map(fn => fn.compute(statistics_for_geography, variables))
-
-        // independent: (N,)
-        // dependent: (K, N)
-
-        const y = independent.map(x => [x])
-        // transpose dependent
-        const x = dependent[0].map((_, i) => dependent.map(row => row[i]))
-
-        // x: (N, K)
-        // y: (N, 1)
-
-        // filter nans
-        // is_nan: (N,)
-
-        const isNan = y.map((yi, i) => isNaN(yi[0]) || x[i].some(xij => isNaN(xij)))
-
-        const xfilt = x.filter((_, i) => !isNan[i])
-        const yfilt = y.filter((_, i) => !isNan[i])
-        const sfgFilt = statistics_for_geography.filter((_, i) => !isNan[i])
-
-        const awoFilt = x.map(row => [1, ...row])
-
-        // eslint-disable-next-line no-restricted-syntax -- A is a matrix
-        const A = xfilt.map(row => [1, ...row])
-        // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
-        let ATW = transpose(A)
-
-        if (this.weightByPopulation) {
-            // eslint-disable-next-line no-restricted-syntax -- W is a matrix
-            const W = sfgFilt.map(sfg => sfg.stats[this.populationIdx])
-            ATW = dotMultiply(ATW, W)
-        }
-
-        const ata = multiply(ATW, A)
-
-        const atb = multiply(ATW, yfilt)
-
-        // solve for weights. weights = (ata)^-1 atb
-
-        const wsCol = lusolve(ata, atb)
-        const ws = wsCol.map(col => (col as MathNumericType[])[0])
-
-        const weights = ws.slice(1)
-        const intercept = ws[0]
-
-        const preds = multiply(awoFilt, wsCol).map(pred => (pred as number[])[0])
+        const w = this.weightByPopulation ? statistics_for_geography.map(sfg => sfg.stats[this.populationIdx]) : undefined
+        const { residuals, weights, intercept } = calculateRegression(independent, dependent, w)
 
         const result: Record<string, number[]> = {}
         for (let i = 0; i < this.dependentNames.length; i++) {
             if (this.dependentNames[i] === '') {
                 continue
             }
-            result[this.dependentNames[i]] = preds.map(() => weights[i] as number)
+            result[this.dependentNames[i]] = residuals.map(() => weights[i])
         }
         if (this.interceptName !== '') {
-            result[this.interceptName] = preds.map(() => intercept as number)
+            result[this.interceptName] = residuals.map(() => intercept)
         }
 
         if (this.residualName !== '') {
-            result[this.residualName] = preds.map((pred, i) => y[i][0] - pred)
+            result[this.residualName] = residuals
         }
 
         return result
     }
+}
+
+export function calculateRegression(independent: number[], dependent: number[][], w: number[] | undefined, noIntercept: boolean = false): {
+    residuals: number[]
+    weights: number[]
+    intercept: number
+} {
+    // independent: (N,)
+    // dependent: (K, N)
+
+    assert (dependent.length !== 0, 'Must have at least one dependent variable')
+    assert (dependent.every(row => row.length === independent.length), `Independent and dependent variables must have the same length: instead got independent: ${independent.length}, dependent: ${JSON.stringify(dependent.map(row => row.length))}`)
+    const y = independent.map(x => [x])
+    // transpose dependent
+    const x = dependent[0].map((_, i) => dependent.map(row => row[i]))
+
+    // x: (N, K)
+    // y: (N, 1)
+    // filter nans
+    // is_nan: (N,)
+    const isNan = y.map((yi, i) => isNaN(yi[0]) || x[i].some(xij => isNaN(xij)))
+
+    const xfilt = x.filter((_, i) => !isNan[i])
+    const yfilt = y.filter((_, i) => !isNan[i])
+    if (w !== undefined) {
+        w = w.filter((_, i) => !isNan[i])
+    }
+
+    // eslint-disable-next-line no-restricted-syntax -- A is a matrix
+    const A = noIntercept ? xfilt : xfilt.map(row => [1, ...row])
+    // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
+    let ATW = transpose(A)
+
+    if (w !== undefined) {
+        ATW = dotMultiply(ATW, w)
+    }
+
+    const ata = multiply(ATW, A)
+
+    const atb = multiply(ATW, yfilt)
+
+    // solve for weights. weights = (ata)^-1 atb
+    const wsCol = lusolve(ata, atb)
+    const ws = wsCol.map(col => (col as MathNumericType[])[0])
+
+    const [weights, intercept] = noIntercept ? [ws, 0] : [ws.slice(1), ws[0]]
+
+    const preds = multiply(A, wsCol).map(pred => (pred as number[])[0])
+
+    const residuals = preds.map((pred, i) => y[i][0] - pred)
+    return { residuals, weights: weights as number[], intercept: intercept as number }
+}
+
+export function computePearsonR2(
+    dependent: number[], residuals: number[], w: number[] | undefined,
+): number {
+    if (dependent.length !== residuals.length) {
+        throw new Error(`Dependent and residuals must have the same length: ${dependent.length} vs ${residuals.length}`)
+    }
+    if (w !== undefined && w.length !== dependent.length) {
+        throw new Error(`Weights must have the same length as dependent and residuals: ${w.length} vs ${dependent.length}`)
+    }
+    if (w === undefined) {
+        w = Array(dependent.length).fill(1)
+    }
+    // https://en.wikipedia.org/wiki/Coefficient_of_determination
+    // the most general definition of R^2 is:
+    // R^2 = 1 - SS_res / SS_tot
+    // where SS_res is the sum of squares of residuals and SS_tot is the total sum of squares
+    // SS_res = sum(w_i * (y_i - y_pred_i)^2)
+    // SS_tot = sum(w_i * (y_i - mean(y))^2)
+    const totalWeight = w.reduce((sum, val) => sum + val, 0)
+    const meanDependent = dependent.reduce((sum, val, i) => sum + w[i] * val, 0) / totalWeight
+
+    const ssRes = w.reduce((sum, weight, i) => sum + weight * Math.pow(residuals[i], 2), 0)
+    const ssTot = w.reduce((sum, weight, i) => sum + weight * Math.pow(dependent[i] - meanDependent, 2), 0)
+    const r = 1 - ssRes / ssTot
+
+    return r
 }
