@@ -90,4 +90,32 @@ def get_custom_quizzes():
                 "Georgia, USA",
             ),
         ],
+        # 666
+        666: [
+            custom_quiz_question(
+                "PW Mean Elevation",
+                "Destruction Bay Settlement, Yukon Territory, Yukon, Canada",
+                "Red Devil CDP, Alaska, USA",
+            ),
+            custom_quiz_question(
+                "Mean high heat index",
+                "Deville CDP, Louisiana, USA",
+                "Death Valley Unified School District, California, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean PM2.5 Pollution",
+                "Devils Lake city, North Dakota, USA",
+                "Florida, USA",
+            ),
+            custom_quiz_question(
+                "Agriculture, forestry, fishing and hunting %",
+                "Horn Lake city, Mississippi, USA",
+                "Kill Devil Hills MSA, NC, USA",
+            ),
+            custom_quiz_question(
+                "Commute Car %",
+                "Hellertown borough, Pennsylvania, USA",
+                "66616, USA",
+            ),
+        ],
     }
