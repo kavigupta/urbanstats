@@ -95,9 +95,9 @@ export function setRange(editor: HTMLElement, { start, end }: Range): void {
 export function htmlToString(html: string): string {
     const domParser = new DOMParser()
     const string = domParser.parseFromString(
-        html
-            .replaceAll(/<div.+?\/div>/g, '') // Everything inside a div is an autocomplete box
-            .replaceAll(/<.*?>/g, ''),
+        html // TODO get rid of recursive divs or count text by visiting tree
+            .replaceAll(/<div.+?\/div>/sg, '') // Everything inside a div is an autocomplete box
+            .replaceAll(/<.*?>/sg, ''),
         'text/html',
     ).documentElement.textContent!
     return string
@@ -118,8 +118,8 @@ function escapeStringForHTML(string: string): string {
 export type Result = { result: 'success', value: USSValue } | { result: 'failure', errors: string[] }
 
 interface AutocompleteMenu {
-    action: (action: 'up' | 'down' | 'accept') => void
-    attachListeners: () => void // call once the returned html is rendered
+    action: (action: 'up' | 'down' | 'accept' | 'escape') => void
+    attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
 export type Execute = (expr: UrbanStatsASTStatement) => USSValue
@@ -136,7 +136,7 @@ export function stringToHtml(
     lastAction: Action,
     autocomplete: {
         collapsedRangeIndex: number | undefined
-        options: (fragment: string) => string[]
+        options: string[]
         apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
     },
 ): { html: string, result: Result, autocomplete: AutocompleteMenu | undefined } {
@@ -190,8 +190,21 @@ export function stringToHtml(
     let autocompleteMenu: AutocompleteMenu | undefined
 
     function maybeAutocompleteMenu(token: AnnotatedToken): string {
-        if (autocompleteLocation !== undefined && token.token.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
-            return `<div contenteditable="false" style="position:absolute;top:100%;left:100%;user-select:none;">hi</div>`
+        const identifierToken = token.token
+        if (autocompleteLocation !== undefined && identifierToken.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
+            const includeOption = (option: string): boolean => {
+                return option.startsWith(identifierToken.value) && option !== identifierToken.value
+            }
+
+            const allIdentifiers = Array.from(
+                new Set(lexTokens
+                    .flatMap(t => t.token.type === 'identifier' && includeOption(t.token.value) && t !== token ? [t.token.value] : [])
+                    .concat(autocomplete.options.filter(includeOption))),
+            ).sort()
+
+            autocompleteMenu = autocompleteMenuCallbacks(allIdentifiers)
+
+            return renderAutocompleteMenu(colors, allIdentifiers)
         }
         else {
             return ''
@@ -330,6 +343,45 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                 style.color = colors.hueColors.orange
                 break
         }
-        return `<span style="${Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')}" ${title !== undefined ? `title="${escapeStringForHTML(title)}"` : ''}>`
+        return `<span style="${styleToString(style)}" ${title !== undefined ? `title="${escapeStringForHTML(title)}"` : ''}>`
+    }
+}
+
+function styleToString(style: Record<string, string>): string {
+    return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
+}
+
+function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
+    const style = {
+        'position': 'absolute',
+        'top': '100%',
+        'left': '100%',
+        'user-select': 'none',
+    }
+
+    const contents = identifiers
+        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === 0)}">${identifier}</div>`)
+        .join('\n')
+
+    return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}">${contents}</div>`
+}
+
+function autocompleteSpanStyle(colors: Colors, index: number, selected: boolean): string {
+    return styleToString({
+        'cursor': 'pointer',
+        'background-color': (selected ? colors.slightlyDifferentBackgroundFocused : index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground)
+    })
+}
+
+function autocompleteMenuCallbacks(identifiers: string[]): AutocompleteMenu {
+    let selectedIndex = 0
+
+    return {
+        attachListeners(editor) {
+
+        },
+        action(action) {
+
+        },
     }
 }

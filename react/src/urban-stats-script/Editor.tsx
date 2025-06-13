@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useSta
 
 import { useColors } from '../page_template/colors'
 
+import { defaultConstants } from './constants'
 import { Action, Execute, getRange, htmlToString, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
 import { renderValue } from './types-values'
 
@@ -9,7 +10,7 @@ import '@fontsource/inconsolata/500.css'
 
 // If we do a different default every time, the component will keep outputting a new script and go into a loop
 const defaultCheckValue: ValueChecker = () => ({ ok: true })
-const defaultAutoCompleteValue: string[] = []
+const defaultAutoCompleteValue: string[] = Array.from(defaultConstants.keys())
 
 export function Editor(
     {
@@ -46,10 +47,10 @@ export function Editor(
         }
         return stringToHtml(newScript, colors, execute, checkValue, lastAction, {
             collapsedRangeIndex,
-            options: () => autocomplete,
-            apply: () => undefined,
+            options: autocomplete,
+            apply: (completion, index) => { setScript(newScript.slice(0, index) + completion + newScript.slice(index)) },
         })
-    }, [colors, execute, checkValue, autocomplete, lastAction])
+    }, [colors, execute, checkValue, autocomplete, lastAction, setScript])
 
     const displayScript = useCallback(() => {
         const editor = editorRef.current!
