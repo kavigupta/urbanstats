@@ -2,18 +2,18 @@
 Got the files ucls_* from Taylor via personal communication, as well as names_full.txt and uc_metadata.zip.
 """
 
-from functools import lru_cache
-import json
-from typing import Counter
-import zipfile
-import PIL.Image
 import glob
+import json
 import re
-import tqdm
-from permacache import permacache, stable_hash
+import zipfile
+from functools import lru_cache
+from typing import Counter
 
 import numpy as np
 import pandas as pd
+import PIL.Image
+import tqdm
+from permacache import permacache, stable_hash
 
 # 0_0 is 70N to 60N, 180W to 170W, and then it's y_x across the grid.
 
