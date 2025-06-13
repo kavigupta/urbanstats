@@ -382,7 +382,7 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
         attachListeners(editor) {
             editor.querySelectorAll('[data-autocomplete-option]').forEach((option) => {
                 const index = parseInt(option.getAttribute('data-index')!)
-                option.addEventListener('onclick', () => {
+                option.addEventListener('click', () => {
                     apply(index)
                 })
                 option.addEventListener('mouseenter', () => {
@@ -396,9 +396,10 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
         action(editor, event) {
             switch (event.key) {
                 case 'Enter':
+                case 'Tab':
                     event.preventDefault()
                     apply(selectedIndex)
-                    return { consumed: true, stopListening: false }
+                    return { consumed: true, stopListening: true }
                 case 'Escape':
                     event.preventDefault()
                     editor.querySelector('[data-autocomplete-menu]')?.remove()

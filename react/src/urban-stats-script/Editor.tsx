@@ -57,6 +57,7 @@ export function Editor(
             apply: (completion, index) => {
                 const editedScript = newScript.slice(0, index) + completion + newScript.slice(index)
                 renderScript(editedScript, { start: index + completion.length, end: index + completion.length })
+                setScript(editedScript)
             },
         })
 
