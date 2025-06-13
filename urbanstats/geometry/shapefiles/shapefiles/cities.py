@@ -10,7 +10,7 @@ CITIES = Shapefile(
     shortname_extractor=lambda x: x.NAMELSAD,
     longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
     filter=lambda x: True,
-    meta=dict(type="City", source="Census", type_category="US Subdivision"),
+    meta=dict(type="City", source="Census", type_category="US City"),
     drop_dup="counties",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},

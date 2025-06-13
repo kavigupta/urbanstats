@@ -68,11 +68,11 @@ interface Result {
 const weights = {
     match: 5,
     position: 5,
-    priority: 1,
+    priority: 1.6,
     population: 2,
     incompleteMatches: 1,
     swapOverlap: 1,
-    priorityType: 0.25,
+    priorityType: 0.4,
 }
 
 const sumOfWeights = Object.values(weights).reduce((total, value) => total + value, 0)
