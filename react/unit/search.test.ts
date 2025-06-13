@@ -31,7 +31,7 @@ firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
 firstResult(test)('ca usa', 'California, USA')
 firstResult(test)('nv usa', 'NV-04 (2023), USA') // Nevada, USA or a NV-??
 firstResult(test)('usa', 'USA')
-firstResult(test)('london', 'London Urban Center, United Kingdom')
+firstResult(test)('london', 'London Metropolitan Cluster, United Kingdom')
 firstResult(test)('berlin', 'Berlin, Germany')
 firstResult(test)('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
 firstResult(test)('san marino', 'San Marino') // Should not be "San Marino, San Marino"
@@ -40,9 +40,9 @@ firstResult(test)('india', 'India')
 firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
 firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
 firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
-firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspelling
+firstResult(test)('dalas', 'Dallas-Fort Worth Metropolitan Cluster, USA') // Correct for misspelling
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
-firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
+firstResult(test)('france-germany', 'Saarbruecken Metropolitan Cluster, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
 
 firstResult(test)('san jose', 'San Jose city, California, USA', 'City')
