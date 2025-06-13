@@ -362,16 +362,18 @@ function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
     }
 
     const contents = identifiers
-        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === 0)}">${identifier}</div>`)
+        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, identifiers.length, index, index === 0)}">${identifier}</div>`)
         .join('')
 
     return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}">${contents}</div>`
 }
 
-function autocompleteSpanStyle(colors: Colors, index: number, selected: boolean): string {
+function autocompleteSpanStyle(colors: Colors, total: number, index: number, selected: boolean): string {
     return styleToString({
         'cursor': 'pointer',
         'background-color': (selected ? colors.slightlyDifferentBackgroundFocused : index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground),
+        'padding': '0 0.5em',
+        'border-radius': index === 0 ? '0.5em 0.5em 0 0' : index === total - 1 ? '0 0 0.5em 0.5em' : 'none',
     })
 }
 
@@ -386,10 +388,10 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
                     apply(index)
                 })
                 option.addEventListener('mouseenter', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, index, true))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, numOptions, index, true))
                 })
                 option.addEventListener('mouseleave', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, index, index === selectedIndex))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, numOptions, index, index === selectedIndex))
                 })
             })
         },
@@ -407,7 +409,7 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
                 case 'ArrowDown':
                 case 'ArrowUp':
                     event.preventDefault()
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, false))
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, numOptions, selectedIndex, false))
                     if (event.key === 'ArrowDown') {
                         selectedIndex++
                     }
@@ -421,7 +423,7 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
                     else if (selectedIndex > numOptions - 1) {
                         selectedIndex = 0
                     }
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, true))
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, numOptions, selectedIndex, true))
                     return { consumed: true, stopListening: false }
             }
             return { consumed: false, stopListening: false }
