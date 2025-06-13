@@ -5,7 +5,6 @@ import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
-import { EditorPanel } from '../urban-stats-script/EditorPanel'
 
 import { Navigator } from './Navigator'
 import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
@@ -178,7 +177,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'mapper':
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'editor':
-            return <EditorPanel />
+            return <pageData.editorPanel />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':
