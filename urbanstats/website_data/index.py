@@ -7,17 +7,17 @@ from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
 from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 
-# maps types to their search priority scores, which must fit into an uint32. Higher=less important
+# maps types to their search priority scores. Higher=less important.
 type_category_to_priority = {
     "US Subdivision": 0,
     "International": 0,
-    "Census": 2,
-    "Small": 2,
-    "Native": 2,
-    "Political": 3,
-    "School": 3,
-    "Oddball": 4,
-    "Kavi": 5,
+    "Census": 20,
+    "Small": 20,
+    "Native": 20,
+    "Political": 30,
+    "School": 30,
+    "Oddball": 40,
+    "Kavi": 50,
 }
 
 
