@@ -2,6 +2,7 @@
 Got the files ucls_* from Taylor via personal communication, as well as names_full.txt and uc_metadata.zip.
 """
 
+from difflib import SequenceMatcher
 import glob
 import json
 import re
@@ -12,8 +13,11 @@ from typing import Counter
 import numpy as np
 import pandas as pd
 import PIL.Image
+import requests
 import tqdm
 from permacache import permacache, stable_hash
+import shapely
+import geopandas as gpd
 
 # 0_0 is 70N to 60N, 180W to 170W, and then it's y_x across the grid.
 
@@ -29,11 +33,12 @@ def filenames():
 
     zips = glob.glob("ucls*.zip")
     for z in zips:
-        for f in zipfile.ZipFile(z).namelist():
-            m = file_format.match(f)
-            assert m, f
-            y, x = int(m.group(1)), int(m.group(2))
-            by_y_x[(y, x)] = z, f
+        with zipfile.ZipFile(z) as zf:
+            for f in zf.namelist():
+                m = file_format.match(f)
+                assert m, f
+                y, x = int(m.group(1)), int(m.group(2))
+                by_y_x[(y, x)] = z, f
     return by_y_x
 
 
@@ -201,7 +206,6 @@ def convert_shape_to_shapefile(lats, lons):
     """
     Convert a shape defined by latitude and longitude points to a shapefile format.
     """
-    import shapely
 
     # create one box per line
     row_boxes = []
@@ -226,8 +230,6 @@ def create_shapefile():
     shapes = [convert_shape_to_shapefile(*s) for s in tqdm.tqdm(shapes)]
 
     # Save the shapes to a file
-    import geopandas as gpd
-
     gdf = gpd.GeoDataFrame(
         dict(rank=np.arange(len(shapes)) + 1), geometry=shapes, crs="EPSG:4326"
     )
@@ -240,7 +242,6 @@ def create_shapefile():
 def get_wikidata_title_and_population(tag):
     # tag is something like "Q13942981"
     # get the name in either English or the first language available
-    import requests
 
     url = f"https://www.wikidata.org/wiki/Special:EntityData/{tag}.json"
     response = requests.get(url)
@@ -309,13 +310,20 @@ def produce_name_based_on_wikidata(candidates_annotated):
 
 def load_metadata():
     with zipfile.ZipFile("uc_metadata.zip") as zf:
-        table = pd.read_csv(zf.open("ucs_data.csv"))
+        with zf.open("ucs_data.csv") as f:
+            table = pd.read_csv(f)
         table = table[["id", "rank", "pop", "core"]]
-        code = zf.open("name_candidates.txt").read().decode("latin-1")
+        with zf.open("name_candidates.txt") as f:
+            code = f.read().decode("latin-1")
+        # pylint: disable=eval-used
+        # This is a list of tuples (id, name, metatag, *rest), it isn't valid json
         name_candidates = eval(code)
 
     with zipfile.ZipFile("names_full.zip") as zf:
-        curated_names = eval(zf.open("names_full.txt", "r").read())
+        with zf.open("names_full.txt", "r") as f:
+            # pylint: disable=eval-used
+            # same as above
+            curated_names = eval(f.read())
 
     return table, name_candidates, curated_names
 
@@ -408,8 +416,6 @@ def near_substring(a, b):
     Define A to be a near substring of B if there exists a substring B'
     of B such that len(B') = len(A) and editDist(A, B') <= 0.1 len(A)
     """
-    from difflib import SequenceMatcher
-
     if len(a) > len(b):
         return False
     if len(a) == 0:
@@ -426,12 +432,14 @@ def near_substring(a, b):
 
 
 def duplicate_index(names):
+    # pylint: disable=consider-using-enumerate
     for i in tqdm.trange(len(names) - 1, 0, -1, delay=5):
         for j in range(len(names)):
             if i == j:
                 continue
             a, b = names[i], names[j]
             a_subset_b = near_substring(a, b)
+            # pylint: disable=arguments-out-of-order
             b_subset_a = near_substring(b, a)
             if not a_subset_b and not b_subset_a:
                 continue
@@ -524,12 +532,7 @@ manual_overrides = {
 }
 
 
-def main():
-    table, name_candidates, curated_names = load_metadata()
-
-    names = {}
-    source = {}
-    missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
+def populate_osm_geonames_names(curated_names, names, source):
     for ident, cns in curated_names.items():
         cns = [x for x in cns if valid_ascii_name(x[1])]  # filter out empty names
         cns_o = [x for x in cns if x[0] == "O"]
@@ -541,8 +544,8 @@ def main():
             names[ident] = process_curated_name(cns_p)
             source[ident] = "Geonames"
 
-    print("No Geonames/OSM names:", len(missing()))
 
+def populate_wikidata_names(names, source, missing):
     for k, v in tqdm.tqdm(list(missing().items())):
         res = produce_name_based_on_wikidata(v)
         if res is None:
@@ -557,28 +560,8 @@ def main():
         names[k] = res
         source[k] = "Wikidata"
 
-    print("No Geonames/OSM/wikidata names:", len(missing()))
 
-    names.update(manual_overrides)
-    source.update({k: "Manual Override" for k in manual_overrides if k not in source})
-
-    print("No Geonames/OSM/wikidata/manual names:", len(missing()))
-
-    for k in tqdm.tqdm(names, desc="Deduplicating OSM/GeoNames names"):
-        new_names_k = process_and_deduplicate_names(names[k])
-        assert (
-            len(new_names_k) > 0
-        ), f"Deduplicated names for {k} to an empty list: {names[k]}"
-        # if new_names_k[:3] != names[k][:3]:
-        #     print(
-        #         f"Deduplicated names for {k} from {names[k][:3]} to {new_names_k[:3]}"
-        #     )
-        names[k] = new_names_k
-
-    geonames_for_missing = pull_non_city_geonames_for_missing(missing(), curated_names)
-
-    shp = load_shapefile_with_data(table)
-
+def populate_coordinate_names(name_candidates, names, source, geonames_for_missing, shp):
     coordinate_names = assign_coordinate_names(shp, name_candidates)
 
     for ident in set(coordinate_names) - set(names):
@@ -591,6 +574,39 @@ def main():
                 coordinate_names[ident], geonames_for_missing.get(ident, None)
             )
         ]
+
+
+def main():
+    table, name_candidates, curated_names = load_metadata()
+
+    names = {}
+    source = {}
+    missing = lambda: {k: v for k, v in name_candidates.items() if k not in names}
+    populate_osm_geonames_names(curated_names, names, source)
+
+    print("No Geonames/OSM names:", len(missing()))
+
+    populate_wikidata_names(names, source, missing)
+
+    print("No Geonames/OSM/wikidata names:", len(missing()))
+
+    names.update(manual_overrides)
+    source.update({k: "Manual Override" for k in manual_overrides if k not in source})
+
+    print("No Geonames/OSM/wikidata/manual names:", len(missing()))
+
+    for k in tqdm.tqdm(names, desc="Deduplicating OSM/GeoNames names"):
+        new_names_k = process_and_deduplicate_names(names[k])
+        assert (
+            len(new_names_k) > 0
+        ), f"Deduplicated names for {k} to an empty list: {names[k]}"
+        names[k] = new_names_k
+
+    geonames_for_missing = pull_non_city_geonames_for_missing(missing(), curated_names)
+
+    shp = load_shapefile_with_data(table)
+
+    populate_coordinate_names(name_candidates, names, source, geonames_for_missing, shp)
 
     shp["names"] = shp.index.map(lambda x: json.dumps(names[x]))
     shp["name"] = shp.index.map(lambda x: "-".join(names[x][:3]))
