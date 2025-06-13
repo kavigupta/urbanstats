@@ -8,7 +8,7 @@ from urbanstats.special_cases.ghsl_urban_center import (
     classify_areas_by_subnational_region,
 )
 
-@permacache("urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters")
+@permacache("urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_2")
 def load_taylor_metropolitan_clusters():
     tmc = gpd.read_file(
         "named_region_shapefiles/taylor-metropolitan-clusters/output/taylor_metropolitan_clusters.shp.zip"
@@ -28,4 +28,10 @@ def load_taylor_metropolitan_clusters():
     attach_subnational_suffxes(
         tmc, subn, table_updated, name_column="name", more_general_direction=True
     )
+    tmc["shortname"] = (
+        tmc.name
+        + tmc.mid.apply(lambda x: " (" + x + ")" if x else "")
+        + " Metropolitan Cluster"
+    )
+    tmc["longname"] = tmc.shortname + ", " + tmc.suffix
     return tmc
