@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from 'mathjs'
+import { MathNumericType, Matrix, dotMultiply, lusolve, multiply, qr, transpose } from 'mathjs'
 
 import { ColorStat, StatisticsForGeography } from './settings'
 
@@ -51,6 +51,10 @@ export function calculateRegression(independent: number[], dependent: number[][]
     // transpose dependent
     const x = dependent[0].map((_, i) => dependent.map(row => row[i]))
 
+    if (w === undefined) {
+        w = Array(y.length).fill(1)
+    }
+
     // x: (N, K)
     // y: (N, 1)
     // filter nans
@@ -59,33 +63,48 @@ export function calculateRegression(independent: number[], dependent: number[][]
 
     const xfilt = x.filter((_, i) => !isNan[i])
     const yfilt = y.filter((_, i) => !isNan[i])
-    if (w !== undefined) {
-        w = w.filter((_, i) => !isNan[i])
-    }
+    w = w.filter((_, i) => !isNan[i])
 
     // eslint-disable-next-line no-restricted-syntax -- A is a matrix
     const A = noIntercept ? xfilt : xfilt.map(row => [1, ...row])
-    // eslint-disable-next-line no-restricted-syntax -- ATW is a matrix
-    let ATW = transpose(A)
 
-    if (w !== undefined) {
-        ATW = dotMultiply(ATW, w)
-    }
+    // From Parth Nobel
+    // Compute z = w^1/2 * y
+    // Compute M = w^1/2 .* A
+    // Compute Q, R = qr(M)
+    // Compute x = R^{-1} Q^T b
 
-    const ata = multiply(ATW, A)
+    const z = yfilt.map((yi, i) => [Math.sqrt(w[i]) * yi[0]])
 
-    const atb = multiply(ATW, yfilt)
+    console.log('z', z)
+    console.log('A', A)
 
-    // solve for weights. weights = (ata)^-1 atb
-    const wsCol = lusolve(ata, atb)
-    const ws = wsCol.map(col => (col as MathNumericType[])[0])
+    // eslint-disable-next-line no-restricted-syntax -- M is a matrix
+    const M = transpose(dotMultiply(transpose(A), w.map(wi => Math.sqrt(wi))))
+
+    console.log('M', M)
+
+    // eslint-disable-next-line no-restricted-syntax -- Q, R are matrices
+    const { Q, R } = qr(M)
+
+    console.log('Q', Q)
+    console.log('R', R)
+
+    // eslint-disable-next-line no-restricted-syntax -- QT is a matrix
+    const QTb = dotMultiply(transpose(Q), z)
+
+    console.log('QTb', QTb)
+
+    const ws = lusolve(R as MathNumericType[][], QTb) as number[]
+
+    console.log('ws', ws)
 
     const [weights, intercept] = noIntercept ? [ws, 0] : [ws.slice(1), ws[0]]
 
-    const preds = multiply(A, wsCol).map(pred => (pred as number[])[0])
+    const preds = multiply(A, ws).map(pred => pred)
 
     const residuals = preds.map((pred, i) => y[i][0] - pred)
-    return { residuals, weights: weights as number[], intercept: intercept as number }
+    return { residuals, weights, intercept }
 }
 
 export function computePearsonR2(
