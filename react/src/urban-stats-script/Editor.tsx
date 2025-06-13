@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useSta
 import { useColors } from '../page_template/colors'
 
 import { defaultConstants } from './constants'
-import { Action, Execute, getRange, htmlToString, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
+import { Action, AutocompleteMenu, Execute, getRange, nodeContent, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
 import { renderValue } from './types-values'
 
 import '@fontsource/inconsolata/500.css'
@@ -17,7 +17,7 @@ export function Editor(
         script,
         setScript,
         execute,
-        autocomplete = defaultAutoCompleteValue,
+        autocompleteIdentifiers = defaultAutoCompleteValue,
         checkValue = defaultCheckValue,
         showOutput = true,
     }:
@@ -25,7 +25,7 @@ export function Editor(
         script: string
         setScript: (newScript: string) => void
         execute: Execute
-        autocomplete?: string[]
+        autocompleteIdentifiers?: string[]
         checkValue?: ValueChecker
         showOutput?: boolean
     },
@@ -40,24 +40,30 @@ export function Editor(
 
     const [lastAction, setLastAction] = useState<Action>(undefined)
 
-    const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
-        let collapsedRangeIndex: number | undefined
-        if (newRange !== undefined && newRange.start === newRange.end) {
-            collapsedRangeIndex = newRange.start
-        }
-        return stringToHtml(newScript, colors, execute, checkValue, lastAction, {
-            collapsedRangeIndex,
-            options: autocomplete,
-            apply: (completion, index) => { setScript(newScript.slice(0, index) + completion + newScript.slice(index)) },
-        })
-    }, [colors, execute, checkValue, autocomplete, lastAction, setScript])
+    const autocompleteActionRef = useRef<AutocompleteMenu['action'] | undefined>(undefined)
 
-    const displayScript = useCallback(() => {
+    const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
         const editor = editorRef.current!
-        const range = getRange(editor)
-        const { html, result: newResult } = renderScript(script, range)
+        const range = newRange ?? getRange(editor)
+
+        let collapsedRangeIndex: number | undefined
+        if (range !== undefined && range.start === range.end) {
+            collapsedRangeIndex = range.start
+        }
+
+        const { html, result: newResult, autocomplete } = stringToHtml(newScript, colors, execute, checkValue, lastAction, {
+            collapsedRangeIndex,
+            options: autocompleteIdentifiers,
+            apply: (completion, index) => {
+                const editedScript = newScript.slice(0, index) + completion + newScript.slice(index)
+                renderScript(editedScript, { start: index + completion.length, end: index + completion.length })
+            },
+        })
+
         if (editor.innerHTML !== html) {
             editor.innerHTML = html
+            autocomplete?.attachListeners(editor)
+            autocompleteActionRef.current = autocomplete?.action
             if (range !== undefined) {
                 // Otherwise, we get into a re-render loop
                 inhibitRangeUpdateEvents.current++
@@ -65,9 +71,11 @@ export function Editor(
             }
         }
         setResult(newResult)
-    }, [renderScript, script])
+    }, [colors, execute, checkValue, autocompleteIdentifiers, lastAction, setScript])
 
-    useEffect(displayScript, [displayScript])
+    useEffect(() => {
+        renderScript(script, undefined)
+    }, [renderScript, script])
 
     useEffect(() => {
         const listener = (): void => {
@@ -88,7 +96,7 @@ export function Editor(
         const editor = editorRef.current!
         const listener = (): void => {
             setLastAction('input')
-            setScript(htmlToString(editor.innerHTML))
+            setScript(nodeContent(editor))
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
@@ -98,11 +106,18 @@ export function Editor(
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
             function editScript(newScript: string, newRange: Range): void {
-                const { html, result: newResult } = renderScript(newScript, newRange)
-                setResult(newResult)
-                editor.innerHTML = html
-                setRange(editor, newRange)
+                renderScript(newScript, newRange)
                 setScript(newScript)
+            }
+
+            if (autocompleteActionRef.current !== undefined) {
+                const { consumed, stopListening } = autocompleteActionRef.current(editor, e)
+                if (stopListening) {
+                    autocompleteActionRef.current = undefined
+                }
+                if (consumed) {
+                    return
+                }
             }
 
             if (e.key === 'Tab') {

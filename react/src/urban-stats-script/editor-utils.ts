@@ -22,15 +22,15 @@ function locationsEqual(a: SingleLocation, b: SingleLocation): boolean {
     return a.lineIdx === b.lineIdx && a.colIdx === b.colIdx
 }
 
-function nodeContentLength(node: Node): number {
-    if (node instanceof HTMLDivElement) {
-        return 0
-    }
-    else if (node instanceof HTMLElement) {
-        return (node.textContent?.length ?? 0) - (node.querySelector('div')?.textContent?.length ?? 0)
+export function nodeContent(node: Node): string {
+    if (node instanceof HTMLElement) {
+        if (!node.isContentEditable) {
+            return ''
+        }
+        return Array.from(node.childNodes).map(nodeContent).join('')
     }
     else {
-        return (node.textContent?.length ?? 0)
+        return node.textContent ?? ''
     }
 }
 
@@ -50,7 +50,7 @@ export function getRange(editor: HTMLElement): Range | undefined {
                 while (node !== editor) {
                     let sibling = node.previousSibling
                     while (sibling !== null) {
-                        offset += nodeContentLength(sibling)
+                        offset += nodeContent(sibling).length
                         sibling = sibling.previousSibling
                     }
                     node = node.parentNode!
@@ -73,8 +73,8 @@ export function setRange(editor: HTMLElement, { start, end }: Range): void {
         let offset = 0
         while (node.childNodes.length > 0) {
             node = node.childNodes.item(0)
-            while (offset + nodeContentLength(node) < position && node.nextSibling !== null) {
-                offset += nodeContentLength(node)
+            while (offset + nodeContent(node).length < position && node.nextSibling !== null) {
+                offset += nodeContent(node).length
                 node = node.nextSibling
             }
         }
@@ -92,17 +92,6 @@ export function setRange(editor: HTMLElement, { start, end }: Range): void {
     selection.addRange(range)
 }
 
-export function htmlToString(html: string): string {
-    const domParser = new DOMParser()
-    const string = domParser.parseFromString(
-        html // TODO get rid of recursive divs or count text by visiting tree
-            .replaceAll(/<div.+?\/div>/sg, '') // Everything inside a div is an autocomplete box
-            .replaceAll(/<.*?>/sg, ''),
-        'text/html',
-    ).documentElement.textContent!
-    return string
-}
-
 const htmlReplacements: [string, string][] = [
     ['&', '&amp;'],
     ['<', '&lt;'],
@@ -117,8 +106,8 @@ function escapeStringForHTML(string: string): string {
 
 export type Result = { result: 'success', value: USSValue } | { result: 'failure', errors: string[] }
 
-interface AutocompleteMenu {
-    action: (action: 'up' | 'down' | 'accept' | 'escape') => void
+export interface AutocompleteMenu {
+    action: (editor: HTMLElement, action: KeyboardEvent) => { consumed: boolean, stopListening: boolean }
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
@@ -202,7 +191,19 @@ export function stringToHtml(
                     .concat(autocomplete.options.filter(includeOption))),
             ).sort()
 
-            autocompleteMenu = autocompleteMenuCallbacks(allIdentifiers)
+            if (allIdentifiers.length === 0) {
+                return ''
+            }
+
+            const completions = allIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
+
+            autocompleteMenu = autocompleteMenuCallbacks(
+                colors,
+                completions.length,
+                (completionIndex) => {
+                    autocomplete.apply(completions[completionIndex], autocomplete.collapsedRangeIndex!)
+                },
+            )
 
             return renderAutocompleteMenu(colors, allIdentifiers)
         }
@@ -357,11 +358,12 @@ function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
         'top': '100%',
         'left': '100%',
         'user-select': 'none',
+        'z-index': '1',
     }
 
     const contents = identifiers
         .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === 0)}">${identifier}</div>`)
-        .join('\n')
+        .join('')
 
     return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}">${contents}</div>`
 }
@@ -369,19 +371,59 @@ function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
 function autocompleteSpanStyle(colors: Colors, index: number, selected: boolean): string {
     return styleToString({
         'cursor': 'pointer',
-        'background-color': (selected ? colors.slightlyDifferentBackgroundFocused : index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground)
+        'background-color': (selected ? colors.slightlyDifferentBackgroundFocused : index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground),
     })
 }
 
-function autocompleteMenuCallbacks(identifiers: string[]): AutocompleteMenu {
+function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (optionIndex: number) => void): AutocompleteMenu {
     let selectedIndex = 0
 
     return {
         attachListeners(editor) {
-
+            editor.querySelectorAll('[data-autocomplete-option]').forEach((option) => {
+                const index = parseInt(option.getAttribute('data-index')!)
+                option.addEventListener('onclick', () => {
+                    apply(index)
+                })
+                option.addEventListener('mouseenter', () => {
+                    option.setAttribute('style', autocompleteSpanStyle(colors, index, true))
+                })
+                option.addEventListener('mouseleave', () => {
+                    option.setAttribute('style', autocompleteSpanStyle(colors, index, index === selectedIndex))
+                })
+            })
         },
-        action(action) {
-
+        action(editor, event) {
+            switch (event.key) {
+                case 'Enter':
+                    event.preventDefault()
+                    apply(selectedIndex)
+                    return { consumed: true, stopListening: false }
+                case 'Escape':
+                    event.preventDefault()
+                    editor.querySelector('[data-autocomplete-menu]')?.remove()
+                    return { consumed: true, stopListening: true }
+                case 'ArrowDown':
+                case 'ArrowUp':
+                    event.preventDefault()
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, false))
+                    if (event.key === 'ArrowDown') {
+                        selectedIndex++
+                    }
+                    else {
+                        selectedIndex--
+                    }
+                    // wrap around
+                    if (selectedIndex < 0) {
+                        selectedIndex = numOptions - 1
+                    }
+                    else if (selectedIndex > numOptions - 1) {
+                        selectedIndex = 0
+                    }
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, true))
+                    return { consumed: true, stopListening: false }
+            }
+            return { consumed: false, stopListening: false }
         },
     }
 }
