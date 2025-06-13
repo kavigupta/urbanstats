@@ -1,4 +1,4 @@
-# ci_server
+# ci_proxy server
 
 This mini-app is used to run e2e tests in the Urban Stats CI.
 
