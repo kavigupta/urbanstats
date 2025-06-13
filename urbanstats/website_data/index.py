@@ -9,8 +9,9 @@ from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 
 # maps types to their search priority scores. Higher=less important.
 type_category_to_priority = {
-    "US Subdivision": 0,
     "International": 0,
+    "US Subdivision": 10,
+    "International City": 15,
     "Census": 20,
     "Small": 20,
     "Native": 20,

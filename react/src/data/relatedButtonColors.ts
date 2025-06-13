@@ -4,6 +4,10 @@ export default [
         'red',
     ],
     [
+        'International City',
+        'red',
+    ],
+    [
         'US Subdivision',
         'blue',
     ],

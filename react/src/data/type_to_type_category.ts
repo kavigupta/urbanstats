@@ -54,7 +54,7 @@ const value: Record<string, string> = {
     'Continent': 'International',
     'Country': 'International',
     'Subnational Region': 'US Subdivision',
-    'Urban Center': 'International',
+    'Urban Center': 'International City',
     '5M Person Circle': 'Kavi',
     '10M Person Circle': 'Kavi',
     '20M Person Circle': 'Kavi',

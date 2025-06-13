@@ -19,6 +19,7 @@ hue_colors = {
 
 related_button_colors = {
     "International": "red",
+    "International City": "red",
     "US Subdivision": "blue",
     "Census": "cyan",
     "Political": "purple",
