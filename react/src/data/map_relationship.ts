@@ -272,6 +272,10 @@ export default [
         'Urban Center',
     ],
     [
+        'Metropolitan Clusters',
+        'Metropolitan Clusters',
+    ],
+    [
         '5M Person Circle',
         '5M Person Circle',
     ],

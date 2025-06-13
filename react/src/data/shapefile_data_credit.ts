@@ -51,6 +51,18 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
     },
     {
         names: [
+            'Metropolitan Clusters',
+        ],
+        dataCredits: [
+            {
+                text: 'See Taylor (elpis on bluesky) for more information on the methodology used to define metropolitan clusters.',
+                linkText: 'Taylor\'s Bluesky',
+                link: 'https://bsky.app/profile/elpis.bsky.social',
+            },
+        ],
+    },
+    {
+        names: [
             'CA Census Division',
         ],
         dataCredits: [
