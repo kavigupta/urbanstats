@@ -101,7 +101,7 @@ def compute_mid_names_for_state(
         return mid_by_idx
     centroids = areas.geometry[idxs_for_state].centroid
     # pylint: disable=import-outside-toplevel
-    from urbanstats.data.circle import name_points_around_center
+    from urbanstats.utils import name_points_around_center
 
     names = name_points_around_center(centroids)
     return {idx: state + ": " + name for idx, name in zip(idxs_for_state, names)}
