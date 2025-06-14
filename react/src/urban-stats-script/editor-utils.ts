@@ -1,7 +1,6 @@
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
-import { bitapAlphabet } from '../utils/bitap'
-import { bitap } from '../utils/bitap-autocomplete'
+import { isAMatch } from '../utils/isAMatch'
 
 import { Context } from './context'
 import { InterpretationError, renderLocInfo } from './interpreter'
@@ -207,25 +206,17 @@ export function stringToHtml(
                 }
                 allIdentifiers.delete(identifierToken.value)
 
-                const maxErrors = 2
-                const needle = { alphabet: bitapAlphabet(identifierToken.value.toLowerCase()), length: identifierToken.value.toLowerCase().length }
-
-                const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(needle.length + longestHaystack + 1))
-
                 const sortedIdentifiers = Array.from(allIdentifiers).flatMap((option) => {
-                    const match = bitap(option.toLowerCase(), needle, maxErrors, bitapBuffers)
-                    if (match === undefined) {
+                    const match = isAMatch(identifierToken.value.toLowerCase(), option.toLowerCase())
+                    if (match === 0) {
                         return []
                     }
                     else {
                         return [{ option, match }]
                     }
                 }).sort((a, b) => {
-                    if (a.match.numErrors !== b.match.numErrors) {
-                        return a.match.numErrors - b.match.numErrors
-                    }
-                    else if (a.match.location !== b.match.location) {
-                        return a.match.location - b.match.location
+                    if (a.match !== b.match) {
+                        return b.match - a.match
                     }
                     else if (a.option.length !== b.option.length) {
                         return a.option.length - b.option.length
