@@ -163,6 +163,15 @@ export function Editor(
         return () => { editor.removeEventListener('keydown', listener) }
     }, [script, setScript, renderScript])
 
+    useEffect(() => {
+        const editor = editorRef.current!
+        const listener = (): void => {
+            autocompleteMenuRef.current?.action(editor, { key: 'Escape', preventDefault: () => undefined })
+        }
+        editor.addEventListener('blur', listener)
+        return () => { editor.removeEventListener('blur', listener) }
+    }, [])
+
     const error = result.result.result === 'failure'
     const executing = result.type === 'parse'
 

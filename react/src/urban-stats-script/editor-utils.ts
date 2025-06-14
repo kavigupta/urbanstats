@@ -108,11 +108,11 @@ function escapeStringForHTML(string: string): string {
 type Result<T> = { result: 'success', value: T } | { result: 'failure', errors: string[] }
 
 export interface AutocompleteMenu {
-    action: (editor: HTMLElement, action: KeyboardEvent) => boolean
+    action: (editor: HTMLElement, action: { key: string, preventDefault: () => void }) => boolean
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
-export type CreateContext = () => Promise<Context>
+export type CreateContext = (stmts: UrbanStatsASTStatement | undefined) => Promise<Context>
 export type Execute = (stmts: UrbanStatsASTStatement, context: Context) => USSValue
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
@@ -238,13 +238,15 @@ export function stringToHtml(
     }
 
     let result: ParseResult
-    const context = createContext()
+    let context: Promise<Context>
 
     if (lexTokens.some(token => token.token.type === 'error')) {
         result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
+        context = createContext(undefined)
     }
     else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
         result = { result: 'failure', errors: ['No input'] }
+        context = createContext(undefined)
     }
     else {
         const parsed = parseTokens(lexTokens)
@@ -260,8 +262,10 @@ export function stringToHtml(
                 }
             }
             result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
+            context = createContext(undefined)
         }
         else {
+            context = createContext(parsed)
             result = {
                 result: 'success',
                 value: (async () => {

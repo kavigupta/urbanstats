@@ -7,7 +7,7 @@ import { Editor } from '../urban-stats-script/Editor'
 import { defaultConstants } from '../urban-stats-script/constants'
 import { Context } from '../urban-stats-script/context'
 import { execute, InterpretationError } from '../urban-stats-script/interpreter'
-import { locationOfLastExpression, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { allIdentifiers, locationOfLastExpression, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
 import { USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 
@@ -30,7 +30,7 @@ export class USSColorStat implements ColorStat {
                 console.error('Error parsing USS expression:', stmts.errors)
                 return statisticsForGeography.map(() => NaN)
             }
-            const ctx = colorStatContext(statisticsForGeography)
+            const ctx = colorStatContext(stmts, statisticsForGeography)
             result = colorStatExecute(stmts, ctx)
         }
         catch (e) {
@@ -41,7 +41,7 @@ export class USSColorStat implements ColorStat {
     }
 }
 
-function colorStatContext(statisticsForGeography: StatisticsForGeography | undefined): Context {
+function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsForGeography: StatisticsForGeography | undefined): Context {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -49,18 +49,19 @@ function colorStatContext(statisticsForGeography: StatisticsForGeography | undef
         new Map(),
     )
 
-    const getVariable = (name: string): USSValue | undefined => {
+    const getVariable = (name: string, load: boolean): USSValue | undefined => {
+        console.log(name, load, statisticsForGeography !== undefined)
         const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
         if (index === -1) {
             return undefined
         }
         return {
             type: { type: 'vector', elementType: { type: 'number' } },
-            value: statisticsForGeography?.map(stat => stat.stats[index]) ?? [],
+            value: load ? statisticsForGeography?.map(stat => stat.stats[index]) ?? [] : [],
         }
     }
 
-    addVariablesToContext(ctx, getVariable)
+    addVariablesToContext(ctx, stmts, getVariable)
     return ctx
 }
 
@@ -72,9 +73,11 @@ function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSV
     return result
 }
 
-function addVariablesToContext(ctx: Context, getVariable: (name: string) => USSValue | undefined): void {
+function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | undefined, getVariable: (name: string, load: boolean) => USSValue | undefined): void {
+    const ids = stmts !== undefined ? allIdentifiers(stmts) : undefined
+
     statistic_variables_info.variableNames.forEach((name) => {
-        const va = getVariable(name)
+        const va = getVariable(name, ids?.has(name) ?? false)
         if (va !== undefined) {
             ctx.assignVariable(name, va)
         }
@@ -82,7 +85,13 @@ function addVariablesToContext(ctx: Context, getVariable: (name: string) => USSV
 
     statistic_variables_info.multiSourceVariables.forEach((content) => {
         const [name, subvars] = content
-        const values = subvars.map(subvar => (ctx.getVariable(subvar) ?? getVariable(subvar))!.value as number[])
+        const values = subvars.map((subvar) => {
+            const existing = ctx.getVariable(subvar)?.value as (undefined | number[])
+            if (existing === undefined || existing.length === 0) {
+                return getVariable(subvar, ids?.has(name) ?? false)!.value as number[]
+            }
+            return existing
+        })
         const value = values[0].map((_, i) => firstNonNan(values.map(v => v[i]))) // take first non-NaN value
         ctx.assignVariable(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
@@ -104,7 +113,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, setFunc
         })
     }, [setFunction, func])
 
-    const createContext = useCallback(async () => colorStatContext(await stats), [stats])
+    const createContext = useCallback(async (stmts: UrbanStatsASTStatement | undefined) => colorStatContext(stmts, await stats), [stats])
 
     const expression = (
         <Editor
