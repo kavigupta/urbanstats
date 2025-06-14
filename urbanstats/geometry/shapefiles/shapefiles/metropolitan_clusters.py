@@ -55,10 +55,10 @@ METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
         </p>
 
         <p>
-        For each of these 3 datasets, we first see if any names are assigned to the cluster. If not,
-        we move to the following dataset. Otherwise, we prune all names with population less than
-        half the largest, deduplicate the names for ones that are similar, and then prune to
-        at most 3 names, then hyphenate the names together.
+        For each of these 3 datasets, we first see if any names are assigned to the cluster. If so,
+        we prune all names with population less than half the largest, deduplicate the names for
+        ones that are similar, and then prune to at most 3 names, then hyphenate the names together.
+        If not, we move to the following dataset and repeat the process.
         </p>
 
         <p>
