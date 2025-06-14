@@ -34,6 +34,7 @@ export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
     | { type: 'expression', value: UrbanStatsASTExpression }
     | { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement[] }
+    | { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression, rest: UrbanStatsASTStatement[] }
 )
 
 type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
@@ -53,7 +54,7 @@ function unifyBase(...locations: BaseLocInfo[]): BaseLocInfo {
     }
 }
 
-function unify(...locations: LocInfo[]): LocInfo {
+export function unify(...locations: LocInfo[]): LocInfo {
     return {
         ...unifyBase(...locations),
         shifted: unifyBase(...locations.map(l => l.shifted)),
@@ -90,6 +91,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'statements':
             return node.entireLoc
         case 'if':
+            return node.entireLoc
+        case 'condition':
             return node.entireLoc
     }
     /* c8 ignore stop */
@@ -139,6 +142,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(statements ${node.result.map(toSExp).join(' ')})`
         case 'if':
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
+        case 'condition':
+            return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
     }
 }
 
@@ -478,6 +483,10 @@ class ParseState {
     }
 
     parseStatement(): UrbanStatsASTStatement | ParseError {
+        if (this.consumeIdentifier('condition')) {
+            return this.parseConditionStatement()
+        }
+
         const expr = this.parseExpression()
         if (expr.type === 'error') {
             return expr
@@ -536,8 +545,28 @@ class ParseState {
         }
     }
 
+    parseConditionStatement(): UrbanStatsASTStatement | ParseError {
+        const conditionToken = this.tokens[this.index - 1]
+        if (!this.consumeBracket('(')) {
+            return { type: 'error', value: 'Expected opening bracket ( after condition', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        const condition = this.parseExpression()
+        if (condition.type === 'error') {
+            return condition
+        }
+        if (!this.consumeBracket(')')) {
+            return { type: 'error', value: 'Expected closing bracket ) after condition', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        return {
+            type: 'condition',
+            entireLoc: unify(conditionToken.location, this.tokens[this.index - 1].location),
+            condition,
+            rest: [],
+        }
+    }
+
     parseStatements(canEnd: boolean = false, end: () => boolean = () => false, errMsg: string = 'Expected end of line or ; after'): UrbanStatsASTStatement | ParseError {
-        const statements: UrbanStatsASTStatement[] = []
+        let statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             if (end()) {
                 break
@@ -558,6 +587,7 @@ class ParseState {
         if (this.index === this.tokens.length && canEnd) {
             return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken(-1).location }
         }
+        statements = gulpRestForConditions(statements)
         if (statements.length === 1) {
             return statements[0]
         }
@@ -569,6 +599,23 @@ class ParseState {
                 : newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } })
         return { type: 'statements', result: statements, entireLoc }
     }
+}
+
+function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStatsASTStatement[] {
+    /**
+     * Handle condition statements by gulping the next statement into the condition's rest.
+     */
+    const result: UrbanStatsASTStatement[] = []
+    for (let i = 0; i < statements.length; i++) {
+        const stmt = statements[i]
+        if (stmt.type === 'condition') {
+            stmt.rest.push(...gulpRestForConditions(statements.slice(i + 1)))
+            result.push(stmt)
+            break
+        }
+        result.push(stmt)
+    }
+    return result
 }
 
 export function parse(code: string): ReturnType<typeof parseTokens> {
@@ -650,6 +697,10 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 if (n.else) {
                     helper(n.else)
                 }
+                return true
+            case 'condition':
+                helper(n.condition)
+                n.rest.forEach(helper)
                 return true
         }
     }

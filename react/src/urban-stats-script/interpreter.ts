@@ -4,7 +4,7 @@ import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
 import { LocInfo } from './lexer'
 import { expressionOperatorMap } from './operators'
-import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
+import { locationOf, unify, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg } from './types-values'
 
@@ -138,6 +138,15 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
 
 export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
     switch (expr.type) {
+        case 'condition':
+            return evaluate(
+                { type: 'if',
+                    condition: expr.condition,
+                    then: { type: 'statements', result: expr.rest, entireLoc: unify(...expr.rest.map(locationOf)) },
+                    entireLoc: expr.entireLoc,
+                },
+                env,
+            )
         case 'assignment':
             const value = evaluate(expr.value, env)
             evaluateLHS(expr.lhs, value, env)
