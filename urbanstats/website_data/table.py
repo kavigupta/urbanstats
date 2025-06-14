@@ -19,7 +19,9 @@ from urbanstats.universe.universe_provider.compute_universes import (
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_35",
     key_function=dict(
         sf=lambda x: x.hash_key,
-        shapefiles=lambda x: {k: v.hash_key for k, v in x.items()},
+        shapefiles=lambda x: {
+            k: (v.hash_key, v.universe_provider) for k, v in x.items()
+        },
         statistic_collections=stable_hash,
     ),
     multiprocess_safe=True,

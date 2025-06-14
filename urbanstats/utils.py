@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from dataclasses import dataclass
@@ -82,3 +83,39 @@ def cached_zarr_array(path, create_fn):
         with zarr.open(path, mode="w") as z:
             z.create_dataset("data", data=result)
     return zarr.open(path, mode="r")["data"]
+
+
+def to_cardinal_direction(angle_revolutions):
+    return {
+        0: "East",
+        0.25: "North",
+        0.5: "West",
+        0.75: "South",
+        0.125: "Northeast",
+        0.375: "Northwest",
+        0.625: "Southwest",
+        0.875: "Southeast",
+        0.0625: "East-Northeast",
+        0.1875: "North-Northeast",
+        0.3125: "North-Northwest",
+        0.4375: "West-Northwest",
+        0.5625: "West-Southwest",
+        0.6875: "South-Southwest",
+        0.8125: "South-Southeast",
+        0.9375: "East-Southeast",
+    }[angle_revolutions]
+
+
+def name_points_around_center(centroids):
+    centroids = np.array([centroids.x.values, centroids.y.values]).T
+    centroids = centroids - centroids.mean(axis=0)
+    angles = np.arctan2(centroids[:, 1], centroids[:, 0])
+    fractions_of_circle = (angles / (2 * np.pi)) % 1
+    centroids = centroids - centroids.mean(axis=0)
+    for log_subdivisions in itertools.count(2):
+        subdivisions = 2**log_subdivisions
+        rounded_fractions = np.round(fractions_of_circle * subdivisions) / subdivisions
+        rounded_fractions %= 1
+        if len(set(rounded_fractions)) == len(rounded_fractions):
+            return [to_cardinal_direction(fraction) for fraction in rounded_fractions]
+    raise RuntimeError("unreachable")
