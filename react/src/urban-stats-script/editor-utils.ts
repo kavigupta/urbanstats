@@ -104,18 +104,26 @@ function escapeStringForHTML(string: string): string {
     return htmlReplacements.reduce((str, [find, replace]) => str.replaceAll(find, replace), string)
 }
 
-export type Result = { result: 'success', value: USSValue } | { result: 'failure', errors: string[] }
+type Result<T> = { result: 'success', value: T } | { result: 'failure', errors: string[] }
 
 export interface AutocompleteMenu {
     action: (editor: HTMLElement, action: KeyboardEvent) => { consumed: boolean, stopListening: boolean }
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
-export type Execute = (expr: UrbanStatsASTStatement) => USSValue
+export type Execute = (expr: UrbanStatsASTStatement) => Promise<USSValue>
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
 
 export type Action = 'input' | 'select' | undefined
+
+/*
+ * EditorParse -> html, result, autocomplete, execute
+ * execute (async) -> html, result
+ */
+
+export type ParseResult = Result<Promise<{ html: string, result: ExecResult }>>
+export type ExecResult = Result<USSValue>
 
 export function stringToHtml(
     string: string,
@@ -128,7 +136,7 @@ export function stringToHtml(
         options: string[]
         apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
     },
-): { html: string, result: Result, autocomplete: AutocompleteMenu | undefined } {
+): { html: string, result: ParseResult, autocomplete: AutocompleteMenu | undefined } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -226,7 +234,7 @@ export function stringToHtml(
         }
     }
 
-    let result: Result
+    let result: ParseResult
 
     if (lexTokens.some(token => token.token.type === 'error')) {
         result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
@@ -250,29 +258,38 @@ export function stringToHtml(
             result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
         }
         else {
-            try {
-                const value = execute(parsed)
-                const checkResult = checkValue(value)
-                if (!checkResult.ok) {
-                    throw new InterpretationError(checkResult.problem, locationOfLastExpression(parsed))
-                }
-                result = { result: 'success', value }
-            }
-            catch (e) {
-                if (e instanceof InterpretationError) {
-                    result = { result: 'failure', errors: [e.message] }
-                    for (const pos of ['start', 'end'] as const) {
-                        const loc = e.location.shifted[pos]
-                        const line = lines[loc.lineIdx]
-                        const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
-                        lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
-                        shift([e], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+            result = {
+                result: 'success',
+                value: (async () => {
+                    try {
+                        const value = await execute(parsed)
+                        const checkResult = checkValue(value)
+                        if (!checkResult.ok) {
+                            throw new InterpretationError(checkResult.problem, locationOfLastExpression(parsed))
+                        }
+                        return { html: lines.join('\n'), result: { result: 'success', value } }
                     }
-                }
-                else {
-                    console.error('Unknown error while evaluating script', e)
-                    result = { result: 'failure', errors: ['Unknown error'] }
-                }
+                    catch (e) {
+                        if (e instanceof InterpretationError) {
+                            for (const pos of ['start', 'end'] as const) {
+                                const loc = e.location.shifted[pos]
+                                const line = lines[loc.lineIdx]
+                                const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
+                                lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                                shift([e], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+                            }
+                            return {
+                                html: lines.join('\n'), result: { result: 'failure', errors: [e.message] },
+                            }
+                        }
+                        else {
+                            console.error('Unknown error while evaluating script', e)
+                            return {
+                                html: lines.join('\n'), result: { result: 'failure', errors: ['Unknown error'] },
+                            }
+                        }
+                    }
+                })(),
             }
         }
     }

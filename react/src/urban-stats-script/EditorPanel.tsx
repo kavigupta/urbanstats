@@ -15,7 +15,9 @@ export function EditorPanel(): ReactNode {
         localStorage.setItem('editor-code', newScript)
     }, [])
 
-    const exec = useCallback((expr: UrbanStatsASTStatement) => execute(expr, emptyContext()), [])
+    const exec = useCallback((expr: UrbanStatsASTStatement) => new Promise((resolve) => {
+        setTimeout(resolve, 1000)
+    }).then(() => execute(expr, emptyContext())), [])
 
     return (
         <PageTemplate>

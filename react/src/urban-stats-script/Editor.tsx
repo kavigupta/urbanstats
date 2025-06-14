@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useSta
 import { useColors } from '../page_template/colors'
 
 import { defaultConstants } from './constants'
-import { Action, AutocompleteMenu, Execute, getRange, nodeContent, Range, Result, setRange, stringToHtml, ValueChecker } from './editor-utils'
+import { Action, AutocompleteMenu, Execute, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ValueChecker, ExecResult } from './editor-utils'
 import { renderValue } from './types-values'
 
 import '@fontsource/inconsolata/500.css'
@@ -11,6 +11,8 @@ import '@fontsource/inconsolata/500.css'
 // If we do a different default every time, the component will keep outputting a new script and go into a loop
 const defaultCheckValue: ValueChecker = () => ({ ok: true })
 const defaultAutoCompleteValue: string[] = Array.from(defaultConstants.keys())
+
+type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: ExecResult }
 
 export function Editor(
     {
@@ -36,15 +38,14 @@ export function Editor(
 
     const inhibitRangeUpdateEvents = useRef<number>(0)
 
-    const [result, setResult] = useState<Result>({ result: 'failure', errors: ['No input'] })
+    const [result, setResult] = useState<Result>({ type: 'parse', result: { result: 'failure', errors: ['No input'] } })
 
     const [lastAction, setLastAction] = useState<Action>(undefined)
 
     const autocompleteActionRef = useRef<AutocompleteMenu['action'] | undefined>(undefined)
 
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
-        const editor = editorRef.current!
-        const range = newRange ?? getRange(editor)
+        const range = newRange ?? getRange(editorRef.current!)
 
         let collapsedRangeIndex: number | undefined
         if (range !== undefined && range.start === range.end) {
@@ -61,17 +62,35 @@ export function Editor(
             },
         })
 
-        if (editor.innerHTML !== html) {
-            editor.innerHTML = html
-            autocomplete?.attachListeners(editor)
-            autocompleteActionRef.current = autocomplete?.action
-            if (range !== undefined) {
+        function setHTML(newHtml: string): void {
+            const editor = editorRef.current!
+            if (editor.innerHTML !== newHtml) {
+                const rangeBefore = getRange(editor)
+                editor.innerHTML = newHtml
+                autocomplete?.attachListeners(editor)
+                if (rangeBefore !== undefined) {
                 // Otherwise, we get into a re-render loop
-                inhibitRangeUpdateEvents.current++
-                setRange(editor, range)
+                    inhibitRangeUpdateEvents.current++
+                    setRange(editor, rangeBefore)
+                }
             }
         }
-        setResult(newResult)
+
+        setHTML(html)
+        autocompleteActionRef.current = autocomplete?.action
+
+        setResult({ type: 'parse', result: newResult })
+        if (newResult.result === 'success') {
+            void newResult.value.then(({ html: execHtml, result: execResult }) => {
+                setResult((currentResult) => {
+                    if (currentResult.result === newResult) {
+                        setHTML(execHtml)
+                        return { type: 'exec', result: execResult }
+                    }
+                    return currentResult
+                })
+            })
+        }
     }, [colors, execute, checkValue, autocompleteIdentifiers, lastAction, setScript])
 
     useEffect(() => {
@@ -146,7 +165,8 @@ export function Editor(
         return () => { editor.removeEventListener('keydown', listener) }
     }, [script, setScript, renderScript])
 
-    const error = result.result === 'failure'
+    const error = result.result.result === 'failure'
+    const executing = result.type === 'parse'
 
     return (
         <div style={{ margin: '2em' }}>
@@ -154,7 +174,7 @@ export function Editor(
                 style={{
                     ...codeStyle,
                     caretColor: colors.textMain,
-                    border: `1px solid ${error ? colors.hueColors.red : (showOutput ? colors.hueColors.green : colors.borderShadow)}`,
+                    border: `1px solid ${error ? colors.hueColors.red : executing ? colors.hueColors.yellow : (showOutput ? colors.hueColors.green : colors.borderShadow)}`,
                     borderRadius: error || showOutput ? '5px 5px 0 0' : '5px',
                 }}
                 ref={editorRef}
@@ -190,11 +210,18 @@ function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNod
             borderLeft: border,
         }
     }
-    if (props.result.result === 'success') {
-        if (props.showOutput) {
+    if (props.result.result.result === 'success') {
+        if (props.result.type === 'parse') {
+            return (
+                <pre style={style(colors.hueColors.yellow)}>
+                    Executing...
+                </pre>
+            )
+        }
+        else if (props.showOutput) {
             return (
                 <pre style={style(colors.hueColors.green)}>
-                    {renderValue(props.result.value)}
+                    {renderValue(props.result.result.value)}
                 </pre>
             )
         }
@@ -205,7 +232,7 @@ function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNod
     else {
         return (
             <pre style={style(colors.hueColors.red)}>
-                {props.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
+                {props.result.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
             </pre>
         )
     }
