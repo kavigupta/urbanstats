@@ -47,6 +47,15 @@ export class Context {
         return this.#variables.entries()
     }
 
+    *allIdentifiers(): Generator<string> {
+        for (const constant of this.#constants.keys()) {
+            yield constant
+        }
+        for (const variable of this.#variables.keys()) {
+            yield variable
+        }
+    }
+
     evolveVariables(variables: Map<string, USSValue>): Context {
         return new Context(
             this.#effect,

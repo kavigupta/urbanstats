@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
@@ -34,6 +34,22 @@ interface DisplayedMapProps extends MapGenericProps {
     height: number | string | undefined
 }
 
+async function getStats(underlyingStats: Promise<ConsolidatedStatistics>): Promise<{ stats: NormalizeProto<IAllStats>[], longnames: string[] }> {
+    return (await underlyingStats) as NormalizeProto<ConsolidatedStatistics>
+}
+
+function filterStats(filter: ColorStat | undefined, stats: Awaited<ReturnType<typeof getStats>>): typeof stats {
+    // TODO correct this!
+    if (filter !== undefined) {
+        const filterVals = filter.compute(stats.stats)
+        return {
+            stats: stats.stats.filter((x, i) => filterVals[i]),
+            longnames: stats.longnames.filter((x, i) => filterVals[i]),
+        }
+    }
+    return stats
+}
+
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     name_to_index: undefined | Map<string, number>
 
@@ -58,15 +74,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
         const lineStyle = this.props.lineStyle
 
-        let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
-        // TODO correct this!
-        if (this.props.filter !== undefined) {
-            const filterVals = this.props.filter.compute(stats.stats)
-            stats = {
-                stats: stats.stats.filter((x, i) => filterVals[i]),
-                longnames: stats.longnames.filter((x, i) => filterVals[i]),
-            }
-        }
+        const stats = filterStats(this.props.filter, await getStats(this.props.underlyingStats))
         const statVals = this.props.colorStat.compute(stats.stats)
         const names = stats.longnames
         const [ramp, interpolations] = this.props.ramp.createRamp(statVals)
@@ -351,6 +359,15 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const headerTextClass = useHeaderTextClass()
 
+    const stats = useMemo(async () => underlyingStats === undefined ? undefined : (await getStats(underlyingStats)).stats, [underlyingStats])
+    const filteredStats = useMemo(async () => {
+        if (underlyingStats === undefined) {
+            return Promise.resolve(undefined)
+        }
+        const filter = mapSettings.filter.enabled ? parseColorStat(nameToIndex, mapSettings.filter.function) : undefined
+        return filterStats(filter, await getStats(underlyingStats)).stats
+    }, [underlyingStats, mapSettings.filter.enabled, mapSettings.filter.function])
+
     if (props.view) {
         return mapperPanel('100%')
     }
@@ -364,6 +381,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                     validGeographies={valid_geographies}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
+                    stats={stats}
+                    filteredStats={filteredStats}
                 />
                 <Export
                     mapRef={mapRef}

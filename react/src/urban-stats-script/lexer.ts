@@ -14,7 +14,7 @@ interface ErrorToken { type: 'error', value: string }
 type NonErrorToken = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken
 type Token = NonErrorToken | ErrorToken
 
-interface SingleLocation {
+export interface SingleLocation {
     lineIdx: number
     colIdx: number
 }
