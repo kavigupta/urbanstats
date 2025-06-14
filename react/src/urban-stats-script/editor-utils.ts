@@ -137,7 +137,7 @@ export function stringToHtml(
         collapsedRangeIndex: number | undefined
         apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
     },
-): { html: string, result: ParseResult, autocomplete: Promise<AutocompleteMenu | undefined> | undefined } {
+): { html: string, result: ParseResult, autocomplete: Promise<AutocompleteMenu | undefined> } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -185,7 +185,7 @@ export function stringToHtml(
 
     const span = spanFactory(colors)
 
-    let autocompleteMenu: ((context: Context) => AutocompleteMenu | undefined) | undefined
+    let autocompleteMenu: (context: Context) => AutocompleteMenu | undefined = () => undefined
 
     function maybeAutocompleteMenu(token: AnnotatedToken): string {
         const identifierToken = token.token
@@ -302,7 +302,7 @@ export function stringToHtml(
 
     const html = lines.join('\n')
 
-    return { html, result, autocomplete: autocompleteMenu !== undefined ? context.then(autocompleteMenu) : undefined }
+    return { html, result, autocomplete: context.then(autocompleteMenu) }
 }
 
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError) => string {

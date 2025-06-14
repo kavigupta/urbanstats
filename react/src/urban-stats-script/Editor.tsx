@@ -72,16 +72,14 @@ export function Editor(
         }
 
         autocompleteMenuRef.current = undefined
-        if (autocomplete !== undefined) {
-            const identifer = ++autocompleteCounter.current
-            void autocomplete.then((autocompleteMenu) => {
-                if (identifer !== autocompleteCounter.current) {
-                    return // Avoid race
-                }
-                autocompleteMenuRef.current = autocompleteMenu
-                autocompleteMenu?.attachListeners(editorRef.current!)
-            })
-        }
+        const identifer = ++autocompleteCounter.current
+        void autocomplete.then((autocompleteMenu) => {
+            if (identifer !== autocompleteCounter.current) {
+                return // Avoid race
+            }
+            autocompleteMenuRef.current = autocompleteMenu
+            autocompleteMenu?.attachListeners(editorRef.current!)
+        })
 
         setHTML(html, range)
         setResult({ type: 'parse', result: newResult })
