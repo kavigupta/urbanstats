@@ -1,13 +1,14 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useCallback } from 'react'
 
 import statistic_variables_info from '../data/statistic_variables_info'
 import { useColors } from '../page_template/colors'
 import { StatName } from '../page_template/statistic-tree'
+import { Editor } from '../urban-stats-script/Editor'
 import { defaultConstants } from '../urban-stats-script/constants'
 import { Context } from '../urban-stats-script/context'
 import { execute, InterpretationError } from '../urban-stats-script/interpreter'
-import { allIdentifiers, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
-import { renderType, USSValue } from '../urban-stats-script/types-values'
+import { locationOfLastExpression, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 
 import { DataListSelector } from './DataListSelector'
@@ -21,54 +22,58 @@ export class USSColorStat implements ColorStat {
         return this._name ?? '[Unnamed function]'
     }
 
-    compute(statistics_for_geography: StatisticsForGeography): number[] {
-        const ctx = new Context(
-            () => undefined,
-            (msg, loc) => { return new InterpretationError(msg, loc) },
-            defaultConstants,
-            new Map(),
-        )
-
-        const getVariable = (name: string): USSValue | undefined => {
-            const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
-            if (index === -1) {
-                return undefined
-            }
-            return {
-                type: { type: 'vector', elementType: { type: 'number' } },
-                value: statistics_for_geography.map(stat => stat.stats[index]),
-            }
-        }
-
+    compute(statisticsForGeography: StatisticsForGeography): number[] {
         let result
         try {
             const stmts = parse(this._uss)
             if (stmts.type === 'error') {
                 console.error('Error parsing USS expression:', stmts.errors)
-                return statistics_for_geography.map(() => NaN)
+                return statisticsForGeography.map(() => NaN)
             }
-            addVariablesToContext(ctx, stmts, getVariable)
-            result = execute(stmts, ctx)
+            const ctx = colorStatContext(statisticsForGeography)
+            result = colorStatExecute(stmts, ctx)
         }
         catch (e) {
             console.error('Error parsing USS expression:', e)
-            return statistics_for_geography.map(() => NaN)
-        }
-        // TODO do this properly via a parameter
-        if (renderType(result.type) !== '[number]' && renderType(result.type) !== '[boolean]') {
-            console.error('USS expression did not return a vector of numbers or booleans:', result)
-            return statistics_for_geography.map(() => NaN)
+            return statisticsForGeography.map(() => NaN)
         }
         return result.value as number[]
     }
 }
 
-function addVariablesToContext(ctx: Context, code: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
-    const ids = allIdentifiers(code)
-    statistic_variables_info.variableNames.forEach((name) => {
-        if (!ids.has(name)) {
-            return
+function colorStatContext(statisticsForGeography: StatisticsForGeography | undefined): Context {
+    const ctx = new Context(
+        () => undefined,
+        (msg, loc) => { return new InterpretationError(msg, loc) },
+        defaultConstants,
+        new Map(),
+    )
+
+    const getVariable = (name: string): USSValue | undefined => {
+        const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
+        if (index === -1) {
+            return undefined
         }
+        return {
+            type: { type: 'vector', elementType: { type: 'number' } },
+            value: statisticsForGeography?.map(stat => stat.stats[index]) ?? [],
+        }
+    }
+
+    addVariablesToContext(ctx, getVariable)
+    return ctx
+}
+
+function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSValue {
+    const result = execute(stmts, context)
+    if (result.type.type !== 'vector' || (result.type.elementType.type !== 'number' && result.type.elementType.type !== 'boolean')) {
+        throw new InterpretationError('USS expression did not return a vector of numbers or booleans:', locationOfLastExpression(stmts))
+    }
+    return result
+}
+
+function addVariablesToContext(ctx: Context, getVariable: (name: string) => USSValue | undefined): void {
+    statistic_variables_info.variableNames.forEach((name) => {
         const va = getVariable(name)
         if (va !== undefined) {
             ctx.assignVariable(name, va)
@@ -77,9 +82,6 @@ function addVariablesToContext(ctx: Context, code: UrbanStatsASTStatement, getVa
 
     statistic_variables_info.multiSourceVariables.forEach((content) => {
         const [name, subvars] = content
-        if (!ids.has(name)) {
-            return
-        }
         const values = subvars.map(subvar => (ctx.getVariable(subvar) ?? getVariable(subvar))!.value as number[])
         const value = values[0].map((_, i) => firstNonNan(values.map(v => v[i]))) // take first non-NaN value
         ctx.assignVariable(name, {
@@ -89,21 +91,28 @@ function addVariablesToContext(ctx: Context, code: UrbanStatsASTStatement, getVa
     })
 }
 
-export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string }): ReactNode {
+export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string, stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     const colors = useColors()
     const func = props.function
+
+    const { setFunction, stats } = props
+
+    const setScript = useCallback((newScript: string) => {
+        setFunction({
+            ...func,
+            uss: newScript,
+        })
+    }, [setFunction, func])
+
+    const createContext = useCallback(async () => colorStatContext(await stats), [stats])
+
     const expression = (
-        <input
-            type="text"
-            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-            placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
-            value={func.uss}
-            onChange={(e) => {
-                props.setFunction({
-                    ...func,
-                    uss: e.target.value,
-                })
-            }}
+        <Editor
+            script={func.uss ?? ''}
+            setScript={setScript}
+            createContext={createContext}
+            execute={colorStatExecute}
+            showOutput={false}
         />
     )
 
@@ -136,7 +145,7 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, setFunc
     )
 }
 
-export function FilterSelector(props: { filter: FilterSettings, setFilter: (newValue: FilterSettings) => void, names: readonly StatName[] }): ReactNode {
+export function FilterSelector(props: { filter: FilterSettings, setFilter: (newValue: FilterSettings) => void, names: readonly StatName[], stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     const colors = useColors()
     const filter = props.filter
     // like FunctionSelector, but has a checkmark for whether the filter is enabled
@@ -171,6 +180,7 @@ export function FilterSelector(props: { filter: FilterSettings, setFilter: (newV
                                 }}
                                 names={props.names}
                                 placeholder={'Filter expression, e.g., "(a > 0 and b < 0) or b > 10"'}
+                                stats={props.stats}
                             />
                         )
                     : <div />
@@ -178,7 +188,7 @@ export function FilterSelector(props: { filter: FilterSettings, setFilter: (newV
         </div>
     )
 }
-export function StatisticSelector({ statistic, setStatistic, names, overallName, simple }: { statistic: ColorStatDescriptor | undefined, setStatistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overallName: string | undefined, simple: boolean }): ReactNode {
+export function StatisticSelector({ statistic, setStatistic, names, overallName, simple, stats }: { statistic: ColorStatDescriptor | undefined, setStatistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overallName: string | undefined, simple: boolean, stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     return (
         <div style={{ width: '100%' }}>
             <DataListSelector
@@ -209,6 +219,7 @@ export function StatisticSelector({ statistic, setStatistic, names, overallName,
                             setFunction={setStatistic}
                             names={names}
                             simple={simple}
+                            stats={stats}
                         />
                     )
                 : <div></div>}

@@ -112,7 +112,7 @@ export interface AutocompleteMenu {
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
-export type CreateContext = (stmts: UrbanStatsASTStatement | undefined) => Promise<Context>
+export type CreateContext = () => Promise<Context>
 export type Execute = (stmts: UrbanStatsASTStatement, context: Context) => USSValue
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
@@ -238,15 +238,13 @@ export function stringToHtml(
     }
 
     let result: ParseResult
-    let context: Promise<Context>
+    const context = createContext()
 
     if (lexTokens.some(token => token.token.type === 'error')) {
         result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
-        context = createContext(undefined)
     }
     else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
         result = { result: 'failure', errors: ['No input'] }
-        context = createContext(undefined)
     }
     else {
         const parsed = parseTokens(lexTokens)
@@ -262,10 +260,8 @@ export function stringToHtml(
                 }
             }
             result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
-            context = createContext(undefined)
         }
         else {
-            context = createContext(parsed)
             result = {
                 result: 'success',
                 value: (async () => {

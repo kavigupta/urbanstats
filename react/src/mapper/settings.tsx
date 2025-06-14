@@ -308,7 +308,7 @@ function BaseMapSelector({ basemap, setBasemap }: { basemap: Basemap, setBasemap
     )
 }
 
-export function MapperSettings(props: { mapSettings: MapSettings, validGeographies: string[], setMapSettings: (newValue: MapSettings) => void, names: readonly StatName[] }): ReactNode {
+export function MapperSettings(props: { mapSettings: MapSettings, validGeographies: string[], setMapSettings: (newValue: MapSettings) => void, names: readonly StatName[], filteredStats: Promise<StatisticsForGeography | undefined>, stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     return (
         <div>
             <DataListSelector
@@ -336,6 +336,7 @@ export function MapperSettings(props: { mapSettings: MapSettings, validGeographi
                     })
                 }}
                 names={props.names}
+                stats={props.stats}
             />
             <StatisticSelector
                 overallName="Statistic for Color:"
@@ -348,6 +349,7 @@ export function MapperSettings(props: { mapSettings: MapSettings, validGeographi
                 }}
                 names={props.names}
                 simple={false}
+                stats={props.filteredStats}
             />
             <RampSelector
                 ramp={props.mapSettings.ramp}
