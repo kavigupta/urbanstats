@@ -188,7 +188,7 @@ const value: Record<string, number[]> = {
         212,
         143,
     ],
-    'world__Metropolitan Clusters': [
+    'world__Metropolitan Cluster': [
         6,
         6,
         6,
@@ -411,7 +411,7 @@ const value: Record<string, number[]> = {
         7,
         5,
     ],
-    'Africa__Metropolitan Clusters': [
+    'Africa__Metropolitan Cluster': [
         27,
         27,
         27,
@@ -441,7 +441,7 @@ const value: Record<string, number[]> = {
         203,
         152,
     ],
-    'Asia__Metropolitan Clusters': [
+    'Asia__Metropolitan Cluster': [
         11,
         11,
         11,
@@ -492,7 +492,7 @@ const value: Record<string, number[]> = {
         36,
         31,
     ],
-    'Europe__Metropolitan Clusters': [
+    'Europe__Metropolitan Cluster': [
         44,
         44,
         44,
@@ -691,7 +691,7 @@ const value: Record<string, number[]> = {
         213,
         142,
     ],
-    'North America__Metropolitan Clusters': [
+    'North America__Metropolitan Cluster': [
         76,
         76,
         76,
@@ -834,19 +834,19 @@ const value: Record<string, number[]> = {
         7,
         5,
     ],
-    'South America__Metropolitan Clusters': [
-        67,
-        67,
-        67,
-        67,
-        67,
-        20,
+    'South America__Metropolitan Cluster': [
+        68,
+        68,
+        68,
+        68,
+        68,
+        15,
     ],
     'South America__Urban Center': [
         276,
         79,
     ],
-    'Brazil__Metropolitan Clusters': [
+    'Brazil__Metropolitan Cluster': [
         120,
         120,
         115,
@@ -866,11 +866,11 @@ const value: Record<string, number[]> = {
         195,
         160,
     ],
-    'Democratic Republic of the Congo__Metropolitan Clusters': [
+    'Democratic Republic of the Congo__Metropolitan Cluster': [
         323,
         32,
     ],
-    'China__Metropolitan Clusters': [
+    'China__Metropolitan Cluster': [
         31,
         31,
         31,
@@ -890,15 +890,15 @@ const value: Record<string, number[]> = {
         110,
         25,
     ],
-    'Ethiopia__Metropolitan Clusters': [
-        257,
-        98,
+    'Ethiopia__Metropolitan Cluster': [
+        260,
+        95,
     ],
-    'Indonesia__Metropolitan Clusters': [
-        297,
-        58,
+    'Indonesia__Metropolitan Cluster': [
+        298,
+        57,
     ],
-    'India__Metropolitan Clusters': [
+    'India__Metropolitan Cluster': [
         33,
         33,
         33,
@@ -917,24 +917,20 @@ const value: Record<string, number[]> = {
         109,
         28,
     ],
-    'Iran__Metropolitan Clusters': [
-        351,
-        4,
-    ],
-    'Mexico__Metropolitan Clusters': [
+    'Mexico__Metropolitan Cluster': [
         298,
         57,
     ],
-    'Nigeria__Metropolitan Clusters': [
-        139,
-        139,
-        77,
+    'Nigeria__Metropolitan Cluster': [
+        140,
+        140,
+        75,
     ],
-    'Pakistan__Metropolitan Clusters': [
+    'Pakistan__Metropolitan Cluster': [
         278,
         77,
     ],
-    'Russia__Metropolitan Clusters': [
+    'Russia__Metropolitan Cluster': [
         170,
         170,
         15,
@@ -1104,7 +1100,7 @@ const value: Record<string, number[]> = {
         212,
         143,
     ],
-    'USA__Metropolitan Clusters': [
+    'USA__Metropolitan Cluster': [
         164,
         164,
         27,

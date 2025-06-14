@@ -269,7 +269,7 @@ const value: Record<string, number[]> = {
         149,
         57,
     ],
-    'world__Metropolitan Clusters': [
+    'world__Metropolitan Cluster': [
         11,
         11,
         11,
@@ -399,13 +399,13 @@ const value: Record<string, number[]> = {
         45,
         40,
     ],
-    'Africa__Metropolitan Clusters': [
-        66,
-        66,
-        66,
-        66,
-        66,
-        25,
+    'Africa__Metropolitan Cluster': [
+        67,
+        67,
+        67,
+        67,
+        67,
+        20,
     ],
     'Africa__Urban Center': [
         257,
@@ -437,7 +437,7 @@ const value: Record<string, number[]> = {
         15,
         10,
     ],
-    'Asia__Metropolitan Clusters': [
+    'Asia__Metropolitan Cluster': [
         24,
         24,
         24,
@@ -467,7 +467,7 @@ const value: Record<string, number[]> = {
         74,
         59,
     ],
-    'Europe__Metropolitan Clusters': [
+    'Europe__Metropolitan Cluster': [
         111,
         111,
         111,
@@ -739,7 +739,7 @@ const value: Record<string, number[]> = {
         149,
         57,
     ],
-    'North America__Metropolitan Clusters': [
+    'North America__Metropolitan Cluster': [
         193,
         162,
     ],
@@ -818,7 +818,7 @@ const value: Record<string, number[]> = {
         122,
         111,
     ],
-    'South America__Metropolitan Clusters': [
+    'South America__Metropolitan Cluster': [
         172,
         172,
         11,
@@ -827,7 +827,7 @@ const value: Record<string, number[]> = {
         239,
         116,
     ],
-    'Brazil__Metropolitan Clusters': [
+    'Brazil__Metropolitan Cluster': [
         311,
         44,
     ],
@@ -853,12 +853,12 @@ const value: Record<string, number[]> = {
         56,
         19,
     ],
-    'China__Metropolitan Clusters': [
-        76,
-        76,
-        76,
-        76,
-        51,
+    'China__Metropolitan Cluster': [
+        77,
+        77,
+        77,
+        77,
+        47,
     ],
     'China__Urban Center': [
         284,
@@ -873,7 +873,7 @@ const value: Record<string, number[]> = {
         59,
         1,
     ],
-    'India__Metropolitan Clusters': [
+    'India__Metropolitan Cluster': [
         83,
         83,
         83,
@@ -885,12 +885,12 @@ const value: Record<string, number[]> = {
         73,
     ],
     'Nigeria__overall': [
-        262,
-        93,
+        264,
+        91,
     ],
     'Russia__overall': [
-        331,
-        24,
+        332,
+        23,
     ],
     'USA__overall': [
         3,

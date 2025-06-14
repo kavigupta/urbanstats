@@ -21,5 +21,5 @@ export default [
     'Country',
     'Subnational Region',
     'Urban Center',
-    'Metropolitan Clusters',
+    'Metropolitan Cluster',
 ] as const

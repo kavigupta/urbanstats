@@ -4,7 +4,7 @@ const value: Record<string, number> = {
     'Subnational Region': 2,
     'County': 3,
     'Urban Center': 4,
-    'Metropolitan Clusters': 5,
+    'Metropolitan Cluster': 5,
     'CA Census Division': 6,
     'CA Population Center': 7,
     'City': 8,

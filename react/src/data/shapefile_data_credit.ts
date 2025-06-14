@@ -51,7 +51,7 @@ const value: { names: string[], dataCredits: { text: string | null, linkText: st
     },
     {
         names: [
-            'Metropolitan Clusters',
+            'Metropolitan Cluster',
         ],
         dataCredits: [
             {
