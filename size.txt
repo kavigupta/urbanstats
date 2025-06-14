@@ -377,3 +377,16 @@ add more radii (#1053)
 1508    order
 1512    data
 4343    total
+
+add taylor metropolitan clusters
+
+16      consolidated
+16      scripts
+21      sitemaps
+29      centroids
+37      index
+86      quiz_sampling_info
+1307    shape
+1629    order
+1668    data
+4815    total

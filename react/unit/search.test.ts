@@ -42,7 +42,7 @@ firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be
 firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
 firstResult(test)('dalas', 'Dallas city, Texas, USA') // Correct for misspelling
 firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
-firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
+firstResult(test)('france-germany', 'Saarbruecken Metropolitan Cluster, Germany-France') // reach test, should find something in both
 firstResult(test)('united states of america', 'United States of America') // symlink
 
 firstResult(test)('san jose', 'San Jose city, California, USA', 'City')
