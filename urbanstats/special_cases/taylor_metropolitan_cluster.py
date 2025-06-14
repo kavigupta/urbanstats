@@ -8,8 +8,21 @@ from urbanstats.special_cases.ghsl_urban_center import (
     classify_areas_by_subnational_region,
 )
 
-@permacache("urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_2")
-def load_taylor_metropolitan_clusters():
+
+@permacache(
+    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning"
+)
+def load_taylor_metropolitan_clusters_post_pruning(min_km2=0.5):
+    tmc = load_taylor_metropolitan_clusters_pre_pruning()
+    area_m2 = tmc.to_crs(dict(proj="cea")).area
+    tmc = tmc[area_m2 >= min_km2 * 1e6]
+    return tmc
+
+
+@permacache(
+    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_2"
+)
+def load_taylor_metropolitan_clusters_pre_pruning():
     tmc = gpd.read_file(
         "named_region_shapefiles/taylor-metropolitan-clusters/output/taylor_metropolitan_clusters.shp.zip"
     )
