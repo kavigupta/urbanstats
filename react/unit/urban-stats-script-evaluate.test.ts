@@ -1164,3 +1164,11 @@ void test('value rendering', () => {
 ]`,
     )
 })
+
+void test('evaluate conditions', (): void => {
+    // 'if (x) { condition(y); abcdefg = 3  }; x = 4'
+    assert.deepStrictEqual(
+        execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
+        { type: numVectorType, value: [NaN, 3, 3] },
+    )
+})

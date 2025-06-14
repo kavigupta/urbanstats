@@ -466,6 +466,33 @@ void test('vector literal', (): void => {
     )
 })
 
+void test('condition-expression', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('condition(x); y = 2; z = 3'),
+        '(condition (id x) (assign (id y) (const 2)) (assign (id z) (const 3)))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition(x); x = 2; condition(y); z = 3'),
+        '(condition (id x) (assign (id x) (const 2)) (condition (id y) (assign (id z) (const 3))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition(x); condition(y); z = 3'),
+        '(condition (id x) (condition (id y) (assign (id z) (const 3))))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition(x); condition(y); condition(z)'),
+        '(condition (id x) (condition (id y) (condition (id z) )))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition(x, y)'),
+        '(errors (error "Expected closing bracket ) after condition" at 0:10))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { condition(y); abcdefg = 3  }; x = 4'),
+        '(statements (expr (if (id x) (condition (id y) (assign (id abcdefg) (const 3))))) (assign (id x) (const 4)))',
+    )
+})
+
 function ids(code: string): Set<string> {
     const res = parse(code)
     if (res.type === 'error') {
