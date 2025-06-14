@@ -181,25 +181,25 @@ test('lr-overall-other-stat', async (t) => {
             .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
         await waitForPageLoaded(t)
         // least compact region
-        await t.navigateTo('/article.html?longname=Fiji&s=D9dego8tisfjWgh')
+        await t.navigateTo('/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt&s=D9dego8tisfjWgh')
         // check that nextOverallCompactness is disabled
         await t.expect(nextOverallCompactness.hasAttribute('disabled')).ok()
         // check that nextOverallCompactness does nothing when clicked
         await t.click(nextOverallCompactness)
         await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Fiji`)
+            .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
         await waitForPageLoaded(t)
         // check that prevOverallCompactness is enabled
         await t.expect(prevOverallCompactness.hasAttribute('disabled')).notOk()
         await t.click(prevOverallCompactness)
         await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Northern%2C+Fiji`)
+            .eql(`${target}/article.html?longname=Fiji`)
         await waitForPageLoaded(t)
         // check that nextOverallCompactness is enabled
         await t.expect(nextOverallCompactness.hasAttribute('disabled')).notOk()
         await t.click(nextOverallCompactness)
         await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Fiji`)
+            .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
         await waitForPageLoaded(t)
     }
     finally {

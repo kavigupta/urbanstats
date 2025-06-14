@@ -86,7 +86,7 @@ export function Shapefiles(): ReactNode {
                                         <a href={link}>{linkText}</a>
                                     </div>
                                     <div style={{ width: '75%', padding: '1em' }}>
-                                        {text}
+                                        <div dangerouslySetInnerHTML={{ __html: text ?? '' }} />
                                     </div>
                                 </div>
                             ))}

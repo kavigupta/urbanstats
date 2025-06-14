@@ -33,6 +33,7 @@ from urbanstats.universe.universe_provider.contained_within import (
     STATE_PROVIDER,
     ContainedWithinUniverseProvider,
 )
+from urbanstats.utils import to_cardinal_direction
 
 
 class MapDataset:
@@ -612,27 +613,6 @@ def naive_directions_for_rows_with_names(rows, names):
         for idx, direction in zip(idxs, naive_directions_for_rows(rows.iloc[idxs])):
             names_out[idx] = f"{name} {direction}"
     return names_out
-
-
-def to_cardinal_direction(angle_revolutions):
-    return {
-        0: "East",
-        0.25: "North",
-        0.5: "West",
-        0.75: "South",
-        0.125: "Northeast",
-        0.375: "Northwest",
-        0.625: "Southwest",
-        0.875: "Southeast",
-        0.0625: "East-Northeast",
-        0.1875: "North-Northeast",
-        0.3125: "North-Northwest",
-        0.4375: "West-Northwest",
-        0.5625: "West-Southwest",
-        0.6875: "South-Southwest",
-        0.8125: "South-Southeast",
-        0.9375: "East-Southeast",
-    }[angle_revolutions]
 
 
 def compute_structure(rows):

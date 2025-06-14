@@ -4,7 +4,10 @@ from time import sleep
 
 import requests
 
-ci_proxy_origin = "http://168.235.89.26"
+
+def ci_proxy_origin(branch):
+    return f"http://{branch}.staging.urbanstats.org"
+
 
 # Resolves an urbanstats branch name into what branch CI should run against in densitydb
 # and waits for the CI proxy to be ready with the current version of that branch
@@ -47,8 +50,8 @@ while True:
     # Must print to error to not corrupt the output
     print(f"Using branch {densitydb_branch['name']}...", file=sys.stderr)
 
-    request_url = f"{ci_proxy_origin}/.git/refs/heads/{densitydb_branch['name']}"
-    response = requests.get(request_url, headers={"x-branch": densitydb_branch["name"]})
+    request_url = f"{ci_proxy_origin(densitydb_branch['name'])}/.git/refs/heads/{densitydb_branch['name']}"
+    response = requests.get(request_url)
     if response.status_code != 200:
         print(
             f"Status code from CI proxy for {request_url}: {response.status_code}",
@@ -71,5 +74,4 @@ while True:
     )
     break
 
-print(f"ci-proxy-origin={ci_proxy_origin}")
-print(f"densitydb-branch-name={densitydb_branch['name']}")
+print(f"ci-proxy-origin={ci_proxy_origin(densitydb_branch['name'])}")
