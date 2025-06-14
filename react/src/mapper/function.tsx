@@ -50,7 +50,6 @@ function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsF
     )
 
     const getVariable = (name: string, load: boolean): USSValue | undefined => {
-        console.log(name, load, statisticsForGeography !== undefined)
         const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
         if (index === -1) {
             return undefined

@@ -216,7 +216,7 @@ export function stringToHtml(
                 )
             }
 
-            return renderAutocompleteMenu()
+            return renderAutocompleteMenu(colors)
         }
         else {
             return ''
@@ -377,28 +377,31 @@ function styleToString(style: Record<string, string>): string {
 
 function renderAutocompleteIdentifiers(colors: Colors, identifiers: string[]): string {
     return identifiers
-        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, identifiers.length, index, index === 0)}">${identifier}</div>`)
+        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === 0)}">${identifier}</div>`)
         .join('')
 }
 
-function renderAutocompleteMenu(): string {
+function renderAutocompleteMenu(colors: Colors): string {
     const style = {
         'position': 'absolute',
         'top': '100%',
         'left': '100%',
         'user-select': 'none',
         'z-index': '1',
+        'overflow': 'scroll',
+        'max-height': `10lh`,
+        'border-radius': '0.5em',
+        'border': `1px solid ${colors.borderNonShadow}`,
     }
 
     return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}"></div>`
 }
 
-function autocompleteSpanStyle(colors: Colors, total: number, index: number, selected: boolean): string {
+function autocompleteSpanStyle(colors: Colors, index: number, selected: boolean): string {
     return styleToString({
         'cursor': 'pointer',
         'background-color': (selected ? colors.slightlyDifferentBackgroundFocused : index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground),
         'padding': '0 0.5em',
-        'border-radius': index === 0 ? '0.5em 0.5em 0 0' : index === total - 1 ? '0 0 0.5em 0.5em' : 'none',
     })
 }
 
@@ -416,10 +419,10 @@ function autocompleteMenuCallbacks(colors: Colors, options: string[], apply: (op
                     apply(index)
                 })
                 option.addEventListener('mouseenter', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, options.length, index, true))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, index, true))
                 })
                 option.addEventListener('mouseleave', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, options.length, index, index === selectedIndex))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, index, index === selectedIndex))
                 })
             })
         },
@@ -442,7 +445,7 @@ function autocompleteMenuCallbacks(colors: Colors, options: string[], apply: (op
                 case 'ArrowDown':
                 case 'ArrowUp':
                     event.preventDefault()
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, options.length, selectedIndex, false))
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, false))
                     if (event.key === 'ArrowDown') {
                         selectedIndex++
                     }
@@ -456,7 +459,9 @@ function autocompleteMenuCallbacks(colors: Colors, options: string[], apply: (op
                     else if (selectedIndex > options.length - 1) {
                         selectedIndex = 0
                     }
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, options.length, selectedIndex, true))
+                    const newSelection = editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)
+                    newSelection?.setAttribute('style', autocompleteSpanStyle(colors, selectedIndex, true))
+                    newSelection?.scrollIntoView({ block: 'nearest' })
                     return true
             }
             return false
