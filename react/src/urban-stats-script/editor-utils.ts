@@ -1,9 +1,10 @@
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 
+import { Context } from './context'
 import { InterpretationError, renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo, SingleLocation } from './lexer'
-import { locationOfLastExpression, ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
+import { ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
 import { USSValue } from './types-values'
 
 export function stringIndexToLocation(lines: string[], colIdx: number): SingleLocation {
@@ -107,11 +108,12 @@ function escapeStringForHTML(string: string): string {
 type Result<T> = { result: 'success', value: T } | { result: 'failure', errors: string[] }
 
 export interface AutocompleteMenu {
-    action: (editor: HTMLElement, action: KeyboardEvent) => { consumed: boolean, stopListening: boolean }
+    action: (editor: HTMLElement, action: KeyboardEvent) => boolean
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
-export type Execute = (expr: UrbanStatsASTStatement) => Promise<USSValue>
+export type CreateContext = (stmts: UrbanStatsASTStatement | undefined) => Promise<Context>
+export type Execute = (stmts: UrbanStatsASTStatement, context: Context) => USSValue
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
 
@@ -128,15 +130,14 @@ export type ExecResult = Result<USSValue>
 export function stringToHtml(
     string: string,
     colors: Colors,
+    createContext: CreateContext,
     execute: Execute,
-    checkValue: ValueChecker,
     lastAction: Action,
     autocomplete: {
         collapsedRangeIndex: number | undefined
-        options: string[]
         apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
     },
-): { html: string, result: ParseResult, autocomplete: AutocompleteMenu | undefined } {
+): { html: string, result: ParseResult, autocomplete: Promise<AutocompleteMenu | undefined> | undefined } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -184,36 +185,38 @@ export function stringToHtml(
 
     const span = spanFactory(colors)
 
-    let autocompleteMenu: AutocompleteMenu | undefined
+    let autocompleteMenu: ((context: Context) => AutocompleteMenu | undefined) | undefined
 
     function maybeAutocompleteMenu(token: AnnotatedToken): string {
         const identifierToken = token.token
         if (autocompleteLocation !== undefined && identifierToken.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
-            const includeOption = (option: string): boolean => {
-                return option.startsWith(identifierToken.value) && option !== identifierToken.value
+            autocompleteMenu = (context) => {
+                const includeOption = (option: string): boolean => {
+                    return option.startsWith(identifierToken.value) && option !== identifierToken.value
+                }
+
+                const allIdentifiers = Array.from(
+                    new Set(lexTokens
+                        .flatMap(t => t.token.type === 'identifier' && includeOption(t.token.value) && t !== token ? [t.token.value] : [])
+                        .concat(Array.from(context.allIdentifiers()).filter(includeOption))),
+                ).sort()
+
+                if (allIdentifiers.length === 0) {
+                    return undefined
+                }
+
+                const completions = allIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
+
+                return autocompleteMenuCallbacks(
+                    colors,
+                    allIdentifiers,
+                    (completionIndex) => {
+                        autocomplete.apply(completions[completionIndex], autocomplete.collapsedRangeIndex!)
+                    },
+                )
             }
 
-            const allIdentifiers = Array.from(
-                new Set(lexTokens
-                    .flatMap(t => t.token.type === 'identifier' && includeOption(t.token.value) && t !== token ? [t.token.value] : [])
-                    .concat(autocomplete.options.filter(includeOption))),
-            ).sort()
-
-            if (allIdentifiers.length === 0) {
-                return ''
-            }
-
-            const completions = allIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
-
-            autocompleteMenu = autocompleteMenuCallbacks(
-                colors,
-                completions.length,
-                (completionIndex) => {
-                    autocomplete.apply(completions[completionIndex], autocomplete.collapsedRangeIndex!)
-                },
-            )
-
-            return renderAutocompleteMenu(colors, allIdentifiers)
+            return renderAutocompleteMenu()
         }
         else {
             return ''
@@ -235,12 +238,15 @@ export function stringToHtml(
     }
 
     let result: ParseResult
+    let context: Promise<Context>
 
     if (lexTokens.some(token => token.token.type === 'error')) {
         result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
+        context = createContext(undefined)
     }
     else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
         result = { result: 'failure', errors: ['No input'] }
+        context = createContext(undefined)
     }
     else {
         const parsed = parseTokens(lexTokens)
@@ -256,17 +262,15 @@ export function stringToHtml(
                 }
             }
             result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
+            context = createContext(undefined)
         }
         else {
+            context = createContext(parsed)
             result = {
                 result: 'success',
                 value: (async () => {
                     try {
-                        const value = await execute(parsed)
-                        const checkResult = checkValue(value)
-                        if (!checkResult.ok) {
-                            throw new InterpretationError(checkResult.problem, locationOfLastExpression(parsed))
-                        }
+                        const value = execute(parsed, await context)
                         return { html: lines.join('\n'), result: { result: 'success', value } }
                     }
                     catch (e) {
@@ -279,13 +283,15 @@ export function stringToHtml(
                                 shift([e], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
                             }
                             return {
-                                html: lines.join('\n'), result: { result: 'failure', errors: [e.message] },
+                                html: lines.join('\n'),
+                                result: { result: 'failure', errors: [e.message] },
                             }
                         }
                         else {
                             console.error('Unknown error while evaluating script', e)
                             return {
-                                html: lines.join('\n'), result: { result: 'failure', errors: ['Unknown error'] },
+                                html: lines.join('\n'),
+                                result: { result: 'failure', errors: ['Unknown error'] },
                             }
                         }
                     }
@@ -296,7 +302,7 @@ export function stringToHtml(
 
     const html = lines.join('\n')
 
-    return { html, result, autocomplete: autocompleteMenu }
+    return { html, result, autocomplete: autocompleteMenu !== undefined ? context.then(autocompleteMenu) : undefined }
 }
 
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError) => string {
@@ -369,7 +375,13 @@ function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
 }
 
-function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
+function renderAutocompleteIdentifiers(colors: Colors, identifiers: string[]): string {
+    return identifiers
+        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, identifiers.length, index, index === 0)}">${identifier}</div>`)
+        .join('')
+}
+
+function renderAutocompleteMenu(): string {
     const style = {
         'position': 'absolute',
         'top': '100%',
@@ -378,11 +390,7 @@ function renderAutocompleteMenu(colors: Colors, identifiers: string[]): string {
         'z-index': '1',
     }
 
-    const contents = identifiers
-        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, identifiers.length, index, index === 0)}">${identifier}</div>`)
-        .join('')
-
-    return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}">${contents}</div>`
+    return `<div data-autocomplete-menu contenteditable="false" style="${styleToString(style)}"></div>`
 }
 
 function autocompleteSpanStyle(colors: Colors, total: number, index: number, selected: boolean): string {
@@ -394,39 +402,47 @@ function autocompleteSpanStyle(colors: Colors, total: number, index: number, sel
     })
 }
 
-function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (optionIndex: number) => void): AutocompleteMenu {
+function autocompleteMenuCallbacks(colors: Colors, options: string[], apply: (optionIndex: number) => void): AutocompleteMenu {
     let selectedIndex = 0
+    let stopListening = false
 
     return {
+        // Should be idempotent
         attachListeners(editor) {
+            editor.querySelector('[data-autocomplete-menu]')!.innerHTML = renderAutocompleteIdentifiers(colors, options)
             editor.querySelectorAll('[data-autocomplete-option]').forEach((option) => {
                 const index = parseInt(option.getAttribute('data-index')!)
                 option.addEventListener('click', () => {
                     apply(index)
                 })
                 option.addEventListener('mouseenter', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, numOptions, index, true))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, options.length, index, true))
                 })
                 option.addEventListener('mouseleave', () => {
-                    option.setAttribute('style', autocompleteSpanStyle(colors, numOptions, index, index === selectedIndex))
+                    option.setAttribute('style', autocompleteSpanStyle(colors, options.length, index, index === selectedIndex))
                 })
             })
         },
         action(editor, event) {
+            if (stopListening) {
+                return false
+            }
             switch (event.key) {
                 case 'Enter':
                 case 'Tab':
                     event.preventDefault()
                     apply(selectedIndex)
-                    return { consumed: true, stopListening: true }
+                    stopListening = true
+                    return true
                 case 'Escape':
                     event.preventDefault()
                     editor.querySelector('[data-autocomplete-menu]')?.remove()
-                    return { consumed: true, stopListening: true }
+                    stopListening = true
+                    return true
                 case 'ArrowDown':
                 case 'ArrowUp':
                     event.preventDefault()
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, numOptions, selectedIndex, false))
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, options.length, selectedIndex, false))
                     if (event.key === 'ArrowDown') {
                         selectedIndex++
                     }
@@ -435,15 +451,15 @@ function autocompleteMenuCallbacks(colors: Colors, numOptions: number, apply: (o
                     }
                     // wrap around
                     if (selectedIndex < 0) {
-                        selectedIndex = numOptions - 1
+                        selectedIndex = options.length - 1
                     }
-                    else if (selectedIndex > numOptions - 1) {
+                    else if (selectedIndex > options.length - 1) {
                         selectedIndex = 0
                     }
-                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, numOptions, selectedIndex, true))
-                    return { consumed: true, stopListening: false }
+                    editor.querySelector(`[data-autocomplete-option][data-index="${selectedIndex}"]`)?.setAttribute('style', autocompleteSpanStyle(colors, options.length, selectedIndex, true))
+                    return true
             }
-            return { consumed: false, stopListening: false }
+            return false
         },
     }
 }
