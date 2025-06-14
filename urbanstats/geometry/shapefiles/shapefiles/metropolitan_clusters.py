@@ -4,7 +4,7 @@ from urbanstats.geometry.shapefiles.shapefiles.urban_centers import create_urban
 from urbanstats.special_cases.taylor_metropolitan_cluster import load_taylor_metropolitan_clusters
 
 METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
-    hash_key="metropolitan_clusters_1",
+    hash_key="metropolitan_clusters_2",
     path=load_taylor_metropolitan_clusters,
     meta=dict(type="Metropolitan Cluster", source="Taylor", type_category="International City"),
     abbreviation="METC",
