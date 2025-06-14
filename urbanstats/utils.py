@@ -1,7 +1,7 @@
+import itertools
 import json
 import os
 from dataclasses import dataclass
-import itertools
 
 import numpy as np
 import zarr

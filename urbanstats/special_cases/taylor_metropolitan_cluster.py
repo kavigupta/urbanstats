@@ -1,5 +1,4 @@
 import geopandas as gpd
-
 from permacache import permacache
 
 from urbanstats.special_cases.country import subnational_regions

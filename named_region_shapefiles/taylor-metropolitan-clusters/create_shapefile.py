@@ -2,22 +2,22 @@
 Got the files ucls_* from Taylor via personal communication, as well as names_full.txt and uc_metadata.zip.
 """
 
-from difflib import SequenceMatcher
 import glob
 import json
 import re
 import zipfile
+from difflib import SequenceMatcher
 from functools import lru_cache
 from typing import Counter
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import PIL.Image
 import requests
+import shapely
 import tqdm
 from permacache import permacache, stable_hash
-import shapely
-import geopandas as gpd
 
 # 0_0 is 70N to 60N, 180W to 170W, and then it's y_x across the grid.
 
@@ -561,7 +561,9 @@ def populate_wikidata_names(names, source, missing):
         source[k] = "Wikidata"
 
 
-def populate_coordinate_names(name_candidates, names, source, geonames_for_missing, shp):
+def populate_coordinate_names(
+    name_candidates, names, source, geonames_for_missing, shp
+):
     coordinate_names = assign_coordinate_names(shp, name_candidates)
 
     for ident in set(coordinate_names) - set(names):

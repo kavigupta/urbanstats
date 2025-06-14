@@ -1,9 +1,8 @@
 import unittest
 
 import numpy as np
-from parameterized import parameterized
-
 from create_shapefile import encode_as_rows
+from parameterized import parameterized
 
 
 class EncodeAsRowsTests(unittest.TestCase):
