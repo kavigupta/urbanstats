@@ -1,5 +1,7 @@
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { bitapAlphabet } from '../utils/bitap'
+import { bitap } from '../utils/bitap-autocomplete'
 
 import { Context } from './context'
 import { InterpretationError, renderLocInfo } from './interpreter'
@@ -191,25 +193,53 @@ export function stringToHtml(
         const identifierToken = token.token
         if (autocompleteLocation !== undefined && identifierToken.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
             autocompleteMenu = (context) => {
-                const includeOption = (option: string): boolean => {
-                    return option.startsWith(identifierToken.value) && option !== identifierToken.value
+                const allIdentifiers = new Set<string>()
+                let longestHaystack = 0
+                for (const t of lexTokens) {
+                    if (t.token.type === 'identifier') {
+                        allIdentifiers.add(t.token.value)
+                        longestHaystack = Math.max(longestHaystack, t.token.value.length)
+                    }
                 }
-
-                const allIdentifiers = Array.from(
-                    new Set(lexTokens
-                        .flatMap(t => t.token.type === 'identifier' && includeOption(t.token.value) && t !== token ? [t.token.value] : [])
-                        .concat(Array.from(context.allIdentifiers()).filter(includeOption))),
-                ).sort()
-
-                if (allIdentifiers.length === 0) {
-                    return undefined
+                for (const id of context.allIdentifiers()) {
+                    allIdentifiers.add(id)
+                    longestHaystack = Math.max(longestHaystack, id.length)
                 }
+                allIdentifiers.delete(identifierToken.value)
 
-                const completions = allIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
+                const maxErrors = 2
+                const needle = { alphabet: bitapAlphabet(identifierToken.value.toLowerCase()), length: identifierToken.value.toLowerCase().length }
+
+                const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(needle.length + longestHaystack + 1))
+
+                const sortedIdentifiers = Array.from(allIdentifiers).flatMap((option) => {
+                    const match = bitap(option.toLowerCase(), needle, maxErrors, bitapBuffers)
+                    if (match === undefined) {
+                        return []
+                    }
+                    else {
+                        return [{ option, match }]
+                    }
+                }).sort((a, b) => {
+                    if (a.match.numErrors !== b.match.numErrors) {
+                        return a.match.numErrors - b.match.numErrors
+                    }
+                    else if (a.match.location !== b.match.location) {
+                        return a.match.location - b.match.location
+                    }
+                    else if (a.option.length !== b.option.length) {
+                        return a.option.length - b.option.length
+                    }
+                    else {
+                        return a.option.localeCompare(b.option)
+                    }
+                }).map(({ option }) => option)
+
+                const completions = sortedIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
 
                 return autocompleteMenuCallbacks(
                     colors,
-                    allIdentifiers,
+                    sortedIdentifiers,
                     (completionIndex) => {
                         autocomplete.apply(completions[completionIndex], autocomplete.collapsedRangeIndex!)
                     },

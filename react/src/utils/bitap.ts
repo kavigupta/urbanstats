@@ -11,13 +11,17 @@ export interface Needle {
     signature: number
 }
 
-export function toNeedle(token: string): Needle {
+export function bitapAlphabet(token: string): Uint32Array {
     const alphabet = new Uint32Array(65535).fill(0)
     for (let i = 0; i < token.length; i++) {
         const char = token.charCodeAt(i)
         alphabet[char] = alphabet[char] | (1 << i)
     }
-    return { alphabet, length: token.length, signature: toSignature(token) }
+    return alphabet
+}
+
+export function toNeedle(token: string): Needle {
+    return { alphabet: bitapAlphabet(token), length: token.length, signature: toSignature(token) }
 }
 
 export interface Haystack {
