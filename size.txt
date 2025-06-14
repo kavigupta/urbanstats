@@ -378,7 +378,7 @@ add more radii (#1053)
 1512    data
 4343    total
 
-add taylor metropolitan centers
+add taylor metropolitan clusters
 
 16      consolidated
 16      scripts

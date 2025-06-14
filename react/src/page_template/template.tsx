@@ -155,6 +155,9 @@ function OtherCredits(): ReactNode {
             {'Significant help with weather data from '}
             <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>
             .
+            {' Thanks to '}
+            <a href="https://bsky.app/profile/elpis.bsky.social">Taylor</a>
+            {' for the Metropolitan Clusters.'}
         </span>
     )
 }
