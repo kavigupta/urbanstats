@@ -50,10 +50,11 @@ export function Editor(
 
         const { html, result: newResult, autocomplete } = stringToHtml(newScript, colors, createContext, execute, lastAction, {
             collapsedRangeIndex,
-            apply: (completion, index) => {
-                const editedScript = newScript.slice(0, index) + completion + newScript.slice(index)
-                renderScript(editedScript, { start: index + completion.length, end: index + completion.length })
+            apply: (completion, from, to, delta) => {
+                const editedScript = newScript.slice(0, from) + completion + newScript.slice(to)
+                renderScript(editedScript, { start: to + delta, end: to + delta })
                 setScript(editedScript)
+                setLastAction('autocomplete')
             },
         })
 

@@ -118,7 +118,7 @@ export type Execute = (stmts: UrbanStatsASTStatement, context: Context) => USSVa
 
 export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
 
-export type Action = 'input' | 'select' | undefined
+export type Action = 'input' | 'select' | 'autocomplete' | undefined
 
 /*
  * EditorParse -> html, result, autocomplete, execute
@@ -136,7 +136,7 @@ export function stringToHtml(
     lastAction: Action,
     autocomplete: {
         collapsedRangeIndex: number | undefined
-        apply: (completion: string, index: number) => void // Insert `completion` (the rest of the option) at `index`.
+        apply: (completion: string, from: number, to: number, delta: number) => void // Replace the range from -> to with completion. delta = completion.length - (to - from) for convenience
     },
 ): { html: string, result: ParseResult, autocomplete: Promise<AutocompleteMenu | undefined> } {
     if (!string.endsWith('\n')) {
@@ -226,13 +226,16 @@ export function stringToHtml(
                     }
                 }).map(({ option }) => option)
 
-                const completions = sortedIdentifiers.map(identifier => identifier.slice(identifierToken.value.length))
-
                 return autocompleteMenuCallbacks(
                     colors,
                     sortedIdentifiers,
                     (completionIndex) => {
-                        autocomplete.apply(completions[completionIndex], autocomplete.collapsedRangeIndex!)
+                        autocomplete.apply(
+                            sortedIdentifiers[completionIndex],
+                            autocomplete.collapsedRangeIndex! - identifierToken.value.length,
+                            autocomplete.collapsedRangeIndex!,
+                            sortedIdentifiers[completionIndex].length - identifierToken.value.length,
+                        )
                     },
                 )
             }
