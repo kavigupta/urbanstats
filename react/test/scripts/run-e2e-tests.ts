@@ -60,7 +60,7 @@ const runTest = async (): Promise<number> => {
     }
 
     let runner = testcafe.createRunner()
-        .src(`test/${test}.ts`)
+        .src(`test/${test}.test.ts`)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
         .screenshots(`screenshots/${test}`)
 
