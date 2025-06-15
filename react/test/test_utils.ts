@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 
-import type { ProtocolProxyApi } from 'devtools-protocol/types/protocol-proxy-api'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 
@@ -271,15 +270,18 @@ export async function dataValues(): Promise<string[]> {
     return values
 }
 
-export function cdpSessionWithSessionId(cdpSession: ProtocolProxyApi.ProtocolApi, sessionId: string): ProtocolProxyApi.ProtocolApi {
+export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, sessionId: string): T {
     // https://issues.chromium.org/issues/406821212#comment2
     return new Proxy(cdpSession, {
-        get(s, prop: keyof typeof cdpSession) {
+        get(s, prop: keyof Object) {
             const value: unknown = s[prop]
             if (value instanceof Function) {
                 return function (...args: unknown[]) {
                     return value.apply(s, args.concat([sessionId])) as unknown
                 }
+            }
+            if (value instanceof Object) {
+                return cdpSessionWithSessionId(value, sessionId)
             }
             return value
         },
