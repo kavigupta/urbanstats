@@ -135,7 +135,8 @@ export default tseslint.config(
             }],
             "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful
             '@typescript-eslint/no-inferrable-types': 'off',
-            '@stylistic/yield-star-spacing': ['error', { before: false, after: true }]
+            '@stylistic/yield-star-spacing': ['error', { before: false, after: true }],
+            '@typescript-eslint/no-wrapper-object-types': 'off',
         },
     },
     {
