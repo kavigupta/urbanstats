@@ -41,7 +41,7 @@ export function quizFriendsTest(
     quizFixture(
         `${props.name} friends test`,
         `${target}/${today}`,
-        { },
+        {},
         '',
         props.platform,
     )
