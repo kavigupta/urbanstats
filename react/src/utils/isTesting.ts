@@ -8,3 +8,5 @@ export function isTesting(): boolean {
 }
 
 export const testingUserAgent = 'urbanstats-e2e'
+
+export const checkString = true
