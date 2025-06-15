@@ -4,6 +4,8 @@ import path from 'path'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 
+import { checkString } from '../src/utils/isTesting'
+
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
@@ -12,8 +14,6 @@ export const getLocationWithoutSettings = ClientFunction(() => {
     url.searchParams.delete('s')
     return url.toString()
 })
-
-export const isTesting = true
 
 export function comparisonPage(locations: string[]): string {
     const params = new URLSearchParams()
@@ -171,7 +171,7 @@ function copyMostRecentFile(t: TestController): void {
 export async function downloadOrCheckString(t: TestController, string: string, name: string): Promise<void> {
     const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
-    if (isTesting) {
+    if (checkString) {
         const expected = fs.readFileSync(pathToFile, 'utf8')
         await t.expect(string).eql(expected)
     }
