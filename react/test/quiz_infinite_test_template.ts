@@ -51,7 +51,8 @@ function regressionTestForVersion(v: number): void {
     })
 }
 
-export function regressionTestForAllVersions(): void {
+// Other tests should execute ignored versions
+export function regressionTestForVersions(versions: number[], ignoredVersions: number[]): void {
     // Get all numbers such that stored_quizzes/quiz_sampling_info/${version}.json exists
     // first list the files
     const files = globSync('../stored_quizzes/quiz_sampling_info/*.json')
@@ -60,6 +61,12 @@ export function regressionTestForAllVersions(): void {
     }
     const vs = files.map(f => parseInt(/(\d+).json$/.exec(f)![0]))
     for (const v of vs) {
+        if (!versions.includes(v) && !ignoredVersions.includes(v)) {
+            throw new Error(`Version ${v} not in versions or ignoredVersions`)
+        }
+    }
+
+    for (const v of versions) {
         regressionTestForVersion(v)
     }
 }
