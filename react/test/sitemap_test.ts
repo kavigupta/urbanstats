@@ -1,4 +1,5 @@
-import { gunzipSync } from 'zlib'
+import { text } from 'stream/consumers'
+import { createGunzip } from 'zlib'
 
 import { ClientFunction, Selector } from 'testcafe'
 
@@ -8,17 +9,16 @@ import { pageDescriptorKind, target, urbanstatsFixture, waitForPageLoaded } from
 
 urbanstatsFixture('home page', target)
 
+async function request(t: TestController, url: string): Promise<string> {
+    const response = await t.request(url, { rawResponse: true, headers: { 'Accept-Encoding': 'gzip' } })
+    return await text((response.body as IncomingMessage).pipe(createGunzip()))
+}
+
 async function loadSitemap(t: TestController): Promise<string[]> {
-    const robots = (await t.request(`${target}/robots.txt`)).body.valueOf() as string
+    const robots = await request(t, `${target}/robots.txt`)
     const sitemapUrls = Array.from(robots.matchAll(/Sitemap: (.+)/g)).map(matches => matches[1])
-    const sitemapsContents = await Promise.all(sitemapUrls.map(async (sitemapUrl) => {
-        const response = await t.request(sitemapUrl.replaceAll('https://urbanstats.org', target))
-        const body = await response.body as Buffer
-        return gunzipSync(body).toString()
-    }))
-    const sitemapContents = sitemapsContents.flatMap((text) => {
-        return text.replaceAll('https://urbanstats.org', target).split('\n')
-    })
+    const sitemapsContents = await Promise.all(sitemapUrls.map(sitemapUrl => request(t, sitemapUrl.replaceAll('https://urbanstats.org', target))))
+    const sitemapContents = sitemapsContents.flatMap(string => string.replaceAll('https://urbanstats.org', target).split('\n'))
     console.warn(`Sitemap has ${sitemapContents.length} entries`)
     return sitemapContents
 }
