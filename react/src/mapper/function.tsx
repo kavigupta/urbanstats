@@ -1,320 +1,126 @@
-import { Parser, Value } from 'expr-eval'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useCallback } from 'react'
 
-import { CheckboxSettingCustom } from '../components/sidebar'
+import statistic_variables_info from '../data/statistic_variables_info'
 import { useColors } from '../page_template/colors'
 import { StatName } from '../page_template/statistic-tree'
+import { Editor } from '../urban-stats-script/Editor'
+import { defaultConstants } from '../urban-stats-script/constants'
+import { Context } from '../urban-stats-script/context'
+import { execute, InterpretationError } from '../urban-stats-script/interpreter'
+import { allIdentifiers, locationOfLastExpression, parse, UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { USSValue } from '../urban-stats-script/types-values'
+import { firstNonNan } from '../utils/math'
 
 import { DataListSelector } from './DataListSelector'
-import { Regression } from './regression'
-import { ColorStat, ColorStatDescriptor, FilterSettings, RegressionDescriptor, StatisticsForGeography } from './settings'
+import { ColorStat, ColorStatDescriptor, FilterSettings, StatisticsForGeography } from './settings'
 
-interface VariableDescriptor {
-    name: string
-    expr: ColorStatDescriptor | undefined
-}
-
-interface Variable {
-    name: string
-    expr: ColorStat
-}
-
-export class FunctionColorStat implements ColorStat {
-    constructor(private readonly _name: string | undefined, private readonly _variables: Variable[], private readonly _regressions: Regression[], private readonly _expr: string) {
+export class USSColorStat implements ColorStat {
+    constructor(private readonly _nameToIndex: ReadonlyMap<string, number>, private readonly _name: string | undefined, private readonly _uss: string) {
     }
 
     name(): string {
         return this._name ?? '[Unnamed function]'
     }
 
-    compute(statistics_for_geography: StatisticsForGeography, vars?: Record<string, number[]>): number[] {
-        let variables = { ...vars }
-        for (const variable of this._variables) {
-            variables[variable.name] = variable.expr.compute(statistics_for_geography)
-        }
-        if (this._expr === '') {
-            return statistics_for_geography.map(() => 0)
-        }
-        for (const regression of this._regressions) {
-            const out = regression.compute(statistics_for_geography, variables)
-            variables = { ...variables, ...out }
-        }
-        return statistics_for_geography.map((_, i) => {
-            const expr = Parser.parse(this._expr)
-            const statVars: Value = {}
-            for (const key of Object.keys(variables)) {
-                statVars[key] = variables[key][i]
+    compute(statisticsForGeography: StatisticsForGeography): number[] {
+        let result
+        try {
+            const stmts = parse(this._uss)
+            if (stmts.type === 'error') {
+                console.error('Error parsing USS expression:', stmts.errors)
+                return statisticsForGeography.map(() => NaN)
             }
-            return expr.evaluate(statVars) as number
-        })
+            const ctx = colorStatContext(stmts, statisticsForGeography)
+            result = colorStatExecute(stmts, ctx)
+        }
+        catch (e) {
+            console.error('Error parsing USS expression:', e)
+            return statisticsForGeography.map(() => NaN)
+        }
+        return result.value as number[]
     }
 }
 
-const operatorStyle: React.CSSProperties = { width: '2em', minWidth: '2em', textAlign: 'center' }
-
-function VariableNameSelector({ variableName, setVariableName, placeholder }: { variableName: string, setVariableName: (newValue: string) => void, placeholder: string }): ReactNode {
-    const colors = useColors()
-    // freeform input for variable name
-    return (
-        <input
-            type="text"
-            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-            placeholder={`e.g., "${placeholder}"`}
-            value={variableName}
-            onChange={(e) => { setVariableName(e.target.value) }}
-        />
+function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsForGeography: StatisticsForGeography | undefined): Context {
+    const ctx = new Context(
+        () => undefined,
+        (msg, loc) => { return new InterpretationError(msg, loc) },
+        defaultConstants,
+        new Map(),
     )
-}
 
-function RegressionSelector(props: { regression: RegressionDescriptor, setRegression: (newValue: RegressionDescriptor) => void, deleteRegression: () => void, names: readonly StatName[] }): ReactNode {
-    // Create several rows organized as
-    // [stat selector] = [coefficient textbox] * [stat selector]
-    //                 + [coefficient textbox] * [stat selector]
-    //                 + [coefficient textbox] * [stat selector]
-    //                 + [coefficient textbox] (intercept)
-    //                 + [coefficient textbox] (residue)
-
-    const setCoefficientVar = (i: number, value: string): void => {
-        const coefficients = props.regression.var_coefficients
-        props.setRegression({
-            ...props.regression,
-            var_coefficients: coefficients.map((c, j) => i === j ? value : c),
-        })
-    }
-    const setInterceptVar = (value: string): void => {
-        props.setRegression({
-            ...props.regression,
-            var_intercept: value,
-        })
-    }
-    const setResidueVar = (value: string): void => {
-        props.setRegression({
-            ...props.regression,
-            var_residue: value,
-        })
-    }
-    const setDependentExpr = (i: number, value: ColorStatDescriptor): void => {
-        const dependents = props.regression.dependents
-        props.setRegression({
-            ...props.regression,
-            dependents: dependents.map((c, j) => i === j ? value : c),
-        })
-    }
-
-    const removeDependentExpr = (i: number): void => {
-        const varCoefficients = props.regression.var_coefficients
-        const dependents = props.regression.dependents
-        props.setRegression({
-            ...props.regression,
-            var_coefficients: varCoefficients.filter((_, j) => i !== j),
-            dependents: dependents.filter((_, j) => i !== j),
-        })
-    }
-
-    const rhsParams: { variableName: string, setVariableName: (newValue: string) => void, name: string, dependent: ColorStatDescriptor | undefined | null, setDependent: (newValue: ColorStatDescriptor) => void, descriptor?: string }[] = props.regression.dependents.map((dependent, i) => {
+    const getVariable = (name: string, load: boolean): USSValue | undefined => {
+        const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
+        if (index === -1) {
+            return undefined
+        }
         return {
-            variableName: props.regression.var_coefficients[i],
-            setVariableName: (value: string) => { setCoefficientVar(i, value) },
-            name: `m_${i + 1}`,
-            dependent: props.regression.dependents[i],
-            setDependent: (value: ColorStatDescriptor) => { setDependentExpr(i, value) },
+            type: { type: 'vector', elementType: { type: 'number' } },
+            value: load ? statisticsForGeography?.map(stat => stat.stats[index]) ?? [] : [],
+        }
+    }
+
+    addVariablesToContext(ctx, stmts, getVariable)
+    return ctx
+}
+
+function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSValue {
+    const result = execute(stmts, context)
+    if (result.type.type !== 'vector' || (result.type.elementType.type !== 'number' && result.type.elementType.type !== 'boolean')) {
+        throw new InterpretationError('USS expression did not return a vector of numbers or booleans:', locationOfLastExpression(stmts))
+    }
+    return result
+}
+
+function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | undefined, getVariable: (name: string, load: boolean) => USSValue | undefined): void {
+    const ids = stmts !== undefined ? allIdentifiers(stmts) : undefined
+
+    statistic_variables_info.variableNames.forEach((name) => {
+        const va = getVariable(name, ids?.has(name) ?? false)
+        if (va !== undefined) {
+            ctx.assignVariable(name, va)
         }
     })
 
-    rhsParams.push({
-        variableName: props.regression.var_intercept,
-        setVariableName: (value) => { setInterceptVar(value) },
-        name: `b`,
-        descriptor: `[intercept]`,
-        dependent: undefined,
-        setDependent: () => { throw new Error('Intercept should not have a dependent') },
-    })
-    rhsParams.push({
-        variableName: props.regression.var_residue,
-        setVariableName: (value) => { setResidueVar(value) },
-        name: `e`,
-        descriptor: `[residue]`,
-        dependent: undefined,
-        setDependent: () => { throw new Error('Residue should not have a dependent') },
-    })
-
-    const dependents = rhsParams.map((param, i) => (
-        <div key={i} style={{ display: 'flex' }}>
-            {/* Text field!!! free enttry for variable entry */}
-            <div style={operatorStyle}>
-                {i === 0 ? '=' : '+'}
-            </div>
-            <div style={{ width: '20%' }}>
-                <VariableNameSelector
-                    variableName={param.variableName}
-                    setVariableName={param.setVariableName}
-                    placeholder={param.name}
-                />
-            </div>
-            <div style={operatorStyle}>
-                <span>&times;</span>
-            </div>
-            <StatisticSelector
-                statistic={param.dependent ?? undefined}
-                overallName={undefined}
-                setStatistic={param.setDependent}
-                names={props.names}
-                simple={true}
-            />
-            <button onClick={() => { removeDependentExpr(i) }}>
-                -
-            </button>
-            {
-                param.descriptor === undefined
-                    ? undefined
-                    : (
-                            <div>
-                                {param.descriptor}
-                            </div>
-                        )
+    statistic_variables_info.multiSourceVariables.forEach((content) => {
+        const [name, subvars] = content
+        const values = subvars.map((subvar) => {
+            const existing = ctx.getVariable(subvar)?.value as (undefined | number[])
+            if (existing === undefined || existing.length === 0) {
+                return getVariable(subvar, ids?.has(name) ?? false)!.value as number[]
             }
-        </div>
-    ))
-
-    const rhsStack = (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {dependents}
-            {/* Add a dependent button */}
-            <div style={{ width: '100%' }}>
-                <button
-                    onClick={() => {
-                        props.setRegression({
-                            ...props.regression,
-                            dependents: [...props.regression.dependents, undefined],
-                            var_coefficients: [...props.regression.var_coefficients, ''],
-                        })
-                    }}
-                >
-                    Add Dependent
-                </button>
-            </div>
-        </div>
-    )
-
-    const lhs = (
-        <StatisticSelector
-            statistic={props.regression.independent ?? undefined}
-            overallName={undefined}
-            setStatistic={(stat) => {
-                props.setRegression({
-                    ...props.regression,
-                    independent: stat,
-                })
-            }}
-            names={props.names}
-            simple={true}
-        />
-    )
-
-    const main = (
-        <div style={{ display: 'flex' }}>
-            <div style={{ width: '30%' }}>
-                {lhs}
-            </div>
-            <div style={{ width: '70%' }}>
-                {rhsStack}
-                <CheckboxSettingCustom
-                    name="Weighted by Population"
-                    checked={props.regression.weight_by_population}
-                    onChange={(value) => {
-                        props.setRegression({
-                            ...props.regression,
-                            weight_by_population: value,
-                        })
-                    }}
-                />
-            </div>
-        </div>
-    )
-
-    return (
-        <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            <div style={{ width: '97%' }}>
-                {main}
-            </div>
-            <div style={{ width: '3%' }}>
-                <button style={{ width: '100%', height: '100%' }} onClick={() => { props.deleteRegression() }}>
-                    -
-                </button>
-            </div>
-        </div>
-    )
+            return existing
+        })
+        const value = values[0].map((_, i) => firstNonNan(values.map(v => v[i]))) // take first non-NaN value
+        ctx.assignVariable(name, {
+            type: { type: 'vector', elementType: { type: 'number' } },
+            value,
+        })
+    })
 }
 
-function VariableSelector(props: { variable: VariableDescriptor, setVariable: (newValue: VariableDescriptor) => void, deleteVariable: () => void, names: readonly StatName[] }): ReactNode {
-    const colors = useColors()
-    const variable = props.variable
-    const namesFull = ['', ...props.names]
-    const initialValue = variable.expr !== undefined && namesFull.includes(variable.expr.value) ? variable.expr.value : ''
-    return (
-        <div style={{ display: 'flex' }}>
-            {/* Button that deletes this variable */}
-            <button onClick={() => { props.deleteVariable() }}>
-                -
-            </button>
-            <div style={{ width: '0.5em' }} />
-            <div style={{ width: '50%' }}>
-                <input
-                    type="text"
-                    style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-                    placeholder='Name, e.g., "a"'
-                    value={variable.name}
-                    onChange={(e) => {
-                        props.setVariable({
-                            ...variable,
-                            name: e.target.value,
-                        })
-                    }}
-                />
-            </div>
-            <div style={{ width: '0.5em' }} />
-            <select
-                onChange={(e) => {
-                    props.setVariable({
-                        ...variable,
-                        expr: {
-                            ...variable.expr,
-                            type: 'single',
-                            value: e.target.value,
-                        },
-                    })
-                }}
-                style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-                value={initialValue}
-            >
-                {
-                    namesFull.map((name, i) => (
-                        <option key={i} value={name}>{name}</option>
-                    ))
-                }
-            </select>
-        </div>
-    )
-}
-
-export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string }): ReactNode {
+export function FunctionSelector(props: { function: ColorStatDescriptor, setFunction: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], simple?: boolean, noNameField?: boolean, placeholder?: string, stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     const colors = useColors()
     const func = props.function
-    if (func.variables === undefined) {
-        func.variables = []
-    }
+
+    const { setFunction, stats } = props
+
+    const setScript = useCallback((newScript: string) => {
+        setFunction({
+            ...func,
+            uss: newScript,
+        })
+    }, [setFunction, func])
+
+    const createContext = useCallback(async (stmts: UrbanStatsASTStatement | undefined) => colorStatContext(stmts, await stats), [stats])
+
     const expression = (
-        <input
-            type="text"
-            style={{ width: '100%', backgroundColor: colors.background, color: colors.textMain }}
-            placeholder={props.placeholder ?? 'Expression, e.g., "a + b"'}
-            value={func.expression}
-            onChange={(e) => {
-                props.setFunction({
-                    ...func,
-                    expression: e.target.value,
-                })
-            }}
+        <Editor
+            script={func.uss ?? ''}
+            setScript={setScript}
+            createContext={createContext}
+            execute={colorStatExecute}
+            showOutput={false}
         />
     )
 
@@ -342,102 +148,12 @@ export function FunctionSelector(props: { function: ColorStatDescriptor, setFunc
                             />
                         )
             }
-            <VariablesSelector
-                getVariables={() => func.variables ?? []}
-                setVariables={(variables) => {
-                    props.setFunction({
-                        ...func,
-                        variables,
-                    })
-                }}
-                names={props.names}
-            />
-            <div style={{ marginBottom: '0.25em' }} />
-            <RegressionsSelector
-                getRegressions={() => func.regressions ?? []}
-                setRegressions={(regressions) => {
-                    props.setFunction({
-                        ...func,
-                        regressions,
-                    })
-                }}
-                names={props.names}
-            />
-            <div style={{ marginBottom: '0.25em' }} />
             {expression}
         </div>
     )
 }
 
-function VariablesSelector({ getVariables: getVariables, setVariables: setVariables, names }: { getVariables: () => VariableDescriptor[], setVariables: (newValue: VariableDescriptor[]) => void, names: readonly StatName[] },
-): ReactNode {
-    return (
-        <>
-            {
-                getVariables().map((variable: VariableDescriptor, i: number) => (
-                    <VariableSelector
-                        key={i}
-                        variable={variable}
-                        setVariable={(v: VariableDescriptor) => { setVariables(getVariables().map((v2, j) => i === j ? v : v2)) }}
-                        deleteVariable={() => { setVariables(getVariables().filter((v2, j) => i !== j)) }}
-                        names={names}
-                    />
-                ))
-            }
-            {/* Add a variable button */}
-            <div style={{ width: '100%' }}>
-                <button
-                    onClick={() => {
-                        setVariables([...getVariables(), {
-                            name: '',
-                            expr: undefined,
-                        }])
-                    }}
-                >
-                    Add Variable
-                </button>
-            </div>
-        </>
-    )
-}
-
-function RegressionsSelector({ getRegressions, setRegressions, names }: { getRegressions: () => RegressionDescriptor[], setRegressions: (newValue: RegressionDescriptor[]) => void, names: readonly StatName[] }): ReactNode {
-    const gr: () => RegressionDescriptor[] = () => getRegressions()
-
-    return (
-        <>
-            {
-                gr().map((regression, i) => (
-                    <RegressionSelector
-                        key={i}
-                        regression={regression}
-                        setRegression={(r) => {
-                            setRegressions(gr().map((r2, j) => i === j ? r : r2))
-                        }}
-                        deleteRegression={() => { setRegressions(gr().filter((r2, j) => i !== j)) }}
-                        names={names}
-                    />
-                ))
-            }
-            {/* Add a regression button */}
-            <div style={{ width: '100%' }}>
-                <button
-                    onClick={() => {
-                        setRegressions([...gr(), {
-                            independent: undefined, dependents: [undefined],
-                            var_residue: '', var_intercept: '', var_coefficients: [''],
-                            weight_by_population: false,
-                        }])
-                    }}
-                >
-                    Add Regression
-                </button>
-            </div>
-        </>
-    )
-}
-
-export function FilterSelector(props: { filter: FilterSettings, setFilter: (newValue: FilterSettings) => void, names: readonly StatName[] }): ReactNode {
+export function FilterSelector(props: { filter: FilterSettings, setFilter: (newValue: FilterSettings) => void, names: readonly StatName[], stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     const colors = useColors()
     const filter = props.filter
     // like FunctionSelector, but has a checkmark for whether the filter is enabled
@@ -472,6 +188,7 @@ export function FilterSelector(props: { filter: FilterSettings, setFilter: (newV
                                 }}
                                 names={props.names}
                                 placeholder={'Filter expression, e.g., "(a > 0 and b < 0) or b > 10"'}
+                                stats={props.stats}
                             />
                         )
                     : <div />
@@ -479,7 +196,7 @@ export function FilterSelector(props: { filter: FilterSettings, setFilter: (newV
         </div>
     )
 }
-export function StatisticSelector({ statistic, setStatistic, names, overallName, simple }: { statistic: ColorStatDescriptor | undefined, setStatistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overallName: string | undefined, simple: boolean }): ReactNode {
+export function StatisticSelector({ statistic, setStatistic, names, overallName, simple, stats }: { statistic: ColorStatDescriptor | undefined, setStatistic: (newValue: ColorStatDescriptor) => void, names: readonly StatName[], overallName: string | undefined, simple: boolean, stats: Promise<StatisticsForGeography | undefined> }): ReactNode {
     return (
         <div style={{ width: '100%' }}>
             <DataListSelector
@@ -492,14 +209,13 @@ export function StatisticSelector({ statistic, setStatistic, names, overallName,
                                 ...statistic,
                                 type: 'single',
                                 value: name,
+                                uss: '',
                             }
                         : {
                                 ...statistic,
                                 type: 'function',
                                 value: 'Function',
-                                variables: [],
-                                expression: '',
-                                name: '',
+                                uss: '',
                             },
                     )
                 }}
@@ -511,6 +227,7 @@ export function StatisticSelector({ statistic, setStatistic, names, overallName,
                             setFunction={setStatistic}
                             names={names}
                             simple={simple}
+                            stats={stats}
                         />
                     )
                 : <div></div>}

@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { mixWithBackground } from '../utils/color'
 
 import { Colors, colorThemes, JuxtastatColors, Theme } from './color-themes'
@@ -14,12 +16,15 @@ export function useCurrentTheme(): Theme {
 export function useColors(): Colors {
     const theme = useCurrentTheme()
     const [cleanBackground] = useSetting('clean_background')
-    const themeDict = { ...colorThemes[theme] }
-    if (cleanBackground) {
-        themeDict.background = themeDict.cleanBackground
-        themeDict.slightlyDifferentBackground = themeDict.cleanSlightlyDifferentBackground
-    }
-    return themeDict
+
+    return useMemo(() => {
+        const themeDict = { ...colorThemes[theme] }
+        if (cleanBackground) {
+            themeDict.background = themeDict.cleanBackground
+            themeDict.slightlyDifferentBackground = themeDict.cleanSlightlyDifferentBackground
+        }
+        return themeDict
+    }, [theme, cleanBackground])
 }
 
 export function useJuxtastatColors(): JuxtastatColors {
