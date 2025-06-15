@@ -31,7 +31,7 @@ if (testFiles.length === 0) {
     process.exit(1)
 }
 
-const tests = testFiles.map(file => /test\/(.+)\.ts/.exec(file)![1])
+const tests = testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
 
 if (options.headless) {
     // Start display subsystem to browser can run
