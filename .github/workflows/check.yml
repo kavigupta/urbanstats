@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*_test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo "matrix=$(find . -name '*.test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.test\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
         working-directory: react/test
 
   resolve-proxy-branch:
@@ -152,7 +152,7 @@ jobs:
           npm run test:e2e -- \
             --proxy=true \
             --browser=chromium \
-            --test=test/${{ matrix.test-file }}.ts \
+            --test=test/${{ matrix.test-file }}.test.ts \
             --parallel=1 \
             --headless=true \
             --compare=true \
