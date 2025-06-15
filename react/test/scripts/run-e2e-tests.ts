@@ -15,7 +15,7 @@ const options = argumentParser({
     options: z.object({
         proxy: booleanArgument({ defaultValue: false }),
         browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
-        test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*_test.ts'`) }),
+        test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*.test.ts'`) }),
         parallel: z.string().transform(string => parseInt(string)).default('1'),
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
