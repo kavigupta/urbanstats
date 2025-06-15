@@ -7,6 +7,7 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
+import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
 import { z } from 'zod'
@@ -18,6 +19,8 @@ export function startProxy(): void {
     console.warn('Proxy is using origin...', ciProxyOrigin)
 
     const app = express()
+
+    app.use(compression({ enforceEncoding: 'gzip' }))
 
     app.use(
         express.static('test/density-db'),
