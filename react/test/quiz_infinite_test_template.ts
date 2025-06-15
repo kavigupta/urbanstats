@@ -158,76 +158,6 @@ export function quizInfiniteTest0(): void {
         // low bit order first: 0111,1100 10[00,0000] This becomes 3E 01
         await t.expect(await juxtastatInfiniteTable(t)).eql(`7|${seedStr}|3E01|6|10\n`)
     })
-
-    test('19-correct', async (t) => {
-        await provideAnswers(t, 0, Array<boolean>(20).fill(true), seedStr)
-        // should have 7 lives
-        await t.expect(await getLives()).eql(['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'])
-        await provideAnswers(t, 20, Array<boolean>(7).fill(false), seedStr)
-        await t.expect(await correctIncorrect(t)).eql([...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)])
-
-        await t.expect(await copyLines(t)).eql([
-            'Juxtastat Infinite 20/∞',
-            '',
-            '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
-            '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
-            '🟥🟥🟥🟥🟥🟥🟥',
-            '',
-            '🥇 Personal Best!',
-            '',
-            `https://juxtastat.org/${param}`,
-        ])
-        // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
-        await t.expect(await juxtastatInfiniteTable(t)).eql(`7|${seedStr}|FFFF0F00|20|27\n`)
-        await quizScreencap(t)
-        await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
-        await quizScreencap(t)
-        await safeReload(t) // Copied! -> Copy Link
-        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
-            '🟩2️⃣0️⃣🟥7️⃣',
-        )
-        await t.expect(await copyLines(t)).eql([
-            'Juxtastat Infinite 20/∞',
-            '',
-            '🟩2️⃣0️⃣🟥7️⃣',
-            '',
-            '🥇 Personal Best!',
-            '',
-            `https://juxtastat.org/${param}`,
-        ])
-    })
-
-    test('18-correct-emoji-compact', async (t) => {
-        await provideAnswers(t, 0, Array<boolean>(18).fill(true), seedStr)
-        await provideAnswers(t, 18, Array<boolean>(6).fill(false), seedStr)
-        await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
-        await quizScreencap(t)
-        await safeReload(t) // Copied! -> Copy Link
-        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
-            '🟩1️⃣8️⃣🟥6️⃣',
-        )
-        await t.expect(await copyLines(t)).eql([
-            'Juxtastat Infinite 18/∞',
-            '',
-            '🟩1️⃣8️⃣🟥6️⃣',
-            '',
-            '🥇 Personal Best!',
-            '',
-            `https://juxtastat.org/${param}`,
-        ])
-        await t.navigateTo(`${target}/quiz.html#date=99`)
-        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
-            '🟩🟩🟩🟩🟥',
-        )
-        await t.expect(await copyLines(t)).eql([
-            'Juxtastat 99 4/5',
-            '',
-            '🟩🟩🟩🟩🟥',
-            '',
-            `https://juxtastat.org/#date=99`,
-        ])
-    })
 }
 
 export function quizInfiniteTest1(): void {
@@ -384,5 +314,85 @@ export function quizInfiniteTest1(): void {
         await clickAmount(t, '12', 0)
         await t.expect(getLocation()).eql(`${target}/quiz.html#mode=infinite&seed=deadbeef00&v=${version}`)
         await t.expect(await yourBestScores()).eql('Your Best Scores\n14\n#1\n12\n#2\n12\n#2\n8\n#3')
+    })
+}
+
+export function quizInfiniteTest2(): void {
+    quizFixture(
+        'generate link',
+        `${target}/quiz.html${param}`,
+        localStorageDefault,
+        ``,
+        'desktop',
+    )
+
+    test('19-correct', async (t) => {
+        await provideAnswers(t, 0, Array<boolean>(20).fill(true), seedStr)
+        // should have 7 lives
+        await t.expect(await getLives()).eql(['Y', 'Y', 'Y', 'Y', 'Y', 'Y', 'Y'])
+        await provideAnswers(t, 20, Array<boolean>(7).fill(false), seedStr)
+        await t.expect(await correctIncorrect(t)).eql([...Array<boolean>(20).fill(true), ...Array<boolean>(7).fill(false)])
+
+        await t.expect(await copyLines(t)).eql([
+            'Juxtastat Infinite 20/∞',
+            '',
+            '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
+            '🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩',
+            '🟥🟥🟥🟥🟥🟥🟥',
+            '',
+            '🥇 Personal Best!',
+            '',
+            `https://juxtastat.org/${param}`,
+        ])
+        // low bit order first: 1111,1111 1111,1111 1111,0000 000[0,0000] This becomes FF FF 0F 00
+        await t.expect(await juxtastatInfiniteTable(t)).eql(`7|${seedStr}|FFFF0F00|20|27\n`)
+        await quizScreencap(t)
+        await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
+        await quizScreencap(t)
+        await safeReload(t) // Copied! -> Copy Link
+        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+            '🟩2️⃣0️⃣🟥7️⃣',
+        )
+        await t.expect(await copyLines(t)).eql([
+            'Juxtastat Infinite 20/∞',
+            '',
+            '🟩2️⃣0️⃣🟥7️⃣',
+            '',
+            '🥇 Personal Best!',
+            '',
+            `https://juxtastat.org/${param}`,
+        ])
+    })
+
+    test('18-correct-emoji-compact', async (t) => {
+        await provideAnswers(t, 0, Array<boolean>(18).fill(true), seedStr)
+        await provideAnswers(t, 18, Array<boolean>(6).fill(false), seedStr)
+        await t.click(Selector('[data-test-id=juxtastatCompactEmoji]'))
+        await quizScreencap(t)
+        await safeReload(t) // Copied! -> Copy Link
+        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+            '🟩1️⃣8️⃣🟥6️⃣',
+        )
+        await t.expect(await copyLines(t)).eql([
+            'Juxtastat Infinite 18/∞',
+            '',
+            '🟩1️⃣8️⃣🟥6️⃣',
+            '',
+            '🥇 Personal Best!',
+            '',
+            `https://juxtastat.org/${param}`,
+        ])
+        await t.navigateTo(`${target}/quiz.html#date=99`)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.expect(await Selector('#quiz-result-summary-emoji').innerText).eql(
+            '🟩🟩🟩🟩🟥',
+        )
+        await t.expect(await copyLines(t)).eql([
+            'Juxtastat 99 4/5',
+            '',
+            '🟩🟩🟩🟩🟥',
+            '',
+            `https://juxtastat.org/#date=99`,
+        ])
     })
 }
