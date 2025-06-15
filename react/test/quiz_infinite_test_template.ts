@@ -51,7 +51,7 @@ function regressionTestForVersion(v: number): void {
     })
 }
 
-function regressionTestForAllVersions(): void {
+export function regressionTestForAllVersions(): void {
     // Get all numbers such that stored_quizzes/quiz_sampling_info/${version}.json exists
     // first list the files
     const files = globSync('../stored_quizzes/quiz_sampling_info/*.json')
@@ -116,8 +116,6 @@ const seedStr = 'deadbeef00'
 const param = `#mode=infinite&seed=${seedStr}&v=${version}`
 
 export function quizInfiniteTest0(): void {
-    regressionTestForAllVersions()
-
     quizFixture(
         'generate link',
         `${target}/quiz.html${param}`,
