@@ -15,9 +15,6 @@ export async function networkUsage(t: TestController): Promise<(label: string) =
     const requests = new Map<Protocol.Network.RequestId, Protocol.Network.Request>()
     let requestBytes: { request: Protocol.Network.Request, bytes: number }[] = []
 
-    // await cdpSession.Target.setDiscoverTargets({ discover: true })
-    // await cdpSession.Target.setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false })
-
     cdpSession.Network.on('requestWillBeSent', (event) => {
         requests.set(event.requestId, event.request)
     })
