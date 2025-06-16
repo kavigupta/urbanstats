@@ -64,7 +64,7 @@
         <g aria-label="line" fill="none" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" transform="translate(0.5,0.5)">
             <path stroke="#975ac3" d="M80,421.667L120.909,421.667L161.818,421.667L202.727,421.667L243.636,421.667L284.545,421.667L325.455,421.667L366.364,421.667L407.273,420.753L448.182,420.149L489.091,419.888L530,413.216L570.909,410.018L611.818,374.713L652.727,328.461L693.636,201.534L734.545,112.734L775.455,158.676L816.364,309.7L857.273,420.949L898.182,421.667L939.091,421.667L980,421.667"></path>
         </g>
-        <g aria-label="tip" fill="#080e17" stroke="#333333" pointer-events="none" text-anchor="start" transform="translate(0.5,0.5)"></g>
+        <g aria-label="tip" fill="#f7f1e8" stroke="#cccccc" pointer-events="none" text-anchor="start" transform="translate(0.5,0.5)"></g>
         <g aria-label="x-axis tick" aria-hidden="true" fill="none" stroke="currentColor" transform="translate(0.5,0)">
             <path transform="translate(80,430)" d="M0,0L0,6"></path>
             <path transform="translate(202.72727272727272,430)" d="M0,0L0,6"></path>
