@@ -10,7 +10,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
     await t.wait(1000) // sometimes downloading takes a little time
     const mrdp = mostRecentDownloadPath()
     const mostRecentDownload = fs.readFileSync(mrdp, 'utf8')
-    await downloadOrCheckString(t, mostRecentDownload, path)
+    await downloadOrCheckString(t, mostRecentDownload, path, 'json')
 }
 
 urbanstatsFixture('mapping', `${target}/mapper.html?settings=H4sIAAAAAAAAA1WOzQ6CQAyEX8XUeCOGixeO%2BggejSEFy7Kh%2B5PdRSWEd7dLjMHe2plvpjMociqg76d60PYBFVwTJoICOs2JAlQzkMWGSbQOOZIoo22TdjZrafIk0O9UwBODzv4I1e2%2BLAW0jl2oo8RugKitYlrtPObDmbEddgcQIKDxGytrSxjgG2Rwq%2FlAkZJoFk3eL2NDPbF%2BQ27OpBRPUiTIiotnX64j0Iu06uWr8ngSd4OR%2FtNdNJLzAd2YY7skAQAA`)
