@@ -90,6 +90,16 @@ function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number,
     }
 }
 
+function fixElementForScreenshot(element: HTMLElement): () => void {
+    // Fixes https://github.com/kavigupta/urbanstats/issues/1145
+    // Some sort of rounding issue in Chrome
+    const attribTexts = Array.from(element.querySelectorAll('.maplibregl-ctrl-attrib-inner')).map(e => e as HTMLElement)
+    attribTexts.forEach(text => text.style.width = `${Math.ceil(text.offsetWidth) + 1}px`)
+    return () => {
+        attribTexts.forEach(text => text.style.width = '')
+    }
+}
+
 export const mapBorderWidth = 1
 export const mapBorderRadius = 5
 
@@ -98,6 +108,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const heightMultiplier = config.heightMultiplier ?? 1
 
     async function screencapElement(ref: HTMLElement): Promise<HTMLCanvasElement> {
+        const unfixElement = fixElementForScreenshot(ref)
+
         /*
          * Safari is flaky at rendering canvases the way `domtoimage` renders them.
          * We work around this by rendering the canvases first, then excluding them from the element render.
@@ -145,6 +157,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         })
 
         resultContext.drawImage(refCanvas, 0, 0)
+
+        unfixElement()
 
         return resultCanvas
     }
