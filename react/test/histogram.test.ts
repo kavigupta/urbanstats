@@ -12,7 +12,7 @@ async function downloadOrCheckHistogram(t: TestController, name: string, nth = 0
     const output = await t.eval(() => {
         return document.getElementsByClassName('histogram-svg-panel')[nth].innerHTML
     }, { dependencies: { nth } }) as string
-    await downloadOrCheckString(t, output, name)
+    await downloadOrCheckString(t, output, name, 'xml')
 }
 
 urbanstatsFixture('article check and uncheck test', `${target}/article.html?longname=New+York+Urban+Center%2C+USA&universe=world`)

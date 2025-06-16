@@ -66,6 +66,7 @@
     "tsx": "^4.19.4",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1",
+    "xml-formatter": "^3.6.6",
     "zodcli": "^0.0.4"
   },
   "dependencies": {

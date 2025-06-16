@@ -3,6 +3,7 @@ import path from 'path'
 
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
+import xmlFormat from 'xml-formatter'
 
 import { checkString } from '../src/utils/isTesting'
 
@@ -168,8 +169,18 @@ function copyMostRecentFile(t: TestController): void {
     fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
+export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}`)
+
+    switch (format) {
+        case 'json':
+            string = JSON.stringify(JSON.parse(string), null, 2)
+            break
+        case 'xml':
+            string = xmlFormat(string)
+            break
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (checkString) {
         const expected = fs.readFileSync(pathToFile, 'utf8')

@@ -77,6 +77,19 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
+    if (isTesting()) {
+        context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
+        context.fillRect(x, y, w, h)
+    }
+    else {
+        context.drawImage(
+            image,
+            x, y, w, h,
+        )
+    }
+}
+
 export const mapBorderWidth = 1
 export const mapBorderRadius = 5
 
@@ -115,16 +128,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
             resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
             resultContext.clip()
 
-            if (isTesting()) {
-                resultContext.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
-                resultContext.fillRect(x, y, w, h)
-            }
-            else {
-                resultContext.drawImage(
-                    canvas,
-                    x, y, w, h,
-                )
-            }
+            drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
 
             resultContext.restore()
         }
@@ -197,7 +201,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         const flagHeight = bannerHeight / 2
         const offset = flagHeight / 2
         const flagWidth = flag.width * flagHeight / flag.height
-        ctx.drawImage(flag, padAround + offset, start + offset, flagWidth, flagHeight)
+        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight)
     }
 
     canvas.toBlob(function (blob) {
