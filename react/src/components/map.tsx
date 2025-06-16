@@ -143,7 +143,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
-        })
+        }).addControl(new maplibregl.FullscreenControl())
 
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))

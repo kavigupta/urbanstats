@@ -76,5 +76,8 @@ export default env => ({
             }),
             new rspack.LightningCssMinimizerRspackPlugin(),
         ],
-    }
+    },
+    watchOptions: {
+        ignored: /node_modules/,
+    },
 })
