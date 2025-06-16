@@ -55,7 +55,7 @@
         <g aria-label="line" fill="none" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" transform="translate(0.5,0.5)">
             <path stroke="#f7aa41" d="M80,421.381L98.367,421.585L116.735,421.544L135.102,421.463L153.469,421.381L171.837,421.259L190.204,421.096L208.571,420.77L226.939,420.321L245.306,419.628L263.673,418.609L282.041,417.182L300.408,415.429L318.776,413.513L337.143,411.067L355.51,408.865L373.878,406.296L392.245,405.114L410.612,404.584L428.98,404.38L447.347,404.706L465.714,404.217L484.082,402.138L502.449,400.956L520.816,396.512L539.184,393.454L557.551,388.847L575.918,381.182L594.286,374.251L612.653,360.267L631.02,343.756L649.388,316.195L667.755,276.934L686.122,217.247L704.49,149.325L722.857,97.751L741.224,88.333L759.592,146.553L777.959,242.973L796.327,307.104L814.694,341.065L833.061,362.551L851.429,367.606L869.796,402.505L888.163,421.218L906.531,421.667L924.898,421.667L943.265,421.667L961.633,421.667L980,421.667"></path>
         </g>
-        <g aria-label="tip" fill="var(--plot-background)" stroke="currentColor" pointer-events="none" text-anchor="start" transform="translate(0.5,0.5)"></g>
+        <g aria-label="tip" fill="#f7f1e8" stroke="#cccccc" pointer-events="none" text-anchor="start" transform="translate(0.5,0.5)"></g>
         <g aria-label="x-axis tick" aria-hidden="true" fill="none" stroke="currentColor" transform="translate(0.5,0)">
             <path transform="translate(80,430)" d="M0,0L0,6"></path>
             <path transform="translate(135.10204081632654,430)" d="M0,0L0,6"></path>
