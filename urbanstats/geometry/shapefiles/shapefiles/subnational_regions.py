@@ -43,7 +43,8 @@ SUBNATIONAL_REGIONS = Shapefile(
     ),
     subset_masks={
         "USA": FilteringSubset(
-            "State", lambda x: extract_country_longname(x) == "USA" and valid_state(x.NAME)
+            "State",
+            lambda x: extract_country_longname(x) == "USA" and valid_state(x.NAME),
         ),
         "Canada": FilteringSubset(
             "Province", lambda x: extract_country_longname(x) == "Canada"

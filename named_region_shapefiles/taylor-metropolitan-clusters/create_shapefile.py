@@ -404,6 +404,7 @@ def load_shapefile_with_data(table):
     shp = shp.set_index("id")
     return shp
 
+
 def normalize(s):
     # copied from urbanstats/website_data/index.py
     s = s.lower()
