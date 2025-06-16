@@ -141,12 +141,15 @@ jobs:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/python_environment
-      - uses: ./.github/actions/node_modules
-      - uses: actions/download-artifact@v4
+      - uses: qoomon/actions--parallel-steps@v1
         with:
-          name: frontend-build
-          path: react/test/density-db
+          steps: |
+            - uses: ./.github/actions/python_environment
+            - uses: ./.github/actions/node_modules
+            - uses: actions/download-artifact@v4
+              with:
+                name: frontend-build
+                path: react/test/density-db
       - name: Run tests
         run: |
           npm run test:e2e -- \
