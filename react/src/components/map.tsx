@@ -599,6 +599,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
                     name: this.props.longname,
                     style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
+                    notClickable: true,
                 },
                 ...relatedPolygons,
             ],
