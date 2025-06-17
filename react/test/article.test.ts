@@ -355,3 +355,12 @@ screenshotOfPage('congressional district at large', '/article.html?longname=VT-0
 screenshotOfPage('legislative district complicated name', '/article.html?longname=VT-HDB-1%2C+USA')
 screenshotOfPage('legislative district short name', '/article.html?longname=CA-SD023%2C+USA')
 screenshotOfPage('county cross district', '/article.html?longname=WY-00+in+Natrona+County%2C+USA')
+
+urbanstatsFixture('washington no relateds', '/article.html?longname=China&s=PnVFWSmVr78Jm')
+
+test('region on map is not clickable', async (t) => {
+    const historyLength = ClientFunction(() => history.length)
+    const initialHistoryLength = await historyLength()
+    await t.click('.maplibregl-map') // Click China
+    await t.expect(historyLength()).eql(initialHistoryLength)
+})
