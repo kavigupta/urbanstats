@@ -15,7 +15,7 @@ const options = argumentParser({
     options: z.object({
         proxy: booleanArgument({ defaultValue: false }),
         browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
-        test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*_test.ts'`) }),
+        test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*.test.ts'`) }),
         parallel: z.string().transform(string => parseInt(string)).default('1'),
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
@@ -31,7 +31,7 @@ if (testFiles.length === 0) {
     process.exit(1)
 }
 
-const tests = testFiles.map(file => /test\/(.+)\.ts/.exec(file)![1])
+const tests = testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
 
 if (options.headless) {
     // Start display subsystem to browser can run
@@ -60,7 +60,7 @@ const runTest = async (): Promise<number> => {
     }
 
     let runner = testcafe.createRunner()
-        .src(`test/${test}.ts`)
+        .src(`test/${test}.test.ts`)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
         .screenshots(`screenshots/${test}`)
 
