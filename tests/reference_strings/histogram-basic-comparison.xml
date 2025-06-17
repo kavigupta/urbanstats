@@ -99,7 +99,7 @@
         </g>
         <g aria-label="x-axis label" text-anchor="end" transform="translate(17.5,37.5)">
             <text transform="translate(980,430)">
-                Density (/km²) →
+                PW Density (r=1km) (/km²) →
             </text>
         </g>
         <g aria-label="x-grid" aria-hidden="true" stroke="currentColor" stroke-opacity="0.1" transform="translate(0.5,0)">

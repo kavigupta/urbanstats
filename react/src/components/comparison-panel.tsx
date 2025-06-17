@@ -244,7 +244,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 {expandedByStatIndex[statIndex]
                                     ? (
                                             <div style={{ width: '100%', position: 'relative' }}>
-                                                <RenderedPlot plotProps={plotProps(statIndex)} />
+                                                <RenderedPlot statDescription={articlesStatData[0].renderedStatname} plotProps={plotProps(statIndex)} />
                                             </div>
                                         )
                                     : null}
@@ -304,7 +304,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
                         return (
                             <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
-                                <RenderedPlot plotProps={plotProps(statIndex)} />
+                                <RenderedPlot statDescription={rows[0].renderedStatname} plotProps={plotProps(statIndex)} />
                             </div>
                         )
                     })}

@@ -22,7 +22,7 @@ interface HistogramProps {
     universeTotal: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string }): ReactNode {
     const [histogramType] = useSetting('histogram_type')
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -55,7 +55,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
                 ...yAxis(maxValue, transpose),
             )
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            const xlabel = `Density (/${useImperial ? 'mi' : 'km'}²)`
+            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
             const legend = props.histograms.length === 1
@@ -63,7 +63,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
                 : { legend: !transpose, range: colors, domain: shortnames }
             return { marks, xlabel, ylabel, ydomain, legend }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
     )
 
     return (

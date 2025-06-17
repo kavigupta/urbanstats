@@ -10,7 +10,7 @@ export interface PlotProps {
     color: string
 }
 
-export function RenderedPlot({ plotProps }: { plotProps: PlotProps[] }): ReactNode {
+export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
     const type = plotProps.reduce<undefined | 'histogram' | 'time_series'>((result, plot) => {
         if (result === undefined) {
             return plot.extraStat?.type
@@ -24,6 +24,7 @@ export function RenderedPlot({ plotProps }: { plotProps: PlotProps[] }): ReactNo
         case 'histogram':
             return (
                 <Histogram
+                    statDescription={statDescription}
                     histograms={plotProps.flatMap(
                         (props) => {
                             if (props.extraStat?.type !== 'histogram') {
