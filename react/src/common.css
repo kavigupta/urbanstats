@@ -124,7 +124,7 @@ input[type=text] {
 /* Style fullscreen/shrink controls to match "Zoom to" controls */
 .maplibregl-ctrl-top-left .maplibregl-ctrl.maplibregl-ctrl-group:has(.maplibregl-ctrl-fullscreen, .maplibregl-ctrl-shrink) {
     margin: 1em;
-    padding: 3.5px;
+    padding: calc((3em - 29px) / 2); /* (height of zoom button + 2*padding of flex container - height of icon)/2 */
     background-color: var(--background);
     box-shadow: none;
 
