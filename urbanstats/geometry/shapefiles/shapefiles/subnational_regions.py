@@ -20,7 +20,7 @@ def extract_country_longname(x):
 
 
 def valid_state(x):
-    s = us.states.lookup(x.NAME)
+    s = us.states.lookup(x)
     if s is None:
         return False
     if s in us.STATES + [us.states.DC, us.states.PR]:
@@ -43,7 +43,8 @@ SUBNATIONAL_REGIONS = Shapefile(
     ),
     subset_masks={
         "USA": FilteringSubset(
-            "State", lambda x: extract_country_longname(x) == "USA" and valid_state(x)
+            "State",
+            lambda x: extract_country_longname(x) == "USA" and valid_state(x.NAME),
         ),
         "Canada": FilteringSubset(
             "Province", lambda x: extract_country_longname(x) == "Canada"

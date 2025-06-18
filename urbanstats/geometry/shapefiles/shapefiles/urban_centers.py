@@ -1,5 +1,6 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import valid_state
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
@@ -22,7 +23,9 @@ def create_urban_center_like_shapefile(**kwargs):
         ),
         subset_masks={
             "USA": FilteringSubset(
-                "US " + kwargs["meta"]["type"], lambda x: "USA" == x.suffix
+                "US " + kwargs["meta"]["type"],
+                lambda x: "USA" == x.suffix
+                and all(valid_state(code[2:]) for code in x.subnationals_ISO_CODE),
             ),
             "Canada": FilteringSubset(
                 "CA " + kwargs["meta"]["type"], lambda x: "Canada" == x.suffix
@@ -36,7 +39,7 @@ def create_urban_center_like_shapefile(**kwargs):
 URBAN_CENTERS = create_urban_center_like_shapefile(
     path=load_ghsl_urban_center,
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
-    hash_key="urban_centers_5",
+    hash_key="urban_centers_6",
     abbreviation="URBC",
     data_credit=dict(
         text="We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true"
