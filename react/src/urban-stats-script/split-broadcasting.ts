@@ -23,6 +23,7 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
             return results.every(x => x)
         case 'object':
         case 'function':
+        case 'opaque':
             // We don't support objects or functions as masks, so we return false
             return false
     }
@@ -81,6 +82,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         // If we reach here, it means the mask is not a valid mask. We checked for this earlier.
         case 'object':
         case 'function':
+        case 'opaque':
             throw new Error('this case was already handled earlier, should not be reachable')
         /* c8 ignore stop */
     }
@@ -140,6 +142,8 @@ function defaultValueForType(type: USSType): USSRawValue {
             return () => {
                 throw new Error(`no default value for function type ${renderType(type)}`)
             }
+        case 'opaque':
+            throw new Error(`no default value for opaque type ${renderType(type)}`)
     }
 }
 

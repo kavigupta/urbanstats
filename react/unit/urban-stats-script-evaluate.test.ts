@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { regressionResultType, regressionType } from '../src/urban-stats-script/constants'
+import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
