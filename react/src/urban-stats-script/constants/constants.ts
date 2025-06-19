@@ -4,6 +4,7 @@ import { USSRawValue, USSValue } from '../types-values'
 
 import { hsv, renderColor, rgb } from './color'
 import { toNumber, toString } from './convert'
+import { constructRampValue } from './ramp'
 import { regression } from './regr'
 
 type Constants = Map<string, USSValue>
@@ -102,4 +103,5 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['rgb', rgb],
     ['hsv', hsv],
     ['renderColor', renderColor],
+    ['constructRamp', constructRampValue],
 ] satisfies [string, USSValue][])

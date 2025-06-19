@@ -1251,3 +1251,93 @@ void test('colors', (): void => {
         },
     )
 })
+
+void test('ramps', (): void => {
+    // Basic ramp construction
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#000000'], [1, '#ffffff']] },
+        },
+    )
+
+    // Ramp with multiple stops
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.5, color: rgb(0.5, 0.5, 0.5)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] },
+        },
+    )
+
+    // Ramp with HSV colors
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: hsv(0, 1, 0.5)}, {value: 1, color: hsv(120, 1, 0.5)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#800000'], [1, '#008000']] },
+        },
+    )
+
+    // Ramp with mixed color types
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.5, color: hsv(120, 1, 0.5)}, {value: 1, color: rgb(0, 0, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] },
+        },
+    )
+
+    // Error: ramp doesn't start at 0
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0.1, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+        },
+    )
+
+    // Error: ramp doesn't end at 1
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.9, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+        },
+    )
+
+    // Error: ramp values decreasing
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.8, color: rgb(0.5, 0.5, 0.5)}, {value: 0.6, color: rgb(1, 1, 1)}, {value: 1.0, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp values must be strictly increasing, found 0.8 >= 0.6 at index 1 at 1:1-159'
+        },
+    )
+
+    // Test ramp rendering
+    const rampResult = evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext())
+    assert.deepStrictEqual(
+        renderValue(rampResult),
+        '[[0,"#000000"],[1,"#ffffff"]]',
+    )
+
+    // Test ramp with conditional assignment
+    assert.throws(
+        () => evaluate(parseExpr('if ([true, false]) {x = constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])}'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'no default value for opaque type ramp'
+        },
+    )
+
+    // Test ramp with variables
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('red', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } })
+    ctx.assignVariable('blue', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 0, g: 0, b: 255 } } })
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] },
+        },
+    )
+})

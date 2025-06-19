@@ -3,7 +3,7 @@ import ColorLib from 'color'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
-interface Color { r: number, g: number, b: number }
+export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
 function rgbToColor(red: number, green: number, blue: number): Color {
@@ -69,10 +69,14 @@ export const renderColor = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
         const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number } }).value
-        const hex = (x: number): string => {
-            const hexValue = x.toString(16)
-            return hexValue.length === 1 ? `0${hexValue}` : hexValue
-        }
-        return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
+        return doRender(color)
     },
 } satisfies USSValue
+
+export function doRender(color: Color): string {
+    const hex = (x: number): string => {
+        const hexValue = x.toString(16)
+        return hexValue.length === 1 ? `0${hexValue}` : hexValue
+    }
+    return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
+}
