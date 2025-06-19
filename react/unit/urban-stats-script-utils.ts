@@ -1,5 +1,5 @@
 /* c8 ignore start */
-import { defaultConstants } from '../src/urban-stats-script/constants'
+import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'

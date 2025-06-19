@@ -1,7 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { regressionResultType, regressionType } from '../src/urban-stats-script/constants'
+import { colorType } from '../src/urban-stats-script/constants/color'
+import { CMap } from '../src/urban-stats-script/constants/map'
+import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
+import { ScaleInstance } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
@@ -96,6 +99,30 @@ void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyContext()),
         { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }, value: [[true, true, false, false, false, false]] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[min, max, sum, mean, median]([1, 2, 3, 5, 6, 70])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, 70, 87, 14.5, 4] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('min([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, Infinity] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('max([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, -Infinity] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('sum([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('mean([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('median([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
     )
 })
 
@@ -869,6 +896,21 @@ void test('constants', (): void => {
     )
 })
 
+function close(a: USSRawValue, b: USSRawValue): boolean {
+    if (typeof a === 'number' && typeof b === 'number') {
+        if (isNaN(a) && isNaN(b)) return true
+        return Math.abs(a - b) < 1e-3
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (!close(a[i], b[i])) return false
+        }
+        return true
+    }
+    return a === b
+}
+
 void test('regression', (): void => {
     // to help generate these, see ./regression.py
     assert.deepStrictEqual(
@@ -896,21 +938,6 @@ void test('regression', (): void => {
                 assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
             }
         }
-    }
-
-    function close(a: USSRawValue, b: USSRawValue): boolean {
-        if (typeof a === 'number' && typeof b === 'number') {
-            if (isNaN(a) && isNaN(b)) return true
-            return Math.abs(a - b) < 1e-3
-        }
-        if (Array.isArray(a) && Array.isArray(b)) {
-            if (a.length !== b.length) return false
-            for (let i = 0; i < a.length; i++) {
-                if (!close(a[i], b[i])) return false
-            }
-            return true
-        }
-        return a === b
     }
 
     assert.deepStrictEqual(
@@ -1170,5 +1197,190 @@ void test('evaluate conditions', (): void => {
     assert.deepStrictEqual(
         execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
         { type: numVectorType, value: [NaN, 3, 3] },
+    )
+})
+
+void test('colors', (): void => {
+    assert.deepStrictEqual(
+        evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
+        { type: colorType, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } },
+    )
+    assert.deepStrictEqual(
+        renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
+        '{"r":255,"g":0,"b":0}',
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: colorType },
+            value: [{ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, { type: 'opaque', value: { r: 191, g: 0, b: 0 } }],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('renderColor(rgb([1, 0.5, 0.75], 0, [0.9, 1.0, 0.2]))'), emptyContext()),
+        { type: {
+            type: 'vector',
+            elementType: { type: 'string' },
+        }, value: ['#ff00e6', '#8000ff', '#bf0033'] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('rgb(2, 0, 0)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: RGB values must be between 0 and 1, got (2, 0, 0) at 1:1-12'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: colorType },
+            value: [
+                { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, // Red
+                { type: 'opaque', value: { r: 128, g: 128, b: 0 } }, // Yellow
+                { type: 'opaque', value: { r: 0, g: 128, b: 0 } }, // Green
+            ],
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('hsv(400, 1, 0.5)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (400, 1, 0.5) at 1:1-16'
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('if ([true, false]) {x = hsv(0, 1, 0.5)}'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'no default value for opaque type color'
+        },
+    )
+})
+
+void test('ramps', (): void => {
+    // Basic ramp construction
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#000000'], [1, '#ffffff']] },
+        },
+    )
+
+    // Ramp with multiple stops
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.5, color: rgb(0.5, 0.5, 0.5)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] },
+        },
+    )
+
+    // Ramp with HSV colors
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: hsv(0, 1, 0.5)}, {value: 1, color: hsv(120, 1, 0.5)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#800000'], [1, '#008000']] },
+        },
+    )
+
+    // Ramp with mixed color types
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.5, color: hsv(120, 1, 0.5)}, {value: 1, color: rgb(0, 0, 1)}])'), emptyContext()),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] },
+        },
+    )
+
+    // Error: ramp doesn't start at 0
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0.1, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+        },
+    )
+
+    // Error: ramp doesn't end at 1
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.9, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+        },
+    )
+
+    // Error: ramp values decreasing
+    assert.throws(
+        () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.8, color: rgb(0.5, 0.5, 0.5)}, {value: 0.6, color: rgb(1, 1, 1)}, {value: 1.0, color: rgb(1, 1, 1)}])'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp values must be strictly increasing, found 0.8 >= 0.6 at index 1 at 1:1-159'
+        },
+    )
+
+    // Test ramp rendering
+    const rampResult = evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext())
+    assert.deepStrictEqual(
+        renderValue(rampResult),
+        '[[0,"#000000"],[1,"#ffffff"]]',
+    )
+
+    // Test ramp with conditional assignment
+    assert.throws(
+        () => evaluate(parseExpr('if ([true, false]) {x = constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])}'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'no default value for opaque type ramp'
+        },
+    )
+
+    // Test ramp with variables
+    const ctx: Context = emptyContext()
+    ctx.assignVariable('red', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } })
+    ctx.assignVariable('blue', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 0, g: 0, b: 255 } } })
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
+        {
+            type: { type: 'opaque', name: 'ramp' },
+            value: { type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] },
+        },
+    )
+})
+
+function assertScale(scale: ScaleInstance, values: number[], proportions: number[]): void {
+    assert.strict(close(proportions, values.map(scale.forward)), `Scale forward mapping failed: ${JSON.stringify(proportions)} != ${JSON.stringify(values.map(scale.forward))}`)
+    assert.strict(close(values, proportions.map(scale.inverse)), `Scale inverse mapping failed: ${JSON.stringify(values)} != ${JSON.stringify(proportions.map(scale.inverse))}`)
+}
+
+void test('test basic map', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
+})
+
+void test('test basic map with geometric', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 4], scale=logScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 4])
+    assertScale(resultMapRaw.scale, [1, Math.sqrt(2), 2, 2 * Math.sqrt(2), 4], [0, 0.25, 0.5, 0.75, 1])
+})
+
+void test('map with only one value', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A"], data=[11.2], scale=linearScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A'])
+    assert.deepStrictEqual(resultMapRaw.data, [11.2])
+    assertScale(resultMapRaw.scale, [10, 11, 12], [-0.7, 0.3, 1.3])
+})
+
+void test('error map with different geo and data lengths', () => {
+    assert.throws(
+        () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale, ramp=rampBone)'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-64'
+        },
     )
 })

@@ -13,13 +13,18 @@ interface USSBooleanType {
     type: 'boolean'
 }
 
+interface USSNullType {
+    type: 'null'
+}
+
+interface USSOpaqueType {
+    type: 'opaque'
+    name: string
+}
+
 export interface USSVectorType {
     type: 'vector'
     elementType: USSType | { type: 'elementOfEmptyVector' }
-}
-
-interface USSNullType {
-    type: 'null'
 }
 
 export interface USSObjectType {
@@ -42,6 +47,7 @@ export type USSType = (
     | USSStringType
     | USSBooleanType
     | USSNullType
+    | USSOpaqueType
     | USSObjectType
     | USSVectorType
     | USSFunctionType
@@ -64,7 +70,8 @@ export type USSRawValue = (
             posArgs: USSRawValue[],
             namedArgs: Record<string, USSRawValue>,
         ) => USSRawValue
-    )
+    ) |
+    { type: 'opaque', value: object }
 )
 
 export interface USSValue {
@@ -97,6 +104,9 @@ export function renderType(type: USSType): string {
     }
     if (type.type === 'null') {
         return 'null'
+    }
+    if (type.type === 'opaque') {
+        return type.name
     }
     return `(${type.posArgs.map(renderArgumentType).join(', ')}; ${Object.entries(type.namedArgs).map(([k, v]) => `${k}: ${renderKwargType(v)}`).join(', ')}) -> ${renderReturnType(type.returnType)}`
 }
@@ -198,6 +208,8 @@ export function renderValue(input: USSValue): string {
                 return `${value.value}`
             case 'string':
                 return `"${value.value}"`
+            case 'opaque':
+                return JSON.stringify((value.value as { type: 'opaque', value: object }).value)
             case 'vector':
                 const vector = value.value as USSRawValue[]
                 if (vector.length === 0) {
