@@ -63,6 +63,7 @@
     "zodcli": "^0.0.4"
   },
   "dependencies": {
+    "@badgateway/oauth2-client": "^3.2.0",
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
     "@fontsource/jost": "^5.0.18",
