@@ -3,6 +3,8 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
+import './map.css'
+
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
@@ -143,7 +145,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             },
             pixelRatio: isTesting() ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
             attributionControl: false,
-        })
+        }).addControl(new maplibregl.FullscreenControl(), 'top-left')
 
         this.map = map
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
