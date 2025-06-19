@@ -147,11 +147,40 @@ function defaultValueForType(type: USSType): USSRawValue {
     }
 }
 
+type MergeResult = { type: 'success', value: USSValue } | { type: 'error', message: string }
+
+function mergeValuesViaMasksSpecialCaseMap(
+    values: USSValue[],
+): MergeResult | undefined {
+    /**
+     * Special case for maps; we handle the case where exactly one value is present.
+     */
+    const nonNullValues = values.filter(x => x.type.type !== 'null')
+    if (nonNullValues.length !== 1) {
+        // If there are no non-null values or more than one, we cannot merge
+        return undefined
+    }
+    const nonNullValue = nonNullValues[0]
+    if (nonNullValue.type.type !== 'opaque' || nonNullValue.type.name !== 'cMap') {
+        // If the non-null value is not a map, this is not a special case we handle
+        return undefined
+    }
+    return {
+        type: 'success',
+        value: nonNullValue,
+    }
+}
+
 export function mergeValuesViaMasks(
     values: USSValue[],
     mask: USSValue & { type: USSVectorType },
     references: USSPrimitiveRawValue[],
-): { type: 'success', value: USSValue } | { type: 'error', message: string } {
+): MergeResult {
+    // special cases
+    const specialCase = mergeValuesViaMasksSpecialCaseMap(values)
+    if (specialCase !== undefined) {
+        return specialCase
+    }
     assert (values.length === references.length, `Expected the number of values (${values.length}) to match the number of references (${references.length})`)
     const mType = mask.type
     if (mType.elementType.type !== 'boolean' && mType.elementType.type !== 'number' && mType.elementType.type !== 'string') {

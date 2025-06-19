@@ -1376,6 +1376,23 @@ void test('map with only one value', () => {
     assertScale(resultMapRaw.scale, [10, 11, 12], [-0.7, 0.3, 1.3])
 })
 
+void test('conditional map', () => {
+    const program = `
+    geo = ["A", "B", "C", "D"];
+    data = [1, 2, 3, 4];
+    mask = [true, true, false, false]
+    if (mask) {
+        cMap(geo=geo, data=data, scale=linearScale, ramp=rampBone)
+    }
+    `
+    console.log('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    const resultMap = execute(parseProgram(program), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2])
+})
+
 void test('error map with different geo and data lengths', () => {
     assert.throws(
         () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale, ramp=rampBone)'), emptyContext()),
