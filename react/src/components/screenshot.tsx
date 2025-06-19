@@ -95,8 +95,13 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
     // Some sort of rounding issue in Chrome
     const attribTexts = Array.from(element.querySelectorAll('.maplibregl-ctrl-attrib-inner')).map(e => e as HTMLElement)
     attribTexts.forEach(text => text.style.width = `${Math.ceil(text.offsetWidth) + 1}px`)
+
+    // Hide the fullscreen button
+    const fullscreenButtons = Array.from(element.querySelectorAll('.maplibregl-ctrl:has(.maplibregl-ctrl-fullscreen)')).map(e => e as HTMLElement)
+    fullscreenButtons.forEach(button => button.style.visibility = 'hidden')
     return () => {
         attribTexts.forEach(text => text.style.width = '')
+        fullscreenButtons.forEach(button => button.style.visibility = '')
     }
 }
 
