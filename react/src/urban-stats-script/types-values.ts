@@ -209,7 +209,7 @@ export function renderValue(input: USSValue): string {
             case 'string':
                 return `"${value.value}"`
             case 'opaque':
-                return JSON.stringify(value.value) // Opaque types are serialized as JSON strings
+                return JSON.stringify((value.value as { type: 'opaque', value: object }).value)
             case 'vector':
                 const vector = value.value as USSRawValue[]
                 if (vector.length === 0) {

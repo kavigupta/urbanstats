@@ -1,6 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { colorType } from '../src/urban-stats-script/constants/color'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
@@ -1170,5 +1171,53 @@ void test('evaluate conditions', (): void => {
     assert.deepStrictEqual(
         execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
         { type: numVectorType, value: [NaN, 3, 3] },
+    )
+})
+
+void test('colors', (): void => {
+    assert.deepStrictEqual(
+        evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
+        { type: colorType, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } },
+    )
+    assert.deepStrictEqual(
+        renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
+        '{"r":255,"g":0,"b":0}',
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: colorType },
+            value: [{ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, { type: 'opaque', value: { r: 191, g: 0, b: 0 } }],
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('renderColor(rgb([1, 0.5, 0.75], 0, [0.9, 1.0, 0.2]))'), emptyContext()),
+        { type: {
+            type: 'vector',
+            elementType: { type: 'string' },
+        }, value: ['#ff00e6', '#8000ff', '#bf0033'] },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('rgb(2, 0, 0)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: RGB values must be between 0 and 1, got (2, 0, 0) at 1:1-12'
+        },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
+        {
+            type: { type: 'vector', elementType: colorType },
+            value: [
+                { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, // Red
+                { type: 'opaque', value: { r: 128, g: 128, b: 0 } }, // Yellow
+                { type: 'opaque', value: { r: 0, g: 128, b: 0 } }, // Green
+            ],
+        },
+    )
+    assert.throws(
+        () => evaluate(parseExpr('hsv(400, 1, 0.5)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'Error while executing function: Error: HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (400, 1, 0.5) at 1:1-16'
+        },
     )
 })

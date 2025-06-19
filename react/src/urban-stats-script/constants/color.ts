@@ -4,7 +4,7 @@ import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 interface Color { r: number, g: number, b: number }
-const colorType = { type: 'opaque', name: 'color' } satisfies USSType
+export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
 function rgbToColor(red: number, green: number, blue: number): Color {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
@@ -33,7 +33,7 @@ export const rgb = {
     },
 } satisfies USSValue
 
-export const hsl = {
+export const hsv = {
     type: {
         type: 'function',
         posArgs: [
@@ -48,12 +48,12 @@ export const hsl = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const hue = posArgs[0] as number
         const saturation = posArgs[1] as number
-        const lightness = posArgs[2] as number
-        if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || lightness < 0 || lightness > 1) {
-            throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${lightness})`)
+        const value = posArgs[2] as number
+        if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
+            throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
         }
         // Convert HSL to RGB using color library
-        const color = ColorLib.hsl(hue, saturation * 100, lightness * 100)
+        const color = ColorLib.hsv(hue, saturation * 100, value * 100)
         const rgbValues = color.rgb().object()
         return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
     },
@@ -70,7 +70,7 @@ export const renderColor = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
         const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number } }).value
         const hex = (x: number): string => {
-            const hexValue = Math.round(x * 255).toString(16)
+            const hexValue = x.toString(16)
             return hexValue.length === 1 ? `0${hexValue}` : hexValue
         }
         return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`

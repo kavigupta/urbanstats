@@ -2,7 +2,7 @@ import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { USSRawValue, USSValue } from '../types-values'
 
-import { hsl, renderColor, rgb } from './color'
+import { hsv, renderColor, rgb } from './color'
 import { toNumber, toString } from './convert'
 import { regression } from './regr'
 
@@ -60,6 +60,6 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['toString', toString],
     ['regression', regression(10)],
     ['rgb', rgb],
-    ['hsl', hsl],
+    ['hsv', hsv],
     ['renderColor', renderColor],
 ] satisfies [string, USSValue][])
