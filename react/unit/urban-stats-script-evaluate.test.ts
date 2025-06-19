@@ -2,7 +2,9 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { colorType } from '../src/urban-stats-script/constants/color'
+import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
+import { ScaleInstance } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
@@ -894,6 +896,21 @@ void test('constants', (): void => {
     )
 })
 
+function close(a: USSRawValue, b: USSRawValue): boolean {
+    if (typeof a === 'number' && typeof b === 'number') {
+        if (isNaN(a) && isNaN(b)) return true
+        return Math.abs(a - b) < 1e-3
+    }
+    if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (!close(a[i], b[i])) return false
+        }
+        return true
+    }
+    return a === b
+}
+
 void test('regression', (): void => {
     // to help generate these, see ./regression.py
     assert.deepStrictEqual(
@@ -921,21 +938,6 @@ void test('regression', (): void => {
                 assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
             }
         }
-    }
-
-    function close(a: USSRawValue, b: USSRawValue): boolean {
-        if (typeof a === 'number' && typeof b === 'number') {
-            if (isNaN(a) && isNaN(b)) return true
-            return Math.abs(a - b) < 1e-3
-        }
-        if (Array.isArray(a) && Array.isArray(b)) {
-            if (a.length !== b.length) return false
-            for (let i = 0; i < a.length; i++) {
-                if (!close(a[i], b[i])) return false
-            }
-            return true
-        }
-        return a === b
     }
 
     assert.deepStrictEqual(
@@ -1338,6 +1340,47 @@ void test('ramps', (): void => {
         {
             type: { type: 'opaque', name: 'ramp' },
             value: { type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] },
+        },
+    )
+})
+
+function assertScale(scale: ScaleInstance, values: number[], proportions: number[]): void {
+    assert.strict(close(proportions, values.map(scale.forward)), `Scale forward mapping failed: ${JSON.stringify(proportions)} != ${JSON.stringify(values.map(scale.forward))}`)
+    assert.strict(close(values, proportions.map(scale.inverse)), `Scale inverse mapping failed: ${JSON.stringify(values)} != ${JSON.stringify(proportions.map(scale.inverse))}`)
+}
+
+void test('test basic map', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
+})
+
+void test('test basic map with geometric', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 4], scale=logScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 4])
+    assertScale(resultMapRaw.scale, [1, Math.sqrt(2), 2, 2 * Math.sqrt(2), 4], [0, 0.25, 0.5, 0.75, 1])
+})
+
+void test('map with only one value', () => {
+    const resultMap = evaluate(parseExpr('cMap(geo=["A"], data=[11.2], scale=linearScale, ramp=rampBone)'), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A'])
+    assert.deepStrictEqual(resultMapRaw.data, [11.2])
+    assertScale(resultMapRaw.scale, [10, 11, 12], [-0.7, 0.3, 1.3])
+})
+
+void test('error map with different geo and data lengths', () => {
+    assert.throws(
+        () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale, ramp=rampBone)'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-64'
         },
     )
 })

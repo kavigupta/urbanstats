@@ -1,7 +1,10 @@
+import { RAMPS } from '../../mapper/ramps'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { Color, doRender } from './color'
+
+export type RampT = [number, string][]
 
 export const rampType = {
     type: 'opaque',
@@ -19,7 +22,7 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
     return {
         type: 'opaque',
-        value: ramp.map(([value, color]) => [value, doRender(color)] as [number, string]),
+        value: ramp.map(([value, color]) => [value, doRender(color)] as [number, string]) satisfies RampT,
     }
 }
 
@@ -53,3 +56,11 @@ export const constructRampValue: USSValue = {
         ]))
     },
 }
+
+export const rampConsts: [string, USSValue][] = Object.entries(RAMPS).map(([name, ramp]) => [
+    `ramp${name}`,
+    {
+        type: rampType,
+        value: ramp,
+    },
+])

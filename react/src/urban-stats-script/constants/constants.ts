@@ -4,8 +4,10 @@ import { USSRawValue, USSValue } from '../types-values'
 
 import { hsv, renderColor, rgb } from './color'
 import { toNumber, toString } from './convert'
-import { constructRampValue } from './ramp'
+import { cMap } from './map'
+import { constructRampValue, rampConsts } from './ramp'
 import { regression } from './regr'
+import { linearScaleValue, logScaleValue } from './scale'
 
 type Constants = Map<string, USSValue>
 
@@ -104,4 +106,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['hsv', hsv],
     ['renderColor', renderColor],
     ['constructRamp', constructRampValue],
+    ...rampConsts,
+    ['linearScale', linearScaleValue],
+    ['logScale', logScaleValue],
+    ['cMap', cMap],
 ] satisfies [string, USSValue][])
