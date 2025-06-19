@@ -1,16 +1,19 @@
 import { generateCodeVerifier, OAuth2Client } from '@badgateway/oauth2-client'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 
+const tokenSchema = z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+    expiresAt: z.number(),
+})
+
 const stateSchema = z.discriminatedUnion('state', [
     z.object({ state: z.literal('signedOut'), previouslySignedIn: z.boolean() }),
     z.object({
-        state: z.literal('signedIn'), token: z.object({
-            accessToken: z.string(),
-            refreshToken: z.string(),
-            expiresAt: z.number(),
-        }),
+        state: z.literal('signedIn'), token: tokenSchema,
     }),
 ])
 
@@ -18,7 +21,7 @@ type State = z.TypeOf<typeof stateSchema>
 
 const localStorageKey = 'quizAuthenticationState'
 
-const authCodeStateKey = 'authCodeState'
+const codeVerifierKey = 'codeVerifier'
 
 const googleClient = new OAuth2Client({
     server: 'https://accounts.google.com',
@@ -26,68 +29,119 @@ const googleClient = new OAuth2Client({
     discoveryEndpoint: '/.well-known/openid-configuration',
 })
 
-const codeVerifier = await generateCodeVerifier()
-
 const redirectUri = urlFromPageDescriptor({ kind: 'oauthCallback', params: {} }).toString()
 
+function loadState(): State {
+    const item = localStorage.getItem(localStorageKey)
+    if (item !== null) {
+        const parseResult = stateSchema.safeParse(JSON.parse(item))
+        if (parseResult.success) {
+            return parseResult.data
+        }
+        else {
+            console.error(`Failed to parse ${localStorageKey}, using default state`, parseResult.error)
+        }
+    }
+    return { state: 'signedOut', previouslySignedIn: false }
+}
+
 class AuthenticationStateMachine {
-    // TODO.. use storage events to keep state in sync
     private _state: State
 
     private setState(newState: State): void {
         this._state = newState
         localStorage.setItem(localStorageKey, JSON.stringify(newState))
+        this.stateObservers.forEach((observer) => { observer() })
     }
 
-    constructor() {
-        this._state = { state: 'signedOut', previouslySignedIn: false }
-        const item = localStorage.getItem(localStorageKey)
-        if (item !== null) {
-            const parseResult = stateSchema.safeParse(JSON.parse(item))
-            if (parseResult.success) {
-                this._state = parseResult.data
+    private stateObservers = new Set<() => void>()
+
+    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
+    useState(): State {
+        const [, setCounter] = useState(0)
+        useEffect(() => {
+            const observer = (): void => {
+                setCounter(counter => counter + 1)
             }
-            else {
-                console.error(`Failed to parse ${localStorageKey}, using default state`, parseResult.error)
+            this.stateObservers.add(observer)
+            return () => {
+                this.stateObservers.delete(observer)
+            }
+        }, [])
+        return this._state
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
+
+    constructor() {
+        this._state = loadState()
+        const weakThis = new WeakRef(this)
+        const listener = (event: StorageEvent): void => {
+            const self = weakThis.deref()
+            if (self === undefined) {
+                removeEventListener('storage', listener)
+            }
+            else if (event.key === localStorageKey) {
+                this._state = loadState()
+                this.stateObservers.forEach((observer) => { observer() })
             }
         }
+        addEventListener('storage', listener)
     }
 
     // Returns a URL for the user to visit
     async startSignIn(): Promise<string> {
-        const authCodeState = crypto.randomUUID()
-        localStorage.setItem(authCodeStateKey, authCodeState)
+        const codeVerifier = await generateCodeVerifier()
+        localStorage.setItem(codeVerifierKey, codeVerifier)
         return await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
-            state: authCodeState,
             codeVerifier,
             scope: ['openid', 'email', 'profile'],
         })
     }
 
     async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<void> {
+        if (this._state.state !== 'signedOut') {
+            throw new Error('Already signed in')
+        }
         const url = urlFromPageDescriptor(descriptor)
-        const state = localStorage.getItem(authCodeStateKey)
-        if (state === null) {
-            throw new Error('No sign in atttempt was started')
+        const codeVerifier = localStorage.getItem(codeVerifierKey)
+        if (codeVerifier === null) {
+            throw new Error('No code verifier was stored')
         }
-        const token = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
+        const token = tokenSchema.parse(await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
-            state,
             codeVerifier,
-        })
-
-        if (token.refreshToken === null) {
-            throw new Error('No refresh token provided')
-        }
-
-        if (token.expiresAt === null) {
-            throw new Error('Token has no expiration date')
-        }
+        }))
 
         // TODO: Associate with persistent server (failable)
 
         this.setState({ state: 'signedIn', token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt } })
+        localStorage.removeItem(codeVerifierKey)
+    }
+
+    authenticationError(): void {
+        this.setState({ state: 'signedOut', previouslySignedIn: true })
+    }
+
+    async getAccessToken(): Promise<string | undefined> {
+        if (this._state.state === 'signedOut') {
+            return undefined
+        }
+
+        if (Date.now() + 10_000 < this._state.token.expiresAt) {
+            return this._state.token.accessToken
+        }
+
+        try {
+            const newToken = tokenSchema.parse(await googleClient.refreshToken(this._state.token))
+            this.setState({ state: 'signedIn', token: newToken })
+            return newToken.accessToken
+        }
+        catch (error) {
+            console.error('Error while refreshing access token', error)
+            this.authenticationError()
+            return undefined
+        }
     }
 }
 
