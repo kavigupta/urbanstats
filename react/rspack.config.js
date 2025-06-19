@@ -76,5 +76,5 @@ export default env => ({
             }),
             new rspack.LightningCssMinimizerRspackPlugin(),
         ],
-    }
+    },
 })

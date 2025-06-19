@@ -1,3 +1,5 @@
+import { cdpSessionWithSessionId } from './test_utils'
+
 // Since testcafe accumulates memory in the CI, each memory test must be run in its own test file
 export async function memoryUsage(t: TestController): Promise<number> {
     const cdpSession = await t.getCurrentCDPSession()
@@ -7,8 +9,7 @@ export async function memoryUsage(t: TestController): Promise<number> {
 
     for (const target of targetInfos) {
         const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
-        // @ts-expect-error -- sessionid
-        await cdpSession.HeapProfiler.collectGarbage(sessionId)
+        await cdpSessionWithSessionId(cdpSession, sessionId).HeapProfiler.collectGarbage()
     }
 
     // Wait for garbage collection
@@ -23,8 +24,7 @@ export async function memoryUsage(t: TestController): Promise<number> {
     for (const target of targetInfos) {
         const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
 
-        // @ts-expect-error -- sessionid
-        const targetBytes = (await cdpSession.Runtime.getHeapUsage(sessionId)).usedSize
+        const targetBytes = (await cdpSessionWithSessionId(cdpSession, sessionId).Runtime.getHeapUsage()).usedSize
         targetsWithMemory.push({ ...target, bytes: targetBytes })
 
         bytesUsed += targetBytes
