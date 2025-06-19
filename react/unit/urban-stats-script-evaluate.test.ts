@@ -98,6 +98,30 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyContext()),
         { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }, value: [[true, true, false, false, false, false]] },
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[min, max, sum, mean, median]([1, 2, 3, 5, 6, 70])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, 70, 87, 14.5, 4] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('min([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, Infinity] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('max([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, -Infinity] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('sum([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, 0] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('mean([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('median([[1], []])'), emptyContext()),
+        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
+    )
 })
 
 void test('evaluate basic variable expressions', (): void => {

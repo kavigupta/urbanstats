@@ -32,6 +32,34 @@ function numericUnaryFunction(
     ]
 }
 
+function numericAggregationFunction(
+    name: string,
+    func: (values: number[]) => number,
+): [string, USSValue] {
+    return [
+        name,
+        {
+            type: {
+                type: 'function',
+                posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }],
+                namedArgs: {},
+                returnType: { type: 'concrete', value: { type: 'number' } },
+            },
+            value: (
+                ctx: Context,
+                posArgs: USSRawValue[],
+                namedArgs: Record<string, USSRawValue>,
+            ) => {
+                assert(posArgs.length === 1, `Expected 1 argument for ${name}, got ${posArgs.length}`)
+                assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ${name}, got ${Object.keys(namedArgs).length}`)
+                const arg = posArgs[0]
+                assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for ${name}, got ${JSON.stringify(arg)}`)
+                return func(arg)
+            },
+        },
+    ]
+}
+
 export const defaultConstants: Constants = new Map<string, USSValue>([
     ['true', { type: { type: 'boolean' }, value: true }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false }] satisfies [string, USSValue],
@@ -56,6 +84,18 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     numericUnaryFunction('exp', Math.exp),
     numericUnaryFunction('sign', Math.sign),
     numericUnaryFunction('nanTo0', value => isNaN(value) ? 0 : value),
+    numericAggregationFunction('sum', values => values.reduce((a, b) => a + b, 0)),
+    numericAggregationFunction('mean', values => values.reduce((a, b) => a + b, 0) / values.length),
+    numericAggregationFunction('min', values => Math.min(...values)),
+    numericAggregationFunction('max', values => Math.max(...values)),
+    numericAggregationFunction('median', (values) => {
+        if (values.length === 0) {
+            return NaN
+        }
+        const sorted = [...values].sort((a, b) => a - b)
+        const mid = Math.floor(sorted.length / 2)
+        return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+    }),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],
