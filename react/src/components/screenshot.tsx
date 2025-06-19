@@ -77,6 +77,34 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
+    if (isTesting()) {
+        context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
+        context.fillRect(x, y, w, h)
+    }
+    else {
+        context.drawImage(
+            image,
+            x, y, w, h,
+        )
+    }
+}
+
+function fixElementForScreenshot(element: HTMLElement): () => void {
+    // Fixes https://github.com/kavigupta/urbanstats/issues/1145
+    // Some sort of rounding issue in Chrome
+    const attribTexts = Array.from(element.querySelectorAll('.maplibregl-ctrl-attrib-inner')).map(e => e as HTMLElement)
+    attribTexts.forEach(text => text.style.width = `${Math.ceil(text.offsetWidth) + 1}px`)
+
+    // Hide the fullscreen button
+    const fullscreenButtons = Array.from(element.querySelectorAll('.maplibregl-ctrl:has(.maplibregl-ctrl-fullscreen)')).map(e => e as HTMLElement)
+    fullscreenButtons.forEach(button => button.style.visibility = 'hidden')
+    return () => {
+        attribTexts.forEach(text => text.style.width = '')
+        fullscreenButtons.forEach(button => button.style.visibility = '')
+    }
+}
+
 export const mapBorderWidth = 1
 export const mapBorderRadius = 5
 
@@ -85,6 +113,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const heightMultiplier = config.heightMultiplier ?? 1
 
     async function screencapElement(ref: HTMLElement): Promise<HTMLCanvasElement> {
+        const unfixElement = fixElementForScreenshot(ref)
+
         /*
          * Safari is flaky at rendering canvases the way `domtoimage` renders them.
          * We work around this by rendering the canvases first, then excluding them from the element render.
@@ -115,16 +145,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
             resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
             resultContext.clip()
 
-            if (isTesting()) {
-                resultContext.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
-                resultContext.fillRect(x, y, w, h)
-            }
-            else {
-                resultContext.drawImage(
-                    canvas,
-                    x, y, w, h,
-                )
-            }
+            drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
 
             resultContext.restore()
         }
@@ -141,6 +162,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         })
 
         resultContext.drawImage(refCanvas, 0, 0)
+
+        unfixElement()
 
         return resultCanvas
     }
@@ -197,7 +220,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         const flagHeight = bannerHeight / 2
         const offset = flagHeight / 2
         const flagWidth = flag.width * flagHeight / flag.height
-        ctx.drawImage(flag, padAround + offset, start + offset, flagWidth, flagHeight)
+        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight)
     }
 
     canvas.toBlob(function (blob) {

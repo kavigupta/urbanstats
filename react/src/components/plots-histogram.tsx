@@ -2,6 +2,7 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 // imort Observable plot
+import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
@@ -21,7 +22,7 @@ interface HistogramProps {
     universeTotal: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string }): ReactNode {
     const [histogramType] = useSetting('histogram_type')
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -36,6 +37,8 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
         <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} />
     )
 
+    const systemColors = useColors()
+
     const plotSpec = useCallback(
         (transpose: boolean) => {
             const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
@@ -46,13 +49,13 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors)
             marks.push(
                 ...xAxisMarks,
                 ...yAxis(maxValue, transpose),
             )
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            const xlabel = `Density (/${useImperial ? 'mi' : 'km'}²)`
+            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
             const legend = props.histograms.length === 1
@@ -60,7 +63,7 @@ export function Histogram(props: { histograms: HistogramProps[] }): ReactNode {
                 : { legend: !transpose, range: colors, domain: shortnames }
             return { marks, xlabel, ylabel, ydomain, legend }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
     )
 
     return (
@@ -330,24 +333,32 @@ function createHistogramMarks(
     renderX: (x: number) => string,
     renderY: (y: number) => string,
     transpose: boolean,
+    colors: Colors,
 ): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
 
     const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
-    const tip = Plot.tip(maxSequences(series), (transpose ? Plot.pointerY : Plot.pointerX)({
-        x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y',
-        title: (d: { names: string[], xidx: number, ys: number[] }) => {
-            let result = `Density: ${renderX(d.xidx)}\n`
-            if (d.names.length > 1) {
-                result += d.names.map((name: string, i: number) => `${name}: ${renderY(d.ys[i])}`).join('\n')
-            }
-            else {
-                result += `Frequency: ${renderY(d.ys[0])}`
-            }
-            return result
-        },
-    }))
+    const tip = Plot.tip(
+        maxSequences(series),
+        (transpose ? Plot.pointerY : Plot.pointerX)({
+            x: transpose ? 'y' : 'xidx',
+            y: transpose ? 'xidx' : 'y',
+            title: (d: { names: string[], xidx: number, ys: number[] }) => {
+                let result = `Density: ${renderX(d.xidx)}\n`
+                if (d.names.length > 1) {
+                    result += d.names.map((name: string, i: number) => `${name}: ${renderY(d.ys[i])}`).join('\n')
+                }
+                else {
+                    result += `Frequency: ${renderY(d.ys[0])}`
+                }
+                return result
+            },
+            fill: colors.slightlyDifferentBackground,
+            stroke: colors.borderNonShadow,
+            textColor: colors.textMain,
+        }),
+    )
     const color = histograms.length === 1 ? histograms[0].color : 'name'
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {

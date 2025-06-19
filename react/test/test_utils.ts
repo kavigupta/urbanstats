@@ -3,6 +3,9 @@ import path from 'path'
 
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
+import xmlFormat from 'xml-formatter'
+
+import { checkString } from '../src/utils/isTesting'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
@@ -12,8 +15,6 @@ export const getLocationWithoutSettings = ClientFunction(() => {
     url.searchParams.delete('s')
     return url.toString()
 })
-
-export const isTesting = true
 
 export function comparisonPage(locations: string[]): string {
     const params = new URLSearchParams()
@@ -168,10 +169,20 @@ function copyMostRecentFile(t: TestController): void {
     fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
+export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}`)
+
+    switch (format) {
+        case 'json':
+            string = JSON.stringify(JSON.parse(string), null, 2)
+            break
+        case 'xml':
+            string = xmlFormat(string)
+            break
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
-    if (isTesting) {
+    if (checkString) {
         const expected = fs.readFileSync(pathToFile, 'utf8')
         await t.expect(string).eql(expected)
     }
@@ -268,4 +279,22 @@ export async function dataValues(): Promise<string[]> {
         values.push(await selector.nth(i).innerText)
     }
     return values
+}
+
+export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, sessionId: string): T {
+    // https://issues.chromium.org/issues/406821212#comment2
+    return new Proxy(cdpSession, {
+        get(s, prop: keyof Object) {
+            const value: unknown = s[prop]
+            if (value instanceof Function) {
+                return function (...args: unknown[]) {
+                    return value.apply(s, args.concat([sessionId])) as unknown
+                }
+            }
+            if (value instanceof Object) {
+                return cdpSessionWithSessionId(value, sessionId)
+            }
+            return value
+        },
+    })
 }

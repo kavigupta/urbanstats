@@ -5,6 +5,7 @@ Got the files ucls_* from Taylor via personal communication, as well as names_fu
 import glob
 import json
 import re
+import unicodedata
 import zipfile
 from difflib import SequenceMatcher
 from functools import lru_cache
@@ -404,10 +405,19 @@ def load_shapefile_with_data(table):
     return shp
 
 
+def normalize(s):
+    # copied from urbanstats/website_data/index.py
+    s = s.lower()
+    s = unicodedata.normalize("NFD", s)
+    s = re.sub(r"[\u0300-\u036f]", "", s)
+    return s
+
+
 def valid_ascii_name(name):
     """
     Check if a name is valid ASCII.
     """
+    name = normalize(name)
     return all(ord(c) < 128 for c in name) and name.strip() != ""
 
 
