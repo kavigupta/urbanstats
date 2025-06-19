@@ -41,7 +41,7 @@ export class USSColorStat implements ColorStat {
     }
 }
 
-function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsForGeography: StatisticsForGeography | undefined): Context {
+export function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsForGeography: StatisticsForGeography | undefined, longnames: string[] | undefined = undefined): Context {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -50,6 +50,15 @@ function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsF
     )
 
     const getVariable = (name: string, load: boolean): USSValue | undefined => {
+        if (name === 'geo') {
+            if (longnames === undefined) {
+                return undefined
+            }
+            return {
+                type: { type: 'vector', elementType: { type: 'string' } },
+                value: load ? longnames : [],
+            }
+        }
         const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
         if (index === -1) {
             return undefined
@@ -64,7 +73,7 @@ function colorStatContext(stmts: UrbanStatsASTStatement | undefined, statisticsF
     return ctx
 }
 
-function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSValue {
+export function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSValue {
     const result = execute(stmts, context)
     if (result.type.type !== 'vector' || (result.type.elementType.type !== 'number' && result.type.elementType.type !== 'boolean')) {
         throw new InterpretationError('USS expression did not return a vector of numbers or booleans:', locationOfLastExpression(stmts))
@@ -75,7 +84,9 @@ function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSV
 function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | undefined, getVariable: (name: string, load: boolean) => USSValue | undefined): void {
     const ids = stmts !== undefined ? allIdentifiers(stmts) : undefined
 
-    statistic_variables_info.variableNames.forEach((name) => {
+    const variables = [...statistic_variables_info.variableNames, 'geo']
+
+    variables.forEach((name) => {
         const va = getVariable(name, ids?.has(name) ?? false)
         if (va !== undefined) {
             ctx.assignVariable(name, va)
