@@ -1220,4 +1220,10 @@ void test('colors', (): void => {
             return err instanceof Error && err.message === 'Error while executing function: Error: HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (400, 1, 0.5) at 1:1-16'
         },
     )
+    assert.throws(
+        () => evaluate(parseExpr('if ([true, false]) {x = hsv(0, 1, 0.5)}'), emptyContext()),
+        (err: Error): boolean => {
+            return err.message === 'no default value for opaque type color'
+        },
+    )
 })
