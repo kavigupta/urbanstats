@@ -75,7 +75,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const ramp = cMap.ramp
         const scale = instantiate(cMap.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale })
+        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label })
         const colors = cMap.data.map(
             val => interpolateColor(ramp, scale.forward(val)),
         )
@@ -111,25 +111,26 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 }
 
-function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): ReactNode {
+function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
     if (props.ramp === undefined) {
         return <div></div>
     }
+    const label = props.ramp.label
     const values = props.ramp.interpolations
 
     const createValue = (stat: number): ReactNode => {
         return (
             <div className="centered_text">
                 <Statistic
-                    statname={props.name}
+                    statname={label}
                     value={stat}
                     isUnit={false}
                 />
                 <Statistic
-                    statname={props.name}
+                    statname={label}
                     value={stat}
                     isUnit={true}
                 />
@@ -169,7 +170,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                 </tbody>
             </table>
             <div className="centered_text">
-                {props.name}
+                {label}
             </div>
         </div>
     )
@@ -187,6 +188,7 @@ interface EmpiricalRamp {
     ramp: Keypoints
     scale: ScaleInstance
     interpolations: number[]
+    label: string
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
@@ -213,7 +215,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
             </div>
             <div style={{ height: '8%', width: '100%' }}>
                 <Colorbar
-                    name="TODO Placeholder"
                     ramp={empiricalRamp}
                 />
             </div>
