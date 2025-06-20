@@ -200,7 +200,7 @@ export function stringToHtml(
                         longestHaystack = Math.max(longestHaystack, t.token.value.length)
                     }
                 }
-                for (const id of context.allIdentifiers()) {
+                for (const id of context.allIdentifiersInclTheoretical()) {
                     allIdentifiers.add(id)
                     longestHaystack = Math.max(longestHaystack, id.length)
                 }

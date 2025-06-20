@@ -1385,7 +1385,6 @@ void test('conditional map', () => {
         cMap(geo=geo, data=data, scale=linearScale, ramp=rampBone)
     }
     `
-    console.log('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     const resultMap = execute(parseProgram(program), emptyContext())
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value

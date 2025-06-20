@@ -49,15 +49,18 @@ export function colorStatContext(stmts: UrbanStatsASTStatement | undefined, stat
         new Map(),
     )
 
-    const getVariable = (name: string, load: boolean): USSValue | undefined => {
+    const getVariable = (name: string): USSValue | undefined => {
         if (name === 'geo') {
             if (longnames === undefined) {
                 return undefined
             }
             return {
                 type: { type: 'vector', elementType: { type: 'string' } },
-                value: load ? longnames : [],
+                value: longnames,
             }
+        }
+        if (statisticsForGeography === undefined) {
+            return undefined
         }
         const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
         if (index === -1) {
@@ -65,7 +68,7 @@ export function colorStatContext(stmts: UrbanStatsASTStatement | undefined, stat
         }
         return {
             type: { type: 'vector', elementType: { type: 'number' } },
-            value: load ? statisticsForGeography?.map(stat => stat.stats[index]) ?? [] : [],
+            value: statisticsForGeography.map(stat => stat.stats[index]),
         }
     }
 
@@ -81,13 +84,17 @@ export function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context
     return result
 }
 
-function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | undefined, getVariable: (name: string, load: boolean) => USSValue | undefined): void {
+function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | undefined, getVariable: (name: string) => USSValue | undefined): void {
     const ids = stmts !== undefined ? allIdentifiers(stmts) : undefined
 
     const variables = [...statistic_variables_info.variableNames, 'geo']
 
     variables.forEach((name) => {
-        const va = getVariable(name, ids?.has(name) ?? false)
+        if (!ids?.has(name)) {
+            ctx.addTheoreticalIdentifier(name)
+            return
+        }
+        const va = getVariable(name)
         if (va !== undefined) {
             ctx.assignVariable(name, va)
         }
@@ -95,14 +102,19 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | und
 
     statistic_variables_info.multiSourceVariables.forEach((content) => {
         const [name, subvars] = content
+        if (!ids?.has(name)) {
+            ctx.addTheoreticalIdentifier(name)
+            return
+        }
         const values = subvars.map((subvar) => {
             const existing = ctx.getVariable(subvar)?.value as (undefined | number[])
-            if (existing === undefined || existing.length === 0) {
-                return getVariable(subvar, ids?.has(name) ?? false)!.value as number[]
-            }
-            return existing
+            return (existing ?? getVariable(subvar)?.value) as (undefined | number[])
         })
-        const value = values[0].map((_, i) => firstNonNan(values.map(v => v[i]))) // take first non-NaN value
+        if (values.some(v => v === undefined)) {
+            return
+        }
+        const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
+        const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
         ctx.assignVariable(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
             value,
