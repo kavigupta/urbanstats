@@ -42,7 +42,7 @@ export function instantiate({ kind, min, max }: ScaleDescriptor): ScaleInstance 
 }
 
 const linearScale: Scale = (values: number[]) => {
-    values = values.filter(value => typeof value === 'number' && !isNaN(value))
+    values = values.filter(value => typeof value === 'number' && !isNaN(value) && isFinite(value))
     const min = Math.min(...values)
     const max = Math.max(...values)
 
