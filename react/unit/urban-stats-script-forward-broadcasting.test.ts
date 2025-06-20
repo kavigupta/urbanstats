@@ -3,6 +3,7 @@ import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
+import { defineFunction } from '../src/urban-stats-script/function-registry'
 import { newLocation } from '../src/urban-stats-script/lexer'
 import { USSRawValue, USSType, renderType } from '../src/urban-stats-script/types-values'
 
@@ -224,10 +225,10 @@ void test('jagged array', (): void => {
     )
     const takesArray = { type: 'function', posArgs: [{ type: 'concrete', value: numVectorType }], namedArgs: {}, returnType: { type: 'concrete', value: numType } } satisfies USSType
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- To match the type signature
-    const fn = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+    const fn = defineFunction('fn', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const arr = posArgs[0] as number[]
         return arr.reduce((acc, val) => acc + val, 0)
-    }
+    })
     assert.deepStrictEqual(
         broadcastApply(
             { type: takesArray, value: fn },

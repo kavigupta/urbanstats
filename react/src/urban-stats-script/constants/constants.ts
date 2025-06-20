@@ -1,5 +1,6 @@
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
+import { defineFunction } from '../function-registry'
 import { USSRawValue, USSValue } from '../types-values'
 
 import { hsv, renderColor, rgb } from './color'
@@ -19,7 +20,7 @@ function numericUnaryFunction(
         name,
         {
             type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-            value: (
+            value: defineFunction(`numericUnary_${name}`, (
                 ctx: Context,
                 posArgs: USSRawValue[],
                 namedArgs: Record<string, USSRawValue>,
@@ -29,8 +30,7 @@ function numericUnaryFunction(
                 const arg = posArgs[0]
                 assert(typeof arg === 'number', `Expected number argument for ${name}, got ${typeof arg}`)
                 return func(arg)
-            },
-
+            }),
         },
     ]
 }
@@ -48,7 +48,7 @@ function numericAggregationFunction(
                 namedArgs: {},
                 returnType: { type: 'concrete', value: { type: 'number' } },
             },
-            value: (
+            value: defineFunction(`numericAggregation_${name}`, (
                 ctx: Context,
                 posArgs: USSRawValue[],
                 namedArgs: Record<string, USSRawValue>,
@@ -58,7 +58,7 @@ function numericAggregationFunction(
                 const arg = posArgs[0]
                 assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for ${name}, got ${JSON.stringify(arg)}`)
                 return func(arg)
-            },
+            }),
         },
     ]
 }

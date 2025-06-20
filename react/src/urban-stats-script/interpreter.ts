@@ -297,7 +297,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
     const operatorObj = expressionOperatorMap.get(operator)
     assert(operatorObj?.unary !== undefined, `Unknown operator: ${operator}`)
     const res = broadcastApply(
-        operatorObj.unary(operator, errLoc),
+        operatorObj.unary,
         [operand],
         [],
         env,
@@ -313,7 +313,7 @@ function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: strin
     const operatorObj = expressionOperatorMap.get(operator)
     assert(operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
     const res = broadcastApply(
-        operatorObj.binary(operator, errLoc),
+        operatorObj.binary,
         [left, right],
         [],
         env,

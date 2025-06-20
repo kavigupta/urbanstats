@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
+import { getFunction } from './function-registry'
 import { InterpretationError } from './interpreter'
 import { LocInfo } from './lexer'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
@@ -270,10 +271,10 @@ function mapSeveral(
      * The function is expected to be a function that takes the positional and keyword arguments.
      */
     if (depth === 0) {
-        assert(typeof fn === 'function', `Expected a function, but got ${typeof fn}`)
+        assert(fn !== null && typeof fn === 'object' && 'type' in fn && fn.type === 'function', `Expected a function, but got ${typeof fn}`)
         const kw = Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v]))
         try {
-            return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>) => USSRawValue)(
+            return getFunction(fn.identifier)(
                 ctx, posArgs, kw,
             )
         }

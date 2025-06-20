@@ -1,6 +1,7 @@
 import ColorLib from 'color'
 
 import { Context } from '../context'
+import { defineFunction } from '../function-registry'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 export interface Color { r: number, g: number, b: number }
@@ -28,9 +29,9 @@ export const rgb = {
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+    value: defineFunction('rgb', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         return { type: 'opaque', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
-    },
+    }),
 } satisfies USSValue
 
 export const hsv = {
@@ -45,7 +46,7 @@ export const hsv = {
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+    value: defineFunction('hsv', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const hue = posArgs[0] as number
         const saturation = posArgs[1] as number
         const value = posArgs[2] as number
@@ -56,7 +57,7 @@ export const hsv = {
         const color = ColorLib.hsv(hue, saturation * 100, value * 100)
         const rgbValues = color.rgb().object()
         return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
-    },
+    }),
 } satisfies USSValue
 
 export const renderColor = {
@@ -67,10 +68,10 @@ export const renderColor = {
         returnType: { type: 'concrete', value: { type: 'string' } },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
+    value: defineFunction('renderColor', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
         const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number } }).value
         return doRender(color)
-    },
+    }),
 } satisfies USSValue
 
 export function doRender(color: Color): string {

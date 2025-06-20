@@ -1,6 +1,7 @@
 /* c8 ignore start */
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
+import { defineFunction } from '../src/urban-stats-script/function-registry'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../src/urban-stats-script/parser'
@@ -27,8 +28,8 @@ export const testFnType = {
     type: 'function',
     posArgs: [{ type: 'concrete', value: numType }], namedArgs: { a: { type: { type: 'concrete', value: numType } } }, returnType: { type: 'concrete', value: numType } } satisfies USSType
 
-export const testFn1: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
-export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number)
+export const testFn1: USSRawValue = defineFunction('testFn1', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number))
+export const testFn2: USSRawValue = defineFunction('testFn2', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number))
 
 export const testFnTypeWithDefault = {
     type: 'function',
@@ -37,8 +38,8 @@ export const testFnTypeWithDefault = {
     returnType: { type: 'concrete', value: numType },
 } satisfies USSType
 
-export const testFnWithDefault: USSRawValue = (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue =>
-    (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number) + 10 * (namedArgs.b as number)
+export const testFnWithDefault: USSRawValue = defineFunction('testFnWithDefault', (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue =>
+    (posArgs[0] as number) * (posArgs[0] as number) * (posArgs[0] as number) + (namedArgs.a as number) + 10 * (namedArgs.b as number))
 
 export const testObjType = {
     type: 'object',
@@ -55,7 +56,7 @@ export const multiArgFnType = {
     returnType: { type: 'concrete', value: numVectorType },
 } satisfies USSType
 
-export function testFnMultiArg(ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue {
+export const testFnMultiArg = defineFunction('testFnMultiArg', (ctx, posArgs, namedArgs) => {
     const x = posArgs[0] as number
     const y = posArgs[1] as number[]
     const a = namedArgs.a as number
@@ -68,7 +69,7 @@ export function testFnMultiArg(ctx: Context, posArgs: USSRawValue[], namedArgs: 
         b.get('u') as number,
         b.get('v') as number,
     ]
-}
+})
 
 export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, location: LocInfo }[], env: Map<string, USSValue>): Context {
     return new Context(

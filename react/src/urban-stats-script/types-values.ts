@@ -1,7 +1,5 @@
 import { assert } from '../utils/defensive'
 
-import { Context } from './context'
-
 interface USSNumberType {
     type: 'number'
 }
@@ -64,13 +62,7 @@ export type USSRawValue = (
     USSPrimitiveRawValue |
     USSRawValue[] |
     Map<string, USSRawValue> |
-    (
-        (
-            ctx: Context,
-            posArgs: USSRawValue[],
-            namedArgs: Record<string, USSRawValue>,
-        ) => USSRawValue
-    ) |
+    { type: 'function', identifier: string } |
     { type: 'opaque', value: object }
 )
 

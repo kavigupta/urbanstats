@@ -1,6 +1,7 @@
 import { calculateRegression, computePearsonR2 } from '../../mapper/regression'
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
+import { defineFunction } from '../function-registry'
 import { USSFunctionArgType, USSRawValue, USSType, USSValue } from '../types-values'
 
 export function regressionResultType(numRegressionDependentsMax: number): USSType {
@@ -37,7 +38,7 @@ export function regressionType(numRegressionDependentsMax: number): USSType {
 export function regression(numRegressionDependentsMax: number): USSValue {
     return {
         type: regressionType(numRegressionDependentsMax),
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        value: defineFunction(`regression_${numRegressionDependentsMax}`, (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
             assert(posArgs.length === 0, `Expected no positional arguments for regression, got ${posArgs.length}`)
             const dependent = namedArgs.y as number[]
             const independents = []
@@ -73,6 +74,6 @@ export function regression(numRegressionDependentsMax: number): USSValue {
             result.set('b', intercept)
 
             return result
-        },
+        }),
     }
 }

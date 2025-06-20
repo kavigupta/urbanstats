@@ -1,5 +1,6 @@
 import { RAMPS } from '../../mapper/ramps'
 import { Context } from '../context'
+import { defineFunction } from '../function-registry'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { Color, doRender } from './color'
@@ -47,14 +48,13 @@ export const constructRampValue: USSValue = {
         namedArgs: {},
         returnType: { type: 'concrete', value: rampType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+    value: defineFunction('constructRamp', (ctx: Context, posArgs: USSRawValue[]): USSRawValue => {
         const ramp = posArgs[0] as Map<string, USSRawValue>[]
         return constructRamp(ramp.map(item => [
             item.get('value') as number,
             (item.get('color') as { type: 'opaque', value: Color }).value,
         ]))
-    },
+    }),
 }
 
 export const rampConsts: [string, USSValue][] = Object.entries(RAMPS).map(([name, ramp]) => [

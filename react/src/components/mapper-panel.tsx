@@ -12,7 +12,7 @@ import { MapSettings, MapperSettings } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
-import { ScaleInstance } from '../urban-stats-script/constants/scale'
+import { ScaleInstance, scales } from '../urban-stats-script/constants/scale'
 import { parse } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -73,10 +73,11 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
         const names = cMap.geo
         const ramp = cMap.ramp
-        const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(cMap.scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale: cMap.scale })
+        const scale = scales[cMap.scale.scaleKey](cMap.data)
+        const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+        this.props.rampCallback({ ramp, interpolations, scale })
         const colors = cMap.data.map(
-            val => interpolateColor(ramp, cMap.scale.forward(val)),
+            val => interpolateColor(ramp, scale.forward(val)),
         )
         const styles = colors.map(
             // no outline, set color fill, alpha=1

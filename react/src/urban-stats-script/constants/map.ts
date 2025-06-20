@@ -1,12 +1,13 @@
+import { defineFunction } from '../function-registry'
 import { USSType, USSValue } from '../types-values'
 
 import { RampT } from './ramp'
-import { Scale, ScaleInstance } from './scale'
+import { Scale } from './scale'
 
 export interface CMap {
     geo: string[]
     data: number[]
-    scale: ScaleInstance
+    scale: Scale
     ramp: RampT
 }
 
@@ -27,7 +28,7 @@ export const cMap: USSValue = {
         },
         returnType: { type: 'concrete', value: cMapType },
     },
-    value: (ctx, posArgs, namedArgs) => {
+    value: defineFunction('cMap', (ctx, posArgs, namedArgs) => {
         const geo = namedArgs.geo as string[]
         const data = namedArgs.data as number[]
         const scale = (namedArgs.scale as { type: 'opaque', value: Scale }).value
@@ -37,11 +38,9 @@ export const cMap: USSValue = {
             throw new Error('geo and data must have the same length')
         }
 
-        const scaleInstance = scale(data)
-
         return {
             type: 'opaque',
-            value: { geo, data, scale: scaleInstance, ramp } satisfies CMap,
+            value: { geo, data, scale, ramp } satisfies CMap,
         }
-    },
+    }),
 }

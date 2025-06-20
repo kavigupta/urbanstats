@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
+import { defineFunction } from './function-registry'
 import { LocInfo } from './lexer'
 import { getPrimitiveType, renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
@@ -136,6 +137,10 @@ function indexType(v: USSType): USSType {
     return v // If the value is not a vector, we just return it as is; broadcasting
 }
 
+const defaultFunctionValue = defineFunction('defaultFunction', () => {
+    throw new Error(`no default value for function`)
+})
+
 function defaultValueForType(type: USSType): USSRawValue {
     switch (type.type) {
         case 'number':
@@ -151,9 +156,7 @@ function defaultValueForType(type: USSType): USSRawValue {
         case 'object':
             return new Map<string, USSRawValue>([...type.properties.entries()].map(([k, v]) => [k, defaultValueForType(v)]))
         case 'function':
-            return () => {
-                throw new Error(`no default value for function type ${renderType(type)}`)
-            }
+            return defaultFunctionValue
         case 'opaque':
             throw new Error(`no default value for opaque type ${renderType(type)}`)
     }
