@@ -14,7 +14,7 @@ export function EditorPanel(): ReactNode {
         localStorage.setItem('editor-code', newScript)
     }, [])
 
-    const autocompleteSymbols = useMemo(() => Array.from(Object.keys(defaultConstants)), [])
+    const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()), [])
 
     const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'generic' }), [])
 

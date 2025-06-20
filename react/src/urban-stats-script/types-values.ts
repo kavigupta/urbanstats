@@ -17,7 +17,7 @@ interface USSNullType {
     type: 'null'
 }
 
-interface USSOpaqueType {
+export interface USSOpaqueType {
     type: 'opaque'
     name: string
 }

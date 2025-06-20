@@ -76,8 +76,8 @@ export function MapperSettings(props: {
     mapSettings: MapSettings
     setMapSettings: (newValue: MapSettings) => void
 }): ReactNode {
-    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyType: props.mapSettings.geography_kind }), [props.mapSettings.geography_kind])
-    const autocompleteSymbols = useMemo(() => Array.from(Object.keys(defaultConstants)).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
+    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyKind: props.mapSettings.geography_kind }), [props.mapSettings.geography_kind])
+    const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
 
     return (
         <div>

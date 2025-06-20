@@ -1,14 +1,14 @@
 import statistic_variables_info from '../data/statistic_variables_info'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
-import { execute, InterpretationError } from '../urban-stats-script/interpreter'
-import { allIdentifiers, locationOfLastExpression, UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { InterpretationError } from '../urban-stats-script/interpreter'
+import { allIdentifiers, UrbanStatsASTStatement } from '../urban-stats-script/parser'
 import { USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 
 import { StatisticsForGeography } from './settings'
 
-export function colorStatContext(stmts: UrbanStatsASTStatement, statisticsForGeography: StatisticsForGeography, longnames: string[] | undefined = undefined): Context {
+export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeography: StatisticsForGeography, longnames: string[]): Context {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -18,9 +18,6 @@ export function colorStatContext(stmts: UrbanStatsASTStatement, statisticsForGeo
 
     const getVariable = (name: string): USSValue | undefined => {
         if (name === 'geo') {
-            if (longnames === undefined) {
-                return undefined
-            }
             return {
                 type: { type: 'vector', elementType: { type: 'string' } },
                 value: longnames,
@@ -38,14 +35,6 @@ export function colorStatContext(stmts: UrbanStatsASTStatement, statisticsForGeo
 
     addVariablesToContext(ctx, stmts, getVariable)
     return ctx
-}
-
-export function colorStatExecute(stmts: UrbanStatsASTStatement, context: Context): USSValue {
-    const result = execute(stmts, context)
-    if (result.type.type !== 'vector' || (result.type.elementType.type !== 'number' && result.type.elementType.type !== 'boolean')) {
-        throw new InterpretationError('USS expression did not return a vector of numbers or booleans:', locationOfLastExpression(stmts))
-    }
-    return result
 }
 
 function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {

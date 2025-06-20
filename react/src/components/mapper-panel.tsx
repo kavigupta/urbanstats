@@ -3,24 +3,20 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
-import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
-import { colorStatContext } from '../mapper/function'
 import { Keypoints } from '../mapper/ramps'
 import { MapSettings, MapperSettings } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
-import { CMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
-import { execute } from '../urban-stats-script/interpreter'
 import { parse } from '../urban-stats-script/parser'
-import { renderType } from '../urban-stats-script/types-values'
+import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
-import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
+import { ConsolidatedShapes, Feature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
@@ -30,14 +26,9 @@ import { Statistic } from './table'
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: string
     underlyingShapes: Promise<ConsolidatedShapes>
-    underlyingStats: Promise<ConsolidatedStatistics>
     rampCallback: (newRamp: EmpiricalRamp) => void
     height: number | string | undefined
     uss: string
-}
-
-async function getStats(underlyingStats: Promise<ConsolidatedStatistics>): Promise<{ stats: NormalizeProto<IAllStats>[], longnames: string[] }> {
-    return (await underlyingStats) as NormalizeProto<ConsolidatedStatistics>
 }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
@@ -62,20 +53,18 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.name_to_index = undefined
         await this.guaranteeNameToIndex()
 
-        const stats = await getStats(this.props.underlyingStats)
-
         const stmts = parse(this.props.uss)
         if (stmts.type === 'error') {
             console.error('Error parsing USS expression:', stmts.errors)
             return { polygons: [], zoomIndex: -1 }
         }
-        const ctx = colorStatContext(stmts, stats.stats, stats.longnames)
-        const result = execute(stmts, ctx)
-        if (renderType(result.type) !== 'cMap') {
-            throw new Error(`USS expression did not return a cMap type, got: ${renderType(result.type)}`)
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
+        if (!result.success) {
+            console.error('Error executing USS expression:', result.error)
+            return { polygons: [], zoomIndex: -1 }
         }
 
-        const cMap = (result.value as { type: 'opaque', value: CMap }).value
+        const cMap = result.value.value.value
         // TODO
         const lineStyle = {
             color: '#000000',
@@ -187,7 +176,6 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
 
 interface MapComponentProps {
     underlyingShapes: Promise<ConsolidatedShapes>
-    underlyingStats: Promise<ConsolidatedStatistics>
     geographyKind: string
     mapRef: React.RefObject<DisplayedMap>
     height: number | string | undefined
@@ -214,7 +202,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
                 <DisplayedMap
                     geographyKind={props.geographyKind}
                     underlyingShapes={props.underlyingShapes}
-                    underlyingStats={props.underlyingStats}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
                     ref={props.mapRef}
                     uss={props.uss}
@@ -298,17 +285,12 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [props.mapSettings])
 
     const [underlyingShapes, setUnderlyingShapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
-    const [underlyingStats, setUnderlyingStats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
 
     useEffect(() => {
         if (valid_geographies.includes(mapSettings.geography_kind)) {
             setUnderlyingShapes(loadProtobuf(
                 consolidatedShapeLink(mapSettings.geography_kind),
                 'ConsolidatedShapes',
-            ))
-            setUnderlyingStats(loadProtobuf(
-                consolidatedStatsLink(mapSettings.geography_kind),
-                'ConsolidatedStatistics',
             ))
         }
     }, [mapSettings.geography_kind])
@@ -331,12 +313,11 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const mapperPanel = (height: string | undefined): ReactNode => {
         const geographyKind = mapSettings.geography_kind
 
-        return (underlyingShapes === undefined || underlyingStats === undefined)
+        return (underlyingShapes === undefined)
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
                         underlyingShapes={underlyingShapes}
-                        underlyingStats={underlyingStats}
                         geographyKind={geographyKind}
                         uss={mapSettings.uss}
                         height={height}
@@ -346,8 +327,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }
 
     const headerTextClass = useHeaderTextClass()
-
-    const stats = useMemo(async () => underlyingStats === undefined ? undefined : (await getStats(underlyingStats)), [underlyingStats])
 
     if (props.view) {
         return mapperPanel('100%')
