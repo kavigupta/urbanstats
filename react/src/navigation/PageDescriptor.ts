@@ -21,6 +21,7 @@ import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { sharedAuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -153,6 +154,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+    z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -216,6 +218,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/oauth-callback.html':
+            return { kind: 'oauthCallback', params }
         default:
             throw new Error('404 not found')
     }
@@ -316,6 +320,10 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
             }
+            break
+        case 'oauthCallback':
+            pathname = '/oauth-callback.html'
+            searchParams = pageDescriptor.params
             break
         case 'initialLoad':
         case 'error':
@@ -631,6 +639,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     settings: mapSettings,
                     mapperPanel: panel.MapperPanel,
                 },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
+        case 'oauthCallback': {
+            await sharedAuthenticationStateMachine.completeSignIn(newDescriptor)
+            return {
+                pageData: { kind: 'index' }, // Todo: Signed in page
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
