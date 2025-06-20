@@ -2,6 +2,7 @@ import React, { ReactNode, useCallback } from 'react'
 
 import { StatName } from '../page_template/statistic-tree'
 import { Editor } from '../urban-stats-script/Editor'
+import { execute } from '../urban-stats-script/interpreter'
 import { UrbanStatsASTStatement } from '../urban-stats-script/parser'
 
 import { DataListSelector } from './DataListSelector'
@@ -155,7 +156,7 @@ export function MapperSettings(props: {
                     })
                 }}
                 createContext={createContext}
-                execute={colorStatExecute}
+                execute={execute}
                 showOutput={false}
             />
         </div>
