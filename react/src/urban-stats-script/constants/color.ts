@@ -31,6 +31,7 @@ export const rgb = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         return { type: 'opaque', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
     },
+    documentation: { humanReadableName: 'Color (RGB)' },
 } satisfies USSValue
 
 export const hsv = {
@@ -57,6 +58,7 @@ export const hsv = {
         const rgbValues = color.rgb().object()
         return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
     },
+    documentation: { humanReadableName: 'Color (HSV)' },
 } satisfies USSValue
 
 export const renderColor = {
@@ -71,6 +73,7 @@ export const renderColor = {
         const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number } }).value
         return doRender(color)
     },
+    documentation: { humanReadableName: 'Color to String' },
 } satisfies USSValue
 
 export function doRender(color: Color): string {

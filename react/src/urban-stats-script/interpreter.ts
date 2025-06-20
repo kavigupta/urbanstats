@@ -6,7 +6,7 @@ import { LocInfo } from './lexer'
 import { expressionOperatorMap } from './operators'
 import { locationOf, unify, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
-import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg } from './types-values'
+import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue } from './types-values'
 
 export type Effect = undefined
 
@@ -36,19 +36,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
         case 'constant':
             const value = expr.value.node
             if (typeof value === 'number') {
-                return {
-                    type: {
-                        type: 'number',
-                    },
-                    value,
-                }
+                return undocValue(value, { type: 'number' })
             }
-            return {
-                type: {
-                    type: 'string',
-                },
-                value: value satisfies string,
-            }
+            return undocValue(value satisfies string, { type: 'string' })
         case 'identifier':
             const varName = expr.name.node
             const res = env.getVariable(varName)
@@ -88,10 +78,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                     return env.error(`vector literal contains heterogenous types ${renderType(elementType)} and ${renderType(e.type)}`, locationOf(expr))
                 })
             }
-            return {
-                type: { type: 'vector', elementType },
-                value: elements.map(e => e.value),
-            }
+            return undocValue(elements.map(e => e.value), { type: 'vector', elementType })
         case 'objectLiteral':
             const ts = new Map<string, USSType>()
             const vs = new Map<string, USSRawValue>()
@@ -103,13 +90,10 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 ts.set(name, v.type)
                 vs.set(name, v.value)
             }
-            return {
-                type: {
-                    type: 'object',
-                    properties: ts,
-                },
-                value: vs,
-            }
+            return undocValue(vs, {
+                type: 'object',
+                properties: ts,
+            })
         case 'if':
             const condition = evaluate(expr.condition, env)
             return splitMask(
@@ -123,10 +107,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                         return execute(expr.then, subEnv)
                     }
                     if (expr.else === undefined) {
-                        return {
-                            type: { type: 'null' },
-                            value: null,
-                        }
+                        return undocValue(null, { type: 'null' })
                     }
                     return execute(expr.else, subEnv)
                 },
@@ -155,10 +136,7 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
             return evaluate(expr.value, env)
         case 'statements':
             if (expr.result.length === 0) {
-                return {
-                    type: { type: 'null' },
-                    value: null,
-                }
+                return undocValue(null, { type: 'null' })
             }
             let result: USSValue = execute(expr.result[0], env)
             for (const statement of expr.result.slice(1)) {
@@ -231,20 +209,14 @@ function attrLookupOrSet(
             val.set(attr, orSet.value)
             return {
                 type: 'success',
-                value: {
-                    type: aT,
-                    value: orSet.value,
-                },
+                value: undocValue(orSet.value, aT),
             }
         }
         const content = val.get(attr)
         assert(content !== undefined, `Expected attribute ${attr} to be defined in object, but got undefined at ${JSON.stringify(obj.value)}`)
         return {
             type: 'success',
-            value: {
-                type: aT,
-                value: val.get(attr)!,
-            },
+            value: undocValue(val.get(attr)!, aT),
         }
     }
     if (type.type === 'vector') {
@@ -253,10 +225,7 @@ function attrLookupOrSet(
         let orSetLookp: (idx: number) => USSValue | undefined = () => undefined
         if (orSet !== undefined) {
             if (orSet.type.type !== 'vector') {
-                orSet = {
-                    type: { type: 'vector', elementType: orSet.type },
-                    value: addAdditionalDims([val.length], orSet.value),
-                }
+                orSet = undocValue(addAdditionalDims([val.length], orSet.value), { type: 'vector', elementType: orSet.type })
             }
             assert(Array.isArray(orSet.value), `It should be an array at this point`)
             if (orSet.value.length !== val.length) {
@@ -266,15 +235,12 @@ function attrLookupOrSet(
             const t = (orSet.type as USSVectorType).elementType
             assert(t.type !== 'elementOfEmptyVector', `Unreachable: elementType should not be elementOfEmptyVector at ${JSON.stringify(orSet.value)}`)
             orSetLookp = (idx: number) => {
-                return {
-                    type: t,
-                    value: v[idx],
-                }
+                return undocValue(v[idx], t)
             }
         }
         const resultsOrErr = val.map((x, i) => {
             assert(type.elementType.type !== 'elementOfEmptyVector', `Unreachable: elementType should not be elementOfEmptyVector at ${JSON.stringify(obj.value)}`)
-            return attrLookupOrSet({ value: x, type: type.elementType }, attr, orSetLookp(i))
+            return attrLookupOrSet(undocValue(x, type.elementType), attr, orSetLookp(i))
         })
         if (resultsOrErr.some(r => r.type === 'error')) {
             return { type: 'error', message: resultsOrErr.filter(r => r.type === 'error').map(r => (r as { type: 'error', message: string }).message)[0] }
@@ -284,10 +250,7 @@ function attrLookupOrSet(
         const typ = results[0].type
         return {
             type: 'success',
-            value: {
-                type: { type: 'vector', elementType: typ },
-                value: rawValue,
-            },
+            value: undocValue(rawValue, { type: 'vector', elementType: typ }),
         }
     }
     return { type: 'error', message: `Cannot access attribute of type ${renderType(type)}. Only objects and vectors support attributes.` }

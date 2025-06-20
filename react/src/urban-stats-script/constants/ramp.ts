@@ -55,6 +55,7 @@ export const constructRampValue: USSValue = {
             (item.get('color') as { type: 'opaque', value: Color }).value,
         ]))
     },
+    documentation: { humanReadableName: 'Custom Ramp' },
 }
 
 export const rampConsts: [string, USSValue][] = Object.entries(RAMPS).map(([name, ramp]) => [
@@ -62,5 +63,6 @@ export const rampConsts: [string, USSValue][] = Object.entries(RAMPS).map(([name
     {
         type: rampType,
         value: ramp,
+        documentation: { humanReadableName: name },
     },
 ])

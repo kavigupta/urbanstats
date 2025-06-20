@@ -30,7 +30,7 @@ function numericUnaryFunction(
                 assert(typeof arg === 'number', `Expected number argument for ${name}, got ${typeof arg}`)
                 return func(arg)
             },
-
+            documentation: { humanReadableName: name },
         },
     ]
 }
@@ -59,17 +59,18 @@ function numericAggregationFunction(
                 assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for ${name}, got ${JSON.stringify(arg)}`)
                 return func(arg)
             },
+            documentation: { humanReadableName: name },
         },
     ]
 }
 
 export const defaultConstants: Constants = new Map<string, USSValue>([
-    ['true', { type: { type: 'boolean' }, value: true }] satisfies [string, USSValue],
-    ['false', { type: { type: 'boolean' }, value: false }] satisfies [string, USSValue],
-    ['null', { type: { type: 'null' }, value: null }] satisfies [string, USSValue],
-    ['inf', { type: { type: 'number' }, value: Infinity }] satisfies [string, USSValue],
-    ['pi', { type: { type: 'number' }, value: Math.PI }] satisfies [string, USSValue],
-    ['E', { type: { type: 'number' }, value: Math.E }] satisfies [string, USSValue],
+    ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true' } }] satisfies [string, USSValue],
+    ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false' } }] satisfies [string, USSValue],
+    ['null', { type: { type: 'null' }, value: null, documentation: { humanReadableName: 'null' } }] satisfies [string, USSValue],
+    ['inf', { type: { type: 'number' }, value: Infinity, documentation: { humanReadableName: '+Infinity' } }] satisfies [string, USSValue],
+    ['pi', { type: { type: 'number' }, value: Math.PI, documentation: { humanReadableName: 'π' } }] satisfies [string, USSValue],
+    ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
     numericUnaryFunction('abs', Math.abs),
     numericUnaryFunction('sqrt', Math.sqrt),
     numericUnaryFunction('ln', Math.log),

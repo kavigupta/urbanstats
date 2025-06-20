@@ -45,6 +45,7 @@ export const linearScaleValue: USSValue = {
         type: 'opaque',
         value: linearScale,
     },
+    documentation: { humanReadableName: 'Linear Scale' },
 }
 
 export const logScaleValue: USSValue = {
@@ -53,4 +54,5 @@ export const logScaleValue: USSValue = {
         type: 'opaque',
         value: logScale,
     },
+    documentation: { humanReadableName: 'Logarithmic Scale' },
 }

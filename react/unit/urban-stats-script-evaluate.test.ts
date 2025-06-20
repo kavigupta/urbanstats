@@ -7,66 +7,68 @@ import { regressionType, regressionResultType } from '../src/urban-stats-script/
 import { ScaleInstance } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
+import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
+
+const stringVectorType = { type: 'vector', elementType: { type: 'string' } } satisfies USSType
 
 void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('2 + 2'), emptyContext()),
-        { type: numType, value: 4 },
+        undocValue(4, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4'), emptyContext()),
-        { type: numType, value: 10 },
+        undocValue(10, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4 * 5'), emptyContext()),
-        { type: numType, value: 26 },
+        undocValue(26, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2'), emptyContext()),
-        { type: numType, value: 62 },
+        undocValue(62, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2 - 7'), emptyContext()),
-        { type: numType, value: 55 },
+        undocValue(55, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 ** -10'), emptyContext()),
-        { type: numType, value: 1 / 1024 },
+        undocValue(1 / 1024, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('-2 ** 10'), emptyContext()),
-        { type: numType, value: -1024 },
+        undocValue(-1024, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 > 3'), emptyContext()),
-        { type: boolType, value: false },
+        undocValue(false, boolType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('12 > 3'), emptyContext()),
-        { type: boolType, value: true },
+        undocValue(true, boolType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('"12" > "3"'), emptyContext()),
-        { type: boolType, value: false },
+        undocValue(false, boolType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('"abc" + "def"'), emptyContext()),
-        { type: stringType, value: 'abcdef' },
+        undocValue('abcdef', stringType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('"abc" + "def" + "ghi"'), emptyContext()),
-        { type: stringType, value: 'abcdefghi' },
+        undocValue('abcdefghi', stringType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 + 3 > 4'), emptyContext()),
-        { type: boolType, value: true },
+        undocValue(true, boolType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyContext()),
-        { type: boolType, value: true },
+        undocValue(true, boolType),
     )
     assert.throws(
         () => evaluate(parseExpr('2(3)'), emptyContext()),
@@ -94,68 +96,65 @@ void test('evaluate basic expressions', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] + 1'), emptyContext()),
-        { type: numMatrixType, value: [[2, 2, 3, 3, 4, 4]] },
+        undocValue([[2, 2, 3, 3, 4, 4]], numMatrixType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyContext()),
-        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }, value: [[true, true, false, false, false, false]] },
+        undocValue([[true, true, false, false, false, false]], { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[min, max, sum, mean, median]([1, 2, 3, 5, 6, 70])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, 70, 87, 14.5, 4] },
+        undocValue([1, 70, 87, 14.5, 4], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('min([[1], []])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, Infinity] },
+        undocValue([1, Infinity], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('max([[1], []])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, -Infinity] },
+        undocValue([1, -Infinity], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('sum([[1], []])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, 0] },
+        undocValue([1, 0], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('mean([[1], []])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
+        undocValue([1, NaN], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('median([[1], []])'), emptyContext()),
-        { type: { type: 'vector', elementType: numType }, value: [1, NaN] },
+        undocValue([1, NaN], { type: 'vector', elementType: numType }),
     )
 })
 
 void test('evaluate basic variable expressions', (): void => {
     const ctx: Context = emptyContext()
-    ctx.assignVariable('x', { type: numVectorType, value: [1, 2, 3] })
+    ctx.assignVariable('x', undocValue([1, 2, 3], numVectorType))
     assert.deepStrictEqual(
         evaluate(parseExpr('x + 1'), ctx),
-        { type: numVectorType, value: [2, 3, 4] },
+        undocValue([2, 3, 4], numVectorType),
     )
-    ctx.assignVariable('y', { type: numMatrixType, value: [[10, 20, 30], [40, 50, 60]] })
+    ctx.assignVariable('y', undocValue([[10, 20, 30], [40, 50, 60]], numMatrixType))
     assert.deepStrictEqual(
         evaluate(parseExpr('y + x'), ctx),
-        { type: numMatrixType, value: [[11, 22, 33], [41, 52, 63]] },
+        undocValue([[11, 22, 33], [41, 52, 63]], numMatrixType),
     )
-    ctx.assignVariable('z', { type: numVectorType, value: [10, 20, 30, 40] })
+    ctx.assignVariable('z', undocValue([10, 20, 30, 40], numVectorType))
     assert.throws(
         () => evaluate(parseExpr('y + z'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Incompatibility between the shape of positional argument 2 (4) and the shape of positional argument 1 (2, 3) at 1:1-5'
         },
     )
-    ctx.assignVariable('s', { type: { type: 'vector', elementType: stringType }, value: ['hello'] })
+    ctx.assignVariable('s', undocValue(['hello'], { type: 'vector', elementType: stringType }))
     assert.throws(
         () => evaluate(parseExpr('+ s'), ctx),
         (err: Error): boolean => {
             return err instanceof InterpretationError && err.message === 'Invalid type for operator +: string at 1:1-3'
         },
     )
-    ctx.assignVariable('obj', {
-        type: testObjType,
-        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
-    })
+    ctx.assignVariable('obj', undocValue(new Map<string, USSRawValue>([['u', 401], ['v', 502]]), testObjType))
     assert.throws(
         () => evaluate(parseExpr('obj + 1'), ctx),
         (err: Error): boolean => {
@@ -172,13 +171,10 @@ void test('evaluate basic variable expressions', (): void => {
 
 void test('evaluate attr accesses', (): void => {
     const ctx: Context = emptyContext()
-    ctx.assignVariable('obj', {
-        type: testObjType,
-        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
-    })
+    ctx.assignVariable('obj', undocValue(new Map<string, USSRawValue>([['u', 401], ['v', 502]]), testObjType))
     assert.deepStrictEqual(
         evaluate(parseExpr('obj.u'), ctx),
-        { type: numType, value: 401 },
+        undocValue(401, numType),
     )
 
     assert.throws(
@@ -187,33 +183,27 @@ void test('evaluate attr accesses', (): void => {
             return err instanceof InterpretationError && err.message === 'Attribute x not found in object of type {u: number, v: number} at 1:1-5'
         },
     )
-    ctx.assignVariable('objs', {
-        type: { type: 'vector', elementType: testObjType },
-        value: [
+    ctx.assignVariable('objs', undocValue([
+        new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
+        new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
+    ], { type: 'vector', elementType: testObjType }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('objs.u'), ctx),
+        undocValue([101, 301], numVectorType),
+    )
+    ctx.assignVariable('objs2', undocValue([
+        [
             new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
             new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
         ],
-    })
-    assert.deepStrictEqual(
-        evaluate(parseExpr('objs.u'), ctx),
-        { type: numVectorType, value: [101, 301] },
-    )
-    ctx.assignVariable('objs2', {
-        type: { type: 'vector', elementType: { type: 'vector', elementType: testObjType } },
-        value: [
-            [
-                new Map<string, USSRawValue>([['u', 101], ['v', 202]]),
-                new Map<string, USSRawValue>([['u', 301], ['v', 402]]),
-            ],
-            [
-                new Map<string, USSRawValue>([['u', 501], ['v', 602]]),
-                new Map<string, USSRawValue>([['u', 701], ['v', 802]]),
-            ],
+        [
+            new Map<string, USSRawValue>([['u', 501], ['v', 602]]),
+            new Map<string, USSRawValue>([['u', 701], ['v', 802]]),
         ],
-    })
+    ], { type: 'vector', elementType: { type: 'vector', elementType: testObjType } }))
     assert.deepStrictEqual(
         evaluate(parseExpr('objs2.u'), ctx),
-        { type: { type: 'vector', elementType: numVectorType }, value: [[101, 301], [501, 701]] },
+        undocValue([[101, 301], [501, 701]], { type: 'vector', elementType: numVectorType }),
     )
     assert.throws(
         () => evaluate(parseExpr('objs2.a'), ctx),
@@ -225,75 +215,57 @@ void test('evaluate attr accesses', (): void => {
 
 void test('evaluate function calls', (): void => {
     const ctx: Context = emptyContext()
-    ctx.assignVariable('x', { type: numVectorType, value: [1, 2, 3] })
-    ctx.assignVariable('testFn1', { type: testFnType, value: testFn1 })
+    ctx.assignVariable('x', undocValue([1, 2, 3], numVectorType))
+    ctx.assignVariable('testFn1', undocValue(testFn1, testFnType))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFn1(2, a=3)'), ctx),
-        { type: numType, value: 2 * 2 + 3 },
+        undocValue(2 * 2 + 3, numType),
     )
-    ctx.assignVariable('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] })
+    ctx.assignVariable('testFns', undocValue([testFn1, testFn2], { type: 'vector', elementType: testFnType }))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFns(2, a=3)'), ctx),
-        { type: numVectorType, value: [2 * 2 + 3, 2 * 2 * 2 + 3] },
+        undocValue([2 * 2 + 3, 2 * 2 * 2 + 3], numVectorType),
     )
-    ctx.assignVariable('testFns', { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2, testFn1] })
+    ctx.assignVariable('testFns', undocValue([testFn1, testFn2, testFn1], { type: 'vector', elementType: testFnType }))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFns(2, a=x)'), ctx),
-        { type: numVectorType, value: [2 * 2 + 1, 2 * 2 * 2 + 2, 2 * 2 + 3] }, // x is [1, 2, 3], so the last one is 2 * 2 + 3
+        undocValue([2 * 2 + 1, 2 * 2 * 2 + 2, 2 * 2 + 3], numVectorType),
     )
-    ctx.assignVariable('testFnMultiArg', { type: multiArgFnType, value: testFnMultiArg })
-    ctx.assignVariable('obj', {
-        type: testObjType,
-        value: new Map<string, USSRawValue>([['u', 401], ['v', 502]]),
-    })
-    ctx.assignVariable('y', { type: numVectorType, value: [1, 2, 3] })
+    ctx.assignVariable('testFnMultiArg', undocValue(testFnMultiArg, multiArgFnType))
+    ctx.assignVariable('obj', undocValue(new Map<string, USSRawValue>([['u', 401], ['v', 502]]), testObjType))
+    ctx.assignVariable('y', undocValue([1, 2, 3], numVectorType))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=obj)'), ctx),
-        {
-            type: numVectorType,
-            value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
-        },
+        undocValue([2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502], numVectorType),
     )
     assert.deepStrictEqual(
         // backwards obj
         evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={v: 502, u: 401})'), ctx),
-        {
-            type: numVectorType,
-            value: [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502],
-        },
+        undocValue([2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 401, 502], numVectorType),
     )
-    ctx.assignVariable('objs', {
-        type: {
-            type: 'object',
-            properties: new Map<string, USSType>([
-                ['u', numType],
-                ['v', numVectorType],
-            ]),
-        } satisfies USSType,
-        value: new Map<string, USSRawValue>([
-            ['u', 100],
-            ['v', [200, 300]],
+    ctx.assignVariable('objs', undocValue(new Map<string, USSRawValue>([
+        ['u', 100],
+        ['v', [200, 300]],
+    ]), {
+        type: 'object',
+        properties: new Map<string, USSType>([
+            ['u', numType],
+            ['v', numVectorType],
         ]),
-    })
+    } satisfies USSType))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objs)'), ctx),
-        {
-            type: numMatrixType,
-            value: [
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
-            ],
-        },
+        undocValue([
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
+        ], numMatrixType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: [200, 300]})'), ctx),
-        {
-            type: numMatrixType,
-            value: [
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
-            ],
-        },
+        undocValue([
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 300],
+        ], numMatrixType),
     )
     assert.throws(
         () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b={u: 100, v: []})'), ctx),
@@ -301,42 +273,33 @@ void test('evaluate function calls', (): void => {
             return err instanceof InterpretationError && err.message === 'Cannot broadcast object property v because its type is an empty vector with no inferred type at 1:1-44'
         },
     )
-    ctx.assignVariable('objsBoth', {
-        type: {
-            type: 'object',
-            properties: new Map<string, USSType>([
-                ['u', numVectorType],
-                ['v', numVectorType],
-            ]),
-        } satisfies USSType,
-        value: new Map<string, USSRawValue>([
-            ['u', [100, 101]],
-            ['v', [200, 300]],
+    ctx.assignVariable('objsBoth', undocValue(new Map<string, USSRawValue>([
+        ['u', [100, 101]],
+        ['v', [200, 300]],
+    ]), {
+        type: 'object',
+        properties: new Map<string, USSType>([
+            ['u', numVectorType],
+            ['v', numVectorType],
         ]),
-    })
+    } satisfies USSType))
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBoth)'), ctx),
-        {
-            type: numMatrixType,
-            value: [
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
-                [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 101, 300],
-            ],
-        },
+        undocValue([
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 100, 200],
+            [2, 1 + 2 + 3, 1 * 1 + 2 * 2 + 3 * 3, 4, 101, 300],
+        ], numMatrixType),
     )
-    ctx.assignVariable('objsBothRagged', {
-        type: {
-            type: 'object',
-            properties: new Map<string, USSType>([
-                ['u', numVectorType],
-                ['v', numVectorType],
-            ]),
-        } satisfies USSType,
-        value: new Map<string, USSRawValue>([
-            ['u', [100, 101]],
-            ['v', [200]],
+    ctx.assignVariable('objsBothRagged', undocValue(new Map<string, USSRawValue>([
+        ['u', [100, 101]],
+        ['v', [200]],
+    ]), {
+        type: 'object',
+        properties: new Map<string, USSType>([
+            ['u', numVectorType],
+            ['v', numVectorType],
         ]),
-    })
+    } satisfies USSType))
     assert.throws(
         () => evaluate(parseExpr('testFnMultiArg(2, y, a=4, b=objsBothRagged)'), ctx),
         (err: Error): boolean => {
@@ -348,20 +311,20 @@ void test('evaluate function calls', (): void => {
 void test('evaluate function calls with defaults', (): void => {
     const newCtx: () => Context = (): Context => {
         const ctx: Context = emptyContext()
-        ctx.assignVariable('testFnWithDefault', { type: testFnTypeWithDefault, value: testFnWithDefault })
+        ctx.assignVariable('testFnWithDefault', undocValue(testFnWithDefault, testFnTypeWithDefault))
         return ctx
     }
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnWithDefault(100, a=3, b=2)'), newCtx()),
-        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 2 },
+        undocValue(100 * 100 * 100 + 3 + 10 * 2, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnWithDefault(100, a=3)'), newCtx()),
-        { type: numType, value: 100 * 100 * 100 + 3 + 10 * 1 }, // b defaults to 1
+        undocValue(100 * 100 * 100 + 3 + 10 * 1, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('testFnWithDefault([100, 200, 300], a=3)'), newCtx()),
-        { type: numVectorType, value: [100 * 100 * 100 + 3 + 10 * 1, 200 * 200 * 200 + 3 + 10 * 1, 300 * 300 * 300 + 3 + 10 * 1] },
+        undocValue([100 * 100 * 100 + 3 + 10 * 1, 200 * 200 * 200 + 3 + 10 * 1, 300 * 300 * 300 + 3 + 10 * 1], numVectorType),
     )
     assert.throws(
         () => evaluate(parseExpr('testFnWithDefault(100, a=3, b=2, c=4)'), newCtx()),
@@ -379,23 +342,23 @@ void test('evaluate function calls with defaults', (): void => {
 
 void test('evaluate if expressions', (): void => {
     const ctx: Context = emptyContext()
-    ctx.assignVariable('x', { type: numType, value: 3 })
+    ctx.assignVariable('x', undocValue(3, numType))
     assert.deepStrictEqual(
         evaluate(parseExpr('if (x > 2) { 1 } else { 2 }'), ctx),
-        { type: numType, value: 1 },
+        undocValue(1, numType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (x < 2) { 1 } else { 2 }'), ctx),
-        { type: numType, value: 2 },
+        undocValue(2, numType),
     )
-    ctx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    ctx.assignVariable('xs', undocValue([1, 2, 3, 4, 5, 6], numVectorType))
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { xs + 1 } else { xs - 2 }'), ctx),
-        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+        undocValue([2, 3, 1, 2, 3, 4], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.throws(
         () => evaluate(parseExpr('if (xs) { ys = xs + 1 } else { ys = xs - 2 }'), ctx),
@@ -420,7 +383,7 @@ void test('evaluate if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWLiteral), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     // incompatbile sizes
     const codeWIncompatible = `
@@ -489,7 +452,7 @@ void test('more if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWithDefinedNull), emptyContext()),
-        { type: { type: 'vector', elementType: { type: 'null' } }, value: [null, null, null, null, null] },
+        undocValue([null, null, null, null, null], { type: 'vector', elementType: { type: 'null' } }),
     )
     // define y as a vector of booleans
     const codeWithDefinedBool = `
@@ -499,7 +462,7 @@ void test('more if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWithDefinedBool), emptyContext()),
-        { type: { type: 'vector', elementType: boolType }, value: [true, true, false, false, false] },
+        undocValue([true, true, false, false, false], { type: 'vector', elementType: boolType }),
     )
     // define y as a vector of vectors of numbers
     const codeWithDefinedNumVector = `
@@ -509,7 +472,7 @@ void test('more if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWithDefinedNumVector), emptyContext()),
-        { type: numMatrixType, value: [[1, 2], [3, 4], [], [], []] },
+        undocValue([[1, 2], [3, 4], [], [], []], numMatrixType),
     )
     // define y as an object
     const codeWithDefinedObject = `
@@ -519,22 +482,22 @@ void test('more if expressions', (): void => {
         `
     assert.deepStrictEqual(
         execute(parseProgram(codeWithDefinedObject), emptyContext()),
-        {
-            type: {
-                type: 'vector',
-                elementType: {
-                    type: 'object',
-                    properties: new Map<string, USSType>([['a', numType], ['b', numType]]),
-                },
-            },
-            value: [
+        undocValue(
+            [
                 new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
                 new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
                 new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
                 new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
                 new Map<string, USSRawValue>([['a', NaN], ['b', NaN]]),
             ],
-        },
+            {
+                type: 'vector',
+                elementType: {
+                    type: 'object',
+                    properties: new Map<string, USSType>([['a', numType], ['b', numType]]),
+                },
+            },
+        ),
     )
     {
         // define y as a function
@@ -544,7 +507,7 @@ void test('more if expressions', (): void => {
         }
         `
         const result = execute(parseProgram(codeWithDefinedFunction), testingContext([], [], new Map<string, USSValue>([
-            ['f', { type: testFnType, value: testFn1 }],
+            ['f', undocValue(testFn1, testFnType)],
         ])))
         assert.deepStrictEqual(result.type, { type: 'vector', elementType: testFnType })
         const v = result.value as USSRawValue[]
@@ -570,7 +533,7 @@ void test('more if expressions', (): void => {
         `
         assert.throws(
             () => execute(parseProgram(codeWithDefinedFunction2), testingContext([], [], new Map<string, USSValue>([
-                ['f', { type: testFnType, value: testFn1 }],
+                ['f', undocValue(testFn1, testFnType)],
             ]))),
             (err: Error): boolean => {
                 return err instanceof InterpretationError && err.message === 'Error while executing function: Error: no default value for function type (number; a: number) -> number at 5:9-17'
@@ -579,57 +542,57 @@ void test('more if expressions', (): void => {
     }
     assert.deepStrictEqual(
         execute(parseProgram('if ([2, 1] == 1) { 2 } else { "2" }'), emptyContext()),
-        { type: { type: 'null' }, value: null },
+        undocValue(null, { type: 'null' }),
     )
 })
 
 void test('evaluate if expressions mutations', (): void => {
     const ctx: Context = emptyContext()
-    ctx.assignVariable('xs', { type: numVectorType, value: [1, 2, 3, 4, 5, 6] })
+    ctx.assignVariable('xs', undocValue([1, 2, 3, 4, 5, 6], numVectorType))
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 } else { ys = xs - 2 }'), ctx),
-        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+        undocValue([2, 3, 1, 2, 3, 4], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('ys'), ctx),
-        { type: numVectorType, value: [2, 3, 1, 2, 3, 4] },
+        undocValue([2, 3, 1, 2, 3, 4], numVectorType),
     )
-    ctx.assignVariable('ys', { type: numVectorType, value: [100, 200, 300, 400, 500, 600] })
+    ctx.assignVariable('ys', undocValue([100, 200, 300, 400, 500, 600], numVectorType))
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { ys = xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('ys'), ctx),
-        { type: numVectorType, value: [2, 3, 300, 400, 500, 600] }, // ys is mutated only for the first two elements
+        undocValue([2, 3, 300, 400, 500, 600], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { zs = xs + 1 }'), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('zs'), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (xs <= 2) { as = xs + 1; bs = as ** 2 }'), ctx),
-        { type: numVectorType, value: [4, 9, NaN, NaN, NaN, NaN] },
+        undocValue([4, 9, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('as'), ctx),
-        { type: numVectorType, value: [2, 3, NaN, NaN, NaN, NaN] },
+        undocValue([2, 3, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('bs'), ctx),
-        { type: numVectorType, value: [4, 9, NaN, NaN, NaN, NaN] },
+        undocValue([4, 9, NaN, NaN, NaN, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (0 == 1) { 2 }'), ctx),
-        { type: { type: 'null' }, value: null },
+        undocValue(null, { type: 'null' }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('if (1 == 1) { }'), ctx),
-        { type: { type: 'null' }, value: null },
+        undocValue(null, { type: 'null' }),
     )
     assert.throws(
         () => evaluate(parseExpr('2 + (if (1 == 1) { })() + 3'), ctx),
@@ -643,52 +606,28 @@ void test('evaluate objects', (): void => {
     const ctx: Context = emptyContext()
     assert.deepStrictEqual(
         evaluate(parseExpr('{ a: 1, b: 2 }'), ctx),
-        {
-            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType]]) },
-            value: new Map<string, USSRawValue>([['a', 1], ['b', 2]]),
-        },
+        undocValue(new Map<string, USSRawValue>([['a', 1], ['b', 2]]), { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType]]) }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('{ a: 1, b: 2, c: "hello" }'), ctx),
-        {
-            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType], ['c', stringType]]) },
-            value: new Map<string, USSRawValue>([['a', 1], ['b', 2], ['c', 'hello']]),
-        },
+        undocValue(new Map<string, USSRawValue>([['a', 1], ['b', 2], ['c', 'hello']]), { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType], ['c', stringType]]) }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('{}'), ctx),
-        {
-            type: {
-                type: 'object',
-                properties: new Map<string, USSType>([
-                ]),
-            },
-            value: new Map<string, USSRawValue>(),
-        },
+        undocValue(new Map<string, USSRawValue>(), { type: 'object', properties: new Map<string, USSType>([]) }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('{ a: 1, b: 2, c: "hello", d: { e: 3 } }'), ctx),
-        {
-            type: {
-                type: 'object',
-                properties: new Map<string, USSType>([
-                    ['a', numType],
-                    ['b', numType],
-                    ['c', stringType],
-                    ['d', { type: 'object', properties: new Map<string, USSType>([['e', numType]]) }],
-                ]),
-            },
-            value: new Map<string, USSRawValue>([
-                ['a', 1],
-                ['b', 2],
-                ['c', 'hello'],
-                ['d', new Map<string, USSRawValue>([['e', 3]])],
-            ]),
-        },
+        undocValue(new Map<string, USSRawValue>([
+            ['a', 1],
+            ['b', 2],
+            ['c', 'hello'],
+            ['d', new Map<string, USSRawValue>([['e', 3]])],
+        ]), { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', numType], ['c', stringType], ['d', { type: 'object', properties: new Map<string, USSType>([['e', numType]]) }]]) }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('{a: 1, b: 2}.a'), ctx),
-        { type: numType, value: 1 },
+        undocValue(1, numType),
     )
     assert.throws(
         () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), ctx),
@@ -710,11 +649,11 @@ void test('evaluate vectors', (): void => {
     // )
     assert.deepStrictEqual(
         evaluate(parseExpr('[]'), ctx),
-        { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
+        undocValue([], { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[]]'), ctx),
-        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[]] },
+        undocValue([[]], { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }),
     )
     assert.throws(
         () => evaluate(parseExpr('[1, [2, 3]]'), ctx),
@@ -724,26 +663,23 @@ void test('evaluate vectors', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 2, 3], [4]]'), ctx),
-        { type: numMatrixType, value: [[1, 2, 3], [4]] },
+        undocValue([[1, 2, 3], [4]], numMatrixType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[1, 2, 3], []]'), ctx),
-        { type: numMatrixType, value: [[1, 2, 3], []] },
+        undocValue([[1, 2, 3], []], numMatrixType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[[1, 2, 3]], []]'), ctx),
-        { type: { type: 'vector', elementType: numMatrixType }, value: [[[1, 2, 3]], []] },
+        undocValue([[[1, 2, 3]], []], { type: 'vector', elementType: numMatrixType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[], []]'), ctx),
-        { type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }, value: [[], []] },
+        undocValue([[], []], { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[[], [[]]]'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } } },
-            value: [[], [[]]],
-        },
+        undocValue([[], [[]]], { type: 'vector', elementType: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } } }),
     )
     assert.throws(
         () => evaluate(parseExpr('[] + [1]'), ctx),
@@ -753,7 +689,7 @@ void test('evaluate vectors', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('{a: []}.a'), ctx),
-        { type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] },
+        undocValue([], { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }),
     )
     assert.throws(
         () => evaluate(parseExpr('[{a: []}, {b: [1]}]'), ctx),
@@ -763,23 +699,17 @@ void test('evaluate vectors', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[{a: []}, {a: [1]}]'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'number' } }]]) } },
-            value: [
-                new Map<string, USSRawValue>([['a', []]]),
-                new Map<string, USSRawValue>([['a', [1]]]),
-            ],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['a', []]]),
+            new Map<string, USSRawValue>([['a', [1]]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'number' } }]]) } }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('[{a: []}, {a: []}]'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }]]) } },
-            value: [
-                new Map<string, USSRawValue>([['a', []]]),
-                new Map<string, USSRawValue>([['a', []]]),
-            ],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['a', []]]),
+            new Map<string, USSRawValue>([['a', []]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['a', { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }]]) } }),
     )
 })
 
@@ -787,10 +717,7 @@ void test('mutate objects', (): void => {
     const ctx: Context = emptyContext()
     assert.deepStrictEqual(
         execute(parseProgram('a = {x: 1}; a.x = 2; a'), ctx),
-        {
-            type: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) },
-            value: new Map<string, USSRawValue>([['x', 2]]),
-        },
+        undocValue(new Map<string, USSRawValue>([['x', 2]]), { type: 'object', properties: new Map<string, USSType>([['x', numType]]) }),
     )
     assert.throws(
         () => execute(parseProgram('a = {x: 1}; a.y = 2; a'), ctx),
@@ -806,31 +733,29 @@ void test('mutate objects', (): void => {
     )
     assert.deepStrictEqual(
         execute(parseProgram('a = [{x: 1}]; a.x = [2]; a'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
-            value: [new Map<string, USSRawValue>([['x', 2]])],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['x', 2]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } }),
     )
     assert.deepStrictEqual(
         execute(parseProgram('a = [{x: 1}]; a.x = 2; a'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
-            value: [new Map<string, USSRawValue>([['x', 2]])],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['x', 2]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } }),
     )
     assert.deepStrictEqual(
         execute(parseProgram('a = [{x: 1}]; [a].x = 2; a'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
-            value: [new Map<string, USSRawValue>([['x', 2]])],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['x', 2]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } }),
     )
     assert.deepStrictEqual(
         execute(parseProgram('a = [{x: 1}, {x: 2}, {x: 3}]; a.x = [2, 3, 4]; a'), ctx),
-        {
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } },
-            value: [new Map<string, USSRawValue>([['x', 2]]), new Map<string, USSRawValue>([['x', 3]]), new Map<string, USSRawValue>([['x', 4]])],
-        },
+        undocValue([
+            new Map<string, USSRawValue>([['x', 2]]),
+            new Map<string, USSRawValue>([['x', 3]]),
+            new Map<string, USSRawValue>([['x', 4]]),
+        ], { type: 'vector', elementType: { type: 'object', properties: new Map<string, USSType>([['x', numType]]) } }),
     )
     // size mismatch
     assert.throws(
@@ -844,7 +769,7 @@ void test('mutate objects', (): void => {
 void test('constants', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('pi'), emptyContext()),
-        { type: numType, value: Math.PI },
+        { value: Math.PI, type: numType, documentation: { humanReadableName: 'π' } },
     )
     assert.throws(
         () => execute(parseProgram('pi = 3.14'), emptyContext()),
@@ -854,45 +779,27 @@ void test('constants', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('sqrt([4, 9, 16, -1])'), emptyContext()),
-        {
-            type: numVectorType,
-            value: [2, 3, 4, NaN],
-        },
+        undocValue([2, 3, 4, NaN], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('toNumber([1, 2, 3] == 2)'), emptyContext()),
-        {
-            type: numVectorType,
-            value: [0, 1, 0],
-        },
+        undocValue([0, 1, 0], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('toString([1, 2, 3] == 2)'), emptyContext()),
-        {
-            type: { type: 'vector', elementType: stringType },
-            value: ['false', 'true', 'false'],
-        },
+        undocValue(['false', 'true', 'false'], { type: 'vector', elementType: stringType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('toNumber([1, 2, 3])'), emptyContext()),
-        {
-            type: numVectorType,
-            value: [1, 2, 3],
-        },
+        undocValue([1, 2, 3], numVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('toString([1, 2, 3])'), emptyContext()),
-        {
-            type: { type: 'vector', elementType: stringType },
-            value: ['1', '2', '3'],
-        },
+        undocValue(['1', '2', '3'], stringVectorType),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('toNumber(["1", "0.75", "3.14", "3m"])'), emptyContext()),
-        {
-            type: numVectorType,
-            value: [1, 0.75, 3.14, 3e6],
-        },
+        undocValue([1, 0.75, 3.14, 3e6], numVectorType),
     )
 })
 
@@ -942,26 +849,23 @@ void test('regression', (): void => {
 
     assert.deepStrictEqual(
         evaluate(parseExpr('regression(x1=[1, 2, 3], y=[4, 5, 6])'), emptyContext()),
-        {
-            type: regressionResultType(10),
-            value: new Map<string, USSRawValue>(
-                [
-                    ['residuals', [0, 0, 0]],
-                    ['m1', 1],
-                    ['m2', NaN],
-                    ['m3', NaN],
-                    ['m4', NaN],
-                    ['m5', NaN],
-                    ['m6', NaN],
-                    ['m7', NaN],
-                    ['m8', NaN],
-                    ['m9', NaN],
-                    ['m10', NaN],
-                    ['r2', 1],
-                    ['b', 3],
-                ],
-            ),
-        },
+        undocValue(new Map<string, USSRawValue>(
+            [
+                ['residuals', [0, 0, 0]],
+                ['m1', 1],
+                ['m2', NaN],
+                ['m3', NaN],
+                ['m4', NaN],
+                ['m5', NaN],
+                ['m6', NaN],
+                ['m7', NaN],
+                ['m8', NaN],
+                ['m9', NaN],
+                ['m10', NaN],
+                ['r2', 1],
+                ['b', 3],
+            ],
+        ), regressionResultType(10)),
     )
     assertEquivalentRegressionOutput(
         evaluate(parseExpr('regression(y=[2, 5, 6], x1=[1, 2, 3], x2=[1, 0, 0])'), emptyContext()).value,
@@ -1007,10 +911,10 @@ void test('regression', (): void => {
         ),
     )
     const ctx: Context = emptyContext()
-    ctx.assignVariable('x1', { type: numVectorType, value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] })
-    ctx.assignVariable('x2', { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2] })
-    ctx.assignVariable('y', { type: numVectorType, value: [1, 2, 3, 4, 5, 6, 7, 8, 9, 100] })
-    ctx.assignVariable('w1', { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 2] })
+    ctx.assignVariable('x1', undocValue([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], numVectorType))
+    ctx.assignVariable('x2', undocValue([1, 1, 1, 1, 1, 1, 1, 1, 2, 2], numVectorType))
+    ctx.assignVariable('y', undocValue([1, 2, 3, 4, 5, 6, 7, 8, 9, 100], numVectorType))
+    ctx.assignVariable('w1', undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1, 2], numVectorType))
     assertEquivalentRegressionOutput(
         evaluate(parseExpr('regression(x1=x1, y=y)'), ctx).value,
         new Map<string, USSRawValue>(
@@ -1060,26 +964,26 @@ void test('regression', (): void => {
 
 void test('value rendering', () => {
     // Numbers
-    assert.strictEqual(renderValue({ type: numType, value: 42 }), '42')
-    assert.strictEqual(renderValue({ type: numType, value: 3.14 }), '3.14')
-    assert.strictEqual(renderValue({ type: numType, value: NaN }), 'NaN')
-    assert.strictEqual(renderValue({ type: numType, value: Infinity }), 'Infinity')
-    assert.strictEqual(renderValue({ type: numType, value: -Infinity }), '-Infinity')
+    assert.strictEqual(renderValue(undocValue(42, numType)), '42')
+    assert.strictEqual(renderValue(undocValue(3.14, numType)), '3.14')
+    assert.strictEqual(renderValue(undocValue(NaN, numType)), 'NaN')
+    assert.strictEqual(renderValue(undocValue(Infinity, numType)), 'Infinity')
+    assert.strictEqual(renderValue(undocValue(-Infinity, numType)), '-Infinity')
 
     // Booleans
-    assert.strictEqual(renderValue({ type: boolType, value: true }), 'true')
-    assert.strictEqual(renderValue({ type: boolType, value: false }), 'false')
+    assert.strictEqual(renderValue(undocValue(true, boolType)), 'true')
+    assert.strictEqual(renderValue(undocValue(false, boolType)), 'false')
 
     // Strings
-    assert.strictEqual(renderValue({ type: stringType, value: 'hello' }), '"hello"')
-    assert.strictEqual(renderValue({ type: stringType, value: '' }), '""')
+    assert.strictEqual(renderValue(undocValue('hello', stringType)), '"hello"')
+    assert.strictEqual(renderValue(undocValue('', stringType)), '""')
 
     // Null
-    assert.strictEqual(renderValue({ type: { type: 'null' }, value: null }), 'null')
+    assert.strictEqual(renderValue(undocValue(null, { type: 'null' })), 'null')
 
     // Vectors
     assert.strictEqual(
-        renderValue({ type: numVectorType, value: [1, 2, 3] }),
+        renderValue(undocValue([1, 2, 3], numVectorType)),
         `[
     1,
     2,
@@ -1087,21 +991,21 @@ void test('value rendering', () => {
 ]`,
     )
     assert.strictEqual(
-        renderValue({ type: { type: 'vector', elementType: stringType }, value: ['a', 'b'] }),
+        renderValue(undocValue(['a', 'b'], { type: 'vector', elementType: stringType })),
         `[
     "a",
     "b"
 ]`,
     )
     assert.strictEqual(
-        renderValue({ type: { type: 'vector', elementType: { type: 'null' } }, value: [null, null] }),
+        renderValue(undocValue([null, null], { type: 'vector', elementType: { type: 'null' } })),
         `[
     null,
     null
 ]`,
     )
     assert.strictEqual(
-        renderValue({ type: { type: 'vector', elementType: numVectorType }, value: [[1, 2], [3, 4]] }),
+        renderValue(undocValue([[1, 2], [3, 4]], { type: 'vector', elementType: numVectorType })),
         `[
     [
         1,
@@ -1114,26 +1018,20 @@ void test('value rendering', () => {
 ]`,
     )
     assert.strictEqual(
-        renderValue({ type: { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }, value: [] }),
+        renderValue(undocValue([], { type: 'vector', elementType: { type: 'elementOfEmptyVector' } })),
         `[]`,
     )
 
     // Objects
     assert.strictEqual(
-        renderValue({
-            type: { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', stringType]]) },
-            value: new Map<string, USSRawValue>([['a', 1], ['b', 'x']]),
-        }),
+        renderValue(undocValue(new Map<string, USSRawValue>([['a', 1], ['b', 'x']]), { type: 'object', properties: new Map<string, USSType>([['a', numType], ['b', stringType]]) })),
         `{
     a: 1,
     b: "x"
 }`,
     )
     assert.strictEqual(
-        renderValue({
-            type: { type: 'object', properties: new Map([['a', numVectorType]]) },
-            value: new Map([['a', [1, 2]]]),
-        }),
+        renderValue(undocValue(new Map([['a', [1, 2]]]), { type: 'object', properties: new Map([['a', numVectorType]]) })),
         `{
     a: [
         1,
@@ -1142,19 +1040,13 @@ void test('value rendering', () => {
 }`,
     )
     assert.strictEqual(
-        renderValue({
-            type: { type: 'object', properties: new Map() },
-            value: new Map(),
-        }),
+        renderValue(undocValue(new Map<string, USSRawValue>(), { type: 'object', properties: new Map<string, USSType>([]) })),
         `{}`,
     )
 
     // Nested objects and vectors
     assert.strictEqual(
-        renderValue({
-            type: { type: 'vector', elementType: { type: 'object', properties: new Map([['x', numType]]) } },
-            value: [new Map([['x', 1]]), new Map([['x', 2]])],
-        }),
+        renderValue(undocValue([new Map([['x', 1]]), new Map([['x', 2]])], { type: 'vector', elementType: { type: 'object', properties: new Map([['x', numType]]) } })),
         `[
     {
         x: 1
@@ -1165,10 +1057,7 @@ void test('value rendering', () => {
 ]`,
     )
     assert.strictEqual(
-        renderValue({
-            type: { type: 'object', properties: new Map([['v', numVectorType]]) },
-            value: new Map([['v', [1, 2, 3]]]),
-        }),
+        renderValue(undocValue(new Map([['v', [1, 2, 3]]]), { type: 'object', properties: new Map([['v', numVectorType]]) })),
         `{
     v: [
         1,
@@ -1180,11 +1069,11 @@ void test('value rendering', () => {
 
     // Functions (should render as type string)
     assert.strictEqual(
-        renderValue({ type: testFnType, value: testFn1 }),
+        renderValue(undocValue(testFn1, testFnType)),
         '(number; a: number) -> number',
     )
     assert.strictEqual(
-        renderValue({ type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] }),
+        renderValue(undocValue([testFn1, testFn2], { type: 'vector', elementType: testFnType })),
         `[
     (number; a: number) -> number,
     (number; a: number) -> number
@@ -1196,14 +1085,14 @@ void test('evaluate conditions', (): void => {
     // 'if (x) { condition(y); abcdefg = 3  }; x = 4'
     assert.deepStrictEqual(
         execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
-        { type: numVectorType, value: [NaN, 3, 3] },
+        undocValue([NaN, 3, 3], numVectorType),
     )
 })
 
 void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
-        { type: colorType, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } },
+        undocValue({ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, colorType),
     )
     assert.deepStrictEqual(
         renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
@@ -1211,17 +1100,15 @@ void test('colors', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
-        {
-            type: { type: 'vector', elementType: colorType },
-            value: [{ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, { type: 'opaque', value: { r: 191, g: 0, b: 0 } }],
-        },
+        undocValue([
+            { type: 'opaque', value: { r: 255, g: 0, b: 0 } },
+            { type: 'opaque', value: { r: 128, g: 0, b: 0 } },
+            { type: 'opaque', value: { r: 191, g: 0, b: 0 } },
+        ], { type: 'vector', elementType: colorType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('renderColor(rgb([1, 0.5, 0.75], 0, [0.9, 1.0, 0.2]))'), emptyContext()),
-        { type: {
-            type: 'vector',
-            elementType: { type: 'string' },
-        }, value: ['#ff00e6', '#8000ff', '#bf0033'] },
+        undocValue(['#ff00e6', '#8000ff', '#bf0033'], { type: 'vector', elementType: { type: 'string' } }),
     )
     assert.throws(
         () => evaluate(parseExpr('rgb(2, 0, 0)'), emptyContext()),
@@ -1231,14 +1118,11 @@ void test('colors', (): void => {
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
-        {
-            type: { type: 'vector', elementType: colorType },
-            value: [
-                { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, // Red
-                { type: 'opaque', value: { r: 128, g: 128, b: 0 } }, // Yellow
-                { type: 'opaque', value: { r: 0, g: 128, b: 0 } }, // Green
-            ],
-        },
+        undocValue([
+            { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, // Red
+            { type: 'opaque', value: { r: 128, g: 128, b: 0 } }, // Yellow
+            { type: 'opaque', value: { r: 0, g: 128, b: 0 } }, // Green
+        ], { type: 'vector', elementType: colorType }),
     )
     assert.throws(
         () => evaluate(parseExpr('hsv(400, 1, 0.5)'), emptyContext()),
@@ -1258,37 +1142,25 @@ void test('ramps', (): void => {
     // Basic ramp construction
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
-        {
-            type: { type: 'opaque', name: 'ramp' },
-            value: { type: 'opaque', value: [[0, '#000000'], [1, '#ffffff']] },
-        },
+        undocValue({ type: 'opaque', value: [[0, '#000000'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with multiple stops
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.5, color: rgb(0.5, 0.5, 0.5)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
-        {
-            type: { type: 'opaque', name: 'ramp' },
-            value: { type: 'opaque', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] },
-        },
+        undocValue({ type: 'opaque', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with HSV colors
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: hsv(0, 1, 0.5)}, {value: 1, color: hsv(120, 1, 0.5)}])'), emptyContext()),
-        {
-            type: { type: 'opaque', name: 'ramp' },
-            value: { type: 'opaque', value: [[0, '#800000'], [1, '#008000']] },
-        },
+        undocValue({ type: 'opaque', value: [[0, '#800000'], [1, '#008000']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with mixed color types
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.5, color: hsv(120, 1, 0.5)}, {value: 1, color: rgb(0, 0, 1)}])'), emptyContext()),
-        {
-            type: { type: 'opaque', name: 'ramp' },
-            value: { type: 'opaque', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] },
-        },
+        undocValue({ type: 'opaque', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Error: ramp doesn't start at 0
@@ -1332,15 +1204,12 @@ void test('ramps', (): void => {
 
     // Test ramp with variables
     const ctx: Context = emptyContext()
-    ctx.assignVariable('red', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 255, g: 0, b: 0 } } })
-    ctx.assignVariable('blue', { type: { type: 'opaque', name: 'color' }, value: { type: 'opaque', value: { r: 0, g: 0, b: 255 } } })
+    ctx.assignVariable('red', undocValue({ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('blue', undocValue({ type: 'opaque', value: { r: 0, g: 0, b: 255 } }, { type: 'opaque', name: 'color' }))
 
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
-        {
-            type: { type: 'opaque', name: 'ramp' },
-            value: { type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] },
-        },
+        undocValue({ type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
     )
 })
 

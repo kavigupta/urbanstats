@@ -57,6 +57,7 @@ export function colorStatContext(stmts: UrbanStatsASTStatement | undefined, stat
             return {
                 type: { type: 'vector', elementType: { type: 'string' } },
                 value: longnames,
+                documentation: { humanReadableName: 'Geography Name' },
             }
         }
         if (statisticsForGeography === undefined) {
@@ -69,6 +70,8 @@ export function colorStatContext(stmts: UrbanStatsASTStatement | undefined, stat
         return {
             type: { type: 'vector', elementType: { type: 'number' } },
             value: statisticsForGeography.map(stat => stat.stats[index]),
+            // TODO use human readable name
+            documentation: { humanReadableName: name },
         }
     }
 
@@ -118,6 +121,8 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement | und
         ctx.assignVariable(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
             value,
+            // TODO use human readable name
+            documentation: { humanReadableName: name },
         })
     })
 }

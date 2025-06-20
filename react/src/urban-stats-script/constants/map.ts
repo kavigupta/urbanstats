@@ -44,4 +44,5 @@ export const cMap: USSValue = {
             value: { geo, data, scale: scaleInstance, ramp } satisfies CMap,
         }
     },
+    documentation: { humanReadableName: 'Choropleth Map' },
 }

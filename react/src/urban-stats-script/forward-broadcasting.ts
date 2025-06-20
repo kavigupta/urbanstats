@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { Context } from './context'
 import { InterpretationError } from './interpreter'
 import { LocInfo } from './lexer'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue } from './types-values'
 
 interface PredicateDescriptor {
     role: string
@@ -43,6 +43,7 @@ function locateTypeVector(
     const subtypesOrErrors = (value as { type: USSVectorType, value: USSRawValue[] }).value.map(fn => locateType({
         type: t,
         value: fn,
+        documentation: value.documentation,
     }, predicate, predicateDescriptor))
     assert(subtypesOrErrors.length !== 0, `Expected at least one vector element, but got an empty vector`)
     if (subtypesOrErrors.some(x => x.type === 'error')) {
@@ -131,6 +132,7 @@ function locateTypeObject(
                 properties: new Map(r),
             },
         },
+        documentation: value.documentation,
     }, predicate, predicateDescriptor)
 }
 
@@ -160,7 +162,7 @@ function locateFunctionAndArguments(
         if (!kwArgs.some(x => x[0] === k)) {
             if (fnType.namedArgs[k].defaultValue !== undefined) {
                 assert(fnType.namedArgs[k].type.type === 'concrete', `Expected named argument ${k} to have a concrete type, but got ${renderType(fnType)}`)
-                kwArgs.push([k, { type: fnType.namedArgs[k].type.value, value: fnType.namedArgs[k].defaultValue } satisfies USSValue])
+                kwArgs.push([k, undocValue(fnType.namedArgs[k].defaultValue, fnType.namedArgs[k].type.value)])
             }
             else {
                 return {
@@ -366,10 +368,7 @@ export function broadcastApply(
     const returnType = returnTypeOrInfer.type === 'inferFromPrimitive' ? getPrimitiveType(resulting, depth) : returnTypeOrInfer.value
     return {
         type: 'success',
-        result: {
-            type: nestedVectorType(returnType, depth),
-            value: resulting,
-        },
+        result: undocValue(resulting, nestedVectorType(returnType, depth)),
     }
 }
 

@@ -16,6 +16,7 @@ export const toString = {
         const arg = posArgs[0]
         return String(arg)
     },
+    documentation: { humanReadableName: 'Anything to string' },
 } satisfies USSValue
 
 export const toNumber = {
@@ -42,4 +43,5 @@ export const toNumber = {
         }
         throw new Error(`Expected a number, string, or boolean argument for toNumber, got ${typeof arg}`)
     },
+    documentation: { humanReadableName: 'Anything to Number' },
 } satisfies USSValue

@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { Context } from './context'
 import { LocInfo } from './lexer'
-import { getPrimitiveType, renderType, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
+import { getPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
     const t = mask.type
@@ -19,7 +19,7 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
                 // If the mask is an empty vector, we can just return true
                 return true
             }
-            const results = (mask.value as USSRawValue[]).map(x => collectUniqueMaskValues(collectIn, { type: et, value: x }))
+            const results = (mask.value as USSRawValue[]).map(x => collectUniqueMaskValues(collectIn, undocValue(x, et)))
             return results.every(x => x)
         case 'object':
         case 'function':
@@ -33,6 +33,7 @@ function repeatMany(value: USSValue, count: number): USSValue & { type: USSVecto
     return {
         type: { type: 'vector', elementType: value.type },
         value: Array.from({ length: count }, () => value.value),
+        documentation: value.documentation,
     }
 }
 
@@ -49,7 +50,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         case 'string':
         case 'null':
             const retval = mask.value === reference ? [value.value] : []
-            return { type: 'success', value: { type: { type: 'vector', elementType: valueType }, value: retval } }
+            return { type: 'success', value: { type: { type: 'vector', elementType: valueType }, value: retval, documentation: value.documentation } }
         case 'vector':
             const maskVector = mask.value as USSRawValue[]
             if (valueType.type !== 'vector') {
@@ -65,8 +66,8 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                 assert(valueType.elementType.type !== 'elementOfEmptyVector', `Value element type cannot be elementOfEmptyVector, got ${renderType(valueType)}`)
                 assert(maskType.elementType.type !== 'elementOfEmptyVector', `Mask element type cannot be elementOfEmptyVector, got ${renderType(maskType)}`)
                 const resultsOrErr = indexMask(
-                    { type: valueType.elementType, value: valueVector[i] },
-                    { type: maskType.elementType, value: maskVector[i] },
+                    { type: valueType.elementType, value: valueVector[i], documentation: value.documentation },
+                    { type: maskType.elementType, value: maskVector[i], documentation: mask.documentation },
                     reference,
                 )
                 if (resultsOrErr.type === 'error') {
@@ -77,7 +78,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                 referenceType = referenceType === undefined ? elt : unifyType(referenceType, elt, () => new Error('Should be unreachable'))
             }
             assert(referenceType !== undefined, 'already handled empty vector case')
-            return { type: 'success', value: { type: { type: 'vector', elementType: referenceType }, value: results } }
+            return { type: 'success', value: { type: { type: 'vector', elementType: referenceType }, value: results, documentation: value.documentation } }
         /* c8 ignore start */
         // If we reach here, it means the mask is not a valid mask. We checked for this earlier.
         case 'object':
@@ -119,7 +120,7 @@ function index(v: USSValue, i: number): USSValue {
         const valueVector = v.value as USSRawValue[]
         assert (i >= 0 && i < valueVector.length, `Index ${i} out of bounds for vector of length ${valueVector.length}`)
         assert(valueType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
-        return { type: valueType.elementType, value: valueVector[i] }
+        return { type: valueType.elementType, value: valueVector[i], documentation: v.documentation }
     }
     return v // If the value is not a vector, we just return it as is; broadcasting
 }
@@ -196,7 +197,7 @@ export function mergeValuesViaMasks(
 
     const types = values.map(x => x.type).filter(x => x.type !== 'null').map(indexType)
     if (types.length === 0) {
-        return { type: 'success', value: { type: { type: 'null' }, value: null } }
+        return { type: 'success', value: undocValue(null, { type: 'null' }) }
     }
     const firstType = types[0]
     if (types.some(x => renderType(x) !== renderType(firstType))) {
@@ -228,6 +229,7 @@ export function mergeValuesViaMasks(
         value: {
             type: { type: 'vector', elementType: types[0] },
             value: finalRes,
+            documentation: values.find(x => x.documentation !== undefined)?.documentation,
         },
     }
 }
@@ -256,7 +258,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     const maskType = mask.type
     if (uniqueValueArray.length === 1) {
         // if there is only one unique value, we can just return the result of the function
-        return fn({ type: getPrimitiveType(uniqueValueArray[0]), value: uniqueValueArray[0] }, env)
+        return fn({ type: getPrimitiveType(uniqueValueArray[0]), value: uniqueValueArray[0], documentation: mask.documentation }, env)
     }
     assert(maskType.type === 'vector', 'unreachable')
     const outEnvsValues = uniqueValueArray.map((value) => {
@@ -265,7 +267,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
             throw env.error(`Conditional error: ${subEnv.message}`, errLocCondition)
         }
         assert(maskType.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
-        const result = fn({ type: getPrimitiveType(value), value }, subEnv.value)
+        const result = fn({ type: getPrimitiveType(value), value, documentation: mask.documentation }, subEnv.value)
         return [result, subEnv.value] satisfies [USSValue, Context]
     })
     const newVars = new Map<string, USSValue>()
@@ -276,7 +278,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
         }
     }
     for (const k of allKeys) {
-        const values = outEnvsValues.map(([, subEnv]) => subEnv.getVariable(k) ?? { type: { type: 'null' }, value: null } satisfies USSValue)
+        const values = outEnvsValues.map(([, subEnv]) => subEnv.getVariable(k) ?? undocValue(null, { type: 'null' }) satisfies USSValue)
         assert(mask.type.type === 'vector', 'unreachable')
         const merged = mergeValuesViaMasks(values, mask as USSValue & { type: USSVectorType }, uniqueValueArray)
         if (merged.type === 'error') {
@@ -301,7 +303,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     )
     if (mergedValues.type === 'error') {
         // If the types do not match, return null
-        return { type: { type: 'null' }, value: null }
+        return undocValue(null, { type: 'null' })
     }
     return mergedValues.value
 }
