@@ -13,7 +13,7 @@ const tokenSchema = z.object({
 const stateSchema = z.discriminatedUnion('state', [
     z.object({ state: z.literal('signedOut'), previouslySignedIn: z.boolean() }),
     z.object({
-        state: z.literal('signedIn'), token: tokenSchema,
+        state: z.literal('signedIn'), token: tokenSchema, email: z.string(),
     }),
 ])
 
@@ -26,6 +26,13 @@ const codeVerifierKey = 'codeVerifier'
 const googleClient = new OAuth2Client({
     server: 'https://accounts.google.com',
     clientId: '866758015458-r7t30bm7b492c1mevid587apej6cjte6.apps.googleusercontent.com',
+    /*
+    NOTE! A client secret does not necessarily need to be kept secret in a browser application.
+    It is used to authenticate the client to the authorization server, and is not used to authenticate the user.
+    For an example of a client secret in plaintext in a github repository, see:
+    https://github.com/google/clasp/blob/aa375c5f589b6065828be22f917b8a9934a748db/src/auth/file_credential_store.ts#L108
+    */
+    clientSecret: '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',
     discoveryEndpoint: '/.well-known/openid-configuration',
 })
 
@@ -73,7 +80,7 @@ class AuthenticationStateMachine {
     /* eslint-enable react-hooks/rules-of-hooks */
 
     constructor() {
-        this._state = loadState()
+        this._state = loadSt    ate()
         const weakThis = new WeakRef(this)
         const listener = (event: StorageEvent): void => {
             const self = weakThis.deref()
@@ -96,6 +103,10 @@ class AuthenticationStateMachine {
             redirectUri,
             codeVerifier,
             scope: ['openid', 'email', 'profile'],
+            extraParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+            },
         })
     }
 
@@ -108,19 +119,38 @@ class AuthenticationStateMachine {
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
-        const token = tokenSchema.parse(await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
+
+        const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
             codeVerifier,
-        }))
+        })
+
+        const token = tokenSchema.parse(rawToken)
+
+        const info = await googleClient.introspect(token)
+
+        console.log('Token info', info)
+
+        if (info.username === undefined) {
+            throw new Error('token does not have username')
+        }
 
         // TODO: Associate with persistent server (failable)
 
-        this.setState({ state: 'signedIn', token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt } })
+        this.setState({
+            state: 'signedIn',
+            token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
+            email: info.username,
+        })
         localStorage.removeItem(codeVerifierKey)
     }
 
     authenticationError(): void {
         this.setState({ state: 'signedOut', previouslySignedIn: true })
+    }
+
+    userSignOut(): void {
+        this.setState({ state: 'signedOut', previouslySignedIn: false })
     }
 
     async getAccessToken(): Promise<string | undefined> {
@@ -134,7 +164,7 @@ class AuthenticationStateMachine {
 
         try {
             const newToken = tokenSchema.parse(await googleClient.refreshToken(this._state.token))
-            this.setState({ state: 'signedIn', token: newToken })
+            this.setState({ state: 'signedIn', token: newToken, email: this._state.email })
             return newToken.accessToken
         }
         catch (error) {
