@@ -1,19 +1,14 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 
-import { StatName } from '../page_template/statistic-tree'
+import valid_geographies from '../data/mapper/used_geographies'
+import statistic_variables_info from '../data/statistic_variables_info'
 import { Editor } from '../urban-stats-script/Editor'
-import { execute } from '../urban-stats-script/interpreter'
-import { UrbanStatsASTStatement } from '../urban-stats-script/parser'
+import { defaultConstants } from '../urban-stats-script/constants/constants'
+import { USSExecutionDescriptor } from '../urban-stats-script/workerManager'
 
 import { DataListSelector } from './DataListSelector'
-import { USSColorStat, colorStatExecute, colorStatContext } from './function'
 
 export type StatisticsForGeography = { stats: number[] }[]
-
-export interface ColorStat {
-    name: () => string
-    compute: (statisticsForGeography: StatisticsForGeography, vars?: Record<string, number[]>) => number[]
-}
 
 /* eslint-disable no-restricted-syntax -- This represents persitent links */
 export interface RegressionDescriptor {
@@ -77,66 +72,18 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
     return addTo as T
 }
 
-export function parseColorStat(nameToIndex: ReadonlyMap<string, number>, colorStat: ColorStatDescriptor | undefined): ColorStat {
-    if (colorStat === undefined) {
-        return new InvalidColorStat()
-    }
-    const type = colorStat.type
-    if (type === 'single') {
-        const value = colorStat.value
-        if (nameToIndex.has(value)) {
-            return new SingleColorStat(nameToIndex.get(value)!, value)
-        }
-        return new InvalidColorStat()
-    }
-    else {
-        if (colorStat.uss === undefined) {
-            return new InvalidColorStat()
-        }
-        return new USSColorStat(nameToIndex, colorStat.name, colorStat.uss)
-    }
-}
-
-class SingleColorStat implements ColorStat {
-    constructor(private readonly _index: number, private readonly _name: string) {
-    }
-
-    name(): string {
-        return this._name
-    }
-
-    compute(statistics_for_geography: StatisticsForGeography): number[] {
-        return statistics_for_geography.map(statistics => statistics.stats[this._index])
-    }
-}
-
-class InvalidColorStat implements ColorStat {
-    name(): string {
-        return '[Invalid]'
-    }
-
-    compute(statistics_for_geography: StatisticsForGeography): number[] {
-        return statistics_for_geography.map(() => 0)
-    }
-}
-
 export function MapperSettings(props: {
     mapSettings: MapSettings
-    validGeographies: string[]
     setMapSettings: (newValue: MapSettings) => void
-    names: readonly StatName[]
-    stats: Promise<StatisticsForGeography | undefined>
-    longnames: Promise<string[] | undefined>
 }): ReactNode {
-    const createContext = useCallback(async (stmts: UrbanStatsASTStatement | undefined) => colorStatContext(stmts, await props.stats, await props.longnames), [props.stats, props.longnames])
+    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyType: props.mapSettings.geography_kind }), [props.mapSettings.geography_kind])
+    const autocompleteSymbols = useMemo(() => Array.from(Object.keys(defaultConstants)).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
 
     return (
         <div>
             <DataListSelector
                 overallName="Geography Kind:"
-                names={
-                    props.validGeographies
-                }
+                names={valid_geographies}
                 initialValue={props.mapSettings.geography_kind}
                 onChange={
                     (name) => {
@@ -155,8 +102,8 @@ export function MapperSettings(props: {
                         uss,
                     })
                 }}
-                createContext={createContext}
-                execute={execute}
+                executionDescriptor={executionDescriptor}
+                autocompleteSymbols={autocompleteSymbols}
                 showOutput={false}
             />
         </div>

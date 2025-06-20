@@ -1,11 +1,12 @@
+import '@fontsource/inconsolata/500.css'
+
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 
-import { Action, AutocompleteMenu, Execute, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ExecResult, CreateContext } from './editor-utils'
+import { Action, AutocompleteMenu, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ExecResult } from './editor-utils'
 import { renderValue } from './types-values'
-
-import '@fontsource/inconsolata/500.css'
+import { USSExecutionDescriptor } from './workerManager'
 
 type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: ExecResult }
 
@@ -13,15 +14,15 @@ export function Editor(
     {
         script,
         setScript,
-        createContext,
-        execute,
+        executionDescriptor,
+        autocompleteSymbols = [],
         showOutput = true,
     }:
     {
         script: string
         setScript: (newScript: string) => void
-        createContext: CreateContext
-        execute: Execute
+        executionDescriptor: USSExecutionDescriptor
+        autocompleteSymbols: string[]
         showOutput?: boolean
     },
 ): ReactNode {
@@ -38,7 +39,6 @@ export function Editor(
     const autocompleteMenuRef = useRef<AutocompleteMenu | undefined>(undefined)
 
     const resultCounter = useRef(0)
-    const autocompleteCounter = useRef(0)
 
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
         const range = newRange ?? getRange(editorRef.current!)
@@ -48,7 +48,7 @@ export function Editor(
             collapsedRangeIndex = range.start
         }
 
-        const { html, result: newResult, autocomplete } = stringToHtml(newScript, colors, createContext, execute, lastAction, {
+        const { html, result: newResult, autocomplete } = stringToHtml(newScript, colors, executionDescriptor, autocompleteSymbols, lastAction, {
             collapsedRangeIndex,
             apply: (completion, from, to, delta) => {
                 const editedScript = newScript.slice(0, from) + completion + newScript.slice(to)
@@ -72,15 +72,7 @@ export function Editor(
             }
         }
 
-        autocompleteMenuRef.current = undefined
-        const identifer = ++autocompleteCounter.current
-        void autocomplete.then((autocompleteMenu) => {
-            if (identifer !== autocompleteCounter.current) {
-                return // Avoid race
-            }
-            autocompleteMenuRef.current = autocompleteMenu
-            autocompleteMenu?.attachListeners(editorRef.current!)
-        })
+        autocompleteMenuRef.current = autocomplete
 
         setHTML(html, range)
         setResult({ type: 'parse', result: newResult })
@@ -96,7 +88,7 @@ export function Editor(
                 setResult({ type: 'exec', result: execResult })
             })
         }
-    }, [colors, createContext, execute, lastAction, setScript])
+    }, [colors, executionDescriptor, autocompleteSymbols, lastAction, setScript])
 
     useEffect(() => {
         renderScript(script, undefined)

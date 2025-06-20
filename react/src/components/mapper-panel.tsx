@@ -8,9 +8,9 @@ import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } fr
 import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import { loadProtobuf } from '../load_json'
-import { colorStatContext, colorStatExecute } from '../mapper/function'
+import { colorStatContext } from '../mapper/function'
 import { Keypoints } from '../mapper/ramps'
-import { ColorStat, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
+import { MapSettings, MapperSettings } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
@@ -38,18 +38,6 @@ interface DisplayedMapProps extends MapGenericProps {
 
 async function getStats(underlyingStats: Promise<ConsolidatedStatistics>): Promise<{ stats: NormalizeProto<IAllStats>[], longnames: string[] }> {
     return (await underlyingStats) as NormalizeProto<ConsolidatedStatistics>
-}
-
-function filterStats(filter: ColorStat | undefined, stats: Awaited<ReturnType<typeof getStats>>): typeof stats {
-    // TODO correct this!
-    if (filter !== undefined) {
-        const filterVals = filter.compute(stats.stats)
-        return {
-            stats: stats.stats.filter((x, i) => filterVals[i]),
-            longnames: stats.longnames.filter((x, i) => filterVals[i]),
-        }
-    }
-    return stats
 }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
@@ -301,8 +289,6 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     )
 }
 
-const nameToIndex = new Map(statNames.map((name, i) => [name, i]))
-
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
@@ -372,12 +358,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    names={statNames}
-                    validGeographies={valid_geographies}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
-                    stats={stats.then(x => x?.stats)}
-                    longnames={stats.then(x => x?.longnames)}
                 />
                 <Export
                     mapRef={mapRef}

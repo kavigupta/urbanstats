@@ -2,11 +2,11 @@ import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 import { isAMatch } from '../utils/isAMatch'
 
-import { Context } from './context'
-import { InterpretationError, renderLocInfo } from './interpreter'
+import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo, SingleLocation } from './lexer'
-import { ParseError, parseTokens, UrbanStatsASTStatement } from './parser'
+import { ParseError, parseTokens } from './parser'
 import { USSValue } from './types-values'
+import { executeAsync, USSExecutionDescriptor } from './workerManager'
 
 export function stringIndexToLocation(lines: string[], colIdx: number): SingleLocation {
     let lineIdx = 0
@@ -113,11 +113,6 @@ export interface AutocompleteMenu {
     attachListeners: (editor: HTMLElement) => void // call once the returned html is rendered
 }
 
-export type CreateContext = (stmts: UrbanStatsASTStatement | undefined) => Promise<Context>
-export type Execute = (stmts: UrbanStatsASTStatement, context: Context) => USSValue
-
-export type ValueChecker = (value: USSValue) => { ok: true } | { ok: false, problem: string }
-
 export type Action = 'input' | 'select' | 'autocomplete' | undefined
 
 /*
@@ -131,14 +126,14 @@ export type ExecResult = Result<USSValue>
 export function stringToHtml(
     string: string,
     colors: Colors,
-    createContext: CreateContext,
-    execute: Execute,
+    executionDescriptor: USSExecutionDescriptor,
+    autocompleteSymbols: string[],
     lastAction: Action,
     autocomplete: {
         collapsedRangeIndex: number | undefined
         apply: (completion: string, from: number, to: number, delta: number) => void // Replace the range from -> to with completion. delta = completion.length - (to - from) for convenience
     },
-): { html: string, result: ParseResult, autocomplete: Promise<AutocompleteMenu | undefined> } {
+): { html: string, result: ParseResult, autocomplete: AutocompleteMenu | undefined } {
     if (!string.endsWith('\n')) {
         string = `${string}\n`
     }
@@ -186,12 +181,12 @@ export function stringToHtml(
 
     const span = spanFactory(colors)
 
-    let autocompleteMenu: (context: Context) => AutocompleteMenu | undefined = () => undefined
+    let autocompleteMenu: () => AutocompleteMenu | undefined = () => undefined
 
     function maybeAutocompleteMenu(token: AnnotatedToken): string {
         const identifierToken = token.token
         if (autocompleteLocation !== undefined && identifierToken.type === 'identifier' && locationsEqual(token.location.end, autocompleteLocation)) {
-            autocompleteMenu = (context) => {
+            autocompleteMenu = () => {
                 const allIdentifiers = new Set<string>()
                 let longestHaystack = 0
                 for (const t of lexTokens) {
@@ -200,7 +195,7 @@ export function stringToHtml(
                         longestHaystack = Math.max(longestHaystack, t.token.value.length)
                     }
                 }
-                for (const id of context.allIdentifiersInclTheoretical()) {
+                for (const id of autocompleteSymbols) {
                     allIdentifiers.add(id)
                     longestHaystack = Math.max(longestHaystack, id.length)
                 }
@@ -262,15 +257,12 @@ export function stringToHtml(
     }
 
     let result: ParseResult
-    let context: Promise<Context>
 
     if (lexTokens.some(token => token.token.type === 'error')) {
         result = { result: 'failure', errors: lexTokens.flatMap(token => token.token.type === 'error' ? [`${token.token.value} at ${renderLocInfo(token.location)}`] : []) }
-        context = createContext(undefined)
     }
     else if (lexTokens.every(token => token.token.type === 'operator' && token.token.value === 'EOL')) {
         result = { result: 'failure', errors: ['No input'] }
-        context = createContext(undefined)
     }
     else {
         const parsed = parseTokens(lexTokens)
@@ -286,37 +278,26 @@ export function stringToHtml(
                 }
             }
             result = { result: 'failure', errors: parsed.errors.map(e => `${e.value} at ${renderLocInfo(e.location)}`) }
-            context = createContext(undefined)
         }
         else {
-            context = createContext(parsed)
             result = {
                 result: 'success',
                 value: (async () => {
-                    try {
-                        const value = execute(parsed, await context)
-                        return { html: lines.join('\n'), result: { result: 'success', value } }
+                    const execResult = await executeAsync({ descriptor: executionDescriptor, stmts: parsed })
+                    if (execResult.success) {
+                        return { html: lines.join('\n'), result: { result: 'success', value: execResult.value } }
                     }
-                    catch (e) {
-                        if (e instanceof InterpretationError) {
-                            for (const pos of ['start', 'end'] as const) {
-                                const loc = e.location.shifted[pos]
-                                const line = lines[loc.lineIdx]
-                                const tag = pos === 'start' ? span({ type: 'error', value: e.shortMessage }) : `</span>`
-                                lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
-                                shift([e], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
-                            }
-                            return {
-                                html: lines.join('\n'),
-                                result: { result: 'failure', errors: [e.message] },
-                            }
+                    else {
+                        for (const pos of ['start', 'end'] as const) {
+                            const loc = execResult.error.location.shifted[pos]
+                            const line = lines[loc.lineIdx]
+                            const tag = pos === 'start' ? span({ type: 'error', value: execResult.error.shortMessage }) : `</span>`
+                            lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                            shift([execResult.error], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
                         }
-                        else {
-                            console.error('Unknown error while evaluating script', e)
-                            return {
-                                html: lines.join('\n'),
-                                result: { result: 'failure', errors: ['Unknown error'] },
-                            }
+                        return {
+                            html: lines.join('\n'),
+                            result: { result: 'failure', errors: [execResult.error.message] },
                         }
                     }
                 })(),
@@ -326,7 +307,7 @@ export function stringToHtml(
 
     const html = lines.join('\n')
 
-    return { html, result, autocomplete: context.then(autocompleteMenu) }
+    return { html, result, autocomplete: autocompleteMenu() }
 }
 
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError) => string {
