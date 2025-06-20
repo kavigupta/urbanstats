@@ -4,14 +4,15 @@ import { test } from 'node:test'
 import { Context } from '../src/urban-stats-script/context'
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
 import { newLocation } from '../src/urban-stats-script/lexer'
-import { USSRawValue, USSType, renderType } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, renderType, undocValue } from '../src/urban-stats-script/types-values'
 
 import { emptyContext, multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
 
 void test('broadcasting-locate-type', (): void => {
     assert.deepStrictEqual(
         locateType(
-            { type: numType, value: 1 },
+            // { type: numType, value: 1 },
+            undocValue(1, numType),
             t => t.type === 'number',
             { typeDesc: 'number', role: 'test' },
         ),
@@ -19,7 +20,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: numVectorType, value: [1, 2, 3] },
+            undocValue([1, 2, 3], numVectorType),
             t => t.type === 'number',
             { typeDesc: 'number', role: 'test' },
         ),
@@ -27,7 +28,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: numMatrixType, value: [[1, 2], [3, 4]] },
+            undocValue([[1, 2], [3, 4]], numMatrixType),
             t => t.type === 'number',
             { typeDesc: 'number', role: 'test' },
         ),
@@ -35,7 +36,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: numMatrixType, value: [[1, 2], [3, 4]] },
+            undocValue([[1, 2], [3, 4]], numMatrixType),
             t => t.type === 'vector' && t.elementType.type === 'number',
             { typeDesc: '[number]', role: 'test' },
         ),
@@ -43,7 +44,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: multiObjType, value: new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            undocValue(new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]), multiObjType),
             t => t.type === 'number',
             { typeDesc: 'number', role: 'test' },
         ),
@@ -51,7 +52,7 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            { type: multiObjType, value: new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]) },
+            undocValue(new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]), multiObjType),
             t => renderType(t) === renderType({ type: 'object', properties: new Map([['a', numType], ['b', numType]]) }),
             { typeDesc: 'object with properties {a: number, b: number}', role: 'test' },
         ),
@@ -70,13 +71,10 @@ void test('broadcasting-locate-type', (): void => {
     )
     assert.deepStrictEqual(
         locateType(
-            {
-                type: multiObjVectorType,
-                value: [
-                    new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]),
-                    new Map<string, USSRawValue>([['a', 6], ['b', [4, 5, 6]]]),
-                ],
-            },
+            undocValue([
+                new Map<string, USSRawValue>([['a', 1], ['b', [1, 2, 3]]]),
+                new Map<string, USSRawValue>([['a', 6], ['b', [4, 5, 6]]]),
+            ], multiObjVectorType),
             t => renderType(t) === renderType({ type: 'object', properties: new Map([['a', numType], ['b', numType]]) }),
             { typeDesc: 'object with properties {a: number, b: number}', role: 'test' },
         ),
@@ -109,96 +107,84 @@ void test('broadcasting-apply', (): void => {
     })
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numType, value: 10 },
+                undocValue(10, numType),
             ],
             [
-                ['a', { type: numType, value: 3 }],
+                ['a', undocValue(3, numType)],
             ],
             emptyContext(),
             locInfo,
         ),
-        { type: 'success', result: { type: numType, value: 10 * 10 + 3 } },
+        { type: 'success', result: undocValue(10 * 10 + 3, numType) },
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numVectorType, value: [10, 20, 30] },
+                undocValue([10, 20, 30], numVectorType),
             ],
             [
-                ['a', { type: numType, value: 3 }],
+                ['a', undocValue(3, numType)],
             ],
             emptyContext(),
             locInfo,
         ),
         {
             type: 'success',
-            result: {
-                type: numVectorType,
-                value: [10 * 10 + 3, 20 * 20 + 3, 30 * 30 + 3],
-            },
+            result: undocValue([10 * 10 + 3, 20 * 20 + 3, 30 * 30 + 3], numVectorType),
         },
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+                undocValue([[10, 20], [30, 40]], numMatrixType),
             ],
             [
-                ['a', { type: numType, value: 3 }],
+                ['a', undocValue(3, numType)],
             ],
             emptyContext(),
             locInfo,
         ),
         {
             type: 'success',
-            result: {
-                type: numMatrixType,
-                value: [[10 * 10 + 3, 20 * 20 + 3], [30 * 30 + 3, 40 * 40 + 3]],
-            },
+            result: undocValue([[10 * 10 + 3, 20 * 20 + 3], [30 * 30 + 3, 40 * 40 + 3]], numMatrixType),
         },
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+                undocValue([[10, 20], [30, 40]], numMatrixType),
             ],
             [
-                ['a', { type: numVectorType, value: [3, 4] }],
+                ['a', undocValue([3, 4], numVectorType)],
             ],
             emptyContext(),
             locInfo,
         ),
         {
             type: 'success',
-            result: {
-                type: numMatrixType,
-                value: [[10 * 10 + 3, 20 * 20 + 4], [30 * 30 + 3, 40 * 40 + 4]],
-            },
+            result: undocValue([[10 * 10 + 3, 20 * 20 + 4], [30 * 30 + 3, 40 * 40 + 4]], numMatrixType),
         },
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: { type: 'vector', elementType: testFnType }, value: [testFn1, testFn2] },
+            undocValue([testFn1, testFn2], { type: 'vector', elementType: testFnType }),
             [
-                { type: numMatrixType, value: [[10, 20], [30, 40]] },
+                undocValue([[10, 20], [30, 40]], numMatrixType),
             ],
             [
-                ['a', { type: numVectorType, value: [3, 4] }],
+                ['a', undocValue([3, 4], numVectorType)],
             ],
             emptyContext(),
             locInfo,
         ),
         {
             type: 'success',
-            result: {
-                type: numMatrixType,
-                value: [[10 * 10 + 3, 20 * 20 * 20 + 4], [30 * 30 + 3, 40 * 40 * 40 + 4]],
-            },
+            result: undocValue([[10 * 10 + 3, 20 * 20 * 20 + 4], [30 * 30 + 3, 40 * 40 * 40 + 4]], numMatrixType),
         },
     )
 })
@@ -210,12 +196,12 @@ void test('jagged array', (): void => {
     })
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn2 },
+            undocValue(testFn2, testFnType),
             [
-                { type: numMatrixType, value: [[10], [10, 20]] },
+                undocValue([[10], [10, 20]], numMatrixType),
             ],
             [
-                ['a', { type: numType, value: 3 }],
+                ['a', undocValue(3, numType)],
             ],
             emptyContext(),
             locInfo,
@@ -230,9 +216,9 @@ void test('jagged array', (): void => {
     }
     assert.deepStrictEqual(
         broadcastApply(
-            { type: takesArray, value: fn },
+            undocValue(fn, takesArray),
             [
-                { type: numMatrixType, value: [[10], [10, 20]] },
+                undocValue([[10], [10, 20]], numMatrixType),
             ],
             [],
             emptyContext(),
@@ -240,10 +226,7 @@ void test('jagged array', (): void => {
         ),
         {
             type: 'success',
-            result: {
-                type: numVectorType,
-                value: [10, 30],
-            },
+            result: undocValue([10, 30], numVectorType),
         },
     )
 })
@@ -255,7 +238,7 @@ void test('wrong number of arguments', (): void => {
     })
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [],
             [],
             emptyContext(),
@@ -268,9 +251,9 @@ void test('wrong number of arguments', (): void => {
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numVectorType, value: [10, 20, 30] },
+                undocValue([10, 20, 30], numVectorType),
             ],
             [
             ],
@@ -284,13 +267,13 @@ void test('wrong number of arguments', (): void => {
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numVectorType, value: [10, 20, 30] },
+                undocValue([10, 20, 30], numVectorType),
             ],
             [
-                ['a', { type: numType, value: 3 }],
-                ['b', { type: numType, value: 4 }],
+                ['a', undocValue(3, numType)],
+                ['b', undocValue(4, numType)],
             ],
             emptyContext(),
             locInfo,
@@ -309,29 +292,12 @@ void test('wrong argument type', (): void => {
     })
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: stringType, value: 'hi' },
+                undocValue('hi', stringType),
             ],
             [
-                ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
-            ],
-            emptyContext(),
-            locInfo,
-        ),
-        {
-            type: 'error',
-            message: 'Expected positional argument 1 to be a number (or vector thereof) but got string',
-        },
-    )
-    assert.deepStrictEqual(
-        broadcastApply(
-            { type: testFnType, value: testFn1 },
-            [
-                { type: { type: 'vector', elementType: stringType }, value: ['hi'] },
-            ],
-            [
-                ['a', { type: numMatrixType, value: [[1, 2], [3, 4]] }],
+                ['a', undocValue([[1, 2], [3, 4]], numMatrixType)],
             ],
             emptyContext(),
             locInfo,
@@ -343,12 +309,29 @@ void test('wrong argument type', (): void => {
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numVectorType, value: [10, 20, 30] },
+                undocValue(['hi'], { type: 'vector', elementType: stringType }),
             ],
             [
-                ['a', { type: stringType, value: 'hi' }],
+                ['a', undocValue([[1, 2], [3, 4]], numMatrixType)],
+            ],
+            emptyContext(),
+            locInfo,
+        ),
+        {
+            type: 'error',
+            message: 'Expected positional argument 1 to be a number (or vector thereof) but got string',
+        },
+    )
+    assert.deepStrictEqual(
+        broadcastApply(
+            undocValue(testFn1, testFnType),
+            [
+                undocValue([10, 20, 30], numVectorType),
+            ],
+            [
+                ['a', undocValue('hi', stringType)],
             ],
             emptyContext(),
             locInfo,
@@ -367,12 +350,12 @@ void test('bad-shape-broadcasting', (): void => {
     })
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numVectorType, value: [10, 20, 30] },
+                undocValue([10, 20, 30], numVectorType),
             ],
             [
-                ['a', { type: numVectorType, value: [1, 2] }],
+                ['a', undocValue([1, 2], numVectorType)],
             ],
             emptyContext(),
             locInfo,
@@ -384,12 +367,12 @@ void test('bad-shape-broadcasting', (): void => {
     )
     assert.deepStrictEqual(
         broadcastApply(
-            { type: testFnType, value: testFn1 },
+            undocValue(testFn1, testFnType),
             [
-                { type: numMatrixType, value: [[10, 20, 3], [30, 40, 4]] },
+                undocValue([[10, 20, 3], [30, 40, 4]], numMatrixType),
             ],
             [
-                ['a', { type: numVectorType, value: [1, 2] }],
+                ['a', undocValue([1, 2], numVectorType)],
             ],
             emptyContext(),
             locInfo,

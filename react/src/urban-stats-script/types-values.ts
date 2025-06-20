@@ -74,9 +74,22 @@ export type USSRawValue = (
     { type: 'opaque', value: object }
 )
 
+export interface Documentation {
+    humanReadableName: string
+}
+
 export interface USSValue {
     type: USSType
     value: USSRawValue
+    documentation?: Documentation
+}
+
+export function undocValue(value: USSRawValue, type: USSType): USSValue {
+    return {
+        type,
+        value,
+        documentation: undefined,
+    }
 }
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
@@ -217,7 +230,7 @@ export function renderValue(input: USSValue): string {
                 }
                 // USSType assertion is OK since we handle zero-length vectors above
                 return `[
-${vector.map(element => `${indent}    ${helper({ value: element, type: type.elementType as USSType }, `${indent}    `)}`).join(',\n')}
+${vector.map(element => `${indent}    ${helper(undocValue(element, type.elementType as USSType), `${indent}    `)}`).join(',\n')}
 ${indent}]`
             case 'object':
                 const map = value.value as Map<string, USSRawValue>
@@ -225,7 +238,7 @@ ${indent}]`
                     return `{}`
                 }
                 return `{
-${Array.from(map.entries()).map(([key, element]) => `${indent}    ${key}: ${helper({ value: element, type: type.properties.get(key)! }, `${indent}    `)}`).join(',\n')}
+${Array.from(map.entries()).map(([key, element]) => `${indent}    ${key}: ${helper(undocValue(element, type.properties.get(key)!), `${indent}    `)}`).join(',\n')}
 ${indent}}`
             case 'function':
                 return renderType(type)

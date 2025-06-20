@@ -74,5 +74,6 @@ export function regression(numRegressionDependentsMax: number): USSValue {
 
             return result
         },
+        documentation: { humanReadableName: `Linear Regression` },
     }
 }

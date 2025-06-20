@@ -1,10 +1,10 @@
-import assert from 'assert/strict'
+import * as assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
 import { newLocation } from '../src/urban-stats-script/lexer'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
-import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 
 import { numMatrixType, numType, numVectorType, testingContext } from './urban-stats-script-utils'
 
@@ -12,77 +12,47 @@ void test('index mask', (): void => {
     // vector/vector
     assert.deepStrictEqual(
         indexMask(
-            {
-                type: numVectorType,
-                value: [100, 200, 300],
-            },
-            {
-                type: numVectorType,
-                value: [2, 2, 3],
-            },
+            undocValue([100, 200, 300], numVectorType),
+            undocValue([2, 2, 3], numVectorType),
             2,
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200] } },
+        { type: 'success', value: undocValue([100, 200], numVectorType) },
     )
     // only first dimension
     assert.deepStrictEqual(
         indexMask(
-            {
-                type: numMatrixType,
-                value: [[100, 200, 300], [400, 500, 600]],
-            },
-            {
-                type: numVectorType,
-                value: [2, 4],
-            },
+            undocValue([[100, 200, 300], [400, 500, 600]], numMatrixType),
+            undocValue([2, 4], numVectorType),
             2,
         ),
-        { type: 'success', value: { type: numMatrixType, value: [[100, 200, 300]] } },
+        { type: 'success', value: undocValue([[100, 200, 300]], numMatrixType) },
     )
     // matrix / matrix indexing -> vector
     assert.deepStrictEqual(
         indexMask(
-            {
-                type: numMatrixType,
-                value: [[100, 200, 300], [400, 500, 600]],
-            },
-            {
-                type: numMatrixType,
-                value: [[2, 2, 3], [4, 2, 5]],
-            },
+            undocValue([[100, 200, 300], [400, 500, 600]], numMatrixType),
+            undocValue([[2, 2, 3], [4, 2, 5]], numMatrixType),
             2,
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200, 500] } },
+        { type: 'success', value: undocValue([100, 200, 500], numVectorType) },
     )
     // automatically expand number to vector
     assert.deepStrictEqual(
         indexMask(
-            {
-                type: numType,
-                value: 100,
-            },
-            {
-                type: numVectorType,
-                value: [2, 2, 3],
-            },
+            undocValue(100, numType),
+            undocValue([2, 2, 3], numVectorType),
             2,
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 100] } },
+        { type: 'success', value: undocValue([100, 100], numVectorType) },
     )
     // empty mask
     assert.deepStrictEqual(
         indexMask(
-            {
-                type: numVectorType,
-                value: [100, 200, 300],
-            },
-            {
-                type: numVectorType,
-                value: [2, 2, 3],
-            },
+            undocValue([100, 200, 300], numVectorType),
+            undocValue([2, 2, 3], numVectorType),
             0,
         ),
-        { type: 'success', value: { type: numVectorType, value: [] } },
+        { type: 'success', value: undocValue([], numVectorType) },
     )
 })
 
@@ -90,69 +60,54 @@ void test('merge values via masks', (): void => {
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numVectorType, value: [100, 200, 300] },
-                { type: numVectorType, value: [600, 700] },
+                undocValue([100, 200, 300], numVectorType),
+                undocValue([600, 700], numVectorType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200, 600, 300, 700] } },
+        { type: 'success', value: undocValue([100, 200, 600, 300, 700], numVectorType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numVectorType, value: [100, 200, 300] },
-                { type: numType, value: 1 },
+                undocValue([100, 200, 300], numVectorType),
+                undocValue(1, numType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200, 1, 300, 1] } },
+        { type: 'success', value: undocValue([100, 200, 1, 300, 1], numVectorType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numType, value: 2 },
-                { type: numType, value: 1 },
+                undocValue(2, numType),
+                undocValue(1, numType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: numVectorType, value: [2, 2, 1, 2, 1] } },
+        { type: 'success', value: undocValue([2, 2, 1, 2, 1], numVectorType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numMatrixType, value: [[100], [200], [300]] },
-                { type: numMatrixType, value: [[600], [700]] },
+                undocValue([[100], [200], [300]], numMatrixType),
+                undocValue([[600], [700]], numMatrixType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: numMatrixType, value: [[100], [200], [600], [300], [700]] } },
+        { type: 'success', value: undocValue([[100], [200], [600], [300], [700]], numMatrixType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numMatrixType, value: [[100], [200], [300]] },
-                { type: numMatrixType, value: [[600], [700]] },
+                undocValue([[100], [200], [300]], numMatrixType),
+                undocValue([[600], [700]], numMatrixType),
             ],
-            {
-                type: numMatrixType,
-                value: [[2], [2], [3], [2], [3]],
-            },
+            undocValue([[2], [2], [3], [2], [3]], numMatrixType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
         { type: 'error', message: 'Cannot condition on a mask of type [[number]]' },
@@ -161,13 +116,10 @@ void test('merge values via masks', (): void => {
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numVectorType, value: [100, 200, 300] },
-                { type: stringVectorType, value: ['hi', 'bye'] },
+                undocValue([100, 200, 300], numVectorType),
+                undocValue(['hi', 'bye'], stringVectorType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
         { type: 'error', message: 'Cannot merge values of different types: number, string' },
@@ -175,54 +127,42 @@ void test('merge values via masks', (): void => {
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: stringVectorType, value: ['a', 'b', 'c'] },
-                { type: stringVectorType, value: ['x', 'y'] },
+                undocValue(['a', 'b', 'c'], stringVectorType),
+                undocValue(['x', 'y'], stringVectorType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: stringVectorType, value: ['a', 'b', 'x', 'c', 'y'] } },
+        { type: 'success', value: undocValue(['a', 'b', 'x', 'c', 'y'], stringVectorType) },
     )
-    const nullValue: USSValue = { type: { type: 'null' }, value: null } satisfies USSValue
+    const nullValue: USSValue = undocValue(null, { type: 'null' })
     // default values
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
-                { type: numVectorType, value: [100, 200, 300] },
+                undocValue([100, 200, 300], numVectorType),
                 nullValue,
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: numVectorType, value: [100, 200, NaN, 300, NaN] } },
+        { type: 'success', value: undocValue([100, 200, NaN, 300, NaN], numVectorType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [
                 nullValue,
-                { type: stringVectorType, value: ['hi', 'bye'] },
+                undocValue(['hi', 'bye'], stringVectorType),
             ],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
-        { type: 'success', value: { type: stringVectorType, value: ['', '', 'hi', '', 'bye'] } },
+        { type: 'success', value: undocValue(['', '', 'hi', '', 'bye'], stringVectorType) },
     )
     assert.deepStrictEqual(
         mergeValuesViaMasks(
             [nullValue, nullValue],
-            {
-                type: numVectorType,
-                value: [2, 2, 3, 2, 3],
-            },
+            undocValue([2, 2, 3, 2, 3], numVectorType) as USSValue & { type: USSVectorType },
             [2, 3],
         ),
         { type: 'success', value: nullValue },
@@ -231,12 +171,12 @@ void test('merge values via masks', (): void => {
 
 void test('split mask testing', (): void => {
     const lengthFn = (value: USSValue, ctx: Context): USSValue => {
-        return { type: numType, value: (ctx.getVariable('a')!.value as USSRawValue[]).length }
+        return undocValue((ctx.getVariable('a')!.value as USSRawValue[]).length, numType)
     }
     const basicContext = (): Context => testingContext([], [], new Map(
         [
-            ['a', { type: numVectorType, value: [100, 100, 200, 300, 400, 200, 200, 100, 100] }],
-            ['b', { type: numVectorType, value: [10, 30, 60, 20, 20, 10, 104, 389, 10] }],
+            ['a', undocValue([100, 100, 200, 300, 400, 200, 200, 100, 100], numVectorType)],
+            ['b', undocValue([10, 30, 60, 20, 20, 10, 104, 389, 10], numVectorType)],
         ],
     ))
     const defaultLocInfo = newLocation({ start: { lineIdx: 1, colIdx: 1 }, end: { lineIdx: 1, colIdx: 1 } })
@@ -244,68 +184,53 @@ void test('split mask testing', (): void => {
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            {
-                type: numVectorType,
-                value: [100, 100, 100, 200, 200, 100, 100, 200, 200],
-            },
+            undocValue([100, 100, 100, 200, 200, 100, 100, 200, 200], numVectorType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
         ),
-        { type: numVectorType, value: [5, 5, 5, 4, 4, 5, 5, 4, 4] },
+        undocValue([5, 5, 5, 4, 4, 5, 5, 4, 4], numVectorType),
     )
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            {
-                type: numType,
-                value: 2,
-            },
+            undocValue(2, numType),
             (value: USSValue, ctx: Context): USSValue => {
-                return { type: numType, value: (ctx.getVariable('a')!.value as USSRawValue[]).length }
+                return undocValue((ctx.getVariable('a')!.value as USSRawValue[]).length, numType)
             },
             defaultLocInfo,
             defaultLocInfo,
         ),
-        { type: numType, value: 9 } satisfies USSValue,
+        undocValue(9, numType),
     )
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            {
-                type: numVectorType,
-                value: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            },
+            undocValue([1, 2, 3, 4, 5, 6, 7, 8, 9], numVectorType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
         ),
-        { type: numVectorType, value: [1, 1, 1, 1, 1, 1, 1, 1, 1] } satisfies USSValue,
+        undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
     )
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            {
-                type: numVectorType,
-                value: [1, 2, 3, 1, 5, 1, 7, 8, 2],
-            },
+            undocValue([1, 2, 3, 1, 5, 1, 7, 8, 2], numVectorType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
         ),
-        { type: numVectorType, value: [3, 2, 1, 3, 1, 3, 1, 1, 2] } satisfies USSValue,
+        undocValue([3, 2, 1, 3, 1, 3, 1, 1, 2], numVectorType),
     )
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            {
-                type: numVectorType,
-                value: [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            },
+            undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
         ),
-        { type: numType, value: 9 } satisfies USSValue,
+        undocValue(9, numType),
     )
 })

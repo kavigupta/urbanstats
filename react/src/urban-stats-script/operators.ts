@@ -33,6 +33,7 @@ function unaryOperator(unos: UnaryOperation[]): (op: string, locInfo: LocInfo) =
                 }
                 throw ctx.error(`Invalid type for operator ${op}: ${argType}`, locInfo)
             },
+            documentation: { humanReadableName: op },
         }
     }
 }
@@ -52,6 +53,7 @@ function binaryOperator(bos: BinaryOperation[]): (op: string, locInfo: LocInfo) 
                 }
                 throw ctx.error(`Invalid types for operator ${op}: ${leftType} and ${rightType}`, locInfo)
             },
+            documentation: { humanReadableName: op },
         }
     }
 }
