@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { Context } from './context'
 import { InterpretationError } from './interpreter'
 import { LocInfo } from './lexer'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs } from './types-values'
 
 interface PredicateDescriptor {
     role: string
@@ -263,6 +263,7 @@ function mapSeveral(
     posArgs: USSRawValue[],
     argumentNames: string[],
     kwArgs: USSRawValue[],
+    originalArgs: OriginalFunctionArgs,
     depth: number,
     ctx: Context,
     locInfo: LocInfo,
@@ -275,8 +276,8 @@ function mapSeveral(
         assert(typeof fn === 'function', `Expected a function, but got ${typeof fn}`)
         const kw = Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v]))
         try {
-            return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>) => USSRawValue)(
-                ctx, posArgs, kw,
+            return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>, oA: OriginalFunctionArgs) => USSRawValue)(
+                ctx, posArgs, kw, originalArgs,
             )
         }
         catch (e) {
@@ -301,6 +302,7 @@ function mapSeveral(
             posArgsI,
             argumentNames,
             kwArgsI,
+            originalArgs,
             depth - 1,
             ctx,
             locInfo,
@@ -319,7 +321,8 @@ function nestedVectorType(type: USSType, depth: number): USSType {
 }
 
 export function broadcastApply(
-    fn: USSValue, posArgs: USSValue[],
+    fn: USSValue,
+    posArgs: USSValue[],
     kwArgs: [string, USSValue][],
     ctx: Context,
     locInfo: LocInfo,
@@ -358,6 +361,7 @@ export function broadcastApply(
         posArgsLocated.map(x => x[2]),
         kwArgs.map(x => x[0]),
         kwArgsLocated.map(x => x[2]),
+        { posArgs, namedArgs: Object.fromEntries(kwArgs) },
         depth,
         ctx,
         locInfo,

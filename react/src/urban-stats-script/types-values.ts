@@ -60,6 +60,11 @@ export type USSPrimitiveRawValue = (
     null
 )
 
+export interface OriginalFunctionArgs {
+    posArgs: USSValue[]
+    namedArgs: Record<string, USSValue>
+}
+
 export type USSRawValue = (
     USSPrimitiveRawValue |
     USSRawValue[] |
@@ -69,6 +74,9 @@ export type USSRawValue = (
             ctx: Context,
             posArgs: USSRawValue[],
             namedArgs: Record<string, USSRawValue>,
+            // only used occasionally, for functions that need to access the original arguments
+            // to e.g., access their documentation
+            originalArgs: OriginalFunctionArgs
         ) => USSRawValue
     ) |
     { type: 'opaque', value: object }

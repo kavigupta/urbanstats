@@ -8,7 +8,7 @@ import { locationOf, unify, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStat
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue } from './types-values'
 
-export type Effect = undefined
+export interface Effect { type: 'warning', message: string }
 
 export function renderLocInfo(loc: LocInfo): string {
     if (loc.start.lineIdx === loc.end.lineIdx) {
