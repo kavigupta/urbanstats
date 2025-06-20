@@ -10,7 +10,7 @@ import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, V
 
 export type Effect = undefined
 
-function renderLocInfo(loc: LocInfo): string {
+export function renderLocInfo(loc: LocInfo): string {
     if (loc.start.lineIdx === loc.end.lineIdx) {
         if (loc.start.colIdx + 1 === loc.end.colIdx) {
             // Single character location
@@ -274,7 +274,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
     const operatorObj = expressionOperatorMap.get(operator)
-    assert (operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
+    assert(operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
     const res = broadcastApply(
         operatorObj.binary(operator, errLoc),
         [left, right],

@@ -45,6 +45,7 @@ function locateTypeVector(
         value: fn,
         documentation: value.documentation,
     }, predicate, predicateDescriptor))
+    assert(subtypesOrErrors.length !== 0, `Expected at least one vector element, but got an empty vector`)
     if (subtypesOrErrors.some(x => x.type === 'error')) {
         return subtypesOrErrors.find(x => x.type === 'error')!
     }
