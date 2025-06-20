@@ -35,6 +35,30 @@ function numericUnaryFunction(
     ]
 }
 
+function numericBinaryFunction(
+    name: string,
+    func: (a: number, b: number) => number,
+): [string, USSValue] {
+    return [
+        name,
+        {
+            type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+            value: (
+                ctx: Context,
+                posArgs: USSRawValue[],
+                namedArgs: Record<string, USSRawValue>,
+            ) => {
+                assert(posArgs.length === 2, `Expected 2 arguments for ${name}, got ${posArgs.length}`)
+                assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ${name}, got ${Object.keys(namedArgs).length}`)
+                const [arg1, arg2] = posArgs
+                assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for ${name}, got ${typeof arg1} and ${typeof arg2}`)
+                return func(arg1, arg2)
+            },
+            documentation: { humanReadableName: name },
+        },
+    ]
+}
+
 function numericAggregationFunction(
     name: string,
     func: (values: number[]) => number,
@@ -71,6 +95,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['inf', { type: { type: 'number' }, value: Infinity, documentation: { humanReadableName: '+Infinity' } }] satisfies [string, USSValue],
     ['pi', { type: { type: 'number' }, value: Math.PI, documentation: { humanReadableName: 'π' } }] satisfies [string, USSValue],
     ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
+    ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN' } }] satisfies [string, USSValue],
     numericUnaryFunction('abs', Math.abs),
     numericUnaryFunction('sqrt', Math.sqrt),
     numericUnaryFunction('ln', Math.log),
@@ -88,6 +113,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     numericUnaryFunction('exp', Math.exp),
     numericUnaryFunction('sign', Math.sign),
     numericUnaryFunction('nanTo0', value => isNaN(value) ? 0 : value),
+    numericBinaryFunction('maximum', (a, b) => Math.max(a, b)),
+    numericBinaryFunction('minimum', (a, b) => Math.min(a, b)),
     numericAggregationFunction('sum', values => values.reduce((a, b) => a + b, 0)),
     numericAggregationFunction('mean', values => values.reduce((a, b) => a + b, 0) / values.length),
     numericAggregationFunction('min', values => Math.min(...values)),

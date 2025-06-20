@@ -819,6 +819,24 @@ function close(a: USSRawValue, b: USSRawValue): boolean {
     return a === b
 }
 
+function assertEquivalentRegressionOutput(
+    actual: USSRawValue,
+    expected: Map<string, USSRawValue>,
+): void {
+    if (!(actual instanceof Map)) {
+        throw new Error(`Expected a Map for regression output, but got ${actual}`)
+    }
+    for (const [key, value] of actual.entries()) {
+        const expectedValue = expected.get(key)
+        if (expectedValue !== undefined) {
+            assert.strict(close(value, expectedValue), `Key ${key} has value ${value}, expected ${expectedValue}`)
+        }
+        else {
+            assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
+        }
+    }
+}
+
 void test('regression', (): void => {
     // to help generate these, see ./regression.py
     assert.deepStrictEqual(
@@ -829,24 +847,6 @@ void test('regression', (): void => {
         renderType(regressionType(3)),
         '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {b: number, m1: number, m2: number, m3: number, r2: number, residuals: [number]}',
     )
-
-    function assertEquivalentRegressionOutput(
-        actual: USSRawValue,
-        expected: Map<string, USSRawValue>,
-    ): void {
-        if (!(actual instanceof Map)) {
-            throw new Error(`Expected a Map for regression output, but got ${actual}`)
-        }
-        for (const [key, value] of actual.entries()) {
-            const expectedValue = expected.get(key)
-            if (expectedValue !== undefined) {
-                assert.strict(close(value, expectedValue), `Key ${key} has value ${value}, expected ${expectedValue}`)
-            }
-            else {
-                assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
-            }
-        }
-    }
 
     assert.deepStrictEqual(
         evaluate(parseExpr('regression(x1=[1, 2, 3], y=[4, 5, 6])'), emptyContext()),
@@ -958,6 +958,21 @@ void test('regression', (): void => {
                 ['m2', 52.734375],
                 ['r2', 0.6415187603457788],
                 ['b', -59.06249999999999],
+            ],
+        ),
+    )
+})
+
+void test('regression-nan-handling', (): void => {
+    const ctx: Context = emptyContext()
+    assertEquivalentRegressionOutput(
+        evaluate(parseExpr('regression(x1=[1, 2, 3], y=[4, 5, NaN])'), ctx).value,
+        new Map<string, USSRawValue>(
+            [
+                ['residuals', [0, 0, NaN]],
+                ['m1', 1],
+                ['b', 3],
+                ['r2', 1],
             ],
         ),
     )
