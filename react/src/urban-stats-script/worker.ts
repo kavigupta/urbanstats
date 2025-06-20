@@ -8,16 +8,17 @@ import { NormalizeProto } from '../utils/types'
 
 import { execute, InterpretationError } from './interpreter'
 import { locationOf, locationOfLastExpression } from './parser'
-import { renderType } from './types-values'
+import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
 async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
     try {
+        let result: USSValue
         switch (request.descriptor.kind) {
             case 'generic': {
                 const context = emptyContext()
-                const result = execute(request.stmts, context)
-                return { success: true, value: result }
+                result = execute(request.stmts, context)
+                break
             }
             case 'mapper': {
                 if (!validGeographies.includes(request.descriptor.geographyKind)) {
@@ -28,13 +29,14 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                     'ConsolidatedStatistics',
                 )) as NormalizeProto<ConsolidatedStatistics>
                 const context = mapperContext(request.stmts, stats.stats, stats.longnames)
-                const result = execute(request.stmts, context)
+                result = execute(request.stmts, context)
                 if (renderType(result.type) !== 'cMap') {
                     throw new InterpretationError(`USS expression did not return a cMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
                 }
-                return { success: true, value: result }
+                break
             }
         }
+        return { success: true, value: { type: result.type, value: removeFunctions(result.value) } }
     }
     catch (error) {
         let interpretationError: InterpretationError
@@ -47,6 +49,19 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         }
         return { success: false, error: { message: interpretationError.message, shortMessage: interpretationError.shortMessage, location: interpretationError.location } }
     }
+}
+
+function removeFunctions(value: USSRawValue): USSRawValue {
+    if (value instanceof Function) {
+        return null
+    }
+    else if (Array.isArray(value)) {
+        return value.map(removeFunctions)
+    }
+    else if (value instanceof Map) {
+        return new Map(Array.from(value.entries()).map(([k, v]) => [k, removeFunctions(v)]))
+    }
+    return value
 }
 
 onmessage = async (message: MessageEvent<USSExecutionRequest>) => {

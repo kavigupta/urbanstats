@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
-import { ScaleInstance } from '../src/urban-stats-script/constants/scale'
+import { instantiate, ScaleDescriptor } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { renderType, USSRawValue, USSType, USSValue, renderValue } from '../src/urban-stats-script/types-values'
@@ -1344,7 +1344,8 @@ void test('ramps', (): void => {
     )
 })
 
-function assertScale(scale: ScaleInstance, values: number[], proportions: number[]): void {
+function assertScale(descriptor: ScaleDescriptor, values: number[], proportions: number[]): void {
+    const scale = instantiate(descriptor)
     assert.strict(close(proportions, values.map(scale.forward)), `Scale forward mapping failed: ${JSON.stringify(proportions)} != ${JSON.stringify(values.map(scale.forward))}`)
     assert.strict(close(values, proportions.map(scale.inverse)), `Scale inverse mapping failed: ${JSON.stringify(values)} != ${JSON.stringify(proportions.map(scale.inverse))}`)
 }
