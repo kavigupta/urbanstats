@@ -124,6 +124,18 @@ function index(v: USSValue, i: number): USSValue {
     return v // If the value is not a vector, we just return it as is; broadcasting
 }
 
+function indexType(v: USSType): USSType {
+    /**
+     * Indexes the type of a value, returning the type of the indexed value.
+     * If the value is not a vector, we just return the type as is.
+     */
+    if (v.type === 'vector') {
+        assert(v.elementType.type !== 'elementOfEmptyVector', `Unreachable: should have failed earlier if elementType was elementOfEmptyVector`)
+        return v.elementType
+    }
+    return v // If the value is not a vector, we just return it as is; broadcasting
+}
+
 function defaultValueForType(type: USSType): USSRawValue {
     switch (type.type) {
         case 'number':
@@ -181,6 +193,17 @@ export function mergeValuesViaMasks(
     if (specialCase !== undefined) {
         return specialCase
     }
+
+    const types = values.map(x => x.type).filter(x => x.type !== 'null').map(indexType)
+    if (types.length === 0) {
+        return { type: 'success', value: { type: { type: 'null' }, value: null } }
+    }
+    const firstType = types[0]
+    if (types.some(x => renderType(x) !== renderType(firstType))) {
+        const uniqueTypeReprs = Array.from(new Set(types.map(renderType))).sort()
+        return { type: 'error', message: `Cannot merge values of different types: ${uniqueTypeReprs.join(', ')}` }
+    }
+
     assert (values.length === references.length, `Expected the number of values (${values.length}) to match the number of references (${references.length})`)
     const mType = mask.type
     if (mType.elementType.type !== 'boolean' && mType.elementType.type !== 'number' && mType.elementType.type !== 'string') {
@@ -191,22 +214,14 @@ export function mergeValuesViaMasks(
     const result: (USSValue | undefined)[] = []
     for (let i = 0; i < maskVector.length; i++) {
         const whichValue = references.indexOf(maskVector[i])
-        assert (whichValue !== -1, `Reference ${references[i]} not found in mask ${maskVector.map(x => JSON.stringify(x)).join(', ')}`)
+        assert (whichValue !== -1, `Reference ${references[i]} not found in mask}`)
         // special case null values.
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
         indices[whichValue]++
     }
-    const types = result.filter(x => x !== undefined).map(x => x.type)
-    if (types.length === 0) {
-        return { type: 'success', value: { type: { type: 'null' }, value: null } }
-    }
-    const firstType = types[0]
-    if (types.some(x => renderType(x) !== renderType(firstType))) {
-        const uniqueTypeReprs = Array.from(new Set(types.map(renderType))).sort()
-        return { type: 'error', message: `Cannot merge values of different types: ${uniqueTypeReprs.join(', ')}` }
-    }
+    const defaultV = defaultValueForType(firstType)
     const finalRes = result.map(
-        x => x ? x.value : defaultValueForType(firstType),
+        x => x ? x.value : defaultV,
     )
     return {
         type: 'success',
