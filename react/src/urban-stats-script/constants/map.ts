@@ -1,12 +1,12 @@
 import { USSType, USSValue } from '../types-values'
 
 import { RampT } from './ramp'
-import { Scale, ScaleInstance } from './scale'
+import { Scale, ScaleDescriptor } from './scale'
 
 export interface CMap {
     geo: string[]
     data: number[]
-    scale: ScaleInstance
+    scale: ScaleDescriptor
     ramp: RampT
 }
 
