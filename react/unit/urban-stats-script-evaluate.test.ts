@@ -6,8 +6,8 @@ import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
-import { evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue } from '../src/urban-stats-script/types-values'
+import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
@@ -515,10 +515,11 @@ void test('more if expressions', (): void => {
         assert.deepStrictEqual(v[1], testFn1)
         assert.throws(
             () => {
-                (v[2] as ((ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => void))(
+                (v[2] as ((ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs) => void))(
                     emptyContext(),
                     [],
                     {},
+                    { posArgs: [], namedArgs: {} },
                 )
             },
             (err: Error): boolean => {
@@ -1220,12 +1221,31 @@ function assertScale(descriptor: ScaleDescriptor, values: number[], proportions:
 }
 
 void test('test basic map', () => {
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone)'), emptyContext())
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
+    assert.deepStrictEqual(effects, [{
+        type: 'warning',
+        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+    }])
+})
+
+void test('test basic map with label passed', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone, label="Test Map")'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
+    assert.deepStrictEqual(resultMapRaw.label, 'Test Map')
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with geometric', () => {
@@ -1269,4 +1289,34 @@ void test('error map with different geo and data lengths', () => {
             return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-64'
         },
     )
+})
+
+void test('map with documentation', () => {
+    const ctx = emptyContext()
+    ctx.assignVariable('x', {
+        type: numVectorType,
+        value: [1, 2, 3],
+        documentation: {
+            humanReadableName: 'X value!',
+        },
+    })
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=x, scale=linearScale, ramp=rampBone)'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+})
+
+void test('conditioned map with documentation', () => {
+    const ctx = emptyContext()
+    ctx.assignVariable('x', {
+        type: numVectorType,
+        value: [1, 2, 3],
+        documentation: {
+            humanReadableName: 'X value!',
+        },
+    })
+    const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=["A", "B"], data=x, scale=linearScale, ramp=rampBone) }'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
 })

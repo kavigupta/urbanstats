@@ -83,9 +83,13 @@ export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, l
     )
 }
 
-export function emptyContext(): Context {
+export function emptyContext(effects: Effect[] | undefined = undefined): Context {
     return new Context(
-        () => { /* no-op */ },
+        (eff) => {
+            if (effects !== undefined) {
+                effects.push(eff)
+            }
+        },
         (msg: string, location: LocInfo) => {
             return new InterpretationError(msg, location)
         },
