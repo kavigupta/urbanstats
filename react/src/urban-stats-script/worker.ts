@@ -63,6 +63,12 @@ function removeFunctions(value: USSRawValue): USSRawValue {
     else if (value instanceof Map) {
         return new Map(Array.from(value.entries()).map(([k, v]) => [k, removeFunctions(v)]))
     }
+    else if (value instanceof Object && value.value instanceof Function) {
+        return {
+            type: value.type,
+            value: {},
+        }
+    }
     return value
 }
 
