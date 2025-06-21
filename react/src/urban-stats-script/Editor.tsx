@@ -10,22 +10,34 @@ import { USSExecutionDescriptor } from './workerManager'
 
 type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: ExecResult }
 
+// TODO add delay parsing
+
+const setScriptDelay = 500
+const executeDelay = 500
+
 export function Editor(
-    {
-        script,
-        setScript,
-        executionDescriptor,
-        autocompleteSymbols = [],
-        showOutput = true,
-    }:
-    {
-        script: string
+    props: {
+        getScript: () => string // Swap this function to get a new script
         setScript: (newScript: string) => void
         executionDescriptor: USSExecutionDescriptor
         autocompleteSymbols: string[]
-        showOutput?: boolean
+        showOutput: boolean
     },
 ): ReactNode {
+    const { executionDescriptor, autocompleteSymbols, setScript: propsSetScript, showOutput, getScript } = props
+
+    const [script, setScript] = useState(getScript)
+
+    useEffect(() => {
+        setScript(getScript())
+    }, [getScript])
+
+    // sync the script after some time of not typing
+    useEffect(() => {
+        const timeout = setTimeout(() => { propsSetScript(script) }, setScriptDelay)
+        return () => { clearTimeout(timeout) }
+    }, [script, propsSetScript])
+
     const colors = useColors()
 
     const editorRef = useRef<HTMLPreElement>(null)
@@ -34,11 +46,15 @@ export function Editor(
 
     const [result, setResult] = useState<Result>({ type: 'parse', result: { result: 'failure', errors: ['No input'] } })
 
+    const [executionStart, setExecutionStart] = useState<number | undefined>(undefined)
+
     const [lastAction, setLastAction] = useState<Action>(undefined)
 
     const autocompleteMenuRef = useRef<AutocompleteMenu | undefined>(undefined)
 
-    const resultCounter = useRef(0)
+    const stagedResultRef = useRef<{ timer: ReturnType<typeof setTimeout>, resultFunction: () => Promise<unknown> } | undefined>(undefined)
+
+    const lastRenderedScriptRef = useRef<string | undefined>(undefined)
 
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
         const range = newRange ?? getRange(editorRef.current!)
@@ -75,18 +91,39 @@ export function Editor(
         autocompleteMenuRef.current = autocomplete
 
         setHTML(html, range)
+
+        // Skip setting results if we just rendered this (happens when cursor is moving around for autocomplete)
+        if (lastRenderedScriptRef.current === newScript) {
+            return
+        }
+
+        lastRenderedScriptRef.current = newScript
+
         setResult({ type: 'parse', result: newResult })
 
         if (newResult.result === 'success') {
-            const identifier = ++resultCounter.current
-            void newResult.value.then(({ html: execHtml, result: execResult }) => {
-                if (identifier !== resultCounter.current) {
-                    return // Someone else is racing
-                }
-
-                setHTML(execHtml, undefined)
-                setResult({ type: 'exec', result: execResult })
-            })
+            clearTimeout(stagedResultRef.current?.timer)
+            stagedResultRef.current = {
+                timer: setTimeout(async (): Promise<void> => {
+                    if (stagedResultRef.current?.resultFunction !== newResult.value) {
+                        return // Avoid race
+                    }
+                    const start = Date.now()
+                    setExecutionStart(start)
+                    const exec = await newResult.value()
+                    setExecutionStart(v => v === start ? undefined : v) // Only turn off execution if we were the one executing
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Race condition
+                    if (stagedResultRef.current?.resultFunction !== newResult.value) {
+                        return // Avoid race
+                    }
+                    setHTML(exec.html, undefined)
+                    setResult({ type: 'exec', result: exec.result })
+                }, executeDelay),
+                resultFunction: newResult.value,
+            }
+        }
+        else {
+            stagedResultRef.current = undefined
         }
     }, [colors, executionDescriptor, autocompleteSymbols, lastAction, setScript])
 
@@ -181,7 +218,7 @@ export function Editor(
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayResult result={result} showOutput={showOutput} />
+            <DisplayResult result={result} showOutput={showOutput} executionStart={executionStart} />
         </div>
     )
 }
@@ -195,7 +232,9 @@ const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNode {
+const showExecutingDelay = 500
+
+function DisplayResult(props: { result: Result, showOutput: boolean, executionStart: number | undefined }): ReactNode {
     const colors = useColors()
     function style(color: string): CSSProperties {
         const border = `2px solid ${color}`
@@ -210,24 +249,37 @@ function DisplayResult(props: { result: Result, showOutput: boolean }): ReactNod
             borderLeft: border,
         }
     }
+
+    const [showExecuting, setShowExecuting] = useState(false)
+
+    useEffect(() => {
+        const timeout = props.executionStart !== undefined
+            ? setTimeout(() => {
+                setShowExecuting(true)
+            }, showExecutingDelay)
+            : undefined
+        return () => {
+            clearTimeout(timeout)
+            setShowExecuting(false)
+        }
+    }, [props.executionStart])
+
     if (props.result.result.result === 'success') {
-        if (props.result.type === 'parse') {
+        if (props.result.type === 'parse' && showExecuting) {
             return (
                 <pre style={style(colors.hueColors.yellow)}>
                     Executing...
                 </pre>
             )
         }
-        else if (props.showOutput) {
+        if (props.result.type === 'exec' && props.showOutput) {
             return (
                 <pre style={style(colors.hueColors.green)}>
                     {renderValue(props.result.result.value)}
                 </pre>
             )
         }
-        else {
-            return null
-        }
+        return null
     }
     else {
         return (

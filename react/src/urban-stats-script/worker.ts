@@ -11,6 +11,8 @@ import { locationOf, locationOfLastExpression } from './parser'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
+// TODO: More caching
+
 async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
     try {
         let result: USSValue
@@ -64,7 +66,7 @@ function removeFunctions(value: USSRawValue): USSRawValue {
     return value
 }
 
-onmessage = async (message: MessageEvent<USSExecutionRequest>) => {
-    const result = await executeRequest(message.data)
-    postMessage(result)
+onmessage = async (message: MessageEvent<{ request: USSExecutionRequest, id: number }>) => {
+    const result = await executeRequest(message.data.request)
+    postMessage({ result, id: message.data.id })
 }

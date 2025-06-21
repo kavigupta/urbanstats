@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import { PageTemplate } from '../page_template/template'
 
@@ -7,11 +7,12 @@ import { defaultConstants } from './constants/constants'
 import { USSExecutionDescriptor } from './workerManager'
 
 export function EditorPanel(): ReactNode {
-    const [script, setScript] = useState(localStorage.getItem('editor-code') ?? '')
-
     const updateScript = useCallback((newScript: string) => {
-        setScript(newScript)
         localStorage.setItem('editor-code', newScript)
+    }, [])
+
+    const getScript = useCallback(() => {
+        return localStorage.getItem('editor-code') ?? ''
     }, [])
 
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()), [])
@@ -21,10 +22,11 @@ export function EditorPanel(): ReactNode {
     return (
         <PageTemplate>
             <Editor
-                script={script}
+                getScript={getScript}
                 setScript={updateScript}
                 executionDescriptor={executionDescriptor}
                 autocompleteSymbols={autocompleteSymbols}
+                showOutput={true}
             />
         </PageTemplate>
     )

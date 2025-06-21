@@ -120,7 +120,7 @@ export type Action = 'input' | 'select' | 'autocomplete' | undefined
  * execute (async) -> html, result
  */
 
-export type ParseResult = Result<Promise<{ html: string, result: ExecResult }>>
+export type ParseResult = Result<() => Promise<{ html: string, result: ExecResult }>>
 export type ExecResult = Result<USSValue>
 
 export function stringToHtml(
@@ -282,7 +282,7 @@ export function stringToHtml(
         else {
             result = {
                 result: 'success',
-                value: (async () => {
+                value: async () => {
                     const execResult = await executeAsync({ descriptor: executionDescriptor, stmts: parsed })
                     if (execResult.success) {
                         return { html: lines.join('\n'), result: { result: 'success', value: execResult.value } }
@@ -300,7 +300,7 @@ export function stringToHtml(
                             result: { result: 'failure', errors: [execResult.error.message] },
                         }
                     }
-                })(),
+                },
             }
         }
     }

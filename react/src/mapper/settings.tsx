@@ -75,6 +75,7 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
 export function MapperSettings(props: {
     mapSettings: MapSettings
     setMapSettings: (newValue: MapSettings) => void
+    getUss: () => string
 }): ReactNode {
     const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyKind: props.mapSettings.geography_kind }), [props.mapSettings.geography_kind])
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
@@ -95,7 +96,7 @@ export function MapperSettings(props: {
                 }
             />
             <Editor
-                script={props.mapSettings.uss}
+                getScript={props.getUss}
                 setScript={(uss) => {
                     props.setMapSettings({
                         ...props.mapSettings,

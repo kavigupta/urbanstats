@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import { loadProtobuf } from '../load_json'
@@ -330,6 +330,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const headerTextClass = useHeaderTextClass()
 
+    const getUss = useCallback(() => props.mapSettings.uss, [props.mapSettings.uss])
+
     if (props.view) {
         return mapperPanel('100%')
     }
@@ -339,6 +341,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
+                    getUss={getUss}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
                 />

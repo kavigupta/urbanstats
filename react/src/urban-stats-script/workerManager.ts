@@ -26,15 +26,21 @@ let sharedUSSWorker: USSWorker | undefined
 
 function createUSSWorker(): USSWorker {
     const worker = new Worker(new URL('./worker', import.meta.url), { name: 'sharedUSSWorker' })
-    const messageQueue: ((result: USSExecutionResult) => void)[] = []
-    worker.addEventListener('message', (message: MessageEvent<USSExecutionResult>) => {
-        messageQueue.shift()!(message.data)
+    // The worker may return responses out of order, so we need to give them identifiers
+    const messageQueue = new Map<number, (result: USSExecutionResult) => void>()
+    worker.addEventListener('message', (message: MessageEvent<{ result: USSExecutionResult, id: number }>) => {
+        messageQueue.get(message.data.id)!(message.data.result)
+        messageQueue.delete(message.data.id)
     })
-    const result: USSWorker = (params) => {
-        worker.postMessage(params)
+    let counter = 0
+    const result: USSWorker = (request) => {
+        const id = ++counter
+        worker.postMessage({ request, id })
         return new Promise((resolve) => {
-            messageQueue.push(resolve)
+            messageQueue.set(id, resolve)
         })
     }
     return result
 }
+
+// TODO Terminate the worker if it hasn't been used in a while
