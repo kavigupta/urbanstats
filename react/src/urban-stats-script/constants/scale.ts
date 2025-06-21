@@ -77,7 +77,10 @@ const linearScale: Scale = (values: number[], min?: number, max?: number, center
 
 const logScale: Scale = (values: number[], min?: number, max?: number, center?: number) => {
     const logVals = values.map(Math.log)
-    const linearScaleDescriptor = linearScale(logVals, min, max, center) as LinearScaleDescriptor
+    const logMin = min !== undefined ? Math.log(min) : undefined
+    const logMax = max !== undefined ? Math.log(max) : undefined
+    const logCenter = center !== undefined ? Math.log(center) : undefined
+    const linearScaleDescriptor = linearScale(logVals, logMin, logMax, logCenter) as LinearScaleDescriptor
     return {
         kind: 'log',
         linearScale: linearScaleDescriptor,
