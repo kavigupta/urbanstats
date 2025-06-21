@@ -19,7 +19,9 @@ export type UrbanStatsASTExpression = (
     { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
-    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement })
+    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }) |
+    // for internal purposes only
+    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string }
 
 export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression } |
@@ -81,6 +83,8 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return node.entireLoc
         case 'condition':
             return node.entireLoc
+        case 'customNode':
+            return locationOf(node.expr)
     }
     /* c8 ignore stop */
 }
