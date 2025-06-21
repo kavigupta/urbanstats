@@ -114,6 +114,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 locationOf(expr.condition),
                 locationOf(expr),
             )
+        case 'customNode':
+            // This is a custom node for internal purposes, we just evaluate the expression
+            return execute(expr.expr, env)
     }
 }
 

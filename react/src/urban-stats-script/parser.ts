@@ -48,6 +48,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
         case 'condition':
             return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
+        case 'customNode':
+            return `(customNode ${toSExp(node.expr)} ${JSON.stringify(node.originalCode)})`
     }
 }
 
@@ -382,6 +384,7 @@ class ParseState {
             case 'vectorLiteral':
             case 'objectLiteral':
             case 'if':
+            case 'customNode':
                 return { type: 'error', value: 'Cannot assign to this expression', location: locationOf(expr) }
         }
     }
@@ -605,6 +608,10 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             case 'condition':
                 helper(n.condition)
                 n.rest.forEach(helper)
+                return true
+            case 'customNode':
+                // do not actually put this in the expressions list, as is for internal use only
+                helper(n.expr)
                 return true
         }
     }
