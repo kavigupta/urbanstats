@@ -14,6 +14,7 @@ const setScriptDelay = 500
 const executeDelay = 500
 
 const undoChunking = 1000
+const undoHistory = 100
 
 interface UndoRedoItem { time: number, script: string, range: Range | undefined }
 
@@ -81,6 +82,9 @@ export function Editor(
         }
         else {
             undoStack.current.push({ time: Date.now(), script: newScript, range: newRange })
+            while (undoStack.current.length > undoHistory) {
+                undoStack.current.shift()
+            }
         }
         redoStack.current = []
     }
