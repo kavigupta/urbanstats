@@ -1,6 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { RAMPS } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
@@ -1278,7 +1279,26 @@ void test('map with only one value', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A'])
     assert.deepStrictEqual(resultMapRaw.data, [11.2])
+    assert.deepStrictEqual(resultMapRaw.ramp, RAMPS.Bone)
     assertScale(resultMapRaw.scale, [10, 11, 12], [-0.7, 0.3, 1.3])
+})
+
+void test('custom map', () => {
+    const program = `
+    ramp = constructRamp([
+        {value: 0, color: rgb(0, 0, 0)},
+        {value: 0.5, color: rgb(0.5, 0.5, 0.5)},
+        {value: 1, color: rgb(1, 1, 1)}
+    ]);
+    cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=ramp)
+    `
+    const resultMap = execute(parseProgram(program), emptyContext())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assert.deepStrictEqual(resultMapRaw.ramp, [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']])
+    assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
 })
 
 void test('conditional map', () => {
