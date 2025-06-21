@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
-import { instantiate, ScaleDescriptor } from '../src/urban-stats-script/constants/scale'
+import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
@@ -1238,7 +1238,7 @@ function assertScale(descriptor: ScaleDescriptor, values: number[], proportions:
 void test('test basic map', () => {
     const effects: Effect[] = []
     const ctx = emptyContext(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone)'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1253,7 +1253,7 @@ void test('test basic map', () => {
 void test('test basic map with label passed', () => {
     const effects: Effect[] = []
     const ctx = emptyContext(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale, ramp=rampBone, label="Test Map")'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, label="Test Map")'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1264,7 +1264,7 @@ void test('test basic map with label passed', () => {
 })
 
 void test('test basic map with geometric', () => {
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 4], scale=logScale, ramp=rampBone)'), emptyContext())
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 4], scale=logScale(), ramp=rampBone)'), emptyContext())
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1273,7 +1273,7 @@ void test('test basic map with geometric', () => {
 })
 
 void test('map with only one value', () => {
-    const resultMap = evaluate(parseExpr('cMap(geo=["A"], data=[11.2], scale=linearScale, ramp=rampBone)'), emptyContext())
+    const resultMap = evaluate(parseExpr('cMap(geo=["A"], data=[11.2], scale=linearScale(), ramp=rampBone)'), emptyContext())
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A'])
@@ -1287,7 +1287,7 @@ void test('conditional map', () => {
     data = [1, 2, 3, 4];
     mask = [true, true, false, false]
     if (mask) {
-        cMap(geo=geo, data=data, scale=linearScale, ramp=rampBone)
+        cMap(geo=geo, data=data, scale=linearScale(), ramp=rampBone)
     }
     `
     const resultMap = execute(parseProgram(program), emptyContext())
@@ -1299,9 +1299,9 @@ void test('conditional map', () => {
 
 void test('error map with different geo and data lengths', () => {
     assert.throws(
-        () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale, ramp=rampBone)'), emptyContext()),
+        () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale(), ramp=rampBone)'), emptyContext()),
         (err: Error): boolean => {
-            return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-64'
+            return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-66'
         },
     )
 })
@@ -1315,7 +1315,7 @@ void test('map with documentation', () => {
             humanReadableName: 'X value!',
         },
     })
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=x, scale=linearScale, ramp=rampBone)'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=x, scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.label, 'X value!')
@@ -1330,8 +1330,139 @@ void test('conditioned map with documentation', () => {
             humanReadableName: 'X value!',
         },
     })
-    const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=["A", "B"], data=x, scale=linearScale, ramp=rampBone) }'), ctx)
+    const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=["A", "B"], data=x, scale=linearScale(), ramp=rampBone) }'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+})
+
+void test('test scale functions with parameters', () => {
+    // Test linearScale with no parameters
+    const linearResult = evaluate(parseExpr('linearScale()'), emptyContext())
+    const linearScaleFn = linearResult.value as { type: 'opaque', value: Scale }
+    const linearDescriptor = linearScaleFn.value([1, 2, 3, 4, 5])
+    assert.deepStrictEqual(linearDescriptor, {
+        kind: 'linear',
+        min: 1,
+        max: 5,
+    })
+
+    // Test linearScale with min and max
+    const linearWithMinMax = evaluate(parseExpr('linearScale(min=0, max=10)'), emptyContext())
+    const linearWithMinMaxFn = linearWithMinMax.value as { type: 'opaque', value: Scale }
+    const linearWithMinMaxDescriptor = linearWithMinMaxFn.value([1, 2, 3, 4, 5])
+    assert.deepStrictEqual(linearWithMinMaxDescriptor, {
+        kind: 'linear',
+        min: 0,
+        max: 10,
+    })
+
+    // Test linearScale with consistent center
+    const linearWithCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=5)'), emptyContext())
+    const linearWithCenterFn = linearWithCenter.value as { type: 'opaque', value: Scale }
+    const linearWithCenterDescriptor = linearWithCenterFn.value([1, 2, 3, 4, 5])
+    assert.deepStrictEqual(linearWithCenterDescriptor, {
+        kind: 'linear',
+        min: 0,
+        max: 10,
+    })
+
+    // Test linearScale with inconsistent center (should throw when called with data)
+    const linearWithInconsistentCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=3)'), emptyContext())
+    const inconsistentScaleFn = linearWithInconsistentCenter.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => inconsistentScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center 3 does not equal (min + max) / 2 = 10 / 2')
+        },
+    )
+
+    // Test scale instantiation and forward/inverse mapping
+    const scaleInstance = instantiate(linearWithMinMaxDescriptor)
+    assert.strictEqual(scaleInstance.forward(0), 0) // min maps to 0
+    assert.strictEqual(scaleInstance.forward(10), 1) // max maps to 1
+    assert.strictEqual(scaleInstance.forward(5), 0.5) // center maps to 0.5
+    assert.strictEqual(scaleInstance.inverse(0), 0) // 0 maps back to min
+    assert.strictEqual(scaleInstance.inverse(1), 10) // 1 maps back to max
+    assert.strictEqual(scaleInstance.inverse(0.5), 5) // 0.5 maps back to center
+
+    // Test edge cases: single value
+    const singleValueScale = evaluate(parseExpr('linearScale()'), emptyContext())
+    const singleValueScaleFn = singleValueScale.value as { type: 'opaque', value: Scale }
+    const singleValueDescriptor = singleValueScaleFn.value([42])
+    assert.deepStrictEqual(singleValueDescriptor, {
+        kind: 'linear',
+        min: 42,
+        max: 42,
+    })
+
+    // Test edge cases: empty array (should handle gracefully)
+    const emptyArrayScale = evaluate(parseExpr('linearScale()'), emptyContext())
+    const emptyArrayScaleFn = emptyArrayScale.value as { type: 'opaque', value: Scale }
+    const emptyArrayDescriptor = emptyArrayScaleFn.value([])
+    assert.deepStrictEqual(emptyArrayDescriptor, {
+        kind: 'linear',
+        min: Infinity,
+        max: -Infinity,
+    })
+
+    // Test edge cases: NaN values are filtered out
+    const nanScale = evaluate(parseExpr('linearScale()'), emptyContext())
+    const nanScaleFn = nanScale.value as { type: 'opaque', value: Scale }
+    const nanDescriptor = nanScaleFn.value([1, NaN, 3, NaN, 5])
+    assert.deepStrictEqual(nanDescriptor, {
+        kind: 'linear',
+        min: 1,
+        max: 5,
+    })
+
+    // --- Additional tests for partial parameter specification ---
+    // Only min provided
+    const linearOnlyMin = evaluate(parseExpr('linearScale(min=2)'), emptyContext())
+    const linearOnlyMinFn = linearOnlyMin.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearOnlyMinFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 2,
+        max: 6,
+    })
+    // Only max provided
+    const linearOnlyMax = evaluate(parseExpr('linearScale(max=7)'), emptyContext())
+    const linearOnlyMaxFn = linearOnlyMax.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearOnlyMaxFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 2,
+        max: 7,
+    })
+    // Only center provided
+    const linearOnlyCenter = evaluate(parseExpr('linearScale(center=5)'), emptyContext())
+    const linearOnlyCenterFn = linearOnlyCenter.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearOnlyCenterFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 2,
+        max: 8,
+    })
+    // min and max provided
+    const linearMinMax = evaluate(parseExpr('linearScale(min=1, max=9)'), emptyContext())
+    const linearMinMaxFn = linearMinMax.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearMinMaxFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 1,
+        max: 9,
+    })
+    // min and center provided
+    const linearMinCenter = evaluate(parseExpr('linearScale(min=1, center=5)'), emptyContext())
+    const linearMinCenterFn = linearMinCenter.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearMinCenterFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 1,
+        max: 9,
+    })
+    // max and center provided
+    const linearMaxCenter = evaluate(parseExpr('linearScale(max=9, center=5)'), emptyContext())
+    const linearMaxCenterFn = linearMaxCenter.value as { type: 'opaque', value: Scale }
+    assert.deepStrictEqual(linearMaxCenterFn.value([2, 4, 6]), {
+        kind: 'linear',
+        min: 1,
+        max: 9,
+    })
 })
