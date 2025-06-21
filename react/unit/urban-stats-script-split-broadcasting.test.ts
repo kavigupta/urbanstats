@@ -179,7 +179,7 @@ void test('split mask testing', (): void => {
             ['b', undocValue([10, 30, 60, 20, 20, 10, 104, 389, 10], numVectorType)],
         ],
     ))
-    const defaultLocInfo = newLocation({ start: { lineIdx: 1, colIdx: 1 }, end: { lineIdx: 1, colIdx: 1 } })
+    const defaultLocInfo = newLocation({ start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 }, end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 } })
     // basic mask testing
     assert.deepStrictEqual(
         splitMask(

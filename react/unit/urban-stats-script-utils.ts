@@ -100,7 +100,7 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
 }
 
 export function parseExpr(input: string): UrbanStatsASTExpression {
-    const parsed = parse(input)
+    const parsed = parse(input, { type: 'single', ident: 'test' })
     if (parsed.type !== 'expression') {
         throw new Error(`Expected an expression, but got ${JSON.stringify(parsed)}`)
     }
@@ -108,7 +108,7 @@ export function parseExpr(input: string): UrbanStatsASTExpression {
 }
 
 export function parseProgram(input: string): UrbanStatsASTStatement {
-    const parsed = parse(input)
+    const parsed = parse(input, { type: 'single', ident: 'test' })
     if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression') {
         throw new Error(`Expected an assignment or statements, but got ${JSON.stringify(parsed)}`)
     }
