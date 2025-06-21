@@ -36,7 +36,7 @@ export const cMap: USSValue = {
         const geo = namedArgs.geo as string[]
         const data = namedArgs.data as number[]
         const scale = (namedArgs.scale as { type: 'opaque', value: Scale }).value
-        const ramp = namedArgs.ramp as RampT
+        const ramp = (namedArgs.ramp as { type: 'opaque', value: RampT }).value
         const labelPassedIn = namedArgs.label as string | null
 
         if (geo.length !== data.length) {
