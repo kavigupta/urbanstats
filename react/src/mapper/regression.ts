@@ -85,7 +85,16 @@ export function calculateRegression(independent: number[], dependent: number[][]
     const preds = multiply(A, wsCol).map(pred => (pred as number[])[0])
 
     const residuals = preds.map((pred, i) => y[i][0] - pred)
-    return { residuals, weights: weights as number[], intercept: intercept as number }
+    const residualsWithNans = Array(independent.length).fill(NaN) as number[]
+    let idx = 0
+    for (let i = 0; i < independent.length; i++) {
+        if (isNan[i]) {
+            continue
+        }
+        residualsWithNans[idx] = residuals[idx]
+        idx++
+    }
+    return { residuals: residualsWithNans, weights: weights as number[], intercept: intercept as number }
 }
 
 export function computePearsonR2(
@@ -100,6 +109,10 @@ export function computePearsonR2(
     if (w === undefined) {
         w = Array(dependent.length).fill(1)
     }
+    const anyNaN = dependent.map((val, i) => isNaN(val) || isNaN(residuals[i]) || (w && isNaN(w[i])))
+    dependent = dependent.filter((_, i) => !anyNaN[i])
+    residuals = residuals.filter((_, i) => !anyNaN[i])
+    w = w.filter((_, i) => !anyNaN[i])
     // https://en.wikipedia.org/wiki/Coefficient_of_determination
     // the most general definition of R^2 is:
     // R^2 = 1 - SS_res / SS_tot
