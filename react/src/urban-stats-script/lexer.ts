@@ -16,11 +16,12 @@ type Token = NonErrorToken | ErrorToken
 
 export type Block = { type: 'single', ident: string } | { type: 'multi' }
 
-export interface SingleLocation {
-    block: Block
+export interface SingleLocationWithinBlock {
     lineIdx: number
     colIdx: number
 }
+
+export type SingleLocation = SingleLocationWithinBlock & { block: Block }
 
 export interface BaseLocInfo {
     start: SingleLocation

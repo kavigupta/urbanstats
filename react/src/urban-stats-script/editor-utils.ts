@@ -3,12 +3,12 @@ import { DefaultMap } from '../utils/DefaultMap'
 import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex, LocInfo, SingleLocation } from './lexer'
+import { AnnotatedToken, lex, LocInfo, SingleLocationWithinBlock } from './lexer'
 import { ParseError, parseTokens } from './parser'
 import { USSValue } from './types-values'
 import { executeAsync, USSExecutionDescriptor } from './workerManager'
 
-export function stringIndexToLocation(lines: string[], colIdx: number): SingleLocation {
+export function stringIndexToLocation(lines: string[], colIdx: number): SingleLocationWithinBlock {
     let lineIdx = 0
     while (lineIdx < lines.length - 1 && lines[lineIdx].length < colIdx) {
         colIdx -= lines[lineIdx].length + 1
@@ -20,7 +20,7 @@ export function stringIndexToLocation(lines: string[], colIdx: number): SingleLo
     }
 }
 
-function locationsEqual(a: SingleLocation, b: SingleLocation): boolean {
+function locationsEqual(a: SingleLocationWithinBlock, b: SingleLocationWithinBlock): boolean {
     return a.lineIdx === b.lineIdx && a.colIdx === b.colIdx
 }
 
@@ -138,7 +138,7 @@ export function stringToHtml(
         string = `${string}\n`
     }
 
-    const lexTokens = lex(string)
+    const lexTokens = lex({ type: 'single', ident: 'editor' }, string)
 
     function shift(tokens: { location: LocInfo }[], line: number, offset: number, delta: number, kind: 'replace' | 'insertBefore'): void {
         for (const token of tokens) {
@@ -157,7 +157,7 @@ export function stringToHtml(
 
     const lines = string.split('\n')
 
-    let autocompleteLocation: SingleLocation | undefined
+    let autocompleteLocation: SingleLocationWithinBlock | undefined
 
     if (autocomplete.collapsedRangeIndex !== undefined && lastAction === 'input') {
         autocompleteLocation = stringIndexToLocation(lines, autocomplete.collapsedRangeIndex)

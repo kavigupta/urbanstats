@@ -61,7 +61,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override async computePolygons(): Promise<Polygons> {
-        const stmts = parse(this.props.uss)
+        const stmts = parse(this.props.uss, { type: 'single', ident: 'mapper-panel' })
         if (stmts.type === 'error') {
             console.error('Error parsing USS expression:', stmts.errors)
             return { polygons: [], zoomIndex: -1 }

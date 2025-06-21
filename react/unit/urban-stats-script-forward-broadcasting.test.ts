@@ -102,8 +102,8 @@ void test('broadcasting-locate-type', (): void => {
 
 void test('broadcasting-apply', (): void => {
     const locInfo = newLocation({
-        start: { lineIdx: 1, colIdx: 1 },
-        end: { lineIdx: 1, colIdx: 1 },
+        start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
+        end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
     })
     assert.deepStrictEqual(
         broadcastApply(
@@ -191,8 +191,8 @@ void test('broadcasting-apply', (): void => {
 
 void test('jagged array', (): void => {
     const locInfo = newLocation({
-        start: { lineIdx: 1, colIdx: 1 },
-        end: { lineIdx: 1, colIdx: 1 },
+        start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
+        end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
     })
     assert.deepStrictEqual(
         broadcastApply(
@@ -233,8 +233,8 @@ void test('jagged array', (): void => {
 
 void test('wrong number of arguments', (): void => {
     const locInfo = newLocation({
-        start: { lineIdx: 1, colIdx: 1 },
-        end: { lineIdx: 1, colIdx: 1 },
+        start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
+        end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
     })
     assert.deepStrictEqual(
         broadcastApply(
@@ -287,8 +287,8 @@ void test('wrong number of arguments', (): void => {
 
 void test('wrong argument type', (): void => {
     const locInfo = newLocation({
-        start: { lineIdx: 1, colIdx: 1 },
-        end: { lineIdx: 1, colIdx: 1 },
+        start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
+        end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
     })
     assert.deepStrictEqual(
         broadcastApply(
@@ -345,8 +345,8 @@ void test('wrong argument type', (): void => {
 
 void test('bad-shape-broadcasting', (): void => {
     const locInfo = newLocation({
-        start: { lineIdx: 1, colIdx: 1 },
-        end: { lineIdx: 1, colIdx: 1 },
+        start: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
+        end: { block: { type: 'single', ident: 'test' }, lineIdx: 1, colIdx: 1 },
     })
     assert.deepStrictEqual(
         broadcastApply(
