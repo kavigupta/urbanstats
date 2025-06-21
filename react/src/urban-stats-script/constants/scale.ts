@@ -1,9 +1,11 @@
 import { USSType, USSValue } from '../types-values'
 
 // Functions can't be send over the worker boundary, so instead we must send descriptors
+export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number }
+
 export type ScaleDescriptor =
-    { kind: 'linear', min: number, max: number } |
-    { kind: 'log', min: number, max: number }
+    LinearScaleDescriptor |
+    { kind: 'log', linearScale: LinearScaleDescriptor }
 export type Scale = (values: number[]) => ScaleDescriptor
 
 export interface ScaleInstance {
@@ -16,9 +18,10 @@ export const scaleType = {
     name: 'scale',
 } satisfies USSType
 
-export function instantiate({ kind, min, max }: ScaleDescriptor): ScaleInstance {
-    switch (kind) {
+export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
+    switch (descriptor.kind) {
         case 'linear':
+            const { min, max } = descriptor
             if (min === max) {
                 // just arbitrarily map min <=> 0.5
                 return {
@@ -33,7 +36,7 @@ export function instantiate({ kind, min, max }: ScaleDescriptor): ScaleInstance 
                 inverse: (value: number) => value * range + min,
             }
         case 'log':
-            const { forward, inverse } = instantiate({ kind: 'linear', min, max })
+            const { forward, inverse } = instantiate(descriptor.linearScale)
             return {
                 forward: (value: number) => forward(Math.log(value)),
                 inverse: (value: number) => Math.exp(inverse(value)),
@@ -55,11 +58,10 @@ const linearScale: Scale = (values: number[]) => {
 
 const logScale: Scale = (values: number[]) => {
     const logVals = values.map(Math.log)
-    const { min, max } = linearScale(logVals)
+    const linearScaleDescriptor = linearScale(logVals) as LinearScaleDescriptor
     return {
         kind: 'log',
-        min,
-        max,
+        linearScale: linearScaleDescriptor,
     }
 }
 
