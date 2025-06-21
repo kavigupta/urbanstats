@@ -1,113 +1,17 @@
 import { assert } from '../utils/defensive'
 
-import { AnnotatedToken, AnnotatedTokenWithValue, BaseLocInfo, lex, LocInfo, newLocation } from './lexer'
+import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, newLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
-interface Decorated<T> {
+export interface Decorated<T> {
     node: T
     location: LocInfo
 }
 
-export type UrbanStatsASTArg = (
-    { type: 'unnamed', value: UrbanStatsASTExpression }
-    | { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression }
-)
-
-export type UrbanStatsASTLHS = (
-    { type: 'identifier', name: Decorated<string> }
-    | { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> }
-
-)
-
-export type UrbanStatsASTExpression = (
-    UrbanStatsASTLHS
-    | { type: 'constant', value: Decorated<number | string> }
-    | { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo }
-    | { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression }
-    | { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression }
-    | { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] }
-    | { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] }
-    | { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }
-)
-
-export type UrbanStatsASTStatement = (
-    { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression }
-    | { type: 'expression', value: UrbanStatsASTExpression }
-    | { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement[] }
-    | { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression, rest: UrbanStatsASTStatement[] }
-)
-
-type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
 export interface ParseError { type: 'error', value: string, location: LocInfo }
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
-
-function unifyBase(...locations: BaseLocInfo[]): BaseLocInfo {
-    assert(locations.length > 0, 'At least one location must be provided for unification')
-    const startLine = locations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
-    const endLine = locations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
-    const startCol = locations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
-    const endCol = locations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
-    return {
-        start: { lineIdx: startLine, colIdx: startCol },
-        end: { lineIdx: endLine, colIdx: endCol },
-    }
-}
-
-export function unify(...locations: LocInfo[]): LocInfo {
-    return {
-        ...unifyBase(...locations),
-        shifted: unifyBase(...locations.map(l => l.shifted)),
-    }
-}
-
-export function locationOf(node: UrbanStatsAST): LocInfo {
-    /* c8 ignore start -- This function doesn't need to be tested in detail, as it is a simple location extractor */
-    switch (node.type) {
-        case 'unnamed':
-            return locationOf(node.value)
-        case 'named':
-            return unify(node.name.location, locationOf(node.value))
-        case 'constant':
-            return node.value.location
-        case 'identifier':
-            return node.name.location
-        case 'attribute':
-            return unify(node.name.location, locationOf(node.expr))
-        case 'function':
-            return node.entireLoc
-        case 'unaryOperator':
-            return unify(node.operator.location, locationOf(node.expr))
-        case 'binaryOperator':
-            return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
-        case 'objectLiteral':
-            return node.entireLoc
-        case 'vectorLiteral':
-            return node.entireLoc
-        case 'assignment':
-            return unify(locationOf(node.lhs), locationOf(node.value))
-        case 'expression':
-            return locationOf(node.value)
-        case 'statements':
-            return node.entireLoc
-        case 'if':
-            return node.entireLoc
-        case 'condition':
-            return node.entireLoc
-    }
-    /* c8 ignore stop */
-}
-
-export function locationOfLastExpression(node: UrbanStatsAST): LocInfo {
-    switch (node.type) {
-        case 'assignment':
-            return locationOf(node.value)
-        case 'statements':
-            return locationOfLastExpression(node.result[node.result.length - 1])
-        default:
-            return locationOf(node)
-    }
-}
 
 export function toSExp(node: UrbanStatsAST): string {
     /**
