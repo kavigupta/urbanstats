@@ -13,6 +13,10 @@ type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: E
 const setScriptDelay = 500
 const executeDelay = 500
 
+const undoChunking = 1000
+
+interface UndoRedoItem { time: number, script: string, range: Range | undefined }
+
 export function Editor(
     props: {
         getScript: () => string // Swap this function to get a new script
@@ -26,13 +30,18 @@ export function Editor(
 
     const [script, setScript] = useState(getScript)
 
-    const undoStack = useRef<{ script: string, range: Range | undefined }[]>([]) // Top of this stack is the current state
-    const redoStack = useRef<{ script: string, range: Range | undefined }[]>([])
+    const undoStack = useRef<UndoRedoItem[]>([]) // Top of this stack is the current state
+    const redoStack = useRef<UndoRedoItem[]>([])
+
+    console.log({
+        undoStack: undoStack.current,
+        redoStack: redoStack.current,
+    })
 
     useEffect(() => {
         const s = getScript()
         setScript(s)
-        undoStack.current = [{ script: s, range: getRange(editorRef.current!) }]
+        undoStack.current = [{ time: Date.now(), script: s, range: getRange(editorRef.current!) }]
         redoStack.current = []
     }, [getScript])
 
@@ -62,6 +71,19 @@ export function Editor(
 
     const lastRenderedScriptRef = useRef<string | undefined>(undefined)
 
+    function newUndoState(newScript: string, newRange: Range | undefined): void {
+        const currentUndoState = undoStack.current[undoStack.current.length - 1]
+        if (currentUndoState.time + undoChunking > Date.now()) {
+            // ammend current item rather than making a new one
+            currentUndoState.script = newScript
+            currentUndoState.range = newRange
+        }
+        else {
+            undoStack.current.push({ time: Date.now(), script: newScript, range: newRange })
+        }
+        redoStack.current = []
+    }
+
     const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
         const range = newRange ?? getRange(editorRef.current!)
 
@@ -77,8 +99,7 @@ export function Editor(
                 const r = { start: to + delta, end: to + delta }
                 renderScript(editedScript, r)
                 setScript(editedScript)
-                undoStack.current.push({ script: editedScript, range: r })
-                redoStack.current = []
+                newUndoState(editedScript, r)
                 setLastAction('autocomplete')
             },
         })
@@ -164,8 +185,7 @@ export function Editor(
             setLastAction('input')
             const newScript = nodeContent(editor)
             setScript(newScript)
-            undoStack.current.push({ script: newScript, range: getRange(editor) })
-            redoStack.current = []
+            newUndoState(newScript, getRange(editor))
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
@@ -177,8 +197,7 @@ export function Editor(
             function editScript(newScript: string, newRange: Range): void {
                 renderScript(newScript, newRange)
                 setScript(newScript)
-                undoStack.current.push({ script: newScript, range: newRange })
-                redoStack.current = []
+                newUndoState(newScript, newRange)
             }
 
             if (autocompleteMenuRef.current?.action(editor, e) === true) {
