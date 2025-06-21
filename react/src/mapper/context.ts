@@ -1,3 +1,4 @@
+import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
@@ -32,7 +33,7 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
             type: { type: 'vector', elementType: { type: 'number' } },
             value: statisticsForGeography.map(stat => stat.stats[index]),
             // TODO use human readable name
-            documentation: { humanReadableName: name },
+            documentation: { humanReadableName: statistic_name_list[index] },
         }
     }
 
@@ -60,10 +61,11 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getV
         if (!ids.has(name)) {
             return
         }
-        const values = subvars.map((subvar) => {
-            const existing = ctx.getVariable(subvar)?.value as (undefined | number[])
-            return (existing ?? getVariable(subvar)?.value) as (undefined | number[])
+        const vs: (USSValue | undefined)[] = subvars.map((subvar) => {
+            const existing = ctx.getVariable(subvar)
+            return existing ?? getVariable(subvar)
         })
+        const values = vs.map(v => v?.value as (undefined | number[]))
         if (values.some(v => v === undefined)) {
             return
         }
@@ -72,6 +74,7 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getV
         ctx.assignVariable(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
             value,
+            documentation: vs.map(v => v?.documentation).find(d => d !== undefined),
         })
     })
 }
