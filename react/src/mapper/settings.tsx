@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statistic_variables_info from '../data/statistic_variables_info'
@@ -72,37 +72,39 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
     return addTo as T
 }
 
-export function MapperSettings(props: {
+export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
     mapSettings: MapSettings
-    setMapSettings: (newValue: MapSettings) => void
+    setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
     getUss: () => string
 }): ReactNode {
-    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyKind: props.mapSettings.geography_kind }), [props.mapSettings.geography_kind])
+    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyKind: mapSettings.geography_kind }), [mapSettings.geography_kind])
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
+
+    const setUss = useCallback((uss: string) => {
+        setMapSettings(s => ({
+            ...s,
+            uss,
+        }))
+    }, [setMapSettings])
 
     return (
         <div>
             <DataListSelector
                 overallName="Geography Kind:"
                 names={valid_geographies}
-                initialValue={props.mapSettings.geography_kind}
+                initialValue={mapSettings.geography_kind}
                 onChange={
                     (name) => {
-                        props.setMapSettings({
-                            ...props.mapSettings,
+                        setMapSettings(s => ({
+                            ...s,
                             geography_kind: name,
-                        })
+                        }))
                     }
                 }
             />
             <Editor
-                getScript={props.getUss}
-                setScript={(uss) => {
-                    props.setMapSettings({
-                        ...props.mapSettings,
-                        uss,
-                    })
-                }}
+                getScript={getUss}
+                setScript={setUss}
                 executionDescriptor={executionDescriptor}
                 autocompleteSymbols={autocompleteSymbols}
                 showOutput={false}
