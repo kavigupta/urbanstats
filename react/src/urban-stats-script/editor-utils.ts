@@ -120,13 +120,13 @@ export type Action = 'input' | 'select' | 'autocomplete' | undefined
  * execute (async) -> html, result
  */
 
-export type ParseResult = Result<() => Promise<{ html: string, result: ExecResult }>>
+export type ParseResult = Result<undefined | (() => Promise<{ html: string, result: ExecResult }>)> // Undefined means did not execute
 export type ExecResult = Result<USSValue>
 
 export function stringToHtml(
     string: string,
     colors: Colors,
-    executionDescriptor: USSExecutionDescriptor,
+    executionDescriptor: USSExecutionDescriptor | undefined,
     autocompleteSymbols: string[],
     lastAction: Action,
     autocomplete: {
@@ -282,25 +282,27 @@ export function stringToHtml(
         else {
             result = {
                 result: 'success',
-                value: async () => {
-                    const execResult = await executeAsync({ descriptor: executionDescriptor, stmts: parsed })
-                    if (execResult.success) {
-                        return { html: lines.join('\n'), result: { result: 'success', value: execResult.value } }
-                    }
-                    else {
-                        for (const pos of ['start', 'end'] as const) {
-                            const loc = execResult.error.location.shifted[pos]
-                            const line = lines[loc.lineIdx]
-                            const tag = pos === 'start' ? span({ type: 'error', value: execResult.error.shortMessage }) : `</span>`
-                            lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
-                            shift([execResult.error], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+                value: executionDescriptor === undefined
+                    ? undefined
+                    : async () => {
+                        const execResult = await executeAsync({ descriptor: executionDescriptor, stmts: parsed })
+                        if (execResult.success) {
+                            return { html: lines.join('\n'), result: { result: 'success', value: execResult.value } }
                         }
-                        return {
-                            html: lines.join('\n'),
-                            result: { result: 'failure', errors: [execResult.error.message] },
+                        else {
+                            for (const pos of ['start', 'end'] as const) {
+                                const loc = execResult.error.location.shifted[pos]
+                                const line = lines[loc.lineIdx]
+                                const tag = pos === 'start' ? span({ type: 'error', value: execResult.error.shortMessage }) : `</span>`
+                                lines[loc.lineIdx] = `${line.slice(0, loc.colIdx)}${tag}${line.slice(loc.colIdx)}`
+                                shift([execResult.error], loc.lineIdx, loc.colIdx, tag.length, pos === 'start' ? 'replace' : 'insertBefore')
+                            }
+                            return {
+                                html: lines.join('\n'),
+                                result: { result: 'failure', errors: [execResult.error.message] },
+                            }
                         }
-                    }
-                },
+                    },
             }
         }
     }

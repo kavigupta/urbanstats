@@ -16,7 +16,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { parse } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
-import { ConsolidatedShapes, Feature } from '../utils/protos'
+import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
@@ -24,35 +24,43 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
-    geographyKind: string
-    underlyingShapes: Promise<ConsolidatedShapes>
+    geographyKind: typeof valid_geographies[number]
     rampCallback: (newRamp: EmpiricalRamp) => void
     height: number | string | undefined
     uss: string
 }
 
-class DisplayedMap extends MapGeneric<DisplayedMapProps> {
-    name_to_index: undefined | Map<string, number>
+interface Shapes { geographyKind: string, data: Promise<{ shapes: NormalizeProto<IConsolidatedShapes>, nameToIndex: Map<string, number> }> }
 
-    async guaranteeNameToIndex(): Promise<void> {
-        if (this.name_to_index === undefined) {
-            const result = (await this.props.underlyingShapes).longnames
-            this.name_to_index = new Map(result.map((r, i) => [r, i]))
+class DisplayedMap extends MapGeneric<DisplayedMapProps> {
+    private shapes: undefined | Shapes
+
+    private getShapes(): Shapes {
+        if (this.shapes?.geographyKind === this.props.geographyKind) {
+            return this.shapes
         }
+
+        this.shapes = { geographyKind: this.props.geographyKind, data: (async () => {
+            const shapes = (await loadProtobuf(
+                consolidatedShapeLink(this.props.geographyKind),
+                'ConsolidatedShapes',
+            )) as NormalizeProto<ConsolidatedShapes>
+
+            const nameToIndex = new Map(shapes.longnames.map((r, i) => [r, i]))
+            return { shapes, nameToIndex }
+        })() }
+
+        return this.shapes
     }
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        await this.guaranteeNameToIndex()
-        const index = this.name_to_index!.get(name)!
-        const data = (await this.props.underlyingShapes).shapes[index]
+        const { nameToIndex, shapes } = await this.getShapes().data
+        const index = nameToIndex.get(name)!
+        const data = shapes.shapes[index]
         return data as NormalizeProto<Feature>
     }
 
     override async computePolygons(): Promise<Polygons> {
-        // reset index
-        this.name_to_index = undefined
-        await this.guaranteeNameToIndex()
-
         const stmts = parse(this.props.uss)
         if (stmts.type === 'error') {
             console.error('Error parsing USS expression:', stmts.errors)
@@ -177,8 +185,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 }
 
 interface MapComponentProps {
-    underlyingShapes: Promise<ConsolidatedShapes>
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
     mapRef: React.RefObject<DisplayedMap>
     height: number | string | undefined
     uss: string
@@ -204,7 +211,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
             <div style={{ height: '90%', width: '100%' }}>
                 <DisplayedMap
                     geographyKind={props.geographyKind}
-                    underlyingShapes={props.underlyingShapes}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
                     ref={props.mapRef}
                     uss={props.uss}
@@ -286,17 +292,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         setMapSettings(props.mapSettings)
     }, [props.mapSettings])
 
-    const [underlyingShapes, setUnderlyingShapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
-
-    useEffect(() => {
-        if (valid_geographies.includes(mapSettings.geography_kind)) {
-            setUnderlyingShapes(loadProtobuf(
-                consolidatedShapeLink(mapSettings.geography_kind),
-                'ConsolidatedShapes',
-            ))
-        }
-    }, [mapSettings.geography_kind])
-
     const mapRef = useRef<DisplayedMap>(null)
 
     const jsonedSettings = JSON.stringify(mapSettings)
@@ -313,13 +308,11 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [jsonedSettings, navContext])
 
     const mapperPanel = (height: string | undefined): ReactNode => {
-        const geographyKind = mapSettings.geography_kind
-
-        return (underlyingShapes === undefined)
+        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
+        return (!valid_geographies.includes(geographyKind))
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
-                        underlyingShapes={underlyingShapes}
                         geographyKind={geographyKind}
                         uss={mapSettings.uss}
                         height={height}
