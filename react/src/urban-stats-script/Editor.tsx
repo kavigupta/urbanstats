@@ -14,6 +14,7 @@ const setScriptDelay = 500
 const executeDelay = 500
 
 const undoChunking = 1000
+const undoHistory = 100
 
 interface UndoRedoItem { time: number, script: string, range: Range | undefined }
 
@@ -21,7 +22,7 @@ export function Editor(
     props: {
         getScript: () => string // Swap this function to get a new script
         setScript: (newScript: string) => void
-        executionDescriptor: USSExecutionDescriptor
+        executionDescriptor: USSExecutionDescriptor | undefined // Undefined means do not execute
         autocompleteSymbols: string[]
         showOutput: boolean
     },
@@ -70,6 +71,7 @@ export function Editor(
     const stagedResultRef = useRef<{ timer: ReturnType<typeof setTimeout>, resultFunction: () => Promise<unknown> } | undefined>(undefined)
 
     const lastRenderedScriptRef = useRef<string | undefined>(undefined)
+    const lastRenderedExecutionDescriptorRef = useRef<USSExecutionDescriptor | undefined>(undefined)
 
     function newUndoState(newScript: string, newRange: Range | undefined): void {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
@@ -80,6 +82,9 @@ export function Editor(
         }
         else {
             undoStack.current.push({ time: Date.now(), script: newScript, range: newRange })
+            while (undoStack.current.length > undoHistory) {
+                undoStack.current.shift()
+            }
         }
         redoStack.current = []
     }
@@ -125,33 +130,39 @@ export function Editor(
         setHTML(html, range)
 
         // Skip setting results if we just rendered this (happens when cursor is moving around for autocomplete)
-        if (lastRenderedScriptRef.current === newScript) {
+        if (lastRenderedScriptRef.current === newScript && lastRenderedExecutionDescriptorRef.current === executionDescriptor) {
             return
         }
 
         lastRenderedScriptRef.current = newScript
+        lastRenderedExecutionDescriptorRef.current = executionDescriptor
 
         setResult({ type: 'parse', result: newResult })
 
         if (newResult.result === 'success') {
             clearTimeout(stagedResultRef.current?.timer)
-            stagedResultRef.current = {
-                timer: setTimeout(async (): Promise<void> => {
-                    if (stagedResultRef.current?.resultFunction !== newResult.value) {
-                        return // Avoid race
-                    }
-                    const start = Date.now()
-                    setExecutionStart(start)
-                    const exec = await newResult.value()
-                    setExecutionStart(v => v === start ? undefined : v) // Only turn off execution if we were the one executing
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Race condition
-                    if (stagedResultRef.current?.resultFunction !== newResult.value) {
-                        return // Avoid race
-                    }
-                    setHTML(exec.html, undefined)
-                    setResult({ type: 'exec', result: exec.result })
-                }, executeDelay),
-                resultFunction: newResult.value,
+            if (newResult.value === undefined) {
+                stagedResultRef.current = undefined
+            }
+            else {
+                stagedResultRef.current = {
+                    timer: setTimeout(async (): Promise<void> => {
+                        if (stagedResultRef.current?.resultFunction !== newResult.value) {
+                            return // Avoid race
+                        }
+                        const start = Date.now()
+                        setExecutionStart(start)
+                        const exec = await newResult.value!()
+                        setExecutionStart(v => v === start ? undefined : v) // Only turn off execution if we were the one executing
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Race condition
+                        if (stagedResultRef.current?.resultFunction !== newResult.value) {
+                            return // Avoid race
+                        }
+                        setHTML(exec.html, undefined)
+                        setResult({ type: 'exec', result: exec.result })
+                    }, executeDelay),
+                    resultFunction: newResult.value,
+                }
             }
         }
         else {
@@ -262,7 +273,7 @@ export function Editor(
     }, [])
 
     const error = result.result.result === 'failure'
-    const executing = result.type === 'parse'
+    const executing = result.type === 'parse' && executionDescriptor !== undefined
 
     return (
         <div style={{ margin: '2em' }}>

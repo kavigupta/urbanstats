@@ -77,7 +77,15 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
     setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
     getUss: () => string
 }): ReactNode {
-    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'mapper', geographyKind: mapSettings.geography_kind }), [mapSettings.geography_kind])
+    const executionDescriptor = useMemo((): USSExecutionDescriptor | undefined => {
+        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
+        if (valid_geographies.includes(geographyKind)) {
+            return ({ kind: 'mapper', geographyKind })
+        }
+        else {
+            return undefined
+        }
+    }, [mapSettings.geography_kind])
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
 
     const setUss = useCallback((uss: string) => {
