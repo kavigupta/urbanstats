@@ -1373,7 +1373,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 3 does not equal (min + max) / 2 = 5')
+            return err.message.includes('Inconsistent parameters: center 3 does not equal (min + max) / 2 = 10 / 2')
         },
     )
 
@@ -1439,7 +1439,7 @@ void test('test scale functions with parameters', () => {
     assert.deepStrictEqual(linearOnlyCenterFn.value([2, 4, 6]), {
         kind: 'linear',
         min: 2,
-        max: 6,
+        max: 8,
     })
     // min and max provided
     const linearMinMax = evaluate(parseExpr('linearScale(min=1, max=9)'), emptyContext())
