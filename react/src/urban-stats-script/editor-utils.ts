@@ -380,9 +380,9 @@ function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
 }
 
-function renderAutocompleteIdentifiers(colors: Colors, identifiers: string[]): string {
+function renderAutocompleteIdentifiers(colors: Colors, identifiers: string[], selectedIndex: number): string {
     return identifiers
-        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === 0)}">${identifier}</div>`)
+        .map((identifier, index) => `<div data-autocomplete-option data-index="${index}" style="${autocompleteSpanStyle(colors, index, index === selectedIndex)}">${identifier}</div>`)
         .join('')
 }
 
@@ -417,7 +417,7 @@ function autocompleteMenuCallbacks(colors: Colors, options: string[], apply: (op
     return {
         // Should be idempotent
         attachListeners(editor) {
-            editor.querySelector('[data-autocomplete-menu]')!.innerHTML = renderAutocompleteIdentifiers(colors, options)
+            editor.querySelector('[data-autocomplete-menu]')!.innerHTML = renderAutocompleteIdentifiers(colors, options, selectedIndex)
             editor.querySelectorAll('[data-autocomplete-option]').forEach((option) => {
                 const index = parseInt(option.getAttribute('data-index')!)
                 option.addEventListener('click', () => {
