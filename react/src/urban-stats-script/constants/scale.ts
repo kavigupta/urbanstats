@@ -6,7 +6,7 @@ export interface LinearScaleDescriptor { kind: 'linear', min: number, max: numbe
 export type ScaleDescriptor =
     LinearScaleDescriptor |
     { kind: 'log', linearScale: LinearScaleDescriptor }
-export type Scale = (values: number[]) => ScaleDescriptor
+export type Scale = (values: number[], min?: number, max?: number, center?: number) => ScaleDescriptor
 
 export interface ScaleInstance {
     forward: (value: number) => number
@@ -44,21 +44,31 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
     }
 }
 
-const linearScale: Scale = (values: number[]) => {
+const linearScale: Scale = (values: number[], min?: number, max?: number, center?: number) => {
     values = values.filter(value => typeof value === 'number' && !isNaN(value))
-    const min = Math.min(...values)
-    const max = Math.max(...values)
+
+    // If all three parameters are provided, validate consistency
+    if (min !== undefined && max !== undefined && center !== undefined) {
+        const expectedCenter = (min + max) / 2
+        if (Math.abs(center - expectedCenter) > 1e-10) {
+            throw new Error(`Inconsistent parameters: center ${center} does not equal (min + max) / 2 = ${expectedCenter}`)
+        }
+    }
+
+    // Use provided parameters or compute from values
+    const computedMin = min ?? Math.min(...values)
+    const computedMax = max ?? Math.max(...values)
 
     return {
         kind: 'linear',
-        min,
-        max,
+        min: computedMin,
+        max: computedMax,
     }
 }
 
-const logScale: Scale = (values: number[]) => {
+const logScale: Scale = (values: number[], min?: number, max?: number, center?: number) => {
     const logVals = values.map(Math.log)
-    const linearScaleDescriptor = linearScale(logVals) as LinearScaleDescriptor
+    const linearScaleDescriptor = linearScale(logVals, min, max, center) as LinearScaleDescriptor
     return {
         kind: 'log',
         linearScale: linearScaleDescriptor,
@@ -66,19 +76,67 @@ const logScale: Scale = (values: number[]) => {
 }
 
 export const linearScaleValue: USSValue = {
-    type: scaleType,
-    value: {
-        type: 'opaque',
-        value: linearScale,
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            min: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+            max: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+            center: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+        },
+        returnType: { type: 'concrete', value: scaleType },
+    },
+    value: (ctx, posArgs, namedArgs) => {
+        const min = namedArgs.min as number | null | undefined
+        const max = namedArgs.max as number | null | undefined
+        const center = namedArgs.center as number | null | undefined
+        // Return a scale function that closes over these params
+        return {
+            type: 'opaque',
+            value: (values: number[]) => linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
+        }
     },
     documentation: { humanReadableName: 'Linear Scale' },
 }
 
 export const logScaleValue: USSValue = {
-    type: scaleType,
-    value: {
-        type: 'opaque',
-        value: logScale,
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            min: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+            max: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+            center: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: null,
+            },
+        },
+        returnType: { type: 'concrete', value: scaleType },
+    },
+    value: (ctx, posArgs, namedArgs) => {
+        const min = namedArgs.min as number | null | undefined
+        const max = namedArgs.max as number | null | undefined
+        const center = namedArgs.center as number | null | undefined
+        // Return a scale function that closes over these params
+        return {
+            type: 'opaque',
+            value: (values: number[]) => logScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
+        }
     },
     documentation: { humanReadableName: 'Logarithmic Scale' },
 }
