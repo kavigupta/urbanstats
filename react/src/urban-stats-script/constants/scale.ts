@@ -47,18 +47,27 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
 const linearScale: Scale = (values: number[], min?: number, max?: number, center?: number) => {
     values = values.filter(value => typeof value === 'number' && !isNaN(value))
 
-    // If all three parameters are provided, validate consistency
-    if (min !== undefined && max !== undefined && center !== undefined) {
-        const expectedCenter = (min + max) / 2
-        if (Math.abs(center - expectedCenter) > 1e-10) {
-            throw new Error(`Inconsistent parameters: center ${center} does not equal (min + max) / 2 = ${expectedCenter}`)
+    let computedMin = min ?? Math.min(...values)
+    let computedMax = max ?? Math.max(...values)
+
+    if (center !== undefined) {
+        if (min !== undefined && max !== undefined) {
+            if (Math.abs(center - (min + max) / 2) > 1e-10) {
+                throw new Error(`Inconsistent parameters: center ${center} does not equal (min + max) / 2 = ${min + max} / 2`)
+            }
+        }
+        else if (min !== undefined) {
+            computedMax = 2 * center - min
+        }
+        else if (max !== undefined) {
+            computedMin = 2 * center - max
+        }
+        else {
+            const range = Math.max(computedMax - center, center - computedMin)
+            computedMin = center - range
+            computedMax = center + range
         }
     }
-
-    // Use provided parameters or compute from values
-    const computedMin = min ?? Math.min(...values)
-    const computedMax = max ?? Math.max(...values)
-
     return {
         kind: 'linear',
         min: computedMin,
