@@ -1486,3 +1486,106 @@ void test('test scale functions with parameters', () => {
         max: 9,
     })
 })
+
+function closeLogScale(
+    actual: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number } },
+    expected: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number } },
+    tol = 1e-10,
+): void {
+    assert.strictEqual(actual.kind, expected.kind)
+    assert.strictEqual(actual.linearScale.kind, expected.linearScale.kind)
+    assert(Math.abs(actual.linearScale.min - expected.linearScale.min) < tol, `min: ${actual.linearScale.min} vs ${expected.linearScale.min}`)
+    assert(Math.abs(actual.linearScale.max - expected.linearScale.max) < tol, `max: ${actual.linearScale.max} vs ${expected.linearScale.max}`)
+}
+
+void test('test log scale functions with parameters', () => {
+    // Test logScale with no parameters
+    const logResult = evaluate(parseExpr('logScale()'), emptyContext())
+    const logScaleFn = logResult.value as { type: 'opaque', value: Scale }
+    const logDescriptor = logScaleFn.value([1, 10, 100])
+    if (logDescriptor.kind === 'log') {
+        closeLogScale(logDescriptor, {
+            kind: 'log',
+            linearScale: {
+                kind: 'linear',
+                min: 0, // log(1) = 0
+                max: Math.log(100), // log(100) = 4.605...
+            },
+        })
+    }
+    else {
+        assert.fail('Expected log scale descriptor')
+    }
+
+    // Test logScale with min and max
+    const logWithMinMax = evaluate(parseExpr('logScale(min=1, max=1000)'), emptyContext())
+    const logWithMinMaxFn = logWithMinMax.value as { type: 'opaque', value: Scale }
+    const logWithMinMaxDescriptor = logWithMinMaxFn.value([10, 100, 1000])
+    if (logWithMinMaxDescriptor.kind === 'log') {
+        closeLogScale(logWithMinMaxDescriptor, {
+            kind: 'log',
+            linearScale: {
+                kind: 'linear',
+                min: Math.log(1), // log(1) = 0
+                max: Math.log(1000), // log(1000) = 6.908...
+            },
+        })
+    }
+    else {
+        assert.fail('Expected log scale descriptor')
+    }
+
+    // Test logScale with min and center
+    const logWithMinCenter = evaluate(parseExpr('logScale(min=1, center=10)'), emptyContext())
+    const logWithMinCenterFn = logWithMinCenter.value as { type: 'opaque', value: Scale }
+    const logWithMinCenterDescriptor = logWithMinCenterFn.value([2, 5, 20])
+    if (logWithMinCenterDescriptor.kind === 'log') {
+        closeLogScale(logWithMinCenterDescriptor, {
+            kind: 'log',
+            linearScale: {
+                kind: 'linear',
+                min: Math.log(1), // log(1) = 0
+                max: 2 * Math.log(10) - Math.log(1), // 2 * log(10) - log(1) = 2 * 2.303 - 0 = 4.606
+            },
+        })
+    }
+    else {
+        assert.fail('Expected log scale descriptor')
+    }
+
+    // Test logScale with max and center
+    const logWithMaxCenter = evaluate(parseExpr('logScale(max=100, center=10)'), emptyContext())
+    const logWithMaxCenterFn = logWithMaxCenter.value as { type: 'opaque', value: Scale }
+    const logWithMaxCenterDescriptor = logWithMaxCenterFn.value([2, 5, 20])
+    if (logWithMaxCenterDescriptor.kind === 'log') {
+        closeLogScale(logWithMaxCenterDescriptor, {
+            kind: 'log',
+            linearScale: {
+                kind: 'linear',
+                min: 2 * Math.log(10) - Math.log(100), // 2 * log(10) - log(100) = 2 * 2.303 - 4.605 = 0
+                max: Math.log(100), // log(100) = 4.605
+            },
+        })
+    }
+    else {
+        assert.fail('Expected log scale descriptor')
+    }
+
+    // Test logScale with only center (should use data bounds)
+    const logWithCenter = evaluate(parseExpr('logScale(center=10)'), emptyContext())
+    const logWithCenterFn = logWithCenter.value as { type: 'opaque', value: Scale }
+    const logWithCenterDescriptor = logWithCenterFn.value([2, 5, 50])
+    if (logWithCenterDescriptor.kind === 'log') {
+        closeLogScale(logWithCenterDescriptor, {
+            kind: 'log',
+            linearScale: {
+                kind: 'linear',
+                min: Math.log(2),
+                max: Math.log(50),
+            },
+        })
+    }
+    else {
+        assert.fail('Expected log scale descriptor')
+    }
+})
