@@ -26,8 +26,14 @@ export function Editor(
 
     const [script, setScript] = useState(getScript)
 
+    const undoStack = useRef<{ script: string, range: Range | undefined }[]>([]) // Top of this stack is the current state
+    const redoStack = useRef<{ script: string, range: Range | undefined }[]>([])
+
     useEffect(() => {
-        setScript(getScript())
+        const s = getScript()
+        setScript(s)
+        undoStack.current = [{ script: s, range: getRange(editorRef.current!) }]
+        redoStack.current = []
     }, [getScript])
 
     // sync the script after some time of not typing
@@ -68,8 +74,11 @@ export function Editor(
             collapsedRangeIndex,
             apply: (completion, from, to, delta) => {
                 const editedScript = newScript.slice(0, from) + completion + newScript.slice(to)
-                renderScript(editedScript, { start: to + delta, end: to + delta })
+                const r = { start: to + delta, end: to + delta }
+                renderScript(editedScript, r)
                 setScript(editedScript)
+                undoStack.current.push({ script: editedScript, range: r })
+                redoStack.current = []
                 setLastAction('autocomplete')
             },
         })
@@ -140,6 +149,7 @@ export function Editor(
             }
             else {
                 setLastAction('select') // Indirectly displays script
+                undoStack.current[undoStack.current.length - 1].range = getRange(editorRef.current!) // updates the selection of the current state
             }
         }
         document.addEventListener('selectionchange', listener)
@@ -152,7 +162,10 @@ export function Editor(
         const editor = editorRef.current!
         const listener = (): void => {
             setLastAction('input')
-            setScript(nodeContent(editor))
+            const newScript = nodeContent(editor)
+            setScript(newScript)
+            undoStack.current.push({ script: newScript, range: getRange(editor) })
+            redoStack.current = []
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
@@ -164,6 +177,8 @@ export function Editor(
             function editScript(newScript: string, newRange: Range): void {
                 renderScript(newScript, newRange)
                 setScript(newScript)
+                undoStack.current.push({ script: newScript, range: newRange })
+                redoStack.current = []
             }
 
             if (autocompleteMenuRef.current?.action(editor, e) === true) {
@@ -188,6 +203,29 @@ export function Editor(
                         `${script.slice(0, range.start - 4)}${script.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
                     )
+                }
+            }
+
+            const isMac = navigator.userAgent.includes('Mac')
+            if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
+                e.preventDefault()
+                // Undo
+                if (undoStack.current.length >= 2) {
+                    const prevState = undoStack.current[undoStack.current.length - 2]
+                    // Prev state becomes current state, current state becomes redo state
+                    redoStack.current.push(undoStack.current.pop()!)
+                    renderScript(prevState.script, prevState.range)
+                    setScript(prevState.script)
+                }
+            }
+            else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
+                e.preventDefault()
+                // Redo
+                const futureState = redoStack.current.pop()
+                if (futureState !== undefined) {
+                    undoStack.current.push(futureState)
+                    renderScript(futureState.script, futureState.range)
+                    setScript(futureState.script)
                 }
             }
         }
