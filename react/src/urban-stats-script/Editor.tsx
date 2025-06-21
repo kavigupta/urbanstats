@@ -10,8 +10,6 @@ import { USSExecutionDescriptor } from './workerManager'
 
 type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: ExecResult }
 
-// TODO add delay parsing
-
 const setScriptDelay = 500
 const executeDelay = 500
 
@@ -48,6 +46,8 @@ export function Editor(
 
     const [executionStart, setExecutionStart] = useState<number | undefined>(undefined)
 
+    const [lastParse, setLastParse] = useState<number | undefined>(undefined)
+
     const [lastAction, setLastAction] = useState<Action>(undefined)
 
     const autocompleteMenuRef = useRef<AutocompleteMenu | undefined>(undefined)
@@ -73,6 +73,8 @@ export function Editor(
                 setLastAction('autocomplete')
             },
         })
+
+        setLastParse(Date.now())
 
         function setHTML(newHtml: string, r: Range | undefined): void {
             const editor = editorRef.current!
@@ -218,7 +220,7 @@ export function Editor(
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayResult result={result} showOutput={showOutput} executionStart={executionStart} />
+            <DisplayResult result={result} showOutput={showOutput} executionStart={executionStart} lastParse={lastParse} />
         </div>
     )
 }
@@ -232,9 +234,9 @@ const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-const showExecutingDelay = 500
+const showDebugInfoDelay = 500
 
-function DisplayResult(props: { result: Result, showOutput: boolean, executionStart: number | undefined }): ReactNode {
+function DisplayResult(props: { result: Result, showOutput: boolean, executionStart: number | undefined, lastParse: number | undefined }): ReactNode {
     const colors = useColors()
     function style(color: string): CSSProperties {
         const border = `2px solid ${color}`
@@ -256,13 +258,27 @@ function DisplayResult(props: { result: Result, showOutput: boolean, executionSt
         const timeout = props.executionStart !== undefined
             ? setTimeout(() => {
                 setShowExecuting(true)
-            }, showExecutingDelay)
+            }, showDebugInfoDelay)
             : undefined
         return () => {
             clearTimeout(timeout)
             setShowExecuting(false)
         }
     }, [props.executionStart])
+
+    const [maybeShowParseError, setMaybeShowParseError] = useState(false)
+
+    useEffect(() => {
+        const timeout = props.lastParse !== undefined
+            ? setTimeout(() => {
+                setMaybeShowParseError(true)
+            }, showDebugInfoDelay)
+            : undefined
+        return () => {
+            clearTimeout(timeout)
+            setMaybeShowParseError(false)
+        }
+    }, [props.lastParse])
 
     if (props.result.result.result === 'success') {
         if (props.result.type === 'parse' && showExecuting) {
@@ -279,13 +295,13 @@ function DisplayResult(props: { result: Result, showOutput: boolean, executionSt
                 </pre>
             )
         }
-        return null
     }
-    else {
+    if (props.result.result.result === 'failure' && maybeShowParseError) {
         return (
             <pre style={style(colors.hueColors.red)}>
                 {props.result.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
             </pre>
         )
     }
+    return null
 }
