@@ -3,7 +3,9 @@ import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
-import { parse, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../src/urban-stats-script/parser'
+import { parse } from '../src/urban-stats-script/parser'
+import { UrbanStatsASTStatement } from '../src/urban-stats-script/ast'
+import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType

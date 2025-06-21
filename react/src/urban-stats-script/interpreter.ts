@@ -1,10 +1,10 @@
 import { assert } from '../utils/defensive'
 
+import { UrbanStatsASTStatement, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTArg, locationOf, unify } from './ast'
 import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
 import { LocInfo } from './lexer'
 import { expressionOperatorMap } from './operators'
-import { locationOf, unify, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './parser'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue } from './types-values'
 

@@ -2,7 +2,7 @@ import validGeographies from '../data/mapper/used_geographies'
 
 import { CMap } from './constants/map'
 import { LocInfo } from './lexer'
-import { UrbanStatsASTStatement } from './parser'
+import { UrbanStatsASTStatement } from './ast'
 import { USSOpaqueType, USSValue } from './types-values'
 
 export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number] }

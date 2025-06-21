@@ -6,8 +6,8 @@ import { consolidatedStatsLink } from '../navigation/links'
 import { ConsolidatedStatistics } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
+import { locationOf, locationOfLastExpression } from './ast'
 import { execute, InterpretationError } from './interpreter'
-import { locationOf, locationOfLastExpression } from './parser'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
