@@ -475,7 +475,7 @@ class ParseState {
     }
 
     parseStatements(canEnd: boolean = false, end: () => boolean = () => false, errMsg: string = 'Expected end of line or ; after'): UrbanStatsASTStatement | ParseError {
-        let statements: UrbanStatsASTStatement[] = []
+        const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             if (end()) {
                 break
@@ -496,18 +496,26 @@ class ParseState {
         if (this.index === this.tokens.length && canEnd) {
             return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken(-1).location }
         }
-        statements = gulpRestForConditions(statements)
-        if (statements.length === 1) {
-            return statements[0]
-        }
-        const entireLoc: LocInfo = statements.length > 0
-            ? unify(...statements.map(locationOf))
-            : this.index > 0
+        return mergeStatements(
+            statements,
+            this.index > 0
                 ? this.tokens[this.index - 1].location
-                /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-                : { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } }
-        return { type: 'statements', result: statements, entireLoc }
+                : undefined,
+        )
     }
+}
+
+export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
+    statements = gulpRestForConditions(statements)
+    if (statements.length === 1) {
+        return statements[0]
+    }
+    const entireLoc: LocInfo = statements.length > 0
+        ? unify(...statements.map(locationOf))
+        : fallbackLocation
+        /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
+        ?? { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } }
+    return { type: 'statements', result: statements, entireLoc }
 }
 
 function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStatsASTStatement[] {
@@ -638,4 +646,15 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
         }
     })
     return identifiers
+}
+
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression): string | undefined {
+    // for now this just handles custom nodes and parse errors. We can extend this later to handle other nodes.
+    if (node.type === 'customNode') {
+        return node.originalCode
+    }
+    if (node.type === 'parseError') {
+        return node.originalCode
+    }
+    return undefined // we don't have a way to unparse other nodes yet
 }
