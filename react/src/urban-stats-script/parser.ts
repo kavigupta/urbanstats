@@ -526,7 +526,7 @@ function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStats
 }
 
 export function parse(code: string, block: Block): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
-    const tokens = lex(block, code)
+    const tokens = lex(block, code.trimEnd())
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
         return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', value: `Unrecognized token: ${token.token.value}`, location: token.location })) }

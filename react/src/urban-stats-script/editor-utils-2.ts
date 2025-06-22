@@ -2,7 +2,7 @@ import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex, SingleLocationWithinBlock } from './lexer'
+import { AnnotatedToken, compareLocations, lex, LocInfo, SingleLocationWithinBlock } from './lexer'
 import { ParseError } from './parser'
 
 export type EditorError = ParseError
@@ -11,6 +11,7 @@ export function longMessage(error: EditorError): string {
     return `${error.value} at ${renderLocInfo(error.location)}`
 }
 
+// `errors` may not overlap
 export function renderCode(uss: string, colors: Colors, errors: EditorError[]): (Node | string)[] {
     if (!uss.endsWith('\n')) {
         uss = `${uss}\n`
@@ -23,40 +24,56 @@ export function renderCode(uss: string, colors: Colors, errors: EditorError[]): 
     const lines = uss.split('\n')
 
     const lexSpans: (Node | string)[] = []
-    let lineIdx = 0
-    let colIdx = 0
+    let errorSpans: { error: EditorError, spans: (Node | string)[] } | undefined = undefined
+    let loc = { lineIdx: 0, colIdx: 0 }
     let indexInTokens = 0
-    while (indexInTokens < lexTokens.length && lineIdx < lines.length && (lineIdx < lines.length - 1 || colIdx < lines[lines.length - 1].length)) {
+    let indexInErrors = 0
+    while (indexInTokens < lexTokens.length && compareLocations(loc, { lineIdx: lines.length - 1, colIdx: lines[lines.length - 1].length }) <= 0) {
+        if (indexInErrors < errors.length) {
+            const errorLoc = errors[indexInErrors].location
+            if (compareLocations(loc, errorLoc.start) >= 0) {
+                errorSpans = { spans: [], error: errors[indexInErrors] }
+                indexInErrors++
+            }
+        }
+        if (errorSpans !== undefined) {
+            const errorLoc = errorSpans.error.location
+            if (compareLocations(loc, errorLoc.end) >= 0) {
+                lexSpans.push(span(errorSpans.error, errorSpans.spans))
+                errorSpans = undefined
+            }
+        }
+
         const token = lexTokens[indexInTokens]
-        if (lineIdx === token.location.start.lineIdx && colIdx === token.location.start.colIdx) {
-            lexSpans.push(span(token.token, getString(lines, token.location)))
-            lineIdx = token.location.end.lineIdx
-            colIdx = token.location.end.colIdx
+        if (compareLocations(loc, token.location.start) === 0) {
+            (errorSpans?.spans ?? lexSpans).push(span(token.token, [getString(lines, token.location.start, token.location.end)]))
+            loc = { ...token.location.end }
             indexInTokens++
         }
-        else if (lineIdx < token.location.start.lineIdx || colIdx < token.location.start.colIdx) {
-            lexSpans.push(getString(lines, { start: { lineIdx, colIdx }, end: token.location.start }))
-            lineIdx = token.location.start.lineIdx
-            colIdx = token.location.start.colIdx
+        else if (compareLocations(loc, token.location.start) < 0) {
+            (errorSpans?.spans ?? lexSpans).push(getString(lines, loc, token.location.start))
+            loc = { ...token.location.start }
         }
         else {
             throw new Error('invalid state')
         }
     }
 
+    lexSpans.pop() // remove last newline
+
     return lexSpans
 }
 
-function getString(lines: string[], loc: { start: SingleLocationWithinBlock, end: SingleLocationWithinBlock }): string {
-    return lines.slice(loc.start.lineIdx, loc.end.lineIdx + 1).map((line, idx, lineSlice) => {
+function getString(lines: string[], start: SingleLocationWithinBlock, end: SingleLocationWithinBlock): string {
+    return lines.slice(start.lineIdx, end.lineIdx + 1).map((line, idx, lineSlice) => {
         if (idx === 0 && idx === lineSlice.length - 1) {
-            return line.slice(loc.start.colIdx, loc.end.colIdx)
+            return line.slice(start.colIdx, end.colIdx)
         }
         else if (idx === 0) {
-            return line.slice(loc.start.colIdx)
+            return line.slice(start.colIdx)
         }
         else if (idx === lineSlice.length - 1) {
-            return line.slice(0, loc.end.colIdx)
+            return line.slice(0, end.colIdx)
         }
         return line
     }).join('\n')
@@ -132,7 +149,7 @@ export function setRange(editor: HTMLElement, { start, end }: Range): void {
     selection.addRange(range)
 }
 
-function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: string) => HTMLSpanElement {
+function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
     const brackets = new DefaultMap<string, number>(() => 0)
 
     return (token, content) => {
@@ -198,7 +215,7 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
         const result = document.createElement('span')
         result.setAttribute('style', styleToString(style))
         result.title = title ?? ''
-        result.textContent = content
+        result.replaceChildren(...content)
         return result
     }
 }

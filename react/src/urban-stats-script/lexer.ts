@@ -21,22 +21,25 @@ export interface SingleLocationWithinBlock {
     colIdx: number
 }
 
+// a < b -> < 0
+// a = b -> = 0
+// a > b -> > 0
+export function compareLocations(a: SingleLocationWithinBlock, b: SingleLocationWithinBlock): number {
+    if (a.lineIdx !== b.lineIdx) {
+        return a.lineIdx - b.lineIdx
+    }
+    return a.colIdx - b.colIdx
+}
+
 export type SingleLocation = SingleLocationWithinBlock & { block: Block }
 
-export interface BaseLocInfo {
+export interface LocInfo {
     start: SingleLocation
     end: SingleLocation
 }
 
-export interface LocInfo extends BaseLocInfo {
-    shifted: BaseLocInfo
-}
-
-export function newLocation(loc: BaseLocInfo): LocInfo {
-    return {
-        ...loc,
-        shifted: { start: { ...loc.start }, end: { ...loc.end } },
-    }
+export function newLocation(loc: LocInfo): LocInfo {
+    return loc
 }
 
 export interface AnnotatedToken {
