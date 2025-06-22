@@ -7,7 +7,7 @@ import { USSOpaqueType, USSValue } from './types-values'
 
 export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number] }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
-export interface AsyncInterpretationError { value: string, location: LocInfo }
+export interface AsyncInterpretationError { type: 'error', value: string, location: LocInfo }
 
 export type USSExecutionResult<Value extends USSValue = USSValue> = { success: true, value: Value } | { success: false, error: AsyncInterpretationError }
 

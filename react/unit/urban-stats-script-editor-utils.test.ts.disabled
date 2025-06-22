@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { describe, it } from 'node:test'
 
-import { stringIndexToLocation } from '../src/urban-stats-script/editor-utils'
+import { stringIndexToLocation } from '../src/urban-stats-script/editor-utils.ts.disabled'
 
 void describe('stringIndexToLocation', () => {
     const cases = [

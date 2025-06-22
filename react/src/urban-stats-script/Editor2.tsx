@@ -68,7 +68,7 @@ export function Editor2(
 
         const editor = editorRef.current!
         const rangeBefore = newRange ?? getRange(editor)
-        editor.replaceChildren(...Array.from(fragment.childNodes))
+        editor.replaceChildren(...fragment)
         if (rangeBefore !== undefined) {
             // Otherwise, we get into a re-render loop
             inhibitRangeUpdateEvents.current++
@@ -189,14 +189,14 @@ export function Editor2(
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            (error ?
-            <DisplayErrors errors={errors} />
-            : null)
+            {error
+                ? <DisplayErrors errors={errors} />
+                : null}
         </div>
     )
 }
 
-const codeStyle: CSSProperties = {
+export const codeStyle: CSSProperties = {
     whiteSpace: 'pre-wrap',
     fontFamily: 'Inconsolata, monospace',
     fontWeight: 500,

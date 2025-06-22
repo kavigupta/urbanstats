@@ -2,7 +2,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { Editor } from '../urban-stats-script/Editor'
+import { Editor2 } from '../urban-stats-script/Editor2'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { USSExecutionDescriptor } from '../urban-stats-script/workerManager'
 
@@ -110,12 +110,11 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
                     }
                 }
             />
-            <Editor
+            <Editor2
                 getScript={getUss}
                 setScript={setUss}
-                executionDescriptor={executionDescriptor}
                 autocompleteSymbols={autocompleteSymbols}
-                showOutput={false}
+                errors={[]}
             />
         </div>
     )

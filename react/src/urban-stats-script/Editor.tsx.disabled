@@ -4,7 +4,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useSta
 
 import { useColors } from '../page_template/colors'
 
-import { Action, AutocompleteMenu, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ExecResult } from './editor-utils'
+import { Action, AutocompleteMenu, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ExecResult } from './editor-utils.ts.disabled'
 import { renderValue } from './types-values'
 import { USSExecutionDescriptor } from './workerManager'
 
