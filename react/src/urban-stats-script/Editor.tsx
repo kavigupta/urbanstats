@@ -69,7 +69,11 @@ export function Editor(
     }
 
     const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
-        const fragment = renderCode(newScript, colors, errors, autocompleteState)
+        const fragment = renderCode(newScript, colors, errors, (token, content) => {
+            if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                content.push(autocompleteState.div)
+            }
+        })
 
         const editor = editorRef.current!
         const rangeBefore = newRange ?? getRange(editor)
