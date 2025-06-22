@@ -528,7 +528,7 @@ function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStats
 }
 
 export function parse(code: string, block?: Block, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
-    const tokens = lex(block || { type: 'multi' }, code)
+    const tokens = lex(block ?? { type: 'multi' }, code)
     return parseTokens(tokens, code, returnParseErrorNode)
 }
 
