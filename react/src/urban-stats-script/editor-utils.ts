@@ -29,11 +29,11 @@ export type AutocompleteState = {
 } | undefined
 
 // `errors` may not overlap
-export function renderCode(script: Script, colors: Colors, errors: EditorError[], modfiyTokenContent: (token: AnnotatedToken, content: (Node | string)[]) => void): (Node | string)[] {
+export function renderCode(script: Script, colors: Colors, errors: EditorError[], modfiyTokenContent: (token: AnnotatedToken, content: Node[]) => void): Node[] {
     const span = spanFactory(colors)
 
-    const lexSpans: (Node | string)[] = []
-    let errorSpans: { error: EditorError, spans: (Node | string)[] } | undefined = undefined
+    const lexSpans: Node[] = []
+    let errorSpans: { error: EditorError, spans: Node[] } | undefined = undefined
     let charIdx = 0
     let indexInTokens = 0
     let indexInErrors = 0
@@ -55,14 +55,14 @@ export function renderCode(script: Script, colors: Colors, errors: EditorError[]
 
         const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
-            const content: (Node | string)[] = [script.uss.slice(token.location.start.charIdx, token.location.end.charIdx)]
+            const content: Node[] = [document.createTextNode(script.uss.slice(token.location.start.charIdx, token.location.end.charIdx))]
             modfiyTokenContent(token, content);
             (errorSpans?.spans ?? lexSpans).push(span(token.token, content))
             charIdx = token.location.end.charIdx
             indexInTokens++
         }
         else if (charIdx < token.location.start.charIdx) {
-            (errorSpans?.spans ?? lexSpans).push(script.uss.slice(charIdx, token.location.start.charIdx))
+            (errorSpans?.spans ?? lexSpans).push(document.createTextNode(script.uss.slice(charIdx, token.location.start.charIdx)))
             charIdx = token.location.start.charIdx
         }
         else {
