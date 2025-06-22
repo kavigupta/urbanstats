@@ -550,228 +550,311 @@ export function TableRowContainer({ children, index, minHeight }: { children: Re
     )
 }
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-    const content = (() => {
-        {
-            const name = props.statname
-            let value = props.value
-            const isUnit = props.isUnit
-            if (name.includes('%') || name.includes('Change') || name.includes('(Grade)')) {
-                if (isUnit) {
-                    return <span>%</span>
-                }
-                return <span>{(value * 100).toFixed(2)}</span>
+interface UnitDisplay {
+    renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+        value: ReactNode
+        unit: ReactNode
+    }
+}
+
+const unitDisplayMap: Record<string, UnitDisplay> = {
+    percentage: {
+        renderValue: (value: number) => {
+            return {
+                value: <span>{(value * 100).toFixed(2)}</span>,
+                unit: <span>%</span>,
             }
-            else if (name.includes('Total') && name.includes('Fatalities')) {
-                if (isUnit) {
-                    return <span>&nbsp;</span>
-                }
-                return <span>{separateNumber(value.toFixed(0))}</span>
+        },
+    },
+    fatalities: {
+        renderValue: (value: number) => {
+            return {
+                value: <span>{separateNumber(value.toFixed(0))}</span>,
+                unit: <span>&nbsp;</span>,
             }
-            else if (name.includes('Fatalities Per Capita')) {
-                if (isUnit) {
-                    return <span>/100k</span>
-                }
-                return <span>{(100_000 * value).toFixed(2)}</span>
+        },
+    },
+    fatalitiesPerCapita: {
+        renderValue: (value: number) => {
+            return {
+                value: <span>{(100_000 * value).toFixed(2)}</span>,
+                unit: <span>/100k</span>,
             }
-            else if (name.includes('Density')) {
-                let unitName = 'km'
-                if (useImperial) {
-                    unitName = 'mi'
-                    value *= 1.60934 * 1.60934
+        },
+    },
+    density: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let unitName = 'km'
+            let adjustedValue = value
+            if (useImperial) {
+                unitName = 'mi'
+                adjustedValue *= 1.60934 * 1.60934
+            }
+            let places = 2
+            if (adjustedValue > 10) {
+                places = 0
+            }
+            else if (adjustedValue > 1) {
+                places = 1
+            }
+            return {
+                value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
+                unit: (
+                    <span>
+                        /&nbsp;
+                        {unitName}
+                        <sup>2</sup>
+                    </span>
+                ),
+            }
+        },
+    },
+    elevation: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let unitName = 'm'
+            let adjustedValue = value
+            if (useImperial) {
+                unitName = 'ft'
+                adjustedValue *= 3.28084
+            }
+            return {
+                value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
+                unit: <span>{unitName}</span>,
+            }
+        },
+    },
+    population: {
+        renderValue: (value: number) => {
+            if (value > 1e9) {
+                return {
+                    value: <span>{(value / 1e9).toPrecision(3)}</span>,
+                    unit: <span>B</span>,
                 }
-                let places = 2
-                if (value > 10) {
-                    places = 0
+            }
+            if (value > 1e6) {
+                return {
+                    value: <span>{(value / 1e6).toPrecision(3)}</span>,
+                    unit: <span>m</span>,
                 }
-                else if (value > 1) {
-                    places = 1
+            }
+            else if (value > 1e4) {
+                return {
+                    value: <span>{(value / 1e3).toPrecision(3)}</span>,
+                    unit: <span>k</span>,
                 }
-                if (isUnit) {
-                    return (
+            }
+            else {
+                return {
+                    value: <span>{separateNumber(value.toFixed(0))}</span>,
+                    unit: <span>&nbsp;</span>,
+                }
+            }
+        },
+    },
+    area: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let adjustedValue = value
+            let unit: React.ReactElement
+            if (useImperial) {
+                adjustedValue /= 1.60934 * 1.60934
+                if (adjustedValue < 1) {
+                    unit = <span>acres</span>
+                    adjustedValue *= 640
+                }
+                else {
+                    unit = (
                         <span>
-                            /&nbsp;
-                            {unitName}
+                            mi
                             <sup>2</sup>
                         </span>
                     )
                 }
-                return <span>{separateNumber(value.toFixed(places))}</span>
             }
-            else if (name.includes('Elevation')) {
-                let unitName = 'm'
-                if (useImperial) {
-                    unitName = 'ft'
-                    value *= 3.28084
-                }
-                if (isUnit) {
-                    return <span>{unitName}</span>
-                }
-                return <span>{separateNumber(value.toFixed(0))}</span>
-            }
-            else if (name.startsWith('Population')) {
-                if (value > 1e9) {
-                    if (isUnit) {
-                        return <span>B</span>
-                    }
-                    return <span>{(value / 1e9).toPrecision(3)}</span>
-                }
-                if (value > 1e6) {
-                    if (isUnit) {
-                        return <span>m</span>
-                    }
-                    return <span>{(value / 1e6).toPrecision(3)}</span>
-                }
-                else if (value > 1e4) {
-                    if (isUnit) {
-                        return <span>k</span>
-                    }
-                    return <span>{(value / 1e3).toPrecision(3)}</span>
+            else {
+                if (adjustedValue < 0.01) {
+                    adjustedValue *= 1000 * 1000
+                    unit = (
+                        <span>
+                            m
+                            <sup>2</sup>
+                        </span>
+                    )
                 }
                 else {
-                    if (isUnit) {
-                        return <span>&nbsp;</span>
-                    }
-                    return <span>{separateNumber(value.toFixed(0))}</span>
+                    unit = (
+                        <span>
+                            km
+                            <sup>2</sup>
+                        </span>
+                    )
                 }
             }
-            else if (name === 'Area') {
-                let unit: string | React.ReactElement = 'null'
-                if (useImperial) {
-                    value /= 1.60934 * 1.60934
-                    if (value < 1) {
-                        unit = <span>acres</span>
-                        value *= 640
-                    }
-                    else {
-                        unit = (
-                            <span>
-                                mi
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                }
-                else {
-                    if (value < 0.01) {
-                        value *= 1000 * 1000
-                        unit = (
-                            <span>
-                                m
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                    else {
-                        unit = (
-                            <span>
-                                km
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                }
-                if (isUnit) {
-                    return unit
-                }
-                else {
-                    if (value > 100) {
-                        return <span>{separateNumber(value.toFixed(0))}</span>
-                    }
-                    else if (value > 10) {
-                        return <span>{value.toFixed(1)}</span>
-                    }
-                    else if (value > 1) {
-                        return <span>{value.toFixed(2)}</span>
-                    }
-                    else {
-                        return <span>{value.toFixed(3)}</span>
-                    }
-                }
+            let places = 3
+            if (adjustedValue > 100) {
+                places = 0
             }
-            else if (name.includes('Mean distance')) {
-                let unit = <span>km</span>
-                if (useImperial) {
-                    unit = <span>mi</span>
-                    value /= 1.60934
-                }
-                if (isUnit) {
-                    return unit
-                }
-                else {
-                    return <span>{value.toFixed(2)}</span>
-                }
+            else if (adjustedValue > 10) {
+                places = 1
             }
-            else if (name.includes('Election') || name.includes('Swing')) {
-                if (isUnit) {
-                    return <span>%</span>
-                }
-                return <ElectionResult value={value} />
+            else if (adjustedValue > 1) {
+                places = 2
             }
-            else if (name.includes('high temp') || name.includes('high heat index') || name.includes('dewpt')) {
-                let unit = <span>&deg;F</span>
-                if (temperatureUnit === 'celsius') {
-                    unit = <span>&deg;C</span>
-                    value = (value - 32) * (5 / 9)
-                }
-                if (isUnit) {
-                    return unit
-                }
-                return <span>{value.toFixed(1)}</span>
+            return {
+                value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
+                unit,
             }
-            else if (name === 'Mean sunny hours') {
-                if (isUnit) {
-                    return <span>&nbsp;</span>
-                }
-                const hours = Math.floor(value)
-                const minutes = Math.floor((value - hours) * 60)
-                // e.g., 3:05
-                return (
+        },
+    },
+    meanDistance: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let unit = <span>km</span>
+            let adjustedValue = value
+            if (useImperial) {
+                unit = <span>mi</span>
+                adjustedValue /= 1.60934
+            }
+            return {
+                value: <span>{adjustedValue.toFixed(2)}</span>,
+                unit,
+            }
+        },
+    },
+    election: {
+        renderValue: (value: number) => {
+            return {
+                value: <ElectionResult value={value} />,
+                unit: <span>%</span>,
+            }
+        },
+    },
+    temperature: {
+        renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+            let unit = <span>&deg;F</span>
+            let adjustedValue = value
+            if (temperatureUnit === 'celsius') {
+                unit = <span>&deg;C</span>
+                adjustedValue = (value - 32) * (5 / 9)
+            }
+            return {
+                value: <span>{adjustedValue.toFixed(1)}</span>,
+                unit,
+            }
+        },
+    },
+    sunnyHours: {
+        renderValue: (value: number) => {
+            const hours = Math.floor(value)
+            const minutes = Math.floor((value - hours) * 60)
+            return {
+                value: (
                     <span>
                         {hours}
                         :
                         {minutes.toString().padStart(2, '0')}
                     </span>
-                )
+                ),
+                unit: <span>&nbsp;</span>,
             }
-            else if (name === 'Rainfall' || name === 'Snowfall [rain-equivalent]') {
-                value *= 100
-                let unit = 'cm'
-                if (useImperial) {
-                    unit = 'in'
-                    value /= 2.54
-                }
-                if (isUnit) {
-                    return (
-                        <span>
-                            {unit}
-                            /yr
-                        </span>
-                    )
-                }
-                return <span>{value.toFixed(1)}</span>
+        },
+    },
+    rainfall: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let adjustedValue = value * 100
+            let unit = 'cm'
+            if (useImperial) {
+                unit = 'in'
+                adjustedValue /= 2.54
             }
-            else if (name.includes('Pollution')) {
-                if (isUnit) {
-                    return (
-                        <span>
-                            &mu;g/m
-                            <sup>3</sup>
-                        </span>
-                    )
-                }
-                return <span>{value.toFixed(2)}</span>
+            return {
+                value: <span>{adjustedValue.toFixed(1)}</span>,
+                unit: (
+                    <span>
+                        {unit}
+                        /yr
+                    </span>
+                ),
             }
-            if (isUnit) {
-                return <span>&nbsp;</span>
+        },
+    },
+    pollution: {
+        renderValue: (value: number) => {
+            return {
+                value: <span>{value.toFixed(2)}</span>,
+                unit: (
+                    <span>
+                        &mu;g/m
+                        <sup>3</sup>
+                    </span>
+                ),
             }
-            return <span>{value.toFixed(3)}</span>
-        }
-    })()
+        },
+    },
+    default: {
+        renderValue: (value: number) => {
+            return {
+                value: <span>{value.toFixed(3)}</span>,
+                unit: <span>&nbsp;</span>,
+            }
+        },
+    },
+}
 
-    return <span style={props.style}>{content}</span>
+function classifyStatistic(statname: string): keyof typeof unitDisplayMap {
+    if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
+        return 'percentage'
+    }
+    if (statname.includes('Total') && statname.includes('Fatalities')) {
+        return 'fatalities'
+    }
+    if (statname.includes('Fatalities Per Capita')) {
+        return 'fatalitiesPerCapita'
+    }
+    if (statname.includes('Density')) {
+        return 'density'
+    }
+    if (statname.includes('Elevation')) {
+        return 'elevation'
+    }
+    if (statname.startsWith('Population')) {
+        return 'population'
+    }
+    if (statname === 'Area') {
+        return 'area'
+    }
+    if (statname.includes('Mean distance')) {
+        return 'meanDistance'
+    }
+    if (statname.includes('Election') || statname.includes('Swing')) {
+        return 'election'
+    }
+    if (statname.includes('high temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
+        return 'temperature'
+    }
+    if (statname === 'Mean sunny hours') {
+        return 'sunnyHours'
+    }
+    if (statname === 'Rainfall' || statname === 'Snowfall [rain-equivalent]') {
+        return 'rainfall'
+    }
+    if (statname.includes('Pollution')) {
+        return 'pollution'
+    }
+    return 'default'
+}
+
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean }): ReactNode {
+    const [useImperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
+
+    const statisticType = classifyStatistic(props.statname)
+    const unitDisplay = unitDisplayMap[statisticType]
+    const { value, unit } = unitDisplay.renderValue(props.value, useImperial, temperatureUnit)
+
+    return (
+        <span style={props.style}>
+            {props.isUnit ? unit : value}
+        </span>
+    )
 }
 
 function ElectionResult(props: { value: number }): ReactNode {
