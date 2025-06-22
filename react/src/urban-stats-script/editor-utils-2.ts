@@ -1,8 +1,9 @@
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex } from './lexer'
+import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError } from './parser'
 
 export type EditorError = ParseError
@@ -20,8 +21,15 @@ export function makeScript(uss: string): Script {
     return { uss, tokens: lex({ type: 'single', ident: 'editor' }, uss) }
 }
 
+export type AutocompleteState = {
+    location: LocInfo
+    options: string[]
+    div: HTMLDivElement
+    apply: (optionIdx: number) => void
+} | undefined
+
 // `errors` may not overlap
-export function renderCode(script: Script, colors: Colors, errors: EditorError[]): (Node | string)[] {
+export function renderCode(script: Script, colors: Colors, errors: EditorError[], autocomplete: AutocompleteState): (Node | string)[] {
     const span = spanFactory(colors)
 
     const lexSpans: (Node | string)[] = []
@@ -47,7 +55,11 @@ export function renderCode(script: Script, colors: Colors, errors: EditorError[]
 
         const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
-            (errorSpans?.spans ?? lexSpans).push(span(token.token, [script.uss.slice(token.location.start.charIdx, token.location.end.charIdx)]))
+            const content: (Node | string)[] = [script.uss.slice(token.location.start.charIdx, token.location.end.charIdx)]
+            if (autocomplete?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                content.push(autocomplete.div)
+            }
+            (errorSpans?.spans ?? lexSpans).push(span(token.token, content))
             charIdx = token.location.end.charIdx
             indexInTokens++
         }
@@ -90,52 +102,50 @@ export function getRange(editor: HTMLElement): Range | undefined {
             if (editor === range.startContainer || editor === range.endContainer) {
                 return { start: 0, end: 0 }
             }
-
-            // Traverse up the tree, counting text content of previous siblings along the way
-            function positionInEditor(node: Node, offset: number): number {
-                while (node !== editor) {
-                    let sibling = node.previousSibling
-                    while (sibling !== null) {
-                        offset += nodeContent(sibling).length
-                        sibling = sibling.previousSibling
-                    }
-                    node = node.parentNode!
-                }
-                return offset
-            }
-
-            return { start: positionInEditor(range.startContainer, range.startOffset), end: positionInEditor(range.endContainer, range.endOffset) }
+            return { start: positionInEditor(editor, range.startContainer, range.startOffset), end: positionInEditor(editor, range.endContainer, range.endOffset) }
         }
     }
 
     return undefined
 }
 
-export function setRange(editor: HTMLElement, { start, end }: Range): void {
-    // Inverse of `positionInEditor`
-    // Traverse down the tree, always keeping the text content behind us lte position
-    function getContainerOffset(position: number): [Node, number] {
-        let node: Node = editor
-        let offset = 0
-        while (node.childNodes.length > 0) {
-            node = node.childNodes.item(0)
-            while (offset + nodeContent(node).length < position && node.nextSibling !== null) {
-                offset += nodeContent(node).length
-                node = node.nextSibling
-            }
+// Traverse up the tree, counting text content of previous siblings along the way
+function positionInEditor(editor: Node, node: Node, offset: number): number {
+    while (node !== editor) {
+        let sibling = node.previousSibling
+        while (sibling !== null) {
+            offset += nodeContent(sibling).length
+            sibling = sibling.previousSibling
         }
-        return [node, position - offset]
+        node = node.parentNode!
     }
+    return offset
+}
 
+export function setRange(editor: HTMLElement, { start, end }: Range): void {
     const selection = window.getSelection()!
 
     const range = document.createRange()
 
-    range.setStart(...getContainerOffset(start))
-    range.setEnd(...getContainerOffset(end))
+    range.setStart(...getContainerOffset(editor, start))
+    range.setEnd(...getContainerOffset(editor, end))
 
     selection.removeAllRanges()
     selection.addRange(range)
+}
+
+// Inverse of `positionInEditor`
+// Traverse down the tree, always keeping the text content behind us lte position
+export function getContainerOffset(node: Node, position: number): [Node, number] {
+    let offset = 0
+    while (node.childNodes.length > 0) {
+        node = node.childNodes.item(0)
+        while (offset + nodeContent(node).length < position && node.nextSibling !== null) {
+            offset += nodeContent(node).length
+            node = node.nextSibling
+        }
+    }
+    return [node, position - offset]
 }
 
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
@@ -211,4 +221,59 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
 
 function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
+}
+
+export function getAutocompleteOptions(autocompleteSymbols: string[], tokens: AnnotatedToken[], currentIdentifer: string): string[] {
+    const allIdentifiers = new Set<string>()
+    for (const t of tokens) {
+        if (t.token.type === 'identifier') {
+            allIdentifiers.add(t.token.value)
+        }
+    }
+    for (const id of autocompleteSymbols) {
+        allIdentifiers.add(id)
+    }
+    allIdentifiers.delete(currentIdentifer)
+
+    const sortedIdentifiers = Array.from(allIdentifiers).flatMap((option) => {
+        const match = isAMatch(currentIdentifer.toLowerCase(), option.toLowerCase())
+        if (match === 0) {
+            return []
+        }
+        else {
+            return [{ option, match }]
+        }
+    }).sort((a, b) => {
+        if (a.match !== b.match) {
+            return b.match - a.match
+        }
+        else if (a.option.length !== b.option.length) {
+            return a.option.length - b.option.length
+        }
+        else {
+            return a.option.localeCompare(b.option)
+        }
+    }).map(({ option }) => option)
+
+    return sortedIdentifiers
+}
+
+export function createAutocompleteMenuDiv(colors: Colors): HTMLDivElement {
+    const style = {
+        'position': 'absolute',
+        'top': '100%',
+        'left': '100%',
+        'user-select': 'none',
+        'z-index': '1',
+        'overflow': 'scroll',
+        'max-height': `10lh`,
+        'border-radius': '0.5em',
+        'border': `1px solid ${colors.borderNonShadow}`,
+    }
+
+    const result = document.createElement('div')
+    result.setAttribute('contenteditable', 'false')
+    result.setAttribute('style', styleToString(style))
+
+    return result
 }

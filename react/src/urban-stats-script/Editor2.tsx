@@ -1,10 +1,11 @@
 import '@fontsource/inconsolata/500.css'
 
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript } from './editor-utils-2'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils-2'
 
 const setScriptDelay = 500
 
@@ -21,7 +22,7 @@ export function Editor2(
         errors: EditorError[]
     },
 ): ReactNode {
-    const { setUss: propsSetUss, getUss, errors } = props
+    const { setUss: propsSetUss, getUss, errors, autocompleteSymbols } = props
 
     const [script, setScript] = useState<Script>(() => makeScript(getUss()))
 
@@ -48,7 +49,8 @@ export function Editor2(
 
     const inhibitRangeUpdateEvents = useRef<number>(0)
 
-    const [autocompleteState, setAutocompleteState] = useState<{ charIdx: number, selection: number } | undefined>(undefined)
+    const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
+    const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
     function newUndoState(newScript: Script, newRange: Range | undefined): void {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
@@ -67,7 +69,7 @@ export function Editor2(
     }
 
     const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
-        const fragment = renderCode(newScript, colors, errors)
+        const fragment = renderCode(newScript, colors, errors, autocompleteState)
 
         const editor = editorRef.current!
         const rangeBefore = newRange ?? getRange(editor)
@@ -77,7 +79,7 @@ export function Editor2(
             inhibitRangeUpdateEvents.current++
             setRange(editor, rangeBefore)
         }
-    }, [colors, errors])
+    }, [colors, errors, autocompleteState])
 
     useEffect(() => {
         renderScript(script, undefined)
@@ -105,8 +107,34 @@ export function Editor2(
         const listener = (): void => {
             const range = getRange(editor)
             const newScript = makeScript(nodeContent(editor))
-            if (range !== undefined && range.start === range.end && newScript.tokens.some(token => token.token.type === 'identifier' && token.location.end.charIdx === range.start)) {
-                setAutocompleteState({ charIdx: range.start, selection: 0 })
+            const token = range !== undefined && range.start === range.end
+                ? newScript.tokens.find(t => t.token.type === 'identifier' && t.location.end.charIdx === range.start)
+                : undefined
+            if (token !== undefined) {
+                const tokenValue = token.token.value as string
+                const options = getAutocompleteOptions(autocompleteSymbols, newScript.tokens, tokenValue)
+                if (options.length === 0) {
+                    setAutocompleteState(undefined)
+                }
+                else {
+                    setAutocompleteState({
+                        location: token.location,
+                        options,
+                        div: createAutocompleteMenuDiv(colors),
+                        apply(optionIdx) {
+                            const option = options[optionIdx]
+                            const delta = option.length - tokenValue.length
+                            const editedUss = newScript.uss.slice(0, token.location.start.charIdx) + option + newScript.uss.slice(token.location.end.charIdx)
+                            const editedRange = { start: token.location.end.charIdx + delta, end: token.location.end.charIdx + delta }
+                            const editedScript = makeScript(editedUss)
+                            renderScript(editedScript, editedRange)
+                            setScript(editedScript)
+                            newUndoState(editedScript, editedRange)
+                            setAutocompleteState(undefined)
+                        },
+                    })
+                    setAutocompleteSelectionIdx(0)
+                }
             }
             else {
                 setAutocompleteState(undefined)
@@ -116,7 +144,7 @@ export function Editor2(
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript])
+    }, [setScript, autocompleteSymbols, colors, renderScript])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -126,9 +154,32 @@ export function Editor2(
                 renderScript(newScript, newRange)
                 setScript(newScript)
                 newUndoState(newScript, newRange)
+                setAutocompleteState(undefined)
             }
 
-            // If autocomplete
+            if (autocompleteState !== undefined) {
+                switch (e.key) {
+                    case 'Enter':
+                    case 'Tab':
+                        e.preventDefault()
+                        autocompleteState.apply(autocompleteSelectionIdx)
+                        return
+                    case 'Escape':
+                        e.preventDefault()
+                        setAutocompleteState(undefined)
+                        return
+                    case 'ArrowDown':
+                    case 'ArrowUp':
+                        e.preventDefault()
+                        if (e.key === 'ArrowDown') {
+                            setAutocompleteSelectionIdx(i => i + 1 >= autocompleteState.options.length ? 0 : i + 1)
+                        }
+                        else {
+                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? autocompleteState.options.length - 1 : i - 1)
+                        }
+                        return
+                }
+            }
 
             if (e.key === 'Tab') {
                 e.preventDefault()
@@ -162,6 +213,7 @@ export function Editor2(
                     const newScript = makeScript(prevState.uss)
                     renderScript(newScript, prevState.range)
                     setScript(newScript)
+                    setAutocompleteState(undefined)
                 }
             }
             else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
@@ -173,17 +225,18 @@ export function Editor2(
                     const newScript = makeScript(futureState.uss)
                     renderScript(newScript, futureState.range)
                     setScript(newScript)
+                    setAutocompleteState(undefined)
                 }
             }
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, setScript, renderScript])
+    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            // Close autocomplete
+            setAutocompleteState(undefined)
         }
         editor.addEventListener('blur', listener)
         return () => { editor.removeEventListener('blur', listener) }
@@ -207,6 +260,17 @@ export function Editor2(
             {error
                 ? <DisplayErrors errors={errors} />
                 : null}
+            {autocompleteState === undefined
+                ? null
+                : createPortal(
+                    <Autocomplete
+                        state={autocompleteState}
+                        selectionIdx={autocompleteSelectionIdx}
+                        setSelectionIdx={setAutocompleteSelectionIdx}
+                        apply={(i) => { autocompleteState.apply(i) }}
+                    />,
+                    autocompleteState.div,
+                )}
         </div>
     )
 }
@@ -239,5 +303,47 @@ function DisplayErrors(props: { errors: EditorError[] }): ReactNode {
         <pre style={style(colors.hueColors.red)}>
             {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
         </pre>
+    )
+}
+
+function Autocomplete(props: { state: Exclude<AutocompleteState, undefined>, selectionIdx: number, setSelectionIdx: (idx: number) => void, apply: (idx: number) => void }): ReactNode {
+    return props.state.options.map((option, index) => (
+        <AutocompleteOption
+            key={option}
+            option={option}
+            index={index}
+            selected={index === props.selectionIdx}
+            apply={() => { props.apply(index) }}
+        />
+    ))
+}
+
+function AutocompleteOption(props: { option: string, index: number, selected: boolean, apply: () => void }): ReactNode {
+    const colors = useColors()
+    const [hovering, setHovering] = useState(false)
+    const style: CSSProperties = {
+        cursor: 'pointer',
+        backgroundColor: (props.selected || hovering
+            ? colors.slightlyDifferentBackgroundFocused
+            : props.index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground),
+        padding: '0 0.5em',
+    }
+
+    const optionRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        optionRef.current?.scrollIntoView({ block: 'nearest' })
+    }, [props.selected])
+
+    return (
+        <div
+            ref={optionRef}
+            style={style}
+            onMouseEnter={() => { setHovering(true) }}
+            onMouseLeave={() => { setHovering(false) }}
+            onClick={props.apply}
+        >
+            {props.option}
+        </div>
     )
 }
