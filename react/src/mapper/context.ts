@@ -1,10 +1,10 @@
 import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
+import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
 import { InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
-import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 

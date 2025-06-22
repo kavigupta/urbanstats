@@ -1,10 +1,11 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 
 import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage } from './editor-utils-2'
+import { lex } from './lexer'
 
 const setScriptDelay = 500
 
@@ -37,7 +38,7 @@ export function Editor2(
 
     // sync the script after some time of not typing
     useEffect(() => {
-        const timeout = setTimeout(() => { propsSetScript(script) }, setScriptDelay)
+        const timeout = setTimeout(() => { propsSetScript(script.trimEnd()) }, setScriptDelay)
         return () => { clearTimeout(timeout) }
     }, [script, propsSetScript])
 
@@ -46,6 +47,10 @@ export function Editor2(
     const editorRef = useRef<HTMLPreElement>(null)
 
     const inhibitRangeUpdateEvents = useRef<number>(0)
+
+    const lexTokens = useMemo(() => lex({ type: 'single', ident: 'editor' }, script), [script])
+
+    const [autocompleteState, setAutocompleteState] = useState<{ charIdx: number, selection: number } | undefined>(undefined)
 
     function newUndoState(newScript: string, newRange: Range | undefined): void {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
@@ -86,7 +91,9 @@ export function Editor2(
                 inhibitRangeUpdateEvents.current--
             }
             else {
-                undoStack.current[undoStack.current.length - 1].range = getRange(editorRef.current!) // updates the selection of the current state
+                const range = getRange(editorRef.current!)
+                setAutocompleteState(undefined) // todo
+                undoStack.current[undoStack.current.length - 1].range = range // updates the selection of the current state
             }
         }
         document.addEventListener('selectionchange', listener)
@@ -98,6 +105,7 @@ export function Editor2(
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
+            setAutocompleteState(undefined)
             const newScript = nodeContent(editor)
             setScript(newScript)
             newUndoState(newScript, getRange(editor))

@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Block, lex, newLocation } from '../src/urban-stats-script/lexer'
+import { Block, lex } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, toSExp } from '../src/urban-stats-script/parser'
 
 const testBlock: Block = {
@@ -11,27 +11,27 @@ const testBlock: Block = {
 
 void test('basic lexing with indices', (): void => {
     assert.deepStrictEqual(lex(testBlock, '1 23 3.3'), [
-        { token: { type: 'number', value: 1 }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1 } }) },
-        { token: { type: 'number', value: 23 }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 2 }, end: { block: testBlock, lineIdx: 0, colIdx: 4 } }) },
-        { token: { type: 'number', value: 3.3 }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 8 } }) },
-        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 8 }, end: { block: testBlock, lineIdx: 0, colIdx: 8 } }) },
+        { token: { type: 'number', value: 1 }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1, charIdx: 1 } } },
+        { token: { type: 'number', value: 23 }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 2, charIdx: 2 }, end: { block: testBlock, lineIdx: 0, colIdx: 4, charIdx: 4 } } },
+        { token: { type: 'number', value: 3.3 }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 8, charIdx: 8 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 8, charIdx: 8 }, end: { block: testBlock, lineIdx: 0, colIdx: 8, charIdx: 8 } } },
     ])
     assert.deepStrictEqual(lex(testBlock, '"abc"'), [
-        { token: { type: 'string', value: 'abc' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 5 } }) },
-        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 5 } }) },
+        { token: { type: 'string', value: 'abc' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 } } },
     ])
     assert.deepStrictEqual(lex(testBlock, '"abc\\""'), [
-        { token: { type: 'string', value: 'abc"' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 7 } }) },
-        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 7 }, end: { block: testBlock, lineIdx: 0, colIdx: 7 } }) },
+        { token: { type: 'string', value: 'abc"' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 7, charIdx: 7 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 7, charIdx: 7 }, end: { block: testBlock, lineIdx: 0, colIdx: 7, charIdx: 7 } } },
     ])
     assert.deepStrictEqual(lex(testBlock, 'f(2, "abc \\" 3.5")'), [
-        { token: { type: 'identifier', value: 'f' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1 } }) },
-        { token: { type: 'bracket', value: '(' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 1 }, end: { block: testBlock, lineIdx: 0, colIdx: 2 } }) },
-        { token: { type: 'number', value: 2 }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 2 }, end: { block: testBlock, lineIdx: 0, colIdx: 3 } }) },
-        { token: { type: 'operator', value: ',' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 3 }, end: { block: testBlock, lineIdx: 0, colIdx: 4 } }) },
-        { token: { type: 'string', value: 'abc " 3.5' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 17 } }) },
-        { token: { type: 'bracket', value: ')' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 17 }, end: { block: testBlock, lineIdx: 0, colIdx: 18 } }) },
-        { token: { type: 'operator', value: 'EOL' }, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 18 }, end: { block: testBlock, lineIdx: 0, colIdx: 18 } }) },
+        { token: { type: 'identifier', value: 'f' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1, charIdx: 1 } } },
+        { token: { type: 'bracket', value: '(' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 1, charIdx: 1 }, end: { block: testBlock, lineIdx: 0, colIdx: 2, charIdx: 2 } } },
+        { token: { type: 'number', value: 2 }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 2, charIdx: 2 }, end: { block: testBlock, lineIdx: 0, colIdx: 3, charIdx: 3 } } },
+        { token: { type: 'operator', value: ',' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 3, charIdx: 3 }, end: { block: testBlock, lineIdx: 0, colIdx: 4, charIdx: 4 } } },
+        { token: { type: 'string', value: 'abc " 3.5' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 }, end: { block: testBlock, lineIdx: 0, colIdx: 17, charIdx: 17 } } },
+        { token: { type: 'bracket', value: ')' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 17, charIdx: 17 }, end: { block: testBlock, lineIdx: 0, colIdx: 18, charIdx: 18 } } },
+        { token: { type: 'operator', value: 'EOL' }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 18, charIdx: 18 }, end: { block: testBlock, lineIdx: 0, colIdx: 18, charIdx: 18 } } },
     ])
 })
 
@@ -178,8 +178,8 @@ void test('basic parsing', (): void => {
         parse('x = 2', testBlock),
         {
             type: 'assignment',
-            lhs: { type: 'identifier', name: { node: 'x', location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1 } }) } },
-            value: { type: 'constant', value: { node: 2, location: newLocation({ start: { block: testBlock, lineIdx: 0, colIdx: 4 }, end: { block: testBlock, lineIdx: 0, colIdx: 5 } }) } },
+            lhs: { type: 'identifier', name: { node: 'x', location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1, charIdx: 1 } } } },
+            value: { type: 'constant', value: { node: 2, location: { start: { block: testBlock, lineIdx: 0, colIdx: 4, charIdx: 4 }, end: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 } } } },
         },
     )
     assert.deepStrictEqual(

@@ -2,7 +2,7 @@ import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, compareLocations, lex, LocInfo, SingleLocationWithinBlock } from './lexer'
+import { AnnotatedToken, lex } from './lexer'
 import { ParseError } from './parser'
 
 export type EditorError = ParseError
@@ -21,62 +21,48 @@ export function renderCode(uss: string, colors: Colors, errors: EditorError[]): 
 
     const lexTokens = lex({ type: 'single', ident: 'editor' }, uss)
 
-    const lines = uss.split('\n')
-
     const lexSpans: (Node | string)[] = []
     let errorSpans: { error: EditorError, spans: (Node | string)[] } | undefined = undefined
-    let loc = { lineIdx: 0, colIdx: 0 }
+    let charIdx = 0
     let indexInTokens = 0
     let indexInErrors = 0
-    while (indexInTokens < lexTokens.length && compareLocations(loc, { lineIdx: lines.length - 1, colIdx: lines[lines.length - 1].length }) <= 0) {
+    while (indexInTokens < lexTokens.length && charIdx < uss.length) {
         if (indexInErrors < errors.length) {
             const errorLoc = errors[indexInErrors].location
-            if (compareLocations(loc, errorLoc.start) >= 0) {
+            if (charIdx >= errorLoc.start.charIdx) {
                 errorSpans = { spans: [], error: errors[indexInErrors] }
                 indexInErrors++
             }
         }
         if (errorSpans !== undefined) {
             const errorLoc = errorSpans.error.location
-            if (compareLocations(loc, errorLoc.end) >= 0) {
+            if (charIdx >= errorLoc.end.charIdx) {
                 lexSpans.push(span(errorSpans.error, errorSpans.spans))
                 errorSpans = undefined
             }
         }
 
         const token = lexTokens[indexInTokens]
-        if (compareLocations(loc, token.location.start) === 0) {
-            (errorSpans?.spans ?? lexSpans).push(span(token.token, [getString(lines, token.location.start, token.location.end)]))
-            loc = { ...token.location.end }
+        if (charIdx === token.location.start.charIdx) {
+            (errorSpans?.spans ?? lexSpans).push(span(token.token, [uss.slice(token.location.start.charIdx, token.location.end.charIdx)]))
+            charIdx = token.location.end.charIdx
             indexInTokens++
         }
-        else if (compareLocations(loc, token.location.start) < 0) {
-            (errorSpans?.spans ?? lexSpans).push(getString(lines, loc, token.location.start))
-            loc = { ...token.location.start }
+        else if (charIdx < token.location.start.charIdx) {
+            (errorSpans?.spans ?? lexSpans).push(uss.slice(charIdx, token.location.start.charIdx))
+            charIdx = token.location.start.charIdx
         }
         else {
             throw new Error('invalid state')
         }
     }
 
-    lexSpans.pop() // remove last newline
+    if (errorSpans !== undefined) {
+        lexSpans.push(span(errorSpans.error, errorSpans.spans))
+        errorSpans = undefined
+    }
 
     return lexSpans
-}
-
-function getString(lines: string[], start: SingleLocationWithinBlock, end: SingleLocationWithinBlock): string {
-    return lines.slice(start.lineIdx, end.lineIdx + 1).map((line, idx, lineSlice) => {
-        if (idx === 0 && idx === lineSlice.length - 1) {
-            return line.slice(start.colIdx, end.colIdx)
-        }
-        else if (idx === 0) {
-            return line.slice(start.colIdx)
-        }
-        else if (idx === lineSlice.length - 1) {
-            return line.slice(0, end.colIdx)
-        }
-        return line
-    }).join('\n')
 }
 
 export function nodeContent(node: Node): string {

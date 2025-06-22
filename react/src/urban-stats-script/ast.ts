@@ -37,9 +37,11 @@ export function unify(...locations: LocInfo[]): LocInfo {
     const endLine = locations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
     const startCol = locations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
     const endCol = locations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
+    const startChar = locations.reduce((min, loc) => Math.min(min, loc.start.charIdx), Number.MAX_VALUE)
+    const endChar = locations.reduce((max, loc) => Math.max(max, loc.end.charIdx), -Number.MAX_VALUE)
     return {
-        start: { block: locations[0].start.block, lineIdx: startLine, colIdx: startCol },
-        end: { block: locations[0].end.block, lineIdx: endLine, colIdx: endCol },
+        start: { block: locations[0].start.block, lineIdx: startLine, colIdx: startCol, charIdx: startChar },
+        end: { block: locations[0].end.block, lineIdx: endLine, colIdx: endCol, charIdx: endChar },
     }
 }
 
