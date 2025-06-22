@@ -146,6 +146,12 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
                 result = execute(statement, env)
             }
             return result
+        case 'parseError':
+            assert(expr.errors.length > 0, 'parseError node must have at least one error')
+            throw env.error(
+                `Parse error: ${expr.errors.map(e => e.value).join(', ')}`,
+                expr.errors[0].location,
+            )
     }
 }
 

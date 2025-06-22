@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
-import { AnnotatedTokenWithValue, lex, LocInfo, Block } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 export interface Decorated<T> {
@@ -48,6 +48,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
         case 'condition':
             return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
+        case 'parseError':
+            return `(parseError ${JSON.stringify(node.originalCode)} ${JSON.stringify(node.errors)})`
         case 'customNode':
             return `(customNode ${toSExp(node.expr)} ${JSON.stringify(node.originalCode)})`
     }
@@ -525,15 +527,26 @@ function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStats
     return result
 }
 
-export function parse(code: string, block: Block): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
-    const tokens = lex(block, code)
+export function parse(code: string, block?: Block, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+    const tokens = lex(block || { type: 'multi' }, code)
+    return parseTokens(tokens, code, returnParseErrorNode)
+}
+
+export function parseTokens(tokens: AnnotatedToken[], originalCode: string, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
-        return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', value: `Unrecognized token: ${token.token.value}`, location: token.location })) }
+        const errors: ParseError[] = lexErrors.map(token => ({ type: 'error' as const, value: `Unrecognized token: ${token.token.value}`, location: token.location }))
+        if (returnParseErrorNode) {
+            return { type: 'parseError', originalCode, errors }
+        }
+        return { type: 'error', errors }
     }
     const state = new ParseState(tokens as AnnotatedTokenWithValue[]) // we checked for errors above, so this cast is safe
     const stmts = state.parseStatements()
     if (stmts.type === 'error') {
+        if (returnParseErrorNode) {
+            return { type: 'parseError', originalCode, errors: [stmts] }
+        }
         return { type: 'error', errors: [stmts] }
     }
     assert(state.index === state.tokens.length, `Parser did not consume all tokens: ${state.index} < ${state.tokens.length}`)
@@ -604,6 +617,8 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             case 'condition':
                 helper(n.condition)
                 n.rest.forEach(helper)
+                return true
+            case 'parseError':
                 return true
             case 'customNode':
                 // do not actually put this in the expressions list, as is for internal use only
