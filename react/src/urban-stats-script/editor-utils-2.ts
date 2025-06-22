@@ -11,22 +11,25 @@ export function longMessage(error: EditorError): string {
     return `${error.value} at ${renderLocInfo(error.location)}`
 }
 
-// `errors` may not overlap
-export function renderCode(uss: string, colors: Colors, errors: EditorError[]): (Node | string)[] {
+export interface Script { uss: string, tokens: AnnotatedToken[] }
+
+export function makeScript(uss: string): Script {
     if (!uss.endsWith('\n')) {
         uss = `${uss}\n`
     }
+    return { uss, tokens: lex({ type: 'single', ident: 'editor' }, uss) }
+}
 
+// `errors` may not overlap
+export function renderCode(script: Script, colors: Colors, errors: EditorError[]): (Node | string)[] {
     const span = spanFactory(colors)
-
-    const lexTokens = lex({ type: 'single', ident: 'editor' }, uss)
 
     const lexSpans: (Node | string)[] = []
     let errorSpans: { error: EditorError, spans: (Node | string)[] } | undefined = undefined
     let charIdx = 0
     let indexInTokens = 0
     let indexInErrors = 0
-    while (indexInTokens < lexTokens.length && charIdx < uss.length) {
+    while (indexInTokens < script.tokens.length && charIdx < script.uss.length) {
         if (indexInErrors < errors.length) {
             const errorLoc = errors[indexInErrors].location
             if (charIdx >= errorLoc.start.charIdx) {
@@ -42,14 +45,14 @@ export function renderCode(uss: string, colors: Colors, errors: EditorError[]): 
             }
         }
 
-        const token = lexTokens[indexInTokens]
+        const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
-            (errorSpans?.spans ?? lexSpans).push(span(token.token, [uss.slice(token.location.start.charIdx, token.location.end.charIdx)]))
+            (errorSpans?.spans ?? lexSpans).push(span(token.token, [script.uss.slice(token.location.start.charIdx, token.location.end.charIdx)]))
             charIdx = token.location.end.charIdx
             indexInTokens++
         }
         else if (charIdx < token.location.start.charIdx) {
-            (errorSpans?.spans ?? lexSpans).push(uss.slice(charIdx, token.location.start.charIdx))
+            (errorSpans?.spans ?? lexSpans).push(script.uss.slice(charIdx, token.location.start.charIdx))
             charIdx = token.location.start.charIdx
         }
         else {

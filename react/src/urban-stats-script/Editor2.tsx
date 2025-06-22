@@ -1,46 +1,46 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage } from './editor-utils-2'
-import { lex } from './lexer'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript } from './editor-utils-2'
 
 const setScriptDelay = 500
 
 const undoChunking = 1000
 const undoHistory = 100
 
-interface UndoRedoItem { time: number, script: string, range: Range | undefined }
+interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
 
 export function Editor2(
     props: {
-        getScript: () => string // Swap this function to get a new script
-        setScript: (newScript: string) => void
+        getUss: () => string // Swap this function to get a new script
+        setUss: (newScript: string) => void
         autocompleteSymbols: string[]
         errors: EditorError[]
     },
 ): ReactNode {
-    const { setScript: propsSetScript, getScript, errors } = props
+    const { setUss: propsSetUss, getUss, errors } = props
 
-    const [script, setScript] = useState(getScript)
+    const [script, setScript] = useState<Script>(() => makeScript(getUss()))
 
     const undoStack = useRef<UndoRedoItem[]>([]) // Top of this stack is the current state
     const redoStack = useRef<UndoRedoItem[]>([])
 
     useEffect(() => {
-        const s = getScript()
-        setScript(s)
-        undoStack.current = [{ time: Date.now(), script: s, range: getRange(editorRef.current!) }]
+        const s = getUss()
+        setScript(makeScript(s))
+        setAutocompleteState(undefined)
+        undoStack.current = [{ time: Date.now(), uss: s, range: getRange(editorRef.current!) }]
         redoStack.current = []
-    }, [getScript])
+    }, [getUss])
 
     // sync the script after some time of not typing
     useEffect(() => {
-        const timeout = setTimeout(() => { propsSetScript(script.trimEnd()) }, setScriptDelay)
+        const timeout = setTimeout(() => { propsSetUss(script.uss.trimEnd()) }, setScriptDelay)
         return () => { clearTimeout(timeout) }
-    }, [script, propsSetScript])
+    }, [script, propsSetUss])
 
     const colors = useColors()
 
@@ -48,19 +48,17 @@ export function Editor2(
 
     const inhibitRangeUpdateEvents = useRef<number>(0)
 
-    const lexTokens = useMemo(() => lex({ type: 'single', ident: 'editor' }, script), [script])
-
     const [autocompleteState, setAutocompleteState] = useState<{ charIdx: number, selection: number } | undefined>(undefined)
 
-    function newUndoState(newScript: string, newRange: Range | undefined): void {
+    function newUndoState(newScript: Script, newRange: Range | undefined): void {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
         if (currentUndoState.time + undoChunking > Date.now()) {
             // ammend current item rather than making a new one
-            currentUndoState.script = newScript
+            currentUndoState.uss = newScript.uss
             currentUndoState.range = newRange
         }
         else {
-            undoStack.current.push({ time: Date.now(), script: newScript, range: newRange })
+            undoStack.current.push({ time: Date.now(), uss: newScript.uss, range: newRange })
             while (undoStack.current.length > undoHistory) {
                 undoStack.current.shift()
             }
@@ -68,7 +66,7 @@ export function Editor2(
         redoStack.current = []
     }
 
-    const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
+    const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
         const fragment = renderCode(newScript, colors, errors)
 
         const editor = editorRef.current!
@@ -92,7 +90,7 @@ export function Editor2(
             }
             else {
                 const range = getRange(editorRef.current!)
-                setAutocompleteState(undefined) // todo
+                setAutocompleteState(undefined)
                 undoStack.current[undoStack.current.length - 1].range = range // updates the selection of the current state
             }
         }
@@ -105,10 +103,16 @@ export function Editor2(
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            setAutocompleteState(undefined)
-            const newScript = nodeContent(editor)
+            const range = getRange(editor)
+            const newScript = makeScript(nodeContent(editor))
+            if (range !== undefined && range.start === range.end && newScript.tokens.some(token => token.token.type === 'identifier' && token.location.end.charIdx === range.start)) {
+                setAutocompleteState({ charIdx: range.start, selection: 0 })
+            }
+            else {
+                setAutocompleteState(undefined)
+            }
             setScript(newScript)
-            newUndoState(newScript, getRange(editor))
+            newUndoState(newScript, range)
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
@@ -117,7 +121,8 @@ export function Editor2(
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
-            function editScript(newScript: string, newRange: Range): void {
+            function editScript(newUss: string, newRange: Range): void {
+                const newScript = makeScript(newUss)
                 renderScript(newScript, newRange)
                 setScript(newScript)
                 newUndoState(newScript, newRange)
@@ -130,17 +135,17 @@ export function Editor2(
                 const range = getRange(editor)
                 if (range !== undefined) {
                     editScript(
-                        `${script.slice(0, range.start)}    ${script.slice(range.end)}`,
+                        `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                         { start: range.start + 4, end: range.start + 4 },
                     )
                 }
             }
             else if (e.key === 'Backspace') {
                 const range = getRange(editor)
-                if (range !== undefined && range.start === range.end && range.start >= 4 && script.slice(range.start - 4, range.start) === '    ') {
+                if (range !== undefined && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
-                        `${script.slice(0, range.start - 4)}${script.slice(range.start)}`,
+                        `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
                     )
                 }
@@ -154,8 +159,9 @@ export function Editor2(
                     const prevState = undoStack.current[undoStack.current.length - 2]
                     // Prev state becomes current state, current state becomes redo state
                     redoStack.current.push(undoStack.current.pop()!)
-                    renderScript(prevState.script, prevState.range)
-                    setScript(prevState.script)
+                    const newScript = makeScript(prevState.uss)
+                    renderScript(newScript, prevState.range)
+                    setScript(newScript)
                 }
             }
             else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
@@ -164,8 +170,9 @@ export function Editor2(
                 const futureState = redoStack.current.pop()
                 if (futureState !== undefined) {
                     undoStack.current.push(futureState)
-                    renderScript(futureState.script, futureState.range)
-                    setScript(futureState.script)
+                    const newScript = makeScript(futureState.uss)
+                    renderScript(newScript, futureState.range)
+                    setScript(newScript)
                 }
             }
         }

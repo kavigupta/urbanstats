@@ -4,7 +4,6 @@ import valid_geographies from '../data/mapper/used_geographies'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { Editor2 } from '../urban-stats-script/Editor2'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
-import { USSExecutionDescriptor } from '../urban-stats-script/workerManager'
 
 import { DataListSelector } from './DataListSelector'
 
@@ -77,15 +76,6 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
     setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
     getUss: () => string
 }): ReactNode {
-    const executionDescriptor = useMemo((): USSExecutionDescriptor | undefined => {
-        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
-        if (valid_geographies.includes(geographyKind)) {
-            return ({ kind: 'mapper', geographyKind })
-        }
-        else {
-            return undefined
-        }
-    }, [mapSettings.geography_kind])
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
 
     const setUss = useCallback((uss: string) => {
@@ -111,8 +101,8 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
                 }
             />
             <Editor2
-                getScript={getUss}
-                setScript={setUss}
+                getUss={getUss}
+                setUss={setUss}
                 autocompleteSymbols={autocompleteSymbols}
                 errors={[]}
             />

@@ -14,7 +14,7 @@ export function EditorPanel(): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
     const [result, setResult] = useState<USSValue | undefined>(undefined)
 
-    const updateScript = useCallback(async (newScript: string) => {
+    const updateUss = useCallback(async (newScript: string) => {
         localStorage.setItem('editor-code', newScript)
 
         const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
@@ -36,7 +36,7 @@ export function EditorPanel(): ReactNode {
         }
     }, [])
 
-    const getScript = useCallback(() => {
+    const getUss = useCallback(() => {
         return localStorage.getItem('editor-code') ?? ''
     }, [])
 
@@ -47,8 +47,8 @@ export function EditorPanel(): ReactNode {
     return (
         <PageTemplate>
             <Editor2
-                getScript={getScript}
-                setScript={updateScript}
+                getUss={getUss}
+                setUss={updateUss}
                 autocompleteSymbols={autocompleteSymbols}
                 errors={errors}
             />
