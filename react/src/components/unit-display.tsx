@@ -153,8 +153,12 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             else if (adjustedValue > 1) {
                 places = 2
             }
+            let rendered = adjustedValue.toFixed(places)
+            if (places === 0) {
+                rendered = separateNumber(rendered)
+            }
             return {
-                value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
+                value: <span>{rendered}</span>,
                 unit,
             }
         },
