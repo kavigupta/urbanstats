@@ -11,7 +11,7 @@ import { execute, InterpretationError } from './interpreter'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
-// TODO: More caching
+let mapperCache: { stats: NormalizeProto<ConsolidatedStatistics>, geographyKind: typeof validGeographies[number] } | undefined
 
 async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
     try {
@@ -26,10 +26,17 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 if (!validGeographies.includes(request.descriptor.geographyKind)) {
                     throw new Error('invalid geography')
                 }
-                const stats = (await loadProtobuf(
-                    consolidatedStatsLink(request.descriptor.geographyKind),
-                    'ConsolidatedStatistics',
-                )) as NormalizeProto<ConsolidatedStatistics>
+                let stats
+                if (mapperCache?.geographyKind === request.descriptor.geographyKind) {
+                    stats = mapperCache.stats
+                }
+                else {
+                    stats = (await loadProtobuf(
+                        consolidatedStatsLink(request.descriptor.geographyKind),
+                        'ConsolidatedStatistics',
+                    )) as NormalizeProto<ConsolidatedStatistics>
+                    mapperCache = { stats, geographyKind: request.descriptor.geographyKind }
+                }
                 const context = mapperContext(request.stmts, stats.stats, stats.longnames)
                 result = execute(request.stmts, context)
                 if (renderType(result.type) !== 'cMap') {
