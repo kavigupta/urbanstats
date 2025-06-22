@@ -296,9 +296,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const setMapSettingsWrapper = (newSettings: MapSettings): void => {
         setMapSettings(newSettings)
         const result = computeUSS(newSettings.script)
-        console.log('Computed USS:', result)
         const errors = getAllParseErrors(result)
-        console.log('Errors:', errors)
         if (errors.length > 0) {
             setErrors(errors)
         }
