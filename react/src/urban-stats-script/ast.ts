@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { BaseLocInfo, LocInfo } from './lexer'
+import { LocInfo } from './lexer'
 import { Decorated } from './parser'
 
 export type UrbanStatsASTArg = (
@@ -31,22 +31,17 @@ export type UrbanStatsASTStatement = (
 
 export type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
 
-function unifyBase(...locations: BaseLocInfo[]): BaseLocInfo {
+export function unify(...locations: LocInfo[]): LocInfo {
     assert(locations.length > 0, 'At least one location must be provided for unification')
     const startLine = locations.reduce((min, loc) => Math.min(min, loc.start.lineIdx), Number.MAX_VALUE)
     const endLine = locations.reduce((max, loc) => Math.max(max, loc.end.lineIdx), -Number.MAX_VALUE)
     const startCol = locations.reduce((min, loc) => Math.min(min, loc.start.colIdx), Number.MAX_VALUE)
     const endCol = locations.reduce((max, loc) => Math.max(max, loc.end.colIdx), -Number.MAX_VALUE)
+    const startChar = locations.reduce((min, loc) => Math.min(min, loc.start.charIdx), Number.MAX_VALUE)
+    const endChar = locations.reduce((max, loc) => Math.max(max, loc.end.charIdx), -Number.MAX_VALUE)
     return {
-        start: { lineIdx: startLine, colIdx: startCol },
-        end: { lineIdx: endLine, colIdx: endCol },
-    }
-}
-
-export function unify(...locations: LocInfo[]): LocInfo {
-    return {
-        ...unifyBase(...locations),
-        shifted: unifyBase(...locations.map(l => l.shifted)),
+        start: { block: locations[0].start.block, lineIdx: startLine, colIdx: startCol, charIdx: startChar },
+        end: { block: locations[0].end.block, lineIdx: endLine, colIdx: endCol, charIdx: endChar },
     }
 }
 

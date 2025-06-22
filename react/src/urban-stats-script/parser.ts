@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, newLocation } from './lexer'
+import { AnnotatedTokenWithValue, lex, LocInfo, Block } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 export interface Decorated<T> {
@@ -503,7 +503,7 @@ class ParseState {
             : this.index > 0
                 ? this.tokens[this.index - 1].location
                 /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-                : newLocation({ start: { lineIdx: 0, colIdx: 0 }, end: { lineIdx: 0, colIdx: 0 } })
+                : { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } }
         return { type: 'statements', result: statements, entireLoc }
     }
 }
@@ -525,12 +525,8 @@ function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStats
     return result
 }
 
-export function parse(code: string): ReturnType<typeof parseTokens> {
-    const tokens = lex(code)
-    return parseTokens(tokens)
-}
-
-export function parseTokens(tokens: AnnotatedToken[]): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+export function parse(code: string, block: Block): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+    const tokens = lex(block, code)
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
         return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', value: `Unrecognized token: ${token.token.value}`, location: token.location })) }
