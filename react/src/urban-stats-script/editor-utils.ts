@@ -29,7 +29,7 @@ export type AutocompleteState = {
 } | undefined
 
 // `errors` may not overlap
-export function renderCode(script: Script, colors: Colors, errors: EditorError[], autocomplete: AutocompleteState): (Node | string)[] {
+export function renderCode(script: Script, colors: Colors, errors: EditorError[], modfiyTokenContent: (token: AnnotatedToken, content: (Node | string)[]) => void): (Node | string)[] {
     const span = spanFactory(colors)
 
     const lexSpans: (Node | string)[] = []
@@ -56,9 +56,7 @@ export function renderCode(script: Script, colors: Colors, errors: EditorError[]
         const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
             const content: (Node | string)[] = [script.uss.slice(token.location.start.charIdx, token.location.end.charIdx)]
-            if (autocomplete?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                content.push(autocomplete.div)
-            }
+            modfiyTokenContent(token, content);
             (errorSpans?.spans ?? lexSpans).push(span(token.token, content))
             charIdx = token.location.end.charIdx
             indexInTokens++
