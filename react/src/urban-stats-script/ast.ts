@@ -1,7 +1,7 @@
 import assert from 'assert'
 
 import { LocInfo } from './lexer'
-import { Decorated } from './parser'
+import { Decorated, ParseError } from './parser'
 
 export type UrbanStatsASTArg = (
     { type: 'unnamed', value: UrbanStatsASTExpression } |
@@ -27,7 +27,8 @@ export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression } |
     { type: 'expression', value: UrbanStatsASTExpression } |
     { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement[] } |
-    { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression, rest: UrbanStatsASTStatement[] })
+    { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression, rest: UrbanStatsASTStatement[] } |
+    { type: 'parseError', originalCode: string, errors: ParseError[] })
 
 export type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
 
@@ -78,6 +79,9 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return node.entireLoc
         case 'condition':
             return node.entireLoc
+        case 'parseError':
+            assert(node.errors.length > 0, 'parseError node must have at least one error')
+            return node.errors[0].location
         case 'customNode':
             return locationOf(node.expr)
     }
@@ -90,7 +94,81 @@ export function locationOfLastExpression(node: UrbanStatsAST): LocInfo {
             return locationOf(node.value)
         case 'statements':
             return locationOfLastExpression(node.result[node.result.length - 1])
+        case 'parseError':
+            assert(node.errors.length > 0, 'parseError node must have at least one error')
+            return node.errors[0].location
         default:
             return locationOf(node)
     }
+}
+
+export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
+    const errors: ParseError[] = []
+
+    function collectErrors(n: UrbanStatsAST): void {
+        switch (n.type) {
+            case 'unnamed':
+                collectErrors(n.value)
+                break
+            case 'named':
+                collectErrors(n.value)
+                break
+            case 'constant':
+            case 'identifier':
+                // No parse errors in these
+                break
+            case 'attribute':
+                collectErrors(n.expr)
+                break
+            case 'function':
+                collectErrors(n.fn)
+                n.args.forEach(collectErrors)
+                break
+            case 'unaryOperator':
+                collectErrors(n.expr)
+                break
+            case 'binaryOperator':
+                collectErrors(n.left)
+                collectErrors(n.right)
+                break
+            case 'objectLiteral':
+                n.properties.forEach(([, value]) => {
+                    collectErrors(value)
+                })
+                break
+            case 'vectorLiteral':
+                n.elements.forEach(collectErrors)
+                break
+            case 'if':
+                collectErrors(n.condition)
+                collectErrors(n.then)
+                if (n.else) {
+                    collectErrors(n.else)
+                }
+                break
+            case 'assignment':
+                collectErrors(n.lhs)
+                collectErrors(n.value)
+                break
+            case 'expression':
+                collectErrors(n.value)
+                break
+            case 'statements':
+                n.result.forEach(collectErrors)
+                break
+            case 'condition':
+                collectErrors(n.condition)
+                n.rest.forEach(collectErrors)
+                break
+            case 'parseError':
+                errors.push(...n.errors)
+                break
+            case 'customNode':
+                collectErrors(n.expr)
+                break
+        }
+    }
+
+    collectErrors(node)
+    return errors
 }
