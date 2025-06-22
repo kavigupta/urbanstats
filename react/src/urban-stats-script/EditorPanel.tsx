@@ -3,9 +3,9 @@ import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
-import { codeStyle, Editor2 } from './Editor2'
+import { codeStyle, Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
-import { EditorError } from './editor-utils-2'
+import { EditorError } from './editor-utils'
 import { parse } from './parser'
 import { renderValue, USSValue } from './types-values'
 import { executeAsync } from './workerManager'
@@ -46,7 +46,7 @@ export function EditorPanel(): ReactNode {
 
     return (
         <PageTemplate>
-            <Editor2
+            <Editor
                 getUss={getUss}
                 setUss={updateUss}
                 autocompleteSymbols={autocompleteSymbols}

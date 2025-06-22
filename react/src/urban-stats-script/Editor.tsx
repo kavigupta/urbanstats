@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils-2'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils'
 
 const setScriptDelay = 500
 
@@ -14,7 +14,7 @@ const undoHistory = 100
 
 interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
 
-export function Editor2(
+export function Editor(
     props: {
         getUss: () => string // Swap this function to get a new script
         setUss: (newScript: string) => void

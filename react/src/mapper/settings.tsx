@@ -2,7 +2,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { Editor2 } from '../urban-stats-script/Editor2'
+import { Editor } from '../urban-stats-script/Editor'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 
 import { DataListSelector } from './DataListSelector'
@@ -100,7 +100,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss }: {
                     }
                 }
             />
-            <Editor2
+            <Editor
                 getUss={getUss}
                 setUss={setUss}
                 autocompleteSymbols={autocompleteSymbols}
