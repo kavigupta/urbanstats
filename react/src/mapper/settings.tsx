@@ -1,3 +1,5 @@
+import assert from 'assert'
+
 import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
@@ -6,7 +8,7 @@ import { Editor } from '../urban-stats-script/Editor'
 import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { parse, ParseError } from '../urban-stats-script/parser'
+import { parse } from '../urban-stats-script/parser'
 
 import { DataListSelector } from './DataListSelector'
 
@@ -55,12 +57,10 @@ export interface MapSettings {
     script: MapperScriptSettings
 }
 
-export function computeUSS(mapSettings: MapperScriptSettings): [UrbanStatsASTStatement | undefined, ParseError[]] {
-    const result = parse(mapSettings.uss, { type: 'single', ident: 'mapper-panel' })
-    if (result.type === 'error') {
-        return [undefined, result.errors]
-    }
-    return [result, []]
+export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStatement {
+    const result = parse(mapSettings.uss, { type: 'single', ident: 'mapper-panel' }, true)
+    assert(result.type !== 'error', `Should not have an error`)
+    return result
 }
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {

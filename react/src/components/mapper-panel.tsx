@@ -12,7 +12,7 @@ import { MapSettings, MapperSettings, computeUSS } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
-import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -295,9 +295,14 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const setMapSettingsWrapper = (newSettings: MapSettings): void => {
         setMapSettings(newSettings)
-        const [result, errors] = computeUSS(newSettings.script)
-        setUSS(result)
-        setErrors(errors)
+        const result = computeUSS(newSettings.script)
+        console.log('Computed USS:', result)
+        const errors = getAllParseErrors(result)
+        console.log('Errors:', errors)
+        if (errors.length > 0) {
+            setErrors(errors)
+        }
+        setUSS(errors.length > 0 ? undefined : result)
     }
 
     useEffect(() => {
