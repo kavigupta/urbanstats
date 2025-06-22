@@ -19,24 +19,14 @@ export type Block = { type: 'single', ident: string } | { type: 'multi' }
 export interface SingleLocationWithinBlock {
     lineIdx: number
     colIdx: number
+    charIdx: number
 }
 
 export type SingleLocation = SingleLocationWithinBlock & { block: Block }
 
-export interface BaseLocInfo {
+export interface LocInfo {
     start: SingleLocation
     end: SingleLocation
-}
-
-export interface LocInfo extends BaseLocInfo {
-    shifted: BaseLocInfo
-}
-
-export function newLocation(loc: BaseLocInfo): LocInfo {
-    return {
-        ...loc,
-        shifted: { start: { ...loc.start }, end: { ...loc.end } },
-    }
 }
 
 export interface AnnotatedToken {
@@ -102,7 +92,7 @@ const operatorLexer: GenericLexer = {
     },
 }
 
-function lexLine(input: string, block: Block, lineNo: number): AnnotatedToken[] {
+function lexLine(input: string, block: Block, lineNo: number, charIdxOffset: number): AnnotatedToken[] {
     const tokens: AnnotatedToken[] = []
     // one line
     assert(!input.includes('\n'), 'Input contains new line characters')
@@ -116,10 +106,10 @@ function lexLine(input: string, block: Block, lineNo: number): AnnotatedToken[] 
         if (char === '(' || char === ')' || char === '{' || char === '}' || char === '[' || char === ']') {
             const token: AnnotatedToken = {
                 token: { type: 'bracket', value: char },
-                location: newLocation({
-                    start: { block, lineIdx: lineNo, colIdx: idx },
-                    end: { block, lineIdx: lineNo, colIdx: idx + 1 },
-                }),
+                location: {
+                    start: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx },
+                    end: { block, lineIdx: lineNo, colIdx: idx + 1, charIdx: charIdxOffset + idx + 1 },
+                },
             }
             tokens.push(token)
             idx++
@@ -127,7 +117,7 @@ function lexLine(input: string, block: Block, lineNo: number): AnnotatedToken[] 
         }
         if (isDigit(char)) {
             let token
-            [idx, token] = lexNumber(input, idx, block, lineNo)
+            [idx, token] = lexNumber(input, idx, block, lineNo, charIdxOffset)
             if (token !== undefined) {
                 tokens.push(token)
                 continue
@@ -135,24 +125,24 @@ function lexLine(input: string, block: Block, lineNo: number): AnnotatedToken[] 
         }
         for (const lexer of [identifierLexer, operatorLexer]) {
             let token
-            [idx, token] = lexGeneric(input, idx, block, lineNo, lexer)
+            [idx, token] = lexGeneric(input, idx, block, lineNo, lexer, charIdxOffset)
             if (token !== undefined) {
                 tokens.push(token)
                 continue lex
             }
         }
         let token
-        [idx, token] = lexString(input, idx, block, lineNo)
+        [idx, token] = lexString(input, idx, block, lineNo, charIdxOffset)
         if (token !== undefined) {
             tokens.push(token)
             continue
         }
         tokens.push({
             token: { type: 'error', value: `Unexpected character: ${char}` },
-            location: newLocation({
-                start: { block, lineIdx: lineNo, colIdx: idx },
-                end: { block, lineIdx: lineNo, colIdx: idx + 1 },
-            }),
+            location: {
+                start: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx },
+                end: { block, lineIdx: lineNo, colIdx: idx + 1, charIdx: charIdxOffset + idx + 1 },
+            },
         })
         idx++
     }
@@ -162,17 +152,20 @@ function lexLine(input: string, block: Block, lineNo: number): AnnotatedToken[] 
 export function lex(block: Block, input: string): AnnotatedToken[] {
     const tokens: AnnotatedToken[] = []
     const lines = input.split('\n')
+    let charIdx = 0
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
-        const lineTokens = lexLine(line, block, i)
+        const lineTokens = lexLine(line, block, i, charIdx)
         tokens.push(...lineTokens)
+        charIdx += line.length
         tokens.push({
             token: { type: 'operator', value: 'EOL' },
-            location: newLocation({
-                start: { block, lineIdx: i, colIdx: line.length },
-                end: { block, lineIdx: i, colIdx: line.length },
-            }),
+            location: {
+                start: { block, lineIdx: i, colIdx: line.length, charIdx },
+                end: { block, lineIdx: i, colIdx: line.length, charIdx },
+            },
         })
+        charIdx += 1 // newline
     }
     return tokens
 }
@@ -183,6 +176,7 @@ function lexGeneric(
     block: Block,
     lineNo: number,
     lexer: GenericLexer,
+    charIdxOffset: number,
 ): [number, AnnotatedToken | undefined] {
     if (!lexer.firstToken(input[idx])) {
         return [idx, undefined]
@@ -194,15 +188,15 @@ function lexGeneric(
     }
     const token: AnnotatedToken = {
         token: lexer.parse(input.slice(start, idx)),
-        location: newLocation({
-            start: { block, lineIdx: lineNo, colIdx: start },
-            end: { block, lineIdx: lineNo, colIdx: idx },
-        }),
+        location: {
+            start: { block, lineIdx: lineNo, colIdx: start, charIdx: charIdxOffset + start },
+            end: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx },
+        },
     }
     return [idx, token]
 }
 
-function lexString(input: string, idx: number, block: Block, lineNo: number): [number, AnnotatedToken | undefined] {
+function lexString(input: string, idx: number, block: Block, lineNo: number, charIdxOffset: number): [number, AnnotatedToken | undefined] {
     if (input[idx] !== '"') {
         return [idx, undefined]
     }
@@ -210,7 +204,7 @@ function lexString(input: string, idx: number, block: Block, lineNo: number): [n
     idx++
     while (true) {
         if (idx >= input.length) {
-            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: newLocation({ start: { block, lineIdx: lineNo, colIdx: start }, end: { block, lineIdx: lineNo, colIdx: idx } }) }]
+            return [idx, { token: { type: 'error', value: 'Unterminated string' }, location: { start: { block, lineIdx: lineNo, colIdx: start, charIdx: charIdxOffset + start }, end: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + start } } }]
         }
         if (input[idx] === '"') {
             idx++
@@ -229,19 +223,19 @@ function lexString(input: string, idx: number, block: Block, lineNo: number): [n
         result = resultObj
     }
     catch (e) {
-        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: newLocation({ start: { block, lineIdx: lineNo, colIdx: start }, end: { block, lineIdx: lineNo, colIdx: idx } }) }]
+        return [idx, { token: { type: 'error', value: `Invalid string: ${input.slice(start, idx)}: ${e}` }, location: { start: { block, lineIdx: lineNo, colIdx: start, charIdx: charIdxOffset + start }, end: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx } } }]
     }
     const token: AnnotatedToken = {
         token: { type: 'string', value: result },
-        location: newLocation({
-            start: { block, lineIdx: lineNo, colIdx: start },
-            end: { block, lineIdx: lineNo, colIdx: idx },
-        }),
+        location: {
+            start: { block, lineIdx: lineNo, colIdx: start, charIdx: charIdxOffset + start },
+            end: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx },
+        },
     }
     return [idx, token]
 }
 
-function lexNumber(input: string, idx: number, block: Block, lineNo: number): [number, AnnotatedToken | undefined] {
+function lexNumber(input: string, idx: number, block: Block, lineNo: number, charIdxOffset: number): [number, AnnotatedToken | undefined] {
     const numberFormat = /^\d+(\.\d+)?([eE][+-]?\d+|k|m)?/i
     const match = numberFormat.exec(input.slice(idx))
     if (!match) {
@@ -250,14 +244,14 @@ function lexNumber(input: string, idx: number, block: Block, lineNo: number): [n
     const numberStr = match[0]
     const number = parseNumber(numberStr)
     if (number === undefined) {
-        return [idx + numberStr.length, { token: { type: 'error', value: `Invalid number format: ${numberStr}` }, location: newLocation({ start: { block, lineIdx: lineNo, colIdx: idx }, end: { block, lineIdx: lineNo, colIdx: idx + numberStr.length } }) }]
+        return [idx + numberStr.length, { token: { type: 'error', value: `Invalid number format: ${numberStr}` }, location: { start: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx }, end: { block, lineIdx: lineNo, colIdx: idx + numberStr.length, charIdx: charIdxOffset + idx + numberStr.length } } }]
     }
     const token: AnnotatedToken = {
         token: { type: 'number', value: number },
-        location: newLocation({
-            start: { block, lineIdx: lineNo, colIdx: idx },
-            end: { block, lineIdx: lineNo, colIdx: idx + numberStr.length },
-        }),
+        location: {
+            start: { block, lineIdx: lineNo, colIdx: idx, charIdx: charIdxOffset + idx },
+            end: { block, lineIdx: lineNo, colIdx: idx + numberStr.length, charIdx: charIdxOffset + idx + numberStr.length },
+        },
     }
     return [idx + numberStr.length, token]
 }

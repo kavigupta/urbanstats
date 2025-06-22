@@ -1,33 +1,72 @@
-import React, { ReactNode, useCallback, useMemo } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
-import { Editor } from './Editor'
+import { codeStyle, Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
-import { USSExecutionDescriptor } from './workerManager'
+import { EditorError } from './editor-utils'
+import { parse } from './parser'
+import { renderValue, USSValue } from './types-values'
+import { executeAsync } from './workerManager'
 
 export function EditorPanel(): ReactNode {
-    const updateScript = useCallback((newScript: string) => {
+    const [errors, setErrors] = useState<EditorError[]>([])
+    const [result, setResult] = useState<USSValue | undefined>(undefined)
+
+    const updateUss = useCallback(async (newScript: string) => {
         localStorage.setItem('editor-code', newScript)
+
+        const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
+
+        if (stmts.type === 'error') {
+            setErrors(stmts.errors)
+            setResult(undefined)
+            return
+        }
+
+        const exec = await executeAsync({ descriptor: { kind: 'generic' }, stmts })
+        if (!exec.success) {
+            setResult(undefined)
+            setErrors([exec.error])
+        }
+        else {
+            setResult(exec.value)
+            setErrors([])
+        }
     }, [])
 
-    const getScript = useCallback(() => {
+    const getUss = useCallback(() => {
         return localStorage.getItem('editor-code') ?? ''
     }, [])
 
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()), [])
 
-    const executionDescriptor = useMemo<USSExecutionDescriptor>(() => ({ kind: 'generic' }), [])
+    const colors = useColors()
 
     return (
         <PageTemplate>
             <Editor
-                getScript={getScript}
-                setScript={updateScript}
-                executionDescriptor={executionDescriptor}
+                getUss={getUss}
+                setUss={updateUss}
                 autocompleteSymbols={autocompleteSymbols}
-                showOutput={true}
+                errors={errors}
             />
+            { result === undefined
+                ? null
+                : (
+                        <div style={{ margin: '2em' }}>
+                            <pre style={{
+                                ...codeStyle,
+                                borderRadius: '5px',
+                                backgroundColor: colors.slightlyDifferentBackground,
+                                border: `2px solid ${colors.hueColors.green}`,
+                            }}
+                            >
+                                {renderValue(result)}
+                            </pre>
+                        </div>
+                    )}
         </PageTemplate>
     )
 }

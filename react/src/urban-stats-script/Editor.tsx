@@ -1,56 +1,47 @@
 import '@fontsource/inconsolata/500.css'
 
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { Action, AutocompleteMenu, getRange, nodeContent, Range, ParseResult, setRange, stringToHtml, ExecResult } from './editor-utils'
-import { renderValue } from './types-values'
-import { USSExecutionDescriptor } from './workerManager'
-
-type Result = { type: 'parse', result: ParseResult } | { type: 'exec', result: ExecResult }
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils'
 
 const setScriptDelay = 500
-const executeDelay = 500
 
 const undoChunking = 1000
 const undoHistory = 100
 
-interface UndoRedoItem { time: number, script: string, range: Range | undefined }
+interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
 
 export function Editor(
     props: {
-        getScript: () => string // Swap this function to get a new script
-        setScript: (newScript: string) => void
-        executionDescriptor: USSExecutionDescriptor | undefined // Undefined means do not execute
+        getUss: () => string // Swap this function to get a new script
+        setUss: (newScript: string) => void
         autocompleteSymbols: string[]
-        showOutput: boolean
+        errors: EditorError[]
     },
 ): ReactNode {
-    const { executionDescriptor, autocompleteSymbols, setScript: propsSetScript, showOutput, getScript } = props
+    const { setUss: propsSetUss, getUss, errors, autocompleteSymbols } = props
 
-    const [script, setScript] = useState(getScript)
+    const [script, setScript] = useState<Script>(() => makeScript(getUss()))
 
     const undoStack = useRef<UndoRedoItem[]>([]) // Top of this stack is the current state
     const redoStack = useRef<UndoRedoItem[]>([])
 
-    console.log({
-        undoStack: undoStack.current,
-        redoStack: redoStack.current,
-    })
-
     useEffect(() => {
-        const s = getScript()
-        setScript(s)
-        undoStack.current = [{ time: Date.now(), script: s, range: getRange(editorRef.current!) }]
+        const s = getUss()
+        setScript(makeScript(s))
+        setAutocompleteState(undefined)
+        undoStack.current = [{ time: Date.now(), uss: s, range: getRange(editorRef.current!) }]
         redoStack.current = []
-    }, [getScript])
+    }, [getUss])
 
     // sync the script after some time of not typing
     useEffect(() => {
-        const timeout = setTimeout(() => { propsSetScript(script) }, setScriptDelay)
+        const timeout = setTimeout(() => { propsSetUss(script.uss.trimEnd()) }, setScriptDelay)
         return () => { clearTimeout(timeout) }
-    }, [script, propsSetScript])
+    }, [script, propsSetUss])
 
     const colors = useColors()
 
@@ -58,30 +49,18 @@ export function Editor(
 
     const inhibitRangeUpdateEvents = useRef<number>(0)
 
-    const [result, setResult] = useState<Result>({ type: 'parse', result: { result: 'failure', errors: ['No input'] } })
+    const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
+    const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
-    const [executionStart, setExecutionStart] = useState<number | undefined>(undefined)
-
-    const [lastParse, setLastParse] = useState<number | undefined>(undefined)
-
-    const [lastAction, setLastAction] = useState<Action>(undefined)
-
-    const autocompleteMenuRef = useRef<AutocompleteMenu | undefined>(undefined)
-
-    const stagedResultRef = useRef<{ timer: ReturnType<typeof setTimeout>, resultFunction: () => Promise<unknown> } | undefined>(undefined)
-
-    const lastRenderedScriptRef = useRef<string | undefined>(undefined)
-    const lastRenderedExecutionDescriptorRef = useRef<USSExecutionDescriptor | undefined>(undefined)
-
-    function newUndoState(newScript: string, newRange: Range | undefined): void {
+    function newUndoState(newScript: Script, newRange: Range | undefined): void {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
         if (currentUndoState.time + undoChunking > Date.now()) {
             // ammend current item rather than making a new one
-            currentUndoState.script = newScript
+            currentUndoState.uss = newScript.uss
             currentUndoState.range = newRange
         }
         else {
-            undoStack.current.push({ time: Date.now(), script: newScript, range: newRange })
+            undoStack.current.push({ time: Date.now(), uss: newScript.uss, range: newRange })
             while (undoStack.current.length > undoHistory) {
                 undoStack.current.shift()
             }
@@ -89,90 +68,32 @@ export function Editor(
         redoStack.current = []
     }
 
-    const renderScript = useCallback((newScript: string, newRange: Range | undefined) => {
-        const range = newRange ?? getRange(editorRef.current!)
+    const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
+        const fragment = renderCode(newScript, colors, errors, autocompleteState)
 
-        let collapsedRangeIndex: number | undefined
-        if (range !== undefined && range.start === range.end) {
-            collapsedRangeIndex = range.start
+        const editor = editorRef.current!
+        const rangeBefore = newRange ?? getRange(editor)
+        editor.replaceChildren(...fragment)
+        if (rangeBefore !== undefined) {
+            // Otherwise, we get into a re-render loop
+            inhibitRangeUpdateEvents.current++
+            setRange(editor, rangeBefore)
         }
-
-        const { html, result: newResult, autocomplete } = stringToHtml(newScript, colors, executionDescriptor, autocompleteSymbols, lastAction, {
-            collapsedRangeIndex,
-            apply: (completion, from, to, delta) => {
-                const editedScript = newScript.slice(0, from) + completion + newScript.slice(to)
-                const r = { start: to + delta, end: to + delta }
-                renderScript(editedScript, r)
-                setScript(editedScript)
-                newUndoState(editedScript, r)
-                setLastAction('autocomplete')
-            },
-        })
-
-        setLastParse(Date.now())
-
-        function setHTML(newHtml: string, r: Range | undefined): void {
-            const editor = editorRef.current!
-            if (editor.innerHTML !== newHtml) {
-                const rangeBefore = r ?? getRange(editor)
-                editor.innerHTML = newHtml
-                autocompleteMenuRef.current?.attachListeners(editor)
-                if (rangeBefore !== undefined) {
-                    // Otherwise, we get into a re-render loop
-                    inhibitRangeUpdateEvents.current++
-                    setRange(editor, rangeBefore)
-                }
-            }
-        }
-
-        autocompleteMenuRef.current = autocomplete
-
-        setHTML(html, range)
-
-        // Skip setting results if we just rendered this (happens when cursor is moving around for autocomplete)
-        if (lastRenderedScriptRef.current === newScript && lastRenderedExecutionDescriptorRef.current === executionDescriptor) {
-            return
-        }
-
-        lastRenderedScriptRef.current = newScript
-        lastRenderedExecutionDescriptorRef.current = executionDescriptor
-
-        setResult({ type: 'parse', result: newResult })
-
-        if (newResult.result === 'success') {
-            clearTimeout(stagedResultRef.current?.timer)
-            if (newResult.value === undefined) {
-                stagedResultRef.current = undefined
-            }
-            else {
-                stagedResultRef.current = {
-                    timer: setTimeout(async (): Promise<void> => {
-                        if (stagedResultRef.current?.resultFunction !== newResult.value) {
-                            return // Avoid race
-                        }
-                        const start = Date.now()
-                        setExecutionStart(start)
-                        const exec = await newResult.value!()
-                        setExecutionStart(v => v === start ? undefined : v) // Only turn off execution if we were the one executing
-                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Race condition
-                        if (stagedResultRef.current?.resultFunction !== newResult.value) {
-                            return // Avoid race
-                        }
-                        setHTML(exec.html, undefined)
-                        setResult({ type: 'exec', result: exec.result })
-                    }, executeDelay),
-                    resultFunction: newResult.value,
-                }
-            }
-        }
-        else {
-            stagedResultRef.current = undefined
-        }
-    }, [colors, executionDescriptor, autocompleteSymbols, lastAction, setScript])
+    }, [colors, errors, autocompleteState])
 
     useEffect(() => {
         renderScript(script, undefined)
     }, [renderScript, script])
+
+    const editScript = useCallback((newUss: string, newRange: Range | undefined, undoable: boolean) => {
+        const newScript = makeScript(newUss)
+        renderScript(newScript, newRange) // Need this to ensure cursor placement
+        setScript(newScript)
+        setAutocompleteState(undefined)
+        if (undoable) {
+            newUndoState(newScript, newRange)
+        }
+    }, [renderScript])
 
     useEffect(() => {
         const listener = (): void => {
@@ -180,8 +101,9 @@ export function Editor(
                 inhibitRangeUpdateEvents.current--
             }
             else {
-                setLastAction('select') // Indirectly displays script
-                undoStack.current[undoStack.current.length - 1].range = getRange(editorRef.current!) // updates the selection of the current state
+                const range = getRange(editorRef.current!)
+                setAutocompleteState(undefined)
+                undoStack.current[undoStack.current.length - 1].range = range // updates the selection of the current state
             }
         }
         document.addEventListener('selectionchange', listener)
@@ -193,26 +115,68 @@ export function Editor(
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            setLastAction('input')
-            const newScript = nodeContent(editor)
+            const range = getRange(editor)
+            const newScript = makeScript(nodeContent(editor))
+            const token = range !== undefined && range.start === range.end
+                ? newScript.tokens.find(t => t.token.type === 'identifier' && t.location.end.charIdx === range.start)
+                : undefined
+            if (token !== undefined) {
+                const tokenValue = token.token.value as string
+                const options = getAutocompleteOptions(autocompleteSymbols, newScript.tokens, tokenValue)
+                if (options.length === 0) {
+                    setAutocompleteState(undefined)
+                }
+                else {
+                    setAutocompleteState({
+                        location: token.location,
+                        options,
+                        div: createAutocompleteMenuDiv(colors),
+                        apply(optionIdx) {
+                            const option = options[optionIdx]
+                            const delta = option.length - tokenValue.length
+                            const editedUss = newScript.uss.slice(0, token.location.start.charIdx) + option + newScript.uss.slice(token.location.end.charIdx)
+                            const editedRange = { start: token.location.end.charIdx + delta, end: token.location.end.charIdx + delta }
+                            editScript(editedUss, editedRange, true)
+                        },
+                    })
+                    setAutocompleteSelectionIdx(0)
+                }
+            }
+            else {
+                setAutocompleteState(undefined)
+            }
             setScript(newScript)
-            newUndoState(newScript, getRange(editor))
+            newUndoState(newScript, range)
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript])
+    }, [setScript, autocompleteSymbols, colors, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
-            function editScript(newScript: string, newRange: Range): void {
-                renderScript(newScript, newRange)
-                setScript(newScript)
-                newUndoState(newScript, newRange)
-            }
-
-            if (autocompleteMenuRef.current?.action(editor, e) === true) {
-                return
+            if (autocompleteState !== undefined) {
+                switch (e.key) {
+                    case 'Enter':
+                    case 'Tab':
+                        e.preventDefault()
+                        autocompleteState.apply(autocompleteSelectionIdx)
+                        return
+                    case 'Escape':
+                        e.preventDefault()
+                        setAutocompleteState(undefined)
+                        return
+                    case 'ArrowDown':
+                    case 'ArrowUp':
+                        e.preventDefault()
+                        if (e.key === 'ArrowDown') {
+                            setAutocompleteSelectionIdx(i => i + 1 >= autocompleteState.options.length ? 0 : i + 1)
+                        }
+                        else {
+                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? autocompleteState.options.length - 1 : i - 1)
+                        }
+                        return
+                }
             }
 
             if (e.key === 'Tab') {
@@ -220,18 +184,20 @@ export function Editor(
                 const range = getRange(editor)
                 if (range !== undefined) {
                     editScript(
-                        `${script.slice(0, range.start)}    ${script.slice(range.end)}`,
+                        `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                         { start: range.start + 4, end: range.start + 4 },
+                        true,
                     )
                 }
             }
             else if (e.key === 'Backspace') {
                 const range = getRange(editor)
-                if (range !== undefined && range.start === range.end && range.start >= 4 && script.slice(range.start - 4, range.start) === '    ') {
+                if (range !== undefined && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
-                        `${script.slice(0, range.start - 4)}${script.slice(range.start)}`,
+                        `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
+                        true,
                     )
                 }
             }
@@ -244,8 +210,7 @@ export function Editor(
                     const prevState = undoStack.current[undoStack.current.length - 2]
                     // Prev state becomes current state, current state becomes redo state
                     redoStack.current.push(undoStack.current.pop()!)
-                    renderScript(prevState.script, prevState.range)
-                    setScript(prevState.script)
+                    editScript(prevState.uss, prevState.range, false)
                 }
             }
             else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
@@ -254,26 +219,24 @@ export function Editor(
                 const futureState = redoStack.current.pop()
                 if (futureState !== undefined) {
                     undoStack.current.push(futureState)
-                    renderScript(futureState.script, futureState.range)
-                    setScript(futureState.script)
+                    editScript(futureState.uss, futureState.range, false)
                 }
             }
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, setScript, renderScript])
+    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            autocompleteMenuRef.current?.action(editor, { key: 'Escape', preventDefault: () => undefined })
+            setAutocompleteState(undefined)
         }
         editor.addEventListener('blur', listener)
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
-    const error = result.result.result === 'failure'
-    const executing = result.type === 'parse' && executionDescriptor !== undefined
+    const error = errors.length > 0
 
     return (
         <div style={{ margin: '2em' }}>
@@ -281,19 +244,32 @@ export function Editor(
                 style={{
                     ...codeStyle,
                     caretColor: colors.textMain,
-                    border: `1px solid ${error ? colors.hueColors.red : executing ? colors.hueColors.yellow : (showOutput ? colors.hueColors.green : colors.borderShadow)}`,
-                    borderRadius: error || showOutput ? '5px 5px 0 0' : '5px',
+                    border: `1px solid ${error ? colors.hueColors.red : colors.borderShadow}`,
+                    borderRadius: error ? '5px 5px 0 0' : '5px',
                 }}
                 ref={editorRef}
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayResult result={result} showOutput={showOutput} executionStart={executionStart} lastParse={lastParse} />
+            {error
+                ? <DisplayErrors errors={errors} />
+                : null}
+            {autocompleteState === undefined
+                ? null
+                : createPortal(
+                    <Autocomplete
+                        state={autocompleteState}
+                        selectionIdx={autocompleteSelectionIdx}
+                        setSelectionIdx={setAutocompleteSelectionIdx}
+                        apply={(i) => { autocompleteState.apply(i) }}
+                    />,
+                    autocompleteState.div,
+                )}
         </div>
     )
 }
 
-const codeStyle: CSSProperties = {
+export const codeStyle: CSSProperties = {
     whiteSpace: 'pre-wrap',
     fontFamily: 'Inconsolata, monospace',
     fontWeight: 500,
@@ -302,9 +278,7 @@ const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-const showDebugInfoDelay = 500
-
-function DisplayResult(props: { result: Result, showOutput: boolean, executionStart: number | undefined, lastParse: number | undefined }): ReactNode {
+function DisplayErrors(props: { errors: EditorError[] }): ReactNode {
     const colors = useColors()
     function style(color: string): CSSProperties {
         const border = `2px solid ${color}`
@@ -319,57 +293,51 @@ function DisplayResult(props: { result: Result, showOutput: boolean, executionSt
             borderLeft: border,
         }
     }
+    return (
+        <pre style={style(colors.hueColors.red)}>
+            {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
+        </pre>
+    )
+}
 
-    const [showExecuting, setShowExecuting] = useState(false)
+function Autocomplete(props: { state: Exclude<AutocompleteState, undefined>, selectionIdx: number, setSelectionIdx: (idx: number) => void, apply: (idx: number) => void }): ReactNode {
+    return props.state.options.map((option, index) => (
+        <AutocompleteOption
+            key={option}
+            option={option}
+            index={index}
+            selected={index === props.selectionIdx}
+            apply={() => { props.apply(index) }}
+        />
+    ))
+}
+
+function AutocompleteOption(props: { option: string, index: number, selected: boolean, apply: () => void }): ReactNode {
+    const colors = useColors()
+    const [hovering, setHovering] = useState(false)
+    const style: CSSProperties = {
+        cursor: 'pointer',
+        backgroundColor: (props.selected || hovering
+            ? colors.slightlyDifferentBackgroundFocused
+            : props.index % 2 === 0 ? colors.background : colors.slightlyDifferentBackground),
+        padding: '0 0.5em',
+    }
+
+    const optionRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        const timeout = props.executionStart !== undefined
-            ? setTimeout(() => {
-                setShowExecuting(true)
-            }, showDebugInfoDelay)
-            : undefined
-        return () => {
-            clearTimeout(timeout)
-            setShowExecuting(false)
-        }
-    }, [props.executionStart])
+        optionRef.current?.scrollIntoView({ block: 'nearest' })
+    }, [props.selected])
 
-    const [maybeShowParseError, setMaybeShowParseError] = useState(false)
-
-    useEffect(() => {
-        const timeout = props.lastParse !== undefined
-            ? setTimeout(() => {
-                setMaybeShowParseError(true)
-            }, showDebugInfoDelay)
-            : undefined
-        return () => {
-            clearTimeout(timeout)
-            setMaybeShowParseError(false)
-        }
-    }, [props.lastParse])
-
-    if (props.result.result.result === 'success') {
-        if (props.result.type === 'parse' && showExecuting) {
-            return (
-                <pre style={style(colors.hueColors.yellow)}>
-                    Executing...
-                </pre>
-            )
-        }
-        if (props.result.type === 'exec' && props.showOutput) {
-            return (
-                <pre style={style(colors.hueColors.green)}>
-                    {renderValue(props.result.result.value)}
-                </pre>
-            )
-        }
-    }
-    if (props.result.result.result === 'failure' && maybeShowParseError) {
-        return (
-            <pre style={style(colors.hueColors.red)}>
-                {props.result.result.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${error}`).join('\n')}
-            </pre>
-        )
-    }
-    return null
+    return (
+        <div
+            ref={optionRef}
+            style={style}
+            onMouseEnter={() => { setHovering(true) }}
+            onMouseLeave={() => { setHovering(false) }}
+            onClick={props.apply}
+        >
+            {props.option}
+        </div>
+    )
 }

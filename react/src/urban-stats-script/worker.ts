@@ -49,7 +49,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             console.error('Unknown interpretation error', error)
             interpretationError = new InterpretationError('Unknown interpretation error', locationOf(request.stmts))
         }
-        return { success: false, error: { message: interpretationError.message, shortMessage: interpretationError.shortMessage, location: interpretationError.location } }
+        return { success: false, error: { type: 'error', value: interpretationError.value, location: interpretationError.location } }
     }
 }
 

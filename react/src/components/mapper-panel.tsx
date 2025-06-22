@@ -13,6 +13,7 @@ import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
+import { EditorError } from '../urban-stats-script/editor-utils'
 import { parse } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -28,6 +29,7 @@ interface DisplayedMapProps extends MapGenericProps {
     rampCallback: (newRamp: EmpiricalRamp) => void
     height: number | string | undefined
     uss: string
+    setErrors: (errors: EditorError[]) => void
 }
 
 interface Shapes { geographyKind: string, data: Promise<{ shapes: NormalizeProto<IConsolidatedShapes>, nameToIndex: Map<string, number> }> }
@@ -63,14 +65,16 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     override async computePolygons(): Promise<Polygons> {
         const stmts = parse(this.props.uss, { type: 'single', ident: 'mapper-panel' })
         if (stmts.type === 'error') {
-            console.error('Error parsing USS expression:', stmts.errors)
+            this.props.setErrors(stmts.errors)
             return { polygons: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
         if (!result.success) {
-            console.error('Error executing USS expression:', result.error)
+            this.props.setErrors([result.error])
             return { polygons: [], zoomIndex: -1 }
         }
+
+        this.props.setErrors([])
 
         const cMap = result.value.value.value
         // TODO
@@ -189,6 +193,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     height: number | string | undefined
     uss: string
+    setErrors: (errors: EditorError[]) => void
 }
 
 interface EmpiricalRamp {
@@ -217,6 +222,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     height={props.height}
                     attribution="startVisible"
                     basemap={{ type: 'osm' }} // TODO
+                    setErrors={props.setErrors}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
@@ -307,6 +313,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
+    const [errors, setErrors] = useState<EditorError[]>([])
+
     const mapperPanel = (height: string | undefined): ReactNode => {
         const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
         return (!valid_geographies.includes(geographyKind))
@@ -317,6 +325,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         uss={mapSettings.uss}
                         height={height}
                         mapRef={mapRef}
+                        setErrors={setErrors}
                     />
                 )
     }
@@ -337,6 +346,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                     getUss={getUss}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
+                    errors={errors}
                 />
                 <Export
                     mapRef={mapRef}
