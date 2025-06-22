@@ -42,19 +42,23 @@ export type Basemap = {
 export interface FilterSettings {
     enabled: boolean
     function: ColorStatDescriptor
-};
+}
 
-/* eslint-disable no-restricted-syntax -- This represents persitent links */
-export interface MapSettings {
-    geography_kind: string
+export interface MapperScriptSettings {
     uss: string
 }
-/* eslint-enable no-restricted-syntax */
+
+export interface MapSettings {
+    geographyKind: string
+    script: MapperScriptSettings
+}
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
     const defaults: MapSettings = {
-        geography_kind: '',
-        uss: '',
+        geographyKind: '',
+        script: {
+            uss: '',
+        },
     }
     return merge(addTo, defaults)
 }
@@ -83,7 +87,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss, errors }: 
     const setUss = useCallback((uss: string) => {
         setMapSettings(s => ({
             ...s,
-            uss,
+            script: { uss },
         }))
     }, [setMapSettings])
 
@@ -92,12 +96,12 @@ export function MapperSettings({ mapSettings, setMapSettings, getUss, errors }: 
             <DataListSelector
                 overallName="Geography Kind:"
                 names={valid_geographies}
-                initialValue={mapSettings.geography_kind}
+                initialValue={mapSettings.geographyKind}
                 onChange={
                     (name) => {
                         setMapSettings(s => ({
                             ...s,
-                            geography_kind: name,
+                            geographyKind: name,
                         }))
                     }
                 }

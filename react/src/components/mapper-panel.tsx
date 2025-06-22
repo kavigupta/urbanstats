@@ -316,13 +316,13 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const [errors, setErrors] = useState<EditorError[]>([])
 
     const mapperPanel = (height: string | undefined): ReactNode => {
-        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
+        const geographyKind = mapSettings.geographyKind as typeof valid_geographies[number]
         return (!valid_geographies.includes(geographyKind))
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
                         geographyKind={geographyKind}
-                        uss={mapSettings.uss}
+                        uss={mapSettings.script.uss}
                         height={height}
                         mapRef={mapRef}
                         setErrors={setErrors}
@@ -332,7 +332,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const headerTextClass = useHeaderTextClass()
 
-    const getUss = useCallback(() => props.mapSettings.uss, [props.mapSettings.uss])
+    const getUss = useCallback(() => props.mapSettings.script.uss, [props.mapSettings.script.uss])
 
     if (props.view) {
         return mapperPanel('100%')
