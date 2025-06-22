@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState, createInlineColorInput } from './editor-utils'
 
 const setScriptDelay = 500
 
@@ -70,8 +70,24 @@ export function Editor(
 
     const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
         const fragment = renderCode(newScript, colors, errors, (token, content) => {
+            const contentNode = content[0]
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.div)
+            }
+            if (token.token.type === 'string' && /^#[0-9a-f]{6}$/.test(token.token.value)) {
+                const colorInput = createInlineColorInput()
+                colorInput.value = contentNode.textContent!.slice(1, 8)
+                colorInput.oninput = () => {
+                    contentNode.textContent = `"${colorInput.value}"`
+                }
+                colorInput.onchange = () => {
+                    const editedScript = makeScript(`${newScript.uss.slice(0, token.location.start.charIdx)}"${colorInput.value}"${newScript.uss.slice(token.location.end.charIdx)}`)
+                    setScript(editedScript)
+                    setAutocompleteState(undefined)
+                    newUndoState(editedScript, undefined)
+                }
+
+                content.unshift(colorInput)
             }
         })
 
@@ -118,7 +134,10 @@ export function Editor(
 
     useEffect(() => {
         const editor = editorRef.current!
-        const listener = (): void => {
+        const listener = (e: Event): void => {
+            if (e.target instanceof HTMLInputElement && e.target.type === 'color') {
+                return
+            }
             const range = getRange(editor)
             const newScript = makeScript(nodeContent(editor))
             const token = range !== undefined && range.start === range.end

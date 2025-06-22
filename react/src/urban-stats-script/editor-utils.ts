@@ -275,3 +275,13 @@ export function createAutocompleteMenuDiv(colors: Colors): HTMLDivElement {
 
     return result
 }
+
+export function createInlineColorInput(): HTMLInputElement {
+    const colorInput = document.createElement('input')
+    colorInput.type = 'color'
+    colorInput.setAttribute('style', styleToString({
+        'inline-size': '1em',
+        'block-size': '1em',
+    }))
+    return colorInput
+}

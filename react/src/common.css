@@ -120,3 +120,13 @@ input[type=text] {
 .syau-searchbox::placeholder {
     color: var(--text-main)
 }
+
+input[type=color] {
+    padding: 0;
+}
+input[type=color]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
