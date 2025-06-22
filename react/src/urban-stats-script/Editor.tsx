@@ -76,7 +76,7 @@ export function Editor(
             }
             if (token.token.type === 'string' && /^#[0-9a-f]{6}$/.test(token.token.value)) {
                 const colorInput = createInlineColorInput()
-                colorInput.value = contentNode.textContent!.slice(1, 8)
+                colorInput.value = token.token.value
                 colorInput.oninput = () => {
                     contentNode.textContent = `"${colorInput.value}"`
                 }
