@@ -85,6 +85,16 @@ export function Editor2(
         renderScript(script, undefined)
     }, [renderScript, script])
 
+    const editScript = useCallback((newUss: string, newRange: Range | undefined, undoable: boolean) => {
+        const newScript = makeScript(newUss)
+        renderScript(newScript, newRange) // Need this to ensure cursor placement
+        setScript(newScript)
+        setAutocompleteState(undefined)
+        if (undoable) {
+            newUndoState(newScript, newRange)
+        }
+    }, [renderScript])
+
     useEffect(() => {
         const listener = (): void => {
             if (inhibitRangeUpdateEvents.current > 0) {
@@ -126,11 +136,7 @@ export function Editor2(
                             const delta = option.length - tokenValue.length
                             const editedUss = newScript.uss.slice(0, token.location.start.charIdx) + option + newScript.uss.slice(token.location.end.charIdx)
                             const editedRange = { start: token.location.end.charIdx + delta, end: token.location.end.charIdx + delta }
-                            const editedScript = makeScript(editedUss)
-                            renderScript(editedScript, editedRange)
-                            setScript(editedScript)
-                            newUndoState(editedScript, editedRange)
-                            setAutocompleteState(undefined)
+                            editScript(editedUss, editedRange, true)
                         },
                     })
                     setAutocompleteSelectionIdx(0)
@@ -144,19 +150,11 @@ export function Editor2(
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript, autocompleteSymbols, colors, renderScript])
+    }, [setScript, autocompleteSymbols, colors, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
-            function editScript(newUss: string, newRange: Range): void {
-                const newScript = makeScript(newUss)
-                renderScript(newScript, newRange)
-                setScript(newScript)
-                newUndoState(newScript, newRange)
-                setAutocompleteState(undefined)
-            }
-
             if (autocompleteState !== undefined) {
                 switch (e.key) {
                     case 'Enter':
@@ -188,6 +186,7 @@ export function Editor2(
                     editScript(
                         `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                         { start: range.start + 4, end: range.start + 4 },
+                        true,
                     )
                 }
             }
@@ -198,6 +197,7 @@ export function Editor2(
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
+                        true,
                     )
                 }
             }
@@ -210,10 +210,7 @@ export function Editor2(
                     const prevState = undoStack.current[undoStack.current.length - 2]
                     // Prev state becomes current state, current state becomes redo state
                     redoStack.current.push(undoStack.current.pop()!)
-                    const newScript = makeScript(prevState.uss)
-                    renderScript(newScript, prevState.range)
-                    setScript(newScript)
-                    setAutocompleteState(undefined)
+                    editScript(prevState.uss, prevState.range, false)
                 }
             }
             else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
@@ -222,16 +219,13 @@ export function Editor2(
                 const futureState = redoStack.current.pop()
                 if (futureState !== undefined) {
                     undoStack.current.push(futureState)
-                    const newScript = makeScript(futureState.uss)
-                    renderScript(newScript, futureState.range)
-                    setScript(newScript)
-                    setAutocompleteState(undefined)
+                    editScript(futureState.uss, futureState.range, false)
                 }
             }
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx])
+    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
