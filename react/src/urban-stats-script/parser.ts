@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, newLocation, Block } from './lexer'
+import { AnnotatedTokenWithValue, lex, LocInfo, newLocation, Block } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 export interface Decorated<T> {
@@ -525,12 +525,8 @@ function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStats
     return result
 }
 
-export function parse(code: string, block: Block): ReturnType<typeof parseTokens> {
+export function parse(code: string, block: Block): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
     const tokens = lex(block, code)
-    return parseTokens(tokens)
-}
-
-export function parseTokens(tokens: AnnotatedToken[]): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
         return { type: 'error', errors: lexErrors.map(token => ({ type: 'error', value: `Unrecognized token: ${token.token.value}`, location: token.location })) }

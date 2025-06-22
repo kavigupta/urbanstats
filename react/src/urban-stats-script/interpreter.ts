@@ -22,11 +22,11 @@ export function renderLocInfo(loc: LocInfo): string {
 }
 
 export class InterpretationError extends Error {
-    public shortMessage: string
+    public value: string
     constructor(message: string, public location: LocInfo) {
         super(`${message} at ${renderLocInfo(location)}`)
         this.name = 'InterpretationError'
-        this.shortMessage = message
+        this.value = message
         this.location = location
     }
 }
