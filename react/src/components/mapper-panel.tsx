@@ -8,13 +8,13 @@ import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState 
 import valid_geographies from '../data/mapper/used_geographies'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
-import { MapSettings, MapperSettings } from '../mapper/settings'
+import { MapSettings, MapperSettings, computeUSS } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
+import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { parse } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
@@ -28,7 +28,7 @@ interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     rampCallback: (newRamp: EmpiricalRamp) => void
     height: number | string | undefined
-    uss: string
+    uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
 }
 
@@ -63,9 +63,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override async computePolygons(): Promise<Polygons> {
-        const stmts = parse(this.props.uss, { type: 'single', ident: 'mapper-panel' })
-        if (stmts.type === 'error') {
-            this.props.setErrors(stmts.errors)
+        const stmts = this.props.uss
+        if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
@@ -192,7 +191,7 @@ interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
     mapRef: React.RefObject<DisplayedMap>
     height: number | string | undefined
-    uss: string
+    uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
 }
 
@@ -292,10 +291,18 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
+    const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
+
+    const setMapSettingsWrapper = (newSettings: MapSettings): void => {
+        setMapSettings(newSettings)
+        const [result, errors] = computeUSS(newSettings.script)
+        setUSS(result)
+        setErrors(errors)
+    }
 
     useEffect(() => {
         // So that map settings are updated when the prop changes
-        setMapSettings(props.mapSettings)
+        setMapSettingsWrapper(props.mapSettings)
     }, [props.mapSettings])
 
     const mapRef = useRef<DisplayedMap>(null)
@@ -322,7 +329,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             : (
                     <MapComponent
                         geographyKind={geographyKind}
-                        uss={mapSettings.script.uss}
+                        uss={uss}
                         height={height}
                         mapRef={mapRef}
                         setErrors={setErrors}
@@ -332,7 +339,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const headerTextClass = useHeaderTextClass()
 
-    const getUss = useCallback(() => props.mapSettings.script.uss, [props.mapSettings.script.uss])
+    const getScript = useCallback(() => mapSettings.script, [mapSettings.script])
 
     if (props.view) {
         return mapperPanel('100%')
@@ -343,9 +350,11 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    getUss={getUss}
+                    getScript={getScript}
                     mapSettings={mapSettings}
-                    setMapSettings={setMapSettings}
+                    setMapSettings={(setter) => {
+                        setMapSettingsWrapper(setter(mapSettings))
+                    }}
                     errors={errors}
                 />
                 <Export
