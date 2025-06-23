@@ -1,6 +1,6 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
@@ -28,14 +28,6 @@ export function Editor(
 
     const undoStack = useRef<UndoRedoItem[]>([]) // Top of this stack is the current state
     const redoStack = useRef<UndoRedoItem[]>([])
-
-    useEffect(() => {
-        const s = getUss()
-        setScript(makeScript(s))
-        setAutocompleteState(undefined)
-        undoStack.current = [{ time: Date.now(), uss: s, range: getRange(editorRef.current!) }]
-        redoStack.current = []
-    }, [getUss])
 
     // sync the script after some time of not typing
     useEffect(() => {
@@ -98,6 +90,16 @@ export function Editor(
             newUndoState(newScript, newRange)
         }
     }, [renderScript])
+
+    useLayoutEffect(() => { // Needs to happen before other effects
+        const s = getUss()
+        const editor = editorRef.current!
+        const currentRange = getRange(editor)
+        const newRange = currentRange !== undefined ? { start: 0, end: 0 } : undefined
+        editScript(s, newRange, false)
+        undoStack.current = [{ time: Date.now(), uss: s, range: newRange }]
+        redoStack.current = []
+    }, [getUss])
 
     useEffect(() => {
         const listener = (): void => {
