@@ -140,22 +140,26 @@ def check_secureid(user, secure_id):
     return res[0] == secure_id
 
 
-def latest_day_from_table(user, table_name, column):
-    user = int(user, 16)
+def sqlTuple(length):
+    return f"({','.join('?'*length)})"
+
+
+def latest_day_from_table(users, table_name, column):
+    users = [int(user, 16) for user in users]
     _, c = table()
     c.execute(
-        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user=?",
-        (user,),
+        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user IN {sqlTuple(len(users))}",
+        users,
     )
     return c.fetchone()[0]
 
 
-def latest_day(user):
-    return latest_day_from_table(user, "JuxtaStatIndividualStats", "day")
+def latest_day(users):
+    return latest_day_from_table(users, "JuxtaStatIndividualStats", "day")
 
 
-def latest_week_retrostat(user):
-    return latest_day_from_table(user, "JuxtaStatIndividualStatsRetrostat", "week")
+def latest_week_retrostat(users):
+    return latest_day_from_table(users, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
 def corrects_to_bitvector(corrects: List[bool]) -> int:
@@ -193,12 +197,12 @@ def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
-def has_infinite_stats(user, seeds_versions):
-    user = int(user, 16)
+def has_infinite_stats(users, seeds_versions):
+    users = [int(user, 16) for user in users]
     _, c = table()
     c.execute(
-        "SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user=?",
-        (user,),
+        f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(users))}",
+        users,
     )
     results = c.fetchall()
     results = set(results)
@@ -298,13 +302,13 @@ def unfriend(requestee, requester):
     conn.commit()
 
 
-def todays_score_for(requestee, requesters, date, quiz_kind):
+def todays_score_for(requestees, requesters, date, quiz_kind):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestee,
+        requestees,
         requesters,
         compute_fn=lambda c, for_user: _compute_daily_score(
             date, quiz_kind, c, for_user
@@ -312,27 +316,27 @@ def todays_score_for(requestee, requesters, date, quiz_kind):
     )
 
 
-def infinite_results(requestee, requesters, seed, version):
+def infinite_results(requestees, requesters, seed, version):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestee,
+        requestees,
         requesters,
         compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version),
     )
 
 
-def _compute_friend_results(requestee, requesters, compute_fn):
-    requestee = int(requestee, 16)
+def _compute_friend_results(requestees, requesters, compute_fn):
+    requestees = [int(requestee, 16) for requestee in requestees]
 
     _, c = table()
     # query the table to see if each pair is a friend pair
 
     c.execute(
-        "SELECT requester FROM FriendRequests WHERE requestee=?",
-        (requestee,),
+        f"SELECT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
+        requestees,
     )
     friends = c.fetchall()
     friends = {x[0] for x in friends}
@@ -357,9 +361,11 @@ def _compute_friend_results(requestee, requesters, compute_fn):
 
 
 def _compute_daily_score(date, quiz_kind, c, for_user):
+    for_all_users = _get_user_users(c, for_user)
+
     c.execute(
-        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user=? AND {problem_id_for_quiz_kind[quiz_kind]}=?",
-        (for_user, date),
+        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user IN {sqlTuple(len(for_all_users))} AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+        for_all_users + [date],
     )
     res = c.fetchone()
     if res is None:
@@ -400,9 +406,8 @@ def _infinite_results(c, for_user, seed, version):
 def associate_email_db(user, email):
     user = int(user, 16)
     conn, c = table()
-    c.execute("SELECT email FROM EmailUsers WHERE user=?", (user,))
-    row = c.fetchone()
-    if row != None and row[0] != email:
+    existing_email = _get_user_email(c, user)
+    if existing_email != None and existing_email != email:
         return "conflict", 409
     # Table constraints prevent duplicates
     c.execute(
@@ -411,3 +416,28 @@ def associate_email_db(user, email):
     )
     conn.commit()
     return "success", 200
+
+
+def get_email_users(email):
+    conn, c = table()
+    return _get_email_users(c, email)
+
+
+def _get_email_users(c, email):
+    c.execute("SELECT user FROM EmailUsers WHERE email=?", (email,))
+    return [row[0] for row in c.fetchall()]
+
+
+def _get_user_email(c, user):
+    c.execute("SELECT email FROM EmailUsers WHERE user=?", (user,))
+    row = c.fetchone()
+    if row is None:
+        return None
+    return row[0]
+
+
+def _get_user_users(c, user):
+    email = _get_user_email(c, user)
+    if email is None:
+        return [user]
+    return _get_email_users(c, email)

@@ -25,6 +25,7 @@ from .juxtastat_stats import (
     todays_score_for,
     unfriend,
     associate_email_db,
+    get_email_users,
 )
 from .shorten import retreive_and_lengthen, shorten_and_save
 
@@ -124,10 +125,11 @@ def authenticate(fields):
     return decorator
 
 
-def get_email():
+def get_email(require_association=True):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
+            user = flask_form()["user"]
             if "x-access-token" in flask.request.headers:
                 email_token = flask.request.headers["x-access-token"]
                 response = requests.get(
@@ -141,8 +143,15 @@ def get_email():
                 if not isinstance(info.get("email"), str):
                     return "email must be a string", 500
 
+                email_users = get_email_users(info.get("email"))
+
+                if require_association and user not in email_users:
+                    return "user not associated with email", 400
+
+                flask.request.environ["email_users"] = email_users
                 flask.request.environ["email"] = info.get("email")
             else:
+                flask.request.environ["email_users"] = [user]
                 flask.request.environ["email"] = None
             return fn()
 
@@ -164,17 +173,19 @@ def juxtastat_register_user_request():
 
 @app.route("/juxtastat/latest_day", methods=["POST"])
 @authenticate([])
+@get_email()
 def juxtastat_latest_day_request():
     form = flask_form()
-    ld = latest_day(form["user"])
+    ld = latest_day(flask.request.environ["email_users"])
     return flask.jsonify(dict(latest_day=ld))
 
 
 @app.route("/retrostat/latest_week", methods=["POST"])
 @authenticate([])
+@get_email()
 def retrostat_latest_week_request():
     form = flask_form()
-    ld = latest_week_retrostat(form["user"])
+    ld = latest_week_retrostat(flask.request.environ["email_users"])
     return flask.jsonify(dict(latest_day=ld))
 
 
@@ -188,10 +199,15 @@ def juxtastat_store_user_stats_request():
 
 @app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
 @authenticate(["seedVersions"])
+@get_email()
 def juxtastat_infinite_has_infinite_stats_request():
     form = flask_form()
     print("HAS INFINITE STATS", form)
-    res = dict(has=has_infinite_stats(form["user"], form["seedVersions"]))
+    res = dict(
+        has=has_infinite_stats(
+            flask.request.environ["email_users"], form["seedVersions"]
+        )
+    )
     print("HAS INFINITE STATS", res)
     return flask.jsonify(res)
 
@@ -266,11 +282,15 @@ def juxtastat_unfriend():
 
 @app.route("/juxtastat/todays_score_for", methods=["POST"])
 @authenticate(["requesters", "date", "quiz_kind"])
+@get_email()
 def juxtastat_todays_score_for():
     form = flask_form()
     res = dict(
         results=todays_score_for(
-            form["user"], form["requesters"], form["date"], form["quiz_kind"]
+            flask.request.environ["email_users"],
+            form["requesters"],
+            form["date"],
+            form["quiz_kind"],
         )
     )
     print("TODAYS SCORE FOR", res)
@@ -279,11 +299,15 @@ def juxtastat_todays_score_for():
 
 @app.route("/juxtastat/infinite_results", methods=["POST"])
 @authenticate(["requesters", "seed", "version"])
+@get_email()
 def juxtastat_infinite_results():
     form = flask_form()
     res = dict(
         results=infinite_results(
-            form["user"], form["requesters"], form["seed"], form["version"]
+            flask.request.environ["email_users"],
+            form["requesters"],
+            form["seed"],
+            form["version"],
         )
     )
     print("INFINITE RESULTS FOR", res)
@@ -292,7 +316,7 @@ def juxtastat_infinite_results():
 
 @app.route("/juxtastat/associate_email", methods=["POST"])
 @authenticate([])
-@get_email()
+@get_email(require_association=False)
 def associate_email():
     form = flask_form()
     user = form["user"]
