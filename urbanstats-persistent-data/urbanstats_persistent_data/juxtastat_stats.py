@@ -58,6 +58,12 @@ def table():
         CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer, UNIQUE(requestee, requester))
         """
     )
+    # Map email <->> user
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS EmailUsers (email text, user integer PRIMARY KEY, UNIQUE(email, user))
+        """
+    )
     # ADD THESE LATER IF WE NEED THEM
     # For now, we can just calculate them from the individual stats
     # We don't have enough users to worry about performance
@@ -389,3 +395,19 @@ def _infinite_results(c, for_user, seed, version):
         maxScoreSeed=max_score_seed,
         maxScoreVersion=max_score_version,
     )
+
+
+def associate_email_db(user, email):
+    user = int(user, 16)
+    conn, c = table()
+    c.execute("SELECT email FROM EmailUsers WHERE user=?", (user,))
+    row = c.fetchone()
+    if row != None and row[0] != email:
+        return "conflict", 409
+    # Table constraints prevent duplicates
+    c.execute(
+        "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
+        (email, user),
+    )
+    conn.commit()
+    return "success", 200

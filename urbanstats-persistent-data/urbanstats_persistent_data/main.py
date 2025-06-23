@@ -2,6 +2,7 @@ import functools
 import hashlib
 import json
 import logging
+import requests
 
 # pylint: disable=import-error
 import flask
@@ -23,6 +24,7 @@ from .juxtastat_stats import (
     store_user_stats_retrostat,
     todays_score_for,
     unfriend,
+    associate_email_db,
 )
 from .shorten import retreive_and_lengthen, shorten_and_save
 
@@ -120,6 +122,40 @@ def authenticate(fields):
         return wrapper
 
     return decorator
+
+
+def get_email():
+    def decorator(fn):
+        @functools.wraps(fn)
+        def wrapper():
+            if "x-access-token" in flask.request.headers:
+                email_token = flask.request.headers["x-access-token"]
+                response = requests.get(
+                    f"https://oauth2.googleapis.com/tokeninfo?access_token={email_token}"
+                )
+                if response.status_code != 200:
+                    return response.content, response.status_code
+
+                info = json.loads(response.content)
+
+                if not isinstance(info.get("email"), str):
+                    return "email must be a string", 500
+
+                flask.request.environ["email"] = info.get("email")
+            else:
+                flask.request.environ["email"] = None
+            return fn()
+
+        return wrapper
+
+    return decorator
+
+
+@app.before_request
+def forward_custom_header():
+    header_name = "X-Forwarded-User"
+    if header_name in flask.request.headers:
+        flask.request.environ["email"] = flask.request.headers[header_name]
 
 
 @app.route("/juxtastat/register_user", methods=["POST"])
@@ -259,6 +295,18 @@ def juxtastat_infinite_results():
     )
     print("INFINITE RESULTS FOR", res)
     return flask.jsonify(res)
+
+
+@app.route("/juxtastat/associate_email", methods=["POST"])
+@authenticate([])
+@get_email()
+def associate_email():
+    form = flask_form()
+    user = form["user"]
+    email = flask.request.environ["email"]
+    if email is None:
+        return "No email", 400
+    return associate_email_db(user, email)
 
 
 logging.getLogger("flask_cors").level = logging.DEBUG
