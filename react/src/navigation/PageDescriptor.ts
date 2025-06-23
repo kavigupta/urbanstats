@@ -181,6 +181,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true, email: string } }
     | {
         kind: 'error'
         error: unknown
@@ -644,9 +645,20 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'oauthCallback': {
-            await sharedAuthenticationStateMachine.completeSignIn(newDescriptor)
+            let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
+            try {
+                result = { success: true, email: await sharedAuthenticationStateMachine.completeSignIn(newDescriptor) }
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    result = { success: false, error: e.message }
+                }
+                else {
+                    result = { success: false, error: 'Unknown error' }
+                }
+            }
             return {
-                pageData: { kind: 'index' }, // Todo: Signed in page
+                pageData: { kind: 'oauthCallback', result },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
@@ -694,6 +706,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.statname
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'oauthCallback':
+            return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
     }

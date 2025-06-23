@@ -112,7 +112,7 @@ class AuthenticationStateMachine {
         })
     }
 
-    async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<void> {
+    async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<string> {
         if (this._state.state !== 'signedOut') {
             throw new Error('Already signed in')
         }
@@ -141,6 +141,7 @@ class AuthenticationStateMachine {
             email: tokenInfo.email,
         })
         localStorage.removeItem(codeVerifierKey)
+        return tokenInfo.email
     }
 
     authenticationError(): void {
