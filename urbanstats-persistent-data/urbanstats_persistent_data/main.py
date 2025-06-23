@@ -151,13 +151,6 @@ def get_email():
     return decorator
 
 
-@app.before_request
-def forward_custom_header():
-    header_name = "X-Forwarded-User"
-    if header_name in flask.request.headers:
-        flask.request.environ["email"] = flask.request.headers[header_name]
-
-
 @app.route("/juxtastat/register_user", methods=["POST"])
 @authenticate(["domain"])
 def juxtastat_register_user_request():
