@@ -80,7 +80,7 @@ class AuthenticationStateMachine {
     /* eslint-enable react-hooks/rules-of-hooks */
 
     constructor() {
-        this._state = loadSt    ate()
+        this._state = loadState()
         const weakThis = new WeakRef(this)
         const listener = (event: StorageEvent): void => {
             const self = weakThis.deref()
@@ -127,20 +127,16 @@ class AuthenticationStateMachine {
 
         const token = tokenSchema.parse(rawToken)
 
-        const info = await googleClient.introspect(token)
-
-        console.log('Token info', info)
-
-        if (info.username === undefined) {
-            throw new Error('token does not have username')
-        }
+        const tokenInfo = z.object({
+            email: z.string(),
+        }).parse(await (await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.accessToken}`)).json())
 
         // TODO: Associate with persistent server (failable)
 
         this.setState({
             state: 'signedIn',
             token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
-            email: info.username,
+            email: tokenInfo.email,
         })
         localStorage.removeItem(codeVerifierKey)
     }
