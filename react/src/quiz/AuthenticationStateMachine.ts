@@ -4,6 +4,8 @@ import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 
+import { QuizLocalStorage } from './quiz'
+
 const tokenSchema = z.object({
     accessToken: z.string(),
     refreshToken: z.string(),
@@ -102,7 +104,7 @@ class AuthenticationStateMachine {
         return await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
             codeVerifier,
-            scope: ['openid', 'email', 'profile'],
+            scope: ['email'],
             extraParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -131,7 +133,7 @@ class AuthenticationStateMachine {
             email: z.string(),
         }).parse(await (await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.accessToken}`)).json())
 
-        // TODO: Associate with persistent server (failable)
+        await QuizLocalStorage.shared.associateEmail(token.accessToken)
 
         this.setState({
             state: 'signedIn',
