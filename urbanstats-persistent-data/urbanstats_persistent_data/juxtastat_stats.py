@@ -335,7 +335,7 @@ def _compute_friend_results(requestees, requesters, compute_fn):
     # query the table to see if each pair is a friend pair
 
     c.execute(
-        f"SELECT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
         requestees,
     )
     friends = c.fetchall()
@@ -367,10 +367,11 @@ def _compute_daily_score(date, quiz_kind, c, for_user):
         f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user IN {sqlTuple(len(for_all_users))} AND {problem_id_for_quiz_kind[quiz_kind]}=?",
         for_all_users + [date],
     )
-    res = c.fetchone()
-    if res is None:
+    res = [bitvector_to_corrects(row[0]) for row in c.fetchall()]
+    if len(res) == 0:
         return dict(corrects=None)
-    return dict(corrects=bitvector_to_corrects(res[0]))
+    # Return the worst score
+    return dict(corrects=min(res, key=lambda corrects: corrects.count(True)))
 
 
 def _infinite_results(c, for_user, seed, version):
