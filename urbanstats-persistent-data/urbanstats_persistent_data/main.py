@@ -3,7 +3,6 @@ import json
 import logging
 import requests
 
-# pylint: disable=import-error
 import flask
 from flask_cors import CORS
 
@@ -26,19 +25,16 @@ from .juxtastat_stats import (
     associate_email_db,
     get_email_users,
 )
-import marshmallow as ma
 from utils import error
-
-# pylint: enable=import-error
-
+import pydantic
 
 app = flask.Flask("urbanstats-persistent-data")
 cors = CORS(app)
 
 
-@app.errorhandler(ma.exceptions.ValidationError)
+@app.errorhandler(pydantic.ValidationError)
 def handle_validation_error(e):
-    return error(400, e.messages_dict, "validation")
+    return error(400, str(e), "validation")
 
 
 import routes

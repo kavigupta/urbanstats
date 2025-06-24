@@ -1,27 +1,30 @@
 from main import app
 from middleware.authenticate import authenticate
 from utils import flask_form
-import marshmallow as ma
+from pydantic import BaseModel
 from db.stats import (
     register_user,
     latest_day,
     latest_week_retrostat,
     store_user_stats,
     has_infinite_stats,
+    store_user_stats_infinite,
+    store_user_stats_retrostat,
 )
 import flask
 from middleware.email import email
 import json
+from typing import List, Tuple
 
 
 @app.route("/juxtastat/register_user", methods=["POST"])
 @authenticate()
 def juxtastat_register_user_request(user):
-    class DomainSchema(ma.Schema):
-        domain = ma.fields.Str(required=True)
+    class DomainSchema(BaseModel):
+        domain: str
 
-    form = DomainSchema().load(flask_form())
-    register_user(user, form["domain"])
+    form = DomainSchema(**flask_form())
+    register_user(user, form.domain)
     return flask.jsonify(dict()), 200
 
 
@@ -41,36 +44,37 @@ def retrostat_latest_week_request(users):
     return flask.jsonify(dict(latest_day=ld))
 
 
+class DayStatsSchema(BaseModel):
+    day_stats: List[Tuple[int, List[bool]]]
+
 
 @app.route("/juxtastat/store_user_stats", methods=["POST"])
 @authenticate()
 def juxtastat_store_user_stats_request(user):
-    class 
     form = flask_form()
-    store_user_stats(user, json.loads(form["day_stats"]))
+    store_user_stats(
+        user, DayStatsSchema(day_stats=json.loads(form["day_stats"])).day_stats
+    )
     return flask.jsonify(dict())
 
 
 @app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
-@authenticate(["seedVersions"])
-@get_email()
-def juxtastat_infinite_has_infinite_stats_request():
-    form = flask_form()
-    res = dict(
-        has=has_infinite_stats(
-            flask.request.environ["email_users"], form["seedVersions"]
-        )
-    )
+@authenticate()
+@email()
+def juxtastat_infinite_has_infinite_stats_request(users):
+
+    class SeedVersions(BaseModel):
+        seedVersions: List[str]
+
+    res = dict(has=has_infinite_stats(users, SeedVersions(**flask_form()).seedVersions))
     return flask.jsonify(res)
 
 
 @app.route("/juxtastat_infinite/store_user_stats", methods=["POST"])
-@authenticate(["seed", "version", "corrects"])
-def juxtastat_infinite_store_user_stats_request():
+@authenticate()
+def juxtastat_infinite_store_user_stats_request(user):
     form = flask_form()
-    store_user_stats_infinite(
-        form["user"], form["seed"], form["version"], form["corrects"]
-    )
+    store_user_stats_infinite(user, form["seed"], form["version"], form["corrects"])
     return flask.jsonify(dict())
 
 

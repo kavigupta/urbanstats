@@ -3,8 +3,8 @@ import flask
 import requests
 import json
 from db.email import get_email_users
-import marshmallow as ma
 from utils import error
+from pydantic import BaseModel
 
 
 def email(require_association=True):
@@ -19,18 +19,16 @@ def email(require_association=True):
                 if response.status_code != 200:
                     return error(500, "Couldn't communicate successfully with Google")
 
-                class InfoSchema(ma.Schema):
-                    email = ma.fields.Str(required=True)
+                class InfoSchema(BaseModel):
+                    email: str
 
-                info = InfoSchema().load(json.loads(response.content))
+                info = InfoSchema(**json.loads(response.content))
 
                 email_users = get_email_users(info["email"])
 
                 if require_association and user not in email_users:
                     return error(400, "User not associated with email")
 
-                flask.request.environ["email_users"] = email_users
-                flask.request.environ["email"] = info.get("email")
                 return fn(email_users, info["email"])
             else:
                 return fn([user], None)

@@ -1,16 +1,16 @@
 from main import app
-import marshmallow as ma
 from db.shorten import retreive_and_lengthen, shorten_and_save
 from utils import flask_form
 import flask
+from pydantic import BaseModel
 
 
 @app.route("/shorten", methods=["POST"])
 def shorten_request():
-    class FullText(ma.Schema):
-        full_text = ma.fields.Str(required=True)
+    class FullText(BaseModel):
+        full_text: str
 
-    full_text = FullText().load(flask_form())["full_text"]
+    full_text = FullText(flask_form()).full_text
 
     shortened = shorten_and_save(full_text)
     return flask.jsonify(dict(shortened=shortened))

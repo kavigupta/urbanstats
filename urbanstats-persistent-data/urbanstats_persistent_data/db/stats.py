@@ -45,7 +45,6 @@ def bitvector_to_corrects(bitvector: int) -> List[bool]:
 def store_user_stats_into_table(
     user, day_stats: List[Tuple[int, List[bool]]], table_name
 ):
-    user = int(user, 16)
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
@@ -69,7 +68,6 @@ def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
 
 
 def has_infinite_stats(users, seeds_versions):
-    users = [int(user, 16) for user in users]
     _, c = table()
     c.execute(
         f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(users))}",
@@ -81,7 +79,6 @@ def has_infinite_stats(users, seeds_versions):
 
 
 def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
-    user = int(user, 16)
     conn, c = table()
     correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
@@ -101,7 +98,6 @@ def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
 
 
 def get_per_question_stats_from_table(day, table_name, column):
-    day = int(day)
     _, c = table()
     c.execute(
         f"""
