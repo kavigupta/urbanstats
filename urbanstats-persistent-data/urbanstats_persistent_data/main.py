@@ -136,12 +136,15 @@ def get_email(require_association=True):
                 info = json.loads(response.content)
 
                 if not isinstance(info.get("email"), str):
-                    return "email must be a string", 500
+                    return flask.jsonify({"error": "email must be a string"}, 500)
 
                 email_users = get_email_users(info.get("email"))
 
                 if require_association and user not in email_users:
-                    return "user not associated with email", 400
+                    return (
+                        flask.jsonify({"error": "user not associated with email"}),
+                        400,
+                    )
 
                 flask.request.environ["email_users"] = email_users
                 flask.request.environ["email"] = info.get("email")
@@ -307,7 +310,7 @@ def associate_email():
     user = form["user"]
     email = flask.request.environ["email"]
     if email is None:
-        return "No email", 400
+        return flask.jsonify({"error": "no email"}), 400
     return associate_email_db(user, email)
 
 
