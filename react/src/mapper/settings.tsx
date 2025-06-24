@@ -110,12 +110,12 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
 }): ReactNode {
     const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
 
-    const modifyUss = useCallback((modifier: (currentUss: UrbanStatsASTExpression | UrbanStatsASTStatement) => UrbanStatsASTExpression | UrbanStatsASTStatement) => {
+    const setUss = useCallback((uss: UrbanStatsASTExpression | UrbanStatsASTStatement) => {
         setMapSettings(s => ({
             ...s,
-            script: { uss: modifier(getScript().uss) },
+            script: { uss },
         }))
-    }, [setMapSettings, getScript])
+    }, [setMapSettings])
 
     return (
         <div>
@@ -134,7 +134,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
             />
             <TopLevelEditor
                 uss={getScript().uss}
-                modifyUss={modifyUss}
+                setUss={setUss}
                 autocompleteSymbols={autocompleteSymbols}
                 errors={errors}
             />
@@ -144,23 +144,23 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
 
 export function CustomEditor({
     uss,
-    modifyUss,
+    setUss,
     autocompleteSymbols,
     errors,
     blockIdent,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
-    modifyUss: (modifier: (currentUss: UrbanStatsASTExpression) => UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression) => void
     autocompleteSymbols: string[]
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
     // We don't expect these props to update during the component lifetime
     const getUss = useCallback(() => uss.originalCode, [])
-    const ourSetUss = useCallback((newUss: string) => {
-        const parsed = parseNoErrorAsExpression(newUss, blockIdent)
-        modifyUss(() => parsed)
-    }, [blockIdent, modifyUss])
+    const ourSetUss = useCallback((u: string) => {
+        const parsed = parseNoErrorAsExpression(u, blockIdent)
+        setUss(parsed)
+    }, [])
 
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
@@ -184,12 +184,12 @@ function makeStatements(elements: UrbanStatsASTStatement[]): UrbanStatsASTStatem
 
 export function TopLevelEditor({
     uss,
-    modifyUss,
+    setUss,
     autocompleteSymbols,
     errors,
 }: {
     uss: UrbanStatsASTExpression | UrbanStatsASTStatement
-    modifyUss: (modifier: (currentUss: UrbanStatsASTExpression | UrbanStatsASTStatement) => UrbanStatsASTExpression | UrbanStatsASTStatement) => void
+    setUss: (u: UrbanStatsASTExpression | UrbanStatsASTStatement) => void
     autocompleteSymbols: string[]
     errors: EditorError[]
 }): ReactNode {
@@ -223,16 +223,7 @@ export function TopLevelEditor({
             return (
                 <CustomEditor
                     uss={ussToUse}
-                    modifyUss={(modifier) => {
-                        modifyUss((currentUss) => {
-                        // Since we know ussToUse.type === 'customNode', currentUss must be a customNode too
-                            if (currentUss.type === 'customNode') {
-                                return modifier(currentUss)
-                            }
-                            // This should never happen, but TypeScript needs this
-                            return currentUss
-                        })
-                    }}
+                    setUss={setUss}
                     autocompleteSymbols={autocompleteSymbols}
                     errors={errors}
                     blockIdent={rootBlockIdent}
@@ -244,14 +235,12 @@ export function TopLevelEditor({
                 {/* Preamble */}
                 <CustomEditor
                     uss={ussToUse.result[0].value}
-                    modifyUss={(modifier: (currentUss: UrbanStatsASTExpression) => UrbanStatsASTExpression) => {
-                        modifyUss(() => {
-                            const preamble = {
-                                type: 'expression',
-                                value: modifier(ussToUse.result[0].value),
-                            } satisfies UrbanStatsASTStatement
-                            return makeStatements([preamble, ussToUse.result[1]])
-                        })
+                    setUss={(u: UrbanStatsASTExpression) => {
+                        const preamble = {
+                            type: 'expression',
+                            value: u,
+                        } satisfies UrbanStatsASTStatement
+                        setUss(makeStatements([preamble, ussToUse.result[1]]))
                     }}
                     autocompleteSymbols={autocompleteSymbols}
                     errors={errors}
@@ -263,17 +252,15 @@ export function TopLevelEditor({
                     <CustomEditor
                     // TODO assert that this is a custom node
                         uss={ussToUse.result[1].condition as UrbanStatsASTExpression & { type: 'customNode' }}
-                        modifyUss={(modifier: (currentUss: UrbanStatsASTExpression) => UrbanStatsASTExpression) => {
-                            modifyUss(() => {
-                                const conditionExpr = parseNoErrorAsExpression(unparse(modifier(ussToUse.result[1].condition)) ?? '', idCondition)
-                                const condition = {
-                                    type: 'condition',
-                                    entireLoc: locationOf(conditionExpr),
-                                    condition: conditionExpr,
-                                    rest: ussToUse.result[1].rest,
-                                } satisfies UrbanStatsASTStatement
-                                return makeStatements([ussToUse.result[0], condition])
-                            })
+                        setUss={(u: UrbanStatsASTExpression) => {
+                            const conditionExpr = parseNoErrorAsExpression(unparse(u) ?? '', idCondition)
+                            const condition = {
+                                type: 'condition',
+                                entireLoc: locationOf(conditionExpr),
+                                condition: conditionExpr,
+                                rest: ussToUse.result[1].rest,
+                            } satisfies UrbanStatsASTStatement
+                            setUss(makeStatements([ussToUse.result[0], condition]))
                         }}
                         autocompleteSymbols={autocompleteSymbols}
                         errors={errors}
@@ -284,17 +271,15 @@ export function TopLevelEditor({
                 <CustomEditor
                     // TODO this shouldn't be required to be a custom node
                     uss={ussToUse.result[1].rest[0].value as UrbanStatsASTExpression & { type: 'customNode' }}
-                    modifyUss={(modifier: (currentUss: UrbanStatsASTExpression) => UrbanStatsASTExpression) => {
-                        modifyUss(() => {
-                            const output = parseNoErrorAsExpression(unparse(modifier(ussToUse.result[1].rest[0].value)) ?? '', idOutput)
-                            const condition = {
-                                type: 'condition',
-                                entireLoc: ussToUse.result[1].entireLoc,
-                                condition: ussToUse.result[1].condition,
-                                rest: [{ type: 'expression', value: output }],
-                            } satisfies UrbanStatsASTStatement
-                            return makeStatements([ussToUse.result[0], condition])
-                        })
+                    setUss={(u: UrbanStatsASTExpression) => {
+                        const output = parseNoErrorAsExpression(unparse(u) ?? '', idOutput)
+                        const condition = {
+                            type: 'condition',
+                            entireLoc: ussToUse.result[1].entireLoc,
+                            condition: ussToUse.result[1].condition,
+                            rest: [{ type: 'expression', value: output }],
+                        } satisfies UrbanStatsASTStatement
+                        setUss(makeStatements([ussToUse.result[0], condition]))
                     }}
                     autocompleteSymbols={autocompleteSymbols}
                     errors={errors}
@@ -312,25 +297,23 @@ export function TopLevelEditor({
                     // TODO actually attempt to parse and unparse fully
                     if (checked) {
                         assert(ussToUse.type === 'statements', 'USS should be statements when enabling custom script')
-                        modifyUss(() => parseNoErrorAsExpression(unparse(ussToUse.result[1].rest[0].value) ?? '', rootBlockIdent))
+                        setUss(parseNoErrorAsExpression(unparse(ussToUse.result[1].rest[0].value) ?? '', rootBlockIdent))
                     }
                     else {
                         assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
-                        modifyUss(() => {
-                            const preamble = {
-                                type: 'expression',
-                                value: parseNoErrorAsExpression('', idPreamble),
-                            } satisfies UrbanStatsASTStatement
-                            const conditionExpr = parseNoErrorAsExpression('', idCondition)
-                            const output = parseNoErrorAsExpression(ussToUse.originalCode, idOutput)
-                            const condition = {
-                                type: 'condition',
-                                entireLoc: locationOf(conditionExpr),
-                                condition: conditionExpr,
-                                rest: [{ type: 'expression', value: output }],
-                            } satisfies UrbanStatsASTStatement
-                            return makeStatements([preamble, condition])
-                        })
+                        const preamble = {
+                            type: 'expression',
+                            value: parseNoErrorAsExpression('', idPreamble),
+                        } satisfies UrbanStatsASTStatement
+                        const conditionExpr = parseNoErrorAsExpression('', idCondition)
+                        const output = parseNoErrorAsExpression(ussToUse.originalCode, idOutput)
+                        const condition = {
+                            type: 'condition',
+                            entireLoc: locationOf(conditionExpr),
+                            condition: conditionExpr,
+                            rest: [{ type: 'expression', value: output }],
+                        } satisfies UrbanStatsASTStatement
+                        setUss(makeStatements([preamble, condition]))
                     }
                 }}
             />
