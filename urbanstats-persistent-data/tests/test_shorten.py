@@ -1,0 +1,18 @@
+import pytest
+
+
+def test_shorten(client):
+    response = client.post("/shorten", json={"full_text": "some_text"})
+
+    assert response.status_code == 200
+
+
+@pytest.mark.only
+def test_shorten_invalid(client):
+    response = client.post("/shorten", json={})
+
+    assert response.status_code == 400
+    assert response.json == {
+        "code": "validation",
+        "error": {"full_text": ["Missing data for required field."]},
+    }
