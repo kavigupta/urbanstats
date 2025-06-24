@@ -177,7 +177,6 @@ def store_user_stats_into_table(
     conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
-    print(day_stats)
     time_unix_millis = round(time.time() * 1000)
     c.executemany(
         f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?)",
@@ -287,7 +286,6 @@ def friend_request(requestee, requester):
         "INSERT INTO FriendRequests VALUES (?, ?)",
         (requestee, requester),
     )
-    print("ABC")
     conn.commit()
 
 

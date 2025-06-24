@@ -40,7 +40,6 @@ def flask_form():
     form = flask.request.form
     if not form:
         form = json.loads(flask.request.data.decode("utf-8"))
-    print(form)
     return form
 
 
@@ -79,7 +78,6 @@ def s():
     c = flask.request.args.get("c")
     post_url = retreive_and_lengthen(c)
     if post_url is None:
-        print("Shortened text not found!")
         return flask.jsonify({"error": "Shortened text not found!"}), 404
     url = "https://urbanstats.org/" + post_url[0]
     return flask.redirect(url)
@@ -91,7 +89,6 @@ def get_authenticated_user(additional_required_params=()):
     required_params = ["user", "secureID"] + list(additional_required_params)
 
     if not all(param in form for param in required_params):
-        print("NEEDS PARAMS", required_params, "GOT", form.keys())
         return False, (
             flask.jsonify(
                 {
@@ -113,10 +110,8 @@ def authenticate(fields):
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
-            print("AUTHENTICATE", flask_form())
             success, error = get_authenticated_user(fields)
             if not success:
-                print("AUTHENTICATE ERROR", error)
                 return error
             return fn()
 
@@ -164,9 +159,6 @@ def get_email(require_association=True):
 @authenticate(["domain"])
 def juxtastat_register_user_request():
     form = flask_form()
-
-    print("RECV", form)
-
     register_user(form["user"], form["domain"])
     return flask.jsonify(dict()), 200
 
@@ -202,13 +194,11 @@ def juxtastat_store_user_stats_request():
 @get_email()
 def juxtastat_infinite_has_infinite_stats_request():
     form = flask_form()
-    print("HAS INFINITE STATS", form)
     res = dict(
         has=has_infinite_stats(
             flask.request.environ["email_users"], form["seedVersions"]
         )
     )
-    print("HAS INFINITE STATS", res)
     return flask.jsonify(res)
 
 
@@ -264,8 +254,6 @@ def retrostat_get_per_question_stats_request():
 @app.route("/juxtastat/friend_request", methods=["POST"])
 @authenticate(["requestee"])
 def juxtastat_friend_request():
-    print("FRIEND REQUEST")
-    print(flask_form())
     form = flask_form()
     friend_request(form["requestee"], form["user"])
     return flask.jsonify(dict())
@@ -275,7 +263,6 @@ def juxtastat_friend_request():
 @authenticate(["requestee"])
 def juxtastat_unfriend():
     form = flask_form()
-    print("unfriend initiated", form)
     unfriend(form["requestee"], form["user"])
     return flask.jsonify(dict())
 
@@ -293,7 +280,6 @@ def juxtastat_todays_score_for():
             form["quiz_kind"],
         )
     )
-    print("TODAYS SCORE FOR", res)
     return flask.jsonify(res)
 
 
@@ -310,7 +296,6 @@ def juxtastat_infinite_results():
             form["version"],
         )
     )
-    print("INFINITE RESULTS FOR", res)
     return flask.jsonify(res)
 
 
