@@ -1,11 +1,10 @@
 import flask
+from flask_pydantic_spec import Response
 from pydantic import BaseModel
 
 from ..db.shorten import retreive_and_lengthen, shorten_and_save
-from ..main import app, api
+from ..main import api, app
 from ..utils import UrbanStatsError, UrbanStatsErrorModel
-
-from flask_pydantic_spec import Response
 
 
 class FullText(BaseModel):
@@ -19,7 +18,6 @@ class Shortened(BaseModel):
 @app.route("/shorten", methods=["POST"])
 @api.validate(body=FullText, resp=Response(HTTP_200=Shortened))
 def shorten_request():
-
     full_text = FullText(**flask.request.json).full_text
 
     shortened = shorten_and_save(full_text)
@@ -31,7 +29,6 @@ def shorten_request():
     query=Shortened, resp=Response(HTTP_200=FullText, HTTP_404=UrbanStatsErrorModel)
 )
 def lengthen_request():
-
     full_text = retreive_and_lengthen(Shortened(**flask.request.args).shortened)
     if full_text is None:
         raise UrbanStatsError(404, "Shortened text not found!")

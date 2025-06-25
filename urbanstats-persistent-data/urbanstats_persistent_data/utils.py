@@ -1,7 +1,5 @@
-import json
-from typing import Any, List, Optional, Type, TypeVar
+from typing import Any, List, Optional, TypeVar
 
-import flask
 from pydantic import BaseModel, BeforeValidator
 
 

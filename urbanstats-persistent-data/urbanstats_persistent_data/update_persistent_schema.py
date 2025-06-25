@@ -1,11 +1,11 @@
 # npx openapi-typescript tmp_file -o ./src/urbanstats-persistent-data.d.ts
 
 import json
+import os
+import subprocess
+import tempfile
 
 from .main import api
-import tempfile
-import subprocess
-import os
 
 
 def update_openapi_typescript():

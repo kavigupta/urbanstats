@@ -1,8 +1,8 @@
+import subprocess
+
 from urbanstats_persistent_data.update_persistent_schema import (
     update_openapi_typescript,
 )
-import subprocess
-import os
 
 
 def test_schema():
@@ -15,6 +15,7 @@ def test_schema():
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert (
         result.returncode == 0

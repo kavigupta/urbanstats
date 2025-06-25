@@ -1,5 +1,6 @@
 import functools
 import json
+from typing import Annotated, Optional
 
 import flask
 import requests
@@ -7,9 +8,7 @@ from pydantic import BaseModel, Field
 
 from ..db.email import get_email_users
 from ..utils import UrbanStatsError
-
 from .authenticate import UserHeadersSchema
-from typing import Annotated, Optional
 
 
 class EmailHeadersSchema(UserHeadersSchema):

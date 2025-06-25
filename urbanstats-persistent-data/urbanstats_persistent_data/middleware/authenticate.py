@@ -17,7 +17,6 @@ def authenticate():
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
-
             req = UserHeadersSchema(**flask.request.headers)
 
             if not check_secureid(req.user, req.secure_id):

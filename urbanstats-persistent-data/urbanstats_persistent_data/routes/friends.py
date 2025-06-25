@@ -1,16 +1,15 @@
 from typing import Annotated, List, Optional
 
 import flask
+from flask_pydantic_spec import Response
 from pydantic import BaseModel
 
 from ..db.friends import friend_request, infinite_results, todays_score_for, unfriend
 from ..db.utils import QuizKind
-from ..main import app, api
-from ..middleware.authenticate import authenticate, UserHeadersSchema
-from ..middleware.email import email, EmailHeadersSchema
-from ..utils import Hexadecimal, EmptyResponse
-
-from flask_pydantic_spec import Response
+from ..main import api, app
+from ..middleware.authenticate import UserHeadersSchema, authenticate
+from ..middleware.email import EmailHeadersSchema, email
+from ..utils import EmptyResponse, Hexadecimal
 
 
 class Requestee(BaseModel):

@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import flask
+from flask_pydantic_spec import Response
 from pydantic import BaseModel
 
 from ..db.stats import (
@@ -14,11 +15,10 @@ from ..db.stats import (
     store_user_stats_infinite,
     store_user_stats_retrostat,
 )
-from ..main import app, api
-from ..middleware.authenticate import authenticate, UserHeadersSchema
-from ..middleware.email import email, EmailHeadersSchema
+from ..main import api, app
+from ..middleware.authenticate import UserHeadersSchema, authenticate
+from ..middleware.email import EmailHeadersSchema, email
 from ..utils import EmptyResponse
-from flask_pydantic_spec import Response
 
 
 class RegisterRequest(BaseModel):
