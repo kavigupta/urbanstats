@@ -2,8 +2,8 @@ import functools
 import flask
 import requests
 import json
-from db.email import get_email_users
-from utils import error
+from ..db.email import get_email_users
+from ..utils import error
 from pydantic import BaseModel
 
 

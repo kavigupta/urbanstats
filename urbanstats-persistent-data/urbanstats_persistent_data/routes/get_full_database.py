@@ -1,9 +1,9 @@
 import hashlib
 from pydantic import BaseModel
-from utils import form, error
+from ..utils import form, error
 import flask
-from db.utils import get_full_database
-from main import app
+from ..db.utils import get_full_database
+from ..main import app
 
 
 def valid_token(tok):

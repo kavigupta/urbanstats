@@ -7,7 +7,6 @@ def test_shorten(client):
     assert response.status_code == 200
 
 
-@pytest.mark.only
 def test_shorten_invalid(client):
     response = client.post("/shorten", json={})
 

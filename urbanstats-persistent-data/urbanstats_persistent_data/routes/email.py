@@ -1,8 +1,8 @@
-from main import app
-from middleware.authenticate import authenticate
-from middleware.email import email
-from utils import error
-from db.email import associate_email_db
+from ..main import app
+from ..middleware.authenticate import authenticate
+from ..middleware.email import email
+from ..utils import error
+from ..db.email import associate_email_db
 
 
 @app.route("/juxtastat/associate_email", methods=["POST"])

@@ -1,8 +1,8 @@
-from main import app
-from middleware.authenticate import authenticate
-from utils import form
+from ..main import app
+from ..middleware.authenticate import authenticate
+from ..utils import form
 from pydantic import BaseModel
-from db.stats import (
+from ..db.stats import (
     register_user,
     latest_day,
     latest_week_retrostat,
@@ -14,8 +14,7 @@ from db.stats import (
     get_per_question_stats_retrostat,
 )
 import flask
-from middleware.email import email
-import json
+from ..middleware.email import email
 from typing import List, Tuple
 
 

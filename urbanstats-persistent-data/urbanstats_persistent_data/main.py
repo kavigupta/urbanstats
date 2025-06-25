@@ -3,7 +3,7 @@ import logging
 import flask
 from flask_cors import CORS
 
-from utils import error
+from .utils import error
 import pydantic
 
 app = flask.Flask("urbanstats-persistent-data")
@@ -15,8 +15,7 @@ def handle_validation_error(e):
     return error(400, str(e), "validation")
 
 
-import routes
-
+from .routes import stats, email, friends, get_full_database, shorten
 
 logging.getLogger("flask_cors").level = logging.DEBUG
 

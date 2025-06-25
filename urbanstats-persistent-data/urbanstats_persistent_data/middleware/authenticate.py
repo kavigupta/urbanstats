@@ -1,7 +1,7 @@
-from utils import error, Hexadecimal
+from ..utils import error, Hexadecimal
 import flask
 import functools
-from db.authenticate import check_secureid
+from ..db.authenticate import check_secureid
 from pydantic import BaseModel, Field, field_validator
 from typing import Annotated
 

@@ -1,6 +1,5 @@
 from .utils import table, sqlTuple, table_for_quiz_kind, problem_id_for_quiz_kind
-import db.email
-import db.stats
+from . import email, stats
 from typing import List
 
 
@@ -87,13 +86,13 @@ def _compute_friend_results(requestees: List[int], requesters: List[int], comput
 
 
 def _compute_daily_score(date, quiz_kind, c, for_user):
-    for_all_users = db.email._get_user_users(c, for_user)
+    for_all_users = email._get_user_users(c, for_user)
 
     c.execute(
         f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user IN {sqlTuple(len(for_all_users))} AND {problem_id_for_quiz_kind[quiz_kind]}=?",
         for_all_users + [date],
     )
-    res = [db.stats.bitvector_to_corrects(row[0]) for row in c.fetchall()]
+    res = [stats.bitvector_to_corrects(row[0]) for row in c.fetchall()]
     if len(res) == 0:
         return dict(corrects=None)
     # Return the worst score

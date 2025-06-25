@@ -1,6 +1,6 @@
-from main import app
-from db.shorten import retreive_and_lengthen, shorten_and_save
-from utils import form, error
+from ..main import app
+from ..db.shorten import retreive_and_lengthen, shorten_and_save
+from ..utils import form, error
 import flask
 from pydantic import BaseModel
 
