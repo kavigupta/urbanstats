@@ -11,4 +11,4 @@ requests==2.32.4
 Werkzeug==2.2.3
 zipp==3.15.0
 pydantic==2.11.7
-flask_pydantic_spec=0.8.5
+flask_pydantic_spec==0.8.5
