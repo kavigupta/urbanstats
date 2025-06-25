@@ -3,10 +3,17 @@ import json
 
 import flask
 import requests
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..db.email import get_email_users
 from ..utils import UrbanStatsError
+
+from .authenticate import UserHeadersSchema
+from typing import Annotated
+
+
+class EmailHeadersSchema(UserHeadersSchema):
+    access_token: Annotated[str, Field(alias="X-Access-Token")]
 
 
 def get_email():

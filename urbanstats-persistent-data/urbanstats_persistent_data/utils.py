@@ -27,6 +27,11 @@ class UrbanStatsError(Exception):
         return {"error": self.error, "code": self.code}
 
 
+class UrbanStatsErrorModel(BaseModel):
+    error: Any
+    code: Optional[str]
+
+
 T = TypeVar("T", bound=BaseModel)
 
 

@@ -3,11 +3,14 @@ import logging
 import flask
 import pydantic
 from flask_cors import CORS
+from flask_pydantic_spec import FlaskPydanticSpec
 
 from .utils import UrbanStatsError
 
 app = flask.Flask("urbanstats-persistent-data")
 cors = CORS(app)
+
+api = FlaskPydanticSpec("flask", app=app)
 
 
 @app.errorhandler(pydantic.ValidationError)

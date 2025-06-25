@@ -8,13 +8,15 @@ from ..db.authenticate import check_secureid
 from ..utils import Hexadecimal, UrbanStatsError
 
 
+class UserHeadersSchema(BaseModel):
+    user: Annotated[int, Field(alias="X-User"), Hexadecimal]
+    secure_id: Annotated[int, Field(alias="X-Secure-Id"), Hexadecimal]
+
+
 def authenticate():
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper():
-            class UserHeadersSchema(BaseModel):
-                user: Annotated[int, Field(alias="X-User"), Hexadecimal]
-                secure_id: Annotated[int, Field(alias="X-Secure-Id"), Hexadecimal]
 
             req = UserHeadersSchema(**flask.request.headers)
 
