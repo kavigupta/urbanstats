@@ -1,14 +1,15 @@
+from ..db.email import associate_email_db
 from ..main import app
 from ..middleware.authenticate import authenticate
-from ..middleware.email import email
-from ..utils import error
-from ..db.email import associate_email_db
+from ..middleware.email import get_email
+from ..utils import UrbanStatsError
 
 
 @app.route("/juxtastat/associate_email", methods=["POST"])
 @authenticate()
-@email(require_association=False)
-def associate_email(users, email):
+def associate_email(user):
+    email = get_email()
     if email is None:
-        return error(400, "no email")
-    return associate_email_db(users[0], email)
+        raise UrbanStatsError(400, "no email")
+    associate_email_db(user, email)
+    return "", 200

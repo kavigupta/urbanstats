@@ -1,3 +1,4 @@
+from ..utils import UrbanStatsError
 from .utils import table
 
 
@@ -5,14 +6,15 @@ def associate_email_db(user: int, email: str):
     conn, c = table()
     existing_email = _get_user_email(c, user)
     if existing_email != None and existing_email != email:
-        return "conflict", 409
+        raise UrbanStatsError(
+            409, "This user is already associated with an existing email"
+        )
     # Table constraints prevent duplicates
     c.execute(
         "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
         (email, user),
     )
     conn.commit()
-    return "success", 200
 
 
 def get_email_users(email):

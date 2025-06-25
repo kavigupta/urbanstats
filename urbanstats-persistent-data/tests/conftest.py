@@ -1,13 +1,13 @@
+import json
+import os
+from urllib.parse import parse_qs, urlparse
+
 import pytest
 from urbanstats_persistent_data.main import app
-import os
-from urllib.parse import urlparse, parse_qs
-import json
 
 
 @pytest.fixture()
 def setup_app(mocker):
-
     def mock_get(url):
         parsed_url = urlparse(url)
         params = parse_qs(parsed_url.query)

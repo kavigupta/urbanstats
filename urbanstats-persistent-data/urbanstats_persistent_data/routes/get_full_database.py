@@ -1,9 +1,11 @@
 import hashlib
-from pydantic import BaseModel
-from ..utils import form, error
+
 import flask
+from pydantic import BaseModel
+
 from ..db.utils import get_full_database
 from ..main import app
+from ..utils import UrbanStatsError, form
 
 
 def valid_token(tok):
@@ -20,5 +22,7 @@ def juxtastat_get_full_database_request():
         token: str
 
     if not valid_token(form(Token).token):
-        return error(401, "This method requires a token, and your token is invalid!")
+        return UrbanStatsError(
+            401, "This method requires a token, and your token is invalid!"
+        )
     return flask.jsonify(get_full_database())

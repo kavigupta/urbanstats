@@ -1,7 +1,8 @@
-from .utils import table, sqlTuple
-from typing import List, Tuple
 import time
+from typing import List, Tuple
+
 from ..utils import corrects_to_bytes
+from .utils import sqlTuple, table
 
 
 def register_user(user, domain):

@@ -1,21 +1,23 @@
-from ..main import app
-from ..middleware.authenticate import authenticate
-from ..utils import form
+from typing import List, Tuple
+
+import flask
 from pydantic import BaseModel
+
 from ..db.stats import (
-    register_user,
-    latest_day,
-    latest_week_retrostat,
-    store_user_stats,
-    has_infinite_stats,
-    store_user_stats_infinite,
-    store_user_stats_retrostat,
     get_per_question_stats,
     get_per_question_stats_retrostat,
+    has_infinite_stats,
+    latest_day,
+    latest_week_retrostat,
+    register_user,
+    store_user_stats,
+    store_user_stats_infinite,
+    store_user_stats_retrostat,
 )
-import flask
+from ..main import app
+from ..middleware.authenticate import authenticate
 from ..middleware.email import email
-from typing import List, Tuple
+from ..utils import form
 
 
 @app.route("/juxtastat/register_user", methods=["POST"])
@@ -59,7 +61,6 @@ def juxtastat_store_user_stats_request(user):
 @authenticate()
 @email()
 def juxtastat_infinite_has_infinite_stats_request(users):
-
     class SeedVersions(BaseModel):
         seedVersions: List[str]
 

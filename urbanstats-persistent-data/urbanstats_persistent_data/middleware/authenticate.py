@@ -1,9 +1,11 @@
-from ..utils import error, Hexadecimal
-import flask
 import functools
-from ..db.authenticate import check_secureid
-from pydantic import BaseModel, Field
 from typing import Annotated
+
+import flask
+from pydantic import BaseModel, Field
+
+from ..db.authenticate import check_secureid
+from ..utils import Hexadecimal, UrbanStatsError
 
 
 def authenticate():
@@ -17,7 +19,7 @@ def authenticate():
             req = UserHeadersSchema(**flask.request.headers)
 
             if not check_secureid(req.user, req.secure_id):
-                return error(200, "Invalid secureID!", "bad_secureid")
+                raise UrbanStatsError(401, "Invalid secureID!", "bad_secureid")
             return fn(req.user)
 
         return wrapper

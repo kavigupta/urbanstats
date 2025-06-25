@@ -1,8 +1,9 @@
-from ..main import app
-from ..db.shorten import retreive_and_lengthen, shorten_and_save
-from ..utils import form, error
 import flask
 from pydantic import BaseModel
+
+from ..db.shorten import retreive_and_lengthen, shorten_and_save
+from ..main import app
+from ..utils import UrbanStatsError, form
 
 
 @app.route("/shorten", methods=["POST"])
@@ -23,7 +24,7 @@ def lengthen_request():
 
     full_text = retreive_and_lengthen(form(Shortened).shortened)
     if full_text is None:
-        return error(404, "Shortened text not found!")
+        raise UrbanStatsError(404, "Shortened text not found!")
     return flask.jsonify(dict(full_text=full_text[0]))
 
 

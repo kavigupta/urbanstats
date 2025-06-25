@@ -1,12 +1,14 @@
+from typing import Annotated, List
+
+import flask
+from pydantic import BaseModel
+
+from ..db.friends import friend_request, infinite_results, todays_score_for, unfriend
+from ..db.utils import QuizKind
 from ..main import app
 from ..middleware.authenticate import authenticate
-from ..utils import form, Hexadecimal
-from pydantic import BaseModel
-from typing import Annotated, List
-from ..db.friends import friend_request, unfriend, todays_score_for, infinite_results
-import flask
 from ..middleware.email import email
-from ..db.utils import QuizKind
+from ..utils import Hexadecimal, form
 
 
 class Requestee(BaseModel):
@@ -16,7 +18,6 @@ class Requestee(BaseModel):
 @app.route("/juxtastat/friend_request", methods=["POST"])
 @authenticate()
 def juxtastat_friend_request(user):
-
     friend_request(form(Requestee).requestee, user)
     return flask.jsonify(dict())
 
