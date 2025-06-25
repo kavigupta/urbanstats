@@ -41,7 +41,7 @@ def from_hex(value: Any) -> int:
     return int(value, 16)
 
 
-Hexadecimal = BeforeValidator(from_hex)
+Hexadecimal = BeforeValidator(from_hex, json_schema_input_type=str)
 
 
 class EmptyResponse(BaseModel):
