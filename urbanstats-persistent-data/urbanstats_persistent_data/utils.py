@@ -24,9 +24,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def form(Model: Type[T]) -> T:
-    form_data = flask.request.form
-    if not form_data:
-        form_data = json.loads(flask.request.data.decode("utf-8"))
+    form_data = json.loads(flask.request.data.decode("utf-8"))
     return Model(**form_data)
 
 

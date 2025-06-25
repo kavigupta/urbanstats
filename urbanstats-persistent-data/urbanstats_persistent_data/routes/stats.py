@@ -28,7 +28,7 @@ def juxtastat_register_user_request(user):
     return flask.jsonify(dict()), 200
 
 
-@app.route("/juxtastat/latest_day", methods=["GET"])
+@app.route("/juxtastat/latest_day", methods=["POST"])
 @authenticate()
 @email()
 def juxtastat_latest_day_request(users):
@@ -36,7 +36,7 @@ def juxtastat_latest_day_request(users):
     return flask.jsonify(dict(latest_day=ld))
 
 
-@app.route("/retrostat/latest_week", methods=["GET"])
+@app.route("/retrostat/latest_week", methods=["POST"])
 @authenticate()
 @email()
 def retrostat_latest_week_request(users):
@@ -55,7 +55,7 @@ def juxtastat_store_user_stats_request(user):
     return flask.jsonify(dict())
 
 
-@app.route("/juxtastat_infinite/has_infinite_stats", methods=["GET"])
+@app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
 @authenticate()
 @email()
 def juxtastat_infinite_has_infinite_stats_request(users):
@@ -87,7 +87,7 @@ def retrostat_store_user_stats_request(user):
     return flask.jsonify(dict())
 
 
-@app.route("/juxtastat/get_per_question_stats", methods=["GET"])
+@app.route("/juxtastat/get_per_question_stats", methods=["POST"])
 def juxtastat_get_per_question_stats_request():
     class Day(BaseModel):
         day: int
@@ -95,7 +95,7 @@ def juxtastat_get_per_question_stats_request():
     return flask.jsonify(get_per_question_stats(Day(**flask.request.args).day))
 
 
-@app.route("/retrostat/get_per_question_stats", methods=["GET"])
+@app.route("/retrostat/get_per_question_stats", methods=["POST"])
 def retrostat_get_per_question_stats_request():
     class Week(BaseModel):
         week: int
