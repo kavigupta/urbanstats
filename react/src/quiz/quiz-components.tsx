@@ -97,7 +97,7 @@ function QuizAuthStatus(): ReactNode {
         )
     }
     else {
-        const signOut = async (e: React.MouseEvent): Promise<void> => {
+        const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
             sharedAuthenticationStateMachine.userSignOut()
         }
