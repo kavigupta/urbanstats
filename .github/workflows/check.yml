@@ -98,9 +98,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
-      - name: Install additional requirements
-        working-directory: urbanstats-persistent-data
-        run: pip install -r requirements.txt
       - name: Test python code
         working-directory: urbanstats-persistent-data
         run: python -m pytest tests
