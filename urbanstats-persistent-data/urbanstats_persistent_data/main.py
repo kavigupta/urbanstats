@@ -40,54 +40,6 @@ def handle_validation_error(e):
 import routes
 
 
-@app.route("/juxtastat/friend_request", methods=["POST"])
-@authenticate(["requestee"])
-def juxtastat_friend_request():
-    form = flask_form()
-    friend_request(form["requestee"], form["user"])
-    return flask.jsonify(dict())
-
-
-@app.route("/juxtastat/unfriend", methods=["POST"])
-@authenticate(["requestee"])
-def juxtastat_unfriend():
-    form = flask_form()
-    unfriend(form["requestee"], form["user"])
-    return flask.jsonify(dict())
-
-
-@app.route("/juxtastat/todays_score_for", methods=["POST"])
-@authenticate(["requesters", "date", "quiz_kind"])
-@get_email()
-def juxtastat_todays_score_for():
-    form = flask_form()
-    res = dict(
-        results=todays_score_for(
-            flask.request.environ["email_users"],
-            form["requesters"],
-            form["date"],
-            form["quiz_kind"],
-        )
-    )
-    return flask.jsonify(res)
-
-
-@app.route("/juxtastat/infinite_results", methods=["POST"])
-@authenticate(["requesters", "seed", "version"])
-@get_email()
-def juxtastat_infinite_results():
-    form = flask_form()
-    res = dict(
-        results=infinite_results(
-            flask.request.environ["email_users"],
-            form["requesters"],
-            form["seed"],
-            form["version"],
-        )
-    )
-    return flask.jsonify(res)
-
-
 @app.route("/juxtastat/associate_email", methods=["POST"])
 @authenticate([])
 @get_email(require_association=False)

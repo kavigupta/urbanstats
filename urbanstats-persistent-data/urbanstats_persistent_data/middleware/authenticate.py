@@ -1,8 +1,9 @@
-from utils import error
+from utils import error, Hexadecimal
 import flask
 import functools
 from db.authenticate import check_secureid
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from typing import Annotated
 
 
 def authenticate():
@@ -10,8 +11,8 @@ def authenticate():
         @functools.wraps(fn)
         def wrapper():
             class UserHeadersSchema(BaseModel):
-                user: int = Field(alias="x-user")
-                secure_id: int = Field(alias="x-secure-id")
+                user: Annotated[int, Field(alias="x-user"), Hexadecimal]
+                secure_id: Annotated[int, Field(alias="x-secure-id"), Hexadecimal]
 
             req = UserHeadersSchema(**flask.request.headers)
 

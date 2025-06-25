@@ -1,7 +1,7 @@
 from .utils import table
 
 
-def check_secureid(user, secure_id):
+def check_secureid(user: int, secure_id: int):
     """
     Returns True iff the secure_id is correct for the given user.
 
@@ -9,8 +9,6 @@ def check_secureid(user, secure_id):
     if the secure id is correct. If the secure id is incorrect, returns False.
     Otherwise, updates the secure id and returns True.
     """
-    user = int(user, 16)
-    secure_id = int(secure_id, 16)
     conn, c = table()
     c.execute(
         "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",

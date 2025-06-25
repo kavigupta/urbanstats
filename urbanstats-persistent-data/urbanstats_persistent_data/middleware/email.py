@@ -24,12 +24,12 @@ def email(require_association=True):
 
                 info = InfoSchema(**json.loads(response.content))
 
-                email_users = get_email_users(info["email"])
+                email_users = get_email_users(info.email)
 
                 if require_association and user not in email_users:
                     return error(400, "User not associated with email")
 
-                return fn(email_users, info["email"])
+                return fn(email_users, info.email)
             else:
                 return fn([user], None)
 

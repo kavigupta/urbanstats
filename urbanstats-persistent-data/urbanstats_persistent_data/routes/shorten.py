@@ -1,6 +1,6 @@
 from main import app
 from db.shorten import retreive_and_lengthen, shorten_and_save
-from utils import flask_form
+from utils import form, error
 import flask
 from pydantic import BaseModel
 
@@ -10,7 +10,7 @@ def shorten_request():
     class FullText(BaseModel):
         full_text: str
 
-    full_text = FullText(flask_form()).full_text
+    full_text = form(FullText).full_text
 
     shortened = shorten_and_save(full_text)
     return flask.jsonify(dict(shortened=shortened))
@@ -18,14 +18,13 @@ def shorten_request():
 
 @app.route("/lengthen", methods=["POST"])
 def lengthen_request():
-    form = flask_form()
+    class Shortened(BaseModel):
+        shortened: str
 
-    if "shortened" in form:
-        full_text = retreive_and_lengthen(form["shortened"])
-        if full_text is None:
-            return flask.jsonify({"error": "Shortened text not found!"}), 404
-        return flask.jsonify(dict(full_text=full_text[0]))
-    return flask.jsonify({"error": "Needs parameter shortened!"}), 200
+    full_text = retreive_and_lengthen(form(Shortened).shortened)
+    if full_text is None:
+        return error(404, "Shortened text not found!")
+    return flask.jsonify(dict(full_text=full_text[0]))
 
 
 @app.route("/s", methods=["GET"])
