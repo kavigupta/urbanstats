@@ -6,11 +6,6 @@ from .utils import problem_id_for_quiz_kind, sqlTuple, table, table_for_quiz_kin
 
 
 def friend_request(requestee, requester):
-    try:
-        requestee = int(requestee, 16)
-    except ValueError:
-        return
-    requester = int(requester, 16)
     conn, c = table()
     c.execute(
         "INSERT INTO FriendRequests VALUES (?, ?)",
@@ -20,8 +15,6 @@ def friend_request(requestee, requester):
 
 
 def unfriend(requestee, requester):
-    requestee = int(requestee, 16)
-    requester = int(requester, 16)
     conn, c = table()
     c.execute(
         "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
@@ -69,11 +62,6 @@ def _compute_friend_results(requestees: List[int], requesters: List[int], comput
 
     results = []
     for requester in requesters:
-        try:
-            requester = int(requester, 16)
-        except ValueError:
-            results.append(dict(friends=False, idError="Invalid User ID"))
-            continue
         if requester in friends:
             results.append(
                 dict(
