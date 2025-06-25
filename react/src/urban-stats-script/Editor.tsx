@@ -1,6 +1,6 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
@@ -16,24 +16,30 @@ interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
 
 export function Editor(
     props: {
-        getUss: () => string // Swap this function to get a new script
+        uss: string
         setUss: (newScript: string) => void
         autocompleteSymbols: string[]
         errors: EditorError[]
     },
 ): ReactNode {
-    const { setUss: propsSetUss, getUss, errors, autocompleteSymbols } = props
+    const { setUss, uss, errors, autocompleteSymbols } = props
 
-    const [script, setScript] = useState<Script>(() => makeScript(getUss()))
+    const setUssRef = useRef(setUss)
 
-    const undoStack = useRef<UndoRedoItem[]>([]) // Top of this stack is the current state
+    useEffect(() => {
+        setUssRef.current = setUss
+    }, [setUss])
+
+    const [script, setScript] = useState<Script>(() => makeScript(uss))
+
+    const undoStack = useRef<UndoRedoItem[]>([{ time: Date.now(), uss, range: undefined }])
     const redoStack = useRef<UndoRedoItem[]>([])
 
     // sync the script after some time of not typing
     useEffect(() => {
-        const timeout = setTimeout(() => { propsSetUss(script.uss.trimEnd()) }, setScriptDelay)
+        const timeout = setTimeout(() => { setUssRef.current(script.uss.trimEnd()) }, setScriptDelay)
         return () => { clearTimeout(timeout) }
-    }, [script, propsSetUss])
+    }, [script])
 
     const colors = useColors()
 
@@ -90,16 +96,6 @@ export function Editor(
             newUndoState(newScript, newRange)
         }
     }, [renderScript])
-
-    useLayoutEffect(() => { // Needs to happen before other effects
-        const s = getUss()
-        const editor = editorRef.current!
-        const currentRange = getRange(editor)
-        const newRange = currentRange !== undefined ? { start: 0, end: 0 } : undefined
-        editScript(s, newRange, false)
-        undoStack.current = [{ time: Date.now(), uss: s, range: newRange }]
-        redoStack.current = []
-    }, [getUss])
 
     useEffect(() => {
         const listener = (): void => {

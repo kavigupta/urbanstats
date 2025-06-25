@@ -155,19 +155,15 @@ export function CustomEditor({
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
-    // We don't expect these props to update during the component lifetime
-    const getUss = useCallback(() => uss.originalCode, [])
-    const ourSetUss = useCallback((u: string) => {
-        const parsed = parseNoErrorAsExpression(u, blockIdent)
-        setUss(parsed)
-    }, [])
-
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
     return (
         <Editor
-            getUss={getUss}
-            setUss={ourSetUss}
+            uss={uss.originalCode}
+            setUss={(u: string) => {
+                const parsed = parseNoErrorAsExpression(u, blockIdent)
+                setUss(parsed)
+            }}
             autocompleteSymbols={autocompleteSymbols}
             errors={ourErrors}
         />

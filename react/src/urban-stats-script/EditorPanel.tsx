@@ -36,7 +36,7 @@ export function EditorPanel(): ReactNode {
         }
     }, [])
 
-    const getUss = useCallback(() => {
+    const uss = useMemo(() => {
         return localStorage.getItem('editor-code') ?? ''
     }, [])
 
@@ -47,7 +47,7 @@ export function EditorPanel(): ReactNode {
     return (
         <PageTemplate>
             <Editor
-                getUss={getUss}
+                uss={uss}
                 setUss={updateUss}
                 autocompleteSymbols={autocompleteSymbols}
                 errors={errors}
