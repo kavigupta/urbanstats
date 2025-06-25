@@ -9,11 +9,11 @@ from ..db.email import get_email_users
 from ..utils import UrbanStatsError
 
 from .authenticate import UserHeadersSchema
-from typing import Annotated
+from typing import Annotated, Optional
 
 
 class EmailHeadersSchema(UserHeadersSchema):
-    access_token: Annotated[str, Field(alias="X-Access-Token")]
+    access_token: Annotated[Optional[str], Field(alias="X-Access-Token")] = None
 
 
 def get_email():

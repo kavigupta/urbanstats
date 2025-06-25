@@ -35,14 +35,6 @@ class UrbanStatsErrorModel(BaseModel):
 T = TypeVar("T", bound=BaseModel)
 
 
-def form(Model: Type[T]) -> T:
-    string = flask.request.data.decode("utf-8")
-    if len(string) == 0:
-        raise UrbanStatsError(400, "zero-length body")
-    form_data = json.loads(string)
-    return Model(**form_data)
-
-
 def from_hex(value: Any) -> int:
     if not isinstance(value, str):
         raise ValueError()
@@ -50,3 +42,7 @@ def from_hex(value: Any) -> int:
 
 
 Hexadecimal = BeforeValidator(from_hex)
+
+
+class EmptyResponse(BaseModel):
+    pass

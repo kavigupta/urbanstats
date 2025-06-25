@@ -71,7 +71,7 @@ def test_juxta_user_stats(client):
     assert response.status_code == 200
     assert response.json == {}
 
-    response = client.post(
+    response = client.get(
         "/juxtastat/latest_day",
         headers=identity_1,
     )
@@ -79,7 +79,7 @@ def test_juxta_user_stats(client):
     assert response.status_code == 200
     assert response.json == {"latest_day": 2}
 
-    response = client.post(
+    response = client.get(
         "/juxtastat/latest_day",
         headers=identity_2,
     )

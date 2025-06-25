@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from ..db.utils import get_full_database
 from ..main import app
-from ..utils import UrbanStatsError, form
+from ..utils import UrbanStatsError
 
 
 def valid_token(tok):
@@ -21,7 +21,7 @@ def juxtastat_get_full_database_request():
     class Token(BaseModel):
         token: str
 
-    if not valid_token(form(Token).token):
+    if not valid_token(Token(**flask.request.json)):
         return UrbanStatsError(
             401, "This method requires a token, and your token is invalid!"
         )
