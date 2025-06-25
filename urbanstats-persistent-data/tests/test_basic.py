@@ -1,10 +1,10 @@
-import pytest
+identity_1 = {"x-user": "1", "x-secure-id": "11"}
 
 
 def test_register_user(client):
     response = client.post(
         "/juxtastat/register_user",
-        headers={"x-user": "1", "x-secure-id": "11"},
+        headers=identity_1,
         json={
             "domain": "test.urbanstats.org",
         },
@@ -15,7 +15,7 @@ def test_register_user(client):
 def test_register_no_body(client):
     response = client.post(
         "/juxtastat/register_user",
-        headers={"x-user": "1", "x-secure-id": "11"},
+        headers=identity_1,
     )
     assert response.status_code == 400
     assert response.json == {
@@ -25,17 +25,13 @@ def test_register_no_body(client):
 
 
 def test_get_latest_day(client):
-    response = client.post(
-        "/juxtastat/latest_day", headers={"x-user": "1", "x-secure-id": "11"}
-    )
+    response = client.post("/juxtastat/latest_day", headers=identity_1)
     assert response.status_code == 200
     assert response.json == {"latest_day": -100}
 
 
 def test_get_latest_week(client):
-    response = client.post(
-        "/retrostat/latest_week", headers={"x-user": "1", "x-secure-id": "11"}
-    )
+    response = client.post("/retrostat/latest_week", headers=identity_1)
     assert response.status_code == 200
     assert response.json == {"latest_day": -100}
 
@@ -43,7 +39,7 @@ def test_get_latest_week(client):
 def test_store_user_stats_success(client):
     response = client.post(
         "/juxtastat/store_user_stats",
-        headers={"x-user": "1", "x-secure-id": "11"},
+        headers=identity_1,
         json={
             "day_stats": [[1, [True, True, True, True, True]]],
         },
@@ -51,9 +47,7 @@ def test_store_user_stats_success(client):
     assert response.json == {}
     assert response.status_code == 200
 
-    response = client.post(
-        "/juxtastat/latest_day", headers={"x-user": "1", "x-secure-id": "11"}
-    )
+    response = client.post("/juxtastat/latest_day", headers=identity_1)
     assert response.status_code == 200
     assert response.json == {"latest_day": 1}
 
@@ -61,10 +55,7 @@ def test_store_user_stats_success(client):
 def test_store_user_stats_missing_fields(client):
     response = client.post(
         "/juxtastat/store_user_stats",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-        },
+        headers=identity_1,
         json={},
     )
     assert response.status_code == 400
@@ -86,10 +77,7 @@ def test_store_user_stats_missing_fields(client):
 def test_store_user_stats_invalid_secureid(client):
     response = client.post(
         "/juxtastat/store_user_stats",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-        },
+        headers=identity_1,
         json={
             "day_stats": [[1, [True, True, True, True, True]]],
         },

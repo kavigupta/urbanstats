@@ -1,5 +1,6 @@
 from typing import List
 
+# pylint: disable=no-name-in-module
 from . import email, stats
 from .utils import problem_id_for_quiz_kind, sqlTuple, table, table_for_quiz_kind
 
@@ -86,10 +87,13 @@ def _compute_friend_results(requestees: List[int], requesters: List[int], comput
 
 
 def _compute_daily_score(date, quiz_kind, c, for_user):
-    for_all_users = email._get_user_users(c, for_user)
-
+    for_all_users = email.get_user_users(c, for_user)
     c.execute(
-        f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} WHERE user IN {sqlTuple(len(for_all_users))} AND {problem_id_for_quiz_kind[quiz_kind]}=?",
+        (
+            f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} "
+            f"WHERE user IN {sqlTuple(len(for_all_users))} "
+            f"AND {problem_id_for_quiz_kind[quiz_kind]}=?"
+        ),
         for_all_users + [date],
     )
     res = [stats.bitvector_to_corrects(row[0]) for row in c.fetchall()]

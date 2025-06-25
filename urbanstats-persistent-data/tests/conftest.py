@@ -35,10 +35,12 @@ def setup_app(mocker):
 
 
 @pytest.fixture()
+# pylint: disable=redefined-outer-name
 def client(setup_app):
     return setup_app.test_client()
 
 
 @pytest.fixture()
+# pylint: disable=redefined-outer-name
 def runner(setup_app):
     return setup_app.test_cli_runner()

@@ -1,25 +1,27 @@
-import pytest
+identity_1 = {
+    "x-user": "1",
+    "x-secure-id": "11",
+    "x-access-token": "email@gmail.com",
+}
+
+identity_2 = {
+    "x-user": "2",
+    "x-secure-id": "12",
+    "x-access-token": "email@gmail.com",
+}
 
 
 def test_associate_email(client):
     response = client.post(
         "/juxtastat/associate_email",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_1,
     )
     assert response.status_code == 200
 
     # Associating the email again succeeds
     response = client.post(
         "/juxtastat/associate_email",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_1,
     )
     assert response.status_code == 200
 
@@ -38,22 +40,14 @@ def test_associate_email(client):
 def test_juxta_user_stats(client):
     response = client.post(
         "/juxtastat/associate_email",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_1,
     )
     assert response.status_code == 200
 
     # Associating the email again succeeds
     response = client.post(
         "/juxtastat/associate_email",
-        headers={
-            "x-user": "2",
-            "x-secure-id": "12",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_2,
     )
     assert response.status_code == 200
 
@@ -62,11 +56,7 @@ def test_juxta_user_stats(client):
         json={
             "day_stats": [[1, [True, True, True, True, True]]],
         },
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_1,
     )
     assert response.status_code == 200
     assert response.json == {}
@@ -76,22 +66,14 @@ def test_juxta_user_stats(client):
         json={
             "day_stats": [[2, [True, True, True, True, True]]],
         },
-        headers={
-            "x-user": "2",
-            "x-secure-id": "12",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_2,
     )
     assert response.status_code == 200
     assert response.json == {}
 
     response = client.post(
         "/juxtastat/latest_day",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_1,
     )
     print(response.json)
     assert response.status_code == 200
@@ -99,11 +81,7 @@ def test_juxta_user_stats(client):
 
     response = client.post(
         "/juxtastat/latest_day",
-        headers={
-            "x-user": "2",
-            "x-secure-id": "12",
-            "x-access-token": "email@gmail.com",
-        },
+        headers=identity_2,
     )
     assert response.status_code == 200
     assert response.json == {"latest_day": 2}

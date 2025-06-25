@@ -22,6 +22,7 @@ def handle_urban_stats_error(e: UrbanStatsError):
     return flask.jsonify(e.to_dict()), e.status
 
 
+# pylint: disable=unused-import
 from .routes import email, friends, get_full_database, shorten, stats
 
 logging.getLogger("flask_cors").level = logging.DEBUG

@@ -21,24 +21,25 @@ def get_email():
         class InfoSchema(BaseModel):
             email: str
 
-        info = InfoSchema(**json.loads(response.content))
-        return info.email
-    else:
-        return None
+        try:
+            info = InfoSchema(**json.loads(response.content))
+            return info.email
+        except Exception as exc:
+            raise UrbanStatsError(500, "Invalid response from Google") from exc
+    return None
 
 
 def email():
     def decorator(fn):
         @functools.wraps(fn)
         def wrapper(user: int):
-            email = get_email()
-            if email:
-                email_users = get_email_users(email)
+            user_email = get_email()
+            if user_email:
+                email_users = get_email_users(user_email)
                 if user not in email_users:
                     raise UrbanStatsError(401, "User not associated with email")
                 return fn(email_users)
-            else:
-                return fn([user])
+            return fn([user])
 
         return wrapper
 
