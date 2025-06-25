@@ -88,6 +88,23 @@ jobs:
       - name: Test python code
         run: python -m pytest tests
 
+  test-urbanstats-persistent:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - name: Install additional requirements
+        working-directory: urbanstats-persistent-data
+        run: pip install -r requirements.txt
+      - name: Test python code
+        working-directory: urbanstats-persistent-data
+        run: python -m pytest tests
+
   build-frontend:
     runs-on: ubuntu-22.04
     needs: build-and-push-common-image
