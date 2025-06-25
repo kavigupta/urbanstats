@@ -1,11 +1,18 @@
 import sqlite3
+from enum import Enum
+
+
+class QuizKind(str, Enum):
+    juxtastat = "juxtastat"
+    retrostat = "retrostat"
+
 
 table_for_quiz_kind = {
-    "juxtastat": "JuxtaStatIndividualStats",
-    "retrostat": "JuxtaStatIndividualStatsRetrostat",
+    QuizKind.juxtastat: "JuxtaStatIndividualStats",
+    QuizKind.retrostat: "JuxtaStatIndividualStatsRetrostat",
 }
 
-problem_id_for_quiz_kind = {"juxtastat": "day", "retrostat": "week"}
+problem_id_for_quiz_kind = {QuizKind.juxtastat: "day", QuizKind.retrostat: "week"}
 
 
 def table():

@@ -73,7 +73,7 @@ def juxtastat_infinite_has_infinite_stats_request(users):
 def juxtastat_infinite_store_user_stats_request(user):
     class Request(BaseModel):
         seed: str
-        version: str
+        version: int
         corrects: List[bool]
 
     req = form(Request)

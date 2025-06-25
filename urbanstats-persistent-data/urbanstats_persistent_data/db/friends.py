@@ -1,6 +1,7 @@
 from .utils import table, sqlTuple, table_for_quiz_kind, problem_id_for_quiz_kind
 import db.email
 import db.stats
+from typing import List
 
 
 def friend_request(requestee, requester):
@@ -54,8 +55,7 @@ def infinite_results(requestees, requesters, seed, version):
     )
 
 
-def _compute_friend_results(requestees, requesters, compute_fn):
-    requestees = [int(requestee, 16) for requestee in requestees]
+def _compute_friend_results(requestees: List[int], requesters: List[int], compute_fn):
 
     _, c = table()
     # query the table to see if each pair is a friend pair
