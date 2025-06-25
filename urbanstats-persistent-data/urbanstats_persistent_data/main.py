@@ -11,8 +11,8 @@ cors = CORS(app)
 
 
 @app.errorhandler(pydantic.ValidationError)
-def handle_validation_error(e):
-    return error(400, str(e), "validation")
+def handle_validation_error(e: pydantic.ValidationError):
+    return error(400, e.errors(include_url=False), "validation")
 
 
 from .routes import stats, email, friends, get_full_database, shorten

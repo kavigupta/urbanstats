@@ -11,8 +11,8 @@ def authenticate():
         @functools.wraps(fn)
         def wrapper():
             class UserHeadersSchema(BaseModel):
-                user: Annotated[int, Field(alias="x-user"), Hexadecimal]
-                secure_id: Annotated[int, Field(alias="x-secure-id"), Hexadecimal]
+                user: Annotated[int, Field(alias="X-User"), Hexadecimal]
+                secure_id: Annotated[int, Field(alias="X-Secure-Id"), Hexadecimal]
 
             req = UserHeadersSchema(**flask.request.headers)
 

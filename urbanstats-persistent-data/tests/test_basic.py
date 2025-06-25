@@ -4,17 +4,18 @@ import pytest
 def test_register_user(client):
     response = client.post(
         "/juxtastat/register_user",
+        headers={"x-user": "1", "x-secure-id": "11"},
         data={
-            "user": "1",
             "domain": "test.urbanstats.org",
         },
     )
+    print(response.json)
     assert response.status_code == 200
 
 
 def test_get_latest_day(client):
-    response = client.post(
-        "/juxtastat/latest_day", data={"user": "1", "secureID": "11"}
+    response = client.get(
+        "/juxtastat/latest_day", headers={"x-user": "1", "x-secure-id": "11"}
     )
     assert response.status_code == 200
     assert response.json == {"latest_day": -100}

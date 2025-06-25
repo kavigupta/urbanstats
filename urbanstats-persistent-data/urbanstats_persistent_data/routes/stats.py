@@ -28,7 +28,7 @@ def juxtastat_register_user_request(user):
     return flask.jsonify(dict()), 200
 
 
-@app.route("/juxtastat/latest_day", methods=["POST"])
+@app.route("/juxtastat/latest_day", methods=["GET"])
 @authenticate()
 @email()
 def juxtastat_latest_day_request(users):
@@ -36,7 +36,7 @@ def juxtastat_latest_day_request(users):
     return flask.jsonify(dict(latest_day=ld))
 
 
-@app.route("/retrostat/latest_week", methods=["POST"])
+@app.route("/retrostat/latest_week", methods=["GET"])
 @authenticate()
 @email()
 def retrostat_latest_week_request(users):
@@ -55,7 +55,7 @@ def juxtastat_store_user_stats_request(user):
     return flask.jsonify(dict())
 
 
-@app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
+@app.route("/juxtastat_infinite/has_infinite_stats", methods=["GET"])
 @authenticate()
 @email()
 def juxtastat_infinite_has_infinite_stats_request(users):

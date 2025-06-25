@@ -13,5 +13,12 @@ def test_shorten_invalid(client):
     assert response.status_code == 400
     assert response.json == {
         "code": "validation",
-        "error": {"full_text": ["Missing data for required field."]},
+        "error": [
+            {
+                "input": {},
+                "loc": ["full_text"],
+                "msg": "Field required",
+                "type": "missing",
+            }
+        ],
     }
