@@ -27,7 +27,7 @@ export function ConditionEditor({
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
             <CheckboxSettingCustom
-                name="Enable condition"
+                name="Filter?"
                 checked={conditionIsCustom}
                 onChange={(checked) => {
                     if (checked) {
@@ -44,16 +44,13 @@ export function ConditionEditor({
                 }}
             />
             {conditionIsCustom && (
-                <>
-                    Condition:
-                    <CustomEditor
-                        uss={condition as UrbanStatsASTExpression & { type: 'customNode' }}
-                        setUss={setCondition}
-                        autocompleteSymbols={autocompleteSymbols}
-                        errors={errors}
-                        blockIdent={blockIdent}
-                    />
-                </>
+                <CustomEditor
+                    uss={condition as UrbanStatsASTExpression & { type: 'customNode' }}
+                    setUss={setCondition}
+                    autocompleteSymbols={autocompleteSymbols}
+                    errors={errors}
+                    blockIdent={blockIdent}
+                />
             )}
         </div>
     )
