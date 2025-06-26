@@ -8,6 +8,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
+import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { makeStatements, parseNoErrorAsExpression, rootBlockIdent } from './utils'
@@ -144,23 +145,5 @@ export function TopLevelEditor({
             />
             { subcomponent() }
         </div>
-    )
-}
-
-export function AutoUXEditor(props: {
-    uss: UrbanStatsASTExpression
-    setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
-    errors: EditorError[]
-    blockIdent: string
-}): ReactNode {
-    return (
-        <CustomEditor
-            uss={props.uss as UrbanStatsASTExpression & { type: 'customNode' }}
-            setUss={props.setUss}
-            typeEnvironment={props.typeEnvironment}
-            errors={props.errors}
-            blockIdent={props.blockIdent}
-        />
     )
 }
