@@ -21,8 +21,8 @@ def juxtastat_get_full_database_request():
     class Token(BaseModel):
         token: str
 
-    if not valid_token(Token(**flask.request.json)):
-        return UrbanStatsError(
+    if not valid_token(Token(**flask.request.json).token):
+        raise UrbanStatsError(
             401, "This method requires a token, and your token is invalid!"
         )
     return flask.jsonify(get_full_database())

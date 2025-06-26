@@ -139,3 +139,68 @@ def test_has_infinite_stats(client):
     )
     assert response.status_code == 200
     assert response.json == {"has": [False, False]}
+
+
+def test_store_retro(client):
+    response = client.post(
+        "/retrostat/store_user_stats",
+        headers=identity_1,
+        json={
+            "day_stats": [[1, [True, True, True, True, True]]],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json == {}
+
+
+def test_juxta_per_question(client):
+    response = client.post(
+        "/juxtastat/register_user",
+        headers=identity_1,
+        json={
+            "domain": "urbanstats.org",
+        },
+    )
+    assert response.status_code == 200
+
+    response = client.get(
+        "/juxtastat/get_per_question_stats",
+        query_string="day=1",
+    )
+    assert response.status_code == 200
+    assert response.json == {
+        "per_question": [],
+        "total": 0,
+    }
+
+    response = client.post(
+        "/juxtastat/store_user_stats",
+        headers=identity_1,
+        json={
+            "day_stats": [[1, [True, True, True, True, True]]],
+        },
+    )
+    assert response.json == {}
+    assert response.status_code == 200
+
+    response = client.get(
+        "/juxtastat/get_per_question_stats",
+        query_string="day=1",
+    )
+    assert response.status_code == 200
+    assert response.json == {
+        "per_question": [1, 1, 1, 1, 1],
+        "total": 1,
+    }
+
+
+def test_retro_per_question(client):
+    response = client.get(
+        "/retrostat/get_per_question_stats",
+        query_string="week=1",
+    )
+    assert response.status_code == 200
+    assert response.json == {
+        "per_question": [],
+        "total": 0,
+    }
