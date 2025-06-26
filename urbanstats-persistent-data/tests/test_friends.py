@@ -1,5 +1,3 @@
-import pytest
-
 identity_a = {
     "x-user": "a",
     "x-secure-id": "aa",
@@ -95,7 +93,6 @@ def test_unfriend(client):
 
 
 def test_friends_infinite(client):
-
     response = client.post(
         "/juxtastat/infinite_results",
         headers=identity_b,
