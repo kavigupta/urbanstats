@@ -6,6 +6,7 @@ import { CheckboxSettingCustom } from '../../components/sidebar'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
+import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
@@ -19,7 +20,7 @@ export function TopLevelEditor({
 }: {
     uss: UrbanStatsASTExpression | UrbanStatsASTStatement
     setUss: (u: UrbanStatsASTExpression | UrbanStatsASTStatement) => void
-    autocompleteSymbols: string[]
+    autocompleteSymbols: Map<string, USSDocumentedType>
     errors: EditorError[]
 }): ReactNode {
     const idPreamble = `${rootBlockIdent}p`

@@ -4,6 +4,7 @@ import valid_geographies from '../../data/mapper/used_geographies'
 import statistic_variables_info from '../../data/statistic_variables_info'
 import { defaultConstants } from '../../urban-stats-script/constants/constants'
 import { EditorError } from '../../urban-stats-script/editor-utils'
+import { USSDocumentedType } from '../../urban-stats-script/types-values'
 import { DataListSelector } from '../DataListSelector'
 
 import { TopLevelEditor } from './TopLevelEditor'
@@ -15,7 +16,28 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
     getScript: () => MapperScriptSettings
     errors: EditorError[]
 }): ReactNode {
-    const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()).concat(statistic_variables_info.variableNames).concat(statistic_variables_info.multiSourceVariables.map(([name]) => name)).concat(['geo']), [])
+    const autocompleteSymbols = useMemo(() => {
+        const allVariableNames = [
+            ...statistic_variables_info.variableNames,
+            ...statistic_variables_info.multiSourceVariables.map(([name]) => name),
+            'geo',
+        ]
+
+        const typeEnvironment = new Map<string, USSDocumentedType>()
+
+        for (const [key, value] of defaultConstants) {
+            typeEnvironment.set(key, value)
+        }
+
+        for (const varName of allVariableNames) {
+            typeEnvironment.set(varName, {
+                type: { type: 'vector', elementType: { type: varName === 'geo' ? 'string' : 'number' } },
+                documentation: { humanReadableName: varName },
+            })
+        }
+
+        return typeEnvironment
+    }, [])
 
     const setUss = useCallback((uss: MapperScriptSettings['uss']) => {
         setMapSettings(s => ({

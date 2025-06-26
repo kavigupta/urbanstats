@@ -7,7 +7,7 @@ import { codeStyle, Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
 import { EditorError } from './editor-utils'
 import { parse } from './parser'
-import { renderValue, USSValue } from './types-values'
+import { renderValue, USSValue, USSDocumentedType } from './types-values'
 import { executeAsync } from './workerManager'
 
 export function EditorPanel(): ReactNode {
@@ -40,7 +40,9 @@ export function EditorPanel(): ReactNode {
         return localStorage.getItem('editor-code') ?? ''
     }, [])
 
-    const autocompleteSymbols = useMemo(() => Array.from(defaultConstants.keys()), [])
+    const autocompleteSymbols = useMemo(() => {
+        return defaultConstants as Map<string, USSDocumentedType>
+    }, [])
 
     const colors = useColors()
 

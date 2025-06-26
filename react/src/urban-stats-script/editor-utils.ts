@@ -5,6 +5,7 @@ import { isAMatch } from '../utils/isAMatch'
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError } from './parser'
+import { USSDocumentedType } from './types-values'
 
 export type EditorError = ParseError
 
@@ -221,14 +222,14 @@ function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
 }
 
-export function getAutocompleteOptions(autocompleteSymbols: string[], tokens: AnnotatedToken[], currentIdentifer: string): string[] {
+export function getAutocompleteOptions(typeEnvironment: Map<string, USSDocumentedType>, tokens: AnnotatedToken[], currentIdentifer: string): string[] {
     const allIdentifiers = new Set<string>()
     for (const t of tokens) {
         if (t.token.type === 'identifier') {
             allIdentifiers.add(t.token.value)
         }
     }
-    for (const id of autocompleteSymbols) {
+    for (const [id] of typeEnvironment) {
         allIdentifiers.add(id)
     }
     allIdentifiers.delete(currentIdentifer)

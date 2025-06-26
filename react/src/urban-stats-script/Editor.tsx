@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { useColors } from '../page_template/colors'
 
 import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils'
+import { USSDocumentedType } from './types-values'
 
 const setScriptDelay = 500
 
@@ -18,7 +19,7 @@ export function Editor(
     props: {
         uss: string
         setUss: (newScript: string) => void
-        autocompleteSymbols: string[]
+        autocompleteSymbols: Map<string, USSDocumentedType>
         errors: EditorError[]
     },
 ): ReactNode {

@@ -5,6 +5,7 @@ import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse } from '../../urban-stats-script/parser'
+import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
 import { parseNoErrorAsExpression } from './utils'
@@ -18,7 +19,7 @@ export function ConditionEditor({
 }: {
     condition: UrbanStatsASTExpression
     setCondition: (conditionExpr: UrbanStatsASTExpression) => void
-    autocompleteSymbols: string[]
+    autocompleteSymbols: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
