@@ -49,6 +49,13 @@ function isAlpha(ch: string): boolean {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'
 }
 
+export function emptyLocation(ident: string): LocInfo {
+    return {
+        start: { block: { type: 'single', ident }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+        end: { block: { type: 'single', ident }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+    }
+}
+
 export function parseNumber(input: string): number | undefined {
     if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
