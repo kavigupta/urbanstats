@@ -187,6 +187,10 @@ void test('basic parsing', (): void => {
         '(statements (assign (id x) (const 2)) (assign (id y) (id x)))',
     )
     assert.deepStrictEqual(
+        parseAndRender(''),
+        '(statements )',
+    )
+    assert.deepStrictEqual(
         parseAndRender('x'),
         '(expr (id x))',
     )
@@ -375,10 +379,6 @@ void test('parse errors in if', (): void => {
 })
 
 void test('parse errors (other)', (): void => {
-    assert.deepStrictEqual(
-        parseAndRender(''),
-        '(errors (error "Unexpected end of input" at 0:0))',
-    )
     assert.deepStrictEqual(
         parseAndRender('if (x*)'),
         '(errors (error "Unexpected bracket )" at 0:6))',

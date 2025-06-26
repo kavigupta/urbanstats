@@ -480,6 +480,10 @@ class ParseState {
             if (end()) {
                 break
             }
+            while (this.skipEOL()) { }
+            if (this.index >= this.tokens.length) {
+                break
+            }
             const statement = this.parseStatement()
             if (statement.type === 'error') {
                 return statement
