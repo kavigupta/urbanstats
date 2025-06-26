@@ -94,16 +94,15 @@ export function TopLevelEditor({
                     blockIdent={idCondition}
                 />
                 {/* Output */}
-                <CustomEditor
+                <AutoUXEditor
                     // TODO this shouldn't be required to be a custom node
-                    uss={ussToUse.result[1].rest[0].value as UrbanStatsASTExpression & { type: 'customNode' }}
+                    uss={ussToUse.result[1].rest[0].value}
                     setUss={(u: UrbanStatsASTExpression) => {
-                        const output = parseNoErrorAsExpression(unparse(u) ?? '', idOutput)
                         const condition = {
                             type: 'condition',
                             entireLoc: ussToUse.result[1].entireLoc,
                             condition: ussToUse.result[1].condition,
-                            rest: [{ type: 'expression', value: output }],
+                            rest: [{ type: 'expression', value: u }],
                         } satisfies UrbanStatsASTStatement
                         setUss(makeStatements([ussToUse.result[0], condition]))
                     }}
@@ -145,5 +144,23 @@ export function TopLevelEditor({
             />
             { subcomponent() }
         </div>
+    )
+}
+
+export function AutoUXEditor(props: {
+    uss: UrbanStatsASTExpression
+    setUss: (u: UrbanStatsASTExpression) => void
+    typeEnvironment: Map<string, USSDocumentedType>
+    errors: EditorError[]
+    blockIdent: string
+}): ReactNode {
+    return (
+        <CustomEditor
+            uss={props.uss as UrbanStatsASTExpression & { type: 'customNode' }}
+            setUss={props.setUss}
+            typeEnvironment={props.typeEnvironment}
+            errors={props.errors}
+            blockIdent={props.blockIdent}
+        />
     )
 }
