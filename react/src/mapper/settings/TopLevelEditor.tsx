@@ -110,6 +110,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
+                    type={{ type: 'opaque', name: 'cMap' }}
                 />
             </div>
         )
