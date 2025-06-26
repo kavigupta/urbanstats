@@ -102,10 +102,6 @@ def table():
     return conn, c
 
 
-def sqlTuple(length):
-    return f"({','.join('?'*length)})"
-
-
 def get_full_database():
     _, c = table()
     # join the user domain table with the individual stats table and get all rows

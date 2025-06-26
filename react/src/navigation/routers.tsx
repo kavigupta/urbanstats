@@ -5,7 +5,6 @@ import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
-import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
 
 import { Navigator } from './Navigator'
 import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
@@ -177,8 +176,6 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
-        case 'oauthCallback':
-            return <OauthCallbackPanel {...pageData} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

@@ -1,8 +1,8 @@
 from typing import List
 
 # pylint: disable=no-name-in-module
-from . import email, stats
-from .utils import problem_id_for_quiz_kind, sqlTuple, table, table_for_quiz_kind
+from . import stats
+from .utils import problem_id_for_quiz_kind, table, table_for_quiz_kind
 
 
 def friend_request(requestee, requester):
@@ -23,13 +23,13 @@ def unfriend(requestee, requester):
     conn.commit()
 
 
-def todays_score_for(requestees, requesters, date, quiz_kind):
+def todays_score_for(requestee, requesters, date, quiz_kind):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestees,
+        requestee,
         requesters,
         compute_fn=lambda c, for_user: _compute_daily_score(
             date, quiz_kind, c, for_user
@@ -37,25 +37,25 @@ def todays_score_for(requestees, requesters, date, quiz_kind):
     )
 
 
-def infinite_results(requestees, requesters, seed, version):
+def infinite_results(requestee, requesters, seed, version):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestees,
+        requestee,
         requesters,
         compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version),
     )
 
 
-def _compute_friend_results(requestees: List[int], requesters: List[int], compute_fn):
+def _compute_friend_results(requestee: int, requesters: List[int], compute_fn):
     _, c = table()
     # query the table to see if each pair is a friend pair
 
     c.execute(
-        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
-        requestees,
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee = ?",
+        (requestee,),
     )
     friends = c.fetchall()
     friends = {x[0] for x in friends}
@@ -75,14 +75,13 @@ def _compute_friend_results(requestees: List[int], requesters: List[int], comput
 
 
 def _compute_daily_score(date, quiz_kind, c, for_user):
-    for_all_users = email.get_user_users(c, for_user)
     c.execute(
         (
             f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} "
-            f"WHERE user IN {sqlTuple(len(for_all_users))} "
+            f"WHERE user = ?"
             f"AND {problem_id_for_quiz_kind[quiz_kind]}=?"
         ),
-        for_all_users + [date],
+        (for_user, date),
     )
     res = [stats.bitvector_to_corrects(row[0]) for row in c.fetchall()]
     if len(res) == 0:

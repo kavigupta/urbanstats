@@ -2,7 +2,7 @@ import time
 from typing import List, Tuple
 
 from ..utils import corrects_to_bytes
-from .utils import sqlTuple, table
+from .utils import table
 
 
 def register_user(user, domain):
@@ -18,21 +18,21 @@ def register_user(user, domain):
     conn.commit()
 
 
-def latest_day_from_table(users: List[int], table_name, column):
+def latest_day_from_table(user: int, table_name, column):
     _, c = table()
     c.execute(
-        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user IN {sqlTuple(len(users))}",
-        users,
+        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user = ?",
+        (user,),
     )
     return c.fetchone()[0]
 
 
-def latest_day(users: List[int]):
-    return latest_day_from_table(users, "JuxtaStatIndividualStats", "day")
+def latest_day(user: int):
+    return latest_day_from_table(user, "JuxtaStatIndividualStats", "day")
 
 
-def latest_week_retrostat(users):
-    return latest_day_from_table(users, "JuxtaStatIndividualStatsRetrostat", "week")
+def latest_week_retrostat(user):
+    return latest_day_from_table(user, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
 def corrects_to_bitvector(corrects: List[bool]) -> int:
@@ -68,11 +68,11 @@ def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
-def has_infinite_stats(users, seeds_versions):
+def has_infinite_stats(user, seeds_versions):
     _, c = table()
     c.execute(
-        f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(users))}",
-        users,
+        f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user = ?",
+        (user,),
     )
     results = c.fetchall()
     results = set(results)

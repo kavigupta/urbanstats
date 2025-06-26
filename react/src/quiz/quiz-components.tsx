@@ -5,7 +5,6 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { sharedAuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
 import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
@@ -69,46 +68,8 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{user}</span>
-            <QuizAuthStatus />
         </div>
     )
-}
-
-function QuizAuthStatus(): ReactNode {
-    const authState = sharedAuthenticationStateMachine.useState()
-
-    if (authState.state === 'signedOut') {
-        const signIn = async (e: React.MouseEvent): Promise<void> => {
-            e.preventDefault()
-            try {
-                const url = await sharedAuthenticationStateMachine.startSignIn()
-                window.open(url, '_blank', 'popup,width=500,height=600')
-            }
-            catch (error) {
-                alert(`There was a problem signing in: ${error}`)
-            }
-        }
-        return (
-            <>
-                {' '}
-                <a href="" onClick={signIn}>Sign In with Google</a>
-                {' to sync your quiz history across devices.'}
-            </>
-        )
-    }
-    else {
-        const signOut = (e: React.MouseEvent): void => {
-            e.preventDefault()
-            sharedAuthenticationStateMachine.userSignOut()
-        }
-
-        return (
-            <>
-                {` Signed in with ${authState.email}. `}
-                <a href="" onClick={signOut}>Sign Out</a>
-            </>
-        )
-    }
 }
 
 export function ExportImport(): ReactNode {
