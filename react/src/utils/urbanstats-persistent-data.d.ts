@@ -294,6 +294,13 @@ export interface components {
         };
         /** EmptyResponse */
         EmptyResponse: Record<string, never>;
+        /** UrbanStatsErrorModel */
+        UrbanStatsErrorModel: {
+            /** Error */
+            error: unknown;
+            /** Code */
+            code: string | null;
+        };
         /** ScoreRequest */
         ScoreRequest: {
             /** Requesters */
@@ -370,13 +377,6 @@ export interface components {
         Shortened: {
             /** Shortened */
             shortened: string;
-        };
-        /** UrbanStatsErrorModel */
-        UrbanStatsErrorModel: {
-            /** Error */
-            error: unknown;
-            /** Code */
-            code: string | null;
         };
         /** S */
         S: {
@@ -474,12 +474,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -508,12 +526,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -542,12 +578,30 @@ export interface operations {
                     "application/json": components["schemas"]["ScoreResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -576,12 +630,30 @@ export interface operations {
                     "application/json": components["schemas"]["InfiniteScoreResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -613,6 +685,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -652,6 +733,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
         };
     };
     s: {
@@ -688,6 +778,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
         };
     };
     juxtastatRegisterUserRequest: {
@@ -715,12 +814,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -745,12 +862,30 @@ export interface operations {
                     "application/json": components["schemas"]["LatestDayResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -775,12 +910,30 @@ export interface operations {
                     "application/json": components["schemas"]["LatestDayResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -809,12 +962,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -843,12 +1014,30 @@ export interface operations {
                     "application/json": components["schemas"]["HasInfiniteStatsResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -877,12 +1066,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -911,12 +1118,30 @@ export interface operations {
                     "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };
@@ -947,6 +1172,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
+            };
         };
     };
     retrostatGetPerQuestionStatsRequest: {
@@ -975,6 +1209,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                };
             };
         };
     };

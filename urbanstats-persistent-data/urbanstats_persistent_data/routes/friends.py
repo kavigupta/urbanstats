@@ -8,7 +8,7 @@ from ..db.friends import friend_request, infinite_results, todays_score_for, unf
 from ..db.utils import QuizKind
 from ..main import api, app
 from ..middleware.authenticate import UserHeadersSchema, authenticate
-from ..utils import EmptyResponse, Hexadecimal
+from ..utils import EmptyResponse, Hexadecimal, UrbanStatsErrorModel
 
 
 class Requestee(BaseModel):
@@ -17,7 +17,13 @@ class Requestee(BaseModel):
 
 @app.route("/juxtastat/friend_request", methods=["POST"])
 @api.validate(
-    headers=UserHeadersSchema, body=Requestee, resp=Response(HTTP_200=EmptyResponse)
+    headers=UserHeadersSchema,
+    body=Requestee,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_friend_request(user):
@@ -27,7 +33,13 @@ def juxtastat_friend_request(user):
 
 @app.route("/juxtastat/unfriend", methods=["POST"])
 @api.validate(
-    headers=UserHeadersSchema, body=Requestee, resp=Response(HTTP_200=EmptyResponse)
+    headers=UserHeadersSchema,
+    body=Requestee,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_unfriend(user):
@@ -52,7 +64,13 @@ class ScoreResponse(BaseModel):
 
 @app.route("/juxtastat/todays_score_for", methods=["POST"])
 @api.validate(
-    headers=UserHeadersSchema, body=ScoreRequest, resp=Response(HTTP_200=ScoreResponse)
+    headers=UserHeadersSchema,
+    body=ScoreRequest,
+    resp=Response(
+        HTTP_200=ScoreResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_todays_score_for(user):
@@ -90,7 +108,11 @@ class InfiniteScoreResponse(BaseModel):
 @api.validate(
     headers=UserHeadersSchema,
     body=InfiniteScoreRequest,
-    resp=Response(HTTP_200=InfiniteScoreResponse),
+    resp=Response(
+        HTTP_200=InfiniteScoreResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_infinite_results(user):
