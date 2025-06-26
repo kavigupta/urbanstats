@@ -341,6 +341,17 @@ void test('evaluate function calls with defaults', (): void => {
     )
 })
 
+void test('execute basic', (): void => {
+    assert.deepStrictEqual(
+        execute(parseProgram(''), emptyContext()),
+        undocValue(null, { type: 'null' }),
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('if (true) {}'), emptyContext()),
+        undocValue(null, { type: 'null' }),
+    )
+})
+
 void test('evaluate if expressions', (): void => {
     const ctx: Context = emptyContext()
     ctx.assignVariable('x', undocValue(3, numType))
