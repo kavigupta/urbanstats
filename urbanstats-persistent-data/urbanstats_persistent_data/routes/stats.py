@@ -79,7 +79,7 @@ def juxtastat_store_user_stats_request(user):
 
 
 class HasInfiniteStatsRequest(BaseModel):
-    seedVersions: List[str]
+    seedVersions: List[Tuple[str, int]]
 
 
 class HasInfiniteStatsResponse(BaseModel):

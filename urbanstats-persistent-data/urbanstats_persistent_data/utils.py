@@ -34,8 +34,6 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def from_hex(value: Any) -> int:
-    if not isinstance(value, str):
-        raise ValueError()
     return int(value, 16)
 
 

@@ -404,7 +404,10 @@ export interface components {
         /** HasInfiniteStatsRequest */
         HasInfiniteStatsRequest: {
             /** Seedversions */
-            seedVersions: string[];
+            seedVersions: [
+                string,
+                number
+            ][];
         };
         /** HasInfiniteStatsResponse */
         HasInfiniteStatsResponse: {
