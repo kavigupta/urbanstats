@@ -8,7 +8,7 @@ import { allIdentifiers } from '../urban-stats-script/parser'
 import { USSValue } from '../urban-stats-script/types-values'
 import { firstNonNan } from '../utils/math'
 
-import { StatisticsForGeography } from './settings'
+import { StatisticsForGeography } from './settings/utils'
 
 export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeography: StatisticsForGeography, longnames: string[]): Context {
     const ctx = new Context(
