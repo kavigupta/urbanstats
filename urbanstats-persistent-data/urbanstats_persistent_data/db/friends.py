@@ -54,7 +54,7 @@ def _compute_friend_results(requestee: int, requesters: List[int], compute_fn):
     # query the table to see if each pair is a friend pair
 
     c.execute(
-        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee = ?",
+        "SELECT DISTINCT requester FROM FriendRequests WHERE requestee = ?",
         (requestee,),
     )
     friends = c.fetchall()
