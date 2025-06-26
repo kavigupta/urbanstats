@@ -9,9 +9,8 @@ import { Editor } from '../urban-stats-script/Editor'
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { emptyLocation, LocInfo } from '../urban-stats-script/lexer'
+import { emptyLocation } from '../urban-stats-script/lexer'
 import { parse, ParseError, unparse } from '../urban-stats-script/parser'
-import { undocValue } from '../urban-stats-script/types-values'
 
 import { DataListSelector } from './DataListSelector'
 
@@ -180,6 +179,56 @@ function makeStatements(elements: UrbanStatsASTStatement[]): UrbanStatsASTStatem
     }
 }
 
+function ConditionEditor({
+    condition,
+    setCondition,
+    autocompleteSymbols,
+    errors,
+    blockIdent,
+}: {
+    condition: UrbanStatsASTExpression
+    setCondition: (conditionExpr: UrbanStatsASTExpression) => void
+    autocompleteSymbols: string[]
+    errors: EditorError[]
+    blockIdent: string
+}): ReactNode {
+    const conditionIsCustom = condition.type === 'customNode'
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
+            <CheckboxSettingCustom
+                name="Enable condition"
+                checked={conditionIsCustom}
+                onChange={(checked) => {
+                    if (checked) {
+                        // Enable condition - keep current condition or set to 'true'
+                        const currentCondition = unparse(condition) ?? 'true'
+                        const conditionExpr = parseNoErrorAsExpression(currentCondition, blockIdent)
+                        setCondition(conditionExpr)
+                    }
+                    else {
+                        // Disable condition - set to constant true
+                        const conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(blockIdent) } } satisfies UrbanStatsASTExpression
+                        setCondition(conditionExpr)
+                    }
+                }}
+            />
+            {conditionIsCustom && (
+                <>
+                    Condition:
+                    <CustomEditor
+                        uss={condition as UrbanStatsASTExpression & { type: 'customNode' }}
+                        setUss={setCondition}
+                        autocompleteSymbols={autocompleteSymbols}
+                        errors={errors}
+                        blockIdent={blockIdent}
+                    />
+                </>
+            )}
+        </div>
+    )
+}
+
 export function TopLevelEditor({
     uss,
     setUss,
@@ -228,7 +277,6 @@ export function TopLevelEditor({
                 />
             )
         }
-        const conditionIsCustom = ussToUse.result[1].condition.type === 'customNode'
 
         return (
             <div>
@@ -247,59 +295,21 @@ export function TopLevelEditor({
                     blockIdent={idPreamble}
                 />
                 {/* Condition */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
-                    <CheckboxSettingCustom
-                        name="Enable condition"
-                        checked={conditionIsCustom}
-                        onChange={(checked) => {
-                            if (checked) {
-                                // Enable condition - keep current condition or set to 'true'
-                                const currentCondition = unparse(ussToUse.result[1].condition) ?? 'true'
-                                const conditionExpr = parseNoErrorAsExpression(currentCondition, idCondition)
-                                const condition = {
-                                    type: 'condition',
-                                    entireLoc: locationOf(conditionExpr),
-                                    condition: conditionExpr,
-                                    rest: ussToUse.result[1].rest,
-                                } satisfies UrbanStatsASTStatement
-                                setUss(makeStatements([ussToUse.result[0], condition]))
-                            }
-                            else {
-                                // Disable condition - set to constant true
-                                const conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
-                                const condition = {
-                                    type: 'condition',
-                                    entireLoc: locationOf(conditionExpr),
-                                    condition: conditionExpr,
-                                    rest: ussToUse.result[1].rest,
-                                } satisfies UrbanStatsASTStatement
-                                setUss(makeStatements([ussToUse.result[0], condition]))
-                            }
-                        }}
-                    />
-                    {conditionIsCustom && (
-                        <>
-                            Condition:
-                            <CustomEditor
-                            // TODO assert that this is a custom node
-                                uss={ussToUse.result[1].condition as UrbanStatsASTExpression & { type: 'customNode' }}
-                                setUss={(u: UrbanStatsASTExpression) => {
-                                    const conditionExpr = parseNoErrorAsExpression(unparse(u) ?? '', idCondition)
-                                    const condition = {
-                                        type: 'condition',
-                                        entireLoc: locationOf(conditionExpr),
-                                        condition: conditionExpr,
-                                        rest: ussToUse.result[1].rest,
-                                    } satisfies UrbanStatsASTStatement
-                                    setUss(makeStatements([ussToUse.result[0], condition]))
-                                }}
-                                autocompleteSymbols={autocompleteSymbols}
-                                errors={errors}
-                                blockIdent={idCondition}
-                            />
-                        </>
-                    )}
-                </div>
+                <ConditionEditor
+                    condition={ussToUse.result[1].condition}
+                    setCondition={(newConditionExpr) => {
+                        const conditionStatement = {
+                            type: 'condition',
+                            entireLoc: locationOf(newConditionExpr),
+                            condition: newConditionExpr,
+                            rest: ussToUse.result[1].rest,
+                        } satisfies UrbanStatsASTStatement
+                        setUss(makeStatements([ussToUse.result[0], conditionStatement]))
+                    }}
+                    autocompleteSymbols={autocompleteSymbols}
+                    errors={errors}
+                    blockIdent={idCondition}
+                />
                 {/* Output */}
                 <CustomEditor
                     // TODO this shouldn't be required to be a custom node
