@@ -314,7 +314,10 @@ export interface components {
         };
         /** Result */
         Result: {
-            /** Corrects */
+            /**
+             * Corrects
+             * @default null
+             */
             corrects: boolean[] | null;
             /** Friends */
             friends: boolean;
@@ -335,13 +338,25 @@ export interface components {
         };
         /** InfiniteResult */
         InfiniteResult: {
-            /** Forthisseed */
+            /**
+             * Forthisseed
+             * @default null
+             */
             forThisSeed: number | null;
-            /** Maxscore */
+            /**
+             * Maxscore
+             * @default null
+             */
             maxScore: number | null;
-            /** Maxscoreseed */
-            maxScoreSeed: number | null;
-            /** Maxscoreversion */
+            /**
+             * Maxscoreseed
+             * @default null
+             */
+            maxScoreSeed: string | null;
+            /**
+             * Maxscoreversion
+             * @default null
+             */
             maxScoreVersion: number | null;
             /** Friends */
             friends: boolean;

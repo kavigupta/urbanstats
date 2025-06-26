@@ -42,7 +42,7 @@ class ScoreRequest(BaseModel):
 
 
 class Result(BaseModel):
-    corrects: Optional[List[bool]]
+    corrects: Optional[List[bool]] = None
     friends: bool
 
 
@@ -75,10 +75,10 @@ class InfiniteScoreRequest(BaseModel):
 
 
 class InfiniteResult(BaseModel):
-    forThisSeed: Optional[int]
-    maxScore: Optional[int]
-    maxScoreSeed: Optional[int]
-    maxScoreVersion: Optional[int]
+    forThisSeed: Optional[int] = None
+    maxScore: Optional[int] = None
+    maxScoreSeed: Optional[str] = None
+    maxScoreVersion: Optional[int] = None
     friends: bool
 
 
@@ -104,4 +104,5 @@ def juxtastat_infinite_results(user):
             req.version,
         )
     )
+
     return flask.jsonify(res)
