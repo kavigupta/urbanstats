@@ -13,13 +13,13 @@ import { parseNoErrorAsExpression } from './utils'
 export function ConditionEditor({
     condition,
     setCondition,
-    autocompleteSymbols,
+    typeEnvironment,
     errors,
     blockIdent,
 }: {
     condition: UrbanStatsASTExpression
     setCondition: (conditionExpr: UrbanStatsASTExpression) => void
-    autocompleteSymbols: Map<string, USSDocumentedType>
+    typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
@@ -48,7 +48,7 @@ export function ConditionEditor({
                 <CustomEditor
                     uss={condition as UrbanStatsASTExpression & { type: 'customNode' }}
                     setUss={setCondition}
-                    autocompleteSymbols={autocompleteSymbols}
+                    typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={blockIdent}
                 />

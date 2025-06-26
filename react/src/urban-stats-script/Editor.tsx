@@ -19,11 +19,11 @@ export function Editor(
     props: {
         uss: string
         setUss: (newScript: string) => void
-        autocompleteSymbols: Map<string, USSDocumentedType>
+        typeEnvironment: Map<string, USSDocumentedType>
         errors: EditorError[]
     },
 ): ReactNode {
-    const { setUss, uss, errors, autocompleteSymbols } = props
+    const { setUss, uss, errors, typeEnvironment } = props
 
     const setUssRef = useRef(setUss)
 
@@ -125,7 +125,7 @@ export function Editor(
                 : undefined
             if (token !== undefined) {
                 const tokenValue = token.token.value as string
-                const options = getAutocompleteOptions(autocompleteSymbols, newScript.tokens, tokenValue)
+                const options = getAutocompleteOptions(typeEnvironment, newScript.tokens, tokenValue)
                 if (options.length === 0) {
                     setAutocompleteState(undefined)
                 }
@@ -153,7 +153,7 @@ export function Editor(
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript, autocompleteSymbols, colors, editScript])
+    }, [setScript, typeEnvironment, colors, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!

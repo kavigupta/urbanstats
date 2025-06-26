@@ -15,12 +15,12 @@ import { makeStatements, parseNoErrorAsExpression, rootBlockIdent } from './util
 export function TopLevelEditor({
     uss,
     setUss,
-    autocompleteSymbols,
+    typeEnvironment,
     errors,
 }: {
     uss: UrbanStatsASTExpression | UrbanStatsASTStatement
     setUss: (u: UrbanStatsASTExpression | UrbanStatsASTStatement) => void
-    autocompleteSymbols: Map<string, USSDocumentedType>
+    typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
 }): ReactNode {
     const idPreamble = `${rootBlockIdent}p`
@@ -54,7 +54,7 @@ export function TopLevelEditor({
                 <CustomEditor
                     uss={ussToUse}
                     setUss={setUss}
-                    autocompleteSymbols={autocompleteSymbols}
+                    typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={rootBlockIdent}
                 />
@@ -73,7 +73,7 @@ export function TopLevelEditor({
                         } satisfies UrbanStatsASTStatement
                         setUss(makeStatements([preamble, ussToUse.result[1]]))
                     }}
-                    autocompleteSymbols={autocompleteSymbols}
+                    typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
                 />
@@ -89,7 +89,7 @@ export function TopLevelEditor({
                         } satisfies UrbanStatsASTStatement
                         setUss(makeStatements([ussToUse.result[0], conditionStatement]))
                     }}
-                    autocompleteSymbols={autocompleteSymbols}
+                    typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idCondition}
                 />
@@ -107,7 +107,7 @@ export function TopLevelEditor({
                         } satisfies UrbanStatsASTStatement
                         setUss(makeStatements([ussToUse.result[0], condition]))
                     }}
-                    autocompleteSymbols={autocompleteSymbols}
+                    typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
                 />

@@ -16,27 +16,27 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
     getScript: () => MapperScriptSettings
     errors: EditorError[]
 }): ReactNode {
-    const autocompleteSymbols = useMemo(() => {
+    const typeEnvironment = useMemo(() => {
         const allVariableNames = [
             ...statistic_variables_info.variableNames,
             ...statistic_variables_info.multiSourceVariables.map(([name]) => name),
             'geo',
         ]
 
-        const typeEnvironment = new Map<string, USSDocumentedType>()
+        const te = new Map<string, USSDocumentedType>()
 
         for (const [key, value] of defaultConstants) {
-            typeEnvironment.set(key, value)
+            te.set(key, value)
         }
 
         for (const varName of allVariableNames) {
-            typeEnvironment.set(varName, {
+            te.set(varName, {
                 type: { type: 'vector', elementType: { type: varName === 'geo' ? 'string' : 'number' } },
                 documentation: { humanReadableName: varName },
             })
         }
 
-        return typeEnvironment
+        return te
     }, [])
 
     const setUss = useCallback((uss: MapperScriptSettings['uss']) => {
@@ -64,7 +64,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
             <TopLevelEditor
                 uss={getScript().uss}
                 setUss={setUss}
-                autocompleteSymbols={autocompleteSymbols}
+                typeEnvironment={typeEnvironment}
                 errors={errors}
             />
         </div>

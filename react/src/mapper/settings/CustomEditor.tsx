@@ -11,13 +11,13 @@ import { parseNoErrorAsExpression } from './utils'
 export function CustomEditor({
     uss,
     setUss,
-    autocompleteSymbols,
+    typeEnvironment,
     errors,
     blockIdent,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
     setUss: (u: UrbanStatsASTExpression) => void
-    autocompleteSymbols: Map<string, USSDocumentedType>
+    typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
@@ -30,7 +30,7 @@ export function CustomEditor({
                 const parsed = parseNoErrorAsExpression(u, blockIdent)
                 setUss(parsed)
             }}
-            autocompleteSymbols={autocompleteSymbols}
+            typeEnvironment={typeEnvironment}
             errors={ourErrors}
         />
     )

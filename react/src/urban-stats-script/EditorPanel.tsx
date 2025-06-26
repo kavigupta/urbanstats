@@ -40,7 +40,7 @@ export function EditorPanel(): ReactNode {
         return localStorage.getItem('editor-code') ?? ''
     }, [])
 
-    const autocompleteSymbols = useMemo(() => {
+    const typeEnvironment = useMemo(() => {
         return defaultConstants as Map<string, USSDocumentedType>
     }, [])
 
@@ -51,7 +51,7 @@ export function EditorPanel(): ReactNode {
             <Editor
                 uss={uss}
                 setUss={updateUss}
-                autocompleteSymbols={autocompleteSymbols}
+                typeEnvironment={typeEnvironment}
                 errors={errors}
             />
             { result === undefined
