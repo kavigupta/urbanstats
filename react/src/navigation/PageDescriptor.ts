@@ -21,6 +21,7 @@ import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { sharedAuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -153,6 +154,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+    z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -179,6 +181,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true, email: string } }
     | {
         kind: 'error'
         error: unknown
@@ -216,6 +219,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/oauth-callback.html':
+            return { kind: 'oauthCallback', params }
         default:
             throw new Error('404 not found')
     }
@@ -316,6 +321,10 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
             }
+            break
+        case 'oauthCallback':
+            pathname = '/oauth-callback.html'
+            searchParams = pageDescriptor.params
             break
         case 'initialLoad':
         case 'error':
@@ -635,6 +644,25 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
         }
+        case 'oauthCallback': {
+            let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
+            try {
+                result = { success: true, email: await sharedAuthenticationStateMachine.completeSignIn(newDescriptor) }
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    result = { success: false, error: e.message }
+                }
+                else {
+                    result = { success: false, error: 'Unknown error' }
+                }
+            }
+            return {
+                pageData: { kind: 'oauthCallback', result },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
     }
 }
 
@@ -678,6 +706,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.statname
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'oauthCallback':
+            return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
     }
