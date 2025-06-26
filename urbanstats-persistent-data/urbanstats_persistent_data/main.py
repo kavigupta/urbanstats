@@ -1,7 +1,6 @@
 import logging
 
 import flask
-import pydantic
 from flask_cors import CORS
 from flask_pydantic_spec import FlaskPydanticSpec
 
@@ -19,7 +18,7 @@ def handle_urban_stats_error(e: UrbanStatsError):
 
 
 @app.errorhandler(Exception)
-def handle_exception(e: Exception):
+def handle_exception(_: Exception):
     return handle_urban_stats_error(
         UrbanStatsError(500, "Unexpected internal error", "internal")
     )
