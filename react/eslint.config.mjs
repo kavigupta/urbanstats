@@ -59,6 +59,7 @@ export default tseslint.config(
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx'],
             },
+            'import/ignore': ['color'],
         },
     },
     {
