@@ -72,7 +72,7 @@ export default tseslint.config(
         },
     },
     {
-        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts', 'src/utils/urbanstats-persistent-data.d.ts'],
+        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts'],
     },
     {
         rules: {

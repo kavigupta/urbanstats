@@ -160,23 +160,23 @@ export function quizFriendsTest(
         const state = await aliceBobFriends(t, false)
         await restoreUser(t, 'Alice', state)
         await addFriend(t, 'Bob2', 'this id does not work')
-        await t.expect(Selector('div').withExactText('Invalid Friend ID').exists).ok()
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        // after a reload, user is not there
+        // Bob2 added but shows up as an invalid user
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
+        // after a reload, same invalid user
         await safeReload(t)
         await t.wait(1000)
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
         await addFriend(t, 'Bob3', '000000b   ')
         // duplicate error
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
         await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
         // remove Bob
         await removeFriend(t, 0)
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, 'Bob2Invalid User IDRemove'])
         // add Bob3
         await addFriend(t, 'Bob3', '000000b    ')
         // Bob3 added
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob3${bobPattern}Remove`])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, 'Bob2Invalid User IDRemove', `Bob3${bobPattern}Remove`])
     })
 
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {

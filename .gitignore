@@ -12,5 +12,3 @@ venv/
 .envrc
 densitydb-site-repo/
 cache
-.coverage
-coverage.xml

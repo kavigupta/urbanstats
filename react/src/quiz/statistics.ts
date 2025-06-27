@@ -1,58 +1,51 @@
-import { client } from '../utils/urbanstats-persistent-client'
-
 import { infiniteQuizIsDone, validQuizInfiniteVersions } from './infinite'
-import { QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
+import { endpoint, QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizLocalStorage } from './quiz'
 
-async function registerUser(): Promise<boolean> {
+async function registerUser(userId: string, secureID: string): Promise<boolean> {
     // Idempotent
-    const { response } = await client.POST('/juxtastat/register_user', {
-        params: {
-            header: QuizLocalStorage.shared.userHeaders(),
-        },
-        body: {
-            // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
-            domain: localStorage.getItem('testHostname') ?? window.location.hostname,
+    const response = await fetch(`${endpoint}/juxtastat/register_user`, {
+        method: 'POST',
+        // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
+        body: JSON.stringify({ user: userId, secureID, domain: localStorage.getItem('testHostname') ?? window.location.hostname }),
+        headers: {
+            'Content-Type': 'application/json',
         },
     })
-
-    if (response.status === 401) {
-        return true
-    }
-
-    return false
+    const json = await response.json() as { error?: string, code?: string }
+    return json.code === 'bad_secureid'
 }
 
-async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: '/juxtastat/latest_day' | '/retrostat/latest_week', endpointStore: '/juxtastat/store_user_stats' | '/retrostat/store_user_stats', parseDay: (day: string) => number): Promise<boolean> {
-    const isError = await registerUser()
+async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: string, endpointStore: string, parseDay: (day: string) => number): Promise<boolean> {
+    const user = QuizLocalStorage.shared.uniquePersistentId.value
+    const secureID = QuizLocalStorage.shared.uniqueSecureId.value
+    const isError = await registerUser(user, secureID)
     if (isError) {
         return true
     }
     // fetch from latest_day endpoint
-
-    const { data } = await client.GET(endpointLatest, {
-        params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+    const latestDayResponse = await fetch(endpoint + endpointLatest, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID }),
+        headers: {
+            'Content-Type': 'application/json',
         },
     })
-
-    if (data === undefined) {
-        return false
-    }
-    const latestDay = data.latest_day
+    // eslint-disable-next-line no-restricted-syntax -- Data from server
+    const latestDayJson = await latestDayResponse.json() as { latest_day: number }
+    const latestDay = latestDayJson.latest_day
     const filteredDays = Object.keys(wholeHistory).filter(day => parseDay(day) > latestDay)
-    const update = filteredDays.map<[number, boolean[]]>((day) => {
+    const update = filteredDays.map((day) => {
         return [
             parseDay(day),
-            wholeHistory[day].correct_pattern.map(b => b === 1 || b === true),
+            wholeHistory[day].correct_pattern,
         ]
     })
-
-    await client.POST(endpointStore, {
-        params: {
-            header: QuizLocalStorage.shared.userHeaders(),
-        },
-        body: {
-            day_stats: update,
+    // store user stats
+    await fetch(endpoint + endpointStore, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, day_stats: JSON.stringify(update) }),
+        headers: {
+            'Content-Type': 'application/json',
         },
     })
     return false
@@ -81,23 +74,19 @@ export function getInfiniteQuizzes(wholeHistory: QuizHistory, isDone: boolean): 
 async function getUnreportedSeedVersions(user: string, secureID: string, wholeHistory: QuizHistory): Promise<[[string, number][], string[]] | undefined> {
     const [seedVersions, keys] = getInfiniteQuizzes(wholeHistory, true)
     // post seedVersions to /juxtastat_infinite/has_infinite_stats
-    const isError = await registerUser()
+    const isError = await registerUser(user, secureID)
     if (isError) {
         return undefined
     }
-
-    const { data } = await client.POST('/juxtastat_infinite/has_infinite_stats', {
-        params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+    const response = await fetch(`${endpoint}/juxtastat_infinite/has_infinite_stats`, {
+        method: 'POST',
+        body: JSON.stringify({ user, secureID, seedVersions }),
+        headers: {
+            'Content-Type': 'application/json',
         },
-        body: { seedVersions },
     })
-
-    if (data === undefined) {
-        return undefined
-    }
-
-    const has = data.has
+    const json = await response.json() as { has: boolean[] }
+    const has = json.has
     return [seedVersions.filter((_, index) => !has[index]), keys.filter((_, index) => !has[index])]
 }
 
@@ -113,12 +102,11 @@ async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<boolea
         const [seed, version] = seedVersions[i]
         const key = keys[i]
         const dayStats = wholeHistory[key]
-        await client.POST('/juxtastat_infinite/store_user_stats', {
-            params: {
-                header: QuizLocalStorage.shared.userHeaders(),
-            },
-            body: {
-                seed, version, corrects: dayStats.correct_pattern.map(b => b === 1 || b === true),
+        await fetch(`${endpoint}/juxtastat_infinite/store_user_stats`, {
+            method: 'POST',
+            body: JSON.stringify({ user, secureID, seed, version, corrects: dayStats.correct_pattern }),
+            headers: {
+                'Content-Type': 'application/json',
             },
         })
     }
@@ -185,25 +173,28 @@ export async function getPerQuestionStats(descriptor: QuizDescriptorWithTime): P
 }
 
 async function fetchPerQuestionStats(descriptor: QuizDescriptorWithTime): Promise<PerQuestionStats> {
-    let response: { data?: PerQuestionStats }
+    let response: Response
     switch (descriptor.kind) {
         case 'juxtastat':
-            response = await client.GET('/juxtastat/get_per_question_stats', {
-                params: {
-                    query: { day: descriptor.name },
+            response = await fetch(`${endpoint}/juxtastat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ day: descriptor.name }),
+                headers: {
+                    'Content-Type': 'application/json',
                 },
             })
             break
         case 'retrostat':
-            response = await client.GET('/retrostat/get_per_question_stats', {
-                params: {
-                    query: { week: parseInt(descriptor.name.substring(1)) },
+            response = await fetch(`${endpoint}/retrostat/get_per_question_stats`, {
+                method: 'POST',
+                body: JSON.stringify({ week: parseInt(descriptor.name.substring(1)) }),
+                headers: {
+                    'Content-Type': 'application/json',
                 },
             })
             break
     }
-    if (response.data === undefined) {
-        throw new Error('Failed to get per question stats')
-    }
-    return response.data
+    const result = await response.json() as PerQuestionStats
+    questionStatsCache.set(JSON.stringify(descriptor), result)
+    return result
 }
