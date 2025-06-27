@@ -1,4 +1,4 @@
-const value: string[] = [
+export default [
     'State',
     'County',
     'MSA',
@@ -7,5 +7,4 @@ const value: string[] = [
     'Congressional District',
     'Media Market',
     'Hospital Referral Region',
-]
-export default value
+] as const

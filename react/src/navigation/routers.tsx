@@ -176,6 +176,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
+        case 'editor':
+            return <pageData.editorPanel />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

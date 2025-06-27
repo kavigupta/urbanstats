@@ -172,3 +172,16 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
     collectErrors(node)
     return errors
 }
+
+export function toStatement(node: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTStatement {
+    switch (node.type) {
+        case 'statements':
+        case 'assignment':
+        case 'expression':
+        case 'condition':
+        case 'parseError':
+            return node
+        default:
+            return { type: 'expression', value: node }
+    }
+}
