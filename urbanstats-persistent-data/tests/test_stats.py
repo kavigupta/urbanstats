@@ -204,3 +204,8 @@ def test_retro_per_question(client):
         "per_question": [],
         "total": 0,
     }
+
+
+def test_404_not_found(client):
+    response = client.get("/nonexistent/endpoint", headers=identity_1)
+    assert response.status_code == 404
