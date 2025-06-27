@@ -281,7 +281,7 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-function DisplayErrors(props: { errors: EditorError[] }): ReactNode {
+export function DisplayErrors(props: { errors: EditorError[] }): ReactNode {
     const colors = useColors()
     function style(color: string): CSSProperties {
         const border = `2px solid ${color}`

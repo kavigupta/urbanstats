@@ -68,7 +68,9 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
+        console.log('statements', stmts)
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
+        console.log('result', result)
         if (!result.success) {
             this.props.setErrors([result.error])
             return { polygons: [], zoomIndex: -1 }
