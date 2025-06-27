@@ -10,9 +10,10 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
+import { client } from '../utils/urbanstats-persistent-client'
 
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, endpoint, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -454,13 +455,13 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
-        const shortened = await fetch(`${endpoint}/shorten`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ full_text: thisURL }),
+        const { data } = await client.POST('/shorten', {
+            body: { full_text: thisURL },
         })
-        const json = await shortened.json() as { shortened: string }
-        url = `https://s.urbanstats.org/s?c=${json.shortened}`
+        if (data === undefined) {
+            throw new Error('Error while shortening')
+        }
+        url = `https://s.urbanstats.org/s?c=${data.shortened}`
     }
     return [text, url]
 }
