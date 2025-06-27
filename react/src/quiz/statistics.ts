@@ -7,7 +7,7 @@ async function registerUser(): Promise<boolean> {
     // Idempotent
     const { response } = await client.POST('/juxtastat/register_user', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
         body: {
             // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
@@ -31,7 +31,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
 
     const { data } = await client.GET(endpointLatest, {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
     })
 
@@ -49,7 +49,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
 
     await client.POST(endpointStore, {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
         body: {
             day_stats: update,
@@ -88,7 +88,7 @@ async function getUnreportedSeedVersions(user: string, secureID: string, wholeHi
 
     const { data } = await client.POST('/juxtastat_infinite/has_infinite_stats', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
         body: { seedVersions },
     })
@@ -115,7 +115,7 @@ async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<boolea
         const dayStats = wholeHistory[key]
         await client.POST('/juxtastat_infinite/store_user_stats', {
             params: {
-                header: QuizLocalStorage.shared.userHeaders(),
+                header: await QuizLocalStorage.shared.userHeaders(),
             },
             body: {
                 seed, version, corrects: dayStats.correct_pattern.map(b => b === 1 || b === true),

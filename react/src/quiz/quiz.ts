@@ -7,6 +7,7 @@ import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 import { client } from '../utils/urbanstats-persistent-client'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
@@ -216,10 +217,13 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    userHeaders(): { 'X-User': string, 'X-Secure-Id': string } {
+    async userHeaders(): Promise<{ 'X-User': string, 'X-Secure-Id': string, 'X-Access-Token'?: string }> {
+        const accessToken = await AuthenticationStateMachine.shared.getAccessToken()
+
         return {
             'X-User': this.uniquePersistentId.value,
             'X-Secure-Id': this.uniqueSecureId.value,
+            ...(accessToken === undefined ? {} : { 'X-Access-Token': accessToken }),
         }
     }
 
@@ -245,7 +249,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             const { data } = await client.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
-                    header: this.userHeaders(),
+                    header: await this.userHeaders(),
                 },
             })
 

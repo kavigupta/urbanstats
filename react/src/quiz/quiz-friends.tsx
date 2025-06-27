@@ -24,7 +24,7 @@ async function juxtaRetroResponse(
     const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
     const { data: friendScoresResponse } = await client.POST('/juxtastat/todays_score_for', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
         body: {
             date,
@@ -47,7 +47,7 @@ async function infiniteResponse(
 ): Promise<FriendResponse[] | undefined> {
     const { data: friendScoresResponse } = await client.POST('/juxtastat/infinite_results', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: await QuizLocalStorage.shared.userHeaders(),
         },
         body: {
             requesters, seed: quizDescriptor.seed, version: quizDescriptor.version,
@@ -125,7 +125,7 @@ export function QuizFriendsPanel(props: {
                             removeFriend={async () => {
                                 await client.POST('/juxtastat/unfriend', {
                                     params: {
-                                        header: QuizLocalStorage.shared.userHeaders(),
+                                        header: await QuizLocalStorage.shared.userHeaders(),
                                     },
                                     body: {
                                         requestee: props.quizFriends[idx][1],

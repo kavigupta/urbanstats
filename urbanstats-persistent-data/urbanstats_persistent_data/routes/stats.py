@@ -17,6 +17,7 @@ from ..db.stats import (
 )
 from ..main import api, app
 from ..middleware.authenticate import UserHeadersSchema, authenticate
+from ..middleware.email import EmailHeadersSchema, email
 from ..utils import EmptyResponse, UrbanStatsErrorModel
 
 
@@ -46,7 +47,7 @@ class LatestDayResponse(BaseModel):
 
 @app.route("/juxtastat/latest_day", methods=["GET"])
 @api.validate(
-    headers=UserHeadersSchema,
+    headers=EmailHeadersSchema,
     resp=Response(
         HTTP_200=LatestDayResponse,
         HTTP_401=UrbanStatsErrorModel,
@@ -54,14 +55,15 @@ class LatestDayResponse(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_latest_day_request(user):
-    ld = latest_day(user)
+@email()
+def juxtastat_latest_day_request(users):
+    ld = latest_day(users)
     return flask.jsonify(dict(latest_day=ld))
 
 
 @app.route("/retrostat/latest_week", methods=["GET"])
 @api.validate(
-    headers=UserHeadersSchema,
+    headers=EmailHeadersSchema,
     resp=Response(
         HTTP_200=LatestDayResponse,
         HTTP_401=UrbanStatsErrorModel,
@@ -69,8 +71,9 @@ def juxtastat_latest_day_request(user):
     ),
 )
 @authenticate()
-def retrostat_latest_week_request(user):
-    ld = latest_week_retrostat(user)
+@email()
+def retrostat_latest_week_request(users):
+    ld = latest_week_retrostat(users)
     return flask.jsonify(dict(latest_day=ld))
 
 
@@ -104,7 +107,7 @@ class HasInfiniteStatsResponse(BaseModel):
 
 @app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
 @api.validate(
-    headers=UserHeadersSchema,
+    headers=EmailHeadersSchema,
     body=HasInfiniteStatsRequest,
     resp=Response(
         HTTP_200=HasInfiniteStatsResponse,
@@ -113,10 +116,11 @@ class HasInfiniteStatsResponse(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_infinite_has_infinite_stats_request(user):
+@email()
+def juxtastat_infinite_has_infinite_stats_request(users):
     res = dict(
         has=has_infinite_stats(
-            user, HasInfiniteStatsRequest(**flask.request.json).seedVersions
+            users, HasInfiniteStatsRequest(**flask.request.json).seedVersions
         )
     )
     return flask.jsonify(res)
