@@ -54,7 +54,9 @@ function loadState(): State {
     return { state: 'signedOut', previouslySignedIn: false }
 }
 
-class AuthenticationStateMachine {
+export class AuthenticationStateMachine {
+    static shared = new AuthenticationStateMachine()
+
     private _state: State
 
     private setState(newState: State): void {
@@ -173,5 +175,3 @@ class AuthenticationStateMachine {
         }
     }
 }
-
-export const sharedAuthenticationStateMachine = new AuthenticationStateMachine()

@@ -5,7 +5,7 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { sharedAuthenticationStateMachine } from './AuthenticationStateMachine'
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
 import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
 
@@ -75,13 +75,13 @@ export function UserId(): ReactNode {
 }
 
 function QuizAuthStatus(): ReactNode {
-    const authState = sharedAuthenticationStateMachine.useState()
+    const authState = AuthenticationStateMachine.shared.useState()
 
     if (authState.state === 'signedOut') {
         const signIn = async (e: React.MouseEvent): Promise<void> => {
             e.preventDefault()
             try {
-                const url = await sharedAuthenticationStateMachine.startSignIn()
+                const url = await AuthenticationStateMachine.shared.startSignIn()
                 window.open(url, '_blank', 'popup,width=500,height=600')
             }
             catch (error) {
@@ -99,7 +99,7 @@ function QuizAuthStatus(): ReactNode {
     else {
         const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
-            sharedAuthenticationStateMachine.userSignOut()
+            AuthenticationStateMachine.shared.userSignOut()
         }
 
         return (

@@ -21,7 +21,6 @@ import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
-import { sharedAuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -647,7 +646,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'oauthCallback': {
             let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
             try {
-                result = { success: true, email: await sharedAuthenticationStateMachine.completeSignIn(newDescriptor) }
+                const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
+                result = { success: true, email: await AuthenticationStateMachine.shared.completeSignIn(newDescriptor) }
             }
             catch (e) {
                 if (e instanceof Error) {
