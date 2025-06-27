@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
+import { client } from '../utils/urbanstats-persistent-client'
 
 import { QuizLocalStorage } from './quiz'
 
@@ -135,7 +136,7 @@ export class AuthenticationStateMachine {
             email: z.string(),
         }).parse(await (await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.accessToken}`)).json())
 
-        await QuizLocalStorage.shared.associateEmail(token.accessToken)
+        await this.associateEmail(token.accessToken)
 
         this.setState({
             state: 'signedIn',
@@ -144,6 +145,25 @@ export class AuthenticationStateMachine {
         })
         localStorage.removeItem(codeVerifierKey)
         return tokenInfo.email
+    }
+
+    private async associateEmail(accessToken: string): Promise<void> {
+        const { response } = await client.POST('/juxtastat/associate_email', {
+            params: {
+                header: {
+                    ...await QuizLocalStorage.shared.userHeaders(),
+                    'X-Access-Token': accessToken,
+                },
+            },
+        })
+        switch (response.status) {
+            case 200:
+                return
+            case 409:
+                throw new Error('This device is already associated with a different email.')
+            default:
+                throw new Error(`Unknown error from server: ${response.status}`)
+        }
     }
 
     authenticationError(): void {

@@ -264,25 +264,6 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Network Error', problemDomain: 'other' }
         }
     }
-
-    async associateEmail(accessToken: string): Promise<void> {
-        const { response } = await client.POST('/juxtastat/associate_email', {
-            params: {
-                header: {
-                    ...await this.userHeaders(),
-                    'X-Access-Token': accessToken,
-                },
-            },
-        })
-        switch (response.status) {
-            case 200:
-                return
-            case 409:
-                throw new Error('This device is already associated with a different email.')
-            default:
-                throw new Error(`Unknown error from server: ${response.status}`)
-        }
-    }
 }
 
 function createAndStoreId(key: string): string {
