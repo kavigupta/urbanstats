@@ -18,7 +18,7 @@ from ..db.stats import (
 from ..main import api, app
 from ..middleware.authenticate import UserHeadersSchema, authenticate
 from ..middleware.email import EmailHeadersSchema, email
-from ..utils import EmptyResponse
+from ..utils import EmptyResponse, UrbanStatsErrorModel
 
 
 class RegisterRequest(BaseModel):
@@ -29,7 +29,11 @@ class RegisterRequest(BaseModel):
 @api.validate(
     headers=UserHeadersSchema,
     body=RegisterRequest,
-    resp=Response(HTTP_200=EmptyResponse),
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_register_user_request(user):
@@ -44,7 +48,11 @@ class LatestDayResponse(BaseModel):
 @app.route("/juxtastat/latest_day", methods=["GET"])
 @api.validate(
     headers=EmailHeadersSchema,
-    resp=Response(HTTP_200=LatestDayResponse),
+    resp=Response(
+        HTTP_200=LatestDayResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 @email()
@@ -56,7 +64,11 @@ def juxtastat_latest_day_request(users):
 @app.route("/retrostat/latest_week", methods=["GET"])
 @api.validate(
     headers=EmailHeadersSchema,
-    resp=Response(HTTP_200=LatestDayResponse),
+    resp=Response(
+        HTTP_200=LatestDayResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 @email()
@@ -73,7 +85,11 @@ class StoreUserStatsRequest(BaseModel):
 @api.validate(
     headers=UserHeadersSchema,
     body=StoreUserStatsRequest,
-    resp=Response(HTTP_200=EmptyResponse),
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_store_user_stats_request(user):
@@ -82,7 +98,7 @@ def juxtastat_store_user_stats_request(user):
 
 
 class HasInfiniteStatsRequest(BaseModel):
-    seedVersions: List[str]
+    seedVersions: List[Tuple[str, int]]
 
 
 class HasInfiniteStatsResponse(BaseModel):
@@ -93,7 +109,11 @@ class HasInfiniteStatsResponse(BaseModel):
 @api.validate(
     headers=EmailHeadersSchema,
     body=HasInfiniteStatsRequest,
-    resp=Response(HTTP_200=HasInfiniteStatsResponse),
+    resp=Response(
+        HTTP_200=HasInfiniteStatsResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 @email()
@@ -116,7 +136,11 @@ class StoreInfiniteUserStatsRequest(BaseModel):
 @api.validate(
     headers=UserHeadersSchema,
     body=StoreInfiniteUserStatsRequest,
-    resp=Response(HTTP_200=EmptyResponse),
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def juxtastat_infinite_store_user_stats_request(user):
@@ -129,7 +153,11 @@ def juxtastat_infinite_store_user_stats_request(user):
 @api.validate(
     headers=UserHeadersSchema,
     body=StoreUserStatsRequest,
-    resp=Response(HTTP_200=EmptyResponse),
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 @authenticate()
 def retrostat_store_user_stats_request(user):
@@ -151,7 +179,10 @@ class PerQuestionResponse(BaseModel):
 @app.route("/juxtastat/get_per_question_stats", methods=["GET"])
 @api.validate(
     query=GetPerQuestionJuxtaStatsRequest,
-    resp=Response(HTTP_200=PerQuestionResponse),
+    resp=Response(
+        HTTP_200=PerQuestionResponse,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 def juxtastat_get_per_question_stats_request():
     return flask.jsonify(
@@ -168,7 +199,10 @@ class GetPerQuestionRetroStatsRequest(BaseModel):
 @app.route("/retrostat/get_per_question_stats", methods=["GET"])
 @api.validate(
     query=GetPerQuestionRetroStatsRequest,
-    resp=Response(HTTP_200=PerQuestionResponse),
+    resp=Response(
+        HTTP_200=PerQuestionResponse,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 def retrostat_get_per_question_stats_request():
     return flask.jsonify(

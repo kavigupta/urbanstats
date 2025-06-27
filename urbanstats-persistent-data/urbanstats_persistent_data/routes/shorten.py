@@ -16,7 +16,13 @@ class Shortened(BaseModel):
 
 
 @app.route("/shorten", methods=["POST"])
-@api.validate(body=FullText, resp=Response(HTTP_200=Shortened))
+@api.validate(
+    body=FullText,
+    resp=Response(
+        HTTP_200=Shortened,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
 def shorten_request():
     full_text = FullText(**flask.request.json).full_text
 
@@ -26,7 +32,12 @@ def shorten_request():
 
 @app.route("/lengthen", methods=["GET"])
 @api.validate(
-    query=Shortened, resp=Response(HTTP_200=FullText, HTTP_404=UrbanStatsErrorModel)
+    query=Shortened,
+    resp=Response(
+        HTTP_200=FullText,
+        HTTP_404=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
 def lengthen_request():
     full_text = retreive_and_lengthen(Shortened(**flask.request.args).shortened)
@@ -40,7 +51,14 @@ class S(BaseModel):
 
 
 @app.route("/s", methods=["GET"])
-@api.validate(query=S, resp=Response("HTTP_302", HTTP_404=UrbanStatsErrorModel))
+@api.validate(
+    query=S,
+    resp=Response(
+        "HTTP_302",
+        HTTP_404=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
 def s():
     post_url = retreive_and_lengthen(S(**flask.request.args).c)
     if post_url is None:

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
+import { client } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 
@@ -13,8 +14,6 @@ export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retr
 export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
 export type QuizKindWithTime = 'juxtastat' | 'retrostat'
-
-export const endpoint = 'https://persistent.urbanstats.org'
 
 /* eslint-disable no-restricted-syntax -- Data from server */
 // stat_path is optional for backwards compatibility
@@ -217,9 +216,15 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
+    userHeaders(): { 'X-User': string, 'X-Secure-Id': string } {
+        return {
+            'X-User': this.uniquePersistentId.value,
+            'X-Secure-Id': this.uniqueSecureId.value,
+        }
+    }
+
     async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
         const user = this.uniquePersistentId.value
-        const secureID = this.uniqueSecureId.value
         if (friendID === '') {
             return { errorMessage: 'Friend ID cannot be empty', problemDomain: 'friendID' }
         }
@@ -237,13 +242,17 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            await fetch(`${endpoint}/juxtastat/friend_request`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, requestee: friendID }),
-                headers: {
-                    'Content-Type': 'application/json',
+            const { data } = await client.POST('/juxtastat/friend_request', {
+                body: { requestee: friendID },
+                params: {
+                    header: this.userHeaders(),
                 },
             })
+
+            if (data === undefined) {
+                return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            }
+
             this.friends.value = [...this.friends.value, [friendName, friendID]]
             return undefined
         }

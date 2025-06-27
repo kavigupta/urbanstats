@@ -68,7 +68,7 @@ def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
     store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
-def has_infinite_stats(users, seeds_versions):
+def has_infinite_stats(users, seeds_versions: List[Tuple[str, int]]):
     _, c = table()
     c.execute(
         f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(users))}",
