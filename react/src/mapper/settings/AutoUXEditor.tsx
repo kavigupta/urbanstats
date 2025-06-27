@@ -20,6 +20,7 @@ export function AutoUXEditor(props: {
     errors: EditorError[]
     blockIdent: string
     type: USSType
+    label?: string
 }): ReactNode {
     const subcomponent = (): ReactNode => {
         const uss = props.uss
@@ -70,21 +71,19 @@ export function AutoUXEditor(props: {
                 const argValue = uss.args.find(a => a.type === 'named' && a.name.node === name)
                 if (argValue) {
                     subselectors.push(
-                        <div>
-                            {name}
-                            <AutoUXEditor
-                                key={`named-${name}`}
-                                uss={argValue.value}
-                                setUss={(newUss) => {
-                                    const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
-                                    props.setUss({ ...uss, args: newArgs })
-                                }}
-                                typeEnvironment={props.typeEnvironment}
-                                errors={props.errors}
-                                blockIdent={`${props.blockIdent}_${name}`}
-                                type={arg.value}
-                            />
-                        </div>,
+                        <AutoUXEditor
+                            key={`named-${name}`}
+                            uss={argValue.value}
+                            setUss={(newUss) => {
+                                const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
+                                props.setUss({ ...uss, args: newArgs })
+                            }}
+                            typeEnvironment={props.typeEnvironment}
+                            errors={props.errors}
+                            blockIdent={`${props.blockIdent}_${name}`}
+                            type={arg.value}
+                            label={name}
+                        />,
                     )
                 }
             })
@@ -103,17 +102,23 @@ export function AutoUXEditor(props: {
             )
         : null
     return (
-        <div>
-            <Selector
-                uss={props.uss}
-                setSelection={(selection: Selection) => {
-                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
-                }}
-                typeEnvironment={props.typeEnvironment}
-                type={props.type}
-            />
-            <div style={{ marginLeft: '8%' }}>
-                {subcomponent()}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+                {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
+                <Selector
+                    uss={props.uss}
+                    setSelection={(selection: Selection) => {
+                        props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
+                    }}
+                    typeEnvironment={props.typeEnvironment}
+                    type={props.type}
+                />
+            </div>
+            <div style={{ display: 'flex', gap: '1em' }}>
+                {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
+                <div style={{ flex: 1 }}>
+                    {subcomponent()}
+                </div>
             </div>
             {errorComponent}
         </div>
@@ -147,21 +152,19 @@ export function Selector(props: {
     assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
     // autocomplete selection  menu
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
-            <select
-                id="selector"
-                value={selectedRendered}
-                onChange={(e) => {
-                    const selectedName = e.target.value
-                    const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(selectedName)]
-                    props.setSelection(selection)
-                }}
-            >
-                {renderedSelectionPossibilities.map((s, i) => (
-                    <option key={i} value={s}>{s}</option>
-                ))}
-            </select>
-        </div>
+        <select
+            id="selector"
+            value={selectedRendered}
+            onChange={(e) => {
+                const selectedName = e.target.value
+                const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(selectedName)]
+                props.setSelection(selection)
+            }}
+        >
+            {renderedSelectionPossibilities.map((s, i) => (
+                <option key={i} value={s}>{s}</option>
+            ))}
+        </select>
     )
 }
 
