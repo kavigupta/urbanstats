@@ -21,7 +21,11 @@ def get_email():
         response = requests.get(
             f"https://oauth2.googleapis.com/tokeninfo?access_token={email_token}"
         )
-        if response.status_code != 200:
+        if response.status_code // 100 == 4:
+            raise UrbanStatsError(
+                401, "Couldn't validate X-Access-Token", "access_token"
+            )
+        elif response.status_code != 200:
             raise UrbanStatsError(500, "Couldn't communicate successfully with Google")
 
         class InfoSchema(BaseModel):
