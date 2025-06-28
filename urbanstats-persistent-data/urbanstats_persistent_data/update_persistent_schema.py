@@ -5,8 +5,9 @@ import os
 import subprocess
 import tempfile
 
-from .main import app
 from fastapi.openapi.utils import get_openapi
+
+from .main import app
 
 
 def update_openapi_typescript():

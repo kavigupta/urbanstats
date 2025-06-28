@@ -67,7 +67,7 @@ def test_store_user_stats_success(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json() == None
+    assert response.json() is None
     assert response.status_code == 200
 
     response = client.get("/juxtastat/latest_day", headers=identity_1)
@@ -103,7 +103,7 @@ def test_store_user_stats_invalid_secureid(client):
         },
     )
     assert response.status_code == 200
-    assert response.json() == None
+    assert response.json() is None
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -140,7 +140,7 @@ def test_store_retro(client):
         },
     )
     assert response.status_code == 200
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_juxta_per_question(client):
@@ -170,7 +170,7 @@ def test_juxta_per_question(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json() == None
+    assert response.json() is None
     assert response.status_code == 200
 
     response = client.get(

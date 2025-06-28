@@ -130,8 +130,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** S */
-        get: operations["s_s_get"];
+        /** Route S */
+        get: operations["route_s_s_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -680,7 +680,7 @@ export interface operations {
             };
         };
     };
-    s_s_get: {
+    route_s_s_get: {
         parameters: {
             query: {
                 c: string;

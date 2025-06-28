@@ -1,8 +1,8 @@
 import hashlib
 import string
+import typing as t
 
 from ..dependencies.db_session import DbSession
-import typing as t
 
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits + "-_"
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))

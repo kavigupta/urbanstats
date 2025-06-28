@@ -28,8 +28,8 @@ def lengthen_request(s: GetDbSession, shortened: str) -> FullText:
 
 
 @app.get("/s", status_code=302)
-def s(db: GetDbSession, c: str):
-    post_url = retreive_and_lengthen(db, c)
+def route_s(s: GetDbSession, c: str):
+    post_url = retreive_and_lengthen(s, c)
     if post_url is None:
         raise fastapi.HTTPException(404, "Shortened text not found!")
     url = "https://urbanstats.org/" + post_url[0]

@@ -1,5 +1,5 @@
-from enum import Enum
 import sqlite3
+from enum import Enum
 
 
 class QuizKind(str, Enum):
