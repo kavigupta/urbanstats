@@ -21,7 +21,7 @@ def test_register_user_invalid_hex(client):
     )
 
     assert response.status_code == 422
-    assert response.json == [
+    assert response.json() == [
         {
             "ctx": {
                 "error": "invalid literal for int() with base 16: 'nothex'",
@@ -43,7 +43,7 @@ def test_register_no_body(client):
         headers=identity_1,
     )
     assert response.status_code == 422
-    assert response.json == [
+    assert response.json() == [
         {
             "input": {},
             "loc": [
@@ -59,13 +59,13 @@ def test_register_no_body(client):
 def test_get_latest_day(client):
     response = client.get("/juxtastat/latest_day", headers=identity_1)
     assert response.status_code == 200
-    assert response.json == {"latest_day": -100}
+    assert response.json() == {"latest_day": -100}
 
 
 def test_get_latest_week(client):
     response = client.get("/retrostat/latest_week", headers=identity_1)
     assert response.status_code == 200
-    assert response.json == {"latest_day": -100}
+    assert response.json() == {"latest_day": -100}
 
 
 def test_store_user_stats_success(client):
@@ -76,12 +76,12 @@ def test_store_user_stats_success(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json == {}
+    assert response.json() == None
     assert response.status_code == 200
 
     response = client.get("/juxtastat/latest_day", headers=identity_1)
     assert response.status_code == 200
-    assert response.json == {"latest_day": 1}
+    assert response.json() == {"latest_day": 1}
 
 
 def test_store_user_stats_missing_fields(client):
@@ -91,7 +91,7 @@ def test_store_user_stats_missing_fields(client):
         json={},
     )
     assert response.status_code == 422
-    assert response.json == [
+    assert response.json() == [
         {
             "input": {},
             "loc": [
@@ -113,7 +113,7 @@ def test_store_user_stats_invalid_secureid(client):
         },
     )
     assert response.status_code == 200
-    assert response.json == {}
+    assert response.json() == None
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -126,7 +126,7 @@ def test_store_user_stats_invalid_secureid(client):
         },
     )
     assert response.status_code == 401
-    assert response.json == {"code": "bad_secureid", "error": "Invalid secureID!"}
+    assert response.json() == {"detail": "Invalid secure ID"}
 
 
 def test_has_infinite_stats(client):
@@ -138,7 +138,7 @@ def test_has_infinite_stats(client):
         },
     )
     assert response.status_code == 200
-    assert response.json == {"has": [False, False]}
+    assert response.json() == {"has": [False, False]}
 
 
 def test_store_retro(client):
@@ -150,7 +150,7 @@ def test_store_retro(client):
         },
     )
     assert response.status_code == 200
-    assert response.json == {}
+    assert response.json() == None
 
 
 def test_juxta_per_question(client):
@@ -165,10 +165,10 @@ def test_juxta_per_question(client):
 
     response = client.get(
         "/juxtastat/get_per_question_stats",
-        query_string="day=1",
+        params={"day": "1"},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "per_question": [],
         "total": 0,
     }
@@ -180,15 +180,15 @@ def test_juxta_per_question(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json == {}
+    assert response.json() == None
     assert response.status_code == 200
 
     response = client.get(
         "/juxtastat/get_per_question_stats",
-        query_string="day=1",
+        params={"day": "1"},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "per_question": [1, 1, 1, 1, 1],
         "total": 1,
     }
@@ -197,10 +197,10 @@ def test_juxta_per_question(client):
 def test_retro_per_question(client):
     response = client.get(
         "/retrostat/get_per_question_stats",
-        query_string="week=1",
+        params={"week": "1"},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "per_question": [],
         "total": 0,
     }

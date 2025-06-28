@@ -11,7 +11,7 @@ def register_user(req: AuthenticatedRequest, domain: str):
     Register a user with a secure id and domain.
     This is Trust on First Use (TOFU) authentication.
     """
-    req.c.execute(
+    req.s.c.execute(
         "INSERT OR REPLACE INTO JuxtaStatUserDomain VALUES (?, ?)",
         (req.user_id, domain),
     )

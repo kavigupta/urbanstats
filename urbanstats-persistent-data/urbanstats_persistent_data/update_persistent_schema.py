@@ -16,7 +16,6 @@ def update_openapi_typescript():
         openapi_version=app.openapi_version,
         description=app.description,
         routes=app.routes,
-        openapi_prefix=app.openapi_prefix,
     )
     # Make all request and response bodies in the OpenAPI spec required
     for path_item in spec.get("paths", {}).values():

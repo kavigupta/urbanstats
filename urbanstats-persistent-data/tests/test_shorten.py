@@ -1,7 +1,3 @@
-import pytest
-
-
-@pytest.mark.only
 def test_shorten(client):
     response = client.post("/shorten", json={"full_text": "some_text"})
 

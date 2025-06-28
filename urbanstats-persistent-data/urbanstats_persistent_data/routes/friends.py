@@ -38,7 +38,7 @@ class ScoreResponse(BaseModel):
     results: List[Result]
 
 
-@app.post("/juxtastat/todays_score_for")
+@app.post("/juxtastat/todays_score_for", response_model_exclude_unset=True)
 def juxtastat_todays_score_for(
     req: AuthenticateRequest, body: ScoreRequestBody
 ) -> ScoreResponse:
@@ -70,7 +70,7 @@ class InfiniteScoreResponse(BaseModel):
     results: List[InfiniteResult]
 
 
-@app.post("/juxtastat/infinite_results")
+@app.post("/juxtastat/infinite_results", response_model_exclude_unset=True)
 def juxtastat_infinite_results(
     req: AuthenticateRequest, body: InfiniteScoreRequestBody
 ) -> InfiniteScoreResponse:

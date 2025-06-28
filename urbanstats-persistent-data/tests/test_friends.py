@@ -26,7 +26,7 @@ def test_friends(client):
         json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json == {"results": [{"corrects": None, "friends": True}]}
+    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
 
     # Store a score for juxtastat
     response = client.post(
@@ -43,7 +43,7 @@ def test_friends(client):
         json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "results": [{"corrects": [True, False, False, True, True], "friends": True}]
     }
 
@@ -74,7 +74,7 @@ def test_unfriend(client):
         json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "results": [
             {
                 "friends": False,
@@ -89,9 +89,13 @@ def test_unfriend(client):
         json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json == {"results": [{"corrects": None, "friends": True}]}
+    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
 
 
+import pytest
+
+
+@pytest.mark.only
 def test_friends_infinite(client):
     response = client.post(
         "/juxtastat/infinite_results",
@@ -99,7 +103,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "results": [
             {
                 "friends": False,
@@ -118,7 +122,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "results": [
             {
                 "forThisSeed": None,
@@ -145,7 +149,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json == {
+    assert response.json() == {
         "results": [
             {
                 "forThisSeed": 1,

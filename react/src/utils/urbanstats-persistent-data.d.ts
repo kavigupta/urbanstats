@@ -13,8 +13,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_friend_request <POST> */
-        post: operations["juxtastatFriendRequest"];
+        /** Juxtastat Friend Request */
+        post: operations["juxtastat_friend_request_juxtastat_friend_request_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -30,8 +30,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_unfriend <POST> */
-        post: operations["juxtastatUnfriend"];
+        /** Juxtastat Unfriend */
+        post: operations["juxtastat_unfriend_juxtastat_unfriend_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -47,8 +47,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_todays_score_for <POST> */
-        post: operations["juxtastatTodaysScoreFor"];
+        /** Juxtastat Todays Score For */
+        post: operations["juxtastat_todays_score_for_juxtastat_todays_score_for_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -64,8 +64,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_infinite_results <POST> */
-        post: operations["juxtastatInfiniteResults"];
+        /** Juxtastat Infinite Results */
+        post: operations["juxtastat_infinite_results_juxtastat_infinite_results_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/juxtastat/get_full_database": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Juxtastat Get Full Database Request */
+        post: operations["juxtastat_get_full_database_request_juxtastat_get_full_database_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -81,8 +98,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** shorten_request <POST> */
-        post: operations["shortenRequest"];
+        /** Shorten Request */
+        post: operations["shorten_request_shorten_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -96,8 +113,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** lengthen_request <GET> */
-        get: operations["lengthenRequest"];
+        /** Lengthen Request */
+        get: operations["lengthen_request_lengthen_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -113,8 +130,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** s <GET> */
-        get: operations["s"];
+        /** S */
+        get: operations["s_s_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -132,8 +149,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_register_user_request <POST> */
-        post: operations["juxtastatRegisterUserRequest"];
+        /** Juxtastat Register User Request */
+        post: operations["juxtastat_register_user_request_juxtastat_register_user_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -147,8 +164,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** juxtastat_latest_day_request <GET> */
-        get: operations["juxtastatLatestDayRequest"];
+        /** Juxtastat Latest Day Request */
+        get: operations["juxtastat_latest_day_request_juxtastat_latest_day_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -164,8 +181,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** retrostat_latest_week_request <GET> */
-        get: operations["retrostatLatestWeekRequest"];
+        /** Retrostat Latest Week Request */
+        get: operations["retrostat_latest_week_request_retrostat_latest_week_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -183,8 +200,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_store_user_stats_request <POST> */
-        post: operations["juxtastatStoreUserStatsRequest"];
+        /** Juxtastat Store User Stats Request */
+        post: operations["juxtastat_store_user_stats_request_juxtastat_store_user_stats_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -200,8 +217,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_infinite_has_infinite_stats_request <POST> */
-        post: operations["juxtastatInfiniteHasInfiniteStatsRequest"];
+        /** Juxtastat Infinite Has Infinite Stats Request */
+        post: operations["juxtastat_infinite_has_infinite_stats_request_juxtastat_infinite_has_infinite_stats_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -217,8 +234,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** juxtastat_infinite_store_user_stats_request <POST> */
-        post: operations["juxtastatInfiniteStoreUserStatsRequest"];
+        /** Juxtastat Infinite Store User Stats Request */
+        post: operations["juxtastat_infinite_store_user_stats_request_juxtastat_infinite_store_user_stats_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -234,8 +251,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** retrostat_store_user_stats_request <POST> */
-        post: operations["retrostatStoreUserStatsRequest"];
+        /** Retrostat Store User Stats Request */
+        post: operations["retrostat_store_user_stats_request_retrostat_store_user_stats_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -249,8 +266,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** juxtastat_get_per_question_stats_request <GET> */
-        get: operations["juxtastatGetPerQuestionStatsRequest"];
+        /** Juxtastat Get Per Question Stats Request */
+        get: operations["juxtastat_get_per_question_stats_request_juxtastat_get_per_question_stats_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -266,8 +283,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** retrostat_get_per_question_stats_request <GET> */
-        get: operations["retrostatGetPerQuestionStatsRequest"];
+        /** Retrostat Get Per Question Stats Request */
+        get: operations["retrostat_get_per_question_stats_request_retrostat_get_per_question_stats_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -280,57 +297,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** Requestee */
-        Requestee: {
-            /** Requestee */
-            requestee: string;
+        /** FullText */
+        FullText: {
+            /** Full Text */
+            full_text: string;
         };
-        /** UserHeadersSchema */
-        UserHeadersSchema: {
-            /** X-User */
-            "X-User": string;
-            /** X-Secure-Id */
-            "X-Secure-Id": string;
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
         };
-        /** EmptyResponse */
-        EmptyResponse: Record<string, never>;
-        /** UrbanStatsErrorModel */
-        UrbanStatsErrorModel: {
-            /** Error */
-            error: unknown;
-            /** Code */
-            code: string | null;
+        /** HasInfiniteStatsBody */
+        HasInfiniteStatsBody: {
+            /** Seedversions */
+            seedVersions: [
+                string,
+                number
+            ][];
         };
-        /** ScoreRequest */
-        ScoreRequest: {
-            /** Requesters */
-            requesters: string[];
-            /** Date */
-            date: number;
-            quiz_kind: components["schemas"]["QuizKind"];
+        /** HasInfiniteStatsResponse */
+        HasInfiniteStatsResponse: {
+            /** Has */
+            has: boolean[];
         };
-        /**
-         * QuizKind
-         * @enum {string}
-         */
-        QuizKind: "juxtastat" | "retrostat";
-        /** ScoreResponse */
-        ScoreResponse: {
-            /** Results */
-            results: components["schemas"]["Result"][];
-        };
-        /** Result */
-        Result: {
-            /**
-             * Corrects
-             * @default null
-             */
-            corrects: boolean[] | null;
+        /** InfiniteResult */
+        InfiniteResult: {
+            /** Forthisseed */
+            forThisSeed?: number | null;
+            /** Maxscore */
+            maxScore?: number | null;
+            /** Maxscoreseed */
+            maxScoreSeed?: string | null;
+            /** Maxscoreversion */
+            maxScoreVersion?: number | null;
             /** Friends */
             friends: boolean;
         };
-        /** InfiniteScoreRequest */
-        InfiniteScoreRequest: {
+        /** InfiniteScoreRequestBody */
+        InfiniteScoreRequestBody: {
             /** Requesters */
             requesters: string[];
             /** Seed */
@@ -343,90 +347,10 @@ export interface components {
             /** Results */
             results: components["schemas"]["InfiniteResult"][];
         };
-        /** InfiniteResult */
-        InfiniteResult: {
-            /**
-             * Forthisseed
-             * @default null
-             */
-            forThisSeed: number | null;
-            /**
-             * Maxscore
-             * @default null
-             */
-            maxScore: number | null;
-            /**
-             * Maxscoreseed
-             * @default null
-             */
-            maxScoreSeed: string | null;
-            /**
-             * Maxscoreversion
-             * @default null
-             */
-            maxScoreVersion: number | null;
-            /** Friends */
-            friends: boolean;
-        };
-        /** FullText */
-        FullText: {
-            /** Full Text */
-            full_text: string;
-        };
-        /** Shortened */
-        Shortened: {
-            /** Shortened */
-            shortened: string;
-        };
-        /** S */
-        S: {
-            /** C */
-            c: string;
-        };
-        /** RegisterRequest */
-        RegisterRequest: {
-            /** Domain */
-            domain: string;
-        };
         /** LatestDayResponse */
         LatestDayResponse: {
             /** Latest Day */
             latest_day: number;
-        };
-        /** StoreUserStatsRequest */
-        StoreUserStatsRequest: {
-            /** Day Stats */
-            day_stats: [
-                number,
-                boolean[]
-            ][];
-        };
-        /** HasInfiniteStatsRequest */
-        HasInfiniteStatsRequest: {
-            /** Seedversions */
-            seedVersions: [
-                string,
-                number
-            ][];
-        };
-        /** HasInfiniteStatsResponse */
-        HasInfiniteStatsResponse: {
-            /** Has */
-            has: boolean[];
-        };
-        /** StoreInfiniteUserStatsRequest */
-        StoreInfiniteUserStatsRequest: {
-            /** Seed */
-            seed: string;
-            /** Version */
-            version: number;
-            /** Corrects */
-            corrects: boolean[];
-        };
-        /** GetPerQuestionJuxtaStatsRequest */
-        GetPerQuestionJuxtaStatsRequest: {
-            /** Day */
-            day: number;
         };
         /** PerQuestionResponse */
         PerQuestionResponse: {
@@ -435,10 +359,76 @@ export interface components {
             /** Per Question */
             per_question: number[];
         };
-        /** GetPerQuestionRetroStatsRequest */
-        GetPerQuestionRetroStatsRequest: {
-            /** Week */
-            week: number;
+        /**
+         * QuizKind
+         * @enum {string}
+         */
+        QuizKind: "juxtastat" | "retrostat";
+        /** RegisterBody */
+        RegisterBody: {
+            /** Domain */
+            domain: string;
+        };
+        /** Requestee */
+        Requestee: {
+            /** Requestee */
+            requestee: string;
+        };
+        /** Result */
+        Result: {
+            /** Corrects */
+            corrects?: boolean[] | null;
+            /** Friends */
+            friends: boolean;
+        };
+        /** ScoreRequestBody */
+        ScoreRequestBody: {
+            /** Requesters */
+            requesters: string[];
+            /** Date */
+            date: number;
+            quiz_kind: components["schemas"]["QuizKind"];
+        };
+        /** ScoreResponse */
+        ScoreResponse: {
+            /** Results */
+            results: components["schemas"]["Result"][];
+        };
+        /** Shortened */
+        Shortened: {
+            /** Shortened */
+            shortened: string;
+        };
+        /** StoreInfiniteUserStatsBody */
+        StoreInfiniteUserStatsBody: {
+            /** Seed */
+            seed: string;
+            /** Version */
+            version: number;
+            /** Corrects */
+            corrects: boolean[];
+        };
+        /** StoreUserStatsBody */
+        StoreUserStatsBody: {
+            /** Day Stats */
+            day_stats: [
+                number,
+                boolean[]
+            ][];
+        };
+        /** TokenBody */
+        TokenBody: {
+            /** Token */
+            token: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
         };
     };
     responses: never;
@@ -449,12 +439,12 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    juxtastatFriendRequest: {
+    juxtastat_friend_request_juxtastat_friend_request_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
@@ -465,22 +455,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -488,25 +469,18 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatUnfriend: {
+    juxtastat_unfriend_juxtastat_unfriend_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
@@ -517,22 +491,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -540,36 +505,29 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatTodaysScoreFor: {
+    juxtastat_todays_score_for_juxtastat_todays_score_for_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ScoreRequest"];
+                "application/json": components["schemas"]["ScoreRequestBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -578,50 +536,34 @@ export interface operations {
                     "application/json": components["schemas"]["ScoreResponse"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
-                };
-            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatInfiniteResults: {
+    juxtastat_infinite_results_juxtastat_infinite_results_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["InfiniteScoreRequest"];
+                "application/json": components["schemas"]["InfiniteScoreRequestBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -630,13 +572,37 @@ export interface operations {
                     "application/json": components["schemas"]["InfiniteScoreResponse"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
+            /** @description Validation Error */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    juxtastat_get_full_database_request_juxtastat_get_full_database_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TokenBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -644,20 +610,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    shortenRequest: {
+    shorten_request_shorten_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -670,7 +629,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -684,20 +643,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    lengthenRequest: {
+    lengthen_request_lengthen_get: {
         parameters: {
             query: {
                 shortened: string;
@@ -708,7 +660,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -717,34 +669,18 @@ export interface operations {
                     "application/json": components["schemas"]["FullText"];
                 };
             };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
-                };
-            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    s: {
+    s_s_get: {
         parameters: {
             query: {
                 c: string;
@@ -755,20 +691,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Found */
+            /** @description Successful Response */
             302: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -776,51 +705,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatRegisterUserRequest: {
+    juxtastat_register_user_request_juxtastat_register_user_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RegisterRequest"];
+                "application/json": components["schemas"]["RegisterBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -828,32 +741,25 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatLatestDayRequest: {
+    juxtastat_latest_day_request_juxtastat_latest_day_get: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -862,46 +768,30 @@ export interface operations {
                     "application/json": components["schemas"]["LatestDayResponse"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
-                };
-            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    retrostatLatestWeekRequest: {
+    retrostat_latest_week_request_retrostat_latest_week_get: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -910,65 +800,40 @@ export interface operations {
                     "application/json": components["schemas"]["LatestDayResponse"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
-                };
-            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatStoreUserStatsRequest: {
+    juxtastat_store_user_stats_request_juxtastat_store_user_stats_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StoreUserStatsRequest"];
+                "application/json": components["schemas"]["StoreUserStatsBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -976,36 +841,29 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatInfiniteHasInfiniteStatsRequest: {
+    juxtastat_infinite_has_infinite_stats_request_juxtastat_infinite_has_infinite_stats_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["HasInfiniteStatsRequest"];
+                "application/json": components["schemas"]["HasInfiniteStatsBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1014,65 +872,40 @@ export interface operations {
                     "application/json": components["schemas"]["HasInfiniteStatsResponse"];
                 };
             };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
-                };
-            };
             /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatInfiniteStoreUserStatsRequest: {
+    juxtastat_infinite_store_user_stats_request_juxtastat_infinite_store_user_stats_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StoreInfiniteUserStatsRequest"];
+                "application/json": components["schemas"]["StoreInfiniteUserStatsBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1080,51 +913,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    retrostatStoreUserStatsRequest: {
+    retrostat_store_user_stats_request_retrostat_store_user_stats_post: {
         parameters: {
             query?: never;
             header: {
-                "X-User": string;
-                "X-Secure-Id": string;
+                "x-user": string;
+                "x-secure-id": string;
             };
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["StoreUserStatsRequest"];
+                "application/json": components["schemas"]["StoreUserStatsBody"];
             };
         };
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EmptyResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1132,20 +949,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    juxtastatGetPerQuestionStatsRequest: {
+    juxtastat_get_per_question_stats_request_juxtastat_get_per_question_stats_get: {
         parameters: {
             query: {
                 day: number;
@@ -1156,7 +966,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1170,20 +980,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    retrostatGetPerQuestionStatsRequest: {
+    retrostat_get_per_question_stats_request_retrostat_get_per_question_stats_get: {
         parameters: {
             query: {
                 week: number;
@@ -1194,7 +997,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1208,15 +1011,8 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
                 content: {
-                    "application/json": components["schemas"]["UrbanStatsErrorModel"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
