@@ -1,13 +1,11 @@
 identity_1 = {
     "x-user": "1",
     "x-secure-id": "11",
-    "x-access-token": "email@gmail.com",
 }
 
 identity_2 = {
     "x-user": "2",
     "x-secure-id": "12",
-    "x-access-token": "email@gmail.com",
 }
 
 
@@ -15,6 +13,7 @@ def test_associate_email(client):
     response = client.post(
         "/juxtastat/associate_email",
         headers=identity_1,
+        json={"token": "email@gmail.com"},
     )
     assert response.status_code == 200
 
@@ -22,17 +21,15 @@ def test_associate_email(client):
     response = client.post(
         "/juxtastat/associate_email",
         headers=identity_1,
+        json={"token": "email@gmail.com"},
     )
     assert response.status_code == 200
 
     # Associating a different email fails
     response = client.post(
         "/juxtastat/associate_email",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "11",
-            "x-access-token": "email2@gmail.com",
-        },
+        headers=identity_1,
+        json={"token": "email2@gmail.com"},
     )
     assert response.status_code == 409
 
@@ -41,6 +38,7 @@ def test_juxta_user_stats(client):
     response = client.post(
         "/juxtastat/associate_email",
         headers=identity_1,
+        json={"token": "email@gmail.com"},
     )
     assert response.status_code == 200
 
@@ -48,6 +46,7 @@ def test_juxta_user_stats(client):
     response = client.post(
         "/juxtastat/associate_email",
         headers=identity_2,
+        json={"token": "email@gmail.com"},
     )
     assert response.status_code == 200
 

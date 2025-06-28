@@ -6,9 +6,7 @@ def associate_email_db(user: int, email: str):
     conn, c = table()
     existing_email = _get_user_email(c, user)
     if existing_email not in (None, email):
-        raise UrbanStatsError(
-            409, "This user is already associated with an existing email"
-        )
+        raise UrbanStatsError(409, "This user is already associated with a different")
     # Table constraints prevent duplicates
     c.execute(
         "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
@@ -36,6 +34,7 @@ def _get_user_email(c, user):
 
 
 def get_user_users(c, user):
+    c = c or table()[1]
     email = _get_user_email(c, user)
     if email is None:
         return [user]

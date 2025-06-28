@@ -17,7 +17,6 @@ from ..db.stats import (
 )
 from ..main import api, app
 from ..middleware.authenticate import UserHeadersSchema, authenticate
-from ..middleware.email import EmailHeadersSchema, email
 from ..utils import EmptyResponse, UrbanStatsErrorModel
 
 
@@ -36,7 +35,7 @@ class RegisterRequest(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_register_user_request(user):
+def juxtastat_register_user_request(user, users):
     register_user(user, RegisterRequest(**flask.request.json).domain)
     return flask.jsonify(dict()), 200
 
@@ -47,7 +46,7 @@ class LatestDayResponse(BaseModel):
 
 @app.route("/juxtastat/latest_day", methods=["GET"])
 @api.validate(
-    headers=EmailHeadersSchema,
+    headers=UserHeadersSchema,
     resp=Response(
         HTTP_200=LatestDayResponse,
         HTTP_401=UrbanStatsErrorModel,
@@ -55,15 +54,14 @@ class LatestDayResponse(BaseModel):
     ),
 )
 @authenticate()
-@email()
-def juxtastat_latest_day_request(users):
+def juxtastat_latest_day_request(user, users):
     ld = latest_day(users)
     return flask.jsonify(dict(latest_day=ld))
 
 
 @app.route("/retrostat/latest_week", methods=["GET"])
 @api.validate(
-    headers=EmailHeadersSchema,
+    headers=UserHeadersSchema,
     resp=Response(
         HTTP_200=LatestDayResponse,
         HTTP_401=UrbanStatsErrorModel,
@@ -71,8 +69,7 @@ def juxtastat_latest_day_request(users):
     ),
 )
 @authenticate()
-@email()
-def retrostat_latest_week_request(users):
+def retrostat_latest_week_request(user, users):
     ld = latest_week_retrostat(users)
     return flask.jsonify(dict(latest_day=ld))
 
@@ -92,7 +89,7 @@ class StoreUserStatsRequest(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_store_user_stats_request(user):
+def juxtastat_store_user_stats_request(user, users):
     store_user_stats(user, StoreUserStatsRequest(**flask.request.json).day_stats)
     return flask.jsonify(dict())
 
@@ -107,7 +104,7 @@ class HasInfiniteStatsResponse(BaseModel):
 
 @app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
 @api.validate(
-    headers=EmailHeadersSchema,
+    headers=UserHeadersSchema,
     body=HasInfiniteStatsRequest,
     resp=Response(
         HTTP_200=HasInfiniteStatsResponse,
@@ -116,8 +113,7 @@ class HasInfiniteStatsResponse(BaseModel):
     ),
 )
 @authenticate()
-@email()
-def juxtastat_infinite_has_infinite_stats_request(users):
+def juxtastat_infinite_has_infinite_stats_request(user, users):
     res = dict(
         has=has_infinite_stats(
             users, HasInfiniteStatsRequest(**flask.request.json).seedVersions
@@ -143,7 +139,7 @@ class StoreInfiniteUserStatsRequest(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_infinite_store_user_stats_request(user):
+def juxtastat_infinite_store_user_stats_request(user, users):
     req = StoreInfiniteUserStatsRequest(**flask.request.json)
     store_user_stats_infinite(user, req.seed, req.version, req.corrects)
     return flask.jsonify(dict())
@@ -160,7 +156,7 @@ def juxtastat_infinite_store_user_stats_request(user):
     ),
 )
 @authenticate()
-def retrostat_store_user_stats_request(user):
+def retrostat_store_user_stats_request(user, users):
     store_user_stats_retrostat(
         user, StoreUserStatsRequest(**flask.request.json).day_stats
     )

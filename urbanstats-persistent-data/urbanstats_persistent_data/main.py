@@ -18,14 +18,14 @@ def handle_urban_stats_error(e: UrbanStatsError):
     return flask.jsonify(e.to_dict()), e.status
 
 
-@app.errorhandler(Exception)
-def handle_exception(e: Exception):
-    # pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-    return handle_urban_stats_error(
-        UrbanStatsError(500, "Unexpected internal error", "internal")
-    )
+# @app.errorhandler(Exception)
+# def handle_exception(e: Exception):
+#     # pass through HTTP errors
+#     if isinstance(e, HTTPException):
+#         return e
+#     return handle_urban_stats_error(
+#         UrbanStatsError(500, "Unexpected internal error", "internal")
+#     )
 
 
 # pylint: disable=unused-import

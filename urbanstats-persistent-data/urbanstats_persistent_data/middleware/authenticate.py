@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from ..db.authenticate import check_secureid
 from ..utils import Hexadecimal, UrbanStatsError
+from ..db.email import get_user_users
 
 
 class UserHeadersSchema(BaseModel):
@@ -21,7 +22,9 @@ def authenticate():
 
             if not check_secureid(req.user, req.secure_id):
                 raise UrbanStatsError(401, "Invalid secureID!", "bad_secureid")
-            return fn(req.user)
+
+            users = get_user_users(None, req.user)
+            return fn(req.user, users)
 
         return wrapper
 

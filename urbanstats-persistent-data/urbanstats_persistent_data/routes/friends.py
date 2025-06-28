@@ -8,7 +8,6 @@ from ..db.friends import friend_request, infinite_results, todays_score_for, unf
 from ..db.utils import QuizKind
 from ..main import api, app
 from ..middleware.authenticate import UserHeadersSchema, authenticate
-from ..middleware.email import EmailHeadersSchema, email
 from ..utils import EmptyResponse, Hexadecimal, UrbanStatsErrorModel
 
 
@@ -27,7 +26,7 @@ class Requestee(BaseModel):
     ),
 )
 @authenticate()
-def juxtastat_friend_request(user):
+def juxtastat_friend_request(user, users):
     friend_request(Requestee(**flask.request.json).requestee, user)
     return flask.jsonify(dict())
 
@@ -43,7 +42,7 @@ def juxtastat_friend_request(user):
     ),
 )
 @authenticate()
-def juxtastat_unfriend(user):
+def juxtastat_unfriend(user, users):
     unfriend(Requestee(**flask.request.json).requestee, user)
     return flask.jsonify(dict())
 
@@ -65,7 +64,7 @@ class ScoreResponse(BaseModel):
 
 @app.route("/juxtastat/todays_score_for", methods=["POST"])
 @api.validate(
-    headers=EmailHeadersSchema,
+    headers=UserHeadersSchema,
     body=ScoreRequest,
     resp=Response(
         HTTP_200=ScoreResponse,
@@ -74,8 +73,7 @@ class ScoreResponse(BaseModel):
     ),
 )
 @authenticate()
-@email()
-def juxtastat_todays_score_for(users):
+def juxtastat_todays_score_for(user, users):
     req = ScoreRequest(**flask.request.json)
     res = dict(
         results=todays_score_for(
@@ -108,7 +106,7 @@ class InfiniteScoreResponse(BaseModel):
 
 @app.route("/juxtastat/infinite_results", methods=["POST"])
 @api.validate(
-    headers=EmailHeadersSchema,
+    headers=UserHeadersSchema,
     body=InfiniteScoreRequest,
     resp=Response(
         HTTP_200=InfiniteScoreResponse,
@@ -117,8 +115,7 @@ class InfiniteScoreResponse(BaseModel):
     ),
 )
 @authenticate()
-@email()
-def juxtastat_infinite_results(users):
+def juxtastat_infinite_results(user, users):
     req = InfiniteScoreRequest(**flask.request.json)
 
     res = dict(
