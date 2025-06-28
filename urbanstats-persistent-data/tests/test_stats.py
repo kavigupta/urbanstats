@@ -21,20 +21,17 @@ def test_register_user_invalid_hex(client):
     )
 
     assert response.status_code == 422
-    assert response.json() == [
-        {
-            "ctx": {
-                "error": "invalid literal for int() with base 16: 'nothex'",
-            },
-            "input": "nothex",
-            "loc": [
-                "X-User",
-            ],
-            "msg": "Value error, invalid literal for int() with base 16: 'nothex'",
-            "type": "value_error",
-            "url": "https://errors.pydantic.dev/2.11/v/value_error",
-        },
-    ]
+    assert response.json() == {
+        "detail": [
+            {
+                "type": "value_error",
+                "loc": ["header", "x-user"],
+                "msg": "Value error, invalid literal for int() with base 16: 'nothex'",
+                "input": "nothex",
+                "ctx": {"error": {}},
+            }
+        ]
+    }
 
 
 def test_register_no_body(client):
@@ -43,17 +40,11 @@ def test_register_no_body(client):
         headers=identity_1,
     )
     assert response.status_code == 422
-    assert response.json() == [
-        {
-            "input": {},
-            "loc": [
-                "domain",
-            ],
-            "msg": "Field required",
-            "type": "missing",
-            "url": "https://errors.pydantic.dev/2.11/v/missing",
-        },
-    ]
+    assert response.json() == {
+        "detail": [
+            {"type": "missing", "loc": ["body"], "msg": "Field required", "input": None}
+        ]
+    }
 
 
 def test_get_latest_day(client):
@@ -91,17 +82,16 @@ def test_store_user_stats_missing_fields(client):
         json={},
     )
     assert response.status_code == 422
-    assert response.json() == [
-        {
-            "input": {},
-            "loc": [
-                "day_stats",
-            ],
-            "msg": "Field required",
-            "type": "missing",
-            "url": "https://errors.pydantic.dev/2.11/v/missing",
-        },
-    ]
+    assert response.json() == {
+        "detail": [
+            {
+                "type": "missing",
+                "loc": ["body", "day_stats"],
+                "msg": "Field required",
+                "input": {},
+            }
+        ]
+    }
 
 
 def test_store_user_stats_invalid_secureid(client):

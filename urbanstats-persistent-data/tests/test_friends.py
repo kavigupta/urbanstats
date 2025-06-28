@@ -92,10 +92,6 @@ def test_unfriend(client):
     assert response.json() == {"results": [{"corrects": None, "friends": True}]}
 
 
-import pytest
-
-
-@pytest.mark.only
 def test_friends_infinite(client):
     response = client.post(
         "/juxtastat/infinite_results",
