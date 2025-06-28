@@ -242,15 +242,18 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { data } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await client.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
                     header: this.userHeaders(),
                 },
             })
 
-            if (data === undefined) {
+            if (response.status === 422) {
                 return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            }
+            if (error !== undefined) {
+                return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
             this.friends.value = [...this.friends.value, [friendName, friendID]]

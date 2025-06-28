@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from ..db.utils import get_full_database
 from ..dependencies.db_session import GetDbSession
 from ..main import app
+from ..utils import HTTPExceptionModel
 
 
 def valid_token(tok):
@@ -20,7 +21,9 @@ class TokenBody(BaseModel):
     token: str
 
 
-@app.post("/juxtastat/get_full_database")
+@app.post(
+    "/juxtastat/get_full_database", responses={401: {"model": HTTPExceptionModel}}
+)
 def juxtastat_get_full_database_request(s: GetDbSession, body: TokenBody):
     if not valid_token(body.token):
         raise fastapi.HTTPException(

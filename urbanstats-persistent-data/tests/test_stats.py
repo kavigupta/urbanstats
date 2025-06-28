@@ -9,7 +9,7 @@ def test_register_user(client):
             "domain": "test.urbanstats.org",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
 
 def test_register_user_invalid_hex(client):
@@ -67,8 +67,7 @@ def test_store_user_stats_success(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json() is None
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.get("/juxtastat/latest_day", headers=identity_1)
     assert response.status_code == 200
@@ -102,8 +101,7 @@ def test_store_user_stats_invalid_secureid(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.status_code == 200
-    assert response.json() is None
+    assert response.status_code == 204
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -139,8 +137,7 @@ def test_store_retro(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.status_code == 200
-    assert response.json() is None
+    assert response.status_code == 204
 
 
 def test_juxta_per_question(client):
@@ -151,7 +148,7 @@ def test_juxta_per_question(client):
             "domain": "urbanstats.org",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.get(
         "/juxtastat/get_per_question_stats",
@@ -170,8 +167,7 @@ def test_juxta_per_question(client):
             "day_stats": [[1, [True, True, True, True, True]]],
         },
     )
-    assert response.json() is None
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.get(
         "/juxtastat/get_per_question_stats",

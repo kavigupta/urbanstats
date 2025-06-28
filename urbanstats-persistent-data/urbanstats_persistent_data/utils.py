@@ -1,6 +1,6 @@
 import typing as t
 
-from pydantic import BeforeValidator
+from pydantic import BaseModel, BeforeValidator
 
 
 def corrects_to_bytes(corrects: t.List[bool]) -> bytes:
@@ -19,3 +19,7 @@ def from_hex(value: t.Any) -> int:
 
 
 Hexadecimal = BeforeValidator(from_hex, json_schema_input_type=str)
+
+
+class HTTPExceptionModel(BaseModel):
+    detail: t.Any = None

@@ -6,7 +6,7 @@ import fastapi
 from fastapi import Header, HTTPException
 
 from ..db.authenticate import check_secureid
-from ..utils import Hexadecimal
+from ..utils import Hexadecimal, HTTPExceptionModel
 from .db_session import DbSession, GetDbSession
 
 
@@ -28,5 +28,7 @@ def authenticate(
         x_user,
     )
 
+
+authenticate_responses = {401: {"model": HTTPExceptionModel}}
 
 AuthenticateRequest = t.Annotated[AuthenticatedRequest, fastapi.Depends(authenticate)]

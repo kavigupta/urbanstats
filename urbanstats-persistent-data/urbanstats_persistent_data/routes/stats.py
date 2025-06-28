@@ -13,7 +13,7 @@ from ..db.stats import (
     store_user_stats_infinite,
     store_user_stats_retrostat,
 )
-from ..dependencies.authenticate import AuthenticateRequest
+from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
 from ..dependencies.db_session import GetDbSession
 from ..main import app
 
@@ -22,7 +22,7 @@ class RegisterBody(BaseModel):
     domain: str
 
 
-@app.post("/juxtastat/register_user")
+@app.post("/juxtastat/register_user", status_code=204, responses=authenticate_responses)
 def juxtastat_register_user_request(
     req: AuthenticateRequest,
     body: RegisterBody,
@@ -34,7 +34,7 @@ class LatestDayResponse(BaseModel):
     latest_day: int
 
 
-@app.get("/juxtastat/latest_day")
+@app.get("/juxtastat/latest_day", responses=authenticate_responses)
 def juxtastat_latest_day_request(
     req: AuthenticateRequest,
 ) -> LatestDayResponse:
@@ -42,7 +42,7 @@ def juxtastat_latest_day_request(
     return LatestDayResponse(latest_day=ld)
 
 
-@app.get("/retrostat/latest_week")
+@app.get("/retrostat/latest_week", responses=authenticate_responses)
 def retrostat_latest_week_request(
     req: AuthenticateRequest,
 ) -> LatestDayResponse:
@@ -54,7 +54,9 @@ class StoreUserStatsBody(BaseModel):
     day_stats: t.List[t.Tuple[int, t.List[bool]]]
 
 
-@app.post("/juxtastat/store_user_stats")
+@app.post(
+    "/juxtastat/store_user_stats", status_code=204, responses=authenticate_responses
+)
 def juxtastat_store_user_stats_request(
     req: AuthenticateRequest, body: StoreUserStatsBody
 ):
@@ -69,7 +71,7 @@ class HasInfiniteStatsResponse(BaseModel):
     has: t.List[bool]
 
 
-@app.post("/juxtastat_infinite/has_infinite_stats")
+@app.post("/juxtastat_infinite/has_infinite_stats", responses=authenticate_responses)
 def juxtastat_infinite_has_infinite_stats_request(
     req: AuthenticateRequest, body: HasInfiniteStatsBody
 ) -> HasInfiniteStatsResponse:
@@ -82,14 +84,20 @@ class StoreInfiniteUserStatsBody(BaseModel):
     corrects: t.List[bool]
 
 
-@app.post("/juxtastat_infinite/store_user_stats")
+@app.post(
+    "/juxtastat_infinite/store_user_stats",
+    status_code=204,
+    responses=authenticate_responses,
+)
 def juxtastat_infinite_store_user_stats_request(
     req: AuthenticateRequest, body: StoreInfiniteUserStatsBody
 ):
     store_user_stats_infinite(req, body.seed, body.version, body.corrects)
 
 
-@app.post("/retrostat/store_user_stats")
+@app.post(
+    "/retrostat/store_user_stats", status_code=204, responses=authenticate_responses
+)
 def retrostat_store_user_stats_request(
     req: AuthenticateRequest, body: StoreUserStatsBody
 ):
