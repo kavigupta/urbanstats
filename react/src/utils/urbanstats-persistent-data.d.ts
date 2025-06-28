@@ -320,19 +320,6 @@ export interface components {
             /** Has */
             has: boolean[];
         };
-        /** InfiniteResult */
-        InfiniteResult: {
-            /** Forthisseed */
-            forThisSeed?: number | null;
-            /** Maxscore */
-            maxScore?: number | null;
-            /** Maxscoreseed */
-            maxScoreSeed?: string | null;
-            /** Maxscoreversion */
-            maxScoreVersion?: number | null;
-            /** Friends */
-            friends: boolean;
-        };
         /** InfiniteScoreRequestBody */
         InfiniteScoreRequestBody: {
             /** Requesters */
@@ -345,12 +332,20 @@ export interface components {
         /** InfiniteScoreResponse */
         InfiniteScoreResponse: {
             /** Results */
-            results: components["schemas"]["InfiniteResult"][];
+            results: (components["schemas"]["NegativeResult"] | components["schemas"]["PositiveInfiniteResult"])[];
         };
         /** LatestDayResponse */
         LatestDayResponse: {
             /** Latest Day */
             latest_day: number;
+        };
+        /** NegativeResult */
+        NegativeResult: {
+            /**
+             * Friends
+             * @constant
+             */
+            friends: false;
         };
         /** PerQuestionResponse */
         PerQuestionResponse: {
@@ -358,6 +353,32 @@ export interface components {
             total: number;
             /** Per Question */
             per_question: number[];
+        };
+        /** PositiveInfiniteResult */
+        PositiveInfiniteResult: {
+            /** Forthisseed */
+            forThisSeed: number | null;
+            /** Maxscore */
+            maxScore: number | null;
+            /** Maxscoreseed */
+            maxScoreSeed: string | null;
+            /** Maxscoreversion */
+            maxScoreVersion: number | null;
+            /**
+             * Friends
+             * @constant
+             */
+            friends: true;
+        };
+        /** PositiveResult */
+        PositiveResult: {
+            /** Corrects */
+            corrects: boolean[] | null;
+            /**
+             * Friends
+             * @constant
+             */
+            friends: true;
         };
         /**
          * QuizKind
@@ -374,13 +395,6 @@ export interface components {
             /** Requestee */
             requestee: string;
         };
-        /** Result */
-        Result: {
-            /** Corrects */
-            corrects?: boolean[] | null;
-            /** Friends */
-            friends: boolean;
-        };
         /** ScoreRequestBody */
         ScoreRequestBody: {
             /** Requesters */
@@ -392,7 +406,7 @@ export interface components {
         /** ScoreResponse */
         ScoreResponse: {
             /** Results */
-            results: components["schemas"]["Result"][];
+            results: (components["schemas"]["NegativeResult"] | components["schemas"]["PositiveResult"])[];
         };
         /** Shortened */
         Shortened: {

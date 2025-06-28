@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional
+from typing import Annotated, List, Optional, Literal
 
 from pydantic import BaseModel
 
@@ -29,16 +29,20 @@ class ScoreRequestBody(BaseModel):
     quiz_kind: QuizKind
 
 
-class Result(BaseModel):
-    corrects: Optional[List[bool]] = None
-    friends: bool
+class NegativeResult(BaseModel):
+    friends: Literal[False]
+
+
+class PositiveResult(BaseModel):
+    corrects: Optional[List[bool]]
+    friends: Literal[True]
 
 
 class ScoreResponse(BaseModel):
-    results: List[Result]
+    results: List[NegativeResult | PositiveResult]
 
 
-@app.post("/juxtastat/todays_score_for", response_model_exclude_unset=True)
+@app.post("/juxtastat/todays_score_for")
 def juxtastat_todays_score_for(
     req: AuthenticateRequest, body: ScoreRequestBody
 ) -> ScoreResponse:
@@ -58,19 +62,19 @@ class InfiniteScoreRequestBody(BaseModel):
     version: int
 
 
-class InfiniteResult(BaseModel):
-    forThisSeed: Optional[int] = None
-    maxScore: Optional[int] = None
-    maxScoreSeed: Optional[str] = None
-    maxScoreVersion: Optional[int] = None
-    friends: bool
+class PositiveInfiniteResult(BaseModel):
+    forThisSeed: Optional[int]
+    maxScore: Optional[int]
+    maxScoreSeed: Optional[str]
+    maxScoreVersion: Optional[int]
+    friends: Literal[True]
 
 
 class InfiniteScoreResponse(BaseModel):
-    results: List[InfiniteResult]
+    results: List[NegativeResult | PositiveInfiniteResult]
 
 
-@app.post("/juxtastat/infinite_results", response_model_exclude_unset=True)
+@app.post("/juxtastat/infinite_results")
 def juxtastat_infinite_results(
     req: AuthenticateRequest, body: InfiniteScoreRequestBody
 ) -> InfiniteScoreResponse:

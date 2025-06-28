@@ -18,15 +18,6 @@ def update_openapi_typescript():
         description=app.description,
         routes=app.routes,
     )
-    # Make all request and response bodies in the OpenAPI spec required
-    for path_item in spec.get("paths", {}).values():
-        for operation in path_item.values():
-            if isinstance(operation, dict) and "requestBody" in operation:
-                operation["requestBody"]["required"] = True
-            if isinstance(operation, dict) and "responses" in operation:
-                for response in operation["responses"].values():
-                    if isinstance(response, dict) and "content" in response:
-                        response["required"] = True
 
     with tempfile.NamedTemporaryFile(
         mode="w", delete=False, suffix=".json"

@@ -216,10 +216,10 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    userHeaders(): { 'X-User': string, 'X-Secure-Id': string } {
+    userHeaders(): { 'x-user': string, 'x-secure-id': string } {
         return {
-            'X-User': this.uniquePersistentId.value,
-            'X-Secure-Id': this.uniqueSecureId.value,
+            'x-user': this.uniquePersistentId.value,
+            'x-secure-id': this.uniqueSecureId.value,
         }
     }
 
