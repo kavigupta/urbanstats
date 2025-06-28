@@ -1,38 +1,17 @@
-import logging
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-import flask
-from flask_cors import CORS
-from flask_pydantic_spec import FlaskPydanticSpec
-from werkzeug.exceptions import HTTPException
+app = FastAPI()
 
-from .utils import UrbanStatsError
+origins = ["http://localhost:8080", "https://urbanstats.org"]
 
-app = flask.Flask("urbanstats-persistent-data")
-cors = CORS(app)
-
-api = FlaskPydanticSpec("flask", app=app)
-
-
-@app.errorhandler(UrbanStatsError)
-def handle_urban_stats_error(e: UrbanStatsError):
-    return flask.jsonify(e.to_dict()), e.status
-
-
-@app.errorhandler(Exception)
-def handle_exception(e: Exception):
-    # pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-    return handle_urban_stats_error(
-        UrbanStatsError(500, "Unexpected internal error", "internal")
-    )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # pylint: disable=unused-import
 from .routes import friends, get_full_database, shorten, stats
-
-logging.getLogger("flask_cors").level = logging.DEBUG
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

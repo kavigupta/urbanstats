@@ -1,11 +1,11 @@
 import hashlib
 
-import flask
+import fastapi
 from pydantic import BaseModel
 
 from ..db.utils import get_full_database
+from ..dependencies.db_session import GetDbSession
 from ..main import app
-from ..utils import UrbanStatsError
 
 
 def valid_token(tok):
@@ -16,13 +16,14 @@ def valid_token(tok):
     return hashlib.sha256(tok.encode("utf-8")).hexdigest() in token_must_hash_to
 
 
-@app.route("/juxtastat/get_full_database", methods=["POST"])
-def juxtastat_get_full_database_request():
-    class Token(BaseModel):
-        token: str
+class TokenBody(BaseModel):
+    token: str
 
-    if not valid_token(Token(**flask.request.json).token):
-        raise UrbanStatsError(
+
+@app.post("/juxtastat/get_full_database")
+def juxtastat_get_full_database_request(s: GetDbSession, body: TokenBody):
+    if not valid_token(body.token):
+        raise fastapi.HTTPException(
             401, "This method requires a token, and your token is invalid!"
         )
-    return flask.jsonify(get_full_database())
+    return get_full_database(s)

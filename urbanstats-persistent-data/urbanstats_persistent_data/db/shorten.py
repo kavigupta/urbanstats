@@ -1,6 +1,8 @@
 import hashlib
-import sqlite3
 import string
+
+from ..dependencies.db_session import DbSession
+import typing as t
 
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits + "-_"
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
@@ -29,41 +31,23 @@ def num_decode(s):
     return n
 
 
-def table():
-    conn = sqlite3.connect("db.sqlite3")
-    c = conn.cursor()
-    # if table does not exist, create it
-    # primary key is shortened (as an integer)
-    # full is the full text
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS ShortenedData
-                 (shortened integer PRIMARY KEY, full text)"""
-    )
-    conn.commit()
-    return conn, c
-
-
 def shorten(full_text):
     shortened = hashlib.sha256(full_text.encode("utf-8")).hexdigest()[-15:]
     shortened = int(shortened, 16)
     return shortened
 
 
-def shorten_and_save(full_text):
-    conn, c = table()
+def shorten_and_save(s: DbSession, full_text):
     shortened = shorten(full_text)
     # insert if it does not exist
-    c.execute(
+    s.c.execute(
         "INSERT OR IGNORE INTO ShortenedData VALUES (?, ?)", (shortened, full_text)
     )
-    conn.commit()
     shortened = num_encode(shortened)
     return shortened
 
 
-def retreive_and_lengthen(shortened):
-    _, c = table()
+def retreive_and_lengthen(s: DbSession, shortened: string) -> t.Optional[str]:
     shortened = num_decode(shortened)
-    c.execute("SELECT full FROM ShortenedData WHERE shortened=?", (shortened,))
-    full_text = c.fetchone()
-    return full_text
+    s.c.execute("SELECT full FROM ShortenedData WHERE shortened=?", (shortened,))
+    return s.c.fetchone()
