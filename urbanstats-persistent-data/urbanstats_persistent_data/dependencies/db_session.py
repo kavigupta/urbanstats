@@ -7,8 +7,7 @@ from ..db.utils import DbSession
 
 def db_session():
     session = DbSession()
-    session.conn.execute("pragma busy_timeout=10000")
-    session.conn.execute("BEGIN")
+    session.c.execute("BEGIN IMMEDIATE")
     try:
         yield session
         session.conn.commit()
