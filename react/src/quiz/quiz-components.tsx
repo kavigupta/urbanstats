@@ -5,9 +5,9 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { AuthenticationStateMachine } from './AuthenticationStateMachine'
+import { startSignIn } from './auth'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
+import { loading, nameOfQuizKind, QuizHistory, QuizKind, QuizPersistent } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -64,7 +64,7 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
 }
 
 export function UserId(): ReactNode {
-    const user = QuizLocalStorage.shared.uniquePersistentId.use()
+    const user = QuizPersistent.shared.uniquePersistentId.use()
     return (
         <div>
             {'Your user id is '}
@@ -75,13 +75,13 @@ export function UserId(): ReactNode {
 }
 
 function QuizAuthStatus(): ReactNode {
-    const authState = AuthenticationStateMachine.shared.useState()
+    const email = QuizPersistent.shared.email.use()
 
-    if (authState.state === 'signedOut') {
+    if (email === undefined) {
         const signIn = async (e: React.MouseEvent): Promise<void> => {
             e.preventDefault()
             try {
-                const url = await AuthenticationStateMachine.shared.startSignIn()
+                const url = await startSignIn()
                 window.open(url, '_blank', 'popup,width=500,height=600')
             }
             catch (error) {
@@ -96,15 +96,18 @@ function QuizAuthStatus(): ReactNode {
             </>
         )
     }
+    else if (email === loading) {
+        return ' Loading...'
+    }
     else {
         const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
-            AuthenticationStateMachine.shared.userSignOut()
+            void QuizPersistent.shared.dissociateEmail()
         }
 
         return (
             <>
-                {` Signed in with ${authState.email}. `}
+                {` Signed in with ${email}. `}
                 <a href="" onClick={signOut}>Sign Out</a>
             </>
         )
@@ -114,11 +117,11 @@ function QuizAuthStatus(): ReactNode {
 export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
-            <button onClick={() => { QuizLocalStorage.shared.exportQuizPersona() }}>
+            <button onClick={() => { QuizPersistent.shared.exportQuizPersona() }}>
                 Export Quiz History
             </button>
             {' '}
-            <button onClick={() => { void QuizLocalStorage.shared.importQuizPersona() }}>
+            <button onClick={() => { void QuizPersistent.shared.importQuizPersona() }}>
                 Import Quiz History
             </button>
         </div>

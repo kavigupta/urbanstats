@@ -75,18 +75,17 @@ export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
-    quiz_friends: quizFriends,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export class StoredProperty<T> {
+class Property<T> {
     private _value: T
     private observers = new Set<() => void>()
 
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
-        this._value = load(localStorage.getItem(localStorageKey))
+    constructor(value: T) {
+        this._value = value
     }
 
     get value(): T {
@@ -95,7 +94,6 @@ export class StoredProperty<T> {
 
     set value(newValue: T) {
         this._value = newValue
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
         this.observers.forEach((observer) => { observer() })
     }
 
@@ -116,12 +114,26 @@ export class StoredProperty<T> {
     /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-export class QuizLocalStorage {
-    private constructor() {
-        // Private constructor
+export class StoredProperty<T> extends Property<T> {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
+        super(load(localStorage.getItem(localStorageKey)))
     }
 
-    static shared = new QuizLocalStorage()
+    override set value(newValue: T) {
+        localStorage.setItem(this.localStorageKey, this.store(newValue))
+        super.value = newValue
+    }
+}
+
+export const loading = Symbol('loading')
+
+export class QuizPersistent {
+    private constructor() {
+        // Private constructor
+        // TODO: fetch email
+    }
+
+    static shared = new QuizPersistent()
 
     readonly history = new StoredProperty<QuizHistory>(
         'quiz_history',
@@ -153,13 +165,16 @@ export class QuizLocalStorage {
 
     readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
+    readonly authenticationError = new Property<boolean>(false)
+
+    readonly email = new Property<string | undefined | typeof loading>(loading)
+
     exportQuizPersona(): void {
         const exported: QuizPersona = {
             date_exported: new Date(),
             persistent_id: this.uniquePersistentId.value,
             secure_id: this.uniqueSecureId.value,
             quiz_history: this.history.value,
-            quiz_friends: this.friends.value,
         }
         const data = JSON.stringify(exported, null, 2)
         saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
@@ -207,7 +222,6 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             }
 
             this.history.value = newHistory
-            this.friends.value = persona.quiz_friends
             this.uniquePersistentId.value = persona.persistent_id
             this.uniqueSecureId.value = persona.secure_id
         }
@@ -216,11 +230,11 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    userHeaders(): Promise<{ 'x-user': string, 'x-secure-id': string }> {
-        return Promise.resolve({
+    userHeaders(): { 'x-user': string, 'x-secure-id': string } {
+        return {
             'x-user': this.uniquePersistentId.value,
             'x-secure-id': this.uniqueSecureId.value,
-        })
+        }
     }
 
     async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
@@ -245,7 +259,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             const { response, error } = await client.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
-                    header: await this.userHeaders(),
+                    header: this.userHeaders(),
                 },
             })
 
@@ -263,6 +277,41 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Network Error', problemDomain: 'other' }
         }
     }
+
+    async associateEmail(accessToken: string): Promise<void> {
+        const { response, data } = await client.POST('/juxtastat/associate_email', {
+            params: {
+                header: this.userHeaders(),
+            },
+            body: {
+                token: accessToken,
+            },
+        })
+        switch (response.status) {
+            case 204:
+                this.email.value = data!.email
+                return
+            case 409:
+                throw new Error('This device is already associated with a different email.')
+            default:
+                throw new Error(`Unknown error from server: ${response.status}`)
+        }
+    }
+
+    async dissociateEmail(): Promise<void> {
+        const { response } = await client.POST('/juxtastat/dissociate_email', {
+            params: {
+                header: this.userHeaders(),
+            },
+        })
+        switch (response.status) {
+            case 204:
+                this.email.value = undefined
+                return
+            default:
+                throw new Error(`Unknown error from server: ${response.status}`)
+        }
+    }
 }
 
 function createAndStoreId(key: string): string {
@@ -277,7 +326,7 @@ function createAndStoreId(key: string): string {
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+    const result = await QuizPersistent.shared.addFriend(friendID, friendName)
     if (result === undefined) {
         alert(`Friend added: ${friendName} !`)
     }

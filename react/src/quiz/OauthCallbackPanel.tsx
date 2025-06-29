@@ -5,6 +5,8 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { mixWithBackground } from '../utils/color'
 
+import { QuizPersistent } from './quiz'
+
 export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallback' }>): ReactNode {
     const colors = useColors()
     const errorBoxStyle: CSSProperties = {
@@ -14,6 +16,8 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
         padding: '10px',
     }
 
+    const email = QuizPersistent.shared.email.use()
+
     return (
         <PageTemplate showFooter={false}>
             <div style={errorBoxStyle}>
@@ -22,10 +26,16 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
                             <>
                                 <h1>Signed In!</h1>
                                 <p>
-                                    Sign in to your other devices with
-                                    {' '}
-                                    <b>{props.result.email}</b>
-                                    {' '}
+                                    Sign in to your other devices
+                                    { typeof email === 'string'
+                                        ? (
+                                                <>
+                                                    {' with '}
+                                                    <b>{email}</b>
+                                                    {' '}
+                                                </>
+                                            )
+                                        : ' '}
                                     to sync your quiz progress.
                                 </p>
                             </>

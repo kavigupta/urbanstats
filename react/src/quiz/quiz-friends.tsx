@@ -8,7 +8,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 import { client } from '../utils/urbanstats-persistent-client'
 
-import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizLocalStorage, QuizDescriptor } from './quiz'
+import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizPersistent, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
@@ -24,7 +24,7 @@ async function juxtaRetroResponse(
     const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
     const { data: friendScoresResponse } = await client.POST('/juxtastat/todays_score_for', {
         params: {
-            header: await QuizLocalStorage.shared.userHeaders(),
+            header: QuizPersistent.shared.userHeaders(),
         },
         body: {
             date,
@@ -44,7 +44,7 @@ async function infiniteResponse(
 ): Promise<FriendResponse[] | undefined> {
     const { data: friendScoresResponse } = await client.POST('/juxtastat/infinite_results', {
         params: {
-            header: await QuizLocalStorage.shared.userHeaders(),
+            header: QuizPersistent.shared.userHeaders(),
         },
         body: {
             requesters, seed: quizDescriptor.seed, version: quizDescriptor.version,
@@ -68,8 +68,8 @@ export function QuizFriendsPanel(props: {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
 
-    const user = QuizLocalStorage.shared.uniquePersistentId.use()
-    const secureID = QuizLocalStorage.shared.uniqueSecureId.use()
+    const user = QuizPersistent.shared.uniquePersistentId.use()
+    const secureID = QuizPersistent.shared.uniqueSecureId.use()
 
     useEffect(() => {
         void (async () => {
@@ -119,7 +119,7 @@ export function QuizFriendsPanel(props: {
                             removeFriend={async () => {
                                 await client.POST('/juxtastat/unfriend', {
                                     params: {
-                                        header: await QuizLocalStorage.shared.userHeaders(),
+                                        header: QuizPersistent.shared.userHeaders(),
                                     },
                                     body: {
                                         requestee: props.quizFriends[idx][1],
@@ -189,7 +189,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
             return
         }
 
-        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizLocalStorage.shared.uniquePersistentId.value, name: playerName }).hash
+        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizPersistent.shared.uniquePersistentId.value, name: playerName }).hash
         const url = `https://juxtastat.org/${hash}`
 
         await navigator.clipboard.writeText(url)
@@ -391,7 +391,7 @@ function AddFriend(): ReactNode {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
         setLoading(true)
-        const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+        const result = await QuizPersistent.shared.addFriend(friendID, friendName)
         setLoading(false)
         if (result !== undefined) {
             setError(result.errorMessage)
