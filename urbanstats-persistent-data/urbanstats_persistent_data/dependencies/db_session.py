@@ -7,6 +7,7 @@ from ..db.utils import DbSession
 
 def db_session():
     session = DbSession()
+    session.conn.execute("BEGIN")
     try:
         yield session
         session.conn.commit()

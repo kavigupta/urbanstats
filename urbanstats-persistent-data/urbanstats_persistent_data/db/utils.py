@@ -21,7 +21,9 @@ class DbSession:
 
     def __init__(self):
         print("new dbsession")
-        self.conn = sqlite3.connect("db.sqlite3", check_same_thread=False)
+        self.conn = sqlite3.connect(
+            "db.sqlite3", check_same_thread=False, isolation_level=None
+        )
         self.c = self.conn.cursor()
         _create_tables(self)
 
