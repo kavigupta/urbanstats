@@ -77,7 +77,7 @@ export function UserId(): ReactNode {
 function QuizAuthStatus(): ReactNode {
     const email = QuizPersistent.shared.email.use()
 
-    if (email === undefined) {
+    if (email === null) {
         const signIn = async (e: React.MouseEvent): Promise<void> => {
             e.preventDefault()
             try {
@@ -95,9 +95,6 @@ function QuizAuthStatus(): ReactNode {
                 {' to sync your quiz history across devices.'}
             </>
         )
-    }
-    else if (email === loading) {
-        return ' Loading...'
     }
     else {
         const signOut = (e: React.MouseEvent): void => {

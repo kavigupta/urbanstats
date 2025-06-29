@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/juxtastat/dissociate_email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dissociate Email */
+        post: operations["dissociate_email_juxtastat_dissociate_email_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/juxtastat/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Email Route */
+        get: operations["get_email_route_juxtastat_email_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/juxtastat/friend_request": {
         parameters: {
             query?: never;
@@ -302,6 +336,11 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** AssociateEmailResponse */
+        AssociateEmailResponse: {
+            /** Email */
+            email: string;
+        };
         /** FullText */
         FullText: {
             /** Full Text */
@@ -348,6 +387,11 @@ export interface components {
         LatestDayResponse: {
             /** Latest Day */
             latest_day: number;
+        };
+        /** MaybeEmailReponse */
+        MaybeEmailReponse: {
+            /** Email */
+            email: string | null;
         };
         /** NegativeResult */
         NegativeResult: {
@@ -475,11 +519,111 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssociateEmailResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+        };
+    };
+    dissociate_email_juxtastat_dissociate_email_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-user": string;
+                "x-secure-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+        };
+    };
+    get_email_route_juxtastat_email_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-user": string;
+                "x-secure-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaybeEmailReponse"];
+                };
             };
             /** @description Unauthorized */
             401: {

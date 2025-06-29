@@ -15,7 +15,8 @@ def test_associate_email(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}
 
     # Associating the email again succeeds
     response = client.post(
@@ -23,7 +24,8 @@ def test_associate_email(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}
 
     # Associating a different email fails
     response = client.post(
@@ -40,7 +42,8 @@ def test_juxta_user_stats(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}
 
     # Associating the email again succeeds
     response = client.post(
@@ -48,7 +51,8 @@ def test_juxta_user_stats(client):
         headers=identity_2,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -82,3 +86,62 @@ def test_juxta_user_stats(client):
     )
     assert response.status_code == 200
     assert response.json() == {"latest_day": 2}
+
+
+def test_dissociate_email(client):
+    # Associate an email first
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "email@gmail.com"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}
+
+    # Dissociate the email
+    response = client.post(
+        "/juxtastat/dissociate_email",
+        headers=identity_1,
+    )
+    assert response.status_code == 204
+
+    # After dissociation, get_email should return null
+    response = client.get(
+        "/juxtastat/email",
+        headers=identity_1,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"email": None}
+
+    # Dissociating again should still succeed (idempotent)
+    response = client.post(
+        "/juxtastat/dissociate_email",
+        headers=identity_1,
+    )
+    assert response.status_code == 204
+
+
+def test_get_email_route(client):
+    # No email associated yet
+    response = client.get(
+        "/juxtastat/email",
+        headers=identity_1,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"email": None}
+
+    # Associate an email
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "email@gmail.com"},
+    )
+    assert response.status_code == 200
+
+    # Now get_email should return the email
+    response = client.get(
+        "/juxtastat/email",
+        headers=identity_1,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"email": "email@gmail.com"}

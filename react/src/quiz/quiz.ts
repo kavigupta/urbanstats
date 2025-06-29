@@ -115,12 +115,33 @@ class Property<T> {
 }
 
 export class StoredProperty<T> extends Property<T> {
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
         super(load(localStorage.getItem(localStorageKey)))
+        const weakThis = new WeakRef(this)
+        const listener = (event: StorageEvent): void => {
+            const self = weakThis.deref()
+            if (self === undefined) {
+                removeEventListener('storage', listener)
+            }
+            else if (event.key === localStorageKey) {
+                this.value = load(localStorage.getItem(localStorageKey))
+            }
+        }
+        addEventListener('storage', listener)
+    }
+
+    override get value(): T {
+        return super.value
     }
 
     override set value(newValue: T) {
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
+        const storeValue = this.store(newValue)
+        if (storeValue === null) {
+            localStorage.removeItem(this.localStorageKey)
+        }
+        else {
+            localStorage.setItem(this.localStorageKey, storeValue)
+        }
         super.value = newValue
     }
 }
@@ -130,7 +151,11 @@ export const loading = Symbol('loading')
 export class QuizPersistent {
     private constructor() {
         // Private constructor
-        // TODO: fetch email
+        void client.GET('/juxtastat/email', { params: { header: this.userHeaders() } }).then(({ data }) => {
+            if (data !== undefined) {
+                this.email.value = data.email
+            }
+        })
     }
 
     static shared = new QuizPersistent()
@@ -167,7 +192,7 @@ export class QuizPersistent {
 
     readonly authenticationError = new Property<boolean>(false)
 
-    readonly email = new Property<string | undefined | typeof loading>(loading)
+    readonly email = new StoredProperty<string | null>('quiz_email', v => v, v => v)
 
     exportQuizPersona(): void {
         const exported: QuizPersona = {
@@ -288,7 +313,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             },
         })
         switch (response.status) {
-            case 204:
+            case 200:
                 this.email.value = data!.email
                 return
             case 409:
@@ -306,7 +331,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         })
         switch (response.status) {
             case 204:
-                this.email.value = undefined
+                this.email.value = null
                 return
             default:
                 throw new Error(`Unknown error from server: ${response.status}`)
