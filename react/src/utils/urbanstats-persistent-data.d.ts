@@ -89,23 +89,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/juxtastat/get_full_database": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Juxtastat Get Full Database Request */
-        post: operations["juxtastat_get_full_database_request_juxtastat_get_full_database_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/shorten": {
         parameters: {
             query?: never;
@@ -457,11 +440,6 @@ export interface components {
                 boolean[]
             ][];
         };
-        /** TokenBody */
-        TokenBody: {
-            /** Token */
-            token: string;
-        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -713,57 +691,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InfiniteScoreResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPExceptionModel"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Internal Server Error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPExceptionModel"];
-                };
-            };
-        };
-    };
-    juxtastat_get_full_database_request_juxtastat_get_full_database_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TokenBody"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */

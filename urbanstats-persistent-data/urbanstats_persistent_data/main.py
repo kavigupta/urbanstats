@@ -16,4 +16,4 @@ app.add_middleware(
 )
 
 # pylint: disable=unused-import
-from .routes import email, friends, get_full_database, shorten, stats
+from .routes import email, friends, shorten, stats

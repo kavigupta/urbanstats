@@ -121,15 +121,3 @@ def _create_tables(s: DbSession):
 
 def sqlTuple(length):
     return f"({','.join('?'*length)})"
-
-
-def get_full_database(s: DbSession):
-    # join the user domain table with the individual stats table and get all rows
-    s.c.execute(
-        """
-        SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
-        FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
-        WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user
-        """
-    )
-    return s.c.fetchall()
