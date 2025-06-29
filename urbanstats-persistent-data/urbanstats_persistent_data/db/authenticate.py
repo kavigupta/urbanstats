@@ -9,16 +9,18 @@ def check_secureid(s: DbSession, user: int, secure_id: int):
     if the secure id is correct. If the secure id is incorrect, returns False.
     Otherwise, updates the secure id and returns True.
     """
-    s.c.execute(
-        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
-        (user,),
-    )
-    res = s.c.fetchone()
-    if res is None:
-        # trust on first use
+    with s.conn:
+        s.c.execute("BEGIN IMMEDIATE")
         s.c.execute(
-            "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
-            (user, secure_id),
+            "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
+            (user,),
         )
-        return True
-    return res[0] == secure_id
+        res = s.c.fetchone()
+        if res is None:
+            # trust on first use
+            s.c.execute(
+                "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
+                (user, secure_id),
+            )
+            return True
+        return res[0] == secure_id
