@@ -15,7 +15,7 @@ def test_associate_email(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     # Associating the email again succeeds
     response = client.post(
@@ -23,7 +23,7 @@ def test_associate_email(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     # Associating a different email fails
     response = client.post(
@@ -40,7 +40,7 @@ def test_juxta_user_stats(client):
         headers=identity_1,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     # Associating the email again succeeds
     response = client.post(
@@ -48,7 +48,7 @@ def test_juxta_user_stats(client):
         headers=identity_2,
         json={"token": "email@gmail.com"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -57,8 +57,7 @@ def test_juxta_user_stats(client):
         },
         headers=identity_1,
     )
-    assert response.status_code == 200
-    assert response.json == {}
+    assert response.status_code == 204
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -67,8 +66,7 @@ def test_juxta_user_stats(client):
         },
         headers=identity_2,
     )
-    assert response.status_code == 200
-    assert response.json == {}
+    assert response.status_code == 204
 
     response = client.get(
         "/juxtastat/latest_day",
@@ -76,11 +74,11 @@ def test_juxta_user_stats(client):
     )
     print(response.json)
     assert response.status_code == 200
-    assert response.json == {"latest_day": 2}
+    assert response.json() == {"latest_day": 2}
 
     response = client.get(
         "/juxtastat/latest_day",
         headers=identity_2,
     )
     assert response.status_code == 200
-    assert response.json == {"latest_day": 2}
+    assert response.json() == {"latest_day": 2}

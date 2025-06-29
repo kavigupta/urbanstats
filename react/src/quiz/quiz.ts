@@ -7,7 +7,6 @@ import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 import { client } from '../utils/urbanstats-persistent-client'
 
-import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
@@ -217,14 +216,11 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    async userHeaders(): Promise<{ 'X-User': string, 'X-Secure-Id': string, 'X-Access-Token'?: string }> {
-        const accessToken = await AuthenticationStateMachine.shared.getAccessToken()
-
-        return {
-            'X-User': this.uniquePersistentId.value,
-            'X-Secure-Id': this.uniqueSecureId.value,
-            ...(accessToken === undefined ? {} : { 'X-Access-Token': accessToken }),
-        }
+    userHeaders(): Promise<{ 'x-user': string, 'x-secure-id': string }> {
+        return Promise.resolve({
+            'x-user': this.uniquePersistentId.value,
+            'x-secure-id': this.uniqueSecureId.value,
+        })
     }
 
     async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
@@ -246,15 +242,18 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { data } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await client.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
                     header: await this.userHeaders(),
                 },
             })
 
-            if (data === undefined) {
+            if (response.status === 422) {
                 return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            }
+            if (error !== undefined) {
+                return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
             this.friends.value = [...this.friends.value, [friendName, friendID]]

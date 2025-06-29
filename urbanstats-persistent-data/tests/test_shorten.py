@@ -3,13 +3,13 @@ def test_shorten(client):
 
     assert response.status_code == 200
 
-    shortened = response.json["shortened"]
-    response = client.get("/lengthen", query_string=f"shortened={shortened}")
+    shortened = response.json()["shortened"]
+    response = client.get("/lengthen", params={"shortened": shortened})
 
     assert response.status_code == 200
-    assert response.json == {"full_text": "some_text"}
+    assert response.json() == {"full_text": "some_text"}
 
-    response = client.get("/s", query_string=f"c={shortened}")
+    response = client.get("/s", params={"c": shortened}, follow_redirects=False)
     assert response.status_code == 302
     assert response.headers["Location"] == "https://urbanstats.org/some_text"
 
@@ -22,11 +22,11 @@ def test_shorten_invalid(client):
 
 def test_lengthen_not_found(client):
     # Use a shortened code that does not exist in the DB
-    response = client.get("/lengthen", query_string="shortened=zzz")
+    response = client.get("/lengthen", params={"shortened": "zzz"})
     assert response.status_code == 404
 
 
 def test_redirect_not_found(client):
     # Use a shortened code that does not exist in the DB
-    response = client.get("/s", query_string="c=zzz")
+    response = client.get("/s", params={"c": "zzz"})
     assert response.status_code == 404

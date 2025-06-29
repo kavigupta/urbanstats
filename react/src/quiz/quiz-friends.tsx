@@ -12,9 +12,9 @@ import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizLocal
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
-export type ResultToDisplayForFriends = { corrects: CorrectPattern } | { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null }
+export type ResultToDisplayForFriends = { corrects: CorrectPattern | null } | { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null }
 
-interface FriendResponse { result: ResultToDisplayForFriends | null, friends: boolean }
+type FriendResponse = { result: ResultToDisplayForFriends, friends: true } | { friends: false }
 type FriendScore = { name?: string } & FriendResponse
 
 async function juxtaRetroResponse(
@@ -35,10 +35,7 @@ async function juxtaRetroResponse(
     if (friendScoresResponse === undefined) {
         return undefined // Probably some sort of auth error, handled elsewhere
     }
-    return friendScoresResponse.results.map(x => ({
-        result: x.corrects === null ? null : { corrects: x.corrects },
-        friends: x.friends,
-    }))
+    return friendScoresResponse.results.map(x => x.friends ? { friends: true, result: x } : { friends: false })
 }
 
 async function infiniteResponse(
@@ -56,10 +53,7 @@ async function infiniteResponse(
     if (friendScoresResponse === undefined) {
         return undefined // Probably some sort of auth error, handled elsewhere
     }
-    return friendScoresResponse.results.map(x => ({
-        result: { forThisSeed: x.forThisSeed, maxScore: x.maxScore, maxScoreSeed: x.maxScoreSeed, maxScoreVersion: x.maxScoreVersion },
-        friends: x.friends,
-    }))
+    return friendScoresResponse.results.map(x => x.friends ? { friends: true, result: x } : { friends: false })
 }
 
 export function QuizFriendsPanel(props: {
@@ -93,7 +87,7 @@ export function QuizFriendsPanel(props: {
                     return
                 }
                 setFriendScores(friendScoresResponse.map(
-                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], result: x.result, friends: x.friends }),
+                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], ...x }),
                 ))
             }
             catch {
@@ -105,7 +99,7 @@ export function QuizFriendsPanel(props: {
         })()
     }, [props.quizDescriptor, props.quizFriends, user, secureID])
 
-    const allResults = [props.myResult, ...friendScores.map(x => x.result)].filter(x => x !== null)
+    const allResults = [props.myResult, ...friendScores.flatMap(x => x.friends ? [x.result] : [])]
 
     const content = (
         <div>
@@ -325,11 +319,6 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
             </div>
         )
     }
-    if (props.result === null) {
-        return (
-            <div style={greyedOut}>Not Done Yet</div>
-        )
-    }
     if ('forThisSeed' in props.result) {
         const link
             = props.result.maxScoreSeed === null || props.result.maxScoreVersion === null
@@ -356,6 +345,11 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
                     <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore ?? '-'}</a>
                 </div>
             </div>
+        )
+    }
+    if (props.result.corrects === null) {
+        return (
+            <div style={greyedOut}>Not Done Yet</div>
         )
     }
     const corrects = props.result.corrects
