@@ -15,23 +15,34 @@ table_for_quiz_kind = {
 problem_id_for_quiz_kind = {QuizKind.juxtastat: "day", QuizKind.retrostat: "week"}
 
 
-def table():
-    conn = sqlite3.connect("db.sqlite3")
-    c = conn.cursor()
+class DbSession:
+    conn: sqlite3.Connection
+    c: sqlite3.Cursor
+
+    def __init__(self):
+        print("new dbsession")
+        self.conn = sqlite3.connect(
+            "db.sqlite3", check_same_thread=False, isolation_level=None
+        )
+        self.c = self.conn.cursor()
+        _create_tables(self)
+
+
+def _create_tables(s: DbSession):
     # primary key is user id (as an integer)
     # day is the challenge day number
     # corrects is an integer representing the correct answers as a bitmap
-    c.execute(
+    s.c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
         (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day))"""
     )
     # retrostat
-    c.execute(
+    s.c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStatsRetrostat
         (user integer, week integer, corrects integer, time integer, PRIMARY KEY (user, week))"""
     )
     # juxtastat infinite
-    c.execute(
+    s.c.execute(
         """CREATE TABLE IF NOT EXISTS JuxtaStatInfiniteStats (
             user integer,
             seed string,
@@ -45,27 +56,34 @@ def table():
     )
 
     # user to domain name
-    c.execute(
+    s.c.execute(
         """
         CREATE TABLE IF NOT EXISTS JuxtaStatUserDomain (user integer PRIMARY KEY, domain text)
         """
     )
     # user to secure id
-    c.execute(
+    s.c.execute(
         """
         CREATE TABLE IF NOT EXISTS JuxtaStatUserSecureID (user integer PRIMARY KEY, secure_id integer)
         """
     )
-    c.execute(
+    s.c.execute(
         """
         CREATE TABLE IF NOT EXISTS FriendRequests (requestee integer, requester integer, UNIQUE(requestee, requester))
         """
     )
     # Map email <->> user
-    c.execute(
+    s.c.execute(
         """
         CREATE TABLE IF NOT EXISTS EmailUsers (email text, user integer PRIMARY KEY, UNIQUE(email, user))
         """
+    )
+    # if table does not exist, create it
+    # primary key is shortened (as an integer)
+    # full is the full text
+    s.c.execute(
+        """CREATE TABLE IF NOT EXISTS ShortenedData
+                 (shortened integer PRIMARY KEY, full text)"""
     )
     # ADD THESE LATER IF WE NEED THEM
     # For now, we can just calculate them from the individual stats
@@ -98,18 +116,16 @@ def table():
     #           score5 integer
     #     )"""
     # )
-    conn.commit()
-    return conn, c
+    s.conn.commit()
 
 
-def get_full_database():
-    _, c = table()
+def get_full_database(s: DbSession):
     # join the user domain table with the individual stats table and get all rows
-    c.execute(
+    s.c.execute(
         """
         SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
         FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
         WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user
         """
     )
-    return c.fetchall()
+    return s.c.fetchall()

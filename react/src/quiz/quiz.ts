@@ -216,10 +216,10 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    userHeaders(): { 'X-User': string, 'X-Secure-Id': string } {
+    userHeaders(): { 'x-user': string, 'x-secure-id': string } {
         return {
-            'X-User': this.uniquePersistentId.value,
-            'X-Secure-Id': this.uniqueSecureId.value,
+            'x-user': this.uniquePersistentId.value,
+            'x-secure-id': this.uniqueSecureId.value,
         }
     }
 
@@ -242,15 +242,18 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { data } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await client.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
                     header: this.userHeaders(),
                 },
             })
 
-            if (data === undefined) {
+            if (response.status === 422) {
                 return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            }
+            if (error !== undefined) {
+                return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
             this.friends.value = [...this.friends.value, [friendName, friendID]]

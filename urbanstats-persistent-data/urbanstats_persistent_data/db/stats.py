@@ -1,92 +1,94 @@
 import time
-from typing import List, Tuple
+import typing as t
 
+from ..dependencies.authenticate import AuthenticatedRequest
+from ..dependencies.db_session import DbSession
 from ..utils import corrects_to_bytes
-from .utils import table
 
 
-def register_user(user, domain):
+def register_user(req: AuthenticatedRequest, domain: str):
     """
     Register a user with a secure id and domain.
     This is Trust on First Use (TOFU) authentication.
     """
-    conn, c = table()
-    c.execute(
+    req.s.c.execute(
         "INSERT OR REPLACE INTO JuxtaStatUserDomain VALUES (?, ?)",
-        (user, domain),
+        (req.user_id, domain),
     )
-    conn.commit()
 
 
-def latest_day_from_table(user: int, table_name, column):
-    _, c = table()
-    c.execute(
+def latest_day_from_table(req: AuthenticatedRequest, table_name, column):
+    req.s.c.execute(
         f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user = ?",
-        (user,),
+        (req.user_id,),
     )
-    return c.fetchone()[0]
+    return req.s.c.fetchone()[0]
 
 
-def latest_day(user: int):
-    return latest_day_from_table(user, "JuxtaStatIndividualStats", "day")
+def latest_day(req: AuthenticatedRequest):
+    return latest_day_from_table(req, "JuxtaStatIndividualStats", "day")
 
 
-def latest_week_retrostat(user):
-    return latest_day_from_table(user, "JuxtaStatIndividualStatsRetrostat", "week")
+def latest_week_retrostat(req: AuthenticatedRequest):
+    return latest_day_from_table(req, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
-def corrects_to_bitvector(corrects: List[bool]) -> int:
+def corrects_to_bitvector(corrects: t.List[bool]) -> int:
     return sum(2**i for i, correct in enumerate(corrects) if correct)
 
 
-def bitvector_to_corrects(bitvector: int) -> List[bool]:
+def bitvector_to_corrects(bitvector: int) -> t.List[bool]:
     return [bool(bitvector & (2**i)) for i in range(5)]
 
 
 def store_user_stats_into_table(
-    user, day_stats: List[Tuple[int, List[bool]]], table_name
+    req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool]]], table_name
 ):
-    conn, c = table()
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
     time_unix_millis = round(time.time() * 1000)
-    c.executemany(
+    req.s.c.executemany(
         f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?)",
         [
-            (user, day, corrects_to_bitvector(corrects), time_unix_millis)
+            (req.user_id, day, corrects_to_bitvector(corrects), time_unix_millis)
             for day, corrects in day_stats
         ],
     )
-    conn.commit()
 
 
-def store_user_stats(user, day_stats: List[Tuple[int, List[bool]]]):
-    store_user_stats_into_table(user, day_stats, "JuxtaStatIndividualStats")
+def store_user_stats(
+    req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool]]]
+):
+    store_user_stats_into_table(req, day_stats, "JuxtaStatIndividualStats")
 
 
-def store_user_stats_retrostat(user, week_stats: List[Tuple[int, List[bool]]]):
-    store_user_stats_into_table(user, week_stats, "JuxtaStatIndividualStatsRetrostat")
+def store_user_stats_retrostat(
+    req: AuthenticatedRequest, week_stats: t.List[t.Tuple[int, t.List[bool]]]
+):
+    store_user_stats_into_table(req, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
-def has_infinite_stats(user, seeds_versions: List[Tuple[str, int]]):
-    _, c = table()
-    c.execute(
+def has_infinite_stats(
+    req: AuthenticatedRequest, seeds_versions: t.List[t.Tuple[str, int]]
+):
+    req.s.c.execute(
         "SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user = ?",
-        (user,),
+        (req.user_id,),
     )
-    results = c.fetchall()
+    results = req.s.c.fetchall()
     results = set(results)
     return [(seed, version) in results for seed, version in seeds_versions]
 
 
-def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
-    conn, c = table()
+def store_user_stats_infinite(
+    req: AuthenticatedRequest, seed, version, corrects: t.List[bool]
+):
     correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
-    c.execute(
+    req.s.c.execute(
         "INSERT OR REPLACE INTO JuxtaStatInfiniteStats VALUES (?, ?, ?, ?, ?, ?, ?)",
         (
-            user,
+            req.user_id,
             seed,
             version,
             correctBytes,
@@ -95,12 +97,10 @@ def store_user_stats_infinite(user, seed, version, corrects: List[bool]):
             time_unix_millis,
         ),
     )
-    conn.commit()
 
 
-def get_per_question_stats_from_table(day, table_name, column):
-    _, c = table()
-    c.execute(
+def get_per_question_stats_from_table(s: DbSession, day, table_name, column):
+    s.c.execute(
         f"""
         SELECT corrects
         FROM {table_name}
@@ -111,7 +111,7 @@ def get_per_question_stats_from_table(day, table_name, column):
         """,
         (day,),
     )
-    corrects = c.fetchall()
+    corrects = s.c.fetchall()
     corrects = [x[0] for x in corrects]
     corrects = [bitvector_to_corrects(x) for x in corrects]
     corrects = list(zip(*corrects))
@@ -121,11 +121,11 @@ def get_per_question_stats_from_table(day, table_name, column):
     )
 
 
-def get_per_question_stats(day):
-    return get_per_question_stats_from_table(day, "JuxtaStatIndividualStats", "day")
+def get_per_question_stats(s: DbSession, day):
+    return get_per_question_stats_from_table(s, day, "JuxtaStatIndividualStats", "day")
 
 
-def get_per_question_stats_retrostat(week):
+def get_per_question_stats_retrostat(s: DbSession, week):
     return get_per_question_stats_from_table(
-        week, "JuxtaStatIndividualStatsRetrostat", "week"
+        s, week, "JuxtaStatIndividualStatsRetrostat", "week"
     )

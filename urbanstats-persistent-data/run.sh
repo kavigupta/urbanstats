@@ -7,4 +7,4 @@ rm -r venv
 virtualenv -p python3 venv
 source venv/bin/activate
 pip3 install -r requirements.txt
-gunicorn --workers=10 --timeout=100 -b 0.0.0.0:443 --certfile $certificate --keyfile $key urbanstats_persistent_data.main:app
+uvicorn --workers 10 --ssl-certfile $certificate --ssl-keyfile $key --port 443 urbanstats_persistent_data.main:app
