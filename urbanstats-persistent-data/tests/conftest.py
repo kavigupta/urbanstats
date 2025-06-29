@@ -23,14 +23,6 @@ def setup_app(mocker):
 
     mocker.patch("requests.get", mock_get)
 
-    def mock_valid_token(token):
-        return token == "valid"
-
-    mocker.patch(
-        "urbanstats_persistent_data.routes.get_full_database.valid_token",
-        mock_valid_token,
-    )
-
     db_path = os.path.join(os.path.dirname(__file__), "..", "db.sqlite3")
     if os.path.exists(db_path):
         os.remove(db_path)
