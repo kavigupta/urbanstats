@@ -20,7 +20,8 @@ class DbSession:
     c: sqlite3.Cursor
 
     def __init__(self):
-        self.conn = sqlite3.connect("db.sqlite3")
+        print("new dbsession")
+        self.conn = sqlite3.connect("db.sqlite3", check_same_thread=False)
         self.c = self.conn.cursor()
         _create_tables(self)
 
