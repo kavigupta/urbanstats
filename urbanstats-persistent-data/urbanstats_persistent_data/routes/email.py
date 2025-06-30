@@ -1,4 +1,5 @@
 import json
+import typing as t
 
 import fastapi
 import requests
@@ -7,8 +8,6 @@ from pydantic import BaseModel
 from ..db.email import associate_email_db, dissociate_email_db, get_user_email
 from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
 from ..main import app
-
-import typing as t
 
 
 class AssociateEmailRequestBody(BaseModel):
