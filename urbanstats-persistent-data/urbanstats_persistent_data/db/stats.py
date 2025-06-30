@@ -1,13 +1,15 @@
 import time
 import typing as t
 
+from pydantic import BaseModel
+
+from ..db.utils import DbSession
 from ..dependencies.authenticate import AuthenticatedRequest
-from ..dependencies.db_session import DbSession
 from ..utils import corrects_to_bytes
 from .utils import sqlTuple
 
 
-def register_user(req: AuthenticatedRequest, domain: str):
+def register_user(req: AuthenticatedRequest, domain: str) -> None:
     """
     Register a user with a secure id and domain.
     This is Trust on First Use (TOFU) authentication.
@@ -18,19 +20,21 @@ def register_user(req: AuthenticatedRequest, domain: str):
     )
 
 
-def latest_day_from_table(req: AuthenticatedRequest, table_name, column):
+def latest_day_from_table(
+    req: AuthenticatedRequest, table_name: str, column: str
+) -> int:
     req.s.c.execute(
         f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
         req.associated_user_ids,
     )
-    return req.s.c.fetchone()[0]
+    return t.cast(int, req.s.c.fetchone()[0])
 
 
-def latest_day(req: AuthenticatedRequest):
+def latest_day(req: AuthenticatedRequest) -> int:
     return latest_day_from_table(req, "JuxtaStatIndividualStats", "day")
 
 
-def latest_week_retrostat(req: AuthenticatedRequest):
+def latest_week_retrostat(req: AuthenticatedRequest) -> int:
     return latest_day_from_table(req, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
@@ -43,8 +47,10 @@ def bitvector_to_corrects(bitvector: int) -> t.List[bool]:
 
 
 def store_user_stats_into_table(
-    req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool]]], table_name
-):
+    req: AuthenticatedRequest,
+    day_stats: t.List[t.Tuple[int, t.List[bool]]],
+    table_name: str,
+) -> None:
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
     time_unix_millis = round(time.time() * 1000)
@@ -59,31 +65,30 @@ def store_user_stats_into_table(
 
 def store_user_stats(
     req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool]]]
-):
+) -> None:
     store_user_stats_into_table(req, day_stats, "JuxtaStatIndividualStats")
 
 
 def store_user_stats_retrostat(
     req: AuthenticatedRequest, week_stats: t.List[t.Tuple[int, t.List[bool]]]
-):
+) -> None:
     store_user_stats_into_table(req, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
 
 def has_infinite_stats(
     req: AuthenticatedRequest, seeds_versions: t.List[t.Tuple[str, int]]
-):
+) -> t.List[bool]:
     req.s.c.execute(
         f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
         req.associated_user_ids,
     )
-    results = req.s.c.fetchall()
-    results = set(results)
+    results = set(req.s.c.fetchall())
     return [(seed, version) in results for seed, version in seeds_versions]
 
 
 def store_user_stats_infinite(
-    req: AuthenticatedRequest, seed, version, corrects: t.List[bool]
-):
+    req: AuthenticatedRequest, seed: str, version: int, corrects: t.List[bool]
+) -> None:
     correctBytes = corrects_to_bytes(corrects)
     time_unix_millis = round(time.time() * 1000)
     req.s.c.execute(
@@ -100,7 +105,14 @@ def store_user_stats_infinite(
     )
 
 
-def get_per_question_stats_from_table(s: DbSession, day, table_name, column):
+class PerQuestionStats(BaseModel):
+    total: int
+    per_question: t.List[int]
+
+
+def get_per_question_stats_from_table(
+    s: DbSession, day: int, table_name: str, column: str
+) -> PerQuestionStats:
     s.c.execute(
         f"""
         SELECT corrects
@@ -116,17 +128,17 @@ def get_per_question_stats_from_table(s: DbSession, day, table_name, column):
     corrects = [x[0] for x in corrects]
     corrects = [bitvector_to_corrects(x) for x in corrects]
     corrects = list(zip(*corrects))
-    return dict(
+    return PerQuestionStats(
         total=len(corrects[0]) if corrects else 0,
         per_question=[sum(x) for x in corrects],
     )
 
 
-def get_per_question_stats(s: DbSession, day):
+def get_per_question_stats(s: DbSession, day: int) -> PerQuestionStats:
     return get_per_question_stats_from_table(s, day, "JuxtaStatIndividualStats", "day")
 
 
-def get_per_question_stats_retrostat(s: DbSession, week):
+def get_per_question_stats_retrostat(s: DbSession, week: int) -> PerQuestionStats:
     return get_per_question_stats_from_table(
         s, week, "JuxtaStatIndividualStatsRetrostat", "week"
     )

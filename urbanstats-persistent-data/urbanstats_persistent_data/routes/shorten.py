@@ -29,7 +29,7 @@ def lengthen_request(s: GetDbSession, shortened: str) -> FullText:
 
 
 @app.get("/s", status_code=302, responses={404: {"model": HTTPExceptionModel}})
-def route_s(s: GetDbSession, c: str):
+def route_s(s: GetDbSession, c: str) -> fastapi.responses.RedirectResponse:
     post_url = retreive_and_lengthen(s, c)
     if post_url is None:
         raise fastapi.HTTPException(404, "Shortened text not found!")
