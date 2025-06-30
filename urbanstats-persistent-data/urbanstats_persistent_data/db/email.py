@@ -1,8 +1,7 @@
 import sqlite3
+import typing as t
 
 from .utils import DbSession
-
-import typing as t
 
 
 def associate_email_db(s: DbSession, user: int, email: str) -> None:
