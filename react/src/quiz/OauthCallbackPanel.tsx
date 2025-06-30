@@ -5,6 +5,7 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { mixWithBackground } from '../utils/color'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { QuizPersistent } from './quiz'
 
 export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallback' }>): ReactNode {
@@ -16,7 +17,7 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
         padding: '10px',
     }
 
-    const email = QuizPersistent.shared.email.use()
+    const state = AuthenticationStateMachine.shared.useState()
 
     return (
         <PageTemplate showFooter={false}>
@@ -27,11 +28,11 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
                                 <h1>Signed In!</h1>
                                 <p>
                                     Sign in to your other devices
-                                    { typeof email === 'string'
+                                    { state.state === 'signedIn'
                                         ? (
                                                 <>
                                                     {' with '}
-                                                    <b>{email}</b>
+                                                    <b>{state.email}</b>
                                                     {' '}
                                                 </>
                                             )

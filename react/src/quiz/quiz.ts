@@ -151,11 +151,6 @@ export const loading = Symbol('loading')
 export class QuizPersistent {
     private constructor() {
         // Private constructor
-        void client.GET('/juxtastat/email', { params: { header: this.userHeaders() } }).then(({ data }) => {
-            if (data !== undefined) {
-                this.email.value = data.email
-            }
-        })
     }
 
     static shared = new QuizPersistent()
@@ -191,8 +186,6 @@ export class QuizPersistent {
     readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
     readonly authenticationError = new Property<boolean>(false)
-
-    readonly email = new StoredProperty<string | null>('quiz_email', v => v, v => v)
 
     exportQuizPersona(): void {
         const exported: QuizPersona = {
@@ -300,41 +293,6 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
         catch {
             return { errorMessage: 'Network Error', problemDomain: 'other' }
-        }
-    }
-
-    async associateEmail(accessToken: string): Promise<void> {
-        const { response, data } = await client.POST('/juxtastat/associate_email', {
-            params: {
-                header: this.userHeaders(),
-            },
-            body: {
-                token: accessToken,
-            },
-        })
-        switch (response.status) {
-            case 200:
-                this.email.value = data!.email
-                return
-            case 409:
-                throw new Error('This device is already associated with a different email.')
-            default:
-                throw new Error(`Unknown error from server: ${response.status}`)
-        }
-    }
-
-    async dissociateEmail(): Promise<void> {
-        const { response } = await client.POST('/juxtastat/dissociate_email', {
-            params: {
-                header: this.userHeaders(),
-            },
-        })
-        switch (response.status) {
-            case 204:
-                this.email.value = null
-                return
-            default:
-                throw new Error(`Unknown error from server: ${response.status}`)
         }
     }
 }

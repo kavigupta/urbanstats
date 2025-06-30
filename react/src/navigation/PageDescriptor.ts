@@ -646,8 +646,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'oauthCallback': {
             let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
             try {
-                const { completeSignIn } = await import('../quiz/auth')
-                await completeSignIn(newDescriptor)
+                const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
+                await AuthenticationStateMachine.shared.completeSignIn(newDescriptor)
                 result = { success: true }
             }
             catch (e) {

@@ -5,9 +5,9 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
-import { startSignIn } from './auth'
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { loading, nameOfQuizKind, QuizHistory, QuizKind, QuizPersistent } from './quiz'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizPersistent } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -75,13 +75,13 @@ export function UserId(): ReactNode {
 }
 
 function QuizAuthStatus(): ReactNode {
-    const email = QuizPersistent.shared.email.use()
+    const state = AuthenticationStateMachine.shared.useState()
 
-    if (email === null) {
+    if (state.state === 'signedOut') {
         const signIn = async (e: React.MouseEvent): Promise<void> => {
             e.preventDefault()
             try {
-                const url = await startSignIn()
+                const url = await AuthenticationStateMachine.shared.startSignIn()
                 window.open(url, '_blank', 'popup,width=500,height=600')
             }
             catch (error) {
@@ -99,12 +99,12 @@ function QuizAuthStatus(): ReactNode {
     else {
         const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
-            void QuizPersistent.shared.dissociateEmail()
+            void AuthenticationStateMachine.shared.userSignOut()
         }
 
         return (
             <>
-                {` Signed in with ${email}. `}
+                {` Signed in with ${state.email}. `}
                 <a href="" onClick={signOut}>Sign Out</a>
             </>
         )
