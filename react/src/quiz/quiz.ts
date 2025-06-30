@@ -124,13 +124,8 @@ class Property<T> {
 export class StoredProperty<T> extends Property<T> {
     constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
         super(load(localStorage.getItem(localStorageKey)))
-        const weakThis = new WeakRef(this)
         const listener = (event: StorageEvent): void => {
-            const self = weakThis.deref()
-            if (self === undefined) {
-                removeEventListener('storage', listener)
-            }
-            else if (event.key === localStorageKey) {
+            if (event.key === localStorageKey) {
                 this.value = load(localStorage.getItem(localStorageKey))
             }
         }

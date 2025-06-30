@@ -85,6 +85,8 @@ export class AuthenticationStateMachine {
     }
     /* eslint-enable react-hooks/rules-of-hooks */
 
+    private isSyncing = false
+
     private constructor() {
         this._state = loadState()
         addEventListener('storage', (event) => {
@@ -98,18 +100,36 @@ export class AuthenticationStateMachine {
 
         void this.syncEmailAssociation()
 
-        QuizPersistent.shared.history.observers.add(() => this.syncProfile())
-        QuizPersistent.shared.friends.observers.add(() => this.syncProfile())
+        let syncTimeout: ReturnType<typeof setTimeout> | undefined
+        const syncDelay = 1000
+
+        const obeserver = (): void => {
+            if (!this.isSyncing) {
+                clearTimeout(syncTimeout)
+                syncTimeout = setTimeout(() => this.syncProfile(), syncDelay)
+            }
+        }
+
+        QuizPersistent.shared.history.observers.add(obeserver)
+        QuizPersistent.shared.friends.observers.add(obeserver)
 
         void this.syncProfile()
     }
 
-    private async syncProfile(): Promise<void> {
-        const token = await this.getAccessToken()
+    private async syncProfile(token?: string): Promise<void> {
+        if (token === undefined) {
+            token = await this.getAccessToken()
+        }
         if (token === undefined) {
             return
         }
-        await syncWithGoogleDrive(token)
+        try {
+            this.isSyncing = true
+            await syncWithGoogleDrive(token)
+        }
+        finally {
+            this.isSyncing = false
+        }
     }
 
     private async syncEmailAssociation(): Promise<void> {
@@ -133,8 +153,11 @@ export class AuthenticationStateMachine {
 
     // Returns a URL for the user to visit
     async startSignIn(): Promise<string> {
-        const codeVerifier = await generateCodeVerifier()
-        localStorage.setItem(codeVerifierKey, codeVerifier)
+        let codeVerifier = localStorage.getItem(codeVerifierKey)
+        if (codeVerifier === null) {
+            codeVerifier = await generateCodeVerifier()
+            localStorage.setItem(codeVerifierKey, codeVerifier)
+        }
         return await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
             codeVerifier,
@@ -155,6 +178,7 @@ export class AuthenticationStateMachine {
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
+        localStorage.removeItem(codeVerifierKey)
 
         const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
@@ -165,14 +189,14 @@ export class AuthenticationStateMachine {
 
         const email = await this.associateEmail(token.accessToken)
 
+        await this.syncProfile(token.accessToken)
+
         this.setState({
             state: 'signedIn',
             token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
             email,
             persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
-
-        void this.syncProfile()
     }
 
     private async associateEmail(accessToken: string): Promise<string> {

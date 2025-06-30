@@ -13,6 +13,8 @@ export async function syncWithGoogleDrive(token: string): Promise<void> {
         return
     }
     const mergedProfile = mergeProfiles(localProfile, remoteProfile)
+    QuizPersistent.shared.history.value = mergedProfile.quiz_history
+    QuizPersistent.shared.friends.value = mergedProfile.friends
     await uploadProfile(token, mergedProfile, fileId)
 }
 
@@ -44,8 +46,15 @@ export function mergeHistories(a: QuizHistory, b: QuizHistory): QuizHistory {
     const conflicts = historyConflicts(a, b)
     return {
         ...a, ...b, ...Object.fromEntries(conflicts.map((key) => {
-            const aCorrect = a[key].correct_pattern.filter(value => value).length
-            const bCorrect = b[key].correct_pattern.filter(value => value).length
+            const aPattern = a[key].correct_pattern
+            const bPattern = b[key].correct_pattern
+            if (aPattern.length !== bPattern.length) {
+                // If one is more complete, return that one, since the user is taking the quiz
+                return [key, aPattern.length > bPattern.length ? a[key] : b[key]]
+            }
+
+            const aCorrect = aPattern.filter(value => value).length
+            const bCorrect = bPattern.filter(value => value).length
             let quizRecord
             if (aCorrect !== bCorrect) {
                 quizRecord = bCorrect > aCorrect ? a[key] : b[key]
