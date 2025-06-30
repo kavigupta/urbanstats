@@ -27,13 +27,14 @@ def test_associate_email(client):
     assert response.status_code == 200
     assert response.json() == {"email": "email@gmail.com"}
 
-    # Associating a different email fails
+    # Associating a different email succeeds
     response = client.post(
         "/juxtastat/associate_email",
         headers=identity_1,
         json={"token": "email2@gmail.com"},
     )
-    assert response.status_code == 409
+    assert response.status_code == 200
+    assert response.json() == {"email": "email2@gmail.com"}
 
 
 def test_juxta_user_stats(client):

@@ -21,6 +21,7 @@ import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -180,7 +181,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
-    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true } }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
         error: unknown
@@ -644,6 +645,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'oauthCallback': {
+            const panel = import('../quiz/OauthCallbackPanel')
             let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
             try {
                 const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
@@ -659,7 +661,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 }
             }
             return {
-                pageData: { kind: 'oauthCallback', result },
+                pageData: { kind: 'oauthCallback', result, oauthCallbackPanel: (await panel).OauthCallbackPanel },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
