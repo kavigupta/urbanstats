@@ -10,7 +10,7 @@ from fastapi.openapi.utils import get_openapi
 from .main import app
 
 
-def update_openapi_typescript():
+def update_openapi_typescript() -> None:
     spec = get_openapi(
         title=app.title,
         version=app.version,

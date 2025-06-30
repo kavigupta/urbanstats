@@ -1,7 +1,9 @@
-from ..dependencies.db_session import DbSession
+import typing as t
+
+from .utils import DbSession
 
 
-def check_secureid(s: DbSession, user: int, secure_id: int):
+def check_secureid(s: DbSession, user: int, secure_id: int) -> bool:
     """
     Returns True iff the secure_id is correct for the given user.
 
@@ -23,4 +25,4 @@ def check_secureid(s: DbSession, user: int, secure_id: int):
                 (user, secure_id),
             )
             return True
-        return res[0] == secure_id
+        return t.cast(int, res[0]) == secure_id

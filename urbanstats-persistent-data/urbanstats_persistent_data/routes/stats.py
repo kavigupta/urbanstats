@@ -3,6 +3,7 @@ import typing as t
 from pydantic import BaseModel
 
 from ..db.stats import (
+    PerQuestionStats,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     has_infinite_stats,
@@ -26,7 +27,7 @@ class RegisterBody(BaseModel):
 def juxtastat_register_user_request(
     req: AuthenticateRequest,
     body: RegisterBody,
-):
+) -> None:
     register_user(req, body.domain)
 
 
@@ -59,7 +60,7 @@ class StoreUserStatsBody(BaseModel):
 )
 def juxtastat_store_user_stats_request(
     req: AuthenticateRequest, body: StoreUserStatsBody
-):
+) -> None:
     store_user_stats(req, body.day_stats)
 
 
@@ -91,7 +92,7 @@ class StoreInfiniteUserStatsBody(BaseModel):
 )
 def juxtastat_infinite_store_user_stats_request(
     req: AuthenticateRequest, body: StoreInfiniteUserStatsBody
-):
+) -> None:
     store_user_stats_infinite(req, body.seed, body.version, body.corrects)
 
 
@@ -100,19 +101,14 @@ def juxtastat_infinite_store_user_stats_request(
 )
 def retrostat_store_user_stats_request(
     req: AuthenticateRequest, body: StoreUserStatsBody
-):
+) -> None:
     store_user_stats_retrostat(req, body.day_stats)
-
-
-class PerQuestionResponse(BaseModel):
-    total: int
-    per_question: t.List[int]
 
 
 @app.get("/juxtastat/get_per_question_stats")
 def juxtastat_get_per_question_stats_request(
     s: GetDbSession, day: int
-) -> PerQuestionResponse:
+) -> PerQuestionStats:
     return get_per_question_stats(s, day)
 
 
@@ -123,5 +119,5 @@ class GetPerQuestionRetroStatsRequest(BaseModel):
 @app.get("/retrostat/get_per_question_stats")
 def retrostat_get_per_question_stats_request(
     s: GetDbSession, week: int
-) -> PerQuestionResponse:
+) -> PerQuestionStats:
     return get_per_question_stats_retrostat(s, week)

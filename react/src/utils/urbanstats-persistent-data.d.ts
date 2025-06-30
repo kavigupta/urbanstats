@@ -280,6 +280,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Corrects */
+        Corrects: {
+            /**
+             * Friends
+             * @constant
+             */
+            friends: true;
+            /** Corrects */
+            corrects: boolean[] | null;
+        };
         /** FullText */
         FullText: {
             /** Full Text */
@@ -308,6 +318,22 @@ export interface components {
             /** Has */
             has: boolean[];
         };
+        /** InfiniteResult */
+        InfiniteResult: {
+            /**
+             * Friends
+             * @constant
+             */
+            friends: true;
+            /** Forthisseed */
+            forThisSeed: number | null;
+            /** Maxscore */
+            maxScore: number | null;
+            /** Maxscoreseed */
+            maxScoreSeed: string | null;
+            /** Maxscoreversion */
+            maxScoreVersion: number | null;
+        };
         /** InfiniteScoreRequestBody */
         InfiniteScoreRequestBody: {
             /** Requesters */
@@ -320,7 +346,7 @@ export interface components {
         /** InfiniteScoreResponse */
         InfiniteScoreResponse: {
             /** Results */
-            results: (components["schemas"]["NegativeResult"] | components["schemas"]["PositiveInfiniteResult"])[];
+            results: (components["schemas"]["NegativeResult"] | components["schemas"]["InfiniteResult"])[];
         };
         /** LatestDayResponse */
         LatestDayResponse: {
@@ -335,38 +361,12 @@ export interface components {
              */
             friends: false;
         };
-        /** PerQuestionResponse */
-        PerQuestionResponse: {
+        /** PerQuestionStats */
+        PerQuestionStats: {
             /** Total */
             total: number;
             /** Per Question */
             per_question: number[];
-        };
-        /** PositiveInfiniteResult */
-        PositiveInfiniteResult: {
-            /** Forthisseed */
-            forThisSeed: number | null;
-            /** Maxscore */
-            maxScore: number | null;
-            /** Maxscoreseed */
-            maxScoreSeed: string | null;
-            /** Maxscoreversion */
-            maxScoreVersion: number | null;
-            /**
-             * Friends
-             * @constant
-             */
-            friends: true;
-        };
-        /** PositiveResult */
-        PositiveResult: {
-            /** Corrects */
-            corrects: boolean[] | null;
-            /**
-             * Friends
-             * @constant
-             */
-            friends: true;
         };
         /**
          * QuizKind
@@ -394,7 +394,7 @@ export interface components {
         /** ScoreResponse */
         ScoreResponse: {
             /** Results */
-            results: (components["schemas"]["NegativeResult"] | components["schemas"]["PositiveResult"])[];
+            results: (components["schemas"]["NegativeResult"] | components["schemas"]["Corrects"])[];
         };
         /** Shortened */
         Shortened: {
@@ -1167,7 +1167,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PerQuestionResponse"];
+                    "application/json": components["schemas"]["PerQuestionStats"];
                 };
             };
             /** @description Validation Error */
@@ -1207,7 +1207,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PerQuestionResponse"];
+                    "application/json": components["schemas"]["PerQuestionStats"];
                 };
             };
             /** @description Validation Error */

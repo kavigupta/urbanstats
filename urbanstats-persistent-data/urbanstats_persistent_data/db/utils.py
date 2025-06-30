@@ -19,7 +19,7 @@ class DbSession:
     conn: sqlite3.Connection
     c: sqlite3.Cursor
 
-    def __init__(self):
+    def __init__(self) -> None:
         print("new dbsession")
         self.conn = sqlite3.connect(
             "db.sqlite3", check_same_thread=False, isolation_level=None
@@ -28,7 +28,7 @@ class DbSession:
         _create_tables(self)
 
 
-def _create_tables(s: DbSession):
+def _create_tables(s: DbSession) -> None:
     # primary key is user id (as an integer)
     # day is the challenge day number
     # corrects is an integer representing the correct answers as a bitmap
