@@ -119,5 +119,5 @@ def _create_tables(s: DbSession) -> None:
     s.conn.commit()
 
 
-def sqlTuple(length):
+def sqlTuple(length: int) -> str:
     return f"({','.join('?'*length)})"

@@ -27,14 +27,12 @@ def associate_email(
     return AssociateEmailResponse(email=email)
 
 
-def get_email_from_token(token):
+def get_email_from_token(token: str) -> str:
     response = requests.get(
         f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
     )
     if response.status_code // 100 == 4:
-        raise fastapi.HTTPException(
-            401, "Couldn't validate access token", "access_token"
-        )
+        raise fastapi.HTTPException(401, "Couldn't validate access token")
     if response.status_code != 200:
         raise fastapi.HTTPException(
             500, "Couldn't communicate successfully with Google"
@@ -53,7 +51,7 @@ def get_email_from_token(token):
 @app.post(
     "/juxtastat/dissociate_email", responses=authenticate_responses, status_code=204
 )
-def dissociate_email(req: AuthenticateRequest):
+def dissociate_email(req: AuthenticateRequest) -> None:
     dissociate_email_db(req.s, req.user_id)
 
 

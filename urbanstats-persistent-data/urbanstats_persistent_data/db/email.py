@@ -1,33 +1,35 @@
-import fastapi
+import sqlite3
 
 from .utils import DbSession
 
+import typing as t
 
-def associate_email_db(s: DbSession, user: int, email: str):
+
+def associate_email_db(s: DbSession, user: int, email: str) -> None:
     s.c.execute(
         "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
         (email, user),
     )
 
 
-def dissociate_email_db(s: DbSession, user: int):
+def dissociate_email_db(s: DbSession, user: int) -> None:
     s.c.execute("DELETE FROM EmailUsers WHERE user = ?", (user,))
 
 
-def get_email_users(c, email):
+def get_email_users(c: sqlite3.Cursor, email: str) -> t.List[int]:
     c.execute("SELECT user FROM EmailUsers WHERE email=?", (email,))
     return [row[0] for row in c.fetchall()]
 
 
-def get_user_email(c, user):
+def get_user_email(c: sqlite3.Cursor, user: int) -> str | None:
     c.execute("SELECT email FROM EmailUsers WHERE user=?", (user,))
     row = c.fetchone()
     if row is None:
         return None
-    return row[0]
+    return t.cast(str, row[0])
 
 
-def get_user_users(c, user):
+def get_user_users(c: sqlite3.Cursor, user: int) -> t.List[int]:
     email = get_user_email(c, user)
     if email is None:
         return [user]
