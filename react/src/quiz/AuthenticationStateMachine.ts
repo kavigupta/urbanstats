@@ -113,6 +113,8 @@ export class AuthenticationStateMachine {
         QuizPersistent.shared.history.observers.add(obeserver)
         QuizPersistent.shared.friends.observers.add(obeserver)
 
+        window.addEventListener('focus', obeserver)
+
         void this.syncProfile()
     }
 

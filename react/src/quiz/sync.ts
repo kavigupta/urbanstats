@@ -117,7 +117,7 @@ async function getProfileFile(token: string): Promise<{ fileId: string, profile:
     } })
 
     if (data === undefined) {
-        throw new Error(`Sync problem, could not get files`)
+        throw new Error(`Sync problem, could not get files. Ensure Urban Stats has access to Google Drive.`)
     }
 
     const profileFile = data.files?.[0]
