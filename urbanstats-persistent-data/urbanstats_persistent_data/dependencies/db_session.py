@@ -5,7 +5,7 @@ from fastapi import Depends
 from ..db.utils import DbSession
 
 
-def db_session():
+def db_session() -> t.Generator[DbSession, None, None]:
     session = DbSession()
     try:
         yield session

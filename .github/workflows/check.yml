@@ -74,6 +74,8 @@ jobs:
         # this is needed because isort and black disagree on the formatting of some files, so we run both and check
         # if there's a difference
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+      - name: typescheck persistent
+        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
 
   test-python:
     runs-on: ubuntu-22.04
