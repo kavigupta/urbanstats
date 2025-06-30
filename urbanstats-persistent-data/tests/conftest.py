@@ -2,6 +2,8 @@ import json
 import os
 from urllib.parse import parse_qs, urlparse
 
+import fastapi
+import fastapi.testclient
 import pytest
 from urbanstats_persistent_data.main import app
 
@@ -21,34 +23,14 @@ def setup_app(mocker):
 
     mocker.patch("requests.get", mock_get)
 
-    def mock_valid_token(token):
-        return token == "valid"
-
-    mocker.patch(
-        "urbanstats_persistent_data.routes.get_full_database.valid_token",
-        mock_valid_token,
-    )
-
     db_path = os.path.join(os.path.dirname(__file__), "..", "db.sqlite3")
     if os.path.exists(db_path):
         os.remove(db_path)
-
-    app.config.update(
-        {
-            "TESTING": True,
-        }
-    )
 
     yield app
 
 
 @pytest.fixture()
-# pylint: disable=redefined-outer-name
+# pylint: disable=redefined-outer-name,unused-argument
 def client(setup_app):
-    return setup_app.test_client()
-
-
-@pytest.fixture()
-# pylint: disable=redefined-outer-name
-def runner(setup_app):
-    return setup_app.test_cli_runner()
+    return fastapi.testclient.TestClient(app)

@@ -1,35 +1,33 @@
-from typing import List
+import typing as t
+
+from ..dependencies.authenticate import AuthenticatedRequest
 
 # pylint: disable=no-name-in-module
 from . import email, stats
-from .utils import problem_id_for_quiz_kind, sqlTuple, table, table_for_quiz_kind
+from .utils import problem_id_for_quiz_kind, sqlTuple, table_for_quiz_kind
 
 
-def friend_request(requestee, requester):
-    conn, c = table()
-    c.execute(
+def friend_request(req: AuthenticatedRequest, requestee):
+    req.s.c.execute(
         "INSERT INTO FriendRequests VALUES (?, ?)",
-        (requestee, requester),
+        (requestee, req.user_id),
     )
-    conn.commit()
 
 
-def unfriend(requestee, requester):
-    conn, c = table()
-    c.execute(
+def unfriend(req: AuthenticatedRequest, requestee):
+    req.s.c.execute(
         "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
-        (requestee, requester),
+        (requestee, req.user_id),
     )
-    conn.commit()
 
 
-def todays_score_for(requestees, requesters, date, quiz_kind):
+def todays_score_for(req: AuthenticatedRequest, requesters, date, quiz_kind):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestees,
+        req,
         requesters,
         compute_fn=lambda c, for_user: _compute_daily_score(
             date, quiz_kind, c, for_user
@@ -37,27 +35,28 @@ def todays_score_for(requestees, requesters, date, quiz_kind):
     )
 
 
-def infinite_results(requestees, requesters, seed, version):
+def infinite_results(req: AuthenticatedRequest, requesters, seed, version):
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
     """
 
     return _compute_friend_results(
-        requestees,
+        req,
         requesters,
         compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version),
     )
 
 
-def _compute_friend_results(requestees: List[int], requesters: List[int], compute_fn):
-    _, c = table()
+def _compute_friend_results(
+    req: AuthenticatedRequest, requesters: t.List[int], compute_fn
+):
     # query the table to see if each pair is a friend pair
 
-    c.execute(
-        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
-        requestees,
+    req.s.c.execute(
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(req.associated_user_ids))}",
+        req.associated_user_ids,
     )
-    friends = c.fetchall()
+    friends = req.s.c.fetchall()
     friends = {x[0] for x in friends}
 
     results = []
@@ -66,7 +65,7 @@ def _compute_friend_results(requestees: List[int], requesters: List[int], comput
             results.append(
                 dict(
                     friends=True,
-                    **compute_fn(c, requester),
+                    **compute_fn(req.s.c, requester),
                 )
             )
         else:

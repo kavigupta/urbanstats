@@ -5,10 +5,10 @@ import { z } from 'zod'
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
-import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
+import { historyConflicts, mergeHistories } from './sync'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -76,18 +76,23 @@ export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
-    quiz_friends: quizFriends,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export class StoredProperty<T> {
-    private _value: T
-    private observers = new Set<() => void>()
+// Used in sync but must be here to avoid circular dependency
+export const syncProfileSchema = z.object({
+    quiz_history: quizHistorySchema,
+    friends: quizFriends,
+})
 
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
-        this._value = load(localStorage.getItem(localStorageKey))
+class Property<T> {
+    private _value: T
+    readonly observers = new Set<() => void>()
+
+    constructor(value: T) {
+        this._value = value
     }
 
     get value(): T {
@@ -96,7 +101,6 @@ export class StoredProperty<T> {
 
     set value(newValue: T) {
         this._value = newValue
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
         this.observers.forEach((observer) => { observer() })
     }
 
@@ -117,12 +121,41 @@ export class StoredProperty<T> {
     /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-export class QuizLocalStorage {
+export class StoredProperty<T> extends Property<T> {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
+        super(load(localStorage.getItem(localStorageKey)))
+        const listener = (event: StorageEvent): void => {
+            if (event.key === localStorageKey) {
+                this.value = load(localStorage.getItem(localStorageKey))
+            }
+        }
+        addEventListener('storage', listener)
+    }
+
+    override get value(): T {
+        return super.value
+    }
+
+    override set value(newValue: T) {
+        const storeValue = this.store(newValue)
+        if (storeValue === null) {
+            localStorage.removeItem(this.localStorageKey)
+        }
+        else {
+            localStorage.setItem(this.localStorageKey, storeValue)
+        }
+        super.value = newValue
+    }
+}
+
+export const loading = Symbol('loading')
+
+export class QuizPersistent {
     private constructor() {
         // Private constructor
     }
 
-    static shared = new QuizLocalStorage()
+    static shared = new QuizPersistent()
 
     readonly history = new StoredProperty<QuizHistory>(
         'quiz_history',
@@ -154,13 +187,14 @@ export class QuizLocalStorage {
 
     readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
+    readonly authenticationError = new Property<boolean>(false)
+
     exportQuizPersona(): void {
         const exported: QuizPersona = {
             date_exported: new Date(),
             persistent_id: this.uniquePersistentId.value,
             secure_id: this.uniqueSecureId.value,
             quiz_history: this.history.value,
-            quiz_friends: this.friends.value,
         }
         const data = JSON.stringify(exported, null, 2)
         saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
@@ -179,10 +213,7 @@ export class QuizLocalStorage {
             const currentHistory = this.history.value
             let newHistory: QuizHistory
 
-            const conflicts = Object.keys(persona.quiz_history)
-                .filter(key =>
-                    key in currentHistory
-                    && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+            const conflicts = historyConflicts(currentHistory, persona.quiz_history)
 
             if (conflicts.length > 0) {
                 if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
@@ -190,13 +221,7 @@ export class QuizLocalStorage {
 ${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
 Are you sure you want to merge them? (The lowest score will be used)`)) {
-                    newHistory = {
-                        ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
-                            const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
-                            const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
-                            return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
-                        })),
-                    }
+                    newHistory = mergeHistories(currentHistory, persona.quiz_history)
                 }
                 else {
                     return
@@ -208,7 +233,6 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             }
 
             this.history.value = newHistory
-            this.friends.value = persona.quiz_friends
             this.uniquePersistentId.value = persona.persistent_id
             this.uniqueSecureId.value = persona.secure_id
         }
@@ -217,13 +241,10 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    async userHeaders(): Promise<{ 'X-User': string, 'X-Secure-Id': string, 'X-Access-Token'?: string }> {
-        const accessToken = await AuthenticationStateMachine.shared.getAccessToken()
-
+    userHeaders(): { 'x-user': string, 'x-secure-id': string } {
         return {
-            'X-User': this.uniquePersistentId.value,
-            'X-Secure-Id': this.uniqueSecureId.value,
-            ...(accessToken === undefined ? {} : { 'X-Access-Token': accessToken }),
+            'x-user': this.uniquePersistentId.value,
+            'x-secure-id': this.uniqueSecureId.value,
         }
     }
 
@@ -246,15 +267,18 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { data } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await persistentClient.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
-                    header: await this.userHeaders(),
+                    header: this.userHeaders(),
                 },
             })
 
-            if (data === undefined) {
+            if (response.status === 422) {
                 return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            }
+            if (error !== undefined) {
+                return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
             this.friends.value = [...this.friends.value, [friendName, friendID]]
@@ -278,7 +302,7 @@ function createAndStoreId(key: string): string {
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+    const result = await QuizPersistent.shared.addFriend(friendID, friendName)
     if (result === undefined) {
         alert(`Friend added: ${friendName} !`)
     }

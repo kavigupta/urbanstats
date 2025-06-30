@@ -180,7 +180,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
-    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true, email: string } }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true } }
     | {
         kind: 'error'
         error: unknown
@@ -647,7 +647,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
             try {
                 const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
-                result = { success: true, email: await AuthenticationStateMachine.shared.completeSignIn(newDescriptor) }
+                await AuthenticationStateMachine.shared.completeSignIn(newDescriptor)
+                result = { success: true }
             }
             catch (e) {
                 if (e instanceof Error) {

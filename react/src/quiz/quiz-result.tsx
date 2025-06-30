@@ -10,10 +10,10 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizPersistent, QuizDescriptorWithTime } from './quiz'
 import { ExportImport, Header, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -43,11 +43,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
-    const [authError, setAuthError] = useState(false)
-    const quizFriends = QuizLocalStorage.shared.friends.use()
+    const quizFriends = QuizPersistent.shared.friends.use()
 
     const setQuizFriends = (qf: QuizFriends): void => {
-        QuizLocalStorage.shared.friends.value = qf
+        QuizPersistent.shared.friends.value = qf
     }
 
     useEffect(() => {
@@ -55,7 +54,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         if (props.quizDescriptor.kind === 'custom') {
             return
         }
-        void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
+        void reportToServer(props.wholeHistory, props.quizDescriptor.kind)
         if (props.quizDescriptor.kind === 'infinite') {
             return
         }
@@ -64,6 +63,8 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
     const correctPattern = props.history.correct_pattern
+
+    const authError = QuizPersistent.shared.authenticationError.use()
 
     return (
         <div>
@@ -455,7 +456,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
-        const { data } = await client.POST('/shorten', {
+        const { data } = await persistentClient.POST('/shorten', {
             body: { full_text: thisURL },
         })
         if (data === undefined) {

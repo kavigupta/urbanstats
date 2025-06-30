@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
-import { QuizLocalStorage } from './quiz'
+import { QuizPersistent } from './quiz'
+import { syncWithGoogleDrive } from './sync'
 
 const tokenSchema = z.object({
     accessToken: z.string(),
@@ -16,7 +17,7 @@ const tokenSchema = z.object({
 const stateSchema = z.discriminatedUnion('state', [
     z.object({ state: z.literal('signedOut'), previouslySignedIn: z.boolean() }),
     z.object({
-        state: z.literal('signedIn'), token: tokenSchema, email: z.string(),
+        state: z.literal('signedIn'), token: tokenSchema, email: z.string(), persistentId: z.string(),
     }),
 ])
 
@@ -84,30 +85,83 @@ export class AuthenticationStateMachine {
     }
     /* eslint-enable react-hooks/rules-of-hooks */
 
-    constructor() {
+    private isSyncing = false
+
+    private constructor() {
         this._state = loadState()
-        const weakThis = new WeakRef(this)
-        const listener = (event: StorageEvent): void => {
-            const self = weakThis.deref()
-            if (self === undefined) {
-                removeEventListener('storage', listener)
-            }
-            else if (event.key === localStorageKey) {
+        addEventListener('storage', (event) => {
+            if (event.key === localStorageKey) {
                 this._state = loadState()
                 this.stateObservers.forEach((observer) => { observer() })
             }
+        })
+
+        QuizPersistent.shared.uniquePersistentId.observers.add(() => this.syncEmailAssociation())
+
+        void this.syncEmailAssociation()
+
+        let syncTimeout: ReturnType<typeof setTimeout> | undefined
+        const syncDelay = 1000
+
+        const obeserver = (): void => {
+            if (!this.isSyncing) {
+                clearTimeout(syncTimeout)
+                syncTimeout = setTimeout(() => this.syncProfile(), syncDelay)
+            }
         }
-        addEventListener('storage', listener)
+
+        QuizPersistent.shared.history.observers.add(obeserver)
+        QuizPersistent.shared.friends.observers.add(obeserver)
+
+        void this.syncProfile()
+    }
+
+    private async syncProfile(token?: string): Promise<void> {
+        if (token === undefined) {
+            token = await this.getAccessToken()
+        }
+        if (token === undefined) {
+            return
+        }
+        try {
+            this.isSyncing = true
+            await syncWithGoogleDrive(token)
+        }
+        finally {
+            this.isSyncing = false
+        }
+    }
+
+    private async syncEmailAssociation(): Promise<void> {
+        if (this._state.state === 'signedIn' && QuizPersistent.shared.uniquePersistentId.value !== this._state.persistentId) {
+            await this.userSignOut()
+            return
+        }
+
+        const { data } = await persistentClient.GET('/juxtastat/email', { params: { header: QuizPersistent.shared.userHeaders() } })
+        if (data) {
+            if (data.email !== null && this._state.state === 'signedOut') {
+                await this.userSignOut() // dissociates email
+                return
+            }
+            const accessToken = await this.getAccessToken()
+            if (data.email === null && accessToken !== undefined) {
+                await this.associateEmail(accessToken)
+            }
+        }
     }
 
     // Returns a URL for the user to visit
     async startSignIn(): Promise<string> {
-        const codeVerifier = await generateCodeVerifier()
-        localStorage.setItem(codeVerifierKey, codeVerifier)
+        let codeVerifier = localStorage.getItem(codeVerifierKey)
+        if (codeVerifier === null) {
+            codeVerifier = await generateCodeVerifier()
+            localStorage.setItem(codeVerifierKey, codeVerifier)
+        }
         return await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
             codeVerifier,
-            scope: ['email'],
+            scope: ['email', 'https://www.googleapis.com/auth/drive.appdata'],
             extraParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -115,7 +169,7 @@ export class AuthenticationStateMachine {
         })
     }
 
-    async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<string> {
+    async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<void> {
         if (this._state.state !== 'signedOut') {
             throw new Error('Already signed in')
         }
@@ -124,6 +178,7 @@ export class AuthenticationStateMachine {
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
+        localStorage.removeItem(codeVerifierKey)
 
         const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
@@ -132,33 +187,31 @@ export class AuthenticationStateMachine {
 
         const token = tokenSchema.parse(rawToken)
 
-        const tokenInfo = z.object({
-            email: z.string(),
-        }).parse(await (await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.accessToken}`)).json())
+        const email = await this.associateEmail(token.accessToken)
 
-        await this.associateEmail(token.accessToken)
+        await this.syncProfile(token.accessToken)
 
         this.setState({
             state: 'signedIn',
             token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
-            email: tokenInfo.email,
+            email,
+            persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
-        localStorage.removeItem(codeVerifierKey)
-        return tokenInfo.email
     }
 
-    private async associateEmail(accessToken: string): Promise<void> {
-        const { response } = await client.POST('/juxtastat/associate_email', {
+    private async associateEmail(accessToken: string): Promise<string> {
+        const { response, data } = await persistentClient.POST('/juxtastat/associate_email', {
             params: {
                 header: {
-                    ...await QuizLocalStorage.shared.userHeaders(),
-                    'X-Access-Token': accessToken,
+                    ...QuizPersistent.shared.userHeaders(),
                 },
             },
+            body: { token: accessToken },
         })
+        if (data) {
+            return data.email
+        }
         switch (response.status) {
-            case 200:
-                return
             case 409:
                 throw new Error('This device is already associated with a different email.')
             default:
@@ -170,8 +223,13 @@ export class AuthenticationStateMachine {
         this.setState({ state: 'signedOut', previouslySignedIn: true })
     }
 
-    userSignOut(): void {
-        this.setState({ state: 'signedOut', previouslySignedIn: false })
+    async userSignOut(): Promise<void> {
+        const { error } = await persistentClient.POST('/juxtastat/dissociate_email', {
+            params: { header: QuizPersistent.shared.userHeaders() },
+        })
+        if (!error) {
+            this.setState({ state: 'signedOut', previouslySignedIn: false })
+        }
     }
 
     async getAccessToken(): Promise<string | undefined> {
@@ -185,7 +243,7 @@ export class AuthenticationStateMachine {
 
         try {
             const newToken = tokenSchema.parse(await googleClient.refreshToken(this._state.token))
-            this.setState({ state: 'signedIn', token: newToken, email: this._state.email })
+            this.setState({ ...this._state, token: newToken })
             return newToken.accessToken
         }
         catch (error) {

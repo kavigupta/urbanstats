@@ -1,133 +1,90 @@
-from typing import Annotated, List, Optional
+from typing import Annotated, List, Literal, Optional
 
-import flask
-from flask_pydantic_spec import Response
 from pydantic import BaseModel
 
 from ..db.friends import friend_request, infinite_results, todays_score_for, unfriend
 from ..db.utils import QuizKind
-from ..main import api, app
-from ..middleware.authenticate import UserHeadersSchema, authenticate
-from ..middleware.email import EmailHeadersSchema, email
-from ..utils import EmptyResponse, Hexadecimal, UrbanStatsErrorModel
+from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
+from ..main import app
+from ..utils import Hexadecimal
 
 
 class Requestee(BaseModel):
     requestee: Annotated[int, Hexadecimal]
 
 
-@app.route("/juxtastat/friend_request", methods=["POST"])
-@api.validate(
-    headers=UserHeadersSchema,
-    body=Requestee,
-    resp=Response(
-        HTTP_200=EmptyResponse,
-        HTTP_401=UrbanStatsErrorModel,
-        HTTP_500=UrbanStatsErrorModel,
-    ),
+@app.post(
+    "/juxtastat/friend_request", status_code=204, responses=authenticate_responses
 )
-@authenticate()
-def juxtastat_friend_request(user):
-    friend_request(Requestee(**flask.request.json).requestee, user)
-    return flask.jsonify(dict())
+def juxtastat_friend_request(body: Requestee, req: AuthenticateRequest):
+    friend_request(req, body.requestee)
 
 
-@app.route("/juxtastat/unfriend", methods=["POST"])
-@api.validate(
-    headers=UserHeadersSchema,
-    body=Requestee,
-    resp=Response(
-        HTTP_200=EmptyResponse,
-        HTTP_401=UrbanStatsErrorModel,
-        HTTP_500=UrbanStatsErrorModel,
-    ),
-)
-@authenticate()
-def juxtastat_unfriend(user):
-    unfriend(Requestee(**flask.request.json).requestee, user)
-    return flask.jsonify(dict())
+@app.post("/juxtastat/unfriend", status_code=204, responses=authenticate_responses)
+def juxtastat_unfriend(body: Requestee, req: AuthenticateRequest):
+    unfriend(req, body.requestee)
 
 
-class ScoreRequest(BaseModel):
+class ScoreRequestBody(BaseModel):
     requesters: List[Annotated[int, Hexadecimal]]
     date: int
     quiz_kind: QuizKind
 
 
-class Result(BaseModel):
-    corrects: Optional[List[bool]] = None
-    friends: bool
+class NegativeResult(BaseModel):
+    friends: Literal[False]
+
+
+class PositiveResult(BaseModel):
+    corrects: Optional[List[bool]]
+    friends: Literal[True]
 
 
 class ScoreResponse(BaseModel):
-    results: List[Result]
+    results: List[NegativeResult | PositiveResult]
 
 
-@app.route("/juxtastat/todays_score_for", methods=["POST"])
-@api.validate(
-    headers=EmailHeadersSchema,
-    body=ScoreRequest,
-    resp=Response(
-        HTTP_200=ScoreResponse,
-        HTTP_401=UrbanStatsErrorModel,
-        HTTP_500=UrbanStatsErrorModel,
-    ),
-)
-@authenticate()
-@email()
-def juxtastat_todays_score_for(users):
-    req = ScoreRequest(**flask.request.json)
-    res = dict(
+@app.post("/juxtastat/todays_score_for", responses=authenticate_responses)
+def juxtastat_todays_score_for(
+    req: AuthenticateRequest, body: ScoreRequestBody
+) -> ScoreResponse:
+    return ScoreResponse(
         results=todays_score_for(
-            users,
-            req.requesters,
-            req.date,
-            req.quiz_kind,
+            req,
+            body.requesters,
+            body.date,
+            body.quiz_kind,
         )
     )
-    return flask.jsonify(res)
 
 
-class InfiniteScoreRequest(BaseModel):
+class InfiniteScoreRequestBody(BaseModel):
     requesters: List[Annotated[int, Hexadecimal]]
     seed: str
     version: int
 
 
-class InfiniteResult(BaseModel):
-    forThisSeed: Optional[int] = None
-    maxScore: Optional[int] = None
-    maxScoreSeed: Optional[str] = None
-    maxScoreVersion: Optional[int] = None
-    friends: bool
+class PositiveInfiniteResult(BaseModel):
+    forThisSeed: Optional[int]
+    maxScore: Optional[int]
+    maxScoreSeed: Optional[str]
+    maxScoreVersion: Optional[int]
+    friends: Literal[True]
 
 
 class InfiniteScoreResponse(BaseModel):
-    results: List[InfiniteResult]
+    results: List[NegativeResult | PositiveInfiniteResult]
 
 
-@app.route("/juxtastat/infinite_results", methods=["POST"])
-@api.validate(
-    headers=EmailHeadersSchema,
-    body=InfiniteScoreRequest,
-    resp=Response(
-        HTTP_200=InfiniteScoreResponse,
-        HTTP_401=UrbanStatsErrorModel,
-        HTTP_500=UrbanStatsErrorModel,
-    ),
-)
-@authenticate()
-@email()
-def juxtastat_infinite_results(users):
-    req = InfiniteScoreRequest(**flask.request.json)
-
-    res = dict(
+@app.post("/juxtastat/infinite_results", responses=authenticate_responses)
+def juxtastat_infinite_results(
+    req: AuthenticateRequest, body: InfiniteScoreRequestBody
+) -> InfiniteScoreResponse:
+    return InfiniteScoreResponse(
         results=infinite_results(
-            users,
-            req.requesters,
-            req.seed,
-            req.version,
+            req,
+            body.requesters,
+            body.seed,
+            body.version,
         )
     )
-
-    return flask.jsonify(res)

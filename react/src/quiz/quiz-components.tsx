@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
@@ -7,7 +7,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizPersistent } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -64,7 +64,7 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
 }
 
 export function UserId(): ReactNode {
-    const user = QuizLocalStorage.shared.uniquePersistentId.use()
+    const user = QuizPersistent.shared.uniquePersistentId.use()
     return (
         <div>
             {'Your user id is '}
@@ -75,14 +75,19 @@ export function UserId(): ReactNode {
 }
 
 function QuizAuthStatus(): ReactNode {
-    const authState = AuthenticationStateMachine.shared.useState()
+    const state = AuthenticationStateMachine.shared.useState()
 
-    if (authState.state === 'signedOut') {
-        const signIn = async (e: React.MouseEvent): Promise<void> => {
+    const [signInUrl, setSignInUrl] = useState<string | undefined>(undefined)
+
+    useEffect(() => {
+        void AuthenticationStateMachine.shared.startSignIn().then(setSignInUrl)
+    }, [])
+
+    if (state.state === 'signedOut') {
+        const signIn = (e: React.MouseEvent): void => {
             e.preventDefault()
             try {
-                const url = await AuthenticationStateMachine.shared.startSignIn()
-                window.open(url, '_blank', 'popup,width=500,height=600')
+                window.open(signInUrl, '_blank', 'popup,width=500,height=600')
             }
             catch (error) {
                 alert(`There was a problem signing in: ${error}`)
@@ -99,12 +104,12 @@ function QuizAuthStatus(): ReactNode {
     else {
         const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
-            AuthenticationStateMachine.shared.userSignOut()
+            void AuthenticationStateMachine.shared.userSignOut()
         }
 
         return (
             <>
-                {` Signed in with ${authState.email}. `}
+                {` Signed in with ${state.email}. `}
                 <a href="" onClick={signOut}>Sign Out</a>
             </>
         )
@@ -114,11 +119,11 @@ function QuizAuthStatus(): ReactNode {
 export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
-            <button onClick={() => { QuizLocalStorage.shared.exportQuizPersona() }}>
+            <button onClick={() => { QuizPersistent.shared.exportQuizPersona() }}>
                 Export Quiz History
             </button>
             {' '}
-            <button onClick={() => { void QuizLocalStorage.shared.importQuizPersona() }}>
+            <button onClick={() => { void QuizPersistent.shared.importQuizPersona() }}>
                 Import Quiz History
             </button>
         </div>
