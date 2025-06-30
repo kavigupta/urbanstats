@@ -82,7 +82,7 @@ export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
 class Property<T> {
     private _value: T
-    private observers = new Set<() => void>()
+    readonly observers = new Set<() => void>()
 
     constructor(value: T) {
         this._value = value

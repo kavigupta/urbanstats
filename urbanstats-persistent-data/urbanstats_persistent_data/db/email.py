@@ -4,18 +4,10 @@ from .utils import DbSession
 
 
 def associate_email_db(s: DbSession, user: int, email: str):
-    with s.conn:
-        s.c.execute("BEGIN IMMEDIATE")
-        existing_email = get_user_email(s.c, user)
-        if existing_email not in (None, email):
-            raise fastapi.HTTPException(
-                409, "This user is already associated with a different email"
-            )
-        # Table constraints prevent duplicates
-        s.c.execute(
-            "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
-            (email, user),
-        )
+    s.c.execute(
+        "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
+        (email, user),
+    )
 
 
 def dissociate_email_db(s: DbSession, user: int):

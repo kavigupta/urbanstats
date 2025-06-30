@@ -16,7 +16,7 @@ const tokenSchema = z.object({
 const stateSchema = z.discriminatedUnion('state', [
     z.object({ state: z.literal('signedOut'), previouslySignedIn: z.boolean() }),
     z.object({
-        state: z.literal('signedIn'), token: tokenSchema, email: z.string(),
+        state: z.literal('signedIn'), token: tokenSchema, email: z.string(), persistentId: z.string(),
     }),
 ])
 
@@ -86,18 +86,35 @@ export class AuthenticationStateMachine {
 
     private constructor() {
         this._state = loadState()
-        const weakThis = new WeakRef(this)
-        const listener = (event: StorageEvent): void => {
-            const self = weakThis.deref()
-            if (self === undefined) {
-                removeEventListener('storage', listener)
-            }
-            else if (event.key === localStorageKey) {
+        addEventListener('storage', (event) => {
+            if (event.key === localStorageKey) {
                 this._state = loadState()
                 this.stateObservers.forEach((observer) => { observer() })
             }
+        })
+
+        const fetchEmailAssociation = async (): Promise<void> => {
+            if (this._state.state === 'signedIn' && QuizPersistent.shared.uniquePersistentId.value !== this._state.persistentId) {
+                await this.userSignOut()
+                return
+            }
+
+            const { data } = await client.GET('/juxtastat/email', { params: { header: QuizPersistent.shared.userHeaders() } })
+            if (data) {
+                if (data.email !== null && this._state.state === 'signedOut') {
+                    await this.userSignOut() // dissociates email
+                    return
+                }
+                const accessToken = await this.getAccessToken()
+                if (data.email === null && accessToken !== undefined) {
+                    await this.associateEmail(accessToken)
+                }
+            }
         }
-        addEventListener('storage', listener)
+
+        QuizPersistent.shared.uniquePersistentId.observers.add(fetchEmailAssociation)
+
+        void fetchEmailAssociation()
     }
 
     // Returns a URL for the user to visit
@@ -138,6 +155,7 @@ export class AuthenticationStateMachine {
             state: 'signedIn',
             token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
             email,
+            persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
     }
 
@@ -185,7 +203,7 @@ export class AuthenticationStateMachine {
 
         try {
             const newToken = tokenSchema.parse(await googleClient.refreshToken(this._state.token))
-            this.setState({ state: 'signedIn', token: newToken, email: this._state.email })
+            this.setState({ ...this._state, token: newToken })
             return newToken.accessToken
         }
         catch (error) {

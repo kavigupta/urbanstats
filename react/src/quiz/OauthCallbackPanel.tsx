@@ -6,7 +6,6 @@ import { PageTemplate } from '../page_template/template'
 import { mixWithBackground } from '../utils/color'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
-import { QuizPersistent } from './quiz'
 
 export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallback' }>): ReactNode {
     const colors = useColors()
