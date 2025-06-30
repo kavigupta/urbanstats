@@ -1,11 +1,11 @@
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, validQuizInfiniteVersions } from './infinite'
 import { QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizPersistent } from './quiz'
 
 async function registerUser(): Promise<void> {
     // Idempotent
-    await client.POST('/juxtastat/register_user', {
+    await persistentClient.POST('/juxtastat/register_user', {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -20,7 +20,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     await registerUser()
 
     // fetch from latest_day endpoint
-    const { data } = await client.GET(endpointLatest, {
+    const { data } = await persistentClient.GET(endpointLatest, {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -38,7 +38,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
         ]
     })
 
-    await client.POST(endpointStore, {
+    await persistentClient.POST(endpointStore, {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -73,7 +73,7 @@ async function getUnreportedSeedVersions(user: string, secureID: string, wholeHi
     // post seedVersions to /juxtastat_infinite/has_infinite_stats
     await registerUser()
 
-    const { data } = await client.POST('/juxtastat_infinite/has_infinite_stats', {
+    const { data } = await persistentClient.POST('/juxtastat_infinite/has_infinite_stats', {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -100,7 +100,7 @@ async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<void> 
         const [seed, version] = seedVersions[i]
         const key = keys[i]
         const dayStats = wholeHistory[key]
-        await client.POST('/juxtastat_infinite/store_user_stats', {
+        await persistentClient.POST('/juxtastat_infinite/store_user_stats', {
             params: {
                 header: QuizPersistent.shared.userHeaders(),
             },
@@ -174,14 +174,14 @@ async function fetchPerQuestionStats(descriptor: QuizDescriptorWithTime): Promis
     let response: { data?: PerQuestionStats }
     switch (descriptor.kind) {
         case 'juxtastat':
-            response = await client.GET('/juxtastat/get_per_question_stats', {
+            response = await persistentClient.GET('/juxtastat/get_per_question_stats', {
                 params: {
                     query: { day: descriptor.name },
                 },
             })
             break
         case 'retrostat':
-            response = await client.GET('/retrostat/get_per_question_stats', {
+            response = await persistentClient.GET('/retrostat/get_per_question_stats', {
                 params: {
                     query: { week: parseInt(descriptor.name.substring(1)) },
                 },

@@ -59,6 +59,7 @@ export default tseslint.config(
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx'],
             },
+            'import/ignore': ['json-stable-stringify'],
         },
     },
     {
@@ -72,7 +73,7 @@ export default tseslint.config(
         },
     },
     {
-        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts', 'src/utils/urbanstats-persistent-data.d.ts'],
+        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts', 'src/utils/urbanstats-persistent-data.d.ts', 'src/utils/google-drive.d.ts'],
     },
     {
         rules: {

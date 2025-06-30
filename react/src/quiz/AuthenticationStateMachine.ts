@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizPersistent } from './quiz'
+import { syncWithGoogleDrive } from './sync'
 
 const tokenSchema = z.object({
     accessToken: z.string(),
@@ -93,28 +94,41 @@ export class AuthenticationStateMachine {
             }
         })
 
-        const fetchEmailAssociation = async (): Promise<void> => {
-            if (this._state.state === 'signedIn' && QuizPersistent.shared.uniquePersistentId.value !== this._state.persistentId) {
-                await this.userSignOut()
-                return
-            }
+        QuizPersistent.shared.uniquePersistentId.observers.add(() => this.syncEmailAssociation())
 
-            const { data } = await client.GET('/juxtastat/email', { params: { header: QuizPersistent.shared.userHeaders() } })
-            if (data) {
-                if (data.email !== null && this._state.state === 'signedOut') {
-                    await this.userSignOut() // dissociates email
-                    return
-                }
-                const accessToken = await this.getAccessToken()
-                if (data.email === null && accessToken !== undefined) {
-                    await this.associateEmail(accessToken)
-                }
-            }
+        void this.syncEmailAssociation()
+
+        QuizPersistent.shared.history.observers.add(() => this.syncProfile())
+        QuizPersistent.shared.friends.observers.add(() => this.syncProfile())
+
+        void this.syncProfile()
+    }
+
+    private async syncProfile(): Promise<void> {
+        const token = await this.getAccessToken()
+        if (token === undefined) {
+            return
+        }
+        await syncWithGoogleDrive(token)
+    }
+
+    private async syncEmailAssociation(): Promise<void> {
+        if (this._state.state === 'signedIn' && QuizPersistent.shared.uniquePersistentId.value !== this._state.persistentId) {
+            await this.userSignOut()
+            return
         }
 
-        QuizPersistent.shared.uniquePersistentId.observers.add(fetchEmailAssociation)
-
-        void fetchEmailAssociation()
+        const { data } = await persistentClient.GET('/juxtastat/email', { params: { header: QuizPersistent.shared.userHeaders() } })
+        if (data) {
+            if (data.email !== null && this._state.state === 'signedOut') {
+                await this.userSignOut() // dissociates email
+                return
+            }
+            const accessToken = await this.getAccessToken()
+            if (data.email === null && accessToken !== undefined) {
+                await this.associateEmail(accessToken)
+            }
+        }
     }
 
     // Returns a URL for the user to visit
@@ -124,7 +138,7 @@ export class AuthenticationStateMachine {
         return await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
             codeVerifier,
-            scope: ['email'],
+            scope: ['email', 'https://www.googleapis.com/auth/drive.appdata'],
             extraParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -157,10 +171,12 @@ export class AuthenticationStateMachine {
             email,
             persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
+
+        void this.syncProfile()
     }
 
     private async associateEmail(accessToken: string): Promise<string> {
-        const { response, data } = await client.POST('/juxtastat/associate_email', {
+        const { response, data } = await persistentClient.POST('/juxtastat/associate_email', {
             params: {
                 header: {
                     ...QuizPersistent.shared.userHeaders(),
@@ -184,7 +200,7 @@ export class AuthenticationStateMachine {
     }
 
     async userSignOut(): Promise<void> {
-        const { error } = await client.POST('/juxtastat/dissociate_email', {
+        const { error } = await persistentClient.POST('/juxtastat/dissociate_email', {
             params: { header: QuizPersistent.shared.userHeaders() },
         })
         if (!error) {

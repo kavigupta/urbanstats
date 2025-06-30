@@ -5,9 +5,10 @@ import { z } from 'zod'
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
+import { historyConflicts, mergeHistories } from './sync'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -79,6 +80,12 @@ export const quizPersonaSchema = z.object({
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
+
+// Used in sync but must be here to avoid circular dependency
+export const syncProfileSchema = z.object({
+    quiz_history: quizHistorySchema,
+    friends: quizFriends,
+})
 
 class Property<T> {
     private _value: T
@@ -211,10 +218,7 @@ export class QuizPersistent {
             const currentHistory = this.history.value
             let newHistory: QuizHistory
 
-            const conflicts = Object.keys(persona.quiz_history)
-                .filter(key =>
-                    key in currentHistory
-                    && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+            const conflicts = historyConflicts(currentHistory, persona.quiz_history)
 
             if (conflicts.length > 0) {
                 if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
@@ -222,13 +226,7 @@ export class QuizPersistent {
 ${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
 Are you sure you want to merge them? (The lowest score will be used)`)) {
-                    newHistory = {
-                        ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
-                            const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
-                            const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
-                            return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
-                        })),
-                    }
+                    newHistory = mergeHistories(currentHistory, persona.quiz_history)
                 }
                 else {
                     return
@@ -274,7 +272,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { response, error } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await persistentClient.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
                     header: this.userHeaders(),

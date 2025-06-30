@@ -10,7 +10,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { msRemaining, renderTimeRemaining } from './dates'
 import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizPersistent, QuizDescriptorWithTime } from './quiz'
@@ -456,7 +456,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
-        const { data } = await client.POST('/shorten', {
+        const { data } = await persistentClient.POST('/shorten', {
             body: { full_text: thisURL },
         })
         if (data === undefined) {

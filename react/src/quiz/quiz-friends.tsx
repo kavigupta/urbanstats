@@ -6,7 +6,7 @@ import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizPersistent, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
@@ -22,7 +22,7 @@ async function juxtaRetroResponse(
     requesters: string[],
 ): Promise<FriendResponse[] | undefined> {
     const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
-    const { data: friendScoresResponse } = await client.POST('/juxtastat/todays_score_for', {
+    const { data: friendScoresResponse } = await persistentClient.POST('/juxtastat/todays_score_for', {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -42,7 +42,7 @@ async function infiniteResponse(
     quizDescriptor: QuizDescriptor & { kind: 'infinite' },
     requesters: string[],
 ): Promise<FriendResponse[] | undefined> {
-    const { data: friendScoresResponse } = await client.POST('/juxtastat/infinite_results', {
+    const { data: friendScoresResponse } = await persistentClient.POST('/juxtastat/infinite_results', {
         params: {
             header: QuizPersistent.shared.userHeaders(),
         },
@@ -117,7 +117,7 @@ export function QuizFriendsPanel(props: {
                             index={idx}
                             friendScore={friendScore}
                             removeFriend={async () => {
-                                await client.POST('/juxtastat/unfriend', {
+                                await persistentClient.POST('/juxtastat/unfriend', {
                                     params: {
                                         header: QuizPersistent.shared.userHeaders(),
                                     },
