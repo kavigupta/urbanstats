@@ -8,6 +8,8 @@ import { Settings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './quiz.css'
+import { AuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
+import { SignedOutPanel } from '../quiz/SignedOutPanel'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
 import { QuizDescriptor, QuizHistory, QuizPersistent, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
@@ -52,6 +54,12 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     const [waitingForTime, setWaitingForTime] = useState(false)
     const [waitingForNextQuestion, setWaitingForNextQuestion] = useState(false)
     const [questions, setQuestions] = useState<QuizQuestion[]>([])
+
+    const authState = AuthenticationStateMachine.shared.useState()
+
+    if (authState.state === 'signedOut' && authState.email !== null) {
+        return <SignedOutPanel />
+    }
 
     if (props.quizDescriptor.kind === 'infinite' && !(validQuizInfiniteVersions satisfies number[] as number[]).includes(props.quizDescriptor.version)) {
         // TODO this should not come up if you've already done the quiz (only relevant once we add the stats)

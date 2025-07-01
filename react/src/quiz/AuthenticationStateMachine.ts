@@ -15,7 +15,7 @@ const tokenSchema = z.object({
 })
 
 const stateSchema = z.discriminatedUnion('state', [
-    z.object({ state: z.literal('signedOut'), previouslySignedIn: z.boolean() }),
+    z.object({ state: z.literal('signedOut'), email: z.nullable(z.string()) }),
     z.object({
         state: z.literal('signedIn'), token: tokenSchema, email: z.string(), persistentId: z.string(),
     }),
@@ -53,7 +53,7 @@ function loadState(): State {
             console.error(`Failed to parse ${localStorageKey}, using default state`, parseResult.error)
         }
     }
-    return { state: 'signedOut', previouslySignedIn: false }
+    return { state: 'signedOut', email: null }
 }
 
 export class AuthenticationStateMachine {
@@ -222,7 +222,7 @@ export class AuthenticationStateMachine {
     }
 
     authenticationError(): void {
-        this.setState({ state: 'signedOut', previouslySignedIn: true })
+        this.setState({ state: 'signedOut', email: this._state.email })
     }
 
     async userSignOut(): Promise<void> {
@@ -230,7 +230,7 @@ export class AuthenticationStateMachine {
             params: { header: QuizPersistent.shared.userHeaders() },
         })
         if (!error) {
-            this.setState({ state: 'signedOut', previouslySignedIn: false })
+            this.setState({ state: 'signedOut', email: null })
         }
     }
 
@@ -254,4 +254,17 @@ export class AuthenticationStateMachine {
             return undefined
         }
     }
+
+    // Need this fancy hook because you'll trigger the pop up blocker if open the window after `await`ing
+    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
+    useStartSignIn(): undefined | (() => void) {
+        const [signInUrl, setSignInUrl] = useState<string | undefined>(undefined)
+
+        useEffect(() => {
+            void this.startSignIn().then(setSignInUrl)
+        }, [])
+
+        return signInUrl ? () => window.open(signInUrl, '_blank', 'popup,width=500,height=600') : undefined
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
 }

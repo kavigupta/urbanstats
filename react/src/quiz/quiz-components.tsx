@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 import '../common.css'
 import '../components/quiz.css'
@@ -77,21 +77,12 @@ export function UserId(): ReactNode {
 function QuizAuthStatus(): ReactNode {
     const state = AuthenticationStateMachine.shared.useState()
 
-    const [signInUrl, setSignInUrl] = useState<string | undefined>(undefined)
-
-    useEffect(() => {
-        void AuthenticationStateMachine.shared.startSignIn().then(setSignInUrl)
-    }, [])
+    const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
 
     if (state.state === 'signedOut') {
         const signIn = (e: React.MouseEvent): void => {
             e.preventDefault()
-            try {
-                window.open(signInUrl, '_blank', 'popup,width=500,height=600')
-            }
-            catch (error) {
-                alert(`There was a problem signing in: ${error}`)
-            }
+            startSignIn?.()
         }
         return (
             <>
