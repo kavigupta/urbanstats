@@ -160,13 +160,9 @@ export class AuthenticationStateMachine {
     }
 
     // Returns a URL for the user to visit
-    async startSignIn(): Promise<string> {
-        let codeVerifier = localStorage.getItem(codeVerifierKey)
-        if (codeVerifier === null) {
-            codeVerifier = await generateCodeVerifier()
-            localStorage.setItem(codeVerifierKey, codeVerifier)
-        }
-        return await googleClient.authorizationCode.getAuthorizeUri({
+    async startSignIn(): Promise<{ start: () => void }> {
+        const codeVerifier = await generateCodeVerifier()
+        const signInUrl = await googleClient.authorizationCode.getAuthorizeUri({
             redirectUri,
             codeVerifier,
             scope: ['email', 'https://www.googleapis.com/auth/drive.appdata'],
@@ -175,7 +171,24 @@ export class AuthenticationStateMachine {
                 prompt: 'consent',
             },
         })
+        return { start: () => {
+            window.open(signInUrl, '_blank', 'popup,width=500,height=600')
+            localStorage.setItem(codeVerifierKey, codeVerifier)
+        } }
     }
+
+    // Need this fancy hook because you'll trigger the pop up blocker if open the window after `await`ing
+    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
+    useStartSignIn(): undefined | (() => void) {
+        const [startSignIn, setStartSignIn] = useState<Awaited<ReturnType<typeof this.startSignIn>> | undefined>(undefined)
+
+        useEffect(() => {
+            void this.startSignIn().then(setStartSignIn)
+        }, [])
+
+        return startSignIn?.start
+    }
+    /* eslint-enable react-hooks/rules-of-hooks */
 
     async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<void> {
         if (this._state.state !== 'signedOut') {
@@ -186,6 +199,7 @@ export class AuthenticationStateMachine {
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
+        localStorage.removeItem(codeVerifierKey)
 
         const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
@@ -204,8 +218,6 @@ export class AuthenticationStateMachine {
             email,
             persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
-
-        localStorage.removeItem(codeVerifierKey)
     }
 
     private async associateEmail(accessToken: string): Promise<string> {
@@ -261,17 +273,4 @@ export class AuthenticationStateMachine {
             return undefined
         }
     }
-
-    // Need this fancy hook because you'll trigger the pop up blocker if open the window after `await`ing
-    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
-    useStartSignIn(): undefined | (() => void) {
-        const [signInUrl, setSignInUrl] = useState<string | undefined>(undefined)
-
-        useEffect(() => {
-            void this.startSignIn().then(setSignInUrl)
-        }, [])
-
-        return signInUrl ? () => window.open(signInUrl, '_blank', 'popup,width=500,height=600') : undefined
-    }
-    /* eslint-enable react-hooks/rules-of-hooks */
 }

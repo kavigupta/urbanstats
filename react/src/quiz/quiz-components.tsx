@@ -87,7 +87,7 @@ export function QuizAuthStatus(): ReactNode {
         }
         return (
             <>
-                <a href="" onClick={signIn}>Sign In with Google</a>
+                <a href="" data-test="googleSignIn" onClick={signIn}>Sign In with Google</a>
                 {' to sync your quiz history across devices.'}
             </>
         )

@@ -54,9 +54,11 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile'): void {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile', intercept: boolean = true): void {
     urbanstatsFixture(fixName, url, async (t) => {
-        await interceptRequests(t)
+        if (intercept) {
+            await interceptRequests(t)
+        }
         const tempfile = `${tempfileName()}.sql`
         // Delete the database and recreate it with the given SQL statements
         writeFileSync(tempfile, sqlStatements)
@@ -86,7 +88,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
 
 const interceptingSessions = new Set<unknown>()
 
-async function interceptRequests(t: TestController): Promise<void> {
+export async function interceptRequests(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return

@@ -61,7 +61,7 @@ const runTest = async (): Promise<number> => {
 
     let runner = testcafe.createRunner()
         .src(`test/${test}.test.ts`)
-        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
+        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen${test === 'quiz_auth' ? '' : ` --user-agent='Chrome ${testingUserAgent}'`}`])
         .screenshots(`screenshots/${test}`)
 
     if (options.video) {
@@ -70,7 +70,7 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000 })
+    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
     return failedTests + await runTest()
 }
