@@ -67,8 +67,9 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
-// list of [name, id] pairs
-export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
+// list of [name, id, timestamp] pairs
+// null name is a tombstone
+export const quizFriends = z.array(z.tuple([z.nullable(z.string()), z.string(), z.optional(z.nullable(z.number()))]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
 
@@ -281,7 +282,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
                 return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
-            this.friends.value = [...this.friends.value, [friendName, friendID]]
+            this.friends.value = [...this.friends.value, [friendName, friendID, Date.now()]]
             return undefined
         }
         catch {

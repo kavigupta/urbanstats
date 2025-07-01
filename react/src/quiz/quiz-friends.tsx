@@ -76,9 +76,10 @@ export function QuizFriendsPanel(props: {
             setIsLoading(true)
             setError(undefined)
             try {
+                const friends = props.quizFriends.filter(([name]) => name !== null) as [string, string, number | undefined][]
                 // map name to id for quizFriends
-                const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
-                const requesters = props.quizFriends.map(x => x[1])
+                const quizIDtoName = Object.fromEntries(friends.map(([name, id]) => [id, name]))
+                const requesters = friends.map(x => x[1])
                 const friendScoresResponse
                     = props.quizDescriptor.kind === 'infinite'
                         ? await infiniteResponse(props.quizDescriptor, requesters)
@@ -125,7 +126,7 @@ export function QuizFriendsPanel(props: {
                                         requestee: props.quizFriends[idx][1],
                                     },
                                 })
-                                const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
+                                const newQuizFriends = props.quizFriends.map<[string | null, string, number | null | undefined]>(([name, id, timestamp]) => name === friendScore.name ? [null, id, Date.now()] : [name, id, timestamp])
                                 props.setQuizFriends(newQuizFriends)
                             }}
                             quizFriends={props.quizFriends}
@@ -244,7 +245,7 @@ function FriendScore(props: {
             return
         }
         const newQuizFriends = [...props.quizFriends]
-        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1]]
+        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
         props.setQuizFriends(newQuizFriends)
         setError(undefined)
     }

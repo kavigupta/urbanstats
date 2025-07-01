@@ -81,7 +81,8 @@ function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
         if (a[aIdx][1] === b[bIdx][1]) {
             // ids same
             if (!usedIds.has(a[aIdx][1])) {
-                if (a[aIdx][0] < b[bIdx][0]) {
+                // prefer latest timestamp
+                if ((a[aIdx][2] ?? 0) > (b[bIdx][2] ?? 0)) {
                     result.push(a[aIdx])
                 }
                 else {
@@ -92,8 +93,8 @@ function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
             aIdx++
             bIdx++
         }
-        // sort by id
-        else if (a[aIdx][1] < b[bIdx][1]) {
+        // sort by timestamp
+        else if ((a[aIdx][2] ?? 0) < (b[bIdx][2] ?? 0)) {
             if (!usedIds.has(a[aIdx][1])) {
                 result.push(a[aIdx])
                 usedIds.add(a[aIdx][1])
