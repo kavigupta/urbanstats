@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react'
 
+import { ErrorBox } from '../ErrorBox'
 import { PageData } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
-import { QuizAuthAlertTemplate } from './QuizAuthAlertTemplate'
 
 export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallback' }>): ReactNode {
     const colors = useColors()
@@ -14,7 +14,7 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
     const state = AuthenticationStateMachine.shared.useState()
 
     return (
-        <QuizAuthAlertTemplate color={backgroundColor}>
+        <ErrorBox color={backgroundColor}>
             {props.result.success
                 ? (
                         <>
@@ -47,6 +47,6 @@ export function OauthCallbackPanel(props: Extract<PageData, { kind: 'oauthCallba
             <button style={{ margin: '1em', padding: '0.5em 1em' }} onClick={() => { window.close() }}>
                 Close Window
             </button>
-        </QuizAuthAlertTemplate>
+        </ErrorBox>
     )
 }

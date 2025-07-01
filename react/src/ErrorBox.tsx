@@ -1,10 +1,13 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
-import { PageTemplate } from '../page_template/template'
+import { useColors } from './page_template/colors'
+import { PageTemplate } from './page_template/template'
 
-export function QuizAuthAlertTemplate(props: { color: string, children: ReactNode }): ReactNode {
+export function ErrorBox(props: { color?: string, children: ReactNode }): ReactNode {
+    const colors = useColors()
+
     const errorBoxStyle: CSSProperties = {
-        backgroundColor: props.color,
+        backgroundColor: props.color ?? colors.slightlyDifferentBackgroundFocused,
         borderRadius: '5px',
         textAlign: 'center',
         padding: '10px',

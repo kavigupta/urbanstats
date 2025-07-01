@@ -1,18 +1,15 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
+import { ErrorBox } from '../ErrorBox'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
-import { QuizAuthAlertTemplate } from './QuizAuthAlertTemplate'
 
 export function SignedOutPanel(): ReactNode {
-    const colors = useColors()
-
     const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
     const authState = AuthenticationStateMachine.shared.useState()
 
     return (
-        <QuizAuthAlertTemplate color={colors.slightlyDifferentBackgroundFocused}>
+        <ErrorBox>
             <h1>You were signed out</h1>
             <p>
                 Sign back in to
@@ -27,6 +24,6 @@ export function SignedOutPanel(): ReactNode {
             <button style={{ margin: '1em', padding: '0.5em 1em' }} onClick={() => { void AuthenticationStateMachine.shared.userSignOut() }}>
                 Sign Out
             </button>
-        </QuizAuthAlertTemplate>
+        </ErrorBox>
     )
 }
