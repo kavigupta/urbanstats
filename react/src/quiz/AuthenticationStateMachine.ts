@@ -6,7 +6,7 @@ import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescrip
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizPersistent } from './quiz'
-import { syncWithGoogleDrive } from './sync'
+import { AuthenticationError, syncWithGoogleDrive } from './sync'
 
 const tokenSchema = z.object({
     accessToken: z.string(),
@@ -129,6 +129,12 @@ export class AuthenticationStateMachine {
             this.isSyncing = true
             await syncWithGoogleDrive(token)
         }
+        catch (e) {
+            if (e instanceof AuthenticationError) {
+                this.authenticationError()
+            }
+            throw e
+        }
         finally {
             this.isSyncing = false
         }
@@ -180,7 +186,6 @@ export class AuthenticationStateMachine {
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
-        localStorage.removeItem(codeVerifierKey)
 
         const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
@@ -199,6 +204,8 @@ export class AuthenticationStateMachine {
             email,
             persistentId: QuizPersistent.shared.uniquePersistentId.value,
         })
+
+        localStorage.removeItem(codeVerifierKey)
     }
 
     private async associateEmail(accessToken: string): Promise<string> {

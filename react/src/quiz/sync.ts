@@ -5,6 +5,8 @@ import { gdriveClient } from '../utils/google-drive-client'
 
 import { QuizFriends, QuizHistory, QuizPersistent, syncProfileSchema } from './quiz'
 
+export class AuthenticationError extends Error {}
+
 export async function syncWithGoogleDrive(token: string): Promise<void> {
     const { fileId, profile: remoteProfile } = await getProfileFile(token)
     const localProfile = getLocalProfile()
@@ -113,12 +115,16 @@ function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
 }
 
 async function getProfileFile(token: string): Promise<{ fileId: string, profile: Profile }> {
-    const { data } = await gdriveClient(token).GET('/files', { params: {
+    const { data, response } = await gdriveClient(token).GET('/files', { params: {
         query: { spaces: 'appDataFolder', fields: 'files(id, name)', q: `name = 'profile.json'` },
     } })
 
     if (data === undefined) {
-        throw new Error(`Sync problem, could not get files. Ensure Urban Stats has access to Google Drive.`)
+        const message = `Sync problem, could not get files. Ensure Urban Stats has access to Google Drive.`
+        if (response.status === 401 || response.status === 403) {
+            throw new AuthenticationError(message)
+        }
+        throw new Error(message)
     }
 
     const profileFile = data.files?.[0]
