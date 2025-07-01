@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
+import { Icon } from '../components/Icon'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
 import { Statistic } from '../components/table'
@@ -12,9 +13,10 @@ import { getVector, VectorSettingsDictionary } from '../page_template/settings-v
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { msRemaining, renderTimeRemaining } from './dates'
 import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizPersistent, QuizDescriptorWithTime } from './quiz'
-import { ExportImport, Header, UserId } from './quiz-components'
+import { ExportImport, Header, QuizAuthStatus, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
@@ -23,6 +25,8 @@ import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, repor
 export type CorrectPattern = (boolean | 0 | 1)[]
 
 const maxPerLine = 10
+
+const authNagEntries = 10
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -61,10 +65,17 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
     }, [props.wholeHistory, props.quizDescriptor])
 
-    const colors = useColors()
     const correctPattern = props.history.correct_pattern
 
     const authError = QuizPersistent.shared.authenticationError.use()
+
+    const dismiss = QuizPersistent.shared.dismissAuthNag.use() !== null
+
+    const authState = AuthenticationStateMachine.shared.useState()
+
+    const nagSignIn = !dismiss && authState.state === 'signedOut' && Object.keys(props.wholeHistory).length >= authNagEntries
+
+    const colors = useColors()
 
     return (
         <div>
@@ -72,20 +83,24 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap"></div>
             {authError
                 ? (
-                        <div
-                            className="serif"
-                            style={{
-                                backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
-                                fontSize: '1.5em',
-                                padding: '0.5em',
-                                textAlign: 'center',
-                            }}
-                        >
+                        <NotificationBanner>
                             <b>
                                 Warning! Someone is possibly attempting to hijack your account.
                                 Please contact us at security@urbanstats.org, and send your persistent ID.
                             </b>
-                        </div>
+                        </NotificationBanner>
+                    )
+                : undefined}
+            {nagSignIn && !authError
+                ? (
+                        <NotificationBanner>
+                            <div>
+                                <QuizAuthStatus />
+                            </div>
+                            <div role="button" onClick={() => QuizPersistent.shared.dismissAuthNag.value = Date.now()}>
+                                <Icon size="1em" color={colors.textMain} src="/close.png" style={{ display: 'inline-block' }} />
+                            </div>
+                        </NotificationBanner>
                     )
                 : undefined}
             <Summary correctPattern={correctPattern} quizKind={props.quizDescriptor.kind} />
@@ -161,6 +176,30 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             </div>
             <OtherQuizzesButtons />
         </div>
+    )
+}
+
+function NotificationBanner(props: { children: ReactNode }): ReactNode {
+    const colors = useColors()
+    return (
+        <>
+            <div
+                className="serif"
+                style={{
+                    backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
+                    fontSize: '1.5em',
+                    padding: '0.5em',
+                    textAlign: 'center',
+                    borderRadius: '5px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-evenly',
+                }}
+            >
+                {props.children}
+            </div>
+            <div className="gap" />
+        </>
     )
 }
 

@@ -69,12 +69,13 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{user}</span>
+            {' '}
             <QuizAuthStatus />
         </div>
     )
 }
 
-function QuizAuthStatus(): ReactNode {
+export function QuizAuthStatus(): ReactNode {
     const state = AuthenticationStateMachine.shared.useState()
 
     const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
@@ -86,7 +87,6 @@ function QuizAuthStatus(): ReactNode {
         }
         return (
             <>
-                {' '}
                 <a href="" onClick={signIn}>Sign In with Google</a>
                 {' to sync your quiz history across devices.'}
             </>
@@ -100,7 +100,7 @@ function QuizAuthStatus(): ReactNode {
 
         return (
             <>
-                {` Signed in with ${state.email}. `}
+                {`Signed in with ${state.email}. `}
                 <a href="" onClick={signOut}>Sign Out</a>
             </>
         )
