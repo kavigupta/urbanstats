@@ -257,9 +257,9 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         if (friendID === user) {
             return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
         }
-        if (this.friends.value.map(x => x[1]).includes(friendID)) {
-            const friendNameDup = this.friends.value.find(x => x[1] === friendID)![0]
-            return { errorMessage: `Friend ID ${friendID} already exists as ${friendNameDup}`, problemDomain: 'friendID' }
+        let dupFriend
+        if ((dupFriend = this.friends.value.find(([name, id]) => name !== null && id === friendID))) {
+            return { errorMessage: `Friend ID ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
         }
         if (friendName === '') {
             return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
@@ -282,7 +282,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
                 return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
-            this.friends.value = [...this.friends.value, [friendName, friendID, Date.now()]]
+            this.friends.value = [...this.friends.value.filter(([,id]) => id !== friendID), [friendName, friendID, Date.now()]]
             return undefined
         }
         catch {
