@@ -12,7 +12,7 @@ def test_schema():
             "bash",
             "-c",
             "[ $(git status --porcelain --untracked-files=no -- :/react/src/utils/urbanstats-persistent-data.d.ts | wc -c) -eq 0 ]"
-            + " || (git diff -- :/react/src/utils/urbanstats-persistent-data.d.ts; exit 1)",
+            + " || (git status; git diff; exit 1)",
         ],
         capture_output=True,
         text=True,

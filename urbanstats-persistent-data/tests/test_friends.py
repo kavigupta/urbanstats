@@ -13,12 +13,12 @@ def test_friends(client):
     response = client.post(
         "/juxtastat/friend_request", headers=identity_a, json={"requestee": "b"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     response = client.post(
         "/juxtastat/friend_request", headers=identity_b, json={"requestee": "a"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     response = client.post(
         "/juxtastat/todays_score_for",
@@ -26,7 +26,7 @@ def test_friends(client):
         json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
+    assert response.json == {"results": [{"corrects": None, "friends": True}]}
 
     # Store a score for juxtastat
     response = client.post(
@@ -34,7 +34,7 @@ def test_friends(client):
         headers=identity_a,
         json={"day_stats": [[1, [True, False, False, True, True]]]},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Now b should be able to see a's score
     response = client.post(
@@ -43,7 +43,7 @@ def test_friends(client):
         json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert response.json == {
         "results": [{"corrects": [True, False, False, True, True], "friends": True}]
     }
 
@@ -53,19 +53,19 @@ def test_unfriend(client):
     response = client.post(
         "/juxtastat/friend_request", headers=identity_a, json={"requestee": "b"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Send friend request from b to a
     response = client.post(
         "/juxtastat/friend_request", headers=identity_b, json={"requestee": "a"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Unfriend: a unfriends b
     response = client.post(
         "/juxtastat/unfriend", headers=identity_a, json={"requestee": "b"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Now, b should not be able to see a's score
     response = client.post(
@@ -74,7 +74,7 @@ def test_unfriend(client):
         json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert response.json == {
         "results": [
             {
                 "friends": False,
@@ -89,7 +89,7 @@ def test_unfriend(client):
         json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
+    assert response.json == {"results": [{"corrects": None, "friends": True}]}
 
 
 def test_friends_infinite(client):
@@ -99,7 +99,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert response.json == {
         "results": [
             {
                 "friends": False,
@@ -110,7 +110,7 @@ def test_friends_infinite(client):
     response = client.post(
         "/juxtastat/friend_request", headers=identity_a, json={"requestee": "b"}
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     response = client.post(
         "/juxtastat/infinite_results",
@@ -118,7 +118,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert response.json == {
         "results": [
             {
                 "forThisSeed": None,
@@ -136,7 +136,7 @@ def test_friends_infinite(client):
         headers=identity_a,
         json={"seed": "abc", "version": 1, "corrects": [True, False, False, False]},
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Now b should be able to see a's score
     response = client.post(
@@ -145,7 +145,7 @@ def test_friends_infinite(client):
         json={"requesters": ["a"], "seed": "abc", "version": 1},
     )
     assert response.status_code == 200
-    assert response.json() == {
+    assert response.json == {
         "results": [
             {
                 "forThisSeed": 1,
