@@ -1,9 +1,10 @@
-import typing as t
+from typing import List, Tuple
 
+import flask
+from flask_pydantic_spec import Response
 from pydantic import BaseModel
 
 from ..db.stats import (
-    PerQuestionStats,
     get_per_question_stats,
     get_per_question_stats_retrostat,
     has_infinite_stats,
@@ -14,110 +15,194 @@ from ..db.stats import (
     store_user_stats_infinite,
     store_user_stats_retrostat,
 )
-from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
-from ..dependencies.db_session import GetDbSession
-from ..main import app
+from ..main import api, app
+from ..middleware.authenticate import UserHeadersSchema, authenticate
+from ..utils import EmptyResponse, UrbanStatsErrorModel
 
 
-class RegisterBody(BaseModel):
+class RegisterRequest(BaseModel):
     domain: str
 
 
-@app.post("/juxtastat/register_user", status_code=204, responses=authenticate_responses)
-def juxtastat_register_user_request(
-    req: AuthenticateRequest,
-    body: RegisterBody,
-) -> None:
-    register_user(req, body.domain)
+@app.route("/juxtastat/register_user", methods=["POST"])
+@api.validate(
+    headers=UserHeadersSchema,
+    body=RegisterRequest,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+@authenticate()
+def juxtastat_register_user_request(user):
+    register_user(user, RegisterRequest(**flask.request.json).domain)
+    return flask.jsonify(dict()), 200
 
 
 class LatestDayResponse(BaseModel):
     latest_day: int
 
 
-@app.get("/juxtastat/latest_day", responses=authenticate_responses)
-def juxtastat_latest_day_request(
-    req: AuthenticateRequest,
-) -> LatestDayResponse:
-    ld = latest_day(req)
-    return LatestDayResponse(latest_day=ld)
-
-
-@app.get("/retrostat/latest_week", responses=authenticate_responses)
-def retrostat_latest_week_request(
-    req: AuthenticateRequest,
-) -> LatestDayResponse:
-    ld = latest_week_retrostat(req)
-    return LatestDayResponse(latest_day=ld)
-
-
-class StoreUserStatsBody(BaseModel):
-    day_stats: t.List[t.Tuple[int, t.List[bool]]]
-
-
-@app.post(
-    "/juxtastat/store_user_stats", status_code=204, responses=authenticate_responses
+@app.route("/juxtastat/latest_day", methods=["GET"])
+@api.validate(
+    headers=UserHeadersSchema,
+    resp=Response(
+        HTTP_200=LatestDayResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
-def juxtastat_store_user_stats_request(
-    req: AuthenticateRequest, body: StoreUserStatsBody
-) -> None:
-    store_user_stats(req, body.day_stats)
+@authenticate()
+def juxtastat_latest_day_request(user):
+    ld = latest_day(user)
+    return flask.jsonify(dict(latest_day=ld))
 
 
-class HasInfiniteStatsBody(BaseModel):
-    seedVersions: t.List[t.Tuple[str, int]]
+@app.route("/retrostat/latest_week", methods=["GET"])
+@api.validate(
+    headers=UserHeadersSchema,
+    resp=Response(
+        HTTP_200=LatestDayResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+@authenticate()
+def retrostat_latest_week_request(user):
+    ld = latest_week_retrostat(user)
+    return flask.jsonify(dict(latest_day=ld))
+
+
+class StoreUserStatsRequest(BaseModel):
+    day_stats: List[Tuple[int, List[bool]]]
+
+
+@app.route("/juxtastat/store_user_stats", methods=["POST"])
+@api.validate(
+    headers=UserHeadersSchema,
+    body=StoreUserStatsRequest,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+@authenticate()
+def juxtastat_store_user_stats_request(user):
+    store_user_stats(user, StoreUserStatsRequest(**flask.request.json).day_stats)
+    return flask.jsonify(dict())
+
+
+class HasInfiniteStatsRequest(BaseModel):
+    seedVersions: List[Tuple[str, int]]
 
 
 class HasInfiniteStatsResponse(BaseModel):
-    has: t.List[bool]
+    has: List[bool]
 
 
-@app.post("/juxtastat_infinite/has_infinite_stats", responses=authenticate_responses)
-def juxtastat_infinite_has_infinite_stats_request(
-    req: AuthenticateRequest, body: HasInfiniteStatsBody
-) -> HasInfiniteStatsResponse:
-    return HasInfiniteStatsResponse(has=has_infinite_stats(req, body.seedVersions))
+@app.route("/juxtastat_infinite/has_infinite_stats", methods=["POST"])
+@api.validate(
+    headers=UserHeadersSchema,
+    body=HasInfiniteStatsRequest,
+    resp=Response(
+        HTTP_200=HasInfiniteStatsResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+@authenticate()
+def juxtastat_infinite_has_infinite_stats_request(user):
+    res = dict(
+        has=has_infinite_stats(
+            user, HasInfiniteStatsRequest(**flask.request.json).seedVersions
+        )
+    )
+    return flask.jsonify(res)
 
 
-class StoreInfiniteUserStatsBody(BaseModel):
+class StoreInfiniteUserStatsRequest(BaseModel):
     seed: str
     version: int
-    corrects: t.List[bool]
+    corrects: List[bool]
 
 
-@app.post(
-    "/juxtastat_infinite/store_user_stats",
-    status_code=204,
-    responses=authenticate_responses,
+@app.route("/juxtastat_infinite/store_user_stats", methods=["POST"])
+@api.validate(
+    headers=UserHeadersSchema,
+    body=StoreInfiniteUserStatsRequest,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
-def juxtastat_infinite_store_user_stats_request(
-    req: AuthenticateRequest, body: StoreInfiniteUserStatsBody
-) -> None:
-    store_user_stats_infinite(req, body.seed, body.version, body.corrects)
+@authenticate()
+def juxtastat_infinite_store_user_stats_request(user):
+    req = StoreInfiniteUserStatsRequest(**flask.request.json)
+    store_user_stats_infinite(user, req.seed, req.version, req.corrects)
+    return flask.jsonify(dict())
 
 
-@app.post(
-    "/retrostat/store_user_stats", status_code=204, responses=authenticate_responses
+@app.route("/retrostat/store_user_stats", methods=["POST"])
+@api.validate(
+    headers=UserHeadersSchema,
+    body=StoreUserStatsRequest,
+    resp=Response(
+        HTTP_200=EmptyResponse,
+        HTTP_401=UrbanStatsErrorModel,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
 )
-def retrostat_store_user_stats_request(
-    req: AuthenticateRequest, body: StoreUserStatsBody
-) -> None:
-    store_user_stats_retrostat(req, body.day_stats)
+@authenticate()
+def retrostat_store_user_stats_request(user):
+    store_user_stats_retrostat(
+        user, StoreUserStatsRequest(**flask.request.json).day_stats
+    )
+    return flask.jsonify(dict())
 
 
-@app.get("/juxtastat/get_per_question_stats")
-def juxtastat_get_per_question_stats_request(
-    s: GetDbSession, day: int
-) -> PerQuestionStats:
-    return get_per_question_stats(s, day)
+class GetPerQuestionJuxtaStatsRequest(BaseModel):
+    day: int
+
+
+class PerQuestionResponse(BaseModel):
+    total: int
+    per_question: List[int]
+
+
+@app.route("/juxtastat/get_per_question_stats", methods=["GET"])
+@api.validate(
+    query=GetPerQuestionJuxtaStatsRequest,
+    resp=Response(
+        HTTP_200=PerQuestionResponse,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+def juxtastat_get_per_question_stats_request():
+    return flask.jsonify(
+        get_per_question_stats(
+            GetPerQuestionJuxtaStatsRequest(**flask.request.args).day
+        )
+    )
 
 
 class GetPerQuestionRetroStatsRequest(BaseModel):
     week: int
 
 
-@app.get("/retrostat/get_per_question_stats")
-def retrostat_get_per_question_stats_request(
-    s: GetDbSession, week: int
-) -> PerQuestionStats:
-    return get_per_question_stats_retrostat(s, week)
+@app.route("/retrostat/get_per_question_stats", methods=["GET"])
+@api.validate(
+    query=GetPerQuestionRetroStatsRequest,
+    resp=Response(
+        HTTP_200=PerQuestionResponse,
+        HTTP_500=UrbanStatsErrorModel,
+    ),
+)
+def retrostat_get_per_question_stats_request():
+    return flask.jsonify(
+        get_per_question_stats_retrostat(
+            GetPerQuestionRetroStatsRequest(**flask.request.args).week
+        )
+    )

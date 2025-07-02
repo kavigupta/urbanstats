@@ -1,9 +1,7 @@
-import typing as t
-
-from .utils import DbSession
+from .utils import table
 
 
-def check_secureid(s: DbSession, user: int, secure_id: int) -> bool:
+def check_secureid(user: int, secure_id: int):
     """
     Returns True iff the secure_id is correct for the given user.
 
@@ -11,18 +9,18 @@ def check_secureid(s: DbSession, user: int, secure_id: int) -> bool:
     if the secure id is correct. If the secure id is incorrect, returns False.
     Otherwise, updates the secure id and returns True.
     """
-    with s.conn:
-        s.c.execute("BEGIN IMMEDIATE")
-        s.c.execute(
-            "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
-            (user,),
+    conn, c = table()
+    c.execute(
+        "SELECT secure_id FROM JuxtaStatUserSecureID WHERE user=?",
+        (user,),
+    )
+    res = c.fetchone()
+    if res is None:
+        # trust on first use
+        c.execute(
+            "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
+            (user, secure_id),
         )
-        res = s.c.fetchone()
-        if res is None:
-            # trust on first use
-            s.c.execute(
-                "INSERT INTO JuxtaStatUserSecureID VALUES (?, ?)",
-                (user, secure_id),
-            )
-            return True
-        return t.cast(int, res[0]) == secure_id
+        conn.commit()
+        return True
+    return res[0] == secure_id

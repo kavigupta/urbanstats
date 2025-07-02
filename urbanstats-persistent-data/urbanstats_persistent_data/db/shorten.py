@@ -1,8 +1,6 @@
 import hashlib
+import sqlite3
 import string
-import typing as t
-
-from ..db.utils import DbSession
 
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits + "-_"
 ALPHABET_REVERSE = dict((c, i) for (i, c) in enumerate(ALPHABET))
@@ -10,7 +8,7 @@ BASE = len(ALPHABET)
 SIGN_CHARACTER = "$"
 
 
-def num_encode(n: int) -> str:
+def num_encode(n):
     if n < 0:
         return SIGN_CHARACTER + num_encode(-n)
     s = []
@@ -22,7 +20,7 @@ def num_encode(n: int) -> str:
     return "".join(reversed(s))
 
 
-def num_decode(s: str) -> int:
+def num_decode(s):
     if s[0] == SIGN_CHARACTER:
         return -num_decode(s[1:])
     n = 0
@@ -31,22 +29,41 @@ def num_decode(s: str) -> int:
     return n
 
 
-def shorten(full_text: str) -> int:
+def table():
+    conn = sqlite3.connect("db.sqlite3")
+    c = conn.cursor()
+    # if table does not exist, create it
+    # primary key is shortened (as an integer)
+    # full is the full text
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS ShortenedData
+                 (shortened integer PRIMARY KEY, full text)"""
+    )
+    conn.commit()
+    return conn, c
+
+
+def shorten(full_text):
     shortened = hashlib.sha256(full_text.encode("utf-8")).hexdigest()[-15:]
-    return int(shortened, 16)
+    shortened = int(shortened, 16)
+    return shortened
 
 
-def shorten_and_save(s: DbSession, full_text: str) -> str:
+def shorten_and_save(full_text):
+    conn, c = table()
     shortened = shorten(full_text)
     # insert if it does not exist
-    s.c.execute(
+    c.execute(
         "INSERT OR IGNORE INTO ShortenedData VALUES (?, ?)", (shortened, full_text)
     )
-    return num_encode(shortened)
+    conn.commit()
+    shortened = num_encode(shortened)
+    return shortened
 
 
-def retreive_and_lengthen(s: DbSession, shortened: str) -> t.Optional[str]:
-    s.c.execute(
-        "SELECT full FROM ShortenedData WHERE shortened=?", (num_decode(shortened),)
-    )
-    return t.cast(str | None, s.c.fetchone())
+def retreive_and_lengthen(shortened):
+    _, c = table()
+    shortened = num_decode(shortened)
+    c.execute("SELECT full FROM ShortenedData WHERE shortened=?", (shortened,))
+    full_text = c.fetchone()
+    return full_text

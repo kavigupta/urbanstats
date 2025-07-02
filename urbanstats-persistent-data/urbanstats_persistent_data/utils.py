@@ -1,9 +1,9 @@
-import typing as t
+from typing import Any, List, Optional, TypeVar
 
 from pydantic import BaseModel, BeforeValidator
 
 
-def corrects_to_bytes(corrects: t.List[bool]) -> bytes:
+def corrects_to_bytes(corrects: List[bool]) -> bytes:
     result = []
     for i in range(0, len(corrects), 8):
         byte = 0
@@ -14,12 +14,31 @@ def corrects_to_bytes(corrects: t.List[bool]) -> bytes:
     return bytes(result)
 
 
-def from_hex(value: t.Any) -> int:
+class UrbanStatsError(Exception):
+    def __init__(self, status: int, error, code: Optional[str] = None):
+        self.status = status
+        self.error = error
+        self.code = code
+        super().__init__()
+
+    def to_dict(self):
+        return {"error": self.error, "code": self.code}
+
+
+class UrbanStatsErrorModel(BaseModel):
+    error: Any
+    code: Optional[str]
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+def from_hex(value: Any) -> int:
     return int(value, 16)
 
 
 Hexadecimal = BeforeValidator(from_hex, json_schema_input_type=str)
 
 
-class HTTPExceptionModel(BaseModel):
-    detail: t.Any = None
+class EmptyResponse(BaseModel):
+    pass
