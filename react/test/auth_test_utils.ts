@@ -1,34 +1,50 @@
 import { Selector } from 'testcafe'
 import { z } from 'zod'
 
-import { interceptRequests } from './quiz_test_utils'
+import { startIntercepting } from './quiz_test_utils'
 import { getLocation, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
 const chooseEmail = Selector(`[data-identifier="${email}"]`)
 
+export const signOutLink = Selector('a').withExactText('Sign Out')
+
 export const signInLink = Selector('a[data-test="googleSignIn"]')
 
-export async function urbanStatsGoogleSignIn(t: TestController): Promise<void> {
-    await t.click(signInLink)
+export const signInButton = Selector('Button').withExactText('Sign In')
+
+const continueButton = Selector('button').withExactText('Continue')
+
+export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
+    if (await signInLink.exists) {
+        await t.click(signInLink)
+    }
+    else if (await signInButton.exists) {
+        await t.click(signInButton)
+    }
+    else {
+        throw new Error('no sign in link or button')
+    }
     await t.wait(1000) // wait for loading
     if (await chooseEmail.exists) {
         // we're already signed in, choose the account
         await t.click(chooseEmail)
-        await t.click(Selector('button').withExactText('Continue'))
+        await t.click(continueButton)
     }
     else {
         await fillSignInForm(t)
     }
     const checkBox = Selector('input[type=checkbox]:not([disabled])')
-    if (await checkBox.exists) {
+    if (enableDrive && await checkBox.exists) {
         await t.click(checkBox)
     }
-    await interceptRequests(t) // start forwarding to the quiz server
-    await t.click(Selector('button').withExactText('Continue'))
+    await startIntercepting(t) // start forwarding to the quiz server
+    while (await continueButton.exists) {
+        await t.click(continueButton)
+    }
     await waitForPageLoaded(t)
-    await t.expect(Selector('h1').withExactText('Signed In!').exists).ok()
+    await t.expect(Selector('h1').withExactText(enableDrive ? 'Signed In!' : 'Sign In Failed').exists).ok()
     await t.eval(() => window.close = () => { console.warn('window closed') })
     await t.click(Selector('button').withExactText('Close Window'))
     const consoleMessages = await t.getBrowserConsoleMessages()

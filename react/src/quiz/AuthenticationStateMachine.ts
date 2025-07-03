@@ -115,7 +115,9 @@ export class AuthenticationStateMachine {
 
         window.addEventListener('focus', obeserver)
 
-        void this.syncProfile()
+        void this.syncProfile().catch((e: unknown) => {
+            console.error('Error syncing profile', e)
+        })
     }
 
     private async syncProfile(token?: string): Promise<void> {

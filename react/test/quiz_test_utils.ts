@@ -57,7 +57,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile', intercept: boolean = true): void {
     urbanstatsFixture(fixName, url, async (t) => {
         if (intercept) {
-            await interceptRequests(t)
+            await startIntercepting(t)
         }
         const tempfile = `${tempfileName()}.sql`
         // Delete the database and recreate it with the given SQL statements
@@ -88,7 +88,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
 
 const interceptingSessions = new Set<unknown>()
 
-export async function interceptRequests(t: TestController): Promise<void> {
+export async function startIntercepting(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return
@@ -139,6 +139,13 @@ export async function interceptRequests(t: TestController): Promise<void> {
             urlPattern: 'https://persistent.urbanstats.org/*',
         }],
     })
+}
+
+/*
+ * There's an issue where Google pages don't like to load while Fetch devtool is on
+ */
+export async function stopIntercepting(t: TestController): Promise<void> {
+    await (await t.getCurrentCDPSession()).Fetch.disable()
 }
 
 export function tempfileName(): string {
