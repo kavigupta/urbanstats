@@ -1,18 +1,15 @@
 import { Selector } from 'testcafe'
 
-import { dissociateUrbanStatsGoogle, email, googleSignIn, signInLink, signOutLink, urbanStatsGoogleSignIn } from './auth_test_utils'
+import { dissociateUrbanStatsGoogle, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './auth_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
-import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
+import { startIntercepting, stopIntercepting } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
-quizFixture('sign in to google', `${target}/quiz.html`, {
+quizAuthFixture('sign in to google', `${target}/quiz.html`, {
     quiz_history: JSON.stringify(exampleQuizHistory(600, 650)),
-}, '', 'desktop', false)
+}, '', 'desktop')
 
 test('sign in to google, clear local storage, sign in again, syncs', async (t) => {
-    await googleSignIn(t)
-    await dissociateUrbanStatsGoogle(t)
-    await t.navigateTo(`${target}/quiz.html`)
     await urbanStatsGoogleSignIn(t)
     await t.navigateTo(`${target}/quiz.html`)
     await t.expect(signOutLink.exists).ok()
@@ -62,8 +59,6 @@ test('sign in to google, clear local storage, reload, should require sign in', a
 test('sign in to google, sign out, quiz history is maintained, dissociate, sign in again, quiz history is still maintained', async (t) => {
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
-    await googleSignIn(t)
-    await dissociateUrbanStatsGoogle(t)
     await urbanStatsGoogleSignIn(t)
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
@@ -71,15 +66,13 @@ test('sign in to google, sign out, quiz history is maintained, dissociate, sign 
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
     await dissociateUrbanStatsGoogle(t)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
     await urbanStatsGoogleSignIn(t)
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
 })
 
 test('sign in to google, do not enable drive, should not be signed in', async (t) => {
-    await googleSignIn(t)
-    await dissociateUrbanStatsGoogle(t)
-    await t.navigateTo(`${target}/quiz.html`)
     // Simulate Google sign-in flow without enabling Drive access
     await urbanStatsGoogleSignIn(t, { enableDrive: false })
     await t.navigateTo(`${target}/quiz.html`)
