@@ -20,7 +20,6 @@ class DbSession:
     c: sqlite3.Cursor
 
     def __init__(self) -> None:
-        print("new dbsession")
         self.conn = sqlite3.connect(
             "db.sqlite3", check_same_thread=False, isolation_level=None
         )
