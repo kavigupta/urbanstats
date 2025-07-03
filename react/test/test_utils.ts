@@ -218,7 +218,14 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
 }
 
 export async function waitForPageLoaded(t: TestController): Promise<void> {
-    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+    const timeout = Date.now() + 10_000
+    while (Date.now() < timeout) {
+        if (await Selector('#pageState_kind').value === 'loaded') {
+            return
+        }
+        await t.wait(1000)
+    }
+    await t.expect(Selector('#pageState_kind').value).eql('loaded')
 }
 
 export function pageDescriptorKind(): Promise<string | undefined> {
