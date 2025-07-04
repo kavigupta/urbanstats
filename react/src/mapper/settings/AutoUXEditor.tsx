@@ -2,6 +2,7 @@ import assert from 'assert'
 
 import React, { ReactNode } from 'react'
 
+import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -36,11 +37,10 @@ function ArgumentEditor(props: {
     return (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
             {hasDefault && (
-                <input
-                    type="checkbox"
+                <CheckboxSettingJustBox
                     checked={isEnabled}
-                    onChange={(e) => {
-                        if (e.target.checked) {
+                    onChange={(checked) => {
+                        if (checked) {
                             // Add the argument with default value
                             const newArgs = [...functionUss.args, {
                                 type: 'named' as const,
