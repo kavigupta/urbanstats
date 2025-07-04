@@ -75,16 +75,16 @@ const runTest = async (): Promise<number> => {
     return failedTests + await runTest()
 }
 
-const startRunningTests = Date.now()
+const killTimer = options.timeLimitSeconds
+    ? setTimeout(() => {
+        console.error(`Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)`)
+        process.exit(1)
+    }, options.timeLimitSeconds * 1000)
+    : undefined
 
 const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
-const testsDurationSeconds = Math.round((Date.now() - startRunningTests) / 1000)
-
-if (options.timeLimitSeconds !== undefined && testsDurationSeconds > options.timeLimitSeconds) {
-    console.error(`Test suite took too long! (Took ${testsDurationSeconds}s, allowed duration ${options.timeLimitSeconds}s)`)
-    process.exit(1)
-}
+clearTimeout(killTimer)
 
 if (options.compare) {
     const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
