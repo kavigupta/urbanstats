@@ -26,6 +26,10 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
 }
 
+export function reverseRamp(ramp: RampT): RampT {
+    return ramp.slice().reverse().map(([value, color]) => [1 - value, color]) as RampT
+}
+
 export const constructRampValue: USSValue = {
     type: {
         type: 'function',
@@ -56,6 +60,29 @@ export const constructRampValue: USSValue = {
         ]))
     },
     documentation: { humanReadableName: 'Custom Ramp' },
+}
+
+export const reverseRampValue: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [
+            {
+                type: 'concrete',
+                value: rampType,
+            },
+        ],
+        namedArgs: {},
+        returnType: { type: 'concrete', value: rampType },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const ramp = posArgs[0] as { type: 'opaque', value: RampT }
+        return {
+            type: 'opaque',
+            value: reverseRamp(ramp.value),
+        }
+    },
+    documentation: { humanReadableName: 'Reverse Ramp' },
 }
 
 export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map(([name, ramp]) => [
