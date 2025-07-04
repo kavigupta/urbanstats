@@ -2,6 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Context } from './context'
+import { unparse } from './parser'
 
 interface USSNumberType {
     type: 'number'
@@ -157,9 +158,7 @@ export function renderDefaultValue(defaultValue: USSDefaultValue): string {
         case 'raw':
             return JSON.stringify(defaultValue.value)
         case 'expression':
-            // TODO: unparse the expression to a string. Log exists to trip eslint
-            console.log('TODO: rendering expression default value')
-            return `<expression>`
+            return unparse(defaultValue.expr)
     }
 }
 

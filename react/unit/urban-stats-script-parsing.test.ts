@@ -1,8 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { Block, lex } from '../src/urban-stats-script/lexer'
-import { allIdentifiers, parse, toSExp } from '../src/urban-stats-script/parser'
+import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
+import { allIdentifiers, parse, toSExp, unparse } from '../src/urban-stats-script/parser'
 
 import { emptyContext } from './urban-stats-script-utils'
 
@@ -552,5 +552,39 @@ void test('collect identifiers', (): void => {
     assert.deepStrictEqual(
         ids('cMap(data=population, scale=linearScale())'),
         new Set(['cMap', 'population', 'linearScale', 'geo']),
+    )
+})
+
+function parseThenUnparse(code: string): string {
+    const res = parse(code, testBlock)
+    if (res.type === 'error') {
+        throw new Error(`Parsing error: ${res.errors.map(err => err.value).join(', ')}`)
+    }
+    return unparse(res)
+}
+
+void test('unparse', (): void => {
+    assert.deepStrictEqual(
+        parseThenUnparse('x = 2; y = x + 3; z = y * 4'),
+        'x = 2;\ny = x + 3;\nz = y * 4',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse(''),
+        '',
+    )
+    assert.deepStrictEqual(
+        unparse({ type: 'statements', result: [
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
+        ], entireLoc: noLocation }),
+        '',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('condition(true); x = 2; y = 3'),
+        'x = 2;\ny = 3',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('condition(x); x = 2; y = 3'),
+        'condition (x)\nx = 2;\ny = 3',
     )
 })

@@ -772,7 +772,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
         case 'expression':
             return unparse(node.value)
         case 'statements':
-            const statementsStr = node.result.map(stmt => unparse(stmt))
+            const statementsStr = node.result.map(stmt => unparse(stmt)).filter(s => s !== '')
             return statementsStr.join(';\n')
         case 'if':
             const conditionStr = unparse(node.condition)
@@ -785,7 +785,13 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             return ifStr
         case 'condition':
             const condStr = unparse(node.condition)
-            const restStr = node.rest.map(stmt => unparse(stmt))
-            return `condition (${condStr})\n${restStr.join('\n')}`
+            // Convert rest statements to a statements list and unparse it
+            const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
+            const restStr = unparse(restStatements)
+            // If condition is literal "true", elide it
+            if (node.condition.type === 'identifier' && node.condition.name.node === 'true') {
+                return restStr
+            }
+            return `condition (${condStr})\n${restStr}`
     }
 }
