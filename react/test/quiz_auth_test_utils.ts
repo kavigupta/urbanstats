@@ -1,8 +1,10 @@
 import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
+import { TestWindow } from '../src/utils/TestUtils'
+
 import { flakyNavigate, quizFixture } from './quiz_test_utils'
-import { target, waitForPageLoaded } from './test_utils'
+import { safeReload, target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
@@ -25,23 +27,24 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.wait(1000) // wait for redirect
 }
 
-export async function dissociateUrbanStatsGoogle(t: TestController): Promise<void> {
-    await flakyNavigate(t, 'https://drive.google.com/drive/u/0/settings')
-    await t.click(Selector('div').withExactText('Manage apps'))
-    const optionsDropdown = Selector('button[aria-label="Options for Urban Stats (Unverified)"]')
-    if (await optionsDropdown.exists) {
-        const disconnectButton = Selector('div').withExactText('Disconnect from Drive')
-        while (!(await disconnectButton.exists)) {
-            // Dropdown goes away on first click
-            await t.click(optionsDropdown)
-            await t.wait(1000)
-        }
-        await t.click(disconnectButton)
-        await t.click(Selector('button').withExactText('Disconnect'))
-        await t.wait(1000) // wait to process
+export async function corruptTokens(t: TestController): Promise<void> {
+    const testEmail = email
+    const fn = (): void => {
+        const { persistentId } = JSON.parse(localStorage.getItem('quizAuthenticationState')!) as { persistentId: string }
+        localStorage.setItem('quizAuthenticationState', JSON.stringify({
+            state: 'signedIn',
+            email: testEmail,
+            persistentId,
+            token: {
+                accessToken: 'abc',
+                refreshToken: '123',
+                expiresAt: 0,
+            },
+        }))
     }
-
-    await t.navigateTo(`${target}/quiz.html`)
+    await t.eval(fn, { dependencies: { testEmail } })
+    await safeReload(t)
+    await t.expect(Selector('h1').withExactText('You were signed out').exists).ok()
 }
 
 export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
@@ -79,15 +82,13 @@ export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
     const beforeEach = args[5]
     quizFixture(args[0], args[1], args[2], args[3], args[4], async (t) => {
         await googleSignIn(t)
-        await dissociateUrbanStatsGoogle(t)
         await beforeEach?.(t)
         await t.navigateTo(args[1])
     })
 }
 
 export async function waitForSync(t: TestController): Promise<void> {
-    // @ts-expect-error -- Test info
-    const isSyncing = ClientFunction(() => window.testSyncing !== false)
+    const isSyncing = ClientFunction(() => (window as unknown as TestWindow).testUtils.testSyncing)
     do {
         await t.wait(1000)
     } while (await isSyncing())

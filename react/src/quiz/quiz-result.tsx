@@ -97,7 +97,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                             <div>
                                 <QuizAuthStatus />
                             </div>
-                            <div role="button" onClick={() => QuizPersistent.shared.dismissAuthNag.value = Date.now()}>
+                            <div role="button" title="Dismiss" onClick={() => QuizPersistent.shared.dismissAuthNag.value = Date.now()}>
                                 <Icon size="1em" color={colors.textMain} src="/close.png" style={{ display: 'inline-block' }} />
                             </div>
                         </NotificationBanner>

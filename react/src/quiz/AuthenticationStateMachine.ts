@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
+import { TestUtils } from '../utils/TestUtils'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizPersistent } from './quiz'
@@ -121,8 +122,7 @@ export class AuthenticationStateMachine {
     }
 
     private async syncProfile(token?: string): Promise<void> {
-        // @ts-expect-error -- Test info
-        window.testSyncing = true
+        TestUtils.shared.testSyncing = true
         if (token === undefined) {
             token = await this.getAccessToken()
         }
@@ -141,8 +141,7 @@ export class AuthenticationStateMachine {
         }
         finally {
             this.isSyncing = false
-            // @ts-expect-error -- Test info
-            window.testSyncing = false
+            TestUtils.shared.testSyncing = false
         }
     }
 

@@ -5,7 +5,8 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import { checkString } from '../src/utils/isTesting'
+import type { TestWindow } from '../src/utils/TestUtils'
+import { checkString } from '../src/utils/checkString'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
@@ -204,6 +205,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            await t.eval(() => (window as unknown as TestWindow).testUtils.set('testIterationId', crypto.randomUUID()))
             screenshotNumber = 0
             await t.eval(() => { localStorage.clear() })
             await t.resizeWindow(1400, 800)

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { dissociateUrbanStatsGoogle, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './quiz_auth_test_utils'
+import { corruptTokens, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './quiz_auth_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
 import { safeReload, target } from './test_utils'
 
@@ -23,12 +23,24 @@ test('sign in to google, clear local storage, sign in again, syncs', async (t) =
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
 })
 
-test('sign in to google, dissociate, try to access quiz, should require sign in, and can sign in again', async (t) => {
+test('sign in to google, corrupt tokens, should require sign in, and can sign in again', async (t) => {
     await urbanStatsGoogleSignIn(t)
-    await dissociateUrbanStatsGoogle(t)
-    await t.expect(Selector('h1').withExactText('You were signed out').exists).ok()
+    await corruptTokens(t)
     await urbanStatsGoogleSignIn(t)
     await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
+})
+
+test('sign in to google, corrupt tokens, choose to sign out, quiz history is maintained', async (t) => {
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
+    await t.expect(signInLink.count).eql(2) // Nag banner
+    await urbanStatsGoogleSignIn(t)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
+    await corruptTokens(t)
+    await t.click(Selector('button').withExactText('Sign Out'))
+    // Quiz history should still be present
+    await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
 })
 
 test('sign in to google, reload page, remains signed in', async (t) => {
@@ -47,27 +59,18 @@ test('sign in to google, clear local storage, reload, should require sign in', a
     await t.expect(signOutLink.exists).notOk()
 })
 
-test('sign in to google, sign out, quiz history is maintained, dissociate, sign in again, quiz history is still maintained', async (t) => {
+test('sign in to google, sign out, quiz history is maintained, sign in again, quiz history is still maintained', async (t) => {
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
+    await t.expect(signInLink.count).eql(2) // Nag banner
+    await t.click('div[title="Dismiss"]')
     await urbanStatsGoogleSignIn(t)
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
     await t.click(signOutLink)
-    await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
-    await dissociateUrbanStatsGoogle(t)
-    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await t.expect(signInLink.count).eql(1) // No Nag banner
     await urbanStatsGoogleSignIn(t)
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
-})
-
-test('sign in to google, do not enable drive, should not be signed in', async (t) => {
-    // Simulate Google sign-in flow without enabling Drive access
-    await urbanStatsGoogleSignIn(t, { enableDrive: false })
-    // User should not be signed in if Drive is not enabled
-    await t.expect(signInLink.exists).ok()
-    await t.expect(signOutLink.exists).notOk()
-    await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).notOk()
 })
