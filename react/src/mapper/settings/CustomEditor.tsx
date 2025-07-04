@@ -3,10 +3,8 @@ import React, { ReactNode, useMemo } from 'react'
 import { Editor } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { ParseError } from '../../urban-stats-script/parser'
+import { ParseError, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
-
-import { parseNoErrorAsExpression } from './utils'
 
 export function CustomEditor({
     uss,

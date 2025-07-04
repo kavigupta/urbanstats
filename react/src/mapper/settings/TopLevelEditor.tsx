@@ -13,7 +13,8 @@ import { USSDocumentedType, USSType } from '../../urban-stats-script/types-value
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
-import { makeStatements, parseNoErrorAsExpression, rootBlockIdent } from './utils'
+import { makeStatements, rootBlockIdent } from './utils'
+import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 
 const cMap = { type: 'opaque', name: 'cMap' } satisfies USSType
 const idPreamble = `${rootBlockIdent}p`

@@ -8,7 +8,7 @@ import { unparse } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
-import { parseNoErrorAsExpression } from './utils'
+import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 
 export function ConditionEditor({
     condition,

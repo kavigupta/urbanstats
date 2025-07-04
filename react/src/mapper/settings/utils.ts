@@ -1,8 +1,5 @@
-import assert from 'assert'
-
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { parse } from '../../urban-stats-script/parser'
-import { USSType } from '../../urban-stats-script/types-values'
+import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -48,22 +45,6 @@ export interface MapperScriptSettings {
 export interface MapSettings {
     geographyKind: string
     script: MapperScriptSettings
-}
-
-export function parseNoError(uss: string, blockId: string): UrbanStatsASTStatement {
-    const result = parse(uss, { type: 'single', ident: blockId }, true)
-    assert(result.type !== 'error', `Should not have an error`)
-    return result
-}
-
-export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
-    const result = parseNoError(uss, blockId)
-    return {
-        type: 'customNode',
-        expr: result,
-        originalCode: uss,
-        expectedType,
-    }
 }
 
 export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStatement {

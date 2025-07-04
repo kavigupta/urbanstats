@@ -7,12 +7,11 @@ import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse } from '../../urban-stats-script/parser'
+import { unparse, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue } from '../../urban-stats-script/types-values'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
-import { parseNoErrorAsExpression } from './utils'
 
 type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' }
 
