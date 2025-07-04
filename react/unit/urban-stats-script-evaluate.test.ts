@@ -29,6 +29,18 @@ void test('evaluate basic expressions', (): void => {
         undocValue(26, numType),
     )
     assert.deepStrictEqual(
+        evaluate(parseExpr('2 * (3 + 4 * 5)'), emptyContext()),
+        undocValue(46, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('(3 + 4 * 5) * 2'), emptyContext()),
+        undocValue(46, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('- -2'), emptyContext()),
+        undocValue(2, numType),
+    )
+    assert.deepStrictEqual(
         evaluate(parseExpr('2 * 3 + 4 * 5 + 6 ** 2'), emptyContext()),
         undocValue(62, numType),
     )

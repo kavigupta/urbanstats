@@ -510,6 +510,7 @@ class ParseState {
             statements,
             this.index > 0
                 ? this.tokens[this.index - 1].location
+                /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
                 : undefined,
         )
     }
