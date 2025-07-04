@@ -13,7 +13,7 @@ import { useMobileLayout } from '../../utils/responsive'
 import { CustomEditor } from './CustomEditor'
 import { parseNoErrorAsExpression } from './utils'
 
-type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' }
+type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' }
 
 const labelWidth = '5%'
 
@@ -91,6 +91,9 @@ export function AutoUXEditor(props: {
     label?: string
 }): ReactNode {
     const subcomponent = (): ReactNode => {
+        if (props.uss.type === 'constant') {
+            return <></>
+        }
         const uss = props.uss
         if (uss.type === 'customNode') {
             return (
@@ -172,8 +175,10 @@ export function AutoUXEditor(props: {
                 setSelection={(selection: Selection) => {
                     props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
                 }}
+                setUss={props.setUss}
                 typeEnvironment={props.typeEnvironment}
                 type={props.type}
+                blockIdent={props.blockIdent}
             />
         </div>
 
@@ -220,6 +225,12 @@ export function AutoUXEditor(props: {
 
 function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Selection[] {
     const results: Selection[] = [{ type: 'custom' }]
+
+    // Add constant option for numbers and strings
+    if (target.type === 'number' || target.type === 'string') {
+        results.push({ type: 'constant' })
+    }
+
     for (const [name, type] of env) {
         const t: USSType = type.type
         if (renderType(t) === renderType(target)) {
@@ -235,35 +246,63 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
+    setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
     type: USSType
+    blockIdent: string
 }): ReactNode {
     const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
     const selected = classifyExpr(props.uss)
     const selectedRendered = renderSelection(props.typeEnvironment, selected)
     assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
-    // autocomplete selection  menu
+
+    const isNumber = props.type.type === 'number'
+    const isString = props.type.type === 'string'
+    const showConstantInput = selected.type === 'constant' && (isNumber || isString)
+    const currentValue = props.uss.type === 'constant' ? props.uss.value.node : ''
+
     return (
-        <select
-            id="selector"
-            value={selectedRendered}
-            onChange={(e) => {
-                const selectedName = e.target.value
-                const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(selectedName)]
-                props.setSelection(selection)
-            }}
-        >
-            {renderedSelectionPossibilities.map((s, i) => (
-                <option key={i} value={s}>{s}</option>
-            ))}
-        </select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <select
+                id="selector"
+                value={selectedRendered}
+                onChange={(e) => {
+                    const selectedName = e.target.value
+                    const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(selectedName)]
+                    props.setSelection(selection)
+                }}
+            >
+                {renderedSelectionPossibilities.map((s, i) => (
+                    <option key={i} value={s}>{s}</option>
+                ))}
+            </select>
+            {showConstantInput && (
+                <input
+                    type={isNumber ? 'number' : 'text'}
+                    value={currentValue}
+                    onChange={(e) => {
+                        const value = isNumber ? Number(e.target.value) : e.target.value
+                        const newUss = {
+                            type: 'constant' as const,
+                            value: { node: value, location: emptyLocation(props.blockIdent) },
+                        }
+                        props.setUss(newUss)
+                    }}
+                    style={{ width: '200px' }}
+                    placeholder={isNumber ? 'Enter number' : 'Enter string'}
+                />
+            )}
+        </div>
     )
 }
 
 function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     if (uss.type === 'customNode') {
         return { type: 'custom' }
+    }
+    if (uss.type === 'constant') {
+        return { type: 'constant' }
     }
     if (uss.type === 'identifier') {
         return { type: 'variable', name: uss.name.node }
@@ -280,6 +319,9 @@ function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, select
     if (selection.type === 'custom') {
         return 'Custom Expression'
     }
+    if (selection.type === 'constant') {
+        return 'Constant'
+    }
     const doc = typeEnvironment.get(selection.name)?.documentation?.humanReadableName
     return doc ?? selection.name
 }
@@ -294,6 +336,8 @@ function defaultForSelection(
     switch (selection.type) {
         case 'custom':
             return parseNoErrorAsExpression('', blockIdent)
+        case 'constant':
+            return { type: 'constant', value: { node: '', location: emptyLocation(blockIdent) } }
         case 'variable':
             const type = typeEnvironment.get(selection.name)?.type
             assert(type, `Variable ${selection.name} not found in type environment`)
