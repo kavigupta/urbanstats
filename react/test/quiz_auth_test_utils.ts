@@ -84,6 +84,7 @@ export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
         await googleSignIn(t)
         await beforeEach?.(t)
         await t.navigateTo(args[1])
+        await waitForPageLoaded(t)
     })
 }
 
