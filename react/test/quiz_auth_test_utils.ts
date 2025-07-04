@@ -73,7 +73,7 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     await t.click(Selector('button').withExactText('Close Window'))
     const consoleMessages = await t.getBrowserConsoleMessages()
     await t.expect(consoleMessages.warn).contains('window closed')
-    await t.navigateTo(`${target}/quiz.html`)
+    await t.navigateTo(`${target}/quiz.html#enableAuth=true`)
     await waitForPageLoaded(t)
     await waitForSync(t)
 }
