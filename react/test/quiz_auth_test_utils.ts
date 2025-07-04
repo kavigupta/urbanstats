@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
-import { quizFixture } from './quiz_test_utils'
+import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
 import { target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
@@ -17,6 +17,7 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 const continueButton = Selector('button').withExactText('Continue')
 
 async function flakyNavigate(t: TestController, dest: string): Promise<void> {
+    await stopIntercepting(t)
     while (true) {
         try {
             await t.navigateTo(dest)
@@ -27,6 +28,7 @@ async function flakyNavigate(t: TestController, dest: string): Promise<void> {
             await t.wait(1000)
         }
     }
+    await startIntercepting(t)
 }
 
 async function googleSignIn(t: TestController): Promise<void> {
