@@ -5,8 +5,9 @@ import React, { ReactNode } from 'react'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation, LocInfo } from '../../urban-stats-script/lexer'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSRawValue } from '../../urban-stats-script/types-values'
+import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
 import { parseNoErrorAsExpression } from './utils'
@@ -157,20 +158,55 @@ export function AutoUXEditor(props: {
                 <DisplayErrors errors={errors} />
             )
         : null
+    const labelWidth = '5%'
+    const leftSegment = (
+        <div style={{ width: labelWidth }}>
+            {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
+        </div>
+    )
+    const rightSegment = (
+        <div style={{ width: `calc(100% - ${labelWidth})` }}>
+            <Selector
+                uss={props.uss}
+                setSelection={(selection: Selection) => {
+                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
+                }}
+                typeEnvironment={props.typeEnvironment}
+                type={props.type}
+            />
+        </div>
+
+    )
+
+    const isMobile = useMobileLayout()
+
+    const component = (): ReactNode => {
+        if (isMobile) {
+            return (
+                <>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {leftSegment}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ width: labelWidth }} />
+                        {rightSegment}
+                    </div>
+                </>
+            )
+        }
+        else {
+            return (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {leftSegment}
+                    {rightSegment}
+                </div>
+            )
+        }
+    }
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-                {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
-                <Selector
-                    uss={props.uss}
-                    setSelection={(selection: Selection) => {
-                        props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
-                    }}
-                    typeEnvironment={props.typeEnvironment}
-                    type={props.type}
-                />
-            </div>
-            <div style={{ display: 'flex', gap: '1em' }}>
+            {component()}
+            <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
                 {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
                 <div style={{ flex: 1 }}>
                     {subcomponent()}
