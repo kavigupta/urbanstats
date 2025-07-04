@@ -436,8 +436,8 @@ function attemptParseExpr(
         case 'expression':
             return parseExpr(expr.value, blockIdent, type, typeEnvironment)
         case 'identifier':
-            const t = typeEnvironment.get(expr.name.node)?.type
-            if (t && renderType(t) === renderType(type)) {
+            const validVariableSelections = possibilities(type, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
+            if (validVariableSelections.some(s => s.name === expr.name.node)) {
                 return expr
             }
             return undefined
@@ -451,14 +451,15 @@ function attemptParseExpr(
             if (fn.type !== 'identifier') {
                 return undefined
             }
+            const validFunctionSelections = possibilities(type, typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
+            if (!validFunctionSelections.some(s => s.name === fn.name.node)) {
+                return undefined
+            }
             const tdoc = typeEnvironment.get(fn.name.node)
             if (!tdoc || tdoc.type.type !== 'function') {
                 return undefined
             }
             const fnType = tdoc.type
-            if (fnType.returnType.type !== 'concrete' || renderType(fnType.returnType.value) !== renderType(type)) {
-                return undefined
-            }
             let positionals = expr.args.filter(a => a.type === 'unnamed') satisfies (UrbanStatsASTArg & { type: 'unnamed' })[]
             if (positionals.length !== fnType.posArgs.length) {
                 return undefined
