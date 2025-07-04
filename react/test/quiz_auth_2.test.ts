@@ -5,7 +5,7 @@ import { addFriend, createUser, removeFriend, restoreUser, startingState } from 
 import { clickButtons } from './quiz_test_utils'
 import { target } from './test_utils'
 
-quizAuthFixture('no state', `${target}/quiz.html`, {}, '', 'desktop')
+quizAuthFixture('no state', `${target}/quiz.html#enableAuth=true`, {}, '', 'desktop')
 
 test('sync quiz progress two devices', async (t) => {
     const state = startingState()
