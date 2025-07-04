@@ -411,6 +411,21 @@ void test('evaluate if expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-32'
         },
     )
+
+    {
+        // index in object
+        const codeWObjectIndex = `
+            x = { a: [1, 2, 3], b: 2 }
+            if ([true, true, false]) {
+                y = x.a
+            }
+            y
+            `
+        assert.deepStrictEqual(
+            execute(parseProgram(codeWObjectIndex), emptyContext()),
+            undocValue([1, 2, NaN], numVectorType),
+        )
+    }
 })
 
 void test('more if expressions', (): void => {
@@ -1332,7 +1347,7 @@ void test('error map with different geo and data lengths', () => {
     assert.throws(
         () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale(), ramp=rampBone)'), emptyContext()),
         (err: Error): boolean => {
-            return err.message === 'Error while executing function: Error: geo and data must have the same length at 1:1-66'
+            return err.message === 'Error while executing function: Error: geo and data must have the same length: 2 and 1 at 1:1-66'
         },
     )
 })

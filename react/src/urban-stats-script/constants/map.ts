@@ -40,7 +40,7 @@ export const cMap: USSValue = {
         const labelPassedIn = namedArgs.label as string | null
 
         if (geo.length !== data.length) {
-            throw new Error('geo and data must have the same length')
+            throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
         }
 
         const scaleInstance = scale(data)
