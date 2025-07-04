@@ -89,11 +89,13 @@ export interface Documentation {
     humanReadableName: string
 }
 
-export interface USSValue {
+export interface USSDocumentedType {
     type: USSType
-    value: USSRawValue
     documentation?: Documentation
+
 }
+
+export type USSValue = { value: USSRawValue } & USSDocumentedType
 
 export function undocValue(value: USSRawValue, type: USSType): USSValue {
     return {

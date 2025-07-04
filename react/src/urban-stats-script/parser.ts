@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
@@ -477,7 +478,7 @@ class ParseState {
     }
 
     parseStatements(canEnd: boolean = false, end: () => boolean = () => false, errMsg: string = 'Expected end of line or ; after'): UrbanStatsASTStatement | ParseError {
-        let statements: UrbanStatsASTStatement[] = []
+        const statements: UrbanStatsASTStatement[] = []
         while (this.index < this.tokens.length) {
             if (end()) {
                 break
@@ -502,18 +503,26 @@ class ParseState {
         if (this.index === this.tokens.length && canEnd) {
             return { type: 'error', value: errMsg, location: this.maybeLastNonEOLToken(-1).location }
         }
-        statements = gulpRestForConditions(statements)
-        if (statements.length === 1) {
-            return statements[0]
-        }
-        const entireLoc: LocInfo = statements.length > 0
-            ? unify(...statements.map(locationOf))
-            : this.index > 0
+        return mergeStatements(
+            statements,
+            this.index > 0
                 ? this.tokens[this.index - 1].location
-                /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-                : noLocation
-        return { type: 'statements', result: statements, entireLoc }
+                : undefined,
+        )
     }
+}
+
+export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
+    statements = gulpRestForConditions(statements)
+    if (statements.length === 1) {
+        return statements[0]
+    }
+    const entireLoc: LocInfo = statements.length > 0
+        ? unify(...statements.map(locationOf))
+        : fallbackLocation
+        /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
+        ?? noLocation
+    return { type: 'statements', result: statements, entireLoc }
 }
 
 function gulpRestForConditions(statements: UrbanStatsASTStatement[]): UrbanStatsASTStatement[] {
@@ -636,7 +645,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
     return expressions
 }
 
-export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
+function identifiersInExpr(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
     const identifiers = new Set<string>()
     allExpressions(node).forEach((expr) => {
         if (expr.type === 'identifier') {
@@ -644,4 +653,45 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
         }
     })
     return identifiers
+}
+
+export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpression, ctx: Context): Set<string> {
+    const identifiers = identifiersInExpr(node)
+    while (true) {
+        // make sure to include identifiers from default values of function arguments pulled in by the identifiers
+        const newIdentifiers = new Set<string>()
+        identifiers.forEach((id) => {
+            const t = ctx.getVariable(id)?.type
+            if (t === undefined || t.type !== 'function') {
+                return
+            }
+            Object.entries(t.namedArgs).forEach(([, arg]) => {
+                const dv = arg.defaultValue
+                if (dv === undefined || dv.type !== 'expression') {
+                    return
+                }
+                identifiersInExpr(dv.expr).forEach((newId) => {
+                    if (!identifiers.has(newId)) {
+                        newIdentifiers.add(newId)
+                    }
+                })
+            })
+        })
+        if (newIdentifiers.size === 0) {
+            break
+        }
+        newIdentifiers.forEach(id => identifiers.add(id))
+    }
+    return identifiers
+}
+
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression): string | undefined {
+    // for now this just handles custom nodes and parse errors. We can extend this later to handle other nodes.
+    if (node.type === 'customNode') {
+        return node.originalCode
+    }
+    if (node.type === 'parseError') {
+        return node.originalCode
+    }
+    return undefined // we don't have a way to unparse other nodes yet
 }
