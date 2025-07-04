@@ -67,7 +67,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Parti
         await safeClearLocalStorage()
         await t.eval(() => {
             for (const k of Object.keys(newLocalstorage)) {
-                safeStorage.setItem(k, newLocalstorage[k]!)
+                safeStorage.setItem(k, newLocalstorage[k] as LocalStorageKey)
             }
         }, { dependencies: { newLocalstorage } })
         await t.eval(() => {
