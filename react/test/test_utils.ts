@@ -5,7 +5,7 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import type { TestWindow } from '../src/utils/TestUtils'
+import { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
@@ -192,6 +192,10 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     }
 }
 
+export const safeClearLocalStorage = ClientFunction(() => {
+    (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
+})
+
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
@@ -205,9 +209,8 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
-            await t.eval(() => (window as unknown as TestWindow).testUtils.set('testIterationId', crypto.randomUUID()))
             screenshotNumber = 0
-            await t.eval(() => { localStorage.clear() })
+            await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {
                 await beforeEach(t)
