@@ -65,27 +65,63 @@ export function AutoUXEditor(props: {
                 )
             })
             Object.entries(type.namedArgs).forEach(([name, argWDefault]) => {
-                // discard default value for now
                 const arg = argWDefault.type
                 assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
                 const argValue = uss.args.find(a => a.type === 'named' && a.name.node === name)
-                if (argValue) {
-                    subselectors.push(
-                        <AutoUXEditor
-                            key={`named-${name}`}
-                            uss={argValue.value}
-                            setUss={(newUss) => {
-                                const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
-                                props.setUss({ ...uss, args: newArgs })
-                            }}
-                            typeEnvironment={props.typeEnvironment}
-                            errors={props.errors}
-                            blockIdent={`${props.blockIdent}_${name}`}
-                            type={arg.value}
-                            label={name}
-                        />,
-                    )
-                }
+                const hasDefault = argWDefault.defaultValue !== undefined
+                const isEnabled = argValue !== undefined
+
+                subselectors.push(
+                    <div key={`named-${name}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em' }}>
+                        {hasDefault && (
+                            <input
+                                type="checkbox"
+                                checked={isEnabled}
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        // Add the argument with default value
+                                        const newArgs = [...uss.args, {
+                                            type: 'named' as const,
+                                            name: { node: name, location: emptyLocation(props.blockIdent) },
+                                            value: parseNoErrorAsExpression('', `${props.blockIdent}_${name}`),
+                                        }]
+                                        props.setUss({ ...uss, args: newArgs })
+                                    }
+                                    else {
+                                        // Remove the argument
+                                        const newArgs = uss.args.filter(a => !(a.type === 'named' && a.name.node === name))
+                                        props.setUss({ ...uss, args: newArgs })
+                                    }
+                                }}
+                            />
+                        )}
+                        {isEnabled
+                            ? (
+                                    <AutoUXEditor
+                                        uss={argValue.value}
+                                        setUss={(newUss) => {
+                                            const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
+                                            props.setUss({ ...uss, args: newArgs })
+                                        }}
+                                        typeEnvironment={props.typeEnvironment}
+                                        errors={props.errors}
+                                        blockIdent={`${props.blockIdent}_${name}`}
+                                        type={arg.value}
+                                        label={name}
+                                    />
+                                )
+                            : hasDefault
+                                ? (
+                                        <span style={{ color: '#666', fontStyle: 'italic' }}>
+                                            {name}
+                                            {' (using default: '}
+                                            {String(argWDefault.defaultValue)}
+                                            )
+                                        </span>
+                                    )
+                                : null}
+                    </div>,
+                )
             })
             return (
                 <div>
