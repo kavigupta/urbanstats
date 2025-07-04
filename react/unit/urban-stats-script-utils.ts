@@ -102,16 +102,21 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
     )
 }
 
-function checkUnparse(parsed: UrbanStatsASTExpression | UrbanStatsASTStatement | { type: 'error' }): void {
+function checkUnparseForInline(parsed: UrbanStatsASTExpression | UrbanStatsASTStatement | { type: 'error' }, inline: boolean): void {
     if (parsed.type === 'error') {
         return
     }
-    const unparsed = unparse(parsed)
+    const unparsed = unparse(parsed, 0, inline)
     const reparsed = parse(unparsed, { type: 'single', ident: 'test' })
     if (reparsed.type === 'error') {
         throw new Error(`Reparsed AST of\n${unparsed}\nis an error: ${JSON.stringify(reparsed)}`)
     }
     assert.deepStrictEqual(toSExp(parsed), toSExp(reparsed), `Unparsed and reparsed rendering do not match:\n\t${toSExp(parsed)}\nUnparsed: ${unparsed}\nReparsed:\n\t${toSExp(reparsed)}`)
+}
+
+function checkUnparse(parsed: UrbanStatsASTExpression | UrbanStatsASTStatement | { type: 'error' }): void {
+    checkUnparseForInline(parsed, false)
+    checkUnparseForInline(parsed, true)
 }
 
 export function parseExpr(input: string): UrbanStatsASTExpression {

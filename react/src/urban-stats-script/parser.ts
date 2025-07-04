@@ -685,12 +685,13 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression): string {
-    // Helper function to check if an expression is simple (doesn't need parentheses)
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, indent: number = 0, inline: boolean = false): string {
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
     }
-
+    function indentSpaces(level: number): string {
+        return '    '.repeat(level)
+    }
     switch (node.type) {
         case 'customNode':
             return node.originalCode
@@ -706,34 +707,30 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
         case 'identifier':
             return node.name.node
         case 'attribute':
-            const exprStr = unparse(node.expr)
+            const exprStr = unparse(node.expr, indent, true)
             return `${exprStr}.${node.name.node}`
         case 'function':
-            const fnStr = unparse(node.fn)
+            const fnStr = unparse(node.fn, indent, true)
             const argsStr = node.args.map((arg) => {
                 switch (arg.type) {
                     case 'unnamed':
-                        return unparse(arg.value)
+                        return unparse(arg.value, indent, true)
                     case 'named':
-                        return `${arg.name.node}=${unparse(arg.value)}`
+                        return `${arg.name.node}=${unparse(arg.value, indent, true)}`
                 }
             })
-            // Wrap function in parentheses if it's not a simple identifier or vector literal
             const fnNeedsParens = !isSimpleExpression(node.fn)
             const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
             return `${fnWithParens}(${argsStr.join(', ')})`
         case 'unaryOperator':
-            const unaryExprStr = unparse(node.expr)
-            // Check if we need parentheses around the expression
+            const unaryExprStr = unparse(node.expr, indent, true)
             const needsParens = !isSimpleExpression(node.expr)
             const exprWithParens = needsParens ? `(${unaryExprStr})` : unaryExprStr
             return `${node.operator.node}${exprWithParens}`
         case 'binaryOperator':
-            const leftStr = unparse(node.left)
-            const rightStr = unparse(node.right)
-            // Get operator precedence
+            const leftStr = unparse(node.left, indent, true)
+            const rightStr = unparse(node.right, indent, true)
             const opPrecedence = expressionOperatorMap.get(node.operator.node)?.precedence ?? 0
-            // Check if left expression needs parentheses
             let leftWithParens = leftStr
             if (node.left.type === 'binaryOperator') {
                 const leftOpPrecedence = expressionOperatorMap.get(node.left.operator.node)?.precedence ?? 0
@@ -744,7 +741,6 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             else if (!isSimpleExpression(node.left)) {
                 leftWithParens = `(${leftStr})`
             }
-            // Check if right expression needs parentheses
             let rightWithParens = rightStr
             if (node.right.type === 'binaryOperator') {
                 const rightOpPrecedence = expressionOperatorMap.get(node.right.operator.node)?.precedence ?? 0
@@ -757,41 +753,44 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             }
             return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
         case 'vectorLiteral':
-            const elementsStr = node.elements.map(elem => unparse(elem))
+            const elementsStr = node.elements.map(elem => unparse(elem, indent, true))
             return `[${elementsStr.join(', ')}]`
         case 'objectLiteral':
             const propertiesStr = node.properties.map(([key, value]) => {
-                const valueStr = unparse(value)
+                const valueStr = unparse(value, indent, true)
                 return `${key}: ${valueStr}`
             })
             return `{${propertiesStr.join(', ')}}`
         case 'assignment':
-            const lhsStr = unparse(node.lhs)
-            const valueStr = unparse(node.value)
-            return `${lhsStr} = ${valueStr}`
+            const lhsStr = unparse(node.lhs, indent, inline)
+            const valueStr = unparse(node.value, indent, inline)
+            return inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(indent)}${lhsStr} = ${valueStr}`
         case 'expression':
-            return unparse(node.value)
+            return inline ? unparse(node.value, indent, inline) : `${indentSpaces(indent)}${unparse(node.value, indent, inline)}`
         case 'statements':
-            const statementsStr = node.result.map(stmt => unparse(stmt)).filter(s => s !== '')
-            return statementsStr.join(';\n')
+            const statementsStr = node.result.map(stmt => unparse(stmt, indent, inline)).filter(s => s !== '')
+            return statementsStr.join(inline ? '; ' : ';\n')
         case 'if':
-            const conditionStr = unparse(node.condition)
-            const thenStr = unparse(node.then)
-            let ifStr = `if (${conditionStr}) {\n${thenStr}\n}`
+            const conditionStr = unparse(node.condition, indent, inline)
+            const thenStr = unparse(node.then, indent + 1, inline)
+            let ifStr = inline
+                ? `if (${conditionStr}) { ${thenStr} }`
+                : `if (${conditionStr}) {\n${thenStr}\n${indentSpaces(indent)}}`
             if (node.else) {
-                const elseStr = unparse(node.else)
-                ifStr += ` else {\n${elseStr}\n}`
+                const elseStr = unparse(node.else, indent + 1, inline)
+                ifStr += inline
+                    ? ` else { ${elseStr} }`
+                    : ` else {\n${elseStr}\n${indentSpaces(indent)}}`
             }
             return ifStr
         case 'condition':
-            const condStr = unparse(node.condition)
-            // Convert rest statements to a statements list and unparse it
+            const condStr = unparse(node.condition, indent, inline)
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
-            const restStr = unparse(restStatements)
+            const restStr = unparse(restStatements, indent, inline)
             // If condition is literal "true", elide it
             if (node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
-            return `condition (${condStr})\n${restStr}`
+            return `${indentSpaces(indent)}condition (${condStr})\n${restStr}`
     }
 }

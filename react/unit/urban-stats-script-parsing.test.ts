@@ -1,4 +1,5 @@
 import assert from 'assert/strict'
+import fs from 'node:fs'
 import { test } from 'node:test'
 
 import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
@@ -587,4 +588,16 @@ void test('unparse', (): void => {
         parseThenUnparse('condition(x); x = 2; y = 3'),
         'condition (x)\nx = 2;\ny = 3',
     )
+})
+
+void test('well-formatted-uss', (): void => {
+    // all files in data/well-formatted-uss
+    const files = fs.readdirSync('unit/data/well-formatted-uss')
+    for (const file of files) {
+        const code = fs.readFileSync(`unit/data/well-formatted-uss/${file}`, 'utf8')
+        assert.deepStrictEqual(
+            parseThenUnparse(code),
+            code,
+        )
+    }
 })
