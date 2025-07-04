@@ -7,6 +7,7 @@ import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } fr
 import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
+import { safeStorage } from '../utils/safeStorage'
 
 import { isSinglePointerCell } from './table'
 
@@ -103,7 +104,7 @@ export function applySettingsParamSettings(settingsFromQueryParams: VectorSettin
         settings.enterStagedMode(Object.fromEntries(stagedSettingsKeys.map(key => [key, settingsFromQueryParams[key]])) as unknown as Partial<SettingsDictionary>)
         // If we haven't saved any previous settings, just save these staged settings
         // This ensures that the new user doesn't get non-default values for settings that aren't relevant to their linked page
-        if (localStorage.getItem('settings') === null) {
+        if (safeStorage.getItem('settings') === null) {
             settings.exitStagedMode('applyWithoutSaving')
         }
     }
@@ -119,6 +120,6 @@ export function applySettingsParamSettings(settingsFromQueryParams: VectorSettin
 
     for (const applySettingsKey of applyKeys) {
         // If we haven't saved any settings, don't save them yet
-        settings.setSetting(applySettingsKey, settingsFromQueryParams[applySettingsKey], localStorage.getItem('settings') !== null)
+        settings.setSetting(applySettingsKey, settingsFromQueryParams[applySettingsKey], safeStorage.getItem('settings') !== null)
     }
 }

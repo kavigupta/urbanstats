@@ -6,6 +6,7 @@ import stat_path_list from '../data/statistic_path_list'
 import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
+import { safeStorage } from '../utils/safeStorage'
 
 import { Theme } from './color-themes'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
@@ -118,7 +119,7 @@ export class Settings {
     private readonly settings: SettingsDictionary
 
     private constructor() {
-        const savedSettings = localStorage.getItem('settings')
+        const savedSettings = safeStorage.getItem('settings')
         const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
         this.settings = { ...defaultSettings, ...loadedSettings }
     }
@@ -146,7 +147,7 @@ export class Settings {
         else {
             this.settings[key] = newValue
             if (save) {
-                localStorage.setItem('settings', JSON.stringify(this.settings))
+                safeStorage.setItem('settings', JSON.stringify(this.settings))
             }
         }
         this.settingValueObservers.get(key).forEach((observer) => { observer() })
@@ -205,7 +206,7 @@ export class Settings {
                     // No need to update observers since these were already the values
                 }
                 if (action !== 'applyWithoutSaving') {
-                    localStorage.setItem('settings', JSON.stringify(this.settings))
+                    safeStorage.setItem('settings', JSON.stringify(this.settings))
                 }
                 this.stagedSettings = undefined
                 this.stagedKeysObservers.forEach((observer) => { observer() })

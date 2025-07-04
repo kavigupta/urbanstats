@@ -127,8 +127,8 @@ export default tseslint.config(
                 // Prevent calling withText with a string argument, instead use withExactText. Allow regex literals only
                 'CallExpression[callee.property.name=withText][arguments.0.type=Literal][arguments.0.regex=undefined]',
                 'MemberExpression[object.name=document][property.name=title]',
-                // Must use test utils instead to safely clear
-                'CallExpression[callee.object.name=localStorage][callee.property.name=clear]'
+                // Must use safeStorage
+                'CallExpression[callee.object.name=localStorage]'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

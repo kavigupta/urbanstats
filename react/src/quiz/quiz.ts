@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
+import { LocalStorageKey, safeStorage } from '../utils/safeStorage'
 import { cancelled, uploadFile } from '../utils/upload'
 import { client } from '../utils/urbanstats-persistent-client'
 
@@ -85,8 +86,8 @@ export class StoredProperty<T> {
     private _value: T
     private observers = new Set<() => void>()
 
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
-        this._value = load(localStorage.getItem(localStorageKey))
+    constructor(readonly localStorageKey: LocalStorageKey, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
+        this._value = load(safeStorage.getItem(localStorageKey))
     }
 
     get value(): T {
@@ -95,7 +96,7 @@ export class StoredProperty<T> {
 
     set value(newValue: T) {
         this._value = newValue
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
+        safeStorage.setItem(this.localStorageKey, this.store(newValue))
         this.observers.forEach((observer) => { observer() })
     }
 
@@ -265,15 +266,15 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
     }
 }
 
-function createAndStoreId(key: string): string {
+function createAndStoreId(key: LocalStorageKey): string {
     // (domain name, id stored in local storage)
     // random 60 bit hex number
     // (15 hex digits)
-    if (localStorage.getItem(key) === null) {
+    if (safeStorage.getItem(key) === null) {
         // register
-        localStorage.setItem(key, randomID())
+        safeStorage.setItem(key, randomID())
     }
-    return localStorage.getItem(key)!
+    return safeStorage.getItem(key)!
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
