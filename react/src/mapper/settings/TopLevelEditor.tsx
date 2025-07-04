@@ -6,6 +6,7 @@ import { CheckboxSettingCustom } from '../../components/sidebar'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
@@ -133,7 +134,7 @@ export function TopLevelEditor({
                             type: 'expression',
                             value: parseNoErrorAsExpression('', idPreamble),
                         } satisfies UrbanStatsASTStatement
-                        const conditionExpr = parseNoErrorAsExpression('', idCondition)
+                        const conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
                         const output = parseNoErrorAsExpression(ussToUse.originalCode, idOutput)
                         const condition = {
                             type: 'condition',
