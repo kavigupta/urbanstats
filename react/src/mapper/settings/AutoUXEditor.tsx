@@ -72,7 +72,7 @@ export function AutoUXEditor(props: {
                 const isEnabled = argValue !== undefined
 
                 subselectors.push(
-                    <div key={`named-${name}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em' }}>
+                    <div key={`named-${name}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
                         {hasDefault && (
                             <input
                                 type="checkbox"
@@ -95,31 +95,26 @@ export function AutoUXEditor(props: {
                                 }}
                             />
                         )}
-                        {isEnabled
-                            ? (
-                                    <AutoUXEditor
-                                        uss={argValue.value}
-                                        setUss={(newUss) => {
-                                            const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
-                                            props.setUss({ ...uss, args: newArgs })
-                                        }}
-                                        typeEnvironment={props.typeEnvironment}
-                                        errors={props.errors}
-                                        blockIdent={`${props.blockIdent}_${name}`}
-                                        type={arg.value}
-                                        label={name}
-                                    />
-                                )
-                            : hasDefault
+                        <div style={{ flex: 1 }}>
+                            {isEnabled
                                 ? (
-                                        <span style={{ color: '#666', fontStyle: 'italic' }}>
-                                            {name}
-                                            {' (using default: '}
-                                            {String(argWDefault.defaultValue)}
-                                            )
-                                        </span>
+                                        <AutoUXEditor
+                                            uss={argValue.value}
+                                            setUss={(newUss) => {
+                                                const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
+                                                props.setUss({ ...uss, args: newArgs })
+                                            }}
+                                            typeEnvironment={props.typeEnvironment}
+                                            errors={props.errors}
+                                            blockIdent={`${props.blockIdent}_${name}`}
+                                            type={arg.value}
+                                            label={name}
+                                        />
                                     )
-                                : null}
+                                : (
+                                        <span>{name}</span>
+                                    )}
+                        </div>
                     </div>,
                 )
             })
