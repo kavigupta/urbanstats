@@ -4,6 +4,8 @@ import { test } from 'node:test'
 import { Block, lex } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, toSExp } from '../src/urban-stats-script/parser'
 
+import { emptyContext } from './urban-stats-script-utils'
+
 const testBlock: Block = {
     type: 'single',
     ident: 'test',
@@ -503,7 +505,7 @@ function ids(code: string): Set<string> {
     if (res.type === 'error') {
         throw new Error(`Parsing error: ${res.errors.map(err => err.value).join(', ')}`)
     }
-    return allIdentifiers(res)
+    return allIdentifiers(res, emptyContext())
 }
 
 void test('collect identifiers', (): void => {
@@ -542,5 +544,13 @@ void test('collect identifiers', (): void => {
     assert.deepStrictEqual(
         ids('regression(x1=x1+0, y=y)'),
         new Set(['x1', 'y', 'regression']),
+    )
+    assert.deepStrictEqual(
+        ids('regression(x1=z+0, y=t)'),
+        new Set(['z', 't', 'regression']),
+    )
+    assert.deepStrictEqual(
+        ids('cMap(data=population, scale=linearScale())'),
+        new Set(['cMap', 'population', 'linearScale', 'geo']),
     )
 })

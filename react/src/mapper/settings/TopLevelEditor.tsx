@@ -3,6 +3,7 @@ import assert from 'assert'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
+import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
@@ -145,6 +146,9 @@ export function TopLevelEditor({
                 }}
             />
             { subcomponent() }
+            <DisplayErrors
+                errors={errors.filter(e => e.location.start.block.type === 'multi')}
+            />
         </div>
     )
 }

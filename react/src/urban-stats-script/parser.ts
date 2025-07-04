@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
@@ -644,13 +645,43 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
     return expressions
 }
 
-export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
+function identifiersInExpr(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
     const identifiers = new Set<string>()
     allExpressions(node).forEach((expr) => {
         if (expr.type === 'identifier') {
             identifiers.add(expr.name.node)
         }
     })
+    return identifiers
+}
+
+export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpression, ctx: Context): Set<string> {
+    const identifiers = identifiersInExpr(node)
+    while (true) {
+        // make sure to include identifiers from default values of function arguments pulled in by the identifiers
+        const newIdentifiers = new Set<string>()
+        identifiers.forEach((id) => {
+            const t = ctx.getVariable(id)?.type
+            if (t === undefined || t.type !== 'function') {
+                return
+            }
+            Object.entries(t.namedArgs).forEach(([, arg]) => {
+                const dv = arg.defaultValue
+                if (dv === undefined || dv.type !== 'expression') {
+                    return
+                }
+                identifiersInExpr(dv.expr).forEach((newId) => {
+                    if (!identifiers.has(newId)) {
+                        newIdentifiers.add(newId)
+                    }
+                })
+            })
+        })
+        if (newIdentifiers.size === 0) {
+            break
+        }
+        newIdentifiers.forEach(id => identifiers.add(id))
+    }
     return identifiers
 }
 

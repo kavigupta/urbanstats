@@ -43,7 +43,7 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
 }
 
 function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
-    const ids = allIdentifiers(stmts)
+    const ids = allIdentifiers(stmts, ctx)
 
     const variables = [...statistic_variables_info.variableNames, 'geo']
 
