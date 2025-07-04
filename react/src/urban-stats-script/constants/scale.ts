@@ -96,11 +96,11 @@ export const linearScaleValue: USSValue = {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
-            max: {
+            center: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
-            center: {
+            max: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
@@ -129,11 +129,11 @@ export const logScaleValue: USSValue = {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
-            max: {
+            center: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
-            center: {
+            max: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: rawDefaultValue(null),
             },
