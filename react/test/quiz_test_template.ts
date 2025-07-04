@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap, getLocation } from './test_utils'
+import { target, mostRecentDownloadPath, safeReload, screencap, getLocation, safeClearLocalStorage } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
@@ -222,8 +222,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // assert no element with id quiz-audience-statistics
         await t.expect(Selector('#quiz-audience-statistics').exists).notOk()
         // now become user 8
+        await safeClearLocalStorage()
         await t.eval(() => {
-            localStorage.clear()
             localStorage.setItem('persistent_id', '000000000000008')
             localStorage.setItem('testHostname', 'testproxy.nonexistent')
         })

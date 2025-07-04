@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
+import { safeClearLocalStorage, safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -62,8 +62,8 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         writeFileSync(tempfile, sqlStatements)
         await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         await runForTest()
+        await safeClearLocalStorage()
         await t.eval(() => {
-            localStorage.clear()
             for (const k of Object.keys(newLocalstorage)) {
                 localStorage.setItem(k, newLocalstorage[k])
             }

@@ -1,51 +1,36 @@
-import * as idb from 'idb'
-
 /**
  * Indicates whether we're e2e testing.
  *
  * Use sparingly! Functionality under testing should diverge minimally.
  *
- * Uses the fact that we only clear localstorage during testing, not idb
+ * Tests should be careful not to clear keys used by this
  */
-
-interface TestKv {
-    testIterationId?: string
-    otherKey?: never
-}
-
 export class TestUtils {
-    isTesting = false
+    readonly isTesting = (window as unknown as TestWindow)['%hammerhead%'] !== undefined
+    readonly testIterationId: string
+    testSyncing = false
 
     private constructor() {
-        void (async () => {
-            this.isTesting = (await this.get('testIterationId')) !== undefined
-        })
+        let iterId = localStorage.getItem('testIterationId')
+        if (iterId === null) {
+            iterId = crypto.randomUUID()
+            localStorage.setItem('testIterationId', iterId)
+        }
+        this.testIterationId = iterId
     }
 
     static shared = new TestUtils()
 
-    db = idb.openDB('Testing', 1, {
-        upgrade(database) {
-            database.createObjectStore('kv')
-        },
-    })
-
-    async get<K extends keyof TestKv>(key: K): Promise<TestKv[K]> {
-        return (await this.db).get('kv', key) as Promise<TestKv[K]>
+    safeClearLocalStorage(): void {
+        // eslint-disable-next-line no-restricted-syntax -- This is the safe function
+        localStorage.clear()
+        localStorage.setItem('testIterationId', this.testIterationId)
     }
-
-    async set<K extends keyof TestKv>(key: K, value: TestKv[K]): Promise<void> {
-        if (key === 'testIterationId') {
-            this.isTesting = value !== undefined
-        }
-        await (await this.db).put('kv', value, key)
-    }
-
-    testSyncing = false
 }
 
 export interface TestWindow {
-    testUtils: TestUtils
+    'testUtils': TestUtils
+    '%hammerhead%': unknown
 }
 
 (window as unknown as TestWindow).testUtils = TestUtils.shared

@@ -127,7 +127,9 @@ export default tseslint.config(
                 'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])', // Prevent accidentally using `replace` without a global regex, which just replaces the first instance
                 // Prevent calling withText with a string argument, instead use withExactText. Allow regex literals only
                 'CallExpression[callee.property.name=withText][arguments.0.type=Literal][arguments.0.regex=undefined]',
-                'MemberExpression[object.name=document][property.name=title]'
+                'MemberExpression[object.name=document][property.name=title]',
+                // Must use test utils instead to safely clear
+                'CallExpression[callee.object.name=localStorage][callee.property.name=clear]'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',

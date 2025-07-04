@@ -192,6 +192,10 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     }
 }
 
+export const safeClearLocalStorage = ClientFunction(() => {
+    (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
+})
+
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
@@ -207,7 +211,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
         .beforeEach(async (t) => {
             await t.eval(() => (window as unknown as TestWindow).testUtils.set('testIterationId', crypto.randomUUID()))
             screenshotNumber = 0
-            await t.eval(() => { localStorage.clear() })
+            await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {
                 await beforeEach(t)
