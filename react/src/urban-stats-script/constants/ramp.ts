@@ -1,4 +1,4 @@
-import { RAMPS } from '../../mapper/ramps'
+import RAMPS from '../../data/mapper/ramps'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
