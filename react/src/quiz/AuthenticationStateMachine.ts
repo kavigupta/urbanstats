@@ -121,6 +121,7 @@ export class AuthenticationStateMachine {
     }
 
     private async syncProfile(token?: string): Promise<void> {
+        localStorage.setItem('test_syncing', 'true')
         if (token === undefined) {
             token = await this.getAccessToken()
         }
@@ -139,6 +140,7 @@ export class AuthenticationStateMachine {
         }
         finally {
             this.isSyncing = false
+            localStorage.setItem('test_syncing', 'false')
         }
     }
 

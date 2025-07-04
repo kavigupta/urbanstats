@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { quizAuthFixture, urbanStatsGoogleSignIn } from './auth_test_utils'
+import { quizAuthFixture, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
 import { addFriend, createUser, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
 import { clickButtons } from './quiz_test_utils'
 import { target } from './test_utils'
@@ -20,6 +20,7 @@ test('sync quiz progress two devices', async (t) => {
     await t.navigateTo(`${target}/quiz.html`)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
     await restoreUser(t, 'Alice', state)
+    await waitForSync(t)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
 })
 
@@ -36,16 +37,16 @@ test('sync friends two devices', async (t) => {
     await urbanStatsGoogleSignIn(t)
     await t.expect(Selector('b').withExactText('Charlie').exists).ok()
     await addFriend(t, 'Darlene', '0d')
-    // give it time to sync
-    await t.wait(5000)
+    await waitForSync(t)
     await restoreUser(t, 'Alice', state)
+    await waitForSync(t)
     await t.expect(Selector('b').withExactText('Charlie').exists).ok()
     await t.expect(Selector('b').withExactText('Darlene').exists).ok()
 
     await removeFriend(t, 1)
-    // give it time to sync
-    await t.wait(5000)
+    await waitForSync(t)
     await restoreUser(t, 'Bob', state)
+    await waitForSync(t)
     await t.expect(Selector('b').withExactText('Darlene').exists).notOk()
 })
 
@@ -69,5 +70,6 @@ test('merge lowest score', async (t) => {
 
     // Restore original user and check merged score is the lowest
     await restoreUser(t, 'Alice', state)
+    await waitForSync(t)
     await t.expect(Selector('div').withExactText('🟩🟥🟩🟥🟥').exists).ok()
 })

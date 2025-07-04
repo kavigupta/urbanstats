@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
 import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
@@ -95,4 +95,11 @@ export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
         await beforeEach?.(t)
         await t.navigateTo(args[1])
     })
+}
+
+export async function waitForSync(t: TestController): Promise<void> {
+    const isSyncing = ClientFunction(() => localStorage.getItem('test_syncing') !== 'false')
+    do {
+        await t.wait(1000)
+    } while (await isSyncing())
 }

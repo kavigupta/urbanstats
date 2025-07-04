@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { dissociateUrbanStatsGoogle, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './auth_test_utils'
+import { dissociateUrbanStatsGoogle, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './quiz_auth_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
 import { safeReload, target } from './test_utils'
 
