@@ -192,6 +192,8 @@ export class QuizPersistent {
 
     readonly dismissAuthNag = new StoredProperty<number | null>('dismiss_auth_nag', v => z.nullable(z.coerce.number()).parse(v), v => v?.toString() ?? null)
 
+    readonly enableAuthFeatures = new StoredProperty<boolean>('enable_auth_features', v => v === 'true', v => v.toString())
+
     exportQuizPersona(): void {
         const exported: QuizPersona = {
             date_exported: new Date(),

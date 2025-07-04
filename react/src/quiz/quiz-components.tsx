@@ -80,6 +80,12 @@ export function QuizAuthStatus(): ReactNode {
 
     const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
 
+    const authEnable = QuizPersistent.shared.enableAuthFeatures.use()
+
+    if (!authEnable) {
+        return null
+    }
+
     if (state.state === 'signedOut') {
         const signIn = (e: React.MouseEvent): void => {
             e.preventDefault()

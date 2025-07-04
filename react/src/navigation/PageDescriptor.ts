@@ -125,6 +125,7 @@ const quizSchema = z.intersection(
     z.object({
         name: z.optional(z.string()),
         id: z.optional(z.string()),
+        enableAuth: z.optional(z.enum(['true', 'false'])),
     }),
 )
 
@@ -294,6 +295,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizContent: pageDescriptor.quizContent,
                 name: pageDescriptor.name,
                 id: pageDescriptor.id,
+                enableAuth: pageDescriptor.enableAuth?.toString(),
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -598,6 +600,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     // Remove friend stuff so it doesn't get triggered again
                     id: undefined,
                     name: undefined,
+                    // and enable auth
+                    enableAuth: undefined,
                 },
                 effects: () => {
                     if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
@@ -606,6 +610,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         void (async () => {
                             const { addFriendFromLink } = await quizImport
                             await addFriendFromLink(friendId, friendName)
+                        })()
+                    }
+                    if (newDescriptor.enableAuth !== undefined) {
+                        const enabled = newDescriptor.enableAuth
+                        void (async () => {
+                            const { QuizPersistent } = await quizImport
+                            QuizPersistent.shared.enableAuthFeatures.value = enabled === 'true'
                         })()
                     }
                 },
