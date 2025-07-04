@@ -19,10 +19,10 @@ const labelWidth = '5%'
 
 function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsASTExpression {
     if (type.type === 'number') {
-        return { type: 'constant', value: { node: 0, location: emptyLocation(blockIdent) } }
+        return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
     if (type.type === 'string') {
-        return { type: 'constant', value: { node: '', location: emptyLocation(blockIdent) } }
+        return { type: 'constant', value: { node: { type: 'string', value: '' }, location: emptyLocation(blockIdent) } }
     }
     return parseNoErrorAsExpression('', blockIdent)
 }
@@ -270,7 +270,7 @@ export function Selector(props: {
     const isNumber = props.type.type === 'number'
     const isString = props.type.type === 'string'
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
-    const currentValue = props.uss.type === 'constant' ? props.uss.value.node : ''
+    const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
@@ -289,14 +289,17 @@ export function Selector(props: {
             </select>
             {showConstantInput && (
                 <input
-                    type={isNumber ? 'number' : 'text'}
-                    value={currentValue}
+                    type="text"
+                    value={currentValue.value}
                     onChange={(e) => {
-                        const value = isNumber ? Number(e.target.value) : e.target.value
+                        const value = e.target.value
                         const newUss = {
                             type: 'constant' as const,
-                            value: { node: value, location: emptyLocation(props.blockIdent) },
-                        }
+                            value: {
+                                node: { type: isNumber ? 'number' : 'string', value },
+                                location: emptyLocation(props.blockIdent),
+                            },
+                        } satisfies UrbanStatsASTExpression
                         props.setUss(newUss)
                     }}
                     style={{ width: '200px' }}
