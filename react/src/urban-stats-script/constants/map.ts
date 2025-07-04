@@ -1,3 +1,4 @@
+import { noLocation } from '../lexer'
 import { USSType, USSValue, rawDefaultValue } from '../types-values'
 
 import { RampT } from './ramp'
@@ -21,7 +22,13 @@ export const cMap: USSValue = {
         type: 'function',
         posArgs: [],
         namedArgs: {
-            geo: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'string' } } } },
+            geo: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'string' } } },
+                defaultValue: { type: 'expression', expr: {
+                    type: 'identifier',
+                    name: { node: 'geo', location: noLocation },
+                } },
+            },
             data: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
             scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
             ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },

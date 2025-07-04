@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 export interface Decorated<T> {

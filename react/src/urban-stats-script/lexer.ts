@@ -29,6 +29,8 @@ export interface LocInfo {
     end: SingleLocation
 }
 
+export const noLocation = { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } } satisfies LocInfo
+
 export interface AnnotatedToken {
     token: Token
     location: LocInfo

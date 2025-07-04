@@ -1277,6 +1277,21 @@ void test('test basic map', () => {
     }])
 })
 
+void test('test basic map, default geo', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = execute(parseProgram('geo = ["A", "B", "C"]; cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
+    assert.deepStrictEqual(effects, [{
+        type: 'warning',
+        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+    }])
+})
+
 void test('test basic map with label passed', () => {
     const effects: Effect[] = []
     const ctx = emptyContext(effects)
