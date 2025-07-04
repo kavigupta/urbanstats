@@ -1,5 +1,6 @@
 import fs from 'fs/promises'
 
+import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
 import { globSync } from 'glob'
 import createTestCafe from 'testcafe'
@@ -77,7 +78,7 @@ const runTest = async (): Promise<number> => {
 
 const killTimer = options.timeLimitSeconds
     ? setTimeout(() => {
-        console.error(`Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)`)
+        console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
         process.exit(1)
     }, options.timeLimitSeconds * 1000)
     : undefined
