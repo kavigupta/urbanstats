@@ -10,6 +10,7 @@ export type LocalStorageKey = 'enable_auth_features'
     | 'secure_id'
     | 'dismiss_auth_nag'
     | 'testHostname'
+    | 'syau_history'
 
 interface TypeSafeLocalStorage extends Storage {
     getItem: (key: LocalStorageKey) => string | null

@@ -56,7 +56,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<LocalStorageKey, string>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Partial<Record<LocalStorageKey, string>>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
     urbanstatsFixture(fixName, url, async (t) => {
         await startIntercepting(t)
         const tempfile = `${tempfileName()}.sql`
@@ -67,7 +67,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         await safeClearLocalStorage()
         await t.eval(() => {
             for (const k of Object.keys(newLocalstorage)) {
-                safeStorage.setItem(k, newLocalstorage[k])
+                safeStorage.setItem(k, newLocalstorage[k]!)
             }
         }, { dependencies: { newLocalstorage } })
         await t.eval(() => {
@@ -235,7 +235,7 @@ export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], versi
     quizFixture(
         'collect correct answers',
         `${target}/quiz.html`,
-        {} as Record<LocalStorageKey, string>,
+        {},
         ``,
         'desktop',
     )
