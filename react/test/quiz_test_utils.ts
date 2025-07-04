@@ -87,7 +87,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
 
 const interceptingSessions = new Set<unknown>()
 
-export async function startIntercepting(t: TestController): Promise<void> {
+async function startIntercepting(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return
@@ -138,13 +138,6 @@ export async function startIntercepting(t: TestController): Promise<void> {
             urlPattern: 'https://persistent.urbanstats.org/*',
         }],
     })
-}
-
-/*
- * There's an issue where Google pages don't like to load while Fetch devtool is on
- */
-export async function stopIntercepting(t: TestController): Promise<void> {
-    await (await t.getCurrentCDPSession()).Fetch.disable()
 }
 
 export function tempfileName(): string {

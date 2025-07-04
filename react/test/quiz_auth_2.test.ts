@@ -31,9 +31,10 @@ test('sync friends two devices', async (t) => {
     await addFriend(t, 'Charlie', '0c')
     await urbanStatsGoogleSignIn(t)
     await t.expect(Selector('b').withExactText('Charlie').exists).ok()
+    await t.navigateTo(target) // So quiz stuff isn't loaded and we aren't watching as we create user
     await createUser(t, 'Bob', '0b', state)
     await t.navigateTo(`${target}/quiz.html`)
-    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
     await urbanStatsGoogleSignIn(t)
     await t.expect(Selector('b').withExactText('Charlie').exists).ok()
     await addFriend(t, 'Darlene', '0d')

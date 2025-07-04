@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
-import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
+import { quizFixture } from './quiz_test_utils'
 import { target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
@@ -16,28 +16,30 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
 
+async function flakyNavigate(t: TestController, dest: string): Promise<void> {
+    while (true) {
+        try {
+            await t.navigateTo(dest)
+            break
+        }
+        catch (e) {
+            console.warn('Problem navigating', e)
+            await t.wait(1000)
+        }
+    }
+}
+
 async function googleSignIn(t: TestController): Promise<void> {
-    await stopIntercepting(t)
-    await t.navigateTo('https://accounts.google.com')
+    await flakyNavigate(t, 'https://accounts.google.com')
     await t.typeText('input[type=email]', email)
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
     await t.wait(1000) // wait for redirect
-    await startIntercepting(t)
 }
 
 export async function dissociateUrbanStatsGoogle(t: TestController): Promise<void> {
-    await stopIntercepting(t)
-    while (true) {
-        try {
-            await t.navigateTo('https://drive.google.com/drive/u/0/settings')
-            break
-        }
-        catch (e) {
-            console.warn('Problem navigating', e)
-        }
-    }
+    await flakyNavigate(t, 'https://drive.google.com/drive/u/0/settings')
     await t.click(Selector('div').withExactText('Manage apps'))
     const optionsDropdown = Selector('button[aria-label="Options for Urban Stats (Unverified)"]')
     if (await optionsDropdown.exists) {
@@ -52,12 +54,10 @@ export async function dissociateUrbanStatsGoogle(t: TestController): Promise<voi
         await t.wait(1000) // wait to process
     }
 
-    await startIntercepting(t)
     await t.navigateTo(`${target}/quiz.html`)
 }
 
 export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
-    await stopIntercepting(t)
     if (await signInLink.exists) {
         await t.click(signInLink)
     }
@@ -74,7 +74,6 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     if (enableDrive && await checkBox.exists) {
         await t.click(checkBox)
     }
-    await startIntercepting(t) // start forwarding to the quiz server
     while (await continueButton.exists) {
         await t.click(continueButton)
     }
