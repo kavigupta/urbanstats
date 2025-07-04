@@ -7,16 +7,20 @@
  */
 export class TestUtils {
     readonly isTesting = (window as unknown as TestWindow)['%hammerhead%'] !== undefined
-    readonly testIterationId: string
+    readonly testIterationId: string | undefined
     testSyncing = false
 
     private constructor() {
         let iterId = localStorage.getItem('testIterationId')
-        if (iterId === null) {
+        if (iterId === null && this.isTesting) {
             iterId = crypto.randomUUID()
             localStorage.setItem('testIterationId', iterId)
         }
-        this.testIterationId = iterId
+        if (iterId !== null && !this.isTesting) {
+            iterId = null
+            localStorage.removeItem('testIterationId')
+        }
+        this.testIterationId = iterId ?? undefined
     }
 
     static shared = new TestUtils()
@@ -24,7 +28,9 @@ export class TestUtils {
     safeClearLocalStorage(): void {
         // eslint-disable-next-line no-restricted-syntax -- This is the safe function
         localStorage.clear()
-        localStorage.setItem('testIterationId', this.testIterationId)
+        if (this.testIterationId !== undefined) {
+            localStorage.setItem('testIterationId', this.testIterationId)
+        }
     }
 }
 

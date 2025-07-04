@@ -12,7 +12,7 @@ test('we are in testing mode', async (t) => {
 
 const getTestingId = ClientFunction(() => (window as unknown as TestWindow).testUtils.testIterationId)
 
-let testingId: string
+let testingId: string | undefined
 test('there is a testing id', async (t) => {
     testingId = await getTestingId()
     await t.expect(testingId).ok()
