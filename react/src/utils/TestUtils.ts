@@ -33,7 +33,7 @@ export class TestUtils {
             localStorage.setItem('testIterationId', this.testIterationId)
         }
         if (quizAuthEnabled !== null) {
-            localStorage.setItem('quiz_auth_features', quizAuthEnabled)
+            localStorage.setItem('enable_auth_features', quizAuthEnabled)
         }
     }
 }
