@@ -1,10 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { LocalStorageKey, safeStorage } from '../src/utils/safeStorage'
-
 import { safeClearLocalStorage, safeReload } from './test_utils'
 
-type Storage = Record<LocalStorageKey, string>
+type Storage = Record<string, string>
 
 export interface JuxtastatUserState {
     currentUser?: string
@@ -27,7 +25,7 @@ export async function createUser(t: TestController, user: string, userId: string
     await switchAwayFromUser(t, state)
     await t.expect(state.allUserState.has(user)).eql(false)
     await t.eval(() => {
-        safeStorage.setItem('persistent_id', userId)
+        localStorage.setItem('persistent_id', userId)
     }, { dependencies: { userId } })
     await safeReload(t)
     state.currentUser = user
@@ -39,7 +37,7 @@ export async function restoreUser(t: TestController, user: string, state: Juxtas
     const storage = state.allUserState.get(user)!
     await t.eval(() => {
         for (const key of Object.keys(storage)) {
-            safeStorage.setItem(key, storage[key])
+            localStorage.setItem(key, storage[key])
         }
     }, { dependencies: { storage } })
     await safeReload(t)

@@ -5,8 +5,6 @@ import { gzipSync } from 'zlib'
 
 import { ClientFunction, Selector } from 'testcafe'
 
-import { safeStorage } from '../src/utils/safeStorage'
-
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
 import { target, mostRecentDownloadPath, safeReload, screencap, getLocation, safeClearLocalStorage } from './test_utils'
 
@@ -93,7 +91,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.wait(3000)
         await quizScreencap(t)
         const quizHistory: unknown = await t.eval(() => {
-            return JSON.stringify(JSON.parse(safeStorage.getItem('quiz_history')!))
+            return JSON.stringify(JSON.parse(localStorage.getItem('quiz_history')!))
         })
         await t.expect(quizHistory).eql('{"99":{"choices":["A","B","A","B","A"],"correct_pattern":[true,false,true,false,false]}}')
         await t.expect(await juxtastatTable(t)).eql('7|99|5\n')
@@ -111,7 +109,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const quizHistory: unknown = await t.eval(() => {
-            return JSON.parse(safeStorage.getItem('quiz_history')!) as unknown
+            return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
         })
         const expectedQuizHistory = exampleQuizHistory(87, 90)
         expectedQuizHistory[99] = {
@@ -185,7 +183,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const quizHistory: unknown = await t.eval(() => {
-            return JSON.parse(safeStorage.getItem('quiz_history')!) as unknown
+            return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
         })
         const expectedQuizHistory = exampleQuizHistory(87, 92)
         expectedQuizHistory[99] = {
@@ -226,8 +224,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // now become user 8
         await safeClearLocalStorage()
         await t.eval(() => {
-            safeStorage.setItem('persistent_id', '000000000000008')
-            safeStorage.setItem('testHostname', 'testproxy.nonexistent')
+            localStorage.setItem('persistent_id', '000000000000008')
+            localStorage.setItem('testHostname', 'testproxy.nonexistent')
         })
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
@@ -262,7 +260,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     test('quiz-new-user', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const result = await t.eval(() => {
-            return [safeStorage.getItem('persistent_id'), safeStorage.getItem('secure_id')] as [string, string]
+            return [localStorage.getItem('persistent_id'), localStorage.getItem('secure_id')] as [string, string]
         }) as [string, string] | null
         await t.expect(result).notEql(null)
         const [userId, secureId] = result!
@@ -296,7 +294,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const quizHistory: unknown = await t.eval(() => {
-            return JSON.parse(safeStorage.getItem('quiz_history')!) as unknown
+            return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
         })
         const expectedQuizHistory = exampleQuizHistory(87, 93, 27, 33)
         expectedQuizHistory[99] = {
@@ -314,7 +312,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         const quizHistory: unknown = await t.eval(() => {
-            return JSON.parse(safeStorage.getItem('quiz_history')!) as unknown
+            return JSON.parse(localStorage.getItem('quiz_history')!) as unknown
         })
         const expectedQuizHistory = exampleQuizHistory(87, 93, 27, 33)
         expectedQuizHistory.W38 = {
@@ -514,7 +512,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         await t.expect(Selector('.juxtastat-user-id').withExactText('b0bacafe').exists).ok()
 
         // Should transfer over secure id
-        await t.expect(await t.eval(() => safeStorage.getItem('secure_id'))).eql('baddecaf')
+        await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
 
         // Quiz 91 should still be there
         await t.navigateTo('/quiz.html#date=91')
@@ -604,7 +602,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         await t.expect(Selector('.juxtastat-user-id').withExactText('b0bacafe').exists).ok()
 
         // Should transfer over secure id
-        await t.expect(await t.eval(() => safeStorage.getItem('secure_id'))).eql('baddecaf')
+        await t.expect(await t.eval(() => localStorage.getItem('secure_id'))).eql('baddecaf')
     })
 
     test('support old retro links', async (t) => {

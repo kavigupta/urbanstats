@@ -2,8 +2,6 @@ import fs from 'fs'
 
 import { Selector } from 'testcafe'
 
-import { safeStorage } from '../src/utils/safeStorage'
-
 import {
     target, checkTextboxes, getLocation,
     safeReload,
@@ -19,7 +17,7 @@ urbanstatsFixture('settings regression test', testLocation,
     async (t) => {
         const egSettings = fs.readFileSync('test/assets/saved-settings-1.json').toString()
         await t.eval(() => {
-            safeStorage.setItem('settings', egSettings)
+            localStorage.setItem('settings', egSettings)
             // Delete settings param so old settings don't persist after navigation
             // eslint-disable-next-line no-restricted-syntax -- Test file
             setTimeout(() => { window.location.href = testLocation }, 0)

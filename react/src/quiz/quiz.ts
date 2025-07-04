@@ -4,7 +4,6 @@ import { z } from 'zod'
 
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
-import { LocalStorageKey, safeStorage } from '../utils/safeStorage'
 import { cancelled, uploadFile } from '../utils/upload'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
@@ -124,11 +123,11 @@ class Property<T> {
 }
 
 export class StoredProperty<T> extends Property<T> {
-    constructor(readonly localStorageKey: LocalStorageKey, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
-        super(load(safeStorage.getItem(localStorageKey)))
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
+        super(load(localStorage.getItem(localStorageKey)))
         const listener = (event: StorageEvent): void => {
             if (event.key === localStorageKey) {
-                this.value = load(safeStorage.getItem(localStorageKey))
+                this.value = load(localStorage.getItem(localStorageKey))
             }
         }
         addEventListener('storage', listener)
@@ -141,10 +140,10 @@ export class StoredProperty<T> extends Property<T> {
     override set value(newValue: T) {
         const storeValue = this.store(newValue)
         if (storeValue === null) {
-            safeStorage.removeItem(this.localStorageKey)
+            localStorage.removeItem(this.localStorageKey)
         }
         else {
-            safeStorage.setItem(this.localStorageKey, storeValue)
+            localStorage.setItem(this.localStorageKey, storeValue)
         }
         super.value = newValue
     }
@@ -296,15 +295,15 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
     }
 }
 
-function createAndStoreId(key: LocalStorageKey): string {
+function createAndStoreId(key: string): string {
     // (domain name, id stored in local storage)
     // random 60 bit hex number
     // (15 hex digits)
-    if (safeStorage.getItem(key) === null) {
+    if (localStorage.getItem(key) === null) {
         // register
-        safeStorage.setItem(key, randomID())
+        localStorage.setItem(key, randomID())
     }
-    return safeStorage.getItem(key)!
+    return localStorage.getItem(key)!
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {

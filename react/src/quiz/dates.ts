@@ -1,11 +1,9 @@
-import { safeStorage } from '../utils/safeStorage'
-
 import { QuizDescriptorWithTime } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
 
 let offsetForTesting = 0
-const debugMillis = parseInt(safeStorage.getItem('debug_quiz_transition') ?? '0')
+const debugMillis = parseInt(localStorage.getItem('debug_quiz_transition') ?? '0')
 if (debugMillis > 0) {
     // Simulates the quiz being 10 seconds from ending
     const startOfDay = new Date()

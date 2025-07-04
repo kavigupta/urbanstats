@@ -1,5 +1,3 @@
-import { safeStorage } from './safeStorage'
-
 /**
  * Indicates whether we're e2e testing.
  *
@@ -13,14 +11,14 @@ export class TestUtils {
     testSyncing = false
 
     private constructor() {
-        let iterId = safeStorage.getItem('testIterationId')
+        let iterId = localStorage.getItem('testIterationId')
         if (iterId === null && this.isTesting) {
             iterId = crypto.randomUUID()
-            safeStorage.setItem('testIterationId', iterId)
+            localStorage.setItem('testIterationId', iterId)
         }
         if (iterId !== null && !this.isTesting) {
             iterId = null
-            safeStorage.removeItem('testIterationId')
+            localStorage.removeItem('testIterationId')
         }
         this.testIterationId = iterId ?? undefined
     }
@@ -28,14 +26,10 @@ export class TestUtils {
     static shared = new TestUtils()
 
     safeClearLocalStorage(): void {
-        const enableAuthFeatures = safeStorage.getItem('enable_auth_features')
         // eslint-disable-next-line no-restricted-syntax -- This is the safe function
         localStorage.clear()
         if (this.testIterationId !== undefined) {
-            safeStorage.setItem('testIterationId', this.testIterationId)
-        }
-        if (enableAuthFeatures !== null) {
-            safeStorage.setItem('enable_auth_features', enableAuthFeatures)
+            localStorage.setItem('testIterationId', this.testIterationId)
         }
     }
 }

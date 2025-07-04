@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { corruptTokens, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './quiz_auth_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
-import { safeClearLocalStorage, safeReload, target } from './test_utils'
+import { safeReload, target } from './test_utils'
 
 quizAuthFixture('existing state', `${target}/quiz.html`, {
     quiz_history: JSON.stringify(exampleQuizHistory(600, 650)),
@@ -14,7 +14,7 @@ test('sign in to google, clear local storage, sign in again, syncs', async (t) =
     await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
 
     await t.click(signOutLink)
-    await safeClearLocalStorage()
+    await t.eval(() => { localStorage.clear() })
     await safeReload(t)
     await t.expect(signInLink.exists).ok()
     await urbanStatsGoogleSignIn(t)
@@ -53,7 +53,7 @@ test('sign in to google, reload page, remains signed in', async (t) => {
 
 test('sign in to google, clear local storage, reload, should require sign in', async (t) => {
     await urbanStatsGoogleSignIn(t)
-    await safeClearLocalStorage()
+    await t.eval(() => { localStorage.clear() })
     await safeReload(t)
     await t.expect(signInLink.exists).ok()
     await t.expect(signOutLink.exists).notOk()
