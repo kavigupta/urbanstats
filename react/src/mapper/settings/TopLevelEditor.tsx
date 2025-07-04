@@ -112,6 +112,7 @@ export function TopLevelEditor({
                     errors={errors}
                     blockIdent={idOutput}
                     type={{ type: 'opaque', name: 'cMap' }}
+                    labelWidth="0px"
                 />
             </div>
         )

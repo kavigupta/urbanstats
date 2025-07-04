@@ -15,8 +15,6 @@ import { parseNoErrorAsExpression } from './utils'
 
 type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' }
 
-const labelWidth = '5%'
-
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
@@ -103,7 +101,9 @@ export function AutoUXEditor(props: {
     blockIdent: string
     type: USSType
     label?: string
+    labelWidth?: string
 }): ReactNode {
+    const labelWidth = props.labelWidth ?? '5%'
     const subcomponent = (): ReactNode => {
         if (props.uss.type === 'constant') {
             return <></>
