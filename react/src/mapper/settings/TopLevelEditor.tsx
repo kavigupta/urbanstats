@@ -7,14 +7,15 @@ import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType } from '../../urban-stats-script/types-values'
+import { toSExp, unparse } from '../../urban-stats-script/parser'
+import { USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
 
-import { AutoUXEditor } from './AutoUXEditor'
+import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { makeStatements, parseNoErrorAsExpression, rootBlockIdent } from './utils'
 
+const cMap = { type: 'opaque', name: 'cMap' } satisfies USSType
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
 const idOutput = `${rootBlockIdent}o`
@@ -113,7 +114,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={{ type: 'opaque', name: 'cMap' }}
+                    type={cMap}
                     labelWidth="0px"
                 />
             </div>
@@ -131,7 +132,7 @@ export function TopLevelEditor({
                     }
                     else {
                         assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(ussToUse.expr))
+                        setUss(attemptParseAsTopLevel(ussToUse.expr, typeEnvironment))
                     }
                 }}
             />
@@ -143,7 +144,7 @@ export function TopLevelEditor({
     )
 }
 
-function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement): UrbanStatsASTStatement {
+function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
@@ -164,11 +165,13 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement): UrbanStatsASTStat
         conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
         conditionRest = [conditionStmt]
     }
+    const body = parseExpr(makeStatements(conditionRest), idOutput, cMap, typeEnvironment)
+    console.log(toSExp(body))
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
         condition: conditionExpr,
-        rest: [{ type: 'expression', value: parseNoErrorAsExpression(unparse(makeStatements(conditionRest)), idOutput) }],
+        rest: [{ type: 'expression', value: body }],
     } satisfies UrbanStatsASTStatement
     return {
         type: 'statements',

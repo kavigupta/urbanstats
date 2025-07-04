@@ -4,9 +4,10 @@ import React, { ReactNode } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
-import { UrbanStatsASTArg, UrbanStatsASTExpression } from '../../urban-stats-script/ast'
+import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
+import { unparse } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue } from '../../urban-stats-script/types-values'
 import { useMobileLayout } from '../../utils/responsive'
 
@@ -375,25 +376,118 @@ function defaultForSelection(
                 assert(arg.type === 'concrete', `Positional argument must be concrete`)
                 args.push({
                     type: 'unnamed',
-                    value: createDefaultExpression(arg.value, `${blockIdent}_${i}`),
+                    value: createDefaultExpression(arg.value, `${blockIdent}_pos_${i}`),
                 })
             }
             // Include named arguments that don't have defaults
-            for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
-                if (argWDefault.defaultValue === undefined) {
-                    const arg = argWDefault.type
-                    assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-                    args.push({
-                        type: 'named',
-                        name: { node: name, location: emptyLocation(blockIdent) },
-                        value: createDefaultExpression(arg.value, `${blockIdent}_${name}`),
-                    })
-                }
+            const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
+            for (const [name, argWDefault] of needed) {
+                const arg = argWDefault.type
+                assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
+                args.push({
+                    type: 'named',
+                    name: { node: name, location: emptyLocation(blockIdent) },
+                    value: createDefaultExpression(arg.value, `${blockIdent}_${name}`),
+                })
             }
             return {
                 type: 'function',
                 fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
                 args,
+                entireLoc: emptyLocation(blockIdent),
+            }
+    }
+}
+
+export function parseExpr(
+    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
+    blockIdent: string,
+    type: USSType,
+    typeEnvironment: Map<string, USSDocumentedType>,
+): UrbanStatsASTExpression {
+    const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment)
+    return parsed ?? parseNoErrorAsExpression(unparse(expr), blockIdent)
+}
+
+function attemptParseExpr(
+    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
+    blockIdent: string,
+    type: USSType,
+    typeEnvironment: Map<string, USSDocumentedType>,
+): UrbanStatsASTExpression | undefined {
+    switch (expr.type) {
+        case 'condition':
+        case 'unaryOperator':
+        case 'binaryOperator':
+        case 'objectLiteral':
+        case 'vectorLiteral':
+        case 'if':
+        case 'assignment':
+        case 'parseError':
+        case 'attribute':
+            return undefined
+        case 'customNode':
+            return parseExpr(expr.expr, blockIdent, type, typeEnvironment)
+        case 'statements':
+            if (expr.result.length === 1) {
+                return parseExpr(expr.result[0], blockIdent, type, typeEnvironment)
+            }
+            return undefined
+        case 'expression':
+            return parseExpr(expr.value, blockIdent, type, typeEnvironment)
+        case 'identifier':
+            const t = typeEnvironment.get(expr.name.node)?.type
+            if (t && renderType(t) === renderType(type)) {
+                return expr
+            }
+            return undefined
+        case 'constant':
+            if (type.type === expr.value.node.type) {
+                return expr
+            }
+            return undefined
+        case 'function':
+            const fn = expr.fn
+            if (fn.type !== 'identifier') {
+                return undefined
+            }
+            const tdoc = typeEnvironment.get(fn.name.node)
+            if (!tdoc || tdoc.type.type !== 'function') {
+                return undefined
+            }
+            const fnType = tdoc.type
+            if (fnType.returnType.type !== 'concrete' || renderType(fnType.returnType.value) !== renderType(type)) {
+                return undefined
+            }
+            let positionals = expr.args.filter(a => a.type === 'unnamed') satisfies (UrbanStatsASTArg & { type: 'unnamed' })[]
+            if (positionals.length !== fnType.posArgs.length) {
+                return undefined
+            }
+            let nameds = expr.args.filter(a => a.type === 'named') satisfies (UrbanStatsASTArg & { type: 'named' })[]
+            const names = new Set(nameds.map(a => a.name.node))
+            const needed = Object.entries(fnType.namedArgs).filter(([, a]) => a.defaultValue === undefined)
+            if (needed.some(([name]) => !names.has(name))) {
+                return undefined
+            }
+            if (fnType.posArgs.some(a => a.type !== 'concrete')) {
+                return undefined
+            }
+            positionals = positionals.map((a, i) => ({
+                type: 'unnamed',
+                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, (fnType.posArgs[i] as { type: 'concrete', value: USSType }).value, typeEnvironment),
+            }))
+            if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
+                return undefined
+            }
+            nameds = nameds.map(a => ({
+                type: 'named',
+                name: a.name,
+                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, (fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value, typeEnvironment),
+            }))
+            return {
+                type: 'function',
+                fn: { type: 'identifier', name: { node: fn.name.node, location: emptyLocation(blockIdent) } },
+                args: [...positionals, ...nameds],
                 entireLoc: emptyLocation(blockIdent),
             }
     }
