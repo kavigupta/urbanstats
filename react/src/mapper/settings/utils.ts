@@ -2,6 +2,7 @@ import assert from 'assert'
 
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { parse } from '../../urban-stats-script/parser'
+import { USSType } from '../../urban-stats-script/types-values'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -55,12 +56,13 @@ export function parseNoError(uss: string, blockId: string): UrbanStatsASTStateme
     return result
 }
 
-export function parseNoErrorAsExpression(uss: string, blockId: string): UrbanStatsASTExpression {
+export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
     const result = parseNoError(uss, blockId)
     return {
         type: 'customNode',
         expr: result,
         originalCode: uss,
+        expectedType,
     }
 }
 

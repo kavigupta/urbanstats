@@ -7,7 +7,7 @@ import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { toSExp, unparse } from '../../urban-stats-script/parser'
+import { unparse } from '../../urban-stats-script/parser'
 import { USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
 
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
@@ -158,7 +158,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
     let conditionExpr: UrbanStatsASTExpression
     let conditionRest: UrbanStatsASTStatement[]
     if (conditionStmt.type === 'condition') {
-        conditionExpr = parseNoErrorAsExpression(unparse(conditionStmt.condition), idCondition)
+        conditionExpr = parseNoErrorAsExpression(unparse(conditionStmt.condition), idCondition, { type: 'boolean' })
         conditionRest = conditionStmt.rest
     }
     else {
@@ -166,7 +166,6 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
         conditionRest = [conditionStmt]
     }
     const body = parseExpr(makeStatements(conditionRest), idOutput, cMap, typeEnvironment)
-    console.log(toSExp(body))
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),

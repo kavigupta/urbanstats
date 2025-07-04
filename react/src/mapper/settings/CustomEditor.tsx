@@ -27,7 +27,7 @@ export function CustomEditor({
         <Editor
             uss={uss.originalCode}
             setUss={(u: string) => {
-                const parsed = parseNoErrorAsExpression(u, blockIdent)
+                const parsed = parseNoErrorAsExpression(u, blockIdent, uss.expectedType)
                 setUss(parsed)
             }}
             typeEnvironment={typeEnvironment}

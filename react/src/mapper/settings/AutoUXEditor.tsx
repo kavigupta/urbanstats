@@ -27,7 +27,7 @@ function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsA
     if (type.type === 'string') {
         return { type: 'constant', value: { node: { type: 'string', value: '' }, location: emptyLocation(blockIdent) } }
     }
-    return parseNoErrorAsExpression('', blockIdent)
+    return parseNoErrorAsExpression('', blockIdent, type)
 }
 
 function ArgumentEditor(props: {
@@ -46,6 +46,7 @@ function ArgumentEditor(props: {
     const argValue = functionUss.args.find(a => a.type === 'named' && a.name.node === props.name)
     const hasDefault = props.argWDefault.defaultValue !== undefined
     const isEnabled = argValue !== undefined
+    const subident = `${props.blockIdent}_${props.name}`
 
     return (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
@@ -57,8 +58,8 @@ function ArgumentEditor(props: {
                             // Add the argument with default value
                             const newArgs = [...functionUss.args, {
                                 type: 'named' as const,
-                                name: { node: props.name, location: emptyLocation(props.blockIdent) },
-                                value: createDefaultExpression(arg.value, `${props.blockIdent}_${props.name}`),
+                                name: { node: props.name, location: emptyLocation(subident) },
+                                value: createDefaultExpression(arg.value, subident),
                             }]
                             props.setUss({ ...functionUss, args: newArgs })
                         }
@@ -81,7 +82,7 @@ function ArgumentEditor(props: {
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
-                                blockIdent={`${props.blockIdent}_${props.name}`}
+                                blockIdent={subident}
                                 type={arg.value}
                                 label={props.name}
                             />
@@ -172,8 +173,6 @@ export function AutoUXEditor(props: {
         }
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
-    const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
-    const errorComponent = <DisplayErrors errors={errors} />
     const leftSegment = (
         <div style={{ width: labelWidth }}>
             {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
@@ -190,6 +189,7 @@ export function AutoUXEditor(props: {
                 typeEnvironment={props.typeEnvironment}
                 type={props.type}
                 blockIdent={props.blockIdent}
+                errors={props.errors}
             />
         </div>
 
@@ -201,10 +201,10 @@ export function AutoUXEditor(props: {
         if (isMobile) {
             return (
                 <>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'top' }}>
                         {leftSegment}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'top' }}>
                         <div style={{ width: labelWidth }} />
                         {rightSegment}
                     </div>
@@ -213,7 +213,7 @@ export function AutoUXEditor(props: {
         }
         else {
             return (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'top' }}>
                     {leftSegment}
                     {rightSegment}
                 </div>
@@ -229,7 +229,6 @@ export function AutoUXEditor(props: {
                     {subcomponent()}
                 </div>
             </div>
-            {errorComponent}
         </div>
     )
 }
@@ -270,6 +269,7 @@ export function Selector(props: {
     typeEnvironment: Map<string, USSDocumentedType>
     type: USSType
     blockIdent: string
+    errors: EditorError[]
 }): ReactNode {
     const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
@@ -281,8 +281,10 @@ export function Selector(props: {
     const isString = props.type.type === 'string'
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
+    const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
+    const errorComponent = <DisplayErrors errors={errors} />
 
-    return (
+    const select = (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
             <select
                 id="selector"
@@ -318,6 +320,15 @@ export function Selector(props: {
             )}
         </div>
     )
+    if (showConstantInput) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
+                {select}
+                {errorComponent}
+            </div>
+        )
+    }
+    return select
 }
 
 function classifyExpr(uss: UrbanStatsASTExpression): Selection {
@@ -359,7 +370,7 @@ function defaultForSelection(
     // TODO actually attempt to parse the current expression and use it as a default
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsExpression('', blockIdent)
+            return parseNoErrorAsExpression('', blockIdent, type)
         case 'constant':
             return createDefaultExpression(type, blockIdent)
         case 'variable':
@@ -406,7 +417,7 @@ export function parseExpr(
     typeEnvironment: Map<string, USSDocumentedType>,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment)
-    return parsed ?? parseNoErrorAsExpression(unparse(expr), blockIdent)
+    return parsed ?? parseNoErrorAsExpression(unparse(expr), blockIdent, type)
 }
 
 function attemptParseExpr(

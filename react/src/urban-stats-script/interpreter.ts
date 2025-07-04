@@ -127,7 +127,17 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             )
         case 'customNode':
             // This is a custom node for internal purposes, we just evaluate the expression
-            return execute(expr.expr, env)
+            const result = execute(expr.expr, env)
+
+            // Check type if expectedType is provided
+            if (expr.expectedType && renderType(result.type) !== renderType(expr.expectedType)) {
+                throw env.error(
+                    `Custom expression expected to return type ${renderType(expr.expectedType)}, but got ${renderType(result.type)}`,
+                    locationOf(expr),
+                )
+            }
+
+            return result
     }
 }
 
