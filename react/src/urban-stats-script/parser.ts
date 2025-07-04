@@ -1,9 +1,12 @@
+import assert from 'assert'
+
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
+import { USSType } from './types-values'
 
 export interface Decorated<T> {
     node: T
@@ -792,5 +795,21 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 return restStr
             }
             return `${indentSpaces(indent)}condition (${condStr})\n${restStr}`
+    }
+}
+
+export function parseNoError(uss: string, blockId: string): UrbanStatsASTStatement {
+    const result = parse(uss, { type: 'single', ident: blockId }, true)
+    assert(result.type !== 'error', `Should not have an error`)
+    return result
+}
+
+export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
+    const result = parseNoError(uss, blockId)
+    return {
+        type: 'customNode',
+        expr: result,
+        originalCode: uss,
+        expectedType,
     }
 }
