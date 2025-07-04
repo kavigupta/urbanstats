@@ -40,7 +40,6 @@ export const cMap: USSValue = {
         returnType: { type: 'concrete', value: cMapType },
     },
     value: (ctx, posArgs, namedArgs, originalArgs) => {
-        console.log('named arguments', namedArgs)
         const geo = namedArgs.geo as string[]
         const data = namedArgs.data as number[]
         const scale = (namedArgs.scale as { type: 'opaque', value: Scale }).value
