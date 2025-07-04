@@ -5,7 +5,7 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import { TestWindow } from '../src/utils/TestUtils'
+import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
