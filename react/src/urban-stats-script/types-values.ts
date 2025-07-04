@@ -1,5 +1,6 @@
 import { assert } from '../utils/defensive'
 
+import { UrbanStatsASTExpression } from './ast'
 import { Context } from './context'
 
 interface USSNumberType {
@@ -35,10 +36,12 @@ export interface USSObjectType {
 export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
 export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' }
 
+export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'expression', expr: UrbanStatsASTExpression }
+
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSRawValue }>
+    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue }>
     returnType: USSFunctionReturnType
 }
 
@@ -100,6 +103,14 @@ export function undocValue(value: USSRawValue, type: USSType): USSValue {
     }
 }
 
+export function rawDefaultValue(value: USSRawValue): USSDefaultValue {
+    return { type: 'raw', value }
+}
+
+export function expressionDefaultValue(expr: UrbanStatsASTExpression): USSDefaultValue {
+    return { type: 'expression', expr }
+}
+
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
     if (param.type === 'concrete') {
         return renderType(param.value) === renderType(arg)
@@ -139,10 +150,21 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
     return 'any'
 }
 
-export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSRawValue }): string {
+export function renderDefaultValue(defaultValue: USSDefaultValue): string {
+    switch (defaultValue.type) {
+        case 'raw':
+            return JSON.stringify(defaultValue.value)
+        case 'expression':
+            // TODO: unparse the expression to a string. Log exists to trip eslint
+            console.log('TODO: rendering expression default value')
+            return `<expression>`
+    }
+}
+
+export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }): string {
     const type = renderArgumentType(arg.type)
     if (arg.defaultValue !== undefined) {
-        return `${type} = ${JSON.stringify(arg.defaultValue)}`
+        return `${type} = ${renderDefaultValue(arg.defaultValue)}`
     }
     return type
 }

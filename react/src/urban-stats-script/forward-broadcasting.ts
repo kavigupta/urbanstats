@@ -1,9 +1,9 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
-import { InterpretationError } from './interpreter'
+import { InterpretationError, evaluate } from './interpreter'
 import { LocInfo } from './lexer'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs, USSDefaultValue, USSFunctionArgType } from './types-values'
 
 interface PredicateDescriptor {
     role: string
@@ -144,6 +144,7 @@ function locateFunctionAndArguments(
     fn: USSValue,
     posArgs: USSValue[],
     kwArgs: [string, USSValue][],
+    ctx: Context,
 ): { type: 'success', result: [TypeLocationSuccess, TypeLocationSuccess[], TypeLocationSuccess[]] } | BroadcastError {
     const fnLocatedOrError = locateType(fn, t => t.type === 'function', { role: 'function', typeDesc: 'function' })
     if (fnLocatedOrError.type === 'error') {
@@ -160,9 +161,10 @@ function locateFunctionAndArguments(
     }
     for (const k of Object.keys(fnType.namedArgs)) {
         if (!kwArgs.some(x => x[0] === k)) {
-            if (fnType.namedArgs[k].defaultValue !== undefined) {
-                assert(fnType.namedArgs[k].type.type === 'concrete', `Expected named argument ${k} to have a concrete type, but got ${renderType(fnType)}`)
-                kwArgs.push([k, undocValue(fnType.namedArgs[k].defaultValue, fnType.namedArgs[k].type.value)])
+            const na = fnType.namedArgs[k]
+            const defaultValue = evaluateDefault(na, ctx)
+            if (defaultValue !== undefined) {
+                kwArgs.push([k, defaultValue])
             }
             else {
                 return {
@@ -210,6 +212,19 @@ function locateFunctionAndArguments(
 interface BroadcastError {
     type: 'error'
     message: string
+}
+
+function evaluateDefault(na: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }, ctx: Context): USSValue | undefined {
+    if (!na.defaultValue) {
+        return undefined
+    }
+    assert(na.type.type === 'concrete', `Expected named argument to have a concrete type`)
+    switch (na.defaultValue.type) {
+        case 'raw':
+            return undocValue(na.defaultValue.value, na.type.value)
+        case 'expression':
+            return evaluate(na.defaultValue.expr, ctx)
+    }
 }
 
 function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {
@@ -338,7 +353,7 @@ export function broadcastApply(
      *
      * If the function cannot be broadcast to the arguments, an error is returned.
      */
-    const result = locateFunctionAndArguments(fn, posArgs, kwArgs)
+    const result = locateFunctionAndArguments(fn, posArgs, kwArgs, ctx)
     if (result.type === 'error') {
         return result
     }
