@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { Context } from '../src/urban-stats-script/context'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
-import { USSRawValue, USSType, USSValue, USSVectorType, renderType, undocValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 
 import { numMatrixType, numType, numVectorType, testingContext } from './urban-stats-script-utils'
 
@@ -64,23 +64,39 @@ void test('index mask', (): void => {
         ),
         { type: 'success', value: undocValue([objWithNoVectorFields.value, objWithNoVectorFields.value], { type: 'vector', elementType: objWithNoVectorFields.type }) },
     )
-    // object with vector fields. Vector field should be indexed into
-    const objWithVectorFields = undocValue(new Map([['a', [100, 200, 300]] satisfies [string, USSRawValue], ['b', 3] satisfies [string, USSRawValue]] satisfies [string, USSRawValue][]), { type: 'object', properties: new Map([['a', { type: 'vector', elementType: { type: 'number' } }], ['b', { type: 'number' }]]) })
-    const out = indexMask(
-        objWithVectorFields,
-        undocValue([2, 2, 3], numVectorType),
-        2,
-    )
-    assert.deepStrictEqual(
-        out,
-        { type: 'success', value: undocValue([
-            new Map([['a', 100], ['b', 3]]),
-            new Map([['a', 200], ['b', 3]]),
-        ], { type: 'vector', elementType: {
-            type: 'object',
-            properties: new Map([['a', { type: 'number' }], ['b', { type: 'number' }]]),
-        } }) },
-    )
+    {
+        // object with vector fields. Vector field should be indexed into
+        const v: [string, USSRawValue][] = [
+            ['a', [100, 200, 300] satisfies USSRawValue] satisfies [string, USSRawValue],
+            ['b', 3] satisfies [string, USSRawValue],
+        ]
+        const vm = new Map(v) satisfies Map<string, USSRawValue>
+        const objWithVectorFields = undocValue(
+            vm,
+            {
+                type: 'object',
+                properties: new Map([
+                ['a', { type: 'vector', elementType: { type: 'number' } } satisfies USSType] satisfies [string, USSType],
+                ['b', { type: 'number' } satisfies USSType] satisfies [string, USSType],
+                ]),
+            },
+        )
+        const out = indexMask(
+            objWithVectorFields,
+            undocValue([2, 2, 3], numVectorType),
+            2,
+        )
+        assert.deepStrictEqual(
+            out,
+            { type: 'success', value: undocValue([
+                new Map([['a', 100], ['b', 3]]),
+                new Map([['a', 200], ['b', 3]]),
+            ], { type: 'vector', elementType: {
+                type: 'object',
+                properties: new Map([['a', { type: 'number' }], ['b', { type: 'number' }]]),
+            } }) },
+        )
+    }
 })
 
 void test('merge values via masks', (): void => {
