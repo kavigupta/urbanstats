@@ -279,50 +279,68 @@ export function TemperatureSetting(): ReactNode {
     )
 };
 
-interface CheckboxSettingCustomProps {
-    name: string
+interface CheckboxSettingCustomJustInputProps {
     checked: boolean
-    indeterminate?: boolean
     onChange: (checked: boolean) => void
-    classNameToUse?: string
+    indeterminate?: boolean
     id?: string
     testId?: string
     highlight?: boolean
     forcedOn?: boolean
 }
 
+type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
+    name: string
+    classNameToUse?: string
+}
+
 export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
     const colors = useColors()
-
-    const id = useId()
-    const inputId = props.id ?? id
-
-    const checkboxRef = useRef<HTMLInputElement>(null)
-
-    useEffect(() => {
-        checkboxRef.current!.indeterminate = props.indeterminate ?? false
-    }, [props.indeterminate])
 
     const divStyle: CSSProperties = {
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
     }
-    const forcedOn = props.forcedOn ?? false
+    const id = useId()
+    const inputId = props.id ?? id
 
     return (
-        <div className={(props.classNameToUse ?? 'checkbox-setting') + (forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
-            <input
-                id={inputId}
-                type="checkbox"
+        <div className={(props.classNameToUse ?? 'checkbox-setting') + (props.forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
+            <CheckboxSettingJustBox
                 checked={props.checked}
-                disabled={forcedOn}
-                onChange={(e) => { props.onChange(e.target.checked) }}
-                ref={checkboxRef}
-                style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
-                data-test-id={props.testId}
-                data-test-highlight={props.highlight}
+                onChange={props.onChange}
+                id={inputId}
+                testId={props.testId}
+                highlight={props.highlight}
+                forcedOn={props.forcedOn}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
     )
 };
+
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+    const colors = useColors()
+    const id = useId()
+    const checkboxRef = useRef<HTMLInputElement>(null)
+    const inputId = props.id ?? id
+    const forcedOn = props.forcedOn ?? false
+
+    useEffect(() => {
+        checkboxRef.current!.indeterminate = props.indeterminate ?? false
+    }, [props.indeterminate])
+
+    return (
+        <input
+            id={inputId}
+            type="checkbox"
+            checked={props.checked}
+            disabled={forcedOn}
+            onChange={(e) => { props.onChange(e.target.checked) }}
+            ref={checkboxRef}
+            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
+            data-test-id={props.testId}
+            data-test-highlight={props.highlight}
+        />
+    )
+}
