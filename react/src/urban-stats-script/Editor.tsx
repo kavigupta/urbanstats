@@ -254,9 +254,7 @@ export function Editor(
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            {error
-                ? <DisplayErrors errors={errors} />
-                : null}
+            <DisplayErrors errors={errors} />
             {autocompleteState === undefined
                 ? null
                 : createPortal(
@@ -281,8 +279,11 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-export function DisplayErrors(props: { errors: EditorError[] }): ReactNode {
+export function DisplayErrors(props: { errors: EditorError[] }): ReactNode | undefined {
     const colors = useColors()
+    if (props.errors.length === 0) {
+        return undefined
+    }
     function style(color: string): CSSProperties {
         const border = `2px solid ${color}`
         return {

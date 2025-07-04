@@ -168,11 +168,7 @@ export function AutoUXEditor(props: {
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
-    const errorComponent = errors.length > 0
-        ? (
-                <DisplayErrors errors={errors} />
-            )
-        : null
+    const errorComponent = <DisplayErrors errors={errors} />
     const leftSegment = (
         <div style={{ width: labelWidth }}>
             {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
