@@ -87,7 +87,7 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
 
 const interceptingSessions = new Set<unknown>()
 
-export async function startIntercepting(t: TestController): Promise<void> {
+async function startIntercepting(t: TestController): Promise<void> {
     const cdpSesh = await t.getCurrentCDPSession()
     if (interceptingSessions.has(cdpSesh)) {
         return
@@ -140,11 +140,27 @@ export async function startIntercepting(t: TestController): Promise<void> {
     })
 }
 
+async function stopIntercepting(t: TestController): Promise<void> {
+    await (await t.getCurrentCDPSession()).Fetch.disable()
+}
+
 /*
  * There's an issue where Google pages don't like to load while Fetch devtool is on
+ * But sometimes (far more rarely) they also don't like to load when the Fetch devtool isn't on
  */
-export async function stopIntercepting(t: TestController): Promise<void> {
-    await (await t.getCurrentCDPSession()).Fetch.disable()
+export async function flakyNavigate(t: TestController, dest: string): Promise<void> {
+    await stopIntercepting(t)
+    while (true) {
+        try {
+            await t.navigateTo(dest)
+            break
+        }
+        catch (e) {
+            console.warn('Problem navigating', e)
+            await t.wait(1000)
+        }
+    }
+    await startIntercepting(t)
 }
 
 export function tempfileName(): string {

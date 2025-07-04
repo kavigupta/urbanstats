@@ -191,7 +191,7 @@ jobs:
         if: "!cancelled()"
         with:
           name: videos-${{ matrix.test-file }}
-          path: react/vidoes
+          path: react/videos
 
   merge-screenshots:
     runs-on: ubuntu-22.04

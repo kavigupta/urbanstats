@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
-import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
+import { flakyNavigate, quizFixture } from './quiz_test_utils'
 import { target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
@@ -15,21 +15,6 @@ export const signInLink = Selector('a[data-test="googleSignIn"]')
 export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
-
-async function flakyNavigate(t: TestController, dest: string): Promise<void> {
-    await stopIntercepting(t)
-    while (true) {
-        try {
-            await t.navigateTo(dest)
-            break
-        }
-        catch (e) {
-            console.warn('Problem navigating', e)
-            await t.wait(1000)
-        }
-    }
-    await startIntercepting(t)
-}
 
 async function googleSignIn(t: TestController): Promise<void> {
     await flakyNavigate(t, 'https://accounts.google.com')
@@ -86,6 +71,7 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     const consoleMessages = await t.getBrowserConsoleMessages()
     await t.expect(consoleMessages.warn).contains('window closed')
     await t.navigateTo(`${target}/quiz.html`)
+    await waitForSync(t)
 }
 
 export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
