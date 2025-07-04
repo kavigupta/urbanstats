@@ -48,3 +48,26 @@ test('sync friends two devices', async (t) => {
     await restoreUser(t, 'Bob', state)
     await t.expect(Selector('b').withExactText('Darlene').exists).notOk()
 })
+
+test('merge lowest score', async (t) => {
+    const state = startingState()
+    await createUser(t, 'Alice', '0a', state)
+    // Play and get a low score
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a']) // 3 / 5
+    await t.expect(Selector('div').withExactText('🟥🟩🟥🟩🟩').exists).ok()
+    await urbanStatsGoogleSignIn(t)
+
+    // Simulate playing on another device with a higher score
+    await createUser(t, 'Bob', '0b', state)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await clickButtons(t, ['b', 'b', 'b', 'b', 'b']) // 2 / 5
+    await t.expect(Selector('div').withExactText('🟩🟥🟩🟥🟥').exists).ok()
+    await urbanStatsGoogleSignIn(t)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await t.expect(Selector('div').withExactText('🟩🟥🟩🟥🟥').exists).ok()
+
+    // Restore original user and check merged score is the lowest
+    await restoreUser(t, 'Alice', state)
+    await t.expect(Selector('div').withExactText('🟩🟥🟩🟥🟥').exists).ok()
+})
