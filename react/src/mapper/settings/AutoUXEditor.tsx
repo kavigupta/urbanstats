@@ -346,8 +346,7 @@ function defaultForSelection(
             const fn = typeEnvironment.get(selection.name)
             assert(fn && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
             const args: UrbanStatsASTArg[] = []
-            // TODO better defaults
-            // enumerate fn.posArgs then go through fn.namedArgs
+            // Only include positional arguments by default, not named arguments with defaults
             for (let i = 0; i < fn.type.posArgs.length; i++) {
                 const arg = fn.type.posArgs[i]
                 assert(arg.type === 'concrete', `Positional argument must be concrete`)
@@ -356,12 +355,15 @@ function defaultForSelection(
                     value: parseNoErrorAsExpression('', `${blockIdent}_${i}`),
                 })
             }
-            for (const [name] of Object.entries(fn.type.namedArgs)) {
-                args.push({
-                    type: 'named',
-                    name: { node: name, location: emptyLocation(blockIdent) },
-                    value: parseNoErrorAsExpression('', `${blockIdent}_${name}`),
-                })
+            // Include named arguments that don't have defaults
+            for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
+                if (argWDefault.defaultValue === undefined) {
+                    args.push({
+                        type: 'named',
+                        name: { node: name, location: emptyLocation(blockIdent) },
+                        value: parseNoErrorAsExpression('', `${blockIdent}_${name}`),
+                    })
+                }
             }
             return {
                 type: 'function',
