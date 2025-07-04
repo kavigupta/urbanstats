@@ -1302,6 +1302,14 @@ void test('ramps', (): void => {
         evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
         undocValue({ type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
     )
+
+    // Test reverseRamp function
+    const ramp = evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 0.3, color: rgb(0.5, 0.5, 0.5)}, {value: 1, color: blue}])'), ctx)
+    ctx.assignVariable('testRamp', ramp)
+    assert.deepStrictEqual(
+        evaluate(parseExpr('reverseRamp(testRamp)'), ctx),
+        undocValue({ type: 'opaque', value: [[0, '#0000ff'], [0.7, '#808080'], [1, '#ff0000']] }, { type: 'opaque', name: 'ramp' }),
+    )
 })
 
 function assertScale(descriptor: ScaleDescriptor, values: number[], proportions: number[]): void {
