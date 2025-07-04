@@ -72,6 +72,10 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('2 + 3 > 4 & 5 < 6'), emptyContext()),
         undocValue(true, boolType),
     )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('minimum(2, 3)'), emptyContext()),
+        undocValue(2, numType),
+    )
     assert.throws(
         () => evaluate(parseExpr('2(3)'), emptyContext()),
         (err: Error): boolean => {
