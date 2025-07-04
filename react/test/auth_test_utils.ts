@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 import { z } from 'zod'
 
 import { quizFixture, startIntercepting, stopIntercepting } from './quiz_test_utils'
-import { getLocation, waitForPageLoaded } from './test_utils'
+import { target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
@@ -17,21 +17,33 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 const continueButton = Selector('button').withExactText('Continue')
 
 async function googleSignIn(t: TestController): Promise<void> {
+    await stopIntercepting(t)
     await t.navigateTo('https://accounts.google.com')
     await t.typeText('input[type=email]', email)
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
     await t.wait(1000) // wait for redirect
+    await startIntercepting(t)
 }
 
 export async function dissociateUrbanStatsGoogle(t: TestController): Promise<void> {
-    await t.navigateTo('https://drive.google.com/drive/u/0/settings')
+    await stopIntercepting(t)
+    while (true) {
+        try {
+            await t.navigateTo('https://drive.google.com/drive/u/0/settings')
+            break
+        }
+        catch (e) {
+            console.warn('Problem navigating', e)
+        }
+    }
     await t.click(Selector('div').withExactText('Manage apps'))
     const optionsDropdown = Selector('button[aria-label="Options for Urban Stats (Unverified)"]')
     if (await optionsDropdown.exists) {
         const disconnectButton = Selector('div').withExactText('Disconnect from Drive')
         while (!(await disconnectButton.exists)) {
+            // Dropdown goes away on first click
             await t.click(optionsDropdown)
             await t.wait(1000)
         }
@@ -39,9 +51,13 @@ export async function dissociateUrbanStatsGoogle(t: TestController): Promise<voi
         await t.click(Selector('button').withExactText('Disconnect'))
         await t.wait(1000) // wait to process
     }
+
+    await startIntercepting(t)
+    await t.navigateTo(`${target}/quiz.html`)
 }
 
 export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
+    await stopIntercepting(t)
     if (await signInLink.exists) {
         await t.click(signInLink)
     }
@@ -68,12 +84,12 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     await t.click(Selector('button').withExactText('Close Window'))
     const consoleMessages = await t.getBrowserConsoleMessages()
     await t.expect(consoleMessages.warn).contains('window closed')
+    await t.navigateTo(`${target}/quiz.html`)
 }
 
 export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
     const beforeEach = args[5]
     quizFixture(args[0], args[1], args[2], args[3], args[4], async (t) => {
-        await stopIntercepting(t)
         await googleSignIn(t)
         await dissociateUrbanStatsGoogle(t)
         await beforeEach?.(t)
