@@ -1,6 +1,7 @@
 import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import valid_geographies from '../../data/mapper/used_geographies'
+import statistic_name_list from '../../data/statistic_name_list'
 import statistic_variables_info from '../../data/statistic_variables_info'
 import { defaultConstants } from '../../urban-stats-script/constants/constants'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -30,10 +31,20 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
         }
 
         for (const varName of allVariableNames) {
-            te.set(varName, {
-                type: { type: 'vector', elementType: { type: varName === 'geo' ? 'string' : 'number' } },
-                documentation: { humanReadableName: varName },
-            })
+            if (varName === 'geo') {
+                te.set(varName, {
+                    type: { type: 'vector', elementType: { type: 'string' } },
+                    documentation: { humanReadableName: 'Geography Name' },
+                })
+            }
+            else {
+                const index = statistic_variables_info.variableNames.indexOf(varName as any)
+                const humanReadableName = index !== -1 ? statistic_name_list[index] : varName
+                te.set(varName, {
+                    type: { type: 'vector', elementType: { type: 'number' } },
+                    documentation: { humanReadableName },
+                })
+            }
         }
 
         return te
