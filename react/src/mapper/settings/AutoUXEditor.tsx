@@ -17,6 +17,16 @@ type Selection = { type: 'variable' | 'function', name: string } | { type: 'cust
 
 const labelWidth = '5%'
 
+function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsASTExpression {
+    if (type.type === 'number') {
+        return { type: 'constant', value: { node: 0, location: emptyLocation(blockIdent) } }
+    }
+    if (type.type === 'string') {
+        return { type: 'constant', value: { node: '', location: emptyLocation(blockIdent) } }
+    }
+    return parseNoErrorAsExpression('', blockIdent)
+}
+
 function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: USSRawValue }
@@ -45,7 +55,7 @@ function ArgumentEditor(props: {
                             const newArgs = [...functionUss.args, {
                                 type: 'named' as const,
                                 name: { node: props.name, location: emptyLocation(props.blockIdent) },
-                                value: parseNoErrorAsExpression('', `${props.blockIdent}_${props.name}`),
+                                value: createDefaultExpression(arg.value, `${props.blockIdent}_${props.name}`),
                             }]
                             props.setUss({ ...functionUss, args: newArgs })
                         }
@@ -173,7 +183,7 @@ export function AutoUXEditor(props: {
             <Selector
                 uss={props.uss}
                 setSelection={(selection: Selection) => {
-                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent))
+                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type))
                 }}
                 setUss={props.setUss}
                 typeEnvironment={props.typeEnvironment}
@@ -331,16 +341,17 @@ function defaultForSelection(
     current: UrbanStatsASTExpression,
     typeEnvironment: Map<string, USSDocumentedType>,
     blockIdent: string,
+    type: USSType,
 ): UrbanStatsASTExpression {
     // TODO actually attempt to parse the current expression and use it as a default
     switch (selection.type) {
         case 'custom':
             return parseNoErrorAsExpression('', blockIdent)
         case 'constant':
-            return { type: 'constant', value: { node: '', location: emptyLocation(blockIdent) } }
+            return createDefaultExpression(type, blockIdent)
         case 'variable':
-            const type = typeEnvironment.get(selection.name)?.type
-            assert(type, `Variable ${selection.name} not found in type environment`)
+            const varType = typeEnvironment.get(selection.name)?.type
+            assert(varType, `Variable ${selection.name} not found in type environment`)
             return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
         case 'function':
             const fn = typeEnvironment.get(selection.name)
@@ -352,16 +363,18 @@ function defaultForSelection(
                 assert(arg.type === 'concrete', `Positional argument must be concrete`)
                 args.push({
                     type: 'unnamed',
-                    value: parseNoErrorAsExpression('', `${blockIdent}_${i}`),
+                    value: createDefaultExpression(arg.value, `${blockIdent}_${i}`),
                 })
             }
             // Include named arguments that don't have defaults
             for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
                 if (argWDefault.defaultValue === undefined) {
+                    const arg = argWDefault.type
+                    assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
                     args.push({
                         type: 'named',
                         name: { node: name, location: emptyLocation(blockIdent) },
-                        value: parseNoErrorAsExpression('', `${blockIdent}_${name}`),
+                        value: createDefaultExpression(arg.value, `${blockIdent}_${name}`),
                     })
                 }
             }
