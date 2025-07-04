@@ -431,6 +431,37 @@ void test('evaluate if expressions', (): void => {
             undocValue([1, 2, NaN], numVectorType),
         )
     }
+    {
+        // index in object
+        const codeWObjectIndex = `
+            x = { a: [1, 2], b: 2 }
+            if ([true, true, false]) {
+                y = x.a
+            }
+            y
+            `
+        assert.throws(
+            () => execute(parseProgram(codeWObjectIndex), emptyContext()),
+            (err: Error): boolean => {
+                return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Expected vector of length 3, but got 2 at 3:17-35'
+            },
+        )
+    }
+    {
+        // assign to constant in if
+        const codeWConstantAssign = `
+            if (true) {
+                true = 1
+            }
+            true
+            `
+        assert.throws(
+            () => execute(parseProgram(codeWConstantAssign), emptyContext()),
+            (err: Error): boolean => {
+                return err instanceof InterpretationError && err.message === 'Cannot assign to constant "true" at 3:17-20'
+            },
+        )
+    }
 })
 
 void test('more if expressions', (): void => {
