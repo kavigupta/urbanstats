@@ -62,7 +62,6 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
     }, [props.wholeHistory, props.quizDescriptor])
 
-    const colors = useColors()
     const correctPattern = props.history.correct_pattern
 
     return (
@@ -71,20 +70,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap"></div>
             {authError
                 ? (
-                        <div
-                            className="serif"
-                            style={{
-                                backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
-                                fontSize: '1.5em',
-                                padding: '0.5em',
-                                textAlign: 'center',
-                            }}
-                        >
+                        <NotificationBanner>
                             <b>
                                 Warning! Someone is possibly attempting to hijack your account.
                                 Please contact us at security@urbanstats.org, and send your persistent ID.
                             </b>
-                        </div>
+                        </NotificationBanner>
                     )
                 : undefined}
             <Summary correctPattern={correctPattern} quizKind={props.quizDescriptor.kind} />
@@ -160,6 +151,30 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             </div>
             <OtherQuizzesButtons />
         </div>
+    )
+}
+
+function NotificationBanner(props: { children: ReactNode }): ReactNode {
+    const colors = useColors()
+    return (
+        <>
+            <div
+                className="serif"
+                style={{
+                    backgroundColor: colors.slightlyDifferentBackgroundFocused, width: '75%', margin: 'auto',
+                    fontSize: '1.5em',
+                    padding: '0.5em',
+                    textAlign: 'center',
+                    borderRadius: '5px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-evenly',
+                }}
+            >
+                {props.children}
+            </div>
+            <div className="gap" />
+        </>
     )
 }
 
