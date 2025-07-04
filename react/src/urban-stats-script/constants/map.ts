@@ -1,4 +1,4 @@
-import { USSType, USSValue } from '../types-values'
+import { USSType, USSValue, rawDefaultValue } from '../types-values'
 
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
@@ -27,7 +27,7 @@ export const cMap: USSValue = {
             ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
             label: {
                 type: { type: 'concrete', value: { type: 'string' } },
-                defaultValue: null,
+                defaultValue: rawDefaultValue(null),
             },
         },
         returnType: { type: 'concrete', value: cMapType },

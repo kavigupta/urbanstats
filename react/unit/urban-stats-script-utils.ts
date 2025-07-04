@@ -5,7 +5,7 @@ import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse } from '../src/urban-stats-script/parser'
-import { USSRawValue, USSType, USSValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
 export const boolType = { type: 'boolean' } satisfies USSType
@@ -34,7 +34,7 @@ export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], named
 export const testFnTypeWithDefault = {
     type: 'function',
     posArgs: [{ type: 'concrete', value: numType }],
-    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: numType }, defaultValue: 1 } },
+    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: numType }, defaultValue: rawDefaultValue(1) } },
     returnType: { type: 'concrete', value: numType },
 } satisfies USSType
 

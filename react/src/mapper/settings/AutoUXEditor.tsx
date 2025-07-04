@@ -7,7 +7,7 @@ import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSRawValue } from '../../urban-stats-script/types-values'
+import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue } from '../../urban-stats-script/types-values'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
@@ -29,7 +29,7 @@ function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsA
 
 function ArgumentEditor(props: {
     name: string
-    argWDefault: { type: USSFunctionArgType, defaultValue?: USSRawValue }
+    argWDefault: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
     uss: UrbanStatsASTExpression & { type: 'function' }
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
