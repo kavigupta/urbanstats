@@ -615,7 +615,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     if (newDescriptor.enableAuth !== undefined) {
                         const enabled = newDescriptor.enableAuth
                         void (async () => {
-                            const { QuizPersistent } = await quizImport
+                            const { QuizPersistent: QuizModel } = await quizImport
                             QuizPersistent.shared.enableAuthFeatures.value = enabled === 'true'
                         })()
                     }

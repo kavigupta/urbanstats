@@ -7,7 +7,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizPersistent } from './quiz'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizModel } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -64,7 +64,7 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
 }
 
 export function UserId(): ReactNode {
-    const user = QuizPersistent.shared.uniquePersistentId.use()
+    const user = QuizModel.shared.uniquePersistentId.use()
     return (
         <div>
             {'Your user id is '}
@@ -80,7 +80,7 @@ export function QuizAuthStatus(): ReactNode {
 
     const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
 
-    const authEnable = QuizPersistent.shared.enableAuthFeatures.use()
+    const authEnable = QuizModel.shared.enableAuthFeatures.use()
 
     if (!authEnable) {
         return null
@@ -116,11 +116,11 @@ export function QuizAuthStatus(): ReactNode {
 export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
-            <button onClick={() => { QuizPersistent.shared.exportQuizPersona() }}>
+            <button onClick={() => { QuizModel.shared.exportQuizPersona() }}>
                 Export Quiz History
             </button>
             {' '}
-            <button onClick={() => { void QuizPersistent.shared.importQuizPersona() }}>
+            <button onClick={() => { void QuizModel.shared.importQuizPersona() }}>
                 Import Quiz History
             </button>
         </div>

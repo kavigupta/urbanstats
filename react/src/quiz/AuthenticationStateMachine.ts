@@ -6,7 +6,7 @@ import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescrip
 import { TestUtils } from '../utils/TestUtils'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
-import { QuizPersistent } from './quiz'
+import { QuizModel } from './quiz'
 import { AuthenticationError, syncWithGoogleDrive } from './sync'
 
 const tokenSchema = z.object({
@@ -97,7 +97,7 @@ export class AuthenticationStateMachine {
             }
         })
 
-        QuizPersistent.shared.uniquePersistentId.observers.add(() => this.syncEmailAssociation())
+        QuizModel.shared.uniquePersistentId.observers.add(() => this.syncEmailAssociation())
 
         void this.syncEmailAssociation()
 
@@ -111,8 +111,8 @@ export class AuthenticationStateMachine {
             }
         }
 
-        QuizPersistent.shared.history.observers.add(obeserver)
-        QuizPersistent.shared.friends.observers.add(obeserver)
+        QuizModel.shared.history.observers.add(obeserver)
+        QuizModel.shared.friends.observers.add(obeserver)
 
         window.addEventListener('focus', obeserver)
 
@@ -146,12 +146,12 @@ export class AuthenticationStateMachine {
     }
 
     private async syncEmailAssociation(): Promise<void> {
-        if (this._state.state === 'signedIn' && QuizPersistent.shared.uniquePersistentId.value !== this._state.persistentId) {
+        if (this._state.state === 'signedIn' && QuizModel.shared.uniquePersistentId.value !== this._state.persistentId) {
             await this.userSignOut()
             return
         }
 
-        const { data } = await persistentClient.GET('/juxtastat/email', { params: { header: QuizPersistent.shared.userHeaders() } })
+        const { data } = await persistentClient.GET('/juxtastat/email', { params: { header: QuizModel.shared.userHeaders() } })
         if (data) {
             if (data.email !== null && this._state.state === 'signedOut') {
                 await this.userSignOut() // dissociates email
@@ -221,7 +221,7 @@ export class AuthenticationStateMachine {
             state: 'signedIn',
             token: { refreshToken: token.refreshToken, accessToken: token.accessToken, expiresAt: token.expiresAt },
             email,
-            persistentId: QuizPersistent.shared.uniquePersistentId.value,
+            persistentId: QuizModel.shared.uniquePersistentId.value,
         })
     }
 
@@ -229,7 +229,7 @@ export class AuthenticationStateMachine {
         const { response, data } = await persistentClient.POST('/juxtastat/associate_email', {
             params: {
                 header: {
-                    ...QuizPersistent.shared.userHeaders(),
+                    ...QuizModel.shared.userHeaders(),
                 },
             },
             body: { token: accessToken },
@@ -251,7 +251,7 @@ export class AuthenticationStateMachine {
 
     async userSignOut(): Promise<void> {
         const { error } = await persistentClient.POST('/juxtastat/dissociate_email', {
-            params: { header: QuizPersistent.shared.userHeaders() },
+            params: { header: QuizModel.shared.userHeaders() },
         })
         if (!error) {
             this.setState({ state: 'signedOut', email: null })

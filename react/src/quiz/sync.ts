@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { TestUtils } from '../utils/TestUtils'
 import { gdriveClient } from '../utils/google-drive-client'
 
-import { QuizFriends, QuizHistory, QuizPersistent, syncProfileSchema } from './quiz'
+import { QuizFriends, QuizHistory, QuizModel, syncProfileSchema } from './quiz'
 
 export class AuthenticationError extends Error {}
 
@@ -16,8 +16,8 @@ export async function syncWithGoogleDrive(token: string): Promise<void> {
         return
     }
     const mergedProfile = mergeProfiles(localProfile, remoteProfile)
-    QuizPersistent.shared.history.value = mergedProfile.quiz_history
-    QuizPersistent.shared.friends.value = mergedProfile.friends
+    QuizModel.shared.history.value = mergedProfile.quiz_history
+    QuizModel.shared.friends.value = mergedProfile.friends
     await uploadProfile(token, mergedProfile, fileId)
 }
 
@@ -25,8 +25,8 @@ type Profile = z.infer<typeof syncProfileSchema>
 
 function getLocalProfile(): Profile {
     return {
-        quiz_history: QuizPersistent.shared.history.value,
-        friends: QuizPersistent.shared.friends.value,
+        quiz_history: QuizModel.shared.history.value,
+        friends: QuizModel.shared.friends.value,
     }
 }
 

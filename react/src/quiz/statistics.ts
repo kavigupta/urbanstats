@@ -1,13 +1,13 @@
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, validQuizInfiniteVersions } from './infinite'
-import { QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizPersistent } from './quiz'
+import { QuizDescriptorWithTime, QuizHistory, QuizKindWithStats, QuizKindWithTime, QuizModel } from './quiz'
 
 async function registerUser(): Promise<void> {
     // Idempotent
     await persistentClient.POST('/juxtastat/register_user', {
         params: {
-            header: QuizPersistent.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
         body: {
             // eslint-disable-next-line no-restricted-syntax -- Using the window hostname
@@ -22,7 +22,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     // fetch from latest_day endpoint
     const { data } = await persistentClient.GET(endpointLatest, {
         params: {
-            header: QuizPersistent.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
     })
 
@@ -40,7 +40,7 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
 
     await persistentClient.POST(endpointStore, {
         params: {
-            header: QuizPersistent.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
         body: {
             day_stats: update,
@@ -75,7 +75,7 @@ async function getUnreportedSeedVersions(user: string, secureID: string, wholeHi
 
     const { data } = await persistentClient.POST('/juxtastat_infinite/has_infinite_stats', {
         params: {
-            header: QuizPersistent.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
         body: { seedVersions },
     })
@@ -89,8 +89,8 @@ async function getUnreportedSeedVersions(user: string, secureID: string, wholeHi
 }
 
 async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<void> {
-    const user = QuizPersistent.shared.uniquePersistentId.value
-    const secureID = QuizPersistent.shared.uniqueSecureId.value
+    const user = QuizModel.shared.uniquePersistentId.value
+    const secureID = QuizModel.shared.uniqueSecureId.value
     const res = await getUnreportedSeedVersions(user, secureID, wholeHistory)
     if (res === undefined) {
         return
@@ -102,7 +102,7 @@ async function reportToServerInfinite(wholeHistory: QuizHistory): Promise<void> 
         const dayStats = wholeHistory[key]
         await persistentClient.POST('/juxtastat_infinite/store_user_stats', {
             params: {
-                header: QuizPersistent.shared.userHeaders(),
+                header: QuizModel.shared.userHeaders(),
             },
             body: {
                 seed, version, corrects: dayStats.correct_pattern.map(b => b === 1 || b === true),

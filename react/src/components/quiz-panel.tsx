@@ -11,7 +11,7 @@ import './quiz.css'
 import { AuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
 import { SignedOutPanel } from '../quiz/SignedOutPanel'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
-import { QuizDescriptor, QuizHistory, QuizPersistent, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
+import { QuizDescriptor, QuizHistory, QuizModel, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { buttonStyle, QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
@@ -33,7 +33,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     // We don't want to save certain quiz types, so bypass the persistent store for those
     const headerClass = useHeaderTextClass()
     const colors = useColors()
-    const persistentQuizHistory = QuizPersistent.shared.history.use()
+    const persistentQuizHistory = QuizModel.shared.history.use()
     const [transientQuizHistory, setTransientQuizHistory] = useState<QuizHistory>({})
 
     let quizHistory: QuizHistory
@@ -43,7 +43,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
         case 'retrostat':
         case 'infinite':
             quizHistory = persistentQuizHistory
-            setQuizHistory = newHistory => QuizPersistent.shared.history.value = newHistory
+            setQuizHistory = newHistory => QuizModel.shared.history.value = newHistory
             break
         case 'custom':
             quizHistory = transientQuizHistory
@@ -230,7 +230,7 @@ export function OtherQuizzesButtons(): ReactNode {
                     quizDatas.filter(q =>
                         q.newPageDescriptor.mode === 'infinite'
                         || !q.pageData.quiz.isDone(
-                            getCorrectPattern(QuizPersistent.shared.history.value, q.pageData.quizDescriptor.name))))
+                            getCorrectPattern(QuizModel.shared.history.value, q.pageData.quizDescriptor.name))))
             }
         })()
 

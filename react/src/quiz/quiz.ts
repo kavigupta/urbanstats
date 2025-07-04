@@ -151,12 +151,12 @@ export class StoredProperty<T> extends Property<T> {
 
 export const loading = Symbol('loading')
 
-export class QuizPersistent {
+export class QuizModel {
     private constructor() {
         // Private constructor
     }
 
-    static shared = new QuizPersistent()
+    static shared = new QuizModel()
 
     readonly history = new StoredProperty<QuizHistory>(
         'quiz_history',
@@ -307,7 +307,7 @@ function createAndStoreId(key: string): string {
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizPersistent.shared.addFriend(friendID, friendName)
+    const result = await QuizModel.shared.addFriend(friendID, friendName)
     if (result === undefined) {
         alert(`Friend added: ${friendName} !`)
     }

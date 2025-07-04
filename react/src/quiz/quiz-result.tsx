@@ -15,7 +15,7 @@ import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizPersistent, QuizDescriptorWithTime } from './quiz'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizModel, QuizDescriptorWithTime } from './quiz'
 import { ExportImport, Header, QuizAuthStatus, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
@@ -47,10 +47,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
-    const quizFriends = QuizPersistent.shared.friends.use()
+    const quizFriends = QuizModel.shared.friends.use()
 
     const setQuizFriends = (qf: QuizFriends): void => {
-        QuizPersistent.shared.friends.value = qf
+        QuizModel.shared.friends.value = qf
     }
 
     useEffect(() => {
@@ -67,10 +67,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const correctPattern = props.history.correct_pattern
 
-    const authError = QuizPersistent.shared.authenticationError.use()
+    const authError = QuizModel.shared.authenticationError.use()
 
-    const dismiss = QuizPersistent.shared.dismissAuthNag.use() !== null
-    const authEnable = QuizPersistent.shared.enableAuthFeatures.use()
+    const dismiss = QuizModel.shared.dismissAuthNag.use() !== null
+    const authEnable = QuizModel.shared.enableAuthFeatures.use()
 
     const authState = AuthenticationStateMachine.shared.useState()
 
@@ -98,7 +98,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                             <div>
                                 <QuizAuthStatus />
                             </div>
-                            <div role="button" title="Dismiss" onClick={() => QuizPersistent.shared.dismissAuthNag.value = Date.now()}>
+                            <div role="button" title="Dismiss" onClick={() => QuizModel.shared.dismissAuthNag.value = Date.now()}>
                                 <Icon size="1em" color={colors.textMain} src="/close.png" style={{ display: 'inline-block' }} />
                             </div>
                         </NotificationBanner>

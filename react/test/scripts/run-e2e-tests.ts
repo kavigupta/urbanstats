@@ -62,7 +62,6 @@ const runTest = async (): Promise<number> => {
         .src(`test/${test}.test.ts`)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
         .screenshots(`screenshots/${test}`)
-        .video(`videos/${test}`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
@@ -70,7 +69,7 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 10_000 : 3000, disableMultipleWindows: true })
+    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000 })
 
     return failedTests + await runTest()
 }
