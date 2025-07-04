@@ -237,15 +237,22 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
         results.push({ type: 'constant' })
     }
 
+    const variables: Selection[] = []
+    const functions: Selection[] = []
+
     for (const [name, type] of env) {
         const t: USSType = type.type
         if (renderType(t) === renderType(target)) {
-            results.push({ type: 'variable', name })
+            variables.push({ type: 'variable', name })
         }
         else if (t.type === 'function' && t.returnType.type === 'concrete' && renderType(t.returnType.value) === renderType(target)) {
-            results.push({ type: 'function', name })
+            functions.push({ type: 'function', name })
         }
     }
+
+    results.push(...functions)
+    results.push(...variables)
+
     return results
 }
 
