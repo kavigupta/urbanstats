@@ -521,7 +521,7 @@ export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLo
         ? unify(...statements.map(locationOf))
         : fallbackLocation
         /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-        ?? { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } }
+        ?? noLocation
     return { type: 'statements', result: statements, entireLoc }
 }
 

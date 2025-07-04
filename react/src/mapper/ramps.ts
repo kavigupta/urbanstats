@@ -1,3 +1,4 @@
+import hueColors from '../data/hueColors'
 import RAMPS from '../data/mapper/ramps'
 import { RampT } from '../urban-stats-script/constants/ramp'
 
@@ -13,5 +14,14 @@ export interface Ramp {
 }
 
 export function getRamps(): Record<string, RampT> {
-    return RAMPS
+    return {
+        ...RAMPS,
+        Uridis: [
+            [0, hueColors.purple],
+            [0.25, hueColors.blue],
+            [0.5, hueColors.cyan],
+            [0.75, hueColors.green],
+            [1, hueColors.yellow],
+        ],
+    }
 }
