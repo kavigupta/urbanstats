@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 
 export interface Decorated<T> {
@@ -511,7 +511,7 @@ class ParseState {
             : this.index > 0
                 ? this.tokens[this.index - 1].location
                 /* c8 ignore next -- This case should not happen in practice, but we handle it gracefully */
-                : { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } }
+                : noLocation
         return { type: 'statements', result: statements, entireLoc }
     }
 }
