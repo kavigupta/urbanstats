@@ -5,13 +5,78 @@ import React, { ReactNode } from 'react'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation } from '../../urban-stats-script/lexer'
-import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { emptyLocation, LocInfo } from '../../urban-stats-script/lexer'
+import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSRawValue } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
 import { parseNoErrorAsExpression } from './utils'
 
 type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' }
+
+function ArgumentEditor(props: {
+    name: string
+    argWDefault: { type: USSFunctionArgType, defaultValue?: USSRawValue }
+    uss: UrbanStatsASTExpression & { type: 'function' }
+    setUss: (u: UrbanStatsASTExpression) => void
+    typeEnvironment: Map<string, USSDocumentedType>
+    errors: EditorError[]
+    blockIdent: string
+}): ReactNode {
+    const arg = props.argWDefault.type
+    assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
+
+    const functionUss = props.uss
+    const argValue = functionUss.args.find(a => a.type === 'named' && a.name.node === props.name)
+    const hasDefault = props.argWDefault.defaultValue !== undefined
+    const isEnabled = argValue !== undefined
+
+    return (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
+            {hasDefault && (
+                <input
+                    type="checkbox"
+                    checked={isEnabled}
+                    onChange={(e) => {
+                        if (e.target.checked) {
+                            // Add the argument with default value
+                            const newArgs = [...functionUss.args, {
+                                type: 'named' as const,
+                                name: { node: props.name, location: emptyLocation(props.blockIdent) },
+                                value: parseNoErrorAsExpression('', `${props.blockIdent}_${props.name}`),
+                            }]
+                            props.setUss({ ...functionUss, args: newArgs })
+                        }
+                        else {
+                            // Remove the argument
+                            const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
+                            props.setUss({ ...functionUss, args: newArgs })
+                        }
+                    }}
+                />
+            )}
+            <div style={{ flex: 1 }}>
+                {isEnabled
+                    ? (
+                            <AutoUXEditor
+                                uss={argValue.value}
+                                setUss={(newUss) => {
+                                    const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                    props.setUss({ ...functionUss, args: newArgs })
+                                }}
+                                typeEnvironment={props.typeEnvironment}
+                                errors={props.errors}
+                                blockIdent={`${props.blockIdent}_${props.name}`}
+                                type={arg.value}
+                                label={props.name}
+                            />
+                        )
+                    : (
+                            <span>{props.name}</span>
+                        )}
+            </div>
+        </div>
+    )
+}
 
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
@@ -65,57 +130,17 @@ export function AutoUXEditor(props: {
                 )
             })
             Object.entries(type.namedArgs).forEach(([name, argWDefault]) => {
-                const arg = argWDefault.type
-                assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-                const argValue = uss.args.find(a => a.type === 'named' && a.name.node === name)
-                const hasDefault = argWDefault.defaultValue !== undefined
-                const isEnabled = argValue !== undefined
-
                 subselectors.push(
-                    <div key={`named-${name}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
-                        {hasDefault && (
-                            <input
-                                type="checkbox"
-                                checked={isEnabled}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        // Add the argument with default value
-                                        const newArgs = [...uss.args, {
-                                            type: 'named' as const,
-                                            name: { node: name, location: emptyLocation(props.blockIdent) },
-                                            value: parseNoErrorAsExpression('', `${props.blockIdent}_${name}`),
-                                        }]
-                                        props.setUss({ ...uss, args: newArgs })
-                                    }
-                                    else {
-                                        // Remove the argument
-                                        const newArgs = uss.args.filter(a => !(a.type === 'named' && a.name.node === name))
-                                        props.setUss({ ...uss, args: newArgs })
-                                    }
-                                }}
-                            />
-                        )}
-                        <div style={{ flex: 1 }}>
-                            {isEnabled
-                                ? (
-                                        <AutoUXEditor
-                                            uss={argValue.value}
-                                            setUss={(newUss) => {
-                                                const newArgs = uss.args.map(a => a.type === 'named' && a.name.node === name ? { ...a, value: newUss } : a)
-                                                props.setUss({ ...uss, args: newArgs })
-                                            }}
-                                            typeEnvironment={props.typeEnvironment}
-                                            errors={props.errors}
-                                            blockIdent={`${props.blockIdent}_${name}`}
-                                            type={arg.value}
-                                            label={name}
-                                        />
-                                    )
-                                : (
-                                        <span>{name}</span>
-                                    )}
-                        </div>
-                    </div>,
+                    <ArgumentEditor
+                        key={`named-${name}`}
+                        name={name}
+                        argWDefault={argWDefault}
+                        uss={uss}
+                        setUss={props.setUss}
+                        typeEnvironment={props.typeEnvironment}
+                        errors={props.errors}
+                        blockIdent={props.blockIdent}
+                    />,
                 )
             })
             return (
