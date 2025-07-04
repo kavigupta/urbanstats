@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import RAMPS from '../src/data/mapper/ramps'
+import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
@@ -1320,7 +1320,7 @@ void test('map with only one value', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A'])
     assert.deepStrictEqual(resultMapRaw.data, [11.2])
-    assert.deepStrictEqual(resultMapRaw.ramp, RAMPS.Bone)
+    assert.deepStrictEqual(resultMapRaw.ramp, getRamps().Bone)
     assertScale(resultMapRaw.scale, [10, 11, 12], [-0.7, 0.3, 1.3])
 })
 

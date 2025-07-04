@@ -1,4 +1,4 @@
-import RAMPS from '../../data/mapper/ramps'
+import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
@@ -58,7 +58,7 @@ export const constructRampValue: USSValue = {
     documentation: { humanReadableName: 'Custom Ramp' },
 }
 
-export const rampConsts: [string, USSValue][] = Object.entries(RAMPS).map(([name, ramp]) => [
+export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map(([name, ramp]) => [
     `ramp${name}`,
     {
         type: rampType,
