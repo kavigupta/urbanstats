@@ -15,9 +15,9 @@ def dissociate_email_db(s: DbSession, user: int) -> None:
     s.c.execute("DELETE FROM EmailUsers WHERE user = ?", (user,))
 
 
-def get_email_users(c: sqlite3.Cursor, email: str) -> t.List[int]:
+def get_email_users(c: sqlite3.Cursor, email: str) -> t.Set[int]:
     c.execute("SELECT user FROM EmailUsers WHERE email=?", (email,))
-    return [row[0] for row in c.fetchall()]
+    return {row[0] for row in c.fetchall()}
 
 
 def get_user_email(c: sqlite3.Cursor, user: int) -> str | None:
@@ -28,8 +28,8 @@ def get_user_email(c: sqlite3.Cursor, user: int) -> str | None:
     return t.cast(str, row[0])
 
 
-def get_user_users(c: sqlite3.Cursor, user: int) -> t.List[int]:
+def get_user_users(c: sqlite3.Cursor, user: int) -> t.Set[int]:
     email = get_user_email(c, user)
     if email is None:
-        return [user]
+        return {user}
     return get_email_users(c, email)

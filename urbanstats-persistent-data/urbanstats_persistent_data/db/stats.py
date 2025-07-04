@@ -25,7 +25,7 @@ def latest_day_from_table(
 ) -> int:
     req.s.c.execute(
         f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
-        req.associated_user_ids,
+        list(req.associated_user_ids),
     )
     return t.cast(int, req.s.c.fetchone()[0])
 
@@ -80,7 +80,7 @@ def has_infinite_stats(
 ) -> t.List[bool]:
     req.s.c.execute(
         f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
-        req.associated_user_ids,
+        list(req.associated_user_ids),
     )
     results = set(req.s.c.fetchall())
     return [(seed, version) in results for seed, version in seeds_versions]

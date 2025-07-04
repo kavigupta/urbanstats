@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { quizAuthFixture, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
 import { addFriend, createUser, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
-import { clickButtons } from './quiz_test_utils'
+import { clickButtons, friendsText } from './quiz_test_utils'
 import { target } from './test_utils'
 
 quizAuthFixture('no state', `${target}/quiz.html#enableAuth=true`, {}, '', 'desktop')
@@ -73,4 +73,43 @@ test('merge lowest score', async (t) => {
     await restoreUser(t, 'Alice', state)
     await waitForSync(t)
     await t.expect(Selector('div').withExactText('🟩🟥🟩🟥🟥').exists).ok()
+})
+
+test(`friends with associated pair of ids`, async (t) => {
+    const state = startingState()
+    // Alice and Bob are linked together
+    await createUser(t, 'Alice', '0a', state)
+    await urbanStatsGoogleSignIn(t)
+    await createUser(t, 'Bob', '0b', state)
+    await urbanStatsGoogleSignIn(t)
+
+    // Charlie adds Alice
+    await createUser(t, 'Charlie', '0c', state)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a']) // 3 / 5
+    await addFriend(t, 'Alice', '0a')
+    await t.expect(friendsText()).eql([
+        'YounynyyCopy Link',
+        'AliceAsk\u00a0Alice\u00a0to add youRemove',
+    ])
+
+    // But Bob completes the quiz, adds charlie
+    await restoreUser(t, 'Bob', state)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await clickButtons(t, ['b', 'b', 'b', 'b', 'b']) // 2 / 5
+    await addFriend(t, 'Charlie', '0c')
+
+    // Bob can see charlie's score
+    await t.expect(friendsText()).eql([
+        'YouynynnCopy Link',
+        'CharlienynyyRemove',
+    ])
+    await waitForSync(t)
+
+    // Charlie should see bob's score
+    await restoreUser(t, 'Charlie', state)
+    await t.expect(friendsText()).eql([
+        'YounynyyCopy Link',
+        'AliceynynnRemove',
+    ])
 })

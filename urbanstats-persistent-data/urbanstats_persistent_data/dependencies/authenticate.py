@@ -15,7 +15,7 @@ from .db_session import GetDbSession
 class AuthenticatedRequest:
     s: DbSession
     user_id: int
-    associated_user_ids: t.List[int]
+    associated_user_ids: t.Set[int]
 
 
 def authenticate(

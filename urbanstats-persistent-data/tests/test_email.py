@@ -1,3 +1,5 @@
+from utils import associate_email
+
 identity_1 = {
     "x-user": "1",
     "x-secure-id": "11",
@@ -10,50 +12,20 @@ identity_2 = {
 
 
 def test_associate_email(client):
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    associate_email(client, identity_1, "email@gmail.com")
 
     # Associating the email again succeeds
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    associate_email(client, identity_1, "email@gmail.com")
 
     # Associating a different email succeeds
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email2@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email2@gmail.com"}
+    associate_email(client, identity_1, "email2@gmail.com")
 
 
 def test_juxta_user_stats(client):
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    associate_email(client, identity_1, "email@gmail.com")
 
     # Associating the email again succeeds
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_2,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    associate_email(client, identity_2, "email@gmail.com")
 
     response = client.post(
         "/juxtastat/store_user_stats",
@@ -91,13 +63,7 @@ def test_juxta_user_stats(client):
 
 def test_dissociate_email(client):
     # Associate an email first
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    associate_email(client, identity_1, "email@gmail.com")
 
     # Dissociate the email
     response = client.post(
@@ -132,12 +98,7 @@ def test_get_email_route(client):
     assert response.json() == {"email": None}
 
     # Associate an email
-    response = client.post(
-        "/juxtastat/associate_email",
-        headers=identity_1,
-        json={"token": "email@gmail.com"},
-    )
-    assert response.status_code == 200
+    associate_email(client, identity_1, "email@gmail.com")
 
     # Now get_email should return the email
     response = client.get(
