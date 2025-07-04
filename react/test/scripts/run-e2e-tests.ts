@@ -64,6 +64,7 @@ const runTest = async (): Promise<number> => {
         .src(`test/${test}.test.ts`)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen${test.startsWith('quiz_auth') ? '' : ` --user-agent='Chrome ${testingUserAgent}'`}`])
         .screenshots(`screenshots/${test}`)
+        .video(`screenshots/videos/${test}`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
