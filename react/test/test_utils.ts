@@ -209,7 +209,6 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
-            await t.eval(() => (window as unknown as TestWindow).testUtils.set('testIterationId', crypto.randomUUID()))
             screenshotNumber = 0
             await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)

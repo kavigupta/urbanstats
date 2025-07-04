@@ -115,19 +115,14 @@ function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
     return result.concat(a.slice(aIdx)).concat(b.slice(bIdx))
 }
 
-async function getFileName(): Promise<string> {
-    let testPortion = ''
-    const testId = await TestUtils.shared.get('testIterationId')
-    if (testId !== undefined) {
-        testPortion = `.${testId}`
-    }
+function getFileName(): string {
     // eslint-disable-next-line no-restricted-syntax -- Storing remote file
-    return `${window.location.host}${testPortion}.profile.json`
+    return `${window.location.host}${TestUtils.shared.testIterationId !== undefined ? `.${TestUtils.shared.testIterationId}` : ''}.profile.json`
 }
 
 async function getProfileFile(token: string): Promise<{ fileId: string, profile: Profile }> {
     const { data, response } = await gdriveClient(token).GET('/files', { params: {
-        query: { spaces: 'appDataFolder', fields: 'files(id, name)', q: `name = '${await getFileName()}'` },
+        query: { spaces: 'appDataFolder', fields: 'files(id, name)', q: `name = '${getFileName()}'` },
     } })
 
     if (data === undefined) {
@@ -171,7 +166,7 @@ async function getProfileFile(token: string): Promise<{ fileId: string, profile:
 
 async function uploadProfile(token: string, json: unknown, existingFileId?: string): Promise<string> {
     const fileMetadata = {
-        name: await getFileName(),
+        name: getFileName(),
         parents: existingFileId ? undefined : ['appDataFolder'],
     }
     const media = {
