@@ -2,6 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { getRamps } from '../src/mapper/ramps'
+import { parseNoErrorAsExpression } from '../src/mapper/settings/utils'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
@@ -1629,4 +1630,42 @@ void test('test log scale functions with parameters', () => {
     else {
         assert.fail('Expected log scale descriptor')
     }
+})
+
+void test('custom node type checking', (): void => {
+    // Test that custom node with correct type passes
+    const correctTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test', numType)
+    const result = evaluate(correctTypeCustomNode, emptyContext())
+    assert.strictEqual(result.value, 5)
+    assert.deepStrictEqual(result.type, numType)
+
+    // Test that custom node with incorrect type throws error
+    const incorrectTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test', stringType)
+    assert.throws(
+        () => evaluate(incorrectTypeCustomNode, emptyContext()),
+        (err: Error): boolean => {
+            return err.message.includes('Custom expression expected to return type string, but got number')
+        },
+    )
+
+    // Test that custom node with boolean type works correctly
+    const booleanCustomNode = parseNoErrorAsExpression('true', 'test', boolType)
+    const boolResult = evaluate(booleanCustomNode, emptyContext())
+    assert.strictEqual(boolResult.value, true)
+    assert.deepStrictEqual(boolResult.type, boolType)
+
+    // Test that custom node with boolean type but wrong expression throws error
+    const wrongBooleanCustomNode = parseNoErrorAsExpression('2 + 3', 'test', boolType)
+    assert.throws(
+        () => evaluate(wrongBooleanCustomNode, emptyContext()),
+        (err: Error): boolean => {
+            return err.message.includes('Custom expression expected to return type boolean, but got number')
+        },
+    )
+
+    // Test that custom node without expectedType works (no type checking)
+    const noTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test')
+    const noTypeResult = evaluate(noTypeCustomNode, emptyContext())
+    assert.strictEqual(noTypeResult.value, 5)
+    assert.deepStrictEqual(noTypeResult.type, numType)
 })

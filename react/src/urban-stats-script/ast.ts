@@ -2,6 +2,7 @@ import assert from 'assert'
 
 import { LocInfo } from './lexer'
 import { Decorated, ParseError } from './parser'
+import { USSType } from './types-values'
 
 export type UrbanStatsASTArg = (
     { type: 'unnamed', value: UrbanStatsASTExpression } |
@@ -21,7 +22,7 @@ export type UrbanStatsASTExpression = (
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }) |
     // for internal purposes only
-    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string }
+    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType }
 
 export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression } |
