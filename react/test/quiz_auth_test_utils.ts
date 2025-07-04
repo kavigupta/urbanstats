@@ -71,6 +71,7 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     const consoleMessages = await t.getBrowserConsoleMessages()
     await t.expect(consoleMessages.warn).contains('window closed')
     await t.navigateTo(`${target}/quiz.html`)
+    await waitForPageLoaded(t)
     await waitForSync(t)
 }
 
@@ -85,7 +86,8 @@ export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
 }
 
 export async function waitForSync(t: TestController): Promise<void> {
-    const isSyncing = ClientFunction(() => localStorage.getItem('test_syncing') !== 'false')
+    // @ts-expect-error -- Test info
+    const isSyncing = ClientFunction(() => window.testSyncing !== false)
     do {
         await t.wait(1000)
     } while (await isSyncing())
