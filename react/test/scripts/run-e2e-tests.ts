@@ -71,7 +71,7 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 10_000 : 3000, disableMultipleWindows: true })
 
     return failedTests + await runTest()
 }
