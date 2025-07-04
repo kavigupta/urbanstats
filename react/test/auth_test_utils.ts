@@ -26,14 +26,18 @@ async function googleSignIn(t: TestController): Promise<void> {
 }
 
 export async function dissociateUrbanStatsGoogle(t: TestController): Promise<void> {
-    const urbanStatsApp = 'https://myaccount.google.com/connections/overview/AXgE0HPnaTLgt69l2Q43sNhBhyCLr6Ypz2FjZe0ZRXQrAMLNhKVpoKfSOCt4elgDR0AJ56y0Dz_QeAqvXJZrN-zKQsfsyCumNip85uO_MMdvU9xepz6cKEg'
-    await t.navigateTo(urbanStatsApp)
-    await t.expect((await getLocation()).startsWith('https://myaccount.google.com/connections')).ok()
-    if ((await getLocation()).startsWith(urbanStatsApp)) {
-        // App is signed in, and we need to clear it
-        await t.click('div[data-name="Urban Stats"][role=button]')
-        await t.click(Selector('button').withExactText('Confirm'))
-        await t.wait(1000) // wait for completion
+    await t.navigateTo('https://drive.google.com/drive/u/0/settings')
+    await t.click(Selector('div').withExactText('Manage apps'))
+    const optionsDropdown = Selector('button[aria-label="Options for Urban Stats (Unverified)"]')
+    if (await optionsDropdown.exists) {
+        const disconnectButton = Selector('div').withExactText('Disconnect from Drive')
+        while (!(await disconnectButton.exists)) {
+            await t.click(optionsDropdown)
+            await t.wait(1000)
+        }
+        await t.click(disconnectButton)
+        await t.click(Selector('button').withExactText('Disconnect'))
+        await t.wait(1000) // wait to process
     }
 }
 

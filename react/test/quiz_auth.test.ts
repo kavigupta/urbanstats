@@ -1,11 +1,12 @@
 import { Selector } from 'testcafe'
 
 import { dissociateUrbanStatsGoogle, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn } from './auth_test_utils'
+import { createUser, restoreUser, startingState } from './quiz_friends_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
-import { startIntercepting, stopIntercepting } from './quiz_test_utils'
+import { clickButtons, startIntercepting, stopIntercepting } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
-quizAuthFixture('sign in to google', `${target}/quiz.html`, {
+quizAuthFixture('existing state', `${target}/quiz.html`, {
     quiz_history: JSON.stringify(exampleQuizHistory(600, 650)),
 }, '', 'desktop')
 
@@ -80,4 +81,23 @@ test('sign in to google, do not enable drive, should not be signed in', async (t
     await t.expect(signInLink.exists).ok()
     await t.expect(signOutLink.exists).notOk()
     await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).notOk()
+})
+
+quizAuthFixture('no state', `${target}/quiz.html`, {}, '', 'desktop')
+
+test.only('sync two devices', async (t) => {
+    const state = startingState()
+    await createUser(t, 'Alice', '0a', state)
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await urbanStatsGoogleSignIn(t)
+    await t.navigateTo(`${target}/quiz.html`)
+    await t.expect(Selector('div').withExactText('1\nPlayed').exists).ok()
+    await createUser(t, 'Bob', '0b', state)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await urbanStatsGoogleSignIn(t)
+    await t.navigateTo(`${target}/quiz.html#date=650`)
+    await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
+    await restoreUser(t, 'Alice', state)
+    await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
 })
