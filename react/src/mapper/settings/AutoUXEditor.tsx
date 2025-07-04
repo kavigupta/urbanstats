@@ -14,6 +14,8 @@ import { parseNoErrorAsExpression } from './utils'
 
 type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' }
 
+const labelWidth = '5%'
+
 function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: USSRawValue }
@@ -158,7 +160,6 @@ export function AutoUXEditor(props: {
                 <DisplayErrors errors={errors} />
             )
         : null
-    const labelWidth = '5%'
     const leftSegment = (
         <div style={{ width: labelWidth }}>
             {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
