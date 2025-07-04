@@ -16,6 +16,7 @@ import { PageTemplate } from '../page_template/template'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
+import { toSExp } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
@@ -68,6 +69,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
+        console.log('statements', toSExp(stmts))
         console.log('statements', stmts)
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
         console.log('result', result)

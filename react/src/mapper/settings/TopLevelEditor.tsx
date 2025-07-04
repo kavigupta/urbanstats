@@ -123,10 +123,9 @@ export function TopLevelEditor({
                 name="Enable custom script"
                 checked={ussToUse.type === 'customNode'}
                 onChange={(checked) => {
-                    // TODO actually attempt to parse and unparse fully
                     if (checked) {
                         assert(ussToUse.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsExpression(unparse(ussToUse.result[1].rest[0].value) ?? '', rootBlockIdent))
+                        setUss(parseNoErrorAsExpression(unparse(ussToUse), rootBlockIdent))
                     }
                     else {
                         assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
