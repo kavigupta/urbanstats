@@ -1,10 +1,13 @@
 /* c8 ignore start */
+
+import assert from 'assert'
+
 import { UrbanStatsASTStatement, UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
-import { parse } from '../src/urban-stats-script/parser'
+import { parse, toSExp, unparse } from '../src/urban-stats-script/parser'
 import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
@@ -99,8 +102,21 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
     )
 }
 
+function checkUnparse(parsed: UrbanStatsASTExpression | UrbanStatsASTStatement | { type: 'error' }): void {
+    if (parsed.type === 'error') {
+        return
+    }
+    const unparsed = unparse(parsed)
+    const reparsed = parse(unparsed, { type: 'single', ident: 'test' })
+    if (reparsed.type === 'error') {
+        throw new Error(`Reparsed AST of\n${unparsed}\nis an error: ${JSON.stringify(reparsed)}`)
+    }
+    assert.deepStrictEqual(toSExp(parsed), toSExp(reparsed), `Unparsed and reparsed rendering do not match:\n\t${toSExp(parsed)}\nUnparsed: ${unparsed}\nReparsed:\n\t${toSExp(reparsed)}`)
+}
+
 export function parseExpr(input: string): UrbanStatsASTExpression {
     const parsed = parse(input, { type: 'single', ident: 'test' })
+    checkUnparse(parsed)
     if (parsed.type !== 'expression') {
         throw new Error(`Expected an expression, but got ${JSON.stringify(parsed)}`)
     }
@@ -109,6 +125,7 @@ export function parseExpr(input: string): UrbanStatsASTExpression {
 
 export function parseProgram(input: string): UrbanStatsASTStatement {
     const parsed = parse(input, { type: 'single', ident: 'test' })
+    checkUnparse(parsed)
     if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression') {
         throw new Error(`Expected an assignment or statements, but got ${JSON.stringify(parsed)}`)
     }

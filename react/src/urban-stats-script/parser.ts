@@ -685,13 +685,107 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression): string | undefined {
-    // for now this just handles custom nodes and parse errors. We can extend this later to handle other nodes.
-    if (node.type === 'customNode') {
-        return node.originalCode
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression): string {
+    // Helper function to check if an expression is simple (doesn't need parentheses)
+    function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
     }
-    if (node.type === 'parseError') {
-        return node.originalCode
+
+    switch (node.type) {
+        case 'customNode':
+            return node.originalCode
+        case 'parseError':
+            return node.originalCode
+        case 'constant':
+            if (node.value.node.type === 'string') {
+                return `"${node.value.node.value}"`
+            }
+            else {
+                return node.value.node.value.toString()
+            }
+        case 'identifier':
+            return node.name.node
+        case 'attribute':
+            const exprStr = unparse(node.expr)
+            return `${exprStr}.${node.name.node}`
+        case 'function':
+            const fnStr = unparse(node.fn)
+            const argsStr = node.args.map((arg) => {
+                switch (arg.type) {
+                    case 'unnamed':
+                        return unparse(arg.value)
+                    case 'named':
+                        return `${arg.name.node}=${unparse(arg.value)}`
+                }
+            })
+            // Wrap function in parentheses if it's not a simple identifier or vector literal
+            const fnNeedsParens = !isSimpleExpression(node.fn)
+            const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
+            return `${fnWithParens}(${argsStr.join(', ')})`
+        case 'unaryOperator':
+            const unaryExprStr = unparse(node.expr)
+            // Check if we need parentheses around the expression
+            const needsParens = !isSimpleExpression(node.expr)
+            const exprWithParens = needsParens ? `(${unaryExprStr})` : unaryExprStr
+            return `${node.operator.node}${exprWithParens}`
+        case 'binaryOperator':
+            const leftStr = unparse(node.left)
+            const rightStr = unparse(node.right)
+            // Get operator precedence
+            const opPrecedence = expressionOperatorMap.get(node.operator.node)?.precedence ?? 0
+            // Check if left expression needs parentheses
+            let leftWithParens = leftStr
+            if (node.left.type === 'binaryOperator') {
+                const leftOpPrecedence = expressionOperatorMap.get(node.left.operator.node)?.precedence ?? 0
+                if (leftOpPrecedence < opPrecedence) {
+                    leftWithParens = `(${leftStr})`
+                }
+            }
+            else if (!isSimpleExpression(node.left)) {
+                leftWithParens = `(${leftStr})`
+            }
+            // Check if right expression needs parentheses
+            let rightWithParens = rightStr
+            if (node.right.type === 'binaryOperator') {
+                const rightOpPrecedence = expressionOperatorMap.get(node.right.operator.node)?.precedence ?? 0
+                if (rightOpPrecedence <= opPrecedence) {
+                    rightWithParens = `(${rightStr})`
+                }
+            }
+            else if (!isSimpleExpression(node.right)) {
+                rightWithParens = `(${rightStr})`
+            }
+            return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
+        case 'vectorLiteral':
+            const elementsStr = node.elements.map(elem => unparse(elem))
+            return `[${elementsStr.join(', ')}]`
+        case 'objectLiteral':
+            const propertiesStr = node.properties.map(([key, value]) => {
+                const valueStr = unparse(value)
+                return `${key}: ${valueStr}`
+            })
+            return `{${propertiesStr.join(', ')}}`
+        case 'assignment':
+            const lhsStr = unparse(node.lhs)
+            const valueStr = unparse(node.value)
+            return `${lhsStr} = ${valueStr}`
+        case 'expression':
+            return unparse(node.value)
+        case 'statements':
+            const statementsStr = node.result.map(stmt => unparse(stmt))
+            return statementsStr.join(';\n')
+        case 'if':
+            const conditionStr = unparse(node.condition)
+            const thenStr = unparse(node.then)
+            let ifStr = `if (${conditionStr}) {\n${thenStr}\n}`
+            if (node.else) {
+                const elseStr = unparse(node.else)
+                ifStr += ` else {\n${elseStr}\n}`
+            }
+            return ifStr
+        case 'condition':
+            const condStr = unparse(node.condition)
+            const restStr = node.rest.map(stmt => unparse(stmt))
+            return `condition (${condStr})\n${restStr.join('\n')}`
     }
-    return undefined // we don't have a way to unparse other nodes yet
 }
