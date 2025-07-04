@@ -23,7 +23,7 @@ export function toSExp(node: UrbanStatsAST): string {
         case 'named':
             return `(named ${node.name.node} ${toSExp(node.value)})`
         case 'constant':
-            return `(const ${node.value.node})`
+            return `(const ${node.value.node.value})`
         case 'identifier':
             return `(id ${node.name.node})`
         case 'attribute':
@@ -123,9 +123,11 @@ class ParseState {
         const token = this.tokens[this.index]
         switch (token.token.type) {
             case 'number':
+                this.index++
+                return { type: 'constant', value: { node: { type: 'number', value: token.token.value }, location: token.location } }
             case 'string':
                 this.index++
-                return { type: 'constant', value: { node: token.token.value, location: token.location } }
+                return { type: 'constant', value: { node: { type: 'string', value: token.token.value }, location: token.location } }
             case 'identifier':
                 this.index++
                 return { type: 'identifier', name: { node: token.token.value, location: token.location } }
@@ -593,7 +595,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
             case 'objectLiteral':
                 expressions.push(n)
                 n.properties.forEach(([key, value]) => {
-                    expressions.push({ type: 'constant', value: { node: key, location: n.entireLoc } })
+                    expressions.push({ type: 'constant', value: { node: { type: 'string', value: key }, location: n.entireLoc } })
                     helper(value)
                 })
                 return true

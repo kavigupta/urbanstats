@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTStatement, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTArg, locationOf, unify } from './ast'
 import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
-import { LocInfo } from './lexer'
+import { LocInfo, parseNumber } from './lexer'
 import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue } from './types-values'
@@ -31,14 +31,25 @@ export class InterpretationError extends Error {
     }
 }
 
+function parseNumberOrThrow(num: number | string, loc: LocInfo): number {
+    if (typeof num === 'number') {
+        return num
+    }
+    const parsed = parseNumber(num)
+    if (parsed === undefined) {
+        throw new InterpretationError(`Invalid number: ${num}`, loc)
+    }
+    return parsed
+}
+
 export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
     switch (expr.type) {
         case 'constant':
             const value = expr.value.node
-            if (typeof value === 'number') {
-                return undocValue(value, { type: 'number' })
+            if (value.type === 'number') {
+                return undocValue(parseNumberOrThrow(value.value, expr.value.location), { type: 'number' })
             }
-            return undocValue(value satisfies string, { type: 'string' })
+            return undocValue(value.value satisfies string, { type: 'string' })
         case 'identifier':
             const varName = expr.name.node
             const res = env.getVariable(varName)

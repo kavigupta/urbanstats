@@ -179,7 +179,7 @@ void test('basic parsing', (): void => {
         {
             type: 'assignment',
             lhs: { type: 'identifier', name: { node: 'x', location: { start: { block: testBlock, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: testBlock, lineIdx: 0, colIdx: 1, charIdx: 1 } } } },
-            value: { type: 'constant', value: { node: 2, location: { start: { block: testBlock, lineIdx: 0, colIdx: 4, charIdx: 4 }, end: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 } } } },
+            value: { type: 'constant', value: { node: { type: 'number', value: 2 }, location: { start: { block: testBlock, lineIdx: 0, colIdx: 4, charIdx: 4 }, end: { block: testBlock, lineIdx: 0, colIdx: 5, charIdx: 5 } } } },
         },
     )
     assert.deepStrictEqual(
