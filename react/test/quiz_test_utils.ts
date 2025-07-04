@@ -5,6 +5,8 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { ClientFunction, Selector } from 'testcafe'
 
+import { LocalStorageKey, safeStorage } from '../src/utils/safeStorage'
+
 import { safeClearLocalStorage, safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
@@ -54,7 +56,7 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
+export function quizFixture(fixName: string, url: string, newLocalstorage: Record<LocalStorageKey, string>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
     urbanstatsFixture(fixName, url, async (t) => {
         await startIntercepting(t)
         const tempfile = `${tempfileName()}.sql`
@@ -65,11 +67,11 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         await safeClearLocalStorage()
         await t.eval(() => {
             for (const k of Object.keys(newLocalstorage)) {
-                localStorage.setItem(k, newLocalstorage[k])
+                safeStorage.setItem(k, newLocalstorage[k])
             }
         }, { dependencies: { newLocalstorage } })
         await t.eval(() => {
-            localStorage.setItem('testHostname', 'testproxy.nonexistent')
+            safeStorage.setItem('testHostname', 'testproxy.nonexistent')
         })
         // Must reload after setting localstorage so page picks it up
         await safeReload(t)
@@ -233,7 +235,7 @@ export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], versi
     quizFixture(
         'collect correct answers',
         `${target}/quiz.html`,
-        {},
+        {} as Record<LocalStorageKey, string>,
         ``,
         'desktop',
     )

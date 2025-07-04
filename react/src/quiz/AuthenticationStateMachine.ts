@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { TestUtils } from '../utils/TestUtils'
+import { safeStorage } from '../utils/safeStorage'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizModel } from './quiz'
@@ -44,7 +45,7 @@ const googleClient = new OAuth2Client({
 const redirectUri = urlFromPageDescriptor({ kind: 'oauthCallback', params: {} }).toString()
 
 function loadState(): State {
-    const item = localStorage.getItem(localStorageKey)
+    const item = safeStorage.getItem(localStorageKey)
     if (item !== null) {
         const parseResult = stateSchema.safeParse(JSON.parse(item))
         if (parseResult.success) {
@@ -64,7 +65,7 @@ export class AuthenticationStateMachine {
 
     private setState(newState: State): void {
         this._state = newState
-        localStorage.setItem(localStorageKey, JSON.stringify(newState))
+        safeStorage.setItem(localStorageKey, JSON.stringify(newState))
         this.stateObservers.forEach((observer) => { observer() })
     }
 
@@ -178,7 +179,7 @@ export class AuthenticationStateMachine {
         })
         return { start: () => {
             window.open(signInUrl, '_blank', 'popup,width=500,height=600')
-            localStorage.setItem(codeVerifierKey, codeVerifier)
+            safeStorage.setItem(codeVerifierKey, codeVerifier)
         } }
     }
 
@@ -200,11 +201,11 @@ export class AuthenticationStateMachine {
             throw new Error('Already signed in')
         }
         const url = urlFromPageDescriptor(descriptor)
-        const codeVerifier = localStorage.getItem(codeVerifierKey)
+        const codeVerifier = safeStorage.getItem(codeVerifierKey)
         if (codeVerifier === null) {
             throw new Error('No code verifier was stored')
         }
-        localStorage.removeItem(codeVerifierKey)
+        safeStorage.removeItem(codeVerifierKey)
 
         const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,

@@ -2,6 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 import { z } from 'zod'
 
 import { TestWindow } from '../src/utils/TestUtils'
+import { safeStorage } from '../src/utils/safeStorage'
 
 import { flakyNavigate, quizFixture } from './quiz_test_utils'
 import { safeReload, target, waitForPageLoaded } from './test_utils'
@@ -30,8 +31,8 @@ async function googleSignIn(t: TestController): Promise<void> {
 export async function corruptTokens(t: TestController): Promise<void> {
     const testEmail = email
     const fn = (): void => {
-        const { persistentId } = JSON.parse(localStorage.getItem('quizAuthenticationState')!) as { persistentId: string }
-        localStorage.setItem('quizAuthenticationState', JSON.stringify({
+        const { persistentId } = JSON.parse(safeStorage.getItem('quizAuthenticationState')!) as { persistentId: string }
+        safeStorage.setItem('quizAuthenticationState', JSON.stringify({
             state: 'signedIn',
             email: testEmail,
             persistentId,
