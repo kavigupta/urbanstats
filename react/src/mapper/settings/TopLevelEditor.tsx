@@ -15,6 +15,10 @@ import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { makeStatements, parseNoErrorAsExpression, rootBlockIdent } from './utils'
 
+const idPreamble = `${rootBlockIdent}p`
+const idCondition = `${rootBlockIdent}c`
+const idOutput = `${rootBlockIdent}o`
+
 export function TopLevelEditor({
     uss,
     setUss,
@@ -26,9 +30,6 @@ export function TopLevelEditor({
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
 }): ReactNode {
-    const idPreamble = `${rootBlockIdent}p`
-    const idCondition = `${rootBlockIdent}c`
-    const idOutput = `${rootBlockIdent}o`
     assert(
         uss.type === 'customNode'
         || (
@@ -130,19 +131,7 @@ export function TopLevelEditor({
                     }
                     else {
                         assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
-                        const preamble = {
-                            type: 'expression',
-                            value: parseNoErrorAsExpression('', idPreamble),
-                        } satisfies UrbanStatsASTStatement
-                        const conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
-                        const output = parseNoErrorAsExpression(ussToUse.originalCode, idOutput)
-                        const condition = {
-                            type: 'condition',
-                            entireLoc: locationOf(conditionExpr),
-                            condition: conditionExpr,
-                            rest: [{ type: 'expression', value: output }],
-                        } satisfies UrbanStatsASTStatement
-                        setUss(makeStatements([preamble, condition]))
+                        setUss(attemptParseAsTopLevel(ussToUse.expr))
                     }
                 }}
             />
@@ -152,4 +141,41 @@ export function TopLevelEditor({
             />
         </div>
     )
+}
+
+function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement): UrbanStatsASTStatement {
+    /**
+     * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
+     */
+    const stmts = stmt.type === 'statements' ? stmt.result : [stmt]
+    const preamble = {
+        type: 'statements',
+        result: stmts.slice(0, -1),
+        entireLoc: locationOf(stmt),
+    } satisfies UrbanStatsASTStatement
+    const conditionStmt = stmts[stmts.length - 1]
+    let conditionExpr: UrbanStatsASTExpression
+    let conditionRest: UrbanStatsASTStatement[]
+    if (conditionStmt.type === 'condition') {
+        conditionExpr = parseNoErrorAsExpression(unparse(conditionStmt.condition), idCondition)
+        conditionRest = conditionStmt.rest
+    }
+    else {
+        conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
+        conditionRest = [conditionStmt]
+    }
+    const condition = {
+        type: 'condition',
+        entireLoc: locationOf(conditionExpr),
+        condition: conditionExpr,
+        rest: [{ type: 'expression', value: parseNoErrorAsExpression(unparse(makeStatements(conditionRest)), idOutput) }],
+    } satisfies UrbanStatsASTStatement
+    return {
+        type: 'statements',
+        result: [
+            { type: 'expression', value: parseNoErrorAsExpression(unparse(preamble), idPreamble) },
+            condition,
+        ],
+        entireLoc: locationOf(stmt),
+    } satisfies UrbanStatsASTStatement
 }
