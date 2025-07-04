@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { test } from 'node:test'
 
 import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
-import { allIdentifiers, parse, toSExp, unparse } from '../src/urban-stats-script/parser'
+import { allIdentifiers, parse, parseNoErrorAsExpression, toSExp, unparse } from '../src/urban-stats-script/parser'
 
 import { emptyContext } from './urban-stats-script-utils'
 
@@ -501,6 +501,21 @@ void test('condition-expression', (): void => {
     )
 })
 
+void test('parse errors in condition', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('condition'),
+        '(errors (error "Expected opening bracket ( after condition" at 0:0))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition('),
+        '(errors (error "Unexpected end of input" at 0:9))',
+    )
+    assert.deepStrictEqual(
+        parseAndRender('condition(x'),
+        '(errors (error "Expected closing bracket ) after condition" at 0:10))',
+    )
+})
+
 function ids(code: string): Set<string> {
     const res = parse(code, testBlock)
     if (res.type === 'error') {
@@ -554,6 +569,14 @@ void test('collect identifiers', (): void => {
         ids('cMap(data=population, scale=linearScale())'),
         new Set(['cMap', 'population', 'linearScale', 'geo']),
     )
+    assert.deepStrictEqual(
+        allIdentifiers(parseNoErrorAsExpression('++', 'test'), emptyContext()),
+        new Set([]),
+    )
+    assert.deepStrictEqual(
+        ids('x = 2; y = x + 3; z = y * 4; condition(x); condition(y); z = 3'),
+        new Set(['x', 'y', 'z']),
+    )
 })
 
 function parseThenUnparse(code: string): string {
@@ -600,4 +623,33 @@ void test('well-formatted-uss', (): void => {
             code,
         )
     }
+})
+
+void test('parse error nodes', (): void => {
+    // Test that parseErrorAsExpression creates an error node with the correct message
+    const errorNode = parseNoErrorAsExpression('This is a test error', 'test')
+    assert.deepStrictEqual(errorNode, {
+        type: 'customNode',
+        originalCode: 'This is a test error',
+        expectedType: undefined,
+        expr: {
+            type: 'parseError',
+            originalCode: 'This is a test error',
+            errors: [
+                {
+                    type: 'error',
+                    value: 'Expected end of line or ; after',
+                    location: {
+                        start: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+                        end: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 4, charIdx: 4 },
+                    },
+                },
+            ],
+        },
+    })
+    assert.strictEqual(errorNode.type, 'customNode')
+    assert.deepStrictEqual(unparse(errorNode.expr), 'This is a test error')
+    assert.deepStrictEqual(toSExp(errorNode), '(customNode (parseError "This is a test error" [{"type":"error","value":"Expected end of line or ; after","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":4,"charIdx":4}}}]) "This is a test error")')
+
+    assert.deepStrictEqual(toSExp(parseNoErrorAsExpression('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unrecognized token: Invalid operator: ++","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
 })

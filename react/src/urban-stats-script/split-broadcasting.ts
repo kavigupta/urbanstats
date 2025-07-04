@@ -29,15 +29,14 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
     }
 }
 
-function repeatMany(value: USSValue, count: number): USSValue & { type: USSVectorType } {
+function repeatMany(value: USSValue, count: number): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
     const vt = value.type
     if (vt.type === 'vector') {
         assert(value.value instanceof Array, 'unreachable')
         if (value.value.length !== count) {
-            // we need a nice error here
-            throw new Error(`Expected vector of length ${count}, but got ${value.value.length}`)
+            return { type: 'error', message: `Expected vector of length ${count}, but got ${value.value.length}` }
         }
-        return { type: vt, value: value.value }
+        return { type: 'success', value: { type: vt, value: value.value } }
     }
     if (vt.type === 'object') {
         const newTypes = new Map<string, USSType>()
@@ -47,21 +46,30 @@ function repeatMany(value: USSValue, count: number): USSValue & { type: USSVecto
             const vVal = value.value.get(k)
             assert(vVal !== undefined, 'unreachable')
             const result = repeatMany(undocValue(vVal, v), count)
-            assert(result.value instanceof Array, 'unreachable')
-            assert(result.type.elementType.type !== 'elementOfEmptyVector', 'unreachable')
-            newProperties.set(k, result.value)
-            newTypes.set(k, result.type.elementType)
+            if (result.type === 'error') {
+                return result
+            }
+            assert(result.value.value instanceof Array, 'unreachable')
+            assert(result.value.type.elementType.type !== 'elementOfEmptyVector', 'unreachable')
+            newProperties.set(k, result.value.value)
+            newTypes.set(k, result.value.type.elementType)
         }
         return {
-            type: { type: 'vector', elementType: { type: 'object', properties: newTypes } },
-            value: Array.from({ length: count }, (_, idx) => new Map(Array.from(newProperties.entries()).map(([k, v]) => [k, v[idx]]))),
-            documentation: value.documentation,
+            type: 'success',
+            value: {
+                type: { type: 'vector', elementType: { type: 'object', properties: newTypes } },
+                value: Array.from({ length: count }, (_, idx) => new Map(Array.from(newProperties.entries()).map(([k, v]) => [k, v[idx]]))),
+                documentation: value.documentation,
+            },
         }
     }
     return {
-        type: { type: 'vector', elementType: value.type },
-        value: Array.from({ length: count }, () => value.value),
-        documentation: value.documentation,
+        type: 'success',
+        value: {
+            type: { type: 'vector', elementType: value.type },
+            value: Array.from({ length: count }, () => value.value),
+            documentation: value.documentation,
+        },
     }
 }
 
@@ -82,7 +90,11 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         case 'vector':
             const maskVector = mask.value as USSRawValue[]
             if (valueType.type !== 'vector') {
-                return indexMask(repeatMany(value, maskVector.length), mask, reference)
+                const repeated = repeatMany(value, maskVector.length)
+                if (repeated.type === 'error') {
+                    return repeated
+                }
+                return indexMask(repeated.value, mask, reference)
             }
             const valueVector = value.value as USSRawValue[]
             if (maskVector.length !== valueVector.length) {
@@ -320,9 +332,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     }
     for (const [k, v] of newVars.entries()) {
         const err = env.assignVariable(k, v)
-        if (err !== undefined) {
-            throw env.error(`Error assigning variable ${k}: ${err}`, errLocIf)
-        }
+        assert(err === undefined, `Error assigning variable ${k}: ${err}`)
     }
     const mergedValues = mergeValuesViaMasks(
         outEnvsValues.map(([v]) => v),
