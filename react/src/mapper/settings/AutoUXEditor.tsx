@@ -17,6 +17,10 @@ type Selection = { type: 'variable' | 'function', name: string } | { type: 'cust
 
 const labelWidth = '5%'
 
+function shouldShowConstant(type: USSType): boolean {
+    return type.type === 'number' || type.type === 'string'
+}
+
 function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsASTExpression {
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
@@ -233,25 +237,27 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
     const results: Selection[] = [{ type: 'custom' }]
 
     // Add constant option for numbers and strings
-    if (target.type === 'number' || target.type === 'string') {
+    if (shouldShowConstant(target)) {
         results.push({ type: 'constant' })
     }
+    else {
+        // Only add variables and functions if constants are not shown
+        const variables: Selection[] = []
+        const functions: Selection[] = []
 
-    const variables: Selection[] = []
-    const functions: Selection[] = []
+        for (const [name, type] of env) {
+            const t: USSType = type.type
+            if (renderType(t) === renderType(target)) {
+                variables.push({ type: 'variable', name })
+            }
+            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderType(t.returnType.value) === renderType(target)) {
+                functions.push({ type: 'function', name })
+            }
+        }
 
-    for (const [name, type] of env) {
-        const t: USSType = type.type
-        if (renderType(t) === renderType(target)) {
-            variables.push({ type: 'variable', name })
-        }
-        else if (t.type === 'function' && t.returnType.type === 'concrete' && renderType(t.returnType.value) === renderType(target)) {
-            functions.push({ type: 'function', name })
-        }
+        results.push(...functions)
+        results.push(...variables)
     }
-
-    results.push(...functions)
-    results.push(...variables)
 
     return results
 }
