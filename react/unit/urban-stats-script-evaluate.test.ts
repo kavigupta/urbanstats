@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { RAMPS } from '../src/mapper/ramps'
+import RAMPS from '../src/data/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
