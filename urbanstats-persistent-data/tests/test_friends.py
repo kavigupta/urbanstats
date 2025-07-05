@@ -197,3 +197,75 @@ def test_friends_transitive(client):
     assert response.json() == {
         "results": [{"corrects": [True, False, False, True, True], "friends": True}]
     }
+
+
+def test_friends_transitive_infinite(client):
+    # associate a + b
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    # friend from c to a
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_c, json={"requestee": "a"}
+    )
+    assert response.status_code == 204
+
+    # post score for b
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_b,
+        json={"seed": "abc", "version": 1, "corrects": [True, False, False, False]},
+    )
+    assert response.status_code == 204
+
+    # friend from b to c
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_b, json={"requestee": "c"}
+    )
+    assert response.status_code == 204
+
+    # get scores for a from c
+    response = client.post(
+        "/juxtastat/infinite_results",
+        headers=identity_c,
+        json={"requesters": ["a"], "seed": "abc", "version": 1},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "results": [
+            {
+                "forThisSeed": 1,
+                "friends": True,
+                "maxScore": 1,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }
+
+    # post score for a
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_a,
+        json={"seed": "abc", "version": 1, "corrects": [True, True, False, False]},
+    )
+    assert response.status_code == 204
+
+    # get scores for a from c
+    response = client.post(
+        "/juxtastat/infinite_results",
+        headers=identity_c,
+        json={"requesters": ["a"], "seed": "abc", "version": 1},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "results": [
+            {
+                "forThisSeed": 2,
+                "friends": True,
+                "maxScore": 2,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }
