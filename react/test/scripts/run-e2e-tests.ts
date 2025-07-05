@@ -20,6 +20,7 @@ const options = argumentParser({
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()),
+        minTimeSeconds: z.optional(z.coerce.number().int()),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -74,6 +75,8 @@ const runTest = async (): Promise<number> => {
     return failedTests + await runTest()
 }
 
+const start = Date.now()
+
 const killTimer = options.timeLimitSeconds
     ? setTimeout(() => {
         console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
@@ -84,6 +87,11 @@ const killTimer = options.timeLimitSeconds
 const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
 clearTimeout(killTimer)
+
+if (options.minTimeSeconds !== undefined && Date.now() - start < options.minTimeSeconds * 1000) {
+    console.error(chalkTemplate`{red.bold Test too short! (${Math.round((Date.now() - start) / 1000)}s) (min duration ${options.minTimeSeconds}s) Group with other tests}`)
+    process.exit(1)
+}
 
 if (options.compare) {
     const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
