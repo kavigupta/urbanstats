@@ -1,4 +1,4 @@
-from utils import associate_email
+from .utils import associate_email
 
 identity_1 = {
     "x-user": "1",
