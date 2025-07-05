@@ -34,7 +34,7 @@ export async function addFriend(friendID: string, friendName: string): Promise<u
         })
 
         if (response.status === 422) {
-            return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
+            return { errorMessage: `Invalid Friend ID${QuizModel.shared.enableAuthFeatures.value ? ' or Email' : ''}`, problemDomain: 'friendID' }
         }
         if (error !== undefined) {
             return { errorMessage: 'Unknown Error', problemDomain: 'other' }
