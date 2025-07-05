@@ -56,7 +56,6 @@ async function waitForServerToBeAvailable(): Promise<void> {
 
 export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
     urbanstatsFixture(fixName, url, async (t) => {
-        await startIntercepting(t)
         const tempfile = `${tempfileName()}.sql`
         // Delete the database and recreate it with the given SQL statements
         writeFileSync(tempfile, sqlStatements)
@@ -83,84 +82,6 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
         }
         await beforeEach?.(t)
     })
-}
-
-const interceptingSessions = new Set<unknown>()
-
-async function startIntercepting(t: TestController): Promise<void> {
-    const cdpSesh = await t.getCurrentCDPSession()
-    if (interceptingSessions.has(cdpSesh)) {
-        return
-    }
-    else {
-        interceptingSessions.add(cdpSesh)
-    }
-    cdpSesh.Fetch.on('requestPaused', async (event) => {
-        try {
-            if (event.responseStatusCode !== undefined) {
-                // This is a response, just send it back
-                await cdpSesh.Fetch.continueResponse({ requestId: event.requestId })
-            }
-            else if (event.request.url.startsWith('https://s.urbanstats.org/s?')) {
-                // We're doing a GET from the link shortener, send the request to the local persistent, and override the location to go to localhost instead of urbanstats.org
-                // Chrome doesn't support overriding the response later, so we must fulfill the request by making a fetch
-                const response = await fetch(event.request.url.replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), {
-                    ...event.request,
-                    redirect: 'manual',
-                })
-                const responseHeaders: { name: string, value: string }[] = []
-                response.headers.forEach((value, name) => {
-                    if (name === 'location') {
-                        responseHeaders.push({
-                            name,
-                            value: value.replaceAll('https://urbanstats.org', 'http://localhost:8000'),
-                        })
-                    }
-                    else {
-                        responseHeaders.push({ name, value })
-                    }
-                })
-                await cdpSesh.Fetch.fulfillRequest({ requestId: event.requestId, responseHeaders, responseCode: response.status })
-            }
-            else {
-                // We're using the persistent backend in some other way, send the request to localhost
-                await cdpSesh.Fetch.continueRequest({ requestId: event.requestId, url: event.request.url.replace(/https:\/\/.+\.urbanstats\.org/g, 'http://localhost:54579') })
-            }
-        }
-        catch (e) {
-            console.error(`Failure in CDP requestPaused handler: ${e}`)
-        }
-    })
-    await cdpSesh.Fetch.enable({
-        patterns: [{
-            urlPattern: 'https://s.urbanstats.org/*',
-        }, {
-            urlPattern: 'https://persistent.urbanstats.org/*',
-        }],
-    })
-}
-
-async function stopIntercepting(t: TestController): Promise<void> {
-    await (await t.getCurrentCDPSession()).Fetch.disable()
-}
-
-/*
- * There's an issue where Google pages don't like to load while Fetch devtool is on
- * But sometimes (far more rarely) they also don't like to load when the Fetch devtool isn't on
- */
-export async function flakyNavigate(t: TestController, dest: string): Promise<void> {
-    await stopIntercepting(t)
-    while (true) {
-        try {
-            await t.navigateTo(dest)
-            break
-        }
-        catch (e) {
-            console.warn('Problem navigating', e)
-            await t.wait(1000)
-        }
-    }
-    await startIntercepting(t)
 }
 
 export function tempfileName(): string {
