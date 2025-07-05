@@ -26,10 +26,14 @@ export class TestUtils {
     static shared = new TestUtils()
 
     safeClearLocalStorage(): void {
+        const quizAuthEnabled = localStorage.getItem('enable_auth_features')
         // eslint-disable-next-line no-restricted-syntax -- This is the safe function
         localStorage.clear()
         if (this.testIterationId !== undefined) {
             localStorage.setItem('testIterationId', this.testIterationId)
+        }
+        if (quizAuthEnabled !== null) {
+            localStorage.setItem('enable_auth_features', quizAuthEnabled)
         }
     }
 }

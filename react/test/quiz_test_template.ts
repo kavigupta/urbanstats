@@ -31,7 +31,7 @@ function secureIdTable(t: TestController): Promise<string> {
 // eslint-disable-next-line no-restricted-syntax -- Persisted data
 type QuizHistory = Record<string | number, { choices: ('A' | 'B')[], correct_pattern: [boolean, boolean, boolean, boolean, boolean] }>
 
-function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number, maxRetro?: number): QuizHistory {
+export function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number, maxRetro?: number): QuizHistory {
     const quizHistory: QuizHistory = {}
     for (let i = minQuiz; i <= maxQuiz; i++) {
         quizHistory[i] = {

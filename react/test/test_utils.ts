@@ -215,7 +215,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             if (beforeEach !== undefined) {
                 await beforeEach(t)
             }
-        })
+        }).skipJsErrors({ pageUrl: /google\.com/ })
 }
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
@@ -223,7 +223,9 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
 }
 
 export async function waitForPageLoaded(t: TestController): Promise<void> {
-    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+    while (await Selector('#pageState_kind').value !== 'loaded') {
+        await t.wait(1000)
+    }
 }
 
 export function pageDescriptorKind(): Promise<string | undefined> {

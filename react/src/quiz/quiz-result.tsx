@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { isFirefox, isMobile } from 'react-device-detect'
 
+import { Icon } from '../components/Icon'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
 import { Statistic } from '../components/table'
@@ -10,11 +11,12 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { msRemaining, renderTimeRemaining } from './dates'
-import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizLocalStorage, QuizDescriptorWithTime } from './quiz'
-import { ExportImport, Header, UserId } from './quiz-components'
+import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion, aCorrect, QuizFriends, nameOfQuizKind, QuizKind, QuizModel, QuizDescriptorWithTime } from './quiz'
+import { ExportImport, Header, QuizAuthStatus, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
@@ -23,6 +25,8 @@ import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, repor
 export type CorrectPattern = (boolean | 0 | 1)[]
 
 const maxPerLine = 10
+
+const authNagEntries = 10
 
 interface QuizResultProps {
     quizDescriptor: QuizDescriptor
@@ -43,11 +47,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             ? undefined
             : getCachedPerQuestionStats(props.quizDescriptor)
     ) ?? { total: 0, per_question: [0, 0, 0, 0, 0] })
-    const [authError, setAuthError] = useState(false)
-    const quizFriends = QuizLocalStorage.shared.friends.use()
+    const quizFriends = QuizModel.shared.friends.use()
 
     const setQuizFriends = (qf: QuizFriends): void => {
-        QuizLocalStorage.shared.friends.value = qf
+        QuizModel.shared.friends.value = qf
     }
 
     useEffect(() => {
@@ -55,7 +58,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         if (props.quizDescriptor.kind === 'custom') {
             return
         }
-        void reportToServer(props.wholeHistory, props.quizDescriptor.kind).then(setAuthError)
+        void reportToServer(props.wholeHistory, props.quizDescriptor.kind)
         if (props.quizDescriptor.kind === 'infinite') {
             return
         }
@@ -63,6 +66,17 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     }, [props.wholeHistory, props.quizDescriptor])
 
     const correctPattern = props.history.correct_pattern
+
+    const authError = QuizModel.shared.authenticationError.use()
+
+    const dismiss = QuizModel.shared.dismissAuthNag.use() !== null
+    const authEnable = QuizModel.shared.enableAuthFeatures.use()
+
+    const authState = AuthenticationStateMachine.shared.useState()
+
+    const nagSignIn = authEnable && !dismiss && authState.state === 'signedOut' && Object.keys(props.wholeHistory).length >= authNagEntries
+
+    const colors = useColors()
 
     return (
         <div>
@@ -75,6 +89,18 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                                 Warning! Someone is possibly attempting to hijack your account.
                                 Please contact us at security@urbanstats.org, and send your persistent ID.
                             </b>
+                        </NotificationBanner>
+                    )
+                : undefined}
+            {nagSignIn && !authError
+                ? (
+                        <NotificationBanner>
+                            <div>
+                                <QuizAuthStatus />
+                            </div>
+                            <div role="button" title="Dismiss" onClick={() => QuizModel.shared.dismissAuthNag.value = Date.now()}>
+                                <Icon size="1em" color={colors.textMain} src="/close.png" style={{ display: 'inline-block' }} />
+                            </div>
                         </NotificationBanner>
                     )
                 : undefined}
@@ -470,7 +496,7 @@ export async function summary(juxtaColors: JuxtastatColors, todayName: string | 
         // current url is too long, shorten it. get the current url without the origin or slash
         // eslint-disable-next-line no-restricted-syntax -- Sharing
         const thisURL = window.location.href.substring(window.location.origin.length + 1)
-        const { data } = await client.POST('/shorten', {
+        const { data } = await persistentClient.POST('/shorten', {
             body: { full_text: thisURL },
         })
         if (data === undefined) {

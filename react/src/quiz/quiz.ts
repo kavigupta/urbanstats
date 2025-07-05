@@ -5,9 +5,10 @@ import { z } from 'zod'
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
+import { historyConflicts, mergeHistories } from './sync'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -66,8 +67,9 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
-// list of [name, id] pairs
-export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
+// list of [name, id, timestamp] pairs
+// null name is a tombstone
+export const quizFriends = z.array(z.tuple([z.nullable(z.string()), z.string(), z.optional(z.nullable(z.number()))]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
 
@@ -81,12 +83,18 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export class StoredProperty<T> {
-    private _value: T
-    private observers = new Set<() => void>()
+// Used in sync but must be here to avoid circular dependency
+export const syncProfileSchema = z.object({
+    quiz_history: quizHistorySchema,
+    friends: quizFriends,
+})
 
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
-        this._value = load(localStorage.getItem(localStorageKey))
+class Property<T> {
+    private _value: T
+    readonly observers = new Set<() => void>()
+
+    constructor(value: T) {
+        this._value = value
     }
 
     get value(): T {
@@ -95,7 +103,6 @@ export class StoredProperty<T> {
 
     set value(newValue: T) {
         this._value = newValue
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
         this.observers.forEach((observer) => { observer() })
     }
 
@@ -116,12 +123,41 @@ export class StoredProperty<T> {
     /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-export class QuizLocalStorage {
+export class StoredProperty<T> extends Property<T> {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
+        super(load(localStorage.getItem(localStorageKey)))
+        const listener = (event: StorageEvent): void => {
+            if (event.key === localStorageKey) {
+                this.value = load(localStorage.getItem(localStorageKey))
+            }
+        }
+        addEventListener('storage', listener)
+    }
+
+    override get value(): T {
+        return super.value
+    }
+
+    override set value(newValue: T) {
+        const storeValue = this.store(newValue)
+        if (storeValue === null) {
+            localStorage.removeItem(this.localStorageKey)
+        }
+        else {
+            localStorage.setItem(this.localStorageKey, storeValue)
+        }
+        super.value = newValue
+    }
+}
+
+export const loading = Symbol('loading')
+
+export class QuizModel {
     private constructor() {
         // Private constructor
     }
 
-    static shared = new QuizLocalStorage()
+    static shared = new QuizModel()
 
     readonly history = new StoredProperty<QuizHistory>(
         'quiz_history',
@@ -153,6 +189,12 @@ export class QuizLocalStorage {
 
     readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
+    readonly authenticationError = new Property<boolean>(false)
+
+    readonly dismissAuthNag = new StoredProperty<number | null>('dismiss_auth_nag', v => z.nullable(z.coerce.number()).parse(v), v => v?.toString() ?? null)
+
+    readonly enableAuthFeatures = new StoredProperty<boolean>('enable_auth_features', v => v === 'true', v => v.toString())
+
     exportQuizPersona(): void {
         const exported: QuizPersona = {
             date_exported: new Date(),
@@ -178,10 +220,7 @@ export class QuizLocalStorage {
             const currentHistory = this.history.value
             let newHistory: QuizHistory
 
-            const conflicts = Object.keys(persona.quiz_history)
-                .filter(key =>
-                    key in currentHistory
-                    && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+            const conflicts = historyConflicts(currentHistory, persona.quiz_history)
 
             if (conflicts.length > 0) {
                 if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
@@ -189,13 +228,7 @@ export class QuizLocalStorage {
 ${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
 Are you sure you want to merge them? (The lowest score will be used)`)) {
-                    newHistory = {
-                        ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
-                            const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
-                            const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
-                            return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
-                        })),
-                    }
+                    newHistory = mergeHistories(currentHistory, persona.quiz_history)
                 }
                 else {
                     return
@@ -231,9 +264,9 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         if (friendID === user) {
             return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
         }
-        if (this.friends.value.map(x => x[1]).includes(friendID)) {
-            const friendNameDup = this.friends.value.find(x => x[1] === friendID)![0]
-            return { errorMessage: `Friend ID ${friendID} already exists as ${friendNameDup}`, problemDomain: 'friendID' }
+        let dupFriend
+        if ((dupFriend = this.friends.value.find(([name, id]) => name !== null && id === friendID))) {
+            return { errorMessage: `Friend ID ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
         }
         if (friendName === '') {
             return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
@@ -242,7 +275,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
         }
         try {
-            const { response, error } = await client.POST('/juxtastat/friend_request', {
+            const { response, error } = await persistentClient.POST('/juxtastat/friend_request', {
                 body: { requestee: friendID },
                 params: {
                     header: this.userHeaders(),
@@ -256,7 +289,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
                 return { errorMessage: 'Unknown Error', problemDomain: 'other' }
             }
 
-            this.friends.value = [...this.friends.value, [friendName, friendID]]
+            this.friends.value = [...this.friends.value.filter(([,id]) => id !== friendID), [friendName, friendID, Date.now()]]
             return undefined
         }
         catch {
@@ -277,7 +310,7 @@ function createAndStoreId(key: string): string {
 }
 
 export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+    const result = await QuizModel.shared.addFriend(friendID, friendName)
     if (result === undefined) {
         alert(`Friend added: ${friendName} !`)
     }

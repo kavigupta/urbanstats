@@ -6,8 +6,8 @@ from pydantic import BaseModel
 from ..dependencies.authenticate import AuthenticatedRequest
 
 # pylint: disable=no-name-in-module
-from . import stats
-from .utils import QuizKind, problem_id_for_quiz_kind, table_for_quiz_kind
+from . import email, stats
+from .utils import QuizKind, problem_id_for_quiz_kind, sqlTuple, table_for_quiz_kind
 
 
 def friend_request(req: AuthenticatedRequest, requestee: int) -> None:
@@ -53,8 +53,8 @@ def todays_score_for(
     return _compute_friend_results(
         req,
         requesters,
-        compute_fn=lambda c, for_user: _compute_daily_score(
-            date, quiz_kind, c, for_user
+        compute_fn=lambda c, for_users: _compute_daily_score(
+            date, quiz_kind, c, for_users
         ),
     )
 
@@ -69,7 +69,7 @@ def infinite_results(
     return _compute_friend_results(
         req,
         requesters,
-        compute_fn=lambda c, for_user: _infinite_results(c, for_user, seed, version),
+        compute_fn=lambda c, for_users: _infinite_results(c, for_users, seed, version),
     )
 
 
@@ -79,35 +79,36 @@ Result = t.TypeVar("Result", Corrects, InfiniteResult)
 def _compute_friend_results(
     req: AuthenticatedRequest,
     requesters: t.List[int],
-    compute_fn: t.Callable[[sqlite3.Cursor, int], Result],
+    compute_fn: t.Callable[[sqlite3.Cursor, t.Set[int]], Result],
 ) -> t.List[NegativeResult | Result]:
     # query the table to see if each pair is a friend pair
 
     req.s.c.execute(
-        "SELECT DISTINCT requester FROM FriendRequests WHERE requestee = ?",
-        (req.user_id,),
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(req.associated_user_ids))}",
+        list(req.associated_user_ids),
     )
     friends = {x[0] for x in req.s.c.fetchall()}
 
     results: t.List[NegativeResult | Result] = []
     for requester in requesters:
-        if requester in friends:
-            results.append(compute_fn(req.s.c, requester))
+        associated_requesters = email.get_user_users(req.s.c, requester)
+        if len(associated_requesters & friends) > 0:
+            results.append(compute_fn(req.s.c, associated_requesters))
         else:
             results.append(NegativeResult(friends=False))
     return results
 
 
 def _compute_daily_score(
-    date: int, quiz_kind: QuizKind, c: sqlite3.Cursor, for_user: int
+    date: int, quiz_kind: QuizKind, c: sqlite3.Cursor, for_users: t.Set[int]
 ) -> Corrects:
     c.execute(
         (
             f"SELECT corrects FROM {table_for_quiz_kind[quiz_kind]} "
-            f"WHERE user = ?"
+            f"WHERE user IN {sqlTuple(len(for_users))} "
             f"AND {problem_id_for_quiz_kind[quiz_kind]}=?"
         ),
-        (for_user, date),
+        list(for_users) + [date],
     )
     res = [stats.bitvector_to_corrects(row[0]) for row in c.fetchall()]
     if len(res) == 0:
@@ -119,7 +120,7 @@ def _compute_daily_score(
 
 
 def _infinite_results(
-    c: sqlite3.Cursor, for_user: int, seed: str, version: int
+    c: sqlite3.Cursor, for_users: t.Set[int], seed: str, version: int
 ) -> InfiniteResult:
     """
     Returns the result for the given user for the given seed and version, as well
@@ -127,15 +128,16 @@ def _infinite_results(
     """
 
     c.execute(
-        "SELECT score FROM JuxtaStatInfiniteStats WHERE user=? AND seed=? AND version=?",
-        (for_user, seed, version),
+        f"SELECT score FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))} AND seed=? AND version=?",
+        list(for_users) + [seed, version],
     )
     res = c.fetchone()
     for_this_seed = None if res is None else res[0]
 
     c.execute(
-        "SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user=? AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user=?)",
-        (for_user, for_user),
+        f"SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))} "
+        f"AND score=(SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))})",
+        list(for_users) + list(for_users),
     )
     res = c.fetchone()
     max_score_seed = None if res is None else res[0]
