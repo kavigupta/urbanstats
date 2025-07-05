@@ -332,6 +332,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'editor':
             pathname = '/editor.html'
             searchParams = {}
+            break
         case 'oauthCallback':
             pathname = '/oauth-callback.html'
             searchParams = pageDescriptor.params
