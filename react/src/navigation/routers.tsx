@@ -1,9 +1,9 @@
-import React, { CSSProperties, ReactNode, useContext, useLayoutEffect } from 'react'
+import React, { ReactNode, useContext, useLayoutEffect } from 'react'
 import { ZodError } from 'zod'
 
+import { ErrorBox } from '../ErrorBox'
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
-import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 
 import { Navigator } from './Navigator'
@@ -52,20 +52,10 @@ background-color: var(--highlight);
 function ErrorScreen({ data }: { data: Extract<PageData, { kind: 'error' }> }): ReactNode {
     const errorContents = data.descriptor === undefined ? <NotFoundError {...data} /> : <PageLoadError {...data} />
 
-    const colors = useColors()
-    const errorBoxStyle: CSSProperties = {
-        backgroundColor: colors.slightlyDifferentBackgroundFocused,
-        borderRadius: '5px',
-        textAlign: 'center',
-        padding: '10px',
-    }
-
     return (
-        <PageTemplate>
-            <div style={errorBoxStyle}>
-                {errorContents}
-            </div>
-        </PageTemplate>
+        <ErrorBox>
+            {errorContents}
+        </ErrorBox>
     )
 }
 
@@ -178,6 +168,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'editor':
             return <pageData.editorPanel />
+        case 'oauthCallback':
+            return <pageData.oauthCallbackPanel {...pageData} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':

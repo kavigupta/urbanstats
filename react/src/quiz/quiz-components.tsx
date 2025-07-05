@@ -5,8 +5,9 @@ import '../components/quiz.css'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizLocalStorage } from './quiz'
+import { nameOfQuizKind, QuizHistory, QuizKind, QuizModel } from './quiz'
 
 export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
@@ -63,23 +64,63 @@ export function Help(props: { quizKind: QuizKind }): ReactNode {
 }
 
 export function UserId(): ReactNode {
-    const user = QuizLocalStorage.shared.uniquePersistentId.use()
+    const user = QuizModel.shared.uniquePersistentId.use()
     return (
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{user}</span>
+            {' '}
+            <QuizAuthStatus />
         </div>
     )
+}
+
+export function QuizAuthStatus(): ReactNode {
+    const state = AuthenticationStateMachine.shared.useState()
+
+    const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
+
+    const authEnable = QuizModel.shared.enableAuthFeatures.use()
+
+    if (!authEnable) {
+        return null
+    }
+
+    if (state.state === 'signedOut') {
+        const signIn = (e: React.MouseEvent): void => {
+            e.preventDefault()
+            startSignIn?.()
+        }
+        return (
+            <>
+                <a href="" data-test="googleSignIn" onClick={signIn}>Sign In with Google</a>
+                {' to sync your quiz history across devices.'}
+            </>
+        )
+    }
+    else {
+        const signOut = (e: React.MouseEvent): void => {
+            e.preventDefault()
+            void AuthenticationStateMachine.shared.userSignOut()
+        }
+
+        return (
+            <>
+                {`Signed in with ${state.email}. `}
+                <a href="" onClick={signOut}>Sign Out</a>
+            </>
+        )
+    }
 }
 
 export function ExportImport(): ReactNode {
     return (
         <div style={{ marginTop: '5px' }}>
-            <button onClick={() => { QuizLocalStorage.shared.exportQuizPersona() }}>
+            <button onClick={() => { QuizModel.shared.exportQuizPersona() }}>
                 Export Quiz History
             </button>
             {' '}
-            <button onClick={() => { void QuizLocalStorage.shared.importQuizPersona() }}>
+            <button onClick={() => { void QuizModel.shared.importQuizPersona() }}>
                 Import Quiz History
             </button>
         </div>

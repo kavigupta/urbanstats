@@ -4,7 +4,7 @@ import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
-import { isTesting } from '../utils/isTesting'
+import { TestUtils } from '../utils/TestUtils'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const screencapButton = (
@@ -78,7 +78,7 @@ function totalOffset(element: Element | null): { top: number, left: number } {
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
-    if (isTesting()) {
+    if (TestUtils.shared.isTesting) {
         context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
         context.fillRect(x, y, w, h)
     }

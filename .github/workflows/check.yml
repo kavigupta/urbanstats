@@ -74,6 +74,8 @@ jobs:
         # this is needed because isort and black disagree on the formatting of some files, so we run both and check
         # if there's a difference
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+      - name: typecheck persistent
+        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
 
   test-python:
     runs-on: ubuntu-22.04
@@ -87,6 +89,20 @@ jobs:
       - uses: ./.github/actions/python_environment
       - name: Test python code
         run: python -m pytest tests
+
+  test-urbanstats-persistent:
+    runs-on: ubuntu-22.04
+
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - name: Test python code
+        working-directory: urbanstats-persistent-data
+        run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
 
   build-frontend:
     runs-on: ubuntu-22.04
@@ -160,6 +176,7 @@ jobs:
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
+          URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:

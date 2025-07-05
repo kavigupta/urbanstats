@@ -21,6 +21,7 @@ import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -125,6 +126,7 @@ const quizSchema = z.intersection(
     z.object({
         name: z.optional(z.string()),
         id: z.optional(z.string()),
+        enableAuth: z.optional(z.enum(['true', 'false'])),
     }),
 )
 
@@ -155,6 +157,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
     z.object({ kind: z.literal('editor') }),
+    z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -182,6 +185,7 @@ export type PageData =
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
     | { kind: 'editor', editorPanel: typeof EditorPanel }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
         error: unknown
@@ -221,6 +225,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'dataCredit', hash: url.hash }
         case '/editor.html':
             return { kind: 'editor' }
+        case '/oauth-callback.html':
+            return { kind: 'oauthCallback', params }
         default:
             throw new Error('404 not found')
     }
@@ -294,6 +300,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizContent: pageDescriptor.quizContent,
                 name: pageDescriptor.name,
                 id: pageDescriptor.id,
+                enableAuth: pageDescriptor.enableAuth?.toString(),
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -325,6 +332,9 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'editor':
             pathname = '/editor.html'
             searchParams = {}
+        case 'oauthCallback':
+            pathname = '/oauth-callback.html'
+            searchParams = pageDescriptor.params
             break
         case 'initialLoad':
         case 'error':
@@ -608,6 +618,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     // Remove friend stuff so it doesn't get triggered again
                     id: undefined,
                     name: undefined,
+                    // and enable auth
+                    enableAuth: undefined,
                 },
                 effects: () => {
                     if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
@@ -616,6 +628,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         void (async () => {
                             const { addFriendFromLink } = await quizImport
                             await addFriendFromLink(friendId, friendName)
+                        })()
+                    }
+                    if (newDescriptor.enableAuth !== undefined) {
+                        const enabled = newDescriptor.enableAuth
+                        void (async () => {
+                            const { QuizModel } = await quizImport
+                            QuizModel.shared.enableAuthFeatures.value = enabled === 'true'
                         })()
                     }
                 },
@@ -650,6 +669,28 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     settings: mapSettings,
                     mapperPanel: panel.MapperPanel,
                 },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
+        case 'oauthCallback': {
+            const panel = import('../quiz/OauthCallbackPanel')
+            let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
+            try {
+                const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
+                await AuthenticationStateMachine.shared.completeSignIn(newDescriptor)
+                result = { success: true }
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    result = { success: false, error: e.message }
+                }
+                else {
+                    result = { success: false, error: 'Unknown error' }
+                }
+            }
+            return {
+                pageData: { kind: 'oauthCallback', result, oauthCallbackPanel: (await panel).OauthCallbackPanel },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
@@ -699,6 +740,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':
             return 'Editor'
+        case 'oauthCallback':
+            return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
     }
