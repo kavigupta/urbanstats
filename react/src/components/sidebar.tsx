@@ -308,6 +308,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
         <div className={(props.classNameToUse ?? 'checkbox-setting') + (props.forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
             <CheckboxSettingJustBox
                 {...props}
+                id={inputId}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
