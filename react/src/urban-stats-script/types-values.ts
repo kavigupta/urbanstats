@@ -135,6 +135,7 @@ export function renderType(type: USSType): string {
         return `[${type.elementType.type === 'elementOfEmptyVector' ? '' : renderType(type.elementType)}]`
     }
     if (type.type === 'object') {
+        assert(type.properties instanceof Map, `Expected properties to be a Map, got ${typeof type.properties}`)
         return `{${[...type.properties.entries()].sort().map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
     }
     if (type.type === 'null') {

@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
-import { CMap } from '../src/urban-stats-script/constants/map'
+import { CMap, Outline } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
@@ -1723,4 +1723,46 @@ void test('custom node type checking', (): void => {
     const noTypeResult = evaluate(noTypeCustomNode, emptyContext())
     assert.strictEqual(noTypeResult.value, 5)
     assert.deepStrictEqual(noTypeResult.type, numType)
+})
+
+void test('test basic map with outline', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0 }, weight: 2 })
+})
+
+void test('test basic map with default outline', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 0, g: 0, b: 0 }, weight: 0 })
+})
+
+void test('test constructOutline function', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const result = evaluate(parseExpr('constructOutline(color=rgb(0, 1, 0), weight=3)'), ctx)
+    assert.deepStrictEqual(result.type, { type: 'opaque', name: 'outline' })
+    const outline = (result.value as { type: 'opaque', value: Outline }).value
+    assert.deepStrictEqual(outline, { color: { r: 0, g: 255, b: 0 }, weight: 3 })
+})
+
+void test('test basic map with outline', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0 }, weight: 2 })
 })
