@@ -85,7 +85,10 @@ def statistic_variables_info():
             assert s in internal_to_actual_variable
             internal_to_actual_variable[s] = variable
             combo.append(variable)
-        multi_source[ms_name] = combo
+        multi_source[ms_name] = dict(
+            individualVariables=combo,
+            humanReadableName=stat.compute_name(statistic_internal_to_display_name()),
+        )
     internal_to_actual_list = [
         internal_to_actual_variable[stat] for stat in internal_statistic_names()
     ]
