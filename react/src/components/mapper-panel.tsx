@@ -14,6 +14,7 @@ import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { PageTemplate } from '../page_template/template'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { toSExp } from '../urban-stats-script/parser'
@@ -81,11 +82,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.props.setErrors([])
 
         const cMap = result.value.value.value
-        // TODO
-        const lineStyle = {
-            color: '#000000',
-            weight: 0,
-        }
+        // Use the outline from cMap instead of hardcoded lineStyle
+        const lineStyle = cMap.outline
 
         const names = cMap.geo
         const ramp = cMap.ramp
@@ -96,11 +94,11 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             val => interpolateColor(ramp, scale.forward(val)),
         )
         const styles = colors.map(
-            // no outline, set color fill, alpha=1
+            // use outline color from cMap, convert Color object to hex string
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
-                color: lineStyle.color,
+                color: doRender(lineStyle.color),
                 opacity: 1,
                 weight: lineStyle.weight,
             }),
