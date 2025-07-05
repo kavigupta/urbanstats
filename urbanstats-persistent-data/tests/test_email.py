@@ -107,3 +107,33 @@ def test_get_email_route(client):
     )
     assert response.status_code == 200
     assert response.json() == {"email": "email@gmail.com"}
+
+
+def test_user_limit_drop(client):
+    # Create multiple identities to test the user limit
+    identities = []
+    for i in range(32):
+        identities.append(
+            {
+                "x-user": f"{(i + 1):x}",
+                "x-secure-id": f"{(i * 10):x}",
+            }
+        )
+
+    # Associate the same email with all identities
+    email = "test@example.com"
+    for identity in identities:
+        associate_email(client, identity, email)
+
+    # Only 16 identifies must still have an email associated
+    total_associated = 0
+    for identity in identities:
+        response = client.get(
+            "/juxtastat/email",
+            headers=identity,
+        )
+        assert response.status_code == 200
+        if response.json()["email"] is not None:
+            total_associated += 1
+
+    assert total_associated == 16
