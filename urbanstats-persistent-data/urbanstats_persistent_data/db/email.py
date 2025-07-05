@@ -1,10 +1,16 @@
+import random
 import sqlite3
 import typing as t
 
 from .utils import DbSession
 
+associated_user_limit = 16
+
 
 def associate_email_db(s: DbSession, user: int, email: str) -> None:
+    while len(users := get_email_users(s.c, email)) >= associated_user_limit:
+        user_to_drop = random.choice(list(users))
+        dissociate_email_db(s, user_to_drop)
     s.c.execute(
         "INSERT OR REPLACE INTO EmailUsers VALUES (?, ?)",
         (email, user),
