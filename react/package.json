@@ -64,6 +64,7 @@
     "zodcli": "^0.0.4"
   },
   "dependencies": {
+    "@badgateway/oauth2-client": "^3.2.0",
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
     "@fontsource/jost": "^5.0.18",
@@ -77,6 +78,7 @@
     "geojson2svg": "^2.0.1",
     "google-protobuf": "^3.21.2",
     "idb": "^8.0.2",
+    "json-stable-stringify": "^1.3.0",
     "json5": "^2.2.0",
     "maplibre-gl": "^5.2.0",
     "mathjs": "^12.1.0",

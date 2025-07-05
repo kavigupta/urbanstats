@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { safeReload } from './test_utils'
+import { safeClearLocalStorage, safeReload } from './test_utils'
 
 type Storage = Record<string, string>
 
@@ -17,9 +17,7 @@ async function switchAwayFromUser(t: TestController, state: JuxtastatUserState):
         // await t.expect(localStorage.hasOwnProperty('persistent_id')).eql(true)
         state.allUserState.set(state.currentUser, localStorage as Storage)
     }
-    await t.eval(() => {
-        window.localStorage.clear()
-    })
+    await safeClearLocalStorage()
     state.currentUser = undefined
 }
 

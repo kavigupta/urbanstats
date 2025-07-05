@@ -5,7 +5,8 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import { checkString } from '../src/utils/isTesting'
+import type { TestWindow } from '../src/utils/TestUtils'
+import { checkString } from '../src/utils/checkString'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
@@ -191,6 +192,10 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     }
 }
 
+export const safeClearLocalStorage = ClientFunction(() => {
+    (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
+})
+
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
@@ -205,12 +210,12 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
         .page(url)
         .beforeEach(async (t) => {
             screenshotNumber = 0
-            await t.eval(() => { localStorage.clear() })
+            await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {
                 await beforeEach(t)
             }
-        })
+        }).skipJsErrors({ pageUrl: /google\.com/ })
 }
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
@@ -218,7 +223,9 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
 }
 
 export async function waitForPageLoaded(t: TestController): Promise<void> {
-    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
+    while (await Selector('#pageState_kind').value !== 'loaded') {
+        await t.wait(1000)
+    }
 }
 
 export function pageDescriptorKind(): Promise<string | undefined> {

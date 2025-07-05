@@ -176,6 +176,7 @@ jobs:
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
+          URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:

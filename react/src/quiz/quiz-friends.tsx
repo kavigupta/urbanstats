@@ -6,9 +6,9 @@ import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
-import { client } from '../utils/urbanstats-persistent-client'
+import { persistentClient } from '../utils/urbanstats-persistent-client'
 
-import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizLocalStorage, QuizDescriptor } from './quiz'
+import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizModel, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
@@ -22,9 +22,9 @@ async function juxtaRetroResponse(
     requesters: string[],
 ): Promise<FriendResponse[] | undefined> {
     const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
-    const { data: friendScoresResponse } = await client.POST('/juxtastat/todays_score_for', {
+    const { data: friendScoresResponse } = await persistentClient.POST('/juxtastat/todays_score_for', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
         body: {
             date,
@@ -42,9 +42,9 @@ async function infiniteResponse(
     quizDescriptor: QuizDescriptor & { kind: 'infinite' },
     requesters: string[],
 ): Promise<FriendResponse[] | undefined> {
-    const { data: friendScoresResponse } = await client.POST('/juxtastat/infinite_results', {
+    const { data: friendScoresResponse } = await persistentClient.POST('/juxtastat/infinite_results', {
         params: {
-            header: QuizLocalStorage.shared.userHeaders(),
+            header: QuizModel.shared.userHeaders(),
         },
         body: {
             requesters, seed: quizDescriptor.seed, version: quizDescriptor.version,
@@ -68,17 +68,18 @@ export function QuizFriendsPanel(props: {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
 
-    const user = QuizLocalStorage.shared.uniquePersistentId.use()
-    const secureID = QuizLocalStorage.shared.uniqueSecureId.use()
+    const user = QuizModel.shared.uniquePersistentId.use()
+    const secureID = QuizModel.shared.uniqueSecureId.use()
 
     useEffect(() => {
         void (async () => {
             setIsLoading(true)
             setError(undefined)
             try {
+                const friends = props.quizFriends.filter(([name]) => name !== null) as [string, string, number | undefined][]
                 // map name to id for quizFriends
-                const quizIDtoName = Object.fromEntries(props.quizFriends.map(x => [x[1], x[0]]))
-                const requesters = props.quizFriends.map(x => x[1])
+                const quizIDtoName = Object.fromEntries(friends.map(([name, id]) => [id, name]))
+                const requesters = friends.map(x => x[1])
                 const friendScoresResponse
                     = props.quizDescriptor.kind === 'infinite'
                         ? await infiniteResponse(props.quizDescriptor, requesters)
@@ -117,15 +118,15 @@ export function QuizFriendsPanel(props: {
                             index={idx}
                             friendScore={friendScore}
                             removeFriend={async () => {
-                                await client.POST('/juxtastat/unfriend', {
+                                await persistentClient.POST('/juxtastat/unfriend', {
                                     params: {
-                                        header: QuizLocalStorage.shared.userHeaders(),
+                                        header: QuizModel.shared.userHeaders(),
                                     },
                                     body: {
                                         requestee: props.quizFriends[idx][1],
                                     },
                                 })
-                                const newQuizFriends = props.quizFriends.filter(x => x[0] !== friendScore.name)
+                                const newQuizFriends = props.quizFriends.map<[string | null, string, number | null | undefined]>(([name, id, timestamp]) => name === friendScore.name ? [null, id, Date.now()] : [name, id, timestamp])
                                 props.setQuizFriends(newQuizFriends)
                             }}
                             quizFriends={props.quizFriends}
@@ -189,7 +190,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
             return
         }
 
-        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizLocalStorage.shared.uniquePersistentId.value, name: playerName }).hash
+        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizModel.shared.uniquePersistentId.value, name: playerName }).hash
         const url = `https://juxtastat.org/${hash}`
 
         await navigator.clipboard.writeText(url)
@@ -244,7 +245,7 @@ function FriendScore(props: {
             return
         }
         const newQuizFriends = [...props.quizFriends]
-        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1]]
+        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
         props.setQuizFriends(newQuizFriends)
         setError(undefined)
     }
@@ -391,7 +392,7 @@ function AddFriend(): ReactNode {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
         setLoading(true)
-        const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
+        const result = await QuizModel.shared.addFriend(friendID, friendName)
         setLoading(false)
         if (result !== undefined) {
             setError(result.errorMessage)

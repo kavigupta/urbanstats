@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from ..db.utils import DbSession
 from ..dependencies.authenticate import AuthenticatedRequest
 from ..utils import corrects_to_bytes
+from .utils import sqlTuple
 
 
 def register_user(req: AuthenticatedRequest, domain: str) -> None:
@@ -23,8 +24,8 @@ def latest_day_from_table(
     req: AuthenticatedRequest, table_name: str, column: str
 ) -> int:
     req.s.c.execute(
-        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user = ?",
-        (req.user_id,),
+        f"SELECT COALESCE(MAX({column}), -100) FROM {table_name} WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
+        list(req.associated_user_ids),
     )
     return t.cast(int, req.s.c.fetchone()[0])
 
@@ -78,8 +79,8 @@ def has_infinite_stats(
     req: AuthenticatedRequest, seeds_versions: t.List[t.Tuple[str, int]]
 ) -> t.List[bool]:
     req.s.c.execute(
-        "SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user = ?",
-        (req.user_id,),
+        f"SELECT seed, version FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(req.associated_user_ids))}",
+        list(req.associated_user_ids),
     )
     results = set(req.s.c.fetchall())
     return [(seed, version) in results for seed, version in seeds_versions]
