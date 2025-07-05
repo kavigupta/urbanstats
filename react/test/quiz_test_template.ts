@@ -823,8 +823,9 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         await t.expect(lines[3]).eql('')
         await t.expect(lines[4]).match(/^https:\/\/s\.urbanstats\.org\/s\?c=.*$/)
         // navigate to the url, should bring us back to the same quiz
-        await t.navigateTo(lines[4])
-        await t.expect(getLocation()).eql(customQuizURL(quiz5Q))
+        const response = await fetch(lines[4].replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), { redirect: 'manual' })
+        await t.expect(response.status).eql(302)
+        await t.expect(response.headers.get('Location')).eql(customQuizURL(quiz5Q).replaceAll(target, 'https://urbanstats.org'))
     })
 
     const quiz3Q = {
