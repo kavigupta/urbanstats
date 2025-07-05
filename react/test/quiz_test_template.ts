@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap, getLocation, safeClearLocalStorage } from './test_utils'
+import { target, mostRecentDownloadPath, safeReload, screencap, safeClearLocalStorage } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
