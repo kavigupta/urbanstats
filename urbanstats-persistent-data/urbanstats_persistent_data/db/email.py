@@ -1,6 +1,6 @@
+import random
 import sqlite3
 import typing as t
-import random
 
 from .utils import DbSession
 
