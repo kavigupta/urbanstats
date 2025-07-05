@@ -8,6 +8,8 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
+import { AuthenticationStateMachine } from './AuthenticationStateMachine'
+import { addFriend } from './friends'
 import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizModel, QuizDescriptor } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
@@ -190,7 +192,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
             return
         }
 
-        const hash = urlFromPageDescriptor({ kind: 'quiz', id: QuizModel.shared.uniquePersistentId.value, name: playerName }).hash
+        const hash = urlFromPageDescriptor({ kind: 'quiz', id: AuthenticationStateMachine.shared.state.email ?? QuizModel.shared.uniquePersistentId.value, name: playerName }).hash
         const url = `https://juxtastat.org/${hash}`
 
         await navigator.clipboard.writeText(url)
@@ -388,11 +390,11 @@ function AddFriend(): ReactNode {
     const [error, setError] = useState<string | undefined>(undefined)
     const [loading, setLoading] = useState(false)
 
-    const addFriend = async (): Promise<void> => {
+    const addFriendClick = async (): Promise<void> => {
         const friendID = friendIDField.trim()
         const friendName = friendNameField.trim()
         setLoading(true)
-        const result = await QuizModel.shared.addFriend(friendID, friendName)
+        const result = await addFriend(friendID, friendName)
         setLoading(false)
         if (result !== undefined) {
             setError(result.errorMessage)
@@ -403,6 +405,8 @@ function AddFriend(): ReactNode {
             setFriendIDField('')
         }
     }
+
+    const authFeaturesEnabled = QuizModel.shared.enableAuthFeatures.use()
 
     const form = (
         <div style={{ display: 'flex', flexDirection: 'row', height: addFriendHeight, alignItems: 'center' }}>
@@ -423,7 +427,7 @@ function AddFriend(): ReactNode {
             >
                 <input
                     type="text"
-                    placeholder="Friend ID"
+                    placeholder={authFeaturesEnabled ? 'Friend ID or Email' : 'Friend ID'}
                     value={friendIDField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendIDField(e.target.value) }}
@@ -432,7 +436,7 @@ function AddFriend(): ReactNode {
             </div>
             <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
                 <button
-                    onClick={addFriend}
+                    onClick={addFriendClick}
                     style={{ marginLeft: '1em', height: '100%' }}
                     disabled={loading}
                 >
