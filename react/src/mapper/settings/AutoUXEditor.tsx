@@ -271,7 +271,9 @@ export function Selector(props: {
     errors: EditorError[]
 }): ReactNode {
     const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
+    console.log('selectionPossibilities', selectionPossibilities)
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
+    console.log('renderedSelectionPossibilities', renderedSelectionPossibilities)
     const selected = classifyExpr(props.uss)
     const selectedRendered = renderSelection(props.typeEnvironment, selected)
     assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')

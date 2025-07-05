@@ -58,7 +58,8 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getV
     })
 
     statistic_variables_info.multiSourceVariables.forEach((content) => {
-        const [name, subvars] = content
+        const [name, info] = content
+        const subvars = info.individualVariables
         if (!ids.has(name)) {
             return
         }

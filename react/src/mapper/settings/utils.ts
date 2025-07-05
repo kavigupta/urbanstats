@@ -1,5 +1,8 @@
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { emptyLocation } from '../../urban-stats-script/lexer'
+
+import { defaultTypeEnvironment } from './MapperSettings'
+import { defaultTopLevelEditor } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -52,10 +55,11 @@ export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStat
 }
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
+    const tle = defaultTopLevelEditor(defaultTypeEnvironment)
     const defaults: MapSettings = {
-        geographyKind: '',
+        geographyKind: 'State',
         script: {
-            uss: parseNoErrorAsExpression('', rootBlockIdent),
+            uss: tle,
         },
     }
     return merge(addTo, defaults)
@@ -74,10 +78,14 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
     return addTo as T
 }
 
-export function makeStatements(elements: UrbanStatsASTStatement[]): UrbanStatsASTStatement {
+export function makeStatements(elements: UrbanStatsASTStatement[], identFallback?: string): UrbanStatsASTStatement {
+    const locations = [...elements.map(locationOf)]
+    if (identFallback !== undefined) {
+        locations.push(emptyLocation(identFallback))
+    }
     return {
         type: 'statements',
         result: elements,
-        entireLoc: unify(...elements.map(locationOf)),
+        entireLoc: unify(...locations),
     }
 }

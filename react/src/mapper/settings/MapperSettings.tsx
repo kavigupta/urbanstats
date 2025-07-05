@@ -6,10 +6,42 @@ import statistic_variables_info from '../../data/statistic_variables_info'
 import { defaultConstants } from '../../urban-stats-script/constants/constants'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
+import { assert } from '../../utils/defensive'
 import { DataListSelector } from '../DataListSelector'
 
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings, MapperScriptSettings } from './utils'
+
+export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
+    const te = new Map<string, USSDocumentedType>()
+
+    for (const [key, value] of defaultConstants) {
+        te.set(key, value)
+    }
+
+    te.set('geo', {
+        type: { type: 'vector', elementType: { type: 'string' } },
+        documentation: { humanReadableName: 'Geography Name' },
+    })
+
+    for (const varName of statistic_variables_info.variableNames) {
+        const index = statistic_variables_info.variableNames.indexOf(varName as any)
+        assert(index !== -1, `Variable ${varName} not found in statistic_name_list`)
+        const humanReadableName = statistic_name_list[index]
+        te.set(varName, {
+            type: { type: 'vector', elementType: { type: 'number' } },
+            documentation: { humanReadableName },
+        })
+    }
+    for (const [name, { humanReadableName }] of statistic_variables_info.multiSourceVariables) {
+        te.set(name, {
+            type: { type: 'vector', elementType: { type: 'number' } },
+            documentation: { humanReadableName },
+        })
+    }
+
+    return te
+})()
 
 export function MapperSettings({ mapSettings, setMapSettings, getScript, errors }: {
     mapSettings: MapSettings
@@ -17,45 +49,14 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
     getScript: () => MapperScriptSettings
     errors: EditorError[]
 }): ReactNode {
-    const typeEnvironment = useMemo(() => {
-        const allVariableNames = [
-            ...statistic_variables_info.variableNames,
-            ...statistic_variables_info.multiSourceVariables.map(([name]) => name),
-            'geo',
-        ]
-
-        const te = new Map<string, USSDocumentedType>()
-
-        for (const [key, value] of defaultConstants) {
-            te.set(key, value)
-        }
-
-        for (const varName of allVariableNames) {
-            if (varName === 'geo') {
-                te.set(varName, {
-                    type: { type: 'vector', elementType: { type: 'string' } },
-                    documentation: { humanReadableName: 'Geography Name' },
-                })
-            }
-            else {
-                const index = statistic_variables_info.variableNames.indexOf(varName as any)
-                const humanReadableName = index !== -1 ? statistic_name_list[index] : varName
-                te.set(varName, {
-                    type: { type: 'vector', elementType: { type: 'number' } },
-                    documentation: { humanReadableName },
-                })
-            }
-        }
-
-        return te
-    }, [])
-
     const setUss = useCallback((uss: MapperScriptSettings['uss']) => {
         setMapSettings(s => ({
             ...s,
             script: { uss },
         }))
     }, [setMapSettings])
+
+    console.log(defaultTypeEnvironment)
 
     return (
         <div>
@@ -75,7 +76,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
             <TopLevelEditor
                 uss={getScript().uss}
                 setUss={setUss}
-                typeEnvironment={typeEnvironment}
+                typeEnvironment={defaultTypeEnvironment}
                 errors={errors}
             />
         </div>
