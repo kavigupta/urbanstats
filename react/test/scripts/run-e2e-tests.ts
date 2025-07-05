@@ -1,12 +1,11 @@
 import fs from 'fs/promises'
 
+import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
 import { globSync } from 'glob'
 import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
-
-import { testingUserAgent } from '../../src/utils/isTesting'
 
 import { startProxy } from './ci_proxy'
 import { booleanArgument } from './util'
@@ -61,7 +60,7 @@ const runTest = async (): Promise<number> => {
 
     let runner = testcafe.createRunner()
         .src(`test/${test}.test.ts`)
-        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --user-agent='Chrome ${testingUserAgent}'`])
+        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
         .screenshots(`screenshots/${test}`)
 
     if (options.video) {
@@ -70,21 +69,21 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000 })
+    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
     return failedTests + await runTest()
 }
 
-const startRunningTests = Date.now()
+const killTimer = options.timeLimitSeconds
+    ? setTimeout(() => {
+        console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
+        process.exit(1)
+    }, options.timeLimitSeconds * 1000)
+    : undefined
 
 const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
-const testsDurationSeconds = Math.round((Date.now() - startRunningTests) / 1000)
-
-if (options.timeLimitSeconds !== undefined && testsDurationSeconds > options.timeLimitSeconds) {
-    console.error(`Test suite took too long! (Took ${testsDurationSeconds}s, allowed duration ${options.timeLimitSeconds}s)`)
-    process.exit(1)
-}
+clearTimeout(killTimer)
 
 if (options.compare) {
     const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
