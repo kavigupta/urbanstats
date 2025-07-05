@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
@@ -271,12 +271,19 @@ export function Selector(props: {
     errors: EditorError[]
 }): ReactNode {
     const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
-    console.log('selectionPossibilities', selectionPossibilities)
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
-    console.log('renderedSelectionPossibilities', renderedSelectionPossibilities)
     const selected = classifyExpr(props.uss)
     const selectedRendered = renderSelection(props.typeEnvironment, selected)
     assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
+
+    const [searchValue, setSearchValue] = useState(selectedRendered)
+    const [isOpen, setIsOpen] = useState(false)
+    const [highlightedIndex, setHighlightedIndex] = useState(-1)
+
+    // Filter options based on search value
+    const filteredOptions = renderedSelectionPossibilities.filter(option =>
+        option.toLowerCase().includes(searchValue.toLowerCase()),
+    )
 
     const isNumber = props.type.type === 'number'
     const isString = props.type.type === 'string'
@@ -285,21 +292,125 @@ export function Selector(props: {
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayErrors errors={errors} />
 
+    const handleOptionSelect = (option: string): void => {
+        const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(option)]
+        props.setSelection(selection)
+        setSearchValue(option)
+        setIsOpen(false)
+        setHighlightedIndex(-1)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent): void => {
+        if (!isOpen || filteredOptions.length === 0) return
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault()
+                setHighlightedIndex(prev =>
+                    prev < filteredOptions.length - 1 ? prev + 1 : 0,
+                )
+                break
+            case 'ArrowUp':
+                e.preventDefault()
+                setHighlightedIndex(prev =>
+                    prev > 0 ? prev - 1 : filteredOptions.length - 1,
+                )
+                break
+            case 'Enter':
+                e.preventDefault()
+                if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+                    handleOptionSelect(filteredOptions[highlightedIndex])
+                }
+                break
+            case 'Escape':
+                e.preventDefault()
+                setIsOpen(false)
+                setHighlightedIndex(-1)
+                break
+        }
+    }
+
     const select = (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
-            <select
-                id="selector"
-                value={selectedRendered}
-                onChange={(e) => {
-                    const selectedName = e.target.value
-                    const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(selectedName)]
-                    props.setSelection(selection)
-                }}
-            >
-                {renderedSelectionPossibilities.map((s, i) => (
-                    <option key={i} value={s}>{s}</option>
-                ))}
-            </select>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+                <input
+                    type="text"
+                    value={searchValue}
+                    onChange={(e) => {
+                        setSearchValue(e.target.value)
+                        setIsOpen(true)
+                        setHighlightedIndex(-1)
+                    }}
+                    onKeyDown={handleKeyDown}
+                    onClick={(e) => {
+                        (e.target as HTMLInputElement).select()
+                    }}
+                    onFocus={() => {
+                        setIsOpen(true)
+                        setHighlightedIndex(-1)
+                    }}
+                    onBlur={() => {
+                        // Delay closing to allow clicking on options
+                        setTimeout(() => {
+                            setIsOpen(false)
+                            setHighlightedIndex(-1)
+                        }, 150)
+                    }}
+                    placeholder="Search options..."
+                    style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        fontSize: '14px',
+                    }}
+                />
+                {isOpen && filteredOptions.length > 0 && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        zIndex: 1000,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    }}
+                    >
+                        {filteredOptions.map((option, index) => (
+                            <div
+                                key={index}
+                                onClick={() => { handleOptionSelect(option) }}
+                                style={{
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    borderBottom: index < filteredOptions.length - 1 ? '1px solid #eee' : 'none',
+                                    backgroundColor: index === highlightedIndex
+                                        ? '#007bff'
+                                        : option === selectedRendered ? '#f0f0f0' : 'transparent',
+                                    color: index === highlightedIndex ? 'white' : 'inherit',
+                                }}
+                                onMouseEnter={(e) => {
+                                    setHighlightedIndex(index)
+                                    e.currentTarget.style.backgroundColor = index === highlightedIndex ? '#007bff' : '#f5f5f5'
+                                    e.currentTarget.style.color = index === highlightedIndex ? 'white' : 'inherit'
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = index === highlightedIndex
+                                        ? '#007bff'
+                                        : option === selectedRendered ? '#f0f0f0' : 'transparent'
+                                    e.currentTarget.style.color = index === highlightedIndex ? 'white' : 'inherit'
+                                }}
+                            >
+                                {option}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
             {showConstantInput && (
                 <input
                     type="text"
