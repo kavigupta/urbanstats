@@ -269,3 +269,96 @@ def test_friends_transitive_infinite(client):
             }
         ]
     }
+
+
+def test_friends_with_emails(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+    associate_email(client, identity_c, "charlie@example.com")
+
+    # Send friend request from a to b using email
+    response = client.post(
+        "/juxtastat/friend_request",
+        headers=identity_a,
+        json={"requestee": "bob@example.com"},
+    )
+    assert response.status_code == 204
+
+    # Ba can see a's score
+    response = client.post(
+        "/juxtastat/todays_score_for",
+        headers=identity_b,
+        json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
+
+    # Send friend request from b to a using email
+    response = client.post(
+        "/juxtastat/friend_request",
+        headers=identity_b,
+        json={"requestee": "alice@example.com"},
+    )
+    assert response.status_code == 204
+
+    # A can se b's score
+    response = client.post(
+        "/juxtastat/todays_score_for",
+        headers=identity_a,
+        json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_unfriend_with_emails(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Send friend request from a to b using email
+    response = client.post(
+        "/juxtastat/friend_request",
+        headers=identity_a,
+        json={"requestee": "bob@example.com"},
+    )
+    assert response.status_code == 204
+
+    # Send friend request from b to a using email
+    response = client.post(
+        "/juxtastat/friend_request",
+        headers=identity_b,
+        json={"requestee": "alice@example.com"},
+    )
+    assert response.status_code == 204
+
+    # Unfriend: a unfriends b using email
+    response = client.post(
+        "/juxtastat/unfriend", headers=identity_a, json={"requestee": "bob@example.com"}
+    )
+    assert response.status_code == 204
+
+    # Now, b should not be able to see a's score
+    response = client.post(
+        "/juxtastat/todays_score_for",
+        headers=identity_b,
+        json={"requesters": ["a"], "date": "1", "quiz_kind": "juxtastat"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b has friended them
+    response = client.post(
+        "/juxtastat/todays_score_for",
+        headers=identity_a,
+        json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"results": [{"corrects": None, "friends": True}]}

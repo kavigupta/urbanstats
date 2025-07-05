@@ -13,14 +13,14 @@ from .utils import QuizKind, problem_id_for_quiz_kind, sqlTuple, table_for_quiz_
 def friend_request(req: AuthenticatedRequest, requestee: int | str) -> None:
     req.s.c.execute(
         "INSERT INTO FriendRequests VALUES (?, ?)",
-        (requestee, req.user_id),
+        (requestee, req.email or req.user_id),
     )
 
 
 def unfriend(req: AuthenticatedRequest, requestee: int | str) -> None:
     req.s.c.execute(
         "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
-        (requestee, req.user_id),
+        (requestee, req.email or req.user_id),
     )
 
 
@@ -85,12 +85,13 @@ def _compute_friend_results(
     compute_fn: t.Callable[[sqlite3.Cursor, t.Set[int]], Result],
 ) -> t.List[NegativeResult | Result]:
     # query the table to see if each pair is a friend pair
+    requestees = req.associated_user_ids | ({req.email} if req.email else set[str]())
 
     req.s.c.execute(
-        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(req.associated_user_ids))}",
-        list(req.associated_user_ids),
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
+        list(requestees),
     )
-    friends: t.Set[int] = {
+    friends = {
         friend
         for x in req.s.c.fetchall()
         for friend in email.get_email_or_user_users(req.s.c, x[0])
