@@ -77,6 +77,7 @@ export const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
+    quiz_friends: quizFriends,
     date_exported: z.optional(z.string().pipe(z.coerce.date())),
 }).strict()
 
@@ -200,6 +201,7 @@ export class QuizModel {
             persistent_id: this.uniquePersistentId.value,
             secure_id: this.uniqueSecureId.value,
             quiz_history: this.history.value,
+            quiz_friends: this.friends.value,
         }
         const data = JSON.stringify(exported, null, 2)
         saveAs(new Blob([data], { type: 'application/json' }), `urbanstats_quiz_${exported.persistent_id}.json`)
@@ -238,6 +240,7 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             }
 
             this.history.value = newHistory
+            this.friends.value = persona.quiz_friends
             this.uniquePersistentId.value = persona.persistent_id
             this.uniqueSecureId.value = persona.secure_id
         }
