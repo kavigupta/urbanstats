@@ -1,5 +1,7 @@
 import { Keypoints } from '../mapper/ramps'
 
+import { assert } from './defensive'
+
 export function randomColor(name: string): string {
     // randomly choose a color hex code where H is between 0 and 360,
     // S is between 50 and 100, and L is between 20 and 50
@@ -19,18 +21,20 @@ export function randomColor(name: string): string {
     return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`
 }
 
-export function interpolateColor(ramp: Keypoints, item: number): string {
+export function interpolateColor(ramp: Keypoints, item: number, color?: string): string {
     // ramp is a list of [value, color] pairs
     // item is a value
 
     // interpolates in RGB space between the two closest colors in the ramp
 
     if (isNaN(item)) {
-        return '#000000'
+        assert(color !== undefined, 'item is NaN and no color provided')
+        return color
     }
 
     if (ramp.length === 0) {
-        return '#000000'
+        assert(color !== undefined, 'item is NaN and no color provided')
+        return color
     }
 
     let i = 0

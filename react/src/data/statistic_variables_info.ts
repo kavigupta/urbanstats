@@ -1,686 +1,821 @@
 export default {
-    variableNames: [
-        'pres_2016_margin',
-        'pres_swing_2016_2020',
-        'pres_2020_margin',
-        'arthritis',
-        'binge_drinking',
-        'high_blood_pressure',
-        'cancer',
-        'asthma',
-        'heart_disease',
-        'doctor_checkup_last_year',
-        'cholesterol_screening_last_year',
-        'cognitive_disability',
-        'copd',
-        'smoking',
-        'dental_visit_last_year',
-        'diabetes',
-        'any_disability',
-        'poor_health',
-        'hearing_disability',
-        'independent_living_disability',
-        'kidney_disease',
-        'no_physical_activity',
-        'mobility_disability',
-        'obesity',
-        'poor_physical_health',
-        'selfcare_disability',
-        'insufficient_sleep',
-        'stroke',
-        'vision_disability',
-        'density_pw_250m_us_census',
-        'density_pw_250m_2000',
-        'density_pw_250m_2010',
-        'density_pw_250m_change_2000_2020',
-        'density_pw_250m_change_2010_2020',
-        'density_pw_500m_us_census',
-        'density_pw_500m_2000',
-        'density_pw_500m_2010',
-        'density_pw_500m_change_2000_2020',
-        'density_pw_500m_change_2010_2020',
-        'density_pw_1km_us_census',
-        'density_pw_1mi_us_census',
-        'density_pw_1mi_2000',
-        'density_pw_1mi_2010',
-        'density_pw_1mi_change_2000_2020',
-        'density_pw_1mi_change_2010_2020',
-        'density_pw_16km_us_census',
-        'density_pw_16km_2000',
-        'density_pw_16km_2010',
-        'density_pw_16km_change_2000_2020',
-        'density_pw_16km_change_2010_2020',
-        'density_pw_1km_2000',
-        'density_pw_1km_2010',
-        'density_pw_1km_change_2000_2020',
-        'density_pw_1km_change_2010_2020',
-        'density_pw_2km_us_census',
-        'density_pw_2km_2000',
-        'density_pw_2km_2010',
-        'density_pw_2km_change_2000_2020',
-        'density_pw_2km_change_2010_2020',
-        'density_pw_32km_us_census',
-        'density_pw_32km_2000',
-        'density_pw_32km_2010',
-        'density_pw_32km_change_2000_2020',
-        'density_pw_32km_change_2010_2020',
-        'density_pw_4km_us_census',
-        'density_pw_4km_2000',
-        'density_pw_4km_2010',
-        'density_pw_4km_change_2000_2020',
-        'density_pw_4km_change_2010_2020',
-        'density_pw_64km_us_census',
-        'density_pw_64km_2000',
-        'density_pw_64km_2010',
-        'density_pw_64km_change_2000_2020',
-        'density_pw_64km_change_2010_2020',
-        'density_pw_8km_us_census',
-        'density_pw_8km_2000',
-        'density_pw_8km_2010',
-        'density_pw_8km_change_2000_2020',
-        'density_pw_8km_change_2010_2020',
-        'area',
-        'asian',
-        'asian_2000',
-        'asian_2010',
-        'foreign_born',
-        'born_outside_state',
-        'born_in_state',
-        'black',
-        'black_2000',
-        'black_2010',
-        'citizen_by_birth',
-        'naturalized_citizen',
-        'non_citizen',
-        'compactness',
-        'hot_days',
-        'cold_days',
-        'moderate_temp_days',
-        'dry_days',
-        'moderate_humidity_days',
-        'humid_days',
-        'density_pw_250m_statcan',
-        'density_pw_500m_statcan',
-        'density_pw_1mi_statcan',
-        'density_pw_16km_statcan',
-        'density_pw_1km_statcan',
-        'density_pw_2km_statcan',
-        'density_pw_32km_statcan',
-        'density_pw_4km_statcan',
-        'density_pw_64km_statcan',
-        'density_pw_8km_statcan',
-        'business_degree',
-        'humanities_degree',
-        'stem_degree',
-        'graduate_us_census',
-        'graduate_statcan',
-        'high_school_us_census',
-        'high_school_statcan',
-        'undergrad_us_census',
-        'undergrad_statcan',
-        'graduate_gender_gap',
-        'hs_gender_gap',
-        'undergrad_gender_gap',
-        'boomer_us_census',
-        'boomer_statcan',
-        'gen_alpha_us_census',
-        'gen_alpha_statcan',
-        'gen_x_us_census',
-        'gen_x_statcan',
-        'gen_z_us_census',
-        'gen_z_statcan',
-        'millennial_us_census',
-        'millennial_statcan',
-        'silent_us_census',
-        'silent_statcan',
-        'density_aw_ghsl',
-        'population_ghsl',
-        'density_pw_1km_ghsl',
-        'density_pw_1mi_ghsl',
-        'density_pw_16km_ghsl',
-        'density_pw_2km_ghsl',
-        'density_pw_32km_ghsl',
-        'density_pw_4km_ghsl',
-        'density_pw_64km_ghsl',
-        'density_pw_8km_ghsl',
-        'elevation',
-        'hilliness',
-        'hawaiian_pi',
-        'hawaiian_pi_2000',
-        'hawaiian_pi_2010',
-        'bottled_tank_lp_gas',
-        'electricity',
-        'fuel_oil_kerosene',
-        'no_heating',
-        'other_fuel',
-        'utility_gas',
-        'hispanic',
-        'hispanic_2000',
-        'hispanic_2010',
-        'racial_homogeneity_2000',
-        'racial_homogeneity_2010',
-        'racial_homogeneity',
-        'racial_homogeneity_change_2000_2020',
-        'racial_homogeneity_change_2010_2020',
-        'sunny_hours',
-        'income_50k_to_100k',
-        'household_income_50k_to_100k_usd',
-        'income_over_100k',
-        'household_income_over_100k_usd',
-        'income_under_50k',
-        'household_income_under_50k_usd',
-        'housing_per_adult',
-        'housing_per_adult_2000',
-        'housing_per_adult_2010',
-        'individual_income_50k_to_100k_cad',
-        'individual_income_50k_to_100k_usd',
-        'individual_income_over_100k_cad',
-        'individual_income_over_100k_usd',
-        'individual_income_under_50k_cad',
-        'individual_income_under_50k_usd',
-        'industry_accommodation_food_us_census',
-        'industry_accommodation_food_statcan',
-        'industry_admin_support_waste_mgmt_us_census',
-        'industry_admin_support_waste_mgmt_statcan',
-        'industry_agriculture_forestry_fishing_us_census',
-        'industry_agriculture_forestry_fishing_statcan',
-        'industry_arts_entertainment_us_census',
-        'industry_arts_entertainment_statcan',
-        'industry_construction_us_census',
-        'industry_construction_statcan',
-        'industry_education_us_census',
-        'industry_education_statcan',
-        'industry_finance_insurance_us_census',
-        'industry_finance_insurance_statcan',
-        'industry_healthcare_social_us_census',
-        'industry_healthcare_social_statcan',
-        'industry_information_us_census',
-        'industry_information_statcan',
-        'industry_management_us_census',
-        'industry_management_statcan',
-        'industry_manufacturing_us_census',
-        'industry_manufacturing_statcan',
-        'industry_mining_oil_gas_us_census',
-        'industry_mining_oil_gas_statcan',
-        'industry_other_services_us_census',
-        'industry_other_services_statcan',
-        'industry_professional_scientific_technical_us_census',
-        'industry_professional_scientific_technical_statcan',
-        'industry_public_admin_us_census',
-        'industry_public_admin_statcan',
-        'industry_real_estate_rental_us_census',
-        'industry_real_estate_rental_statcan',
-        'industry_retail_trade_us_census',
-        'industry_retail_trade_statcan',
-        'industry_transportation_warehousing_us_census',
-        'industry_transportation_warehousing_statcan',
-        'industry_utilities_us_census',
-        'industry_utilities_statcan',
-        'industry_wholesale_trade_us_census',
-        'industry_wholesale_trade_statcan',
-        'public_insurance',
-        'uninsured',
-        'private_insurance',
-        'no_internet',
-        'english_only',
-        'other_languages',
-        'spanish',
-        'grocery_store_within_ten_miles',
-        'grocery_store_within_one_mile',
-        'grocery_store_within_twenty_miles',
-        'grocery_store_within_half_mile',
-        'low_income',
-        'divorced_us_census',
-        'divorced_statcan',
-        'married_us_census',
-        'married_statcan',
-        'never_married_us_census',
-        'never_married_statcan',
-        'superfund_mean_dist',
-        'airport_mean_dist',
-        'hospital_mean_dist',
-        'school_mean_dist',
-        'high_dewpoint',
-        'high_heat_index',
-        'high_temp',
-        'high_temp_fall',
-        'high_temp_spring',
-        'high_temp_summer',
-        'high_temp_winter',
-        'native',
-        'native_2000',
-        'native_2010',
-        'occupation_architects_engineers',
-        'occupation_arts_media',
-        'occupation_cleaning_maintenance',
-        'occupation_business_finance',
-        'occupation_social_service',
-        'occupation_computer_math',
-        'occupation_construction',
-        'occupation_education',
-        'occupation_agriculture',
-        'occupation_firefighting',
-        'occupation_food_service',
-        'occupation_health_practitioners',
-        'occupation_health_technicians',
-        'occupation_healthcare_support',
-        'occupation_maintenance',
-        'occupation_law_enforcement',
-        'occupation_legal',
-        'occupation_scientists',
-        'occupation_management',
-        'occupation_material_moving',
-        'occupation_office_admin',
-        'occupation_personal_care',
-        'occupation_production',
-        'occupation_sales',
-        'occupation_transportation',
-        'other_mixed',
-        'other_mixed_2000',
-        'other_mixed_2010',
-        'park_1km',
-        'pm25_pollution',
-        'population_us_census',
-        'population_2000',
-        'population_2010',
-        'population_statcan',
-        'population_change_2000_2020',
-        'population_change_2010_2020',
-        'poverty',
-        'rainfall',
-        'one_br_750_to_1500',
-        'one_br_over_1500',
-        'one_br_under_750',
-        'two_br_750_to_1500',
-        'two_br_over_1500',
-        'two_br_under_750',
-        'rent_20_to_40_percent',
-        'rent_over_40_percent',
-        'rent_under_20_percent',
-        'renter',
-        'density_aw_us_census',
-        'density_aw_2000',
-        'density_aw_2010',
-        'density_aw_statcan',
-        'local_segregation_2000',
-        'local_segregation_2010',
-        'local_segregation',
-        'local_segregation_change_2000_2020',
-        'local_segregation_change_2010_2020',
-        'segregation_2000',
-        'segregation_2010',
-        'segregation',
-        'segregation_change_2000_2020',
-        'segregation_change_2010_2020',
-        'snowfall',
-        'living_with_parents',
-        'cohabiting_gay',
-        'cohabiting_straight',
-        'other_living_situation',
-        'single_householder',
-        'traffic_fatalities',
-        'traffic_fatalities_per_capita',
-        'traffic_ped_cyclist_fatalities',
-        'ped_cyclist_fatalities_per_capita',
-        'commute_time_15_to_29_us_census',
-        'commute_time_15_to_29_statcan',
-        'commute_time_30_to_59_us_census',
-        'commute_time_30_to_59_statcan',
-        'commute_time_over_60_us_census',
-        'commute_time_over_60_statcan',
-        'commute_time_under_15_us_census',
-        'commute_time_under_15_statcan',
-        'commute_bike',
-        'commute_car',
-        'commute_transit',
-        'commute_walk',
-        'commute_work_from_home',
-        'vacancy_rate',
-        'vacancy_rate_2000',
-        'vacancy_rate_2010',
-        'one_plus_vehicles',
-        'two_plus_vehicles',
-        'no_vehicle',
-        'white',
-        'white_2000',
-        'white_2010',
-        'windy_days',
-        'superfund_within_10km',
-        'airport_within_30km',
-        'hospital_within_10km',
-        'school_within_2km',
-        'built_pre_1970',
-        'built_1970s',
-        'built_1980s',
-        'built_1990s',
-        'built_2000s',
-        'built_2010_plus',
+    "variableNames": [
+        "pres_2016_margin",
+        "pres_swing_2016_2020",
+        "pres_2020_margin",
+        "arthritis",
+        "binge_drinking",
+        "high_blood_pressure",
+        "cancer",
+        "asthma",
+        "heart_disease",
+        "doctor_checkup_last_year",
+        "cholesterol_screening_last_year",
+        "cognitive_disability",
+        "copd",
+        "smoking",
+        "dental_visit_last_year",
+        "diabetes",
+        "any_disability",
+        "poor_health",
+        "hearing_disability",
+        "independent_living_disability",
+        "kidney_disease",
+        "no_physical_activity",
+        "mobility_disability",
+        "obesity",
+        "poor_physical_health",
+        "selfcare_disability",
+        "insufficient_sleep",
+        "stroke",
+        "vision_disability",
+        "density_pw_250m_us_census",
+        "density_pw_250m_2000",
+        "density_pw_250m_2010",
+        "density_pw_250m_change_2000_2020",
+        "density_pw_250m_change_2010_2020",
+        "density_pw_500m_us_census",
+        "density_pw_500m_2000",
+        "density_pw_500m_2010",
+        "density_pw_500m_change_2000_2020",
+        "density_pw_500m_change_2010_2020",
+        "density_pw_1km_us_census",
+        "density_pw_1mi_us_census",
+        "density_pw_1mi_2000",
+        "density_pw_1mi_2010",
+        "density_pw_1mi_change_2000_2020",
+        "density_pw_1mi_change_2010_2020",
+        "density_pw_16km_us_census",
+        "density_pw_16km_2000",
+        "density_pw_16km_2010",
+        "density_pw_16km_change_2000_2020",
+        "density_pw_16km_change_2010_2020",
+        "density_pw_1km_2000",
+        "density_pw_1km_2010",
+        "density_pw_1km_change_2000_2020",
+        "density_pw_1km_change_2010_2020",
+        "density_pw_2km_us_census",
+        "density_pw_2km_2000",
+        "density_pw_2km_2010",
+        "density_pw_2km_change_2000_2020",
+        "density_pw_2km_change_2010_2020",
+        "density_pw_32km_us_census",
+        "density_pw_32km_2000",
+        "density_pw_32km_2010",
+        "density_pw_32km_change_2000_2020",
+        "density_pw_32km_change_2010_2020",
+        "density_pw_4km_us_census",
+        "density_pw_4km_2000",
+        "density_pw_4km_2010",
+        "density_pw_4km_change_2000_2020",
+        "density_pw_4km_change_2010_2020",
+        "density_pw_64km_us_census",
+        "density_pw_64km_2000",
+        "density_pw_64km_2010",
+        "density_pw_64km_change_2000_2020",
+        "density_pw_64km_change_2010_2020",
+        "density_pw_8km_us_census",
+        "density_pw_8km_2000",
+        "density_pw_8km_2010",
+        "density_pw_8km_change_2000_2020",
+        "density_pw_8km_change_2010_2020",
+        "area",
+        "asian",
+        "asian_2000",
+        "asian_2010",
+        "foreign_born",
+        "born_outside_state",
+        "born_in_state",
+        "black",
+        "black_2000",
+        "black_2010",
+        "citizen_by_birth",
+        "naturalized_citizen",
+        "non_citizen",
+        "compactness",
+        "hot_days",
+        "cold_days",
+        "moderate_temp_days",
+        "dry_days",
+        "moderate_humidity_days",
+        "humid_days",
+        "density_pw_250m_statcan",
+        "density_pw_500m_statcan",
+        "density_pw_1mi_statcan",
+        "density_pw_16km_statcan",
+        "density_pw_1km_statcan",
+        "density_pw_2km_statcan",
+        "density_pw_32km_statcan",
+        "density_pw_4km_statcan",
+        "density_pw_64km_statcan",
+        "density_pw_8km_statcan",
+        "business_degree",
+        "humanities_degree",
+        "stem_degree",
+        "graduate_us_census",
+        "graduate_statcan",
+        "high_school_us_census",
+        "high_school_statcan",
+        "undergrad_us_census",
+        "undergrad_statcan",
+        "graduate_gender_gap",
+        "hs_gender_gap",
+        "undergrad_gender_gap",
+        "boomer_us_census",
+        "boomer_statcan",
+        "gen_alpha_us_census",
+        "gen_alpha_statcan",
+        "gen_x_us_census",
+        "gen_x_statcan",
+        "gen_z_us_census",
+        "gen_z_statcan",
+        "millennial_us_census",
+        "millennial_statcan",
+        "silent_us_census",
+        "silent_statcan",
+        "density_aw_ghsl",
+        "population_ghsl",
+        "density_pw_1km_ghsl",
+        "density_pw_1mi_ghsl",
+        "density_pw_16km_ghsl",
+        "density_pw_2km_ghsl",
+        "density_pw_32km_ghsl",
+        "density_pw_4km_ghsl",
+        "density_pw_64km_ghsl",
+        "density_pw_8km_ghsl",
+        "elevation",
+        "hilliness",
+        "hawaiian_pi",
+        "hawaiian_pi_2000",
+        "hawaiian_pi_2010",
+        "bottled_tank_lp_gas",
+        "electricity",
+        "fuel_oil_kerosene",
+        "no_heating",
+        "other_fuel",
+        "utility_gas",
+        "hispanic",
+        "hispanic_2000",
+        "hispanic_2010",
+        "racial_homogeneity_2000",
+        "racial_homogeneity_2010",
+        "racial_homogeneity",
+        "racial_homogeneity_change_2000_2020",
+        "racial_homogeneity_change_2010_2020",
+        "sunny_hours",
+        "income_50k_to_100k",
+        "household_income_50k_to_100k_usd",
+        "income_over_100k",
+        "household_income_over_100k_usd",
+        "income_under_50k",
+        "household_income_under_50k_usd",
+        "housing_per_adult",
+        "housing_per_adult_2000",
+        "housing_per_adult_2010",
+        "individual_income_50k_to_100k_cad",
+        "individual_income_50k_to_100k_usd",
+        "individual_income_over_100k_cad",
+        "individual_income_over_100k_usd",
+        "individual_income_under_50k_cad",
+        "individual_income_under_50k_usd",
+        "industry_accommodation_food_us_census",
+        "industry_accommodation_food_statcan",
+        "industry_admin_support_waste_mgmt_us_census",
+        "industry_admin_support_waste_mgmt_statcan",
+        "industry_agriculture_forestry_fishing_us_census",
+        "industry_agriculture_forestry_fishing_statcan",
+        "industry_arts_entertainment_us_census",
+        "industry_arts_entertainment_statcan",
+        "industry_construction_us_census",
+        "industry_construction_statcan",
+        "industry_education_us_census",
+        "industry_education_statcan",
+        "industry_finance_insurance_us_census",
+        "industry_finance_insurance_statcan",
+        "industry_healthcare_social_us_census",
+        "industry_healthcare_social_statcan",
+        "industry_information_us_census",
+        "industry_information_statcan",
+        "industry_management_us_census",
+        "industry_management_statcan",
+        "industry_manufacturing_us_census",
+        "industry_manufacturing_statcan",
+        "industry_mining_oil_gas_us_census",
+        "industry_mining_oil_gas_statcan",
+        "industry_other_services_us_census",
+        "industry_other_services_statcan",
+        "industry_professional_scientific_technical_us_census",
+        "industry_professional_scientific_technical_statcan",
+        "industry_public_admin_us_census",
+        "industry_public_admin_statcan",
+        "industry_real_estate_rental_us_census",
+        "industry_real_estate_rental_statcan",
+        "industry_retail_trade_us_census",
+        "industry_retail_trade_statcan",
+        "industry_transportation_warehousing_us_census",
+        "industry_transportation_warehousing_statcan",
+        "industry_utilities_us_census",
+        "industry_utilities_statcan",
+        "industry_wholesale_trade_us_census",
+        "industry_wholesale_trade_statcan",
+        "public_insurance",
+        "uninsured",
+        "private_insurance",
+        "no_internet",
+        "english_only",
+        "other_languages",
+        "spanish",
+        "grocery_store_within_ten_miles",
+        "grocery_store_within_one_mile",
+        "grocery_store_within_twenty_miles",
+        "grocery_store_within_half_mile",
+        "low_income",
+        "divorced_us_census",
+        "divorced_statcan",
+        "married_us_census",
+        "married_statcan",
+        "never_married_us_census",
+        "never_married_statcan",
+        "superfund_mean_dist",
+        "airport_mean_dist",
+        "hospital_mean_dist",
+        "school_mean_dist",
+        "high_dewpoint",
+        "high_heat_index",
+        "high_temp",
+        "high_temp_fall",
+        "high_temp_spring",
+        "high_temp_summer",
+        "high_temp_winter",
+        "native",
+        "native_2000",
+        "native_2010",
+        "occupation_architects_engineers",
+        "occupation_arts_media",
+        "occupation_cleaning_maintenance",
+        "occupation_business_finance",
+        "occupation_social_service",
+        "occupation_computer_math",
+        "occupation_construction",
+        "occupation_education",
+        "occupation_agriculture",
+        "occupation_firefighting",
+        "occupation_food_service",
+        "occupation_health_practitioners",
+        "occupation_health_technicians",
+        "occupation_healthcare_support",
+        "occupation_maintenance",
+        "occupation_law_enforcement",
+        "occupation_legal",
+        "occupation_scientists",
+        "occupation_management",
+        "occupation_material_moving",
+        "occupation_office_admin",
+        "occupation_personal_care",
+        "occupation_production",
+        "occupation_sales",
+        "occupation_transportation",
+        "other_mixed",
+        "other_mixed_2000",
+        "other_mixed_2010",
+        "park_1km",
+        "pm25_pollution",
+        "population_us_census",
+        "population_2000",
+        "population_2010",
+        "population_statcan",
+        "population_change_2000_2020",
+        "population_change_2010_2020",
+        "poverty",
+        "rainfall",
+        "one_br_750_to_1500",
+        "one_br_over_1500",
+        "one_br_under_750",
+        "two_br_750_to_1500",
+        "two_br_over_1500",
+        "two_br_under_750",
+        "rent_20_to_40_percent",
+        "rent_over_40_percent",
+        "rent_under_20_percent",
+        "renter",
+        "density_aw_us_census",
+        "density_aw_2000",
+        "density_aw_2010",
+        "density_aw_statcan",
+        "local_segregation_2000",
+        "local_segregation_2010",
+        "local_segregation",
+        "local_segregation_change_2000_2020",
+        "local_segregation_change_2010_2020",
+        "segregation_2000",
+        "segregation_2010",
+        "segregation",
+        "segregation_change_2000_2020",
+        "segregation_change_2010_2020",
+        "snowfall",
+        "living_with_parents",
+        "cohabiting_gay",
+        "cohabiting_straight",
+        "other_living_situation",
+        "single_householder",
+        "traffic_fatalities",
+        "traffic_fatalities_per_capita",
+        "traffic_ped_cyclist_fatalities",
+        "ped_cyclist_fatalities_per_capita",
+        "commute_time_15_to_29_us_census",
+        "commute_time_15_to_29_statcan",
+        "commute_time_30_to_59_us_census",
+        "commute_time_30_to_59_statcan",
+        "commute_time_over_60_us_census",
+        "commute_time_over_60_statcan",
+        "commute_time_under_15_us_census",
+        "commute_time_under_15_statcan",
+        "commute_bike",
+        "commute_car",
+        "commute_transit",
+        "commute_walk",
+        "commute_work_from_home",
+        "vacancy_rate",
+        "vacancy_rate_2000",
+        "vacancy_rate_2010",
+        "one_plus_vehicles",
+        "two_plus_vehicles",
+        "no_vehicle",
+        "white",
+        "white_2000",
+        "white_2010",
+        "windy_days",
+        "superfund_within_10km",
+        "airport_within_30km",
+        "hospital_within_10km",
+        "school_within_2km",
+        "built_pre_1970",
+        "built_1970s",
+        "built_1980s",
+        "built_1990s",
+        "built_2000s",
+        "built_2010_plus"
     ],
-    multiSourceVariables: [
+    "multiSourceVariables": [
         [
-            'population',
-            [
-                'population_us_census',
-                'population_statcan',
-                'population_ghsl',
-            ],
+            "population",
+            {
+                "individualVariables": [
+                    "population_us_census",
+                    "population_statcan",
+                    "population_ghsl"
+                ],
+                "humanReadableName": "Population"
+            }
         ],
         [
-            'density_pw_1km',
-            [
-                'density_pw_1km_us_census',
-                'density_pw_1km_statcan',
-                'density_pw_1km_ghsl',
-            ],
+            "density_pw_1km",
+            {
+                "individualVariables": [
+                    "density_pw_1km_us_census",
+                    "density_pw_1km_statcan",
+                    "density_pw_1km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=1km)"
+            }
         ],
         [
-            'density_aw',
-            [
-                'density_aw_us_census',
-                'density_aw_statcan',
-                'density_aw_ghsl',
-            ],
+            "density_aw",
+            {
+                "individualVariables": [
+                    "density_aw_us_census",
+                    "density_aw_statcan",
+                    "density_aw_ghsl"
+                ],
+                "humanReadableName": "AW Density"
+            }
         ],
         [
-            'silent',
-            [
-                'silent_us_census',
-                'silent_statcan',
-            ],
+            "silent",
+            {
+                "individualVariables": [
+                    "silent_us_census",
+                    "silent_statcan"
+                ],
+                "humanReadableName": "Silent %"
+            }
         ],
         [
-            'boomer',
-            [
-                'boomer_us_census',
-                'boomer_statcan',
-            ],
+            "boomer",
+            {
+                "individualVariables": [
+                    "boomer_us_census",
+                    "boomer_statcan"
+                ],
+                "humanReadableName": "Boomer %"
+            }
         ],
         [
-            'gen_x',
-            [
-                'gen_x_us_census',
-                'gen_x_statcan',
-            ],
+            "gen_x",
+            {
+                "individualVariables": [
+                    "gen_x_us_census",
+                    "gen_x_statcan"
+                ],
+                "humanReadableName": "Gen X %"
+            }
         ],
         [
-            'millennial',
-            [
-                'millennial_us_census',
-                'millennial_statcan',
-            ],
+            "millennial",
+            {
+                "individualVariables": [
+                    "millennial_us_census",
+                    "millennial_statcan"
+                ],
+                "humanReadableName": "Millennial %"
+            }
         ],
         [
-            'gen_z',
-            [
-                'gen_z_us_census',
-                'gen_z_statcan',
-            ],
+            "gen_z",
+            {
+                "individualVariables": [
+                    "gen_z_us_census",
+                    "gen_z_statcan"
+                ],
+                "humanReadableName": "Gen Z %"
+            }
         ],
         [
-            'gen_alpha',
-            [
-                'gen_alpha_us_census',
-                'gen_alpha_statcan',
-            ],
+            "gen_alpha",
+            {
+                "individualVariables": [
+                    "gen_alpha_us_census",
+                    "gen_alpha_statcan"
+                ],
+                "humanReadableName": "Gen Alpha %"
+            }
         ],
         [
-            'commute_time_under_15',
-            [
-                'commute_time_under_15_us_census',
-                'commute_time_under_15_statcan',
-            ],
+            "commute_time_under_15",
+            {
+                "individualVariables": [
+                    "commute_time_under_15_us_census",
+                    "commute_time_under_15_statcan"
+                ],
+                "humanReadableName": "Commute Time < 15 min %"
+            }
         ],
         [
-            'commute_time_15_to_29',
-            [
-                'commute_time_15_to_29_us_census',
-                'commute_time_15_to_29_statcan',
-            ],
+            "commute_time_15_to_29",
+            {
+                "individualVariables": [
+                    "commute_time_15_to_29_us_census",
+                    "commute_time_15_to_29_statcan"
+                ],
+                "humanReadableName": "Commute Time 15 - 29 min %"
+            }
         ],
         [
-            'commute_time_30_to_59',
-            [
-                'commute_time_30_to_59_us_census',
-                'commute_time_30_to_59_statcan',
-            ],
+            "commute_time_30_to_59",
+            {
+                "individualVariables": [
+                    "commute_time_30_to_59_us_census",
+                    "commute_time_30_to_59_statcan"
+                ],
+                "humanReadableName": "Commute Time 30 - 59 min %"
+            }
         ],
         [
-            'commute_time_over_60',
-            [
-                'commute_time_over_60_us_census',
-                'commute_time_over_60_statcan',
-            ],
+            "commute_time_over_60",
+            {
+                "individualVariables": [
+                    "commute_time_over_60_us_census",
+                    "commute_time_over_60_statcan"
+                ],
+                "humanReadableName": "Commute Time > 60 min %"
+            }
         ],
         [
-            'industry_agriculture_forestry_fishing',
-            [
-                'industry_agriculture_forestry_fishing_us_census',
-                'industry_agriculture_forestry_fishing_statcan',
-            ],
+            "industry_agriculture_forestry_fishing",
+            {
+                "individualVariables": [
+                    "industry_agriculture_forestry_fishing_us_census",
+                    "industry_agriculture_forestry_fishing_statcan"
+                ],
+                "humanReadableName": "Agriculture, forestry, fishing and hunting %"
+            }
         ],
         [
-            'industry_mining_oil_gas',
-            [
-                'industry_mining_oil_gas_us_census',
-                'industry_mining_oil_gas_statcan',
-            ],
+            "industry_mining_oil_gas",
+            {
+                "individualVariables": [
+                    "industry_mining_oil_gas_us_census",
+                    "industry_mining_oil_gas_statcan"
+                ],
+                "humanReadableName": "Mining, quarrying, and oil and gas extraction %"
+            }
         ],
         [
-            'industry_accommodation_food',
-            [
-                'industry_accommodation_food_us_census',
-                'industry_accommodation_food_statcan',
-            ],
+            "industry_accommodation_food",
+            {
+                "individualVariables": [
+                    "industry_accommodation_food_us_census",
+                    "industry_accommodation_food_statcan"
+                ],
+                "humanReadableName": "Accommodation and food services %"
+            }
         ],
         [
-            'industry_arts_entertainment',
-            [
-                'industry_arts_entertainment_us_census',
-                'industry_arts_entertainment_statcan',
-            ],
+            "industry_arts_entertainment",
+            {
+                "individualVariables": [
+                    "industry_arts_entertainment_us_census",
+                    "industry_arts_entertainment_statcan"
+                ],
+                "humanReadableName": "Arts, entertainment, and recreation %"
+            }
         ],
         [
-            'industry_construction',
-            [
-                'industry_construction_us_census',
-                'industry_construction_statcan',
-            ],
+            "industry_construction",
+            {
+                "individualVariables": [
+                    "industry_construction_us_census",
+                    "industry_construction_statcan"
+                ],
+                "humanReadableName": "Construction %"
+            }
         ],
         [
-            'industry_education',
-            [
-                'industry_education_us_census',
-                'industry_education_statcan',
-            ],
+            "industry_education",
+            {
+                "individualVariables": [
+                    "industry_education_us_census",
+                    "industry_education_statcan"
+                ],
+                "humanReadableName": "Educational services %"
+            }
         ],
         [
-            'industry_healthcare_social',
-            [
-                'industry_healthcare_social_us_census',
-                'industry_healthcare_social_statcan',
-            ],
+            "industry_healthcare_social",
+            {
+                "individualVariables": [
+                    "industry_healthcare_social_us_census",
+                    "industry_healthcare_social_statcan"
+                ],
+                "humanReadableName": "Health care and social assistance %"
+            }
         ],
         [
-            'industry_finance_insurance',
-            [
-                'industry_finance_insurance_us_census',
-                'industry_finance_insurance_statcan',
-            ],
+            "industry_finance_insurance",
+            {
+                "individualVariables": [
+                    "industry_finance_insurance_us_census",
+                    "industry_finance_insurance_statcan"
+                ],
+                "humanReadableName": "Finance and insurance %"
+            }
         ],
         [
-            'industry_real_estate_rental',
-            [
-                'industry_real_estate_rental_us_census',
-                'industry_real_estate_rental_statcan',
-            ],
+            "industry_real_estate_rental",
+            {
+                "individualVariables": [
+                    "industry_real_estate_rental_us_census",
+                    "industry_real_estate_rental_statcan"
+                ],
+                "humanReadableName": "Real estate and rental and leasing %"
+            }
         ],
         [
-            'industry_information',
-            [
-                'industry_information_us_census',
-                'industry_information_statcan',
-            ],
+            "industry_information",
+            {
+                "individualVariables": [
+                    "industry_information_us_census",
+                    "industry_information_statcan"
+                ],
+                "humanReadableName": "Information %"
+            }
         ],
         [
-            'industry_manufacturing',
-            [
-                'industry_manufacturing_us_census',
-                'industry_manufacturing_statcan',
-            ],
+            "industry_manufacturing",
+            {
+                "individualVariables": [
+                    "industry_manufacturing_us_census",
+                    "industry_manufacturing_statcan"
+                ],
+                "humanReadableName": "Manufacturing %"
+            }
         ],
         [
-            'industry_other_services',
-            [
-                'industry_other_services_us_census',
-                'industry_other_services_statcan',
-            ],
+            "industry_other_services",
+            {
+                "individualVariables": [
+                    "industry_other_services_us_census",
+                    "industry_other_services_statcan"
+                ],
+                "humanReadableName": "Other services, except public administration %"
+            }
         ],
         [
-            'industry_admin_support_waste_mgmt',
-            [
-                'industry_admin_support_waste_mgmt_us_census',
-                'industry_admin_support_waste_mgmt_statcan',
-            ],
+            "industry_admin_support_waste_mgmt",
+            {
+                "individualVariables": [
+                    "industry_admin_support_waste_mgmt_us_census",
+                    "industry_admin_support_waste_mgmt_statcan"
+                ],
+                "humanReadableName": "Administrative and support and waste management services %"
+            }
         ],
         [
-            'industry_management',
-            [
-                'industry_management_us_census',
-                'industry_management_statcan',
-            ],
+            "industry_management",
+            {
+                "individualVariables": [
+                    "industry_management_us_census",
+                    "industry_management_statcan"
+                ],
+                "humanReadableName": "Management of companies and enterprises %"
+            }
         ],
         [
-            'industry_professional_scientific_technical',
-            [
-                'industry_professional_scientific_technical_us_census',
-                'industry_professional_scientific_technical_statcan',
-            ],
+            "industry_professional_scientific_technical",
+            {
+                "individualVariables": [
+                    "industry_professional_scientific_technical_us_census",
+                    "industry_professional_scientific_technical_statcan"
+                ],
+                "humanReadableName": "Professional, scientific, and technical services %"
+            }
         ],
         [
-            'industry_public_admin',
-            [
-                'industry_public_admin_us_census',
-                'industry_public_admin_statcan',
-            ],
+            "industry_public_admin",
+            {
+                "individualVariables": [
+                    "industry_public_admin_us_census",
+                    "industry_public_admin_statcan"
+                ],
+                "humanReadableName": "Public administration %"
+            }
         ],
         [
-            'industry_retail_trade',
-            [
-                'industry_retail_trade_us_census',
-                'industry_retail_trade_statcan',
-            ],
+            "industry_retail_trade",
+            {
+                "individualVariables": [
+                    "industry_retail_trade_us_census",
+                    "industry_retail_trade_statcan"
+                ],
+                "humanReadableName": "Retail trade %"
+            }
         ],
         [
-            'industry_transportation_warehousing',
-            [
-                'industry_transportation_warehousing_us_census',
-                'industry_transportation_warehousing_statcan',
-            ],
+            "industry_transportation_warehousing",
+            {
+                "individualVariables": [
+                    "industry_transportation_warehousing_us_census",
+                    "industry_transportation_warehousing_statcan"
+                ],
+                "humanReadableName": "Transportation and warehousing %"
+            }
         ],
         [
-            'industry_utilities',
-            [
-                'industry_utilities_us_census',
-                'industry_utilities_statcan',
-            ],
+            "industry_utilities",
+            {
+                "individualVariables": [
+                    "industry_utilities_us_census",
+                    "industry_utilities_statcan"
+                ],
+                "humanReadableName": "Utilities %"
+            }
         ],
         [
-            'industry_wholesale_trade',
-            [
-                'industry_wholesale_trade_us_census',
-                'industry_wholesale_trade_statcan',
-            ],
+            "industry_wholesale_trade",
+            {
+                "individualVariables": [
+                    "industry_wholesale_trade_us_census",
+                    "industry_wholesale_trade_statcan"
+                ],
+                "humanReadableName": "Wholesale trade %"
+            }
         ],
         [
-            'never_married',
-            [
-                'never_married_us_census',
-                'never_married_statcan',
-            ],
+            "never_married",
+            {
+                "individualVariables": [
+                    "never_married_us_census",
+                    "never_married_statcan"
+                ],
+                "humanReadableName": "Never Married %"
+            }
         ],
         [
-            'married',
-            [
-                'married_us_census',
-                'married_statcan',
-            ],
+            "married",
+            {
+                "individualVariables": [
+                    "married_us_census",
+                    "married_statcan"
+                ],
+                "humanReadableName": "Married (not divorced) %"
+            }
         ],
         [
-            'divorced',
-            [
-                'divorced_us_census',
-                'divorced_statcan',
-            ],
+            "divorced",
+            {
+                "individualVariables": [
+                    "divorced_us_census",
+                    "divorced_statcan"
+                ],
+                "humanReadableName": "Divorced %"
+            }
         ],
         [
-            'density_pw_250m',
-            [
-                'density_pw_250m_us_census',
-                'density_pw_250m_statcan',
-            ],
+            "density_pw_250m",
+            {
+                "individualVariables": [
+                    "density_pw_250m_us_census",
+                    "density_pw_250m_statcan"
+                ],
+                "humanReadableName": "PW Density (r=250m)"
+            }
         ],
         [
-            'density_pw_500m',
-            [
-                'density_pw_500m_us_census',
-                'density_pw_500m_statcan',
-            ],
+            "density_pw_500m",
+            {
+                "individualVariables": [
+                    "density_pw_500m_us_census",
+                    "density_pw_500m_statcan"
+                ],
+                "humanReadableName": "PW Density (r=500m)"
+            }
         ],
         [
-            'density_pw_1mi',
-            [
-                'density_pw_1mi_us_census',
-                'density_pw_1mi_statcan',
-                'density_pw_1mi_ghsl',
-            ],
+            "density_pw_1mi",
+            {
+                "individualVariables": [
+                    "density_pw_1mi_us_census",
+                    "density_pw_1mi_statcan",
+                    "density_pw_1mi_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=1mi)"
+            }
         ],
         [
-            'density_pw_2km',
-            [
-                'density_pw_2km_us_census',
-                'density_pw_2km_statcan',
-                'density_pw_2km_ghsl',
-            ],
+            "density_pw_2km",
+            {
+                "individualVariables": [
+                    "density_pw_2km_us_census",
+                    "density_pw_2km_statcan",
+                    "density_pw_2km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=2km)"
+            }
         ],
         [
-            'density_pw_4km',
-            [
-                'density_pw_4km_us_census',
-                'density_pw_4km_statcan',
-                'density_pw_4km_ghsl',
-            ],
+            "density_pw_4km",
+            {
+                "individualVariables": [
+                    "density_pw_4km_us_census",
+                    "density_pw_4km_statcan",
+                    "density_pw_4km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=4km)"
+            }
         ],
         [
-            'density_pw_8km',
-            [
-                'density_pw_8km_us_census',
-                'density_pw_8km_statcan',
-                'density_pw_8km_ghsl',
-            ],
+            "density_pw_8km",
+            {
+                "individualVariables": [
+                    "density_pw_8km_us_census",
+                    "density_pw_8km_statcan",
+                    "density_pw_8km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=8km)"
+            }
         ],
         [
-            'density_pw_16km',
-            [
-                'density_pw_16km_us_census',
-                'density_pw_16km_statcan',
-                'density_pw_16km_ghsl',
-            ],
+            "density_pw_16km",
+            {
+                "individualVariables": [
+                    "density_pw_16km_us_census",
+                    "density_pw_16km_statcan",
+                    "density_pw_16km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=16km)"
+            }
         ],
         [
-            'density_pw_32km',
-            [
-                'density_pw_32km_us_census',
-                'density_pw_32km_statcan',
-                'density_pw_32km_ghsl',
-            ],
+            "density_pw_32km",
+            {
+                "individualVariables": [
+                    "density_pw_32km_us_census",
+                    "density_pw_32km_statcan",
+                    "density_pw_32km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=32km)"
+            }
         ],
         [
-            'density_pw_64km',
-            [
-                'density_pw_64km_us_census',
-                'density_pw_64km_statcan',
-                'density_pw_64km_ghsl',
-            ],
-        ],
-    ],
+            "density_pw_64km",
+            {
+                "individualVariables": [
+                    "density_pw_64km_us_census",
+                    "density_pw_64km_statcan",
+                    "density_pw_64km_ghsl"
+                ],
+                "humanReadableName": "PW Density (r=64km)"
+            }
+        ]
+    ]
 } as const

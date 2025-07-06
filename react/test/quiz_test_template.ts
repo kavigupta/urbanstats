@@ -412,6 +412,10 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
             }),
             persistent_id: 'b0bacafe',
             secure_id: 'baddecaf',
+            quiz_friends: JSON.stringify([
+                ['name', 'id'],
+                [null, 'id2', 1234],
+            ]),
         },
         '',
         platform,
@@ -454,7 +458,10 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 ],
             },
         },
-        quiz_friends: [],
+        quiz_friends: [
+            ['name', 'id'],
+            [null, 'id2', 1234],
+        ],
     }
 
     test('export quiz progress', async (t) => {

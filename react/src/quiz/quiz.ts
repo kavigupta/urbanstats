@@ -54,6 +54,10 @@ export function loadRetro(quiz: RetroQuestionJSON): RetroQuestion {
     return { kind: 'retrostat', a: loadJuxta(quiz.a), b: loadJuxta(quiz.b), a_ease: quiz.a_ease, b_ease: quiz.b_ease }
 }
 
+/**
+ * When modifying any of the below schemas, ensure that you update exim tests with a new example version of your data.
+ */
+
 export const quizHistorySchema = z.record(
     z.string(),
     z.object({
@@ -68,7 +72,10 @@ export type QuizHistory = z.infer<typeof quizHistorySchema>
 
 // list of [name, id, timestamp] pairs
 // null name is a tombstone
-export const quizFriends = z.array(z.tuple([z.nullable(z.string()), z.string(), z.optional(z.nullable(z.number()))]))
+export const quizFriends = z.array(z.union([
+    z.tuple([z.string(), z.string()]), // v1
+    z.tuple([z.nullable(z.string()), z.string(), z.number()]), // v2
+]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
 

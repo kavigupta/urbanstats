@@ -128,7 +128,7 @@ export function QuizFriendsPanel(props: {
                                         requestee: props.quizFriends[idx][1],
                                     },
                                 })
-                                const newQuizFriends = props.quizFriends.map<[string | null, string, number | null | undefined]>(([name, id, timestamp]) => name === friendScore.name ? [null, id, Date.now()] : [name, id, timestamp])
+                                const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
                                 props.setQuizFriends(newQuizFriends)
                             }}
                             quizFriends={props.quizFriends}
@@ -333,7 +333,7 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
         const relevantOtherResults = props.otherResults.filter(
             x => 'forThisSeed' in x,
         )
-        const baseStyle = { width: '50%', border, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff', fontWeight: 'bold' }
+        const baseStyle = { width: '50%', border, display: 'flex', justifyContent: 'center', alignItems: 'center', color: colors.buttonTextWhite, fontWeight: 'bold' }
         const maxMaxScore = Math.max(...relevantOtherResults.map(x => x.maxScore ?? 0)) === props.result.maxScore
         const maxForThisSeed = Math.max(...relevantOtherResults.map(x => x.forThisSeed ?? 0)) === props.result.forThisSeed
         return (
@@ -345,7 +345,7 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
                     style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue }}
                     onClick={link.onClick}
                 >
-                    <a style={{ textDecoration: 'none', color: '#fff' }} href={link.href}>{props.result.maxScore ?? '-'}</a>
+                    <a style={{ textDecoration: 'none', color: colors.buttonTextWhite }} href={link.href}>{props.result.maxScore ?? '-'}</a>
                 </div>
             </div>
         )
