@@ -308,13 +308,24 @@ export function Selector(props: {
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
 
-    // Sort options: matching ones first, then non-matching ones
-    const sortedOptions = renderedSelectionPossibilities.sort((a, b) => {
-        const aMatches = a.toLowerCase().includes(searchValue.toLowerCase())
-        const bMatches = b.toLowerCase().includes(searchValue.toLowerCase())
+    // Create pairs of options and their selections, then sort them
+    const optionSelectionPairs = selectionPossibilities.map((selection, index) => ({
+        option: renderedSelectionPossibilities[index],
+        selection,
+    }))
+
+    const sortedPairs = optionSelectionPairs.sort((a, b) => {
+        const aMatches = a.option.toLowerCase().includes(searchValue.toLowerCase())
+        const bMatches = b.option.toLowerCase().includes(searchValue.toLowerCase())
         if (aMatches && !bMatches) return -1
         if (!aMatches && bMatches) return 1
         return 0
+    })
+
+    const sortedOptions = sortedPairs.map(pair => pair.option)
+    const optionToSelectionMap = new Map<string, Selection>()
+    sortedPairs.forEach((pair) => {
+        optionToSelectionMap.set(pair.option, pair.selection)
     })
 
     const isNumber = props.type.type === 'number'
@@ -325,11 +336,13 @@ export function Selector(props: {
     const errorComponent = <DisplayErrors errors={errors} />
 
     const handleOptionSelect = (option: string): void => {
-        const selection = selectionPossibilities[renderedSelectionPossibilities.indexOf(option)]
-        props.setSelection(selection)
-        setSearchValue(option)
-        setIsOpen(false)
-        setHighlightedIndex(0)
+        const selection = optionToSelectionMap.get(option)
+        if (selection) {
+            props.setSelection(selection)
+            setSearchValue(option)
+            setIsOpen(false)
+            setHighlightedIndex(0)
+        }
     }
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
