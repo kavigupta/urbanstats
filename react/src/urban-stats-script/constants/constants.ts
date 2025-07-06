@@ -89,9 +89,9 @@ function numericAggregationFunction(
 }
 
 export const defaultConstants: Constants = new Map<string, USSValue>([
-    ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true' } }] satisfies [string, USSValue],
+    ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', isDefault: true } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false' } }] satisfies [string, USSValue],
-    ['null', { type: { type: 'null' }, value: null, documentation: { humanReadableName: 'null' } }] satisfies [string, USSValue],
+    ['null', { type: { type: 'null' }, value: null, documentation: { humanReadableName: 'null', isDefault: true } }] satisfies [string, USSValue],
     ['inf', { type: { type: 'number' }, value: Infinity, documentation: { humanReadableName: '+Infinity' } }] satisfies [string, USSValue],
     ['pi', { type: { type: 'number' }, value: Math.PI, documentation: { humanReadableName: 'π' } }] satisfies [string, USSValue],
     ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
