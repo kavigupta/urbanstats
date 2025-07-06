@@ -12,6 +12,10 @@ import {
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
+test('too long test', async (t) => {
+    await t.wait(6 * 60 * 1000)
+})
+
 test('california-article-test', async (t) => {
     // screenshot path: images/first_test.png
     await screencap(t)
