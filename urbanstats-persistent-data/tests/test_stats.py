@@ -1,27 +1,25 @@
-identity_1 = {"x-user": "1", "x-secure-id": "11"}
+from .utils import (
+    create_identity,
+    register_user,
+    store_juxtastat_stats,
+    store_retrostat_stats,
+    get_latest_day,
+    get_latest_week,
+    check_has_infinite_stats,
+    get_juxta_per_question_stats,
+    get_retro_per_question_stats,
+)
+
+identity_1 = create_identity("1", "11")
 
 
 def test_register_user(client):
-    response = client.post(
-        "/juxtastat/register_user",
-        headers=identity_1,
-        json={
-            "domain": "test.urbanstats.org",
-        },
-    )
-    assert response.status_code == 204
+    register_user(client, identity_1)
 
 
 def test_register_user_invalid_hex(client):
     # x-user is not a valid hex string
-    response = client.post(
-        "/juxtastat/register_user",
-        headers={"x-user": "nothex", "x-secure-id": "11"},
-        json={"domain": "test.urbanstats.org"},
-    )
-
-    assert response.status_code == 422
-    assert response.json() == {
+    expected_error = {
         "detail": [
             {
                 "type": "value_error",
@@ -32,56 +30,48 @@ def test_register_user_invalid_hex(client):
             }
         ]
     }
+    response = client.post(
+        "/juxtastat/register_user",
+        headers=create_identity("nothex", "11"),
+        json={"domain": "test.urbanstats.org"},
+    )
+    assert response.status_code == 422
+    assert response.json() == expected_error
 
 
 def test_register_no_body(client):
+    expected_error = {
+        "detail": [
+            {"type": "missing", "loc": ["body"], "msg": "Field required", "input": None}
+        ]
+    }
     response = client.post(
         "/juxtastat/register_user",
         headers=identity_1,
     )
     assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {"type": "missing", "loc": ["body"], "msg": "Field required", "input": None}
-        ]
-    }
+    assert response.json() == expected_error
 
 
 def test_get_latest_day(client):
-    response = client.get("/juxtastat/latest_day", headers=identity_1)
-    assert response.status_code == 200
-    assert response.json() == {"latest_day": -100}
+    result = get_latest_day(client, identity_1)
+    assert result == {"latest_day": -100}
 
 
 def test_get_latest_week(client):
-    response = client.get("/retrostat/latest_week", headers=identity_1)
-    assert response.status_code == 200
-    assert response.json() == {"latest_day": -100}
+    result = get_latest_week(client, identity_1)
+    assert result == {"latest_day": -100}
 
 
 def test_store_user_stats_success(client):
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        headers=identity_1,
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
-    )
-    assert response.status_code == 204
+    store_juxtastat_stats(client, identity_1, 1, [True, True, True, True, True])
 
-    response = client.get("/juxtastat/latest_day", headers=identity_1)
-    assert response.status_code == 200
-    assert response.json() == {"latest_day": 1}
+    result = get_latest_day(client, identity_1)
+    assert result == {"latest_day": 1}
 
 
 def test_store_user_stats_missing_fields(client):
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        headers=identity_1,
-        json={},
-    )
-    assert response.status_code == 422
-    assert response.json() == {
+    expected_error = {
         "detail": [
             {
                 "type": "missing",
@@ -91,102 +81,58 @@ def test_store_user_stats_missing_fields(client):
             }
         ]
     }
+    response = client.post(
+        "/juxtastat/store_user_stats",
+        headers=identity_1,
+        json={},
+    )
+    assert response.status_code == 422
+    assert response.json() == expected_error
 
 
 def test_store_user_stats_invalid_secureid(client):
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        headers=identity_1,
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
-    )
-    assert response.status_code == 204
+    store_juxtastat_stats(client, identity_1, 1, [True, True, True, True, True])
 
+    expected_error = {"detail": "Invalid secure ID"}
     response = client.post(
         "/juxtastat/store_user_stats",
-        headers={
-            "x-user": "1",
-            "x-secure-id": "12",
-        },
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
+        headers=create_identity("1", "12"),
+        json={"day_stats": [[1, [True, True, True, True, True]]]},
     )
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid secure ID"}
+    assert response.json() == expected_error
 
 
 def test_has_infinite_stats(client):
-    response = client.post(
-        "/juxtastat_infinite/has_infinite_stats",
-        headers=identity_1,
-        json={
-            "seedVersions": [["a", 1], ["b", 2]],
-        },
-    )
-    assert response.status_code == 200
-    assert response.json() == {"has": [False, False]}
+    result = check_has_infinite_stats(client, identity_1, [["a", 1], ["b", 2]])
+    assert result == {"has": [False, False]}
 
 
 def test_store_retro(client):
-    response = client.post(
-        "/retrostat/store_user_stats",
-        headers=identity_1,
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
-    )
-    assert response.status_code == 204
+    store_retrostat_stats(client, identity_1, 1, [True, True, True, True, True])
 
 
 def test_juxta_per_question(client):
-    response = client.post(
-        "/juxtastat/register_user",
-        headers=identity_1,
-        json={
-            "domain": "urbanstats.org",
-        },
-    )
-    assert response.status_code == 204
+    register_user(client, identity_1, "urbanstats.org")
 
-    response = client.get(
-        "/juxtastat/get_per_question_stats",
-        params={"day": "1"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {
+    result = get_juxta_per_question_stats(client, "1")
+    assert result == {
         "per_question": [],
         "total": 0,
     }
 
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        headers=identity_1,
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
-    )
-    assert response.status_code == 204
+    store_juxtastat_stats(client, identity_1, 1, [True, True, True, True, True])
 
-    response = client.get(
-        "/juxtastat/get_per_question_stats",
-        params={"day": "1"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {
+    result = get_juxta_per_question_stats(client, "1")
+    assert result == {
         "per_question": [1, 1, 1, 1, 1],
         "total": 1,
     }
 
 
 def test_retro_per_question(client):
-    response = client.get(
-        "/retrostat/get_per_question_stats",
-        params={"week": "1"},
-    )
-    assert response.status_code == 200
-    assert response.json() == {
+    result = get_retro_per_question_stats(client, "1")
+    assert result == {
         "per_question": [],
         "total": 0,
     }

@@ -1,14 +1,14 @@
-from .utils import associate_email
+from .utils import (
+    associate_email,
+    create_identity,
+    store_juxtastat_stats,
+    get_latest_day,
+    dissociate_email,
+    get_email,
+)
 
-identity_1 = {
-    "x-user": "1",
-    "x-secure-id": "11",
-}
-
-identity_2 = {
-    "x-user": "2",
-    "x-secure-id": "12",
-}
+identity_1 = create_identity("1", "11")
+identity_2 = create_identity("2", "12")
 
 
 def test_associate_email(client):
@@ -27,38 +27,14 @@ def test_juxta_user_stats(client):
     # Associating the email again succeeds
     associate_email(client, identity_2, "email@gmail.com")
 
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        json={
-            "day_stats": [[1, [True, True, True, True, True]]],
-        },
-        headers=identity_1,
-    )
-    assert response.status_code == 204
+    store_juxtastat_stats(client, identity_1, 1, [True, True, True, True, True])
+    store_juxtastat_stats(client, identity_2, 2, [True, True, True, True, True])
 
-    response = client.post(
-        "/juxtastat/store_user_stats",
-        json={
-            "day_stats": [[2, [True, True, True, True, True]]],
-        },
-        headers=identity_2,
-    )
-    assert response.status_code == 204
+    result = get_latest_day(client, identity_1)
+    assert result == {"latest_day": 2}
 
-    response = client.get(
-        "/juxtastat/latest_day",
-        headers=identity_1,
-    )
-    print(response.json)
-    assert response.status_code == 200
-    assert response.json() == {"latest_day": 2}
-
-    response = client.get(
-        "/juxtastat/latest_day",
-        headers=identity_2,
-    )
-    assert response.status_code == 200
-    assert response.json() == {"latest_day": 2}
+    result = get_latest_day(client, identity_2)
+    assert result == {"latest_day": 2}
 
 
 def test_dissociate_email(client):
@@ -66,59 +42,34 @@ def test_dissociate_email(client):
     associate_email(client, identity_1, "email@gmail.com")
 
     # Dissociate the email
-    response = client.post(
-        "/juxtastat/dissociate_email",
-        headers=identity_1,
-    )
-    assert response.status_code == 204
+    dissociate_email(client, identity_1)
 
     # After dissociation, get_email should return null
-    response = client.get(
-        "/juxtastat/email",
-        headers=identity_1,
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": None}
+    result = get_email(client, identity_1)
+    assert result == {"email": None}
 
     # Dissociating again should still succeed (idempotent)
-    response = client.post(
-        "/juxtastat/dissociate_email",
-        headers=identity_1,
-    )
-    assert response.status_code == 204
+    dissociate_email(client, identity_1)
 
 
 def test_get_email_route(client):
     # No email associated yet
-    response = client.get(
-        "/juxtastat/email",
-        headers=identity_1,
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": None}
+    result = get_email(client, identity_1)
+    assert result == {"email": None}
 
     # Associate an email
     associate_email(client, identity_1, "email@gmail.com")
 
     # Now get_email should return the email
-    response = client.get(
-        "/juxtastat/email",
-        headers=identity_1,
-    )
-    assert response.status_code == 200
-    assert response.json() == {"email": "email@gmail.com"}
+    result = get_email(client, identity_1)
+    assert result == {"email": "email@gmail.com"}
 
 
 def test_user_limit_drop(client):
     # Create multiple identities to test the user limit
     identities = []
     for i in range(32):
-        identities.append(
-            {
-                "x-user": f"{(i + 1):x}",
-                "x-secure-id": f"{(i * 10):x}",
-            }
-        )
+        identities.append(create_identity(f"{(i + 1):x}", f"{(i * 10):x}"))
 
     # Associate the same email with all identities
     email = "test@example.com"
@@ -128,12 +79,8 @@ def test_user_limit_drop(client):
     # Only 16 identifies must still have an email associated
     total_associated = 0
     for identity in identities:
-        response = client.get(
-            "/juxtastat/email",
-            headers=identity,
-        )
-        assert response.status_code == 200
-        if response.json()["email"] is not None:
+        result = get_email(client, identity)
+        if result["email"] is not None:
             total_associated += 1
 
     assert total_associated == 16
