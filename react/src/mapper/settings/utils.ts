@@ -33,7 +33,7 @@ export interface LineStyle {
 
 export type Basemap = {
     type: 'osm'
-    disableBasemap?: boolean
+    noLabels?: boolean
 } | { type: 'none' }
 
 export interface FilterSettings {
