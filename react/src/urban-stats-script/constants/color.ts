@@ -4,6 +4,8 @@ import hueColors from '../../data/hueColors'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
+import { camelToHuman } from './utils'
+
 export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
@@ -93,10 +95,7 @@ export function doRender(color: Color): string {
 }
 
 function colorConstant(name: string, value: string): [string, USSValue] {
-    let humanReadableName = name.charAt(0).toUpperCase() + name.slice(1)
-    if (humanReadableName === 'DarkGrey') {
-        humanReadableName = 'Dark Grey'
-    }
+    const humanReadableName = camelToHuman(name)
     return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
 }
 
