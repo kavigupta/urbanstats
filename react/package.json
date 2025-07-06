@@ -64,7 +64,7 @@
     "zodcli": "^0.0.4"
   },
   "dependencies": {
-    "@badgateway/oauth2-client": "^3.2.0",
+    "@badgateway/oauth2-client": "github:lukebrody/oauth2-client#fixRaceCondition-build",
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
     "@fontsource/inconsolata": "^5.2.6",
