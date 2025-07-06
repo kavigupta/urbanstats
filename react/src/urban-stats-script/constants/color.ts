@@ -93,7 +93,11 @@ export function doRender(color: Color): string {
 }
 
 function colorConstant(name: string, value: string): [string, USSValue] {
-    return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName: name } }] satisfies [string, USSValue]
+    let humanReadableName = name.charAt(0).toUpperCase() + name.slice(1)
+    if (humanReadableName === 'DarkGrey') {
+        humanReadableName = 'Dark Grey'
+    }
+    return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
 }
 
 export const colorConstants = [
