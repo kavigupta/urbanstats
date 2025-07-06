@@ -15,7 +15,6 @@ const options = argumentParser({
         proxy: booleanArgument({ defaultValue: false }),
         browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
         test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*.test.ts'`) }),
-        parallel: z.string().transform(string => parseInt(string)).default('1'),
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
@@ -50,15 +49,19 @@ const testcafe = await createTestCafe('localhost', 1337, 1338)
 const testsPattern = tests.length === 1 ? tests[0] : `{${tests.join(',')}}`
 await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${testsPattern}/**`, { nodir: true }).map(file => fs.rm(file)))
 
-const testsToRun = [...tests]
+// Run tests
+const start = Date.now()
 
-const runTest = async (): Promise<number> => {
-    const test = testsToRun.shift()
+const killTimer = options.timeLimitSeconds
+    ? setTimeout(() => {
+        console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
+        process.exit(1)
+    }, options.timeLimitSeconds * 1000)
+    : undefined
 
-    if (test === undefined) {
-        return Promise.resolve(0)
-    }
+let testsFailed = 0
 
+for (const test of tests) {
     let runner = testcafe.createRunner()
         .src(`test/${test}.test.ts`)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
@@ -70,21 +73,8 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
-
-    return failedTests + await runTest()
+    testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 }
-
-const start = Date.now()
-
-const killTimer = options.timeLimitSeconds
-    ? setTimeout(() => {
-        console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
-        process.exit(1)
-    }, options.timeLimitSeconds * 1000)
-    : undefined
-
-const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
 
 clearTimeout(killTimer)
 
