@@ -44,7 +44,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
 function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
-    uss: UrbanStatsASTExpression & { type: 'function' }
+    uss: UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
@@ -58,6 +58,10 @@ function ArgumentEditor(props: {
     const hasDefault = props.argWDefault.defaultValue !== undefined
     const isEnabled = argValue !== undefined
     const subident = `${props.blockIdent}_${props.name}`
+
+    // Get the function's documentation to find human-readable argument names
+    const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
+    const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
 
     return (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
@@ -95,11 +99,11 @@ function ArgumentEditor(props: {
                                 errors={props.errors}
                                 blockIdent={subident}
                                 type={arg.value}
-                                label={props.name}
+                                label={humanReadableName}
                             />
                         )
                     : (
-                            <span>{props.name}</span>
+                            <span>{humanReadableName}</span>
                         )}
             </div>
         </div>
@@ -137,12 +141,11 @@ export function AutoUXEditor(props: {
             return <></>
         }
         if (uss.type === 'function') {
-            const fn = uss.fn
-            assert(fn.type === 'identifier', 'Function must be an identifier')
-            const tdoc = props.typeEnvironment.get(fn.name.node)
-            assert(tdoc !== undefined, `Function ${fn.name.node} not found in type environment`)
+            assert(uss.fn.type === 'identifier', 'Function must be an identifier')
+            const tdoc = props.typeEnvironment.get(uss.fn.name.node)
+            assert(tdoc !== undefined, `Function ${uss.fn.name.node} not found in type environment`)
             const type = tdoc.type
-            assert(type.type === 'function', `Function ${fn.name.node} must be a function type`)
+            assert(type.type === 'function', `Function ${uss.fn.name.node} must be a function type`)
             const subselectors: ReactNode[] = []
             type.posArgs.forEach((arg, i) => {
                 assert(arg.type === 'concrete', `Positional argument must be concrete`)
@@ -168,7 +171,8 @@ export function AutoUXEditor(props: {
                         key={`named-${name}`}
                         name={name}
                         argWDefault={argWDefault}
-                        uss={uss}
+                        // cast is valid because we checked type above
+                        uss={uss as UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }}
                         setUss={props.setUss}
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}

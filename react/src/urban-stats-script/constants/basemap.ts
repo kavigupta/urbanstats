@@ -23,7 +23,13 @@ export const osmBasemap: USSValue = {
         const noLabels = namedArgs.noLabels as boolean
         return { type: 'opaque', value: { type: 'osm', noLabels } }
     },
-    documentation: { humanReadableName: 'OSM Basemap', isDefault: true },
+    documentation: {
+        humanReadableName: 'OSM Basemap',
+        isDefault: true,
+        namedArgs: {
+            noLabels: 'Disable Basemap Labels',
+        },
+    },
 } satisfies USSValue
 
 export const noBasemap: USSValue = {

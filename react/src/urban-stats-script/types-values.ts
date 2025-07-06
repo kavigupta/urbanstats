@@ -93,6 +93,10 @@ export interface Documentation {
      * True if this is the canonical default value for its type (e.g., the default ramp or scale).
      */
     isDefault?: boolean
+    /**
+     * Human-readable names for named arguments. Maps argument name to display name.
+     */
+    namedArgs?: Record<string, string>
 }
 
 export interface USSDocumentedType {

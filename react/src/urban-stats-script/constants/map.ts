@@ -55,7 +55,14 @@ export const constructOutline = {
         const weight = namedArgs.weight as number
         return { type: 'opaque', value: { color, weight } }
     },
-    documentation: { humanReadableName: 'Construct  Outline', isDefault: true },
+    documentation: {
+        humanReadableName: 'Outline',
+        isDefault: true,
+        namedArgs: {
+            color: 'Border Color',
+            weight: 'Border Width',
+        },
+    },
 } satisfies USSValue
 
 export const cMap: USSValue = {
@@ -114,5 +121,17 @@ export const cMap: USSValue = {
             value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap } satisfies CMap,
         }
     },
-    documentation: { humanReadableName: 'Choropleth Map', isDefault: true },
+    documentation: {
+        humanReadableName: 'Choropleth Map',
+        isDefault: true,
+        namedArgs: {
+            data: 'Data Values',
+            scale: 'Color Scale',
+            ramp: 'Color Ramp',
+            label: 'Map Label',
+            geo: 'Geography Names',
+            outline: 'Border Style',
+            basemap: 'Background Map',
+        },
+    },
 }
