@@ -308,10 +308,14 @@ export function Selector(props: {
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
 
-    // Filter options based on search value
-    const filteredOptions = renderedSelectionPossibilities.filter(option =>
-        option.toLowerCase().includes(searchValue.toLowerCase()),
-    )
+    // Sort options: matching ones first, then non-matching ones
+    const sortedOptions = renderedSelectionPossibilities.sort((a, b) => {
+        const aMatches = a.toLowerCase().includes(searchValue.toLowerCase())
+        const bMatches = b.toLowerCase().includes(searchValue.toLowerCase())
+        if (aMatches && !bMatches) return -1
+        if (!aMatches && bMatches) return 1
+        return 0
+    })
 
     const isNumber = props.type.type === 'number'
     const isString = props.type.type === 'string'
@@ -329,25 +333,25 @@ export function Selector(props: {
     }
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
-        if (!isOpen || filteredOptions.length === 0) return
+        if (!isOpen || sortedOptions.length === 0) return
 
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault()
                 setHighlightedIndex(prev =>
-                    prev < filteredOptions.length - 1 ? prev + 1 : 0,
+                    prev < sortedOptions.length - 1 ? prev + 1 : 0,
                 )
                 break
             case 'ArrowUp':
                 e.preventDefault()
                 setHighlightedIndex(prev =>
-                    prev > 0 ? prev - 1 : filteredOptions.length - 1,
+                    prev > 0 ? prev - 1 : sortedOptions.length - 1,
                 )
                 break
             case 'Enter':
                 e.preventDefault()
-                if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
-                    handleOptionSelect(filteredOptions[highlightedIndex])
+                if (highlightedIndex >= 0 && highlightedIndex < sortedOptions.length) {
+                    handleOptionSelect(sortedOptions[highlightedIndex])
                 }
                 break
             case 'Escape':
@@ -393,7 +397,7 @@ export function Selector(props: {
                         fontSize: '14px',
                     }}
                 />
-                {isOpen && filteredOptions.length > 0 && (
+                {isOpen && sortedOptions.length > 0 && (
                     <div style={{
                         position: 'absolute',
                         top: '100%',
@@ -408,14 +412,14 @@ export function Selector(props: {
                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     }}
                     >
-                        {filteredOptions.map((option, index) => (
+                        {sortedOptions.map((option, index) => (
                             <div
                                 key={index}
                                 onClick={() => { handleOptionSelect(option) }}
                                 style={{
                                     padding: '8px 12px',
                                     cursor: 'pointer',
-                                    borderBottom: index < filteredOptions.length - 1 ? '1px solid #eee' : 'none',
+                                    borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
                                     backgroundColor: index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
                                     color: colors.textMain,
                                 }}
