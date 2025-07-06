@@ -76,13 +76,14 @@ def get_explanation_page():
 def get_human_readable_name_for_variable(
     stat, internal_to_actual_variable, multi_source_variable_names, multi_source_stats
 ):
+    # Too many locals is disabled here because this function is pretty straightforward
+    # pylint: disable=too-many-locals
     """
     Get the appropriate human-readable name for a variable, including source information for multi-source variables.
     """
-    var_name = internal_to_actual_variable[stat]
     base_name = statistic_internal_to_display_name()[stat]
 
-    if var_name not in multi_source_variable_names:
+    if internal_to_actual_variable[stat] not in multi_source_variable_names:
         return base_name
 
     # Find the source for this specific variable
@@ -91,12 +92,10 @@ def get_human_readable_name_for_variable(
             if stat_name == stat:
                 if source is None:
                     return base_name
-                else:
-                    # Only add source information if the base name doesn't already contain source info
-                    if " [" in base_name and "]" in base_name:
-                        return base_name
-                    else:
-                        return f"{base_name} [{source.name}]"
+                # Only add source information if the base name doesn't already contain source info
+                if " [" in base_name and "]" in base_name:
+                    return base_name
+                return f"{base_name} [{source.name}]"
 
     return base_name
 
