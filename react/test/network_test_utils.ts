@@ -58,10 +58,13 @@ export async function networkUsage(t: TestController): Promise<(label: string) =
             return chalkTemplate`{${chalkColor} ${bytes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '_').padStart(10)}}`
         }
 
+        // eslint-disable-next-line no-restricted-syntax -- fine to use for console output
         console.warn(`${formatBytes(totalData, 'magenta')} bytes network usage ${label}`)
         for (const [originKey, originValue] of urlTree.entries()) {
+            // eslint-disable-next-line no-restricted-syntax -- fine to use for console output
             console.warn(`${formatBytes(originValue.bytes, 'cyan')}    ${originKey}`)
             for (const [folderKey, folderValue] of originValue.folders) {
+            // eslint-disable-next-line no-restricted-syntax -- fine to use for console output
                 console.warn(`${formatBytes(folderValue.bytes, 'blue')}        ${folderKey}`)
                 if (folderValue.requests.length === 1 && folderValue.requests[0][0] === '') {
                     continue

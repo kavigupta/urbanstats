@@ -204,7 +204,7 @@ function NotificationBanner(props: { children: ReactNode }): ReactNode {
     )
 }
 
-export function buttonStyle(color: string): CSSProperties {
+export function buttonStyle(color: string, textColor: string): CSSProperties {
     return {
         textAlign: 'center',
         fontSize: '2em',
@@ -217,7 +217,7 @@ export function buttonStyle(color: string): CSSProperties {
         backgroundColor: color,
         borderRadius: '0.25em',
         border: 'none',
-        color: '#fff',
+        color: textColor,
     }
 }
 
@@ -268,7 +268,7 @@ export function GenericShareButton(props: {
     return (
         <button
             className="serif"
-            style={buttonStyle(colors.hueColors.green)}
+            style={buttonStyle(colors.hueColors.green, colors.buttonTextWhite)}
             ref={props.buttonRef}
             onClick={async () => {
                 const [text, url] = await props.produceSummary()
@@ -324,7 +324,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithTime }): ReactNode {
         padding: '0.25em 0.25em',
         borderRadius: '0.25em',
         border: 'none',
-        color: '#fff',
+        color: colors.buttonTextWhite,
     }
 
     const navigator = useContext(Navigator.Context)

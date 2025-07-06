@@ -11,7 +11,9 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink } from '../navigation/links'
+import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
@@ -33,6 +35,7 @@ interface DisplayedMapProps extends MapGenericProps {
     height: number | string | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
+    colors: Colors
 }
 
 interface Shapes { geographyKind: string, data: Promise<{ shapes: NormalizeProto<IConsolidatedShapes>, nameToIndex: Map<string, number> }> }
@@ -225,6 +228,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     attribution="startVisible"
                     basemap={{ type: 'osm' }} // TODO
                     setErrors={props.setErrors}
+                    colors={useColors()}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
