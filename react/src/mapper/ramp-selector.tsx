@@ -163,7 +163,7 @@ function CustomColormapSelector(props: { colormap: string, setColormap: (newValu
         else {
             value = (colormap[atIndex - 1][0] + colormap[atIndex][0]) / 2
         }
-        const color = interpolateColor(colormap, value)
+        const color = interpolateColor(colormap, value, colors.mapInvalidFillColor)
         newColormap.splice(atIndex, 0, [value, color])
         props.setColormap(
             JSON.stringify(newColormap),
