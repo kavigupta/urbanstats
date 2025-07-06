@@ -12,6 +12,8 @@ import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
@@ -32,6 +34,7 @@ interface DisplayedMapProps extends MapGenericProps {
     lineStyle: LineStyle
     basemap: Basemap
     height: number | string | undefined
+    colors: Colors
 }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
@@ -72,7 +75,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const [ramp, interpolations] = this.props.ramp.createRamp(statVals)
         this.props.rampCallback({ ramp, interpolations })
         const colors = statVals.map(
-            val => interpolateColor(ramp, val),
+            val => interpolateColor(ramp, val, this.props.colors.mapInvalidFillColor),
         )
         const styles = colors.map(
             // no outline, set color fill, alpha=1
@@ -190,6 +193,7 @@ interface EmpiricalRamp {
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
+    const colors = useColors()
     const colorStat = parseColorStat(nameToIndex, props.colorStat)
     const filter = props.filter.enabled ? parseColorStat(nameToIndex, props.filter.function) : undefined
 
@@ -216,6 +220,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={props.basemap}
                     height={props.height}
                     attribution="startVisible"
+                    colors={colors}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>

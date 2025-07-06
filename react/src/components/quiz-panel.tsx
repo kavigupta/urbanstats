@@ -182,7 +182,7 @@ export function JuxtastatInfiniteButton(): ReactNode {
     return (
         <a
             style={{
-                ...buttonStyle(colors.hueColors.blue),
+                ...buttonStyle(colors.hueColors.blue, colors.buttonTextWhite),
                 width: '30%',
                 textDecoration: 'none',
             }}
@@ -238,7 +238,7 @@ export function OtherQuizzesButtons(): ReactNode {
     }, [otherQuizPages])
 
     const otherQuizButtonStyle: CSSProperties = {
-        ...buttonStyle(colors.hueColors.blue),
+        ...buttonStyle(colors.hueColors.blue, colors.buttonTextWhite),
         width: '30%',
         textDecoration: 'none',
     }

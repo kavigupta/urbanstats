@@ -26,7 +26,9 @@ export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
     const [colorblindMode] = useSetting('colorblind_mode')
     return {
+        // eslint-disable-next-line no-restricted-syntax -- Allowing hex colors for themes
         correct: colorblindMode ? '#65fe08' : colors.hueColors.green,
+        // eslint-disable-next-line no-restricted-syntax -- Allowing hex colors for themes
         incorrect: colorblindMode ? mixWithBackground(colors.hueColors.red, 0.3, '#000000') : colors.hueColors.red,
         correctEmoji: '🟩',
         incorrectEmoji: '🟥',

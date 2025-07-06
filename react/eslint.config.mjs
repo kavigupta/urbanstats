@@ -129,7 +129,12 @@ export default tseslint.config(
                 'CallExpression[callee.property.name=withText][arguments.0.type=Literal][arguments.0.regex=undefined]',
                 'MemberExpression[object.name=document][property.name=title]',
                 // Must use test utils instead to safely clear
-                'CallExpression[callee.object.name=localStorage][callee.property.name=clear]'
+                'CallExpression[callee.object.name=localStorage][callee.property.name=clear]',
+                // Disallow color constants - use design system colors instead
+                'Literal[value=/^#[0-9A-Fa-f]{3,8}$/]', // Hex colors
+                'Literal[value=/^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/]', // RGB colors
+                'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
+                'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]' // Named colors
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
