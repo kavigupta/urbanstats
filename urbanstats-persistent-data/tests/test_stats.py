@@ -1,13 +1,13 @@
 from .utils import (
+    check_has_infinite_stats,
     create_identity,
+    get_juxta_per_question_stats,
+    get_latest_day,
+    get_latest_week,
+    get_retro_per_question_stats,
     register_user,
     store_juxtastat_stats,
     store_retrostat_stats,
-    get_latest_day,
-    get_latest_week,
-    check_has_infinite_stats,
-    get_juxta_per_question_stats,
-    get_retro_per_question_stats,
 )
 
 identity_1 = create_identity("1", "11")

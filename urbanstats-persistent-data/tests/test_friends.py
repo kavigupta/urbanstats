@@ -1,15 +1,15 @@
 from .utils import (
     associate_email,
+    check_infinite_results,
+    check_todays_score_for,
     create_identity,
+    dissociate_email,
     send_friend_request,
     send_friend_request_with_email,
+    store_infinite_stats,
+    store_juxtastat_stats,
     unfriend_user,
     unfriend_user_with_email,
-    store_juxtastat_stats,
-    store_infinite_stats,
-    dissociate_email,
-    check_todays_score_for,
-    check_infinite_results,
 )
 
 identity_a = create_identity("a", "aa")

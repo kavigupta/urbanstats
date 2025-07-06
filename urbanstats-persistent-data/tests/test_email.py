@@ -1,10 +1,10 @@
 from .utils import (
     associate_email,
     create_identity,
-    store_juxtastat_stats,
-    get_latest_day,
     dissociate_email,
     get_email,
+    get_latest_day,
+    store_juxtastat_stats,
 )
 
 identity_1 = create_identity("1", "11")
