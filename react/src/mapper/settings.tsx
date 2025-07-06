@@ -82,6 +82,7 @@ export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
             },
         },
         line_style: {
+            // eslint-disable-next-line no-restricted-syntax -- the default outline being black isn't dependent on the theme
             color: '#000000',
             weight: 0.5,
         },

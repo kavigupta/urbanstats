@@ -4,9 +4,11 @@ import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
+    const colors = useColors()
     const screencapButton = (
         <div
             onClick={props.onClick}
@@ -45,7 +47,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 width: '100%',
                 top: 0,
                 left: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
+                backgroundColor: `${colors.textMain}80`,
                 zIndex: 1,
             }}
             >

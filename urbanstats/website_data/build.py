@@ -163,12 +163,6 @@ def build_react_site(site_folder, mode):
     create_react_jsons()
 
     subprocess.run(
-        ["npx", "eslint", "--fix", "src/data"],
-        check=True,
-        cwd="react",
-    )
-
-    subprocess.run(
         f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
         shell=True,
         check=mode != "dev",
