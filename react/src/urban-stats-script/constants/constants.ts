@@ -2,6 +2,7 @@ import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { USSRawValue, USSValue } from '../types-values'
 
+import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
 import { cMap, constructOutline } from './map'
@@ -142,4 +143,6 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['logScale', logScaleValue],
     ['cMap', cMap],
     ['constructOutline', constructOutline],
+    ['osmBasemap', osmBasemap],
+    ['noBasemap', noBasemap],
 ] satisfies [string, USSValue][])

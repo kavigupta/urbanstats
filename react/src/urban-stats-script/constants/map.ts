@@ -1,7 +1,9 @@
+import { Basemap } from '../../mapper/settings/utils'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
 import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
+import { basemapType } from './basemap'
 import { Color } from './color'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
@@ -18,6 +20,7 @@ export interface CMap {
     ramp: RampT
     label: string
     outline: Outline
+    basemap: Basemap
 }
 
 export const cMapType = {
@@ -78,6 +81,10 @@ export const cMap: USSValue = {
                 type: { type: 'concrete', value: outlineType },
                 defaultValue: rawDefaultValue({ type: 'opaque', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
             },
+            basemap: {
+                type: { type: 'concrete', value: basemapType },
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', disableBasemap: false } }),
+            },
         },
         returnType: { type: 'concrete', value: cMapType },
     },
@@ -88,6 +95,7 @@ export const cMap: USSValue = {
         const ramp = (namedArgs.ramp as { type: 'opaque', value: RampT }).value
         const labelPassedIn = namedArgs.label as string | null
         const outline = (namedArgs.outline as { type: 'opaque', value: Outline }).value
+        const basemap = (namedArgs.basemap as { type: 'opaque', value: Basemap }).value
 
         if (geo.length !== data.length) {
             throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -103,7 +111,7 @@ export const cMap: USSValue = {
 
         return {
             type: 'opaque',
-            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline } satisfies CMap,
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap } satisfies CMap,
         }
     },
     documentation: { humanReadableName: 'Choropleth Map', isDefault: true },

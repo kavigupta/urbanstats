@@ -9,7 +9,7 @@ import valid_geographies from '../data/mapper/used_geographies'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapSettings, computeUSS } from '../mapper/settings/utils'
+import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
@@ -31,6 +31,7 @@ import { Statistic } from './table'
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     rampCallback: (newRamp: EmpiricalRamp) => void
+    basemapCallback: (basemap: Basemap) => void
     height: number | string | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
@@ -89,6 +90,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const scale = instantiate(cMap.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
         this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label })
+        this.props.basemapCallback(cMap.basemap)
         const colors = cMap.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
@@ -208,6 +210,7 @@ interface EmpiricalRamp {
 
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
+    const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
     return (
         <div style={{
@@ -220,11 +223,12 @@ function MapComponent(props: MapComponentProps): ReactNode {
                 <DisplayedMap
                     geographyKind={props.geographyKind}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
+                    basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
                     ref={props.mapRef}
                     uss={props.uss}
                     height={props.height}
                     attribution="startVisible"
-                    basemap={{ type: 'osm' }} // TODO
+                    basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
                 />
