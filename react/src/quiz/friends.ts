@@ -18,7 +18,7 @@ export async function addFriend(friendID: string, friendName: string): Promise<u
     }
     let dupFriend
     if ((dupFriend = QuizModel.shared.friends.value.find(([name, id]) => name !== null && id === friendID))) {
-        return { errorMessage: `${idOrEmail} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
+        return { errorMessage: `${idOrEmail} ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
     }
     if (friendName === '') {
         return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
