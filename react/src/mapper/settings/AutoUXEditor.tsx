@@ -189,7 +189,7 @@ export function AutoUXEditor(props: {
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
     const leftSegment = (
-        <div style={{ width: labelWidth }}>
+        <div>
             {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
         </div>
     )
@@ -210,10 +210,10 @@ export function AutoUXEditor(props: {
 
     )
 
-    const isMobile = useMobileLayout()
+    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
 
     const component = (): ReactNode => {
-        if (isMobile) {
+        if (twoLines) {
             return (
                 <>
                     <div style={{ display: 'flex', alignItems: 'top' }}>
@@ -229,7 +229,9 @@ export function AutoUXEditor(props: {
         else {
             return (
                 <div style={{ display: 'flex', alignItems: 'top' }}>
-                    {leftSegment}
+                    <div style={{ width: labelWidth }}>
+                        {leftSegment}
+                    </div>
                     {rightSegment}
                 </div>
             )
