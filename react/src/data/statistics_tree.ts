@@ -1,6060 +1,6060 @@
 export const dataSources = [
     {
-        category: 'Population',
-        sources: [
+        "category": "Population",
+        "sources": [
             {
-                source: 'US Census',
-                is_default: true,
+                "source": "US Census",
+                "is_default": true
             },
             {
-                source: 'Canadian Census',
-                is_default: true,
+                "source": "Canadian Census",
+                "is_default": true
             },
             {
-                source: 'GHSL',
-                is_default: false,
-            },
-        ],
-    },
+                "source": "GHSL",
+                "is_default": false
+            }
+        ]
+    }
 ] as const
 
 export const rawStatsTree = [
     {
-        id: 'main',
-        name: 'Main',
-        contents: [
+        "id": "main",
+        "name": "Main",
+        "contents": [
             {
-                id: 'population',
-                name: 'Population',
-                contents: [
+                "id": "population",
+                "name": "Population",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Population',
-                                stats: [
+                                "name": "Population",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 280,
+                                        "column": 280
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 283,
+                                        "column": 283
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 134,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 134
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Population (2010)',
-                                stats: [
+                                "name": "Population (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 282,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 282
+                                    }
+                                ]
                             },
                             {
-                                name: 'Population Change (2010-2020)',
-                                stats: [
+                                "name": "Population Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 285,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 285
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Population (2000)',
-                                stats: [
+                                "name": "Population (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 281,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 281
+                                    }
+                                ]
                             },
                             {
-                                name: 'Population Change (2000-2020)',
-                                stats: [
+                                "name": "Population Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 284,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 284
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_1',
-                name: 'PW Density (r=1km)',
-                contents: [
+                "id": "ad_1",
+                "name": "PW Density (r=1km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1km)',
-                                stats: [
+                                "name": "PW Density (r=1km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 39,
+                                        "column": 39
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 103,
+                                        "column": 103
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 135,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 135
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=1km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 51,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 51
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=1km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=1km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 53,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 53
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=1km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 50,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 50
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=1km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=1km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 52,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 52
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'sd',
-                name: 'AW Density',
-                contents: [
+                "id": "sd",
+                "name": "AW Density",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'AW Density',
-                                stats: [
+                                "name": "AW Density",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 298,
+                                        "column": 298
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 301,
+                                        "column": 301
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 133,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 133
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'AW Density (2010)',
-                                stats: [
+                                "name": "AW Density (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 300,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 300
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'AW Density (2000)',
-                                stats: [
+                                "name": "AW Density (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 299,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 299
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'area',
-                name: 'Area',
-                contents: [
+                "id": "area",
+                "name": "Area",
+                "contents": [
                     {
-                        year: null,
-                        stats_by_source: [
+                        "year": null,
+                        "stats_by_source": [
                             {
-                                name: 'Area',
-                                stats: [
+                                "name": "Area",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 79,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 79
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'compactness',
-                name: 'Compactness',
-                contents: [
+                "id": "compactness",
+                "name": "Compactness",
+                "contents": [
                     {
-                        year: null,
-                        stats_by_source: [
+                        "year": null,
+                        "stats_by_source": [
                             {
-                                name: 'Compactness',
-                                stats: [
+                                "name": "Compactness",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 92,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 92
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'topography',
-        name: 'Topography',
-        contents: [
+        "id": "topography",
+        "name": "Topography",
+        "contents": [
             {
-                id: 'gridded_hilliness',
-                name: 'PW Mean Hilliness (Grade)',
-                contents: [
+                "id": "gridded_hilliness",
+                "name": "PW Mean Hilliness (Grade)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Mean Hilliness (Grade)',
-                                stats: [
+                                "name": "PW Mean Hilliness (Grade)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 144,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 144
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'gridded_elevation',
-                name: 'PW Mean Elevation',
-                contents: [
+                "id": "gridded_elevation",
+                "name": "PW Mean Elevation",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Mean Elevation',
-                                stats: [
+                                "name": "PW Mean Elevation",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 143,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 143
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'race',
-        name: 'Race',
-        contents: [
+        "id": "race",
+        "name": "Race",
+        "contents": [
             {
-                id: 'white',
-                name: 'White %',
-                contents: [
+                "id": "white",
+                "name": "White %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'White %',
-                                stats: [
+                                "name": "White %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 341,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 341
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'White % (2010)',
-                                stats: [
+                                "name": "White % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 343,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 343
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'White % (2000)',
-                                stats: [
+                                "name": "White % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 342,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 342
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'hispanic',
-                name: 'Hispanic %',
-                contents: [
+                "id": "hispanic",
+                "name": "Hispanic %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Hispanic %',
-                                stats: [
+                                "name": "Hispanic %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 154,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 154
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Hispanic % (2010)',
-                                stats: [
+                                "name": "Hispanic % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 156,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 156
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Hispanic % (2000)',
-                                stats: [
+                                "name": "Hispanic % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 155,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 155
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'black',
-                name: 'Black %',
-                contents: [
+                "id": "black",
+                "name": "Black %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Black %',
-                                stats: [
+                                "name": "Black %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 86,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 86
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Black % (2010)',
-                                stats: [
+                                "name": "Black % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 88,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 88
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Black % (2000)',
-                                stats: [
+                                "name": "Black % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 87,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 87
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'asian',
-                name: 'Asian %',
-                contents: [
+                "id": "asian",
+                "name": "Asian %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Asian %',
-                                stats: [
+                                "name": "Asian %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 80,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 80
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Asian % (2010)',
-                                stats: [
+                                "name": "Asian % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 82,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 82
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Asian % (2000)',
-                                stats: [
+                                "name": "Asian % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 81,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 81
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'native',
-                name: 'Native %',
-                contents: [
+                "id": "native",
+                "name": "Native %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Native %',
-                                stats: [
+                                "name": "Native %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 247,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 247
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Native % (2010)',
-                                stats: [
+                                "name": "Native % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 249,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 249
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Native % (2000)',
-                                stats: [
+                                "name": "Native % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 248,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 248
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'hawaiian_pi',
-                name: 'Hawaiian / PI %',
-                contents: [
+                "id": "hawaiian_pi",
+                "name": "Hawaiian / PI %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Hawaiian / PI %',
-                                stats: [
+                                "name": "Hawaiian / PI %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 145,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 145
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Hawaiian / PI % (2010)',
-                                stats: [
+                                "name": "Hawaiian / PI % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 147,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 147
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Hawaiian / PI % (2000)',
-                                stats: [
+                                "name": "Hawaiian / PI % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 146,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 146
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'other  slash  mixed',
-                name: 'Other / Mixed %',
-                contents: [
+                "id": "other  slash  mixed",
+                "name": "Other / Mixed %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Other / Mixed %',
-                                stats: [
+                                "name": "Other / Mixed %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 275,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 275
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Other / Mixed % (2010)',
-                                stats: [
+                                "name": "Other / Mixed % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 277,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 277
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Other / Mixed % (2000)',
-                                stats: [
+                                "name": "Other / Mixed % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 276,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 276
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'homogeneity_250',
-                name: 'Racial Homogeneity %',
-                contents: [
+                "id": "homogeneity_250",
+                "name": "Racial Homogeneity %",
+                "contents": [
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Racial Homogeneity (2000) %',
-                                stats: [
+                                "name": "Racial Homogeneity (2000) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 157,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 157
+                                    }
+                                ]
                             },
                             {
-                                name: 'Racial Homogeneity Change (2000-2020) %',
-                                stats: [
+                                "name": "Racial Homogeneity Change (2000-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 160,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 160
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Racial Homogeneity (2010) %',
-                                stats: [
+                                "name": "Racial Homogeneity (2010) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 158,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 158
+                                    }
+                                ]
                             },
                             {
-                                name: 'Racial Homogeneity Change (2010-2020) %',
-                                stats: [
+                                "name": "Racial Homogeneity Change (2010-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 161,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 161
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Racial Homogeneity %',
-                                stats: [
+                                "name": "Racial Homogeneity %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 159,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 159
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'segregation_250',
-                name: 'Segregation %',
-                contents: [
+                "id": "segregation_250",
+                "name": "Segregation %",
+                "contents": [
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Segregation (2000) %',
-                                stats: [
+                                "name": "Segregation (2000) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 307,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 307
+                                    }
+                                ]
                             },
                             {
-                                name: 'Segregation Change (2000-2020) %',
-                                stats: [
+                                "name": "Segregation Change (2000-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 310,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 310
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Segregation (2010) %',
-                                stats: [
+                                "name": "Segregation (2010) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 308,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 308
+                                    }
+                                ]
                             },
                             {
-                                name: 'Segregation Change (2010-2020) %',
-                                stats: [
+                                "name": "Segregation Change (2010-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 311,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 311
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Segregation %',
-                                stats: [
+                                "name": "Segregation %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 309,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 309
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'segregation_250_10',
-                name: 'Mean Local Segregation %',
-                contents: [
+                "id": "segregation_250_10",
+                "name": "Mean Local Segregation %",
+                "contents": [
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Mean Local Segregation (2000) %',
-                                stats: [
+                                "name": "Mean Local Segregation (2000) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 302,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 302
+                                    }
+                                ]
                             },
                             {
-                                name: 'Mean Local Segregation Change (2000-2020) %',
-                                stats: [
+                                "name": "Mean Local Segregation Change (2000-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 305,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 305
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Mean Local Segregation (2010) %',
-                                stats: [
+                                "name": "Mean Local Segregation (2010) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 303,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 303
+                                    }
+                                ]
                             },
                             {
-                                name: 'Mean Local Segregation Change (2010-2020) %',
-                                stats: [
+                                "name": "Mean Local Segregation Change (2010-2020) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 306,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 306
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean Local Segregation %',
-                                stats: [
+                                "name": "Mean Local Segregation %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 304,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 304
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'national_origin',
-        name: 'National Origin',
-        contents: [
+        "id": "national_origin",
+        "name": "National Origin",
+        "contents": [
             {
-                id: 'citizenship_citizen_by_birth',
-                name: 'Citizen by Birth %',
-                contents: [
+                "id": "citizenship_citizen_by_birth",
+                "name": "Citizen by Birth %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Citizen by Birth %',
-                                stats: [
+                                "name": "Citizen by Birth %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 89,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 89
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'citizenship_citizen_by_naturalization',
-                name: 'Citizen by Naturalization %',
-                contents: [
+                "id": "citizenship_citizen_by_naturalization",
+                "name": "Citizen by Naturalization %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Citizen by Naturalization %',
-                                stats: [
+                                "name": "Citizen by Naturalization %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 90,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 90
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'citizenship_not_citizen',
-                name: 'Non-citizen %',
-                contents: [
+                "id": "citizenship_not_citizen",
+                "name": "Non-citizen %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Non-citizen %',
-                                stats: [
+                                "name": "Non-citizen %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 91,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 91
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'birthplace_non_us',
-                name: 'Born outside US %',
-                contents: [
+                "id": "birthplace_non_us",
+                "name": "Born outside US %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Born outside US %',
-                                stats: [
+                                "name": "Born outside US %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 83,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 83
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'birthplace_us_not_state',
-                name: 'Born in us outside state %',
-                contents: [
+                "id": "birthplace_us_not_state",
+                "name": "Born in us outside state %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Born in us outside state %',
-                                stats: [
+                                "name": "Born in us outside state %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 84,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 84
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'birthplace_us_state',
-                name: 'Born in state of residence %',
-                contents: [
+                "id": "birthplace_us_state",
+                "name": "Born in state of residence %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Born in state of residence %',
-                                stats: [
+                                "name": "Born in state of residence %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 85,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 85
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'language_english_only',
-                name: 'Only English at Home %',
-                contents: [
+                "id": "language_english_only",
+                "name": "Only English at Home %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Only English at Home %',
-                                stats: [
+                                "name": "Only English at Home %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 222,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 222
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'language_spanish',
-                name: 'Spanish at Home %',
-                contents: [
+                "id": "language_spanish",
+                "name": "Spanish at Home %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Spanish at Home %',
-                                stats: [
+                                "name": "Spanish at Home %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 224,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 224
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'language_other',
-                name: 'Other at Home %',
-                contents: [
+                "id": "language_other",
+                "name": "Other at Home %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Other at Home %',
-                                stats: [
+                                "name": "Other at Home %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 223,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 223
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'education',
-        name: 'Education',
-        contents: [
+        "id": "education",
+        "name": "Education",
+        "contents": [
             {
-                id: 'education_high_school',
-                name: 'High School %',
-                contents: [
+                "id": "education_high_school",
+                "name": "High School %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High School %',
-                                stats: [
+                                "name": "High School %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 114,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 114
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_ugrad',
-                name: 'Undergrad %',
-                contents: [
+                "id": "education_ugrad",
+                "name": "Undergrad %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Undergrad %',
-                                stats: [
+                                "name": "Undergrad %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 116,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 116
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_grad',
-                name: 'Grad %',
-                contents: [
+                "id": "education_grad",
+                "name": "Grad %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Grad %',
-                                stats: [
+                                "name": "Grad %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 112,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 112
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_high_school_canada',
-                name: 'High school diploma [25-64] %',
-                contents: [
+                "id": "education_high_school_canada",
+                "name": "High school diploma [25-64] %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High school diploma [25-64] %',
-                                stats: [
+                                "name": "High school diploma [25-64] %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 115,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 115
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_ugrad_canada',
-                name: 'Bachelor\'s degree [25-64] %',
-                contents: [
+                "id": "education_ugrad_canada",
+                "name": "Bachelor's degree [25-64] %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Bachelor\'s degree [25-64] %',
-                                stats: [
+                                "name": "Bachelor's degree [25-64] %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 117,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 117
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_grad_canada',
-                name: 'Graduate degree [25-64] %',
-                contents: [
+                "id": "education_grad_canada",
+                "name": "Graduate degree [25-64] %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Graduate degree [25-64] %',
-                                stats: [
+                                "name": "Graduate degree [25-64] %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 113,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 113
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_field_stem',
-                name: 'Undergrad STEM %',
-                contents: [
+                "id": "education_field_stem",
+                "name": "Undergrad STEM %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Undergrad STEM %',
-                                stats: [
+                                "name": "Undergrad STEM %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 111,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 111
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_field_humanities',
-                name: 'Undergrad Humanities %',
-                contents: [
+                "id": "education_field_humanities",
+                "name": "Undergrad Humanities %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Undergrad Humanities %',
-                                stats: [
+                                "name": "Undergrad Humanities %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 110,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 110
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'education_field_business',
-                name: 'Undergrad Business %',
-                contents: [
+                "id": "education_field_business",
+                "name": "Undergrad Business %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Undergrad Business %',
-                                stats: [
+                                "name": "Undergrad Business %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 109,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 109
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'female_hs_gap_4',
-                name: '% of women with high school education - % of men with high school education',
-                contents: [
+                "id": "female_hs_gap_4",
+                "name": "% of women with high school education - % of men with high school education",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% of women with high school education - % of men with high school education',
-                                stats: [
+                                "name": "% of women with high school education - % of men with high school education",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 119,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 119
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'female_ugrad_gap_4',
-                name: '% of women with undergraduate education - % of men with undergraduate education',
-                contents: [
+                "id": "female_ugrad_gap_4",
+                "name": "% of women with undergraduate education - % of men with undergraduate education",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% of women with undergraduate education - % of men with undergraduate education',
-                                stats: [
+                                "name": "% of women with undergraduate education - % of men with undergraduate education",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 120,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 120
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'female_grad_gap_4',
-                name: '% of women with graduate education - % of men with graduate education',
-                contents: [
+                "id": "female_grad_gap_4",
+                "name": "% of women with graduate education - % of men with graduate education",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% of women with graduate education - % of men with graduate education',
-                                stats: [
+                                "name": "% of women with graduate education - % of men with graduate education",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 118,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 118
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'generation',
-        name: 'Generation',
-        contents: [
+        "id": "generation",
+        "name": "Generation",
+        "contents": [
             {
-                id: 'generation_silent',
-                name: 'Silent %',
-                contents: [
+                "id": "generation_silent",
+                "name": "Silent %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Silent %',
-                                stats: [
+                                "name": "Silent %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 131,
+                                        "column": 131
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 132,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 132
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'generation_boomer',
-                name: 'Boomer %',
-                contents: [
+                "id": "generation_boomer",
+                "name": "Boomer %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Boomer %',
-                                stats: [
+                                "name": "Boomer %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 121,
+                                        "column": 121
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 122,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 122
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'generation_genx',
-                name: 'Gen X %',
-                contents: [
+                "id": "generation_genx",
+                "name": "Gen X %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Gen X %',
-                                stats: [
+                                "name": "Gen X %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 125,
+                                        "column": 125
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 126,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 126
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'generation_millenial',
-                name: 'Millennial %',
-                contents: [
+                "id": "generation_millenial",
+                "name": "Millennial %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Millennial %',
-                                stats: [
+                                "name": "Millennial %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 129,
+                                        "column": 129
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 130,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 130
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'generation_genz',
-                name: 'Gen Z %',
-                contents: [
+                "id": "generation_genz",
+                "name": "Gen Z %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Gen Z %',
-                                stats: [
+                                "name": "Gen Z %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 127,
+                                        "column": 127
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 128,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 128
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'generation_genalpha',
-                name: 'Gen Alpha %',
-                contents: [
+                "id": "generation_genalpha",
+                "name": "Gen Alpha %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Gen Alpha %',
-                                stats: [
+                                "name": "Gen Alpha %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 123,
+                                        "column": 123
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 124,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "column": 124
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'income',
-        name: 'Income',
-        contents: [
+        "id": "income",
+        "name": "Income",
+        "contents": [
             {
-                id: 'poverty_below_line',
-                name: 'Poverty %',
-                contents: [
+                "id": "poverty_below_line",
+                "name": "Poverty %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Poverty %',
-                                stats: [
+                                "name": "Poverty %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 286,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 286
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'lico_at_canada',
-                name: 'LICO-AT %',
-                contents: [
+                "id": "lico_at_canada",
+                "name": "LICO-AT %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'LICO-AT %',
-                                stats: [
+                                "name": "LICO-AT %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 229,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 229
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_under_50k',
-                name: 'Household Income < $50k %',
-                contents: [
+                "id": "household_income_under_50k",
+                "name": "Household Income < $50k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household Income < $50k %',
-                                stats: [
+                                "name": "Household Income < $50k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 168,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 168
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_50k_to_100k',
-                name: 'Household Income $50k - $100k %',
-                contents: [
+                "id": "household_income_50k_to_100k",
+                "name": "Household Income $50k - $100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household Income $50k - $100k %',
-                                stats: [
+                                "name": "Household Income $50k - $100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 164,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 164
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_over_100k',
-                name: 'Household Income > $100k %',
-                contents: [
+                "id": "household_income_over_100k",
+                "name": "Household Income > $100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household Income > $100k %',
-                                stats: [
+                                "name": "Household Income > $100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 166,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 166
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_under_50cad',
-                name: 'Household income < C$50k %',
-                contents: [
+                "id": "household_income_under_50cad",
+                "name": "Household income < C$50k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household income < C$50k %',
-                                stats: [
+                                "name": "Household income < C$50k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 167,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 167
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_50_to_100cad',
-                name: 'Household income C$50k - C$100k %',
-                contents: [
+                "id": "household_income_50_to_100cad",
+                "name": "Household income C$50k - C$100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household income C$50k - C$100k %',
-                                stats: [
+                                "name": "Household income C$50k - C$100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 163,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 163
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'household_income_above_100_cad',
-                name: 'Household income > C$100k %',
-                contents: [
+                "id": "household_income_above_100_cad",
+                "name": "Household income > C$100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Household income > C$100k %',
-                                stats: [
+                                "name": "Household income > C$100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 165,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 165
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_under_50k',
-                name: 'Individual Income < $50k %',
-                contents: [
+                "id": "individual_income_under_50k",
+                "name": "Individual Income < $50k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual Income < $50k %',
-                                stats: [
+                                "name": "Individual Income < $50k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 177,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 177
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_50k_to_100k',
-                name: 'Individual Income $50k - $100k %',
-                contents: [
+                "id": "individual_income_50k_to_100k",
+                "name": "Individual Income $50k - $100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual Income $50k - $100k %',
-                                stats: [
+                                "name": "Individual Income $50k - $100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 173,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 173
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_over_100k',
-                name: 'Individual Income > $100k %',
-                contents: [
+                "id": "individual_income_over_100k",
+                "name": "Individual Income > $100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual Income > $100k %',
-                                stats: [
+                                "name": "Individual Income > $100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 175,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 175
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_under_50cad',
-                name: 'Individual income < C$50k %',
-                contents: [
+                "id": "individual_income_under_50cad",
+                "name": "Individual income < C$50k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual income < C$50k %',
-                                stats: [
+                                "name": "Individual income < C$50k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 176,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 176
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_50_to_100cad',
-                name: 'Individual income C$50k - C$100k %',
-                contents: [
+                "id": "individual_income_50_to_100cad",
+                "name": "Individual income C$50k - C$100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual income C$50k - C$100k %',
-                                stats: [
+                                "name": "Individual income C$50k - C$100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 172,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 172
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'individual_income_above_100_cad',
-                name: 'Individual income > C$100k %',
-                contents: [
+                "id": "individual_income_above_100_cad",
+                "name": "Individual income > C$100k %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Individual income > C$100k %',
-                                stats: [
+                                "name": "Individual income > C$100k %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 174,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 174
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'housing',
-        name: 'Housing',
-        contents: [
+        "id": "housing",
+        "name": "Housing",
+        "contents": [
             {
-                id: 'housing_per_pop',
-                name: 'Housing Units per Adult',
-                contents: [
+                "id": "housing_per_pop",
+                "name": "Housing Units per Adult",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Housing Units per Adult',
-                                stats: [
+                                "name": "Housing Units per Adult",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 169,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 169
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Housing Units per Adult (2010)',
-                                stats: [
+                                "name": "Housing Units per Adult (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 171,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 171
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Housing Units per Adult (2000)',
-                                stats: [
+                                "name": "Housing Units per Adult (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 170,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 170
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'vacancy',
-                name: 'Vacancy %',
-                contents: [
+                "id": "vacancy",
+                "name": "Vacancy %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Vacancy %',
-                                stats: [
+                                "name": "Vacancy %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 335,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 335
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'Vacancy % (2010)',
-                                stats: [
+                                "name": "Vacancy % (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 337,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 337
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'Vacancy % (2000)',
-                                stats: [
+                                "name": "Vacancy % (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 336,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 336
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_burden_under_20',
-                name: 'Rent/Income < 20%',
-                contents: [
+                "id": "rent_burden_under_20",
+                "name": "Rent/Income < 20%",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Rent/Income < 20%',
-                                stats: [
+                                "name": "Rent/Income < 20%",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 296,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 296
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_burden_20_to_40',
-                name: 'Rent/Income 20%-40%',
-                contents: [
+                "id": "rent_burden_20_to_40",
+                "name": "Rent/Income 20%-40%",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Rent/Income 20%-40%',
-                                stats: [
+                                "name": "Rent/Income 20%-40%",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 294,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 294
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_burden_over_40',
-                name: 'Rent/Income > 40%',
-                contents: [
+                "id": "rent_burden_over_40",
+                "name": "Rent/Income > 40%",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Rent/Income > 40%',
-                                stats: [
+                                "name": "Rent/Income > 40%",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 295,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 295
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_1br_under_750',
-                name: '1BR Rent < $750 %',
-                contents: [
+                "id": "rent_1br_under_750",
+                "name": "1BR Rent < $750 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '1BR Rent < $750 %',
-                                stats: [
+                                "name": "1BR Rent < $750 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 290,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 290
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_1br_750_to_1500',
-                name: '1BR Rent $750 - $1500 %',
-                contents: [
+                "id": "rent_1br_750_to_1500",
+                "name": "1BR Rent $750 - $1500 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '1BR Rent $750 - $1500 %',
-                                stats: [
+                                "name": "1BR Rent $750 - $1500 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 288,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 288
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_1br_over_1500',
-                name: '1BR Rent > $1500 %',
-                contents: [
+                "id": "rent_1br_over_1500",
+                "name": "1BR Rent > $1500 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '1BR Rent > $1500 %',
-                                stats: [
+                                "name": "1BR Rent > $1500 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 289,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 289
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_2br_under_750',
-                name: '2BR Rent < $750 %',
-                contents: [
+                "id": "rent_2br_under_750",
+                "name": "2BR Rent < $750 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2BR Rent < $750 %',
-                                stats: [
+                                "name": "2BR Rent < $750 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 293,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 293
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_2br_750_to_1500',
-                name: '2BR Rent $750 - $1500 %',
-                contents: [
+                "id": "rent_2br_750_to_1500",
+                "name": "2BR Rent $750 - $1500 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2BR Rent $750 - $1500 %',
-                                stats: [
+                                "name": "2BR Rent $750 - $1500 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 291,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 291
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_2br_over_1500',
-                name: '2BR Rent > $1500 %',
-                contents: [
+                "id": "rent_2br_over_1500",
+                "name": "2BR Rent > $1500 %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2BR Rent > $1500 %',
-                                stats: [
+                                "name": "2BR Rent > $1500 %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 292,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 292
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_1969_or_earlier',
-                name: '% units built pre-1970',
-                contents: [
+                "id": "year_built_1969_or_earlier",
+                "name": "% units built pre-1970",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built pre-1970',
-                                stats: [
+                                "name": "% units built pre-1970",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 349,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 349
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_1970_to_1979',
-                name: '% units built in 1970s',
-                contents: [
+                "id": "year_built_1970_to_1979",
+                "name": "% units built in 1970s",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built in 1970s',
-                                stats: [
+                                "name": "% units built in 1970s",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 350,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 350
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_1980_to_1989',
-                name: '% units built in 1980s',
-                contents: [
+                "id": "year_built_1980_to_1989",
+                "name": "% units built in 1980s",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built in 1980s',
-                                stats: [
+                                "name": "% units built in 1980s",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 351,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 351
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_1990_to_1999',
-                name: '% units built in 1990s',
-                contents: [
+                "id": "year_built_1990_to_1999",
+                "name": "% units built in 1990s",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built in 1990s',
-                                stats: [
+                                "name": "% units built in 1990s",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 352,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 352
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_2000_to_2009',
-                name: '% units built in 2000s',
-                contents: [
+                "id": "year_built_2000_to_2009",
+                "name": "% units built in 2000s",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built in 2000s',
-                                stats: [
+                                "name": "% units built in 2000s",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 353,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 353
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'year_built_2010_or_later',
-                name: '% units built in 2010s+',
-                contents: [
+                "id": "year_built_2010_or_later",
+                "name": "% units built in 2010s+",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '% units built in 2010s+',
-                                stats: [
+                                "name": "% units built in 2010s+",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 354,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 354
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rent_or_own_rent',
-                name: 'Renter %',
-                contents: [
+                "id": "rent_or_own_rent",
+                "name": "Renter %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Renter %',
-                                stats: [
+                                "name": "Renter %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 297,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 297
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'transportation',
-        name: 'Transportation',
-        contents: [
+        "id": "transportation",
+        "name": "Transportation",
+        "contents": [
             {
-                id: 'transportation_means_car',
-                name: 'Commute Car %',
-                contents: [
+                "id": "transportation_means_car",
+                "name": "Commute Car %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Car %',
-                                stats: [
+                                "name": "Commute Car %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 331,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 331
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_means_bike',
-                name: 'Commute Bike %',
-                contents: [
+                "id": "transportation_means_bike",
+                "name": "Commute Bike %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Bike %',
-                                stats: [
+                                "name": "Commute Bike %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 330,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 330
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_means_walk',
-                name: 'Commute Walk %',
-                contents: [
+                "id": "transportation_means_walk",
+                "name": "Commute Walk %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Walk %',
-                                stats: [
+                                "name": "Commute Walk %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 333,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 333
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_means_transit',
-                name: 'Commute Transit %',
-                contents: [
+                "id": "transportation_means_transit",
+                "name": "Commute Transit %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Transit %',
-                                stats: [
+                                "name": "Commute Transit %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 332,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 332
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_means_worked_at_home',
-                name: 'Commute Work From Home %',
-                contents: [
+                "id": "transportation_means_worked_at_home",
+                "name": "Commute Work From Home %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Work From Home %',
-                                stats: [
+                                "name": "Commute Work From Home %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 334,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 334
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_commute_time_under_15',
-                name: 'Commute Time < 15 min %',
-                contents: [
+                "id": "transportation_commute_time_under_15",
+                "name": "Commute Time < 15 min %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Time < 15 min %',
-                                stats: [
+                                "name": "Commute Time < 15 min %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 328,
+                                        "column": 328
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 329,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 329
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_commute_time_15_to_29',
-                name: 'Commute Time 15 - 29 min %',
-                contents: [
+                "id": "transportation_commute_time_15_to_29",
+                "name": "Commute Time 15 - 29 min %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Time 15 - 29 min %',
-                                stats: [
+                                "name": "Commute Time 15 - 29 min %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 322,
+                                        "column": 322
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 323,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 323
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_commute_time_30_to_59',
-                name: 'Commute Time 30 - 59 min %',
-                contents: [
+                "id": "transportation_commute_time_30_to_59",
+                "name": "Commute Time 30 - 59 min %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Time 30 - 59 min %',
-                                stats: [
+                                "name": "Commute Time 30 - 59 min %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 324,
+                                        "column": 324
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 325,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 325
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'transportation_commute_time_over_60',
-                name: 'Commute Time > 60 min %',
-                contents: [
+                "id": "transportation_commute_time_over_60",
+                "name": "Commute Time > 60 min %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Commute Time > 60 min %',
-                                stats: [
+                                "name": "Commute Time > 60 min %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 326,
+                                        "column": 326
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 327,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 327
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'vehicle_ownership_none',
-                name: 'Households With no Vehicle %',
-                contents: [
+                "id": "vehicle_ownership_none",
+                "name": "Households With no Vehicle %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Households With no Vehicle %',
-                                stats: [
+                                "name": "Households With no Vehicle %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 340,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 340
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'vehicle_ownership_at_least_1',
-                name: 'Households With 1+ Vehicles %',
-                contents: [
+                "id": "vehicle_ownership_at_least_1",
+                "name": "Households With 1+ Vehicles %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Households With 1+ Vehicles %',
-                                stats: [
+                                "name": "Households With 1+ Vehicles %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 338,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 338
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'vehicle_ownership_at_least_2',
-                name: 'Households With 2+ Vehicles %',
-                contents: [
+                "id": "vehicle_ownership_at_least_2",
+                "name": "Households With 2+ Vehicles %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Households With 2+ Vehicles %',
-                                stats: [
+                                "name": "Households With 2+ Vehicles %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 339,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 339
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'traffic_fatalities_last_decade_per_capita',
-                name: 'Traffic Fatalities Per Capita Per Year',
-                contents: [
+                "id": "traffic_fatalities_last_decade_per_capita",
+                "name": "Traffic Fatalities Per Capita Per Year",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Traffic Fatalities Per Capita Per Year',
-                                stats: [
+                                "name": "Traffic Fatalities Per Capita Per Year",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 319,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 319
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'traffic_fatalities_ped_last_decade_per_capita',
-                name: 'Pedestrian/Cyclist Fatalities Per Capita Per Year',
-                contents: [
+                "id": "traffic_fatalities_ped_last_decade_per_capita",
+                "name": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Pedestrian/Cyclist Fatalities Per Capita Per Year',
-                                stats: [
+                                "name": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 321,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 321
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'traffic_fatalities_last_decade',
-                name: 'Total Traffic Fatalities In Last Decade',
-                contents: [
+                "id": "traffic_fatalities_last_decade",
+                "name": "Total Traffic Fatalities In Last Decade",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Total Traffic Fatalities In Last Decade',
-                                stats: [
+                                "name": "Total Traffic Fatalities In Last Decade",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 318,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 318
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'traffic_fatalities_ped_last_decade',
-                name: 'Total Pedestrian/Cyclist Fatalities In Last Decade',
-                contents: [
+                "id": "traffic_fatalities_ped_last_decade",
+                "name": "Total Pedestrian/Cyclist Fatalities In Last Decade",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Total Pedestrian/Cyclist Fatalities In Last Decade',
-                                stats: [
+                                "name": "Total Pedestrian/Cyclist Fatalities In Last Decade",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 320,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 320
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'health',
-        name: 'Health',
-        contents: [
+        "id": "health",
+        "name": "Health",
+        "contents": [
             {
-                id: 'GHLTH_cdc_2',
-                name: 'Fair or poor self-rated health status %',
-                contents: [
+                "id": "GHLTH_cdc_2",
+                "name": "Fair or poor self-rated health status %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Fair or poor self-rated health status %',
-                                stats: [
+                                "name": "Fair or poor self-rated health status %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 17,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 17
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'PHLTH_cdc_2',
-                name: 'Physical health not good for two weeks in last year %',
-                contents: [
+                "id": "PHLTH_cdc_2",
+                "name": "Physical health not good for two weeks in last year %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Physical health not good for two weeks in last year %',
-                                stats: [
+                                "name": "Physical health not good for two weeks in last year %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 24,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 24
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ARTHRITIS_cdc_2',
-                name: 'Arthritis %',
-                contents: [
+                "id": "ARTHRITIS_cdc_2",
+                "name": "Arthritis %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Arthritis %',
-                                stats: [
+                                "name": "Arthritis %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 3,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 3
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CASTHMA_cdc_2',
-                name: 'Current asthma %',
-                contents: [
+                "id": "CASTHMA_cdc_2",
+                "name": "Current asthma %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Current asthma %',
-                                stats: [
+                                "name": "Current asthma %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 7,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 7
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'BPHIGH_cdc_2',
-                name: 'High blood pressure %',
-                contents: [
+                "id": "BPHIGH_cdc_2",
+                "name": "High blood pressure %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High blood pressure %',
-                                stats: [
+                                "name": "High blood pressure %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 5,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 5
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CANCER_cdc_2',
-                name: 'Cancer (excluding skin cancer) %',
-                contents: [
+                "id": "CANCER_cdc_2",
+                "name": "Cancer (excluding skin cancer) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Cancer (excluding skin cancer) %',
-                                stats: [
+                                "name": "Cancer (excluding skin cancer) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 6,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 6
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'KIDNEY_cdc_2',
-                name: 'Chronic kidney disease %',
-                contents: [
+                "id": "KIDNEY_cdc_2",
+                "name": "Chronic kidney disease %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Chronic kidney disease %',
-                                stats: [
+                                "name": "Chronic kidney disease %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 20,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 20
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'COPD_cdc_2',
-                name: 'COPD %',
-                contents: [
+                "id": "COPD_cdc_2",
+                "name": "COPD %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'COPD %',
-                                stats: [
+                                "name": "COPD %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 12,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 12
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CHD_cdc_2',
-                name: 'Coronary heart disease %',
-                contents: [
+                "id": "CHD_cdc_2",
+                "name": "Coronary heart disease %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Coronary heart disease %',
-                                stats: [
+                                "name": "Coronary heart disease %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 8,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 8
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'DIABETES_cdc_2',
-                name: 'Diagnosed diabetes %',
-                contents: [
+                "id": "DIABETES_cdc_2",
+                "name": "Diagnosed diabetes %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Diagnosed diabetes %',
-                                stats: [
+                                "name": "Diagnosed diabetes %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 15,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 15
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'OBESITY_cdc_2',
-                name: 'Obesity %',
-                contents: [
+                "id": "OBESITY_cdc_2",
+                "name": "Obesity %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Obesity %',
-                                stats: [
+                                "name": "Obesity %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 23,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 23
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'STROKE_cdc_2',
-                name: 'Stroke %',
-                contents: [
+                "id": "STROKE_cdc_2",
+                "name": "Stroke %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Stroke %',
-                                stats: [
+                                "name": "Stroke %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 27,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 27
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'DISABILITY_cdc_2',
-                name: 'Disability %',
-                contents: [
+                "id": "DISABILITY_cdc_2",
+                "name": "Disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Disability %',
-                                stats: [
+                                "name": "Disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 16,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 16
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'HEARING_cdc_2',
-                name: 'Hearing disability %',
-                contents: [
+                "id": "HEARING_cdc_2",
+                "name": "Hearing disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Hearing disability %',
-                                stats: [
+                                "name": "Hearing disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 18,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 18
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'VISION_cdc_2',
-                name: 'Vision disability %',
-                contents: [
+                "id": "VISION_cdc_2",
+                "name": "Vision disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Vision disability %',
-                                stats: [
+                                "name": "Vision disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 28,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 28
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'COGNITION_cdc_2',
-                name: 'Cognitive disability %',
-                contents: [
+                "id": "COGNITION_cdc_2",
+                "name": "Cognitive disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Cognitive disability %',
-                                stats: [
+                                "name": "Cognitive disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 11,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 11
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'MOBILITY_cdc_2',
-                name: 'Mobility disability %',
-                contents: [
+                "id": "MOBILITY_cdc_2",
+                "name": "Mobility disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mobility disability %',
-                                stats: [
+                                "name": "Mobility disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 22,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 22
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'SELFCARE_cdc_2',
-                name: 'Self-care disability %',
-                contents: [
+                "id": "SELFCARE_cdc_2",
+                "name": "Self-care disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Self-care disability %',
-                                stats: [
+                                "name": "Self-care disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 25,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 25
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'INDEPLIVE_cdc_2',
-                name: 'Independent living disability %',
-                contents: [
+                "id": "INDEPLIVE_cdc_2",
+                "name": "Independent living disability %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Independent living disability %',
-                                stats: [
+                                "name": "Independent living disability %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 19,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 19
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'BINGE_cdc_2',
-                name: 'Binge drinking among adults %',
-                contents: [
+                "id": "BINGE_cdc_2",
+                "name": "Binge drinking among adults %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Binge drinking among adults %',
-                                stats: [
+                                "name": "Binge drinking among adults %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 4,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 4
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CSMOKING_cdc_2',
-                name: 'Smoking %',
-                contents: [
+                "id": "CSMOKING_cdc_2",
+                "name": "Smoking %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Smoking %',
-                                stats: [
+                                "name": "Smoking %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 13,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 13
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'LPA_cdc_2',
-                name: 'No leisure-time physical activity %',
-                contents: [
+                "id": "LPA_cdc_2",
+                "name": "No leisure-time physical activity %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'No leisure-time physical activity %',
-                                stats: [
+                                "name": "No leisure-time physical activity %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 21,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 21
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'SLEEP_cdc_2',
-                name: 'Sleeping less than 7 hours %',
-                contents: [
+                "id": "SLEEP_cdc_2",
+                "name": "Sleeping less than 7 hours %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Sleeping less than 7 hours %',
-                                stats: [
+                                "name": "Sleeping less than 7 hours %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 26,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 26
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CHECKUP_cdc_2',
-                name: 'Attended doctor in last year %',
-                contents: [
+                "id": "CHECKUP_cdc_2",
+                "name": "Attended doctor in last year %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Attended doctor in last year %',
-                                stats: [
+                                "name": "Attended doctor in last year %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 9,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 9
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'DENTAL_cdc_2',
-                name: 'Attended dentist in last year %',
-                contents: [
+                "id": "DENTAL_cdc_2",
+                "name": "Attended dentist in last year %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Attended dentist in last year %',
-                                stats: [
+                                "name": "Attended dentist in last year %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 14,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 14
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'CHOLSCREEN_cdc_2',
-                name: 'Cholesterol screening in last year %',
-                contents: [
+                "id": "CHOLSCREEN_cdc_2",
+                "name": "Cholesterol screening in last year %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Cholesterol screening in last year %',
-                                stats: [
+                                "name": "Cholesterol screening in last year %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 10,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 10
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'climate_change',
-        name: 'Environment',
-        contents: [
+        "id": "climate_change",
+        "name": "Environment",
+        "contents": [
             {
-                id: 'pm_25_2018_2022',
-                name: 'PW Mean PM2.5 Pollution',
-                contents: [
+                "id": "pm_25_2018_2022",
+                "name": "PW Mean PM2.5 Pollution",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Mean PM2.5 Pollution',
-                                stats: [
+                                "name": "PW Mean PM2.5 Pollution",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 279,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 279
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_utility_gas',
-                name: 'Utility gas heating %',
-                contents: [
+                "id": "heating_utility_gas",
+                "name": "Utility gas heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Utility gas heating %',
-                                stats: [
+                                "name": "Utility gas heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 153,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 153
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_electricity',
-                name: 'Electricity heating %',
-                contents: [
+                "id": "heating_electricity",
+                "name": "Electricity heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Electricity heating %',
-                                stats: [
+                                "name": "Electricity heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 149,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 149
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_bottled_tank_lp_gas',
-                name: 'Bottled, tank, or LP gas heating %',
-                contents: [
+                "id": "heating_bottled_tank_lp_gas",
+                "name": "Bottled, tank, or LP gas heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Bottled, tank, or LP gas heating %',
-                                stats: [
+                                "name": "Bottled, tank, or LP gas heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 148,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 148
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_feul_oil_kerosene',
-                name: 'Fuel oil, kerosene, etc. heating %',
-                contents: [
+                "id": "heating_feul_oil_kerosene",
+                "name": "Fuel oil, kerosene, etc. heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Fuel oil, kerosene, etc. heating %',
-                                stats: [
+                                "name": "Fuel oil, kerosene, etc. heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 150,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 150
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_other',
-                name: 'Other fuel heating %',
-                contents: [
+                "id": "heating_other",
+                "name": "Other fuel heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Other fuel heating %',
-                                stats: [
+                                "name": "Other fuel heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 152,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 152
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'heating_no',
-                name: 'No heating %',
-                contents: [
+                "id": "heating_no",
+                "name": "No heating %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'No heating %',
-                                stats: [
+                                "name": "No heating %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 151,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 151
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'industry',
-        name: 'Industry',
-        contents: [
+        "id": "industry",
+        "name": "Industry",
+        "contents": [
             {
-                id: 'industry_agriculture,_forestry,_fishing_and_hunting',
-                name: 'Agriculture, forestry, fishing and hunting %',
-                contents: [
+                "id": "industry_agriculture,_forestry,_fishing_and_hunting",
+                "name": "Agriculture, forestry, fishing and hunting %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Agriculture, forestry, fishing and hunting %',
-                                stats: [
+                                "name": "Agriculture, forestry, fishing and hunting %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 182,
+                                        "column": 182
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 183,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 183
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_mining,_quarrying,_and_oil_and_gas_extraction',
-                name: 'Mining, quarrying, and oil and gas extraction %',
-                contents: [
+                "id": "industry_mining,_quarrying,_and_oil_and_gas_extraction",
+                "name": "Mining, quarrying, and oil and gas extraction %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mining, quarrying, and oil and gas extraction %',
-                                stats: [
+                                "name": "Mining, quarrying, and oil and gas extraction %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 200,
+                                        "column": 200
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 201,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 201
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_accommodation_and_food_services',
-                name: 'Accommodation and food services %',
-                contents: [
+                "id": "industry_accommodation_and_food_services",
+                "name": "Accommodation and food services %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Accommodation and food services %',
-                                stats: [
+                                "name": "Accommodation and food services %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 178,
+                                        "column": 178
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 179,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 179
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_arts,_entertainment,_and_recreation',
-                name: 'Arts, entertainment, and recreation %',
-                contents: [
+                "id": "industry_arts,_entertainment,_and_recreation",
+                "name": "Arts, entertainment, and recreation %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Arts, entertainment, and recreation %',
-                                stats: [
+                                "name": "Arts, entertainment, and recreation %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 184,
+                                        "column": 184
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 185,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 185
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_construction',
-                name: 'Construction %',
-                contents: [
+                "id": "industry_construction",
+                "name": "Construction %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Construction %',
-                                stats: [
+                                "name": "Construction %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 186,
+                                        "column": 186
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 187,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 187
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_educational_services',
-                name: 'Educational services %',
-                contents: [
+                "id": "industry_educational_services",
+                "name": "Educational services %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Educational services %',
-                                stats: [
+                                "name": "Educational services %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 188,
+                                        "column": 188
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 189,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 189
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_health_care_and_social_assistance',
-                name: 'Health care and social assistance %',
-                contents: [
+                "id": "industry_health_care_and_social_assistance",
+                "name": "Health care and social assistance %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Health care and social assistance %',
-                                stats: [
+                                "name": "Health care and social assistance %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 192,
+                                        "column": 192
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 193,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 193
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_finance_and_insurance',
-                name: 'Finance and insurance %',
-                contents: [
+                "id": "industry_finance_and_insurance",
+                "name": "Finance and insurance %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Finance and insurance %',
-                                stats: [
+                                "name": "Finance and insurance %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 190,
+                                        "column": 190
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 191,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 191
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_real_estate_and_rental_and_leasing',
-                name: 'Real estate and rental and leasing %',
-                contents: [
+                "id": "industry_real_estate_and_rental_and_leasing",
+                "name": "Real estate and rental and leasing %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Real estate and rental and leasing %',
-                                stats: [
+                                "name": "Real estate and rental and leasing %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 208,
+                                        "column": 208
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 209,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 209
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_information',
-                name: 'Information %',
-                contents: [
+                "id": "industry_information",
+                "name": "Information %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Information %',
-                                stats: [
+                                "name": "Information %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 194,
+                                        "column": 194
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 195,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 195
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_manufacturing',
-                name: 'Manufacturing %',
-                contents: [
+                "id": "industry_manufacturing",
+                "name": "Manufacturing %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Manufacturing %',
-                                stats: [
+                                "name": "Manufacturing %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 198,
+                                        "column": 198
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 199,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 199
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_other_services,_except_public_administration',
-                name: 'Other services, except public administration %',
-                contents: [
+                "id": "industry_other_services,_except_public_administration",
+                "name": "Other services, except public administration %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Other services, except public administration %',
-                                stats: [
+                                "name": "Other services, except public administration %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 202,
+                                        "column": 202
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 203,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 203
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_administrative_and_support_and_waste_management_services',
-                name: 'Administrative and support and waste management services %',
-                contents: [
+                "id": "industry_administrative_and_support_and_waste_management_services",
+                "name": "Administrative and support and waste management services %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Administrative and support and waste management services %',
-                                stats: [
+                                "name": "Administrative and support and waste management services %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 180,
+                                        "column": 180
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 181,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 181
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_management_of_companies_and_enterprises',
-                name: 'Management of companies and enterprises %',
-                contents: [
+                "id": "industry_management_of_companies_and_enterprises",
+                "name": "Management of companies and enterprises %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Management of companies and enterprises %',
-                                stats: [
+                                "name": "Management of companies and enterprises %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 196,
+                                        "column": 196
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 197,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 197
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_professional,_scientific,_and_technical_services',
-                name: 'Professional, scientific, and technical services %',
-                contents: [
+                "id": "industry_professional,_scientific,_and_technical_services",
+                "name": "Professional, scientific, and technical services %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Professional, scientific, and technical services %',
-                                stats: [
+                                "name": "Professional, scientific, and technical services %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 204,
+                                        "column": 204
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 205,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 205
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_public_administration',
-                name: 'Public administration %',
-                contents: [
+                "id": "industry_public_administration",
+                "name": "Public administration %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Public administration %',
-                                stats: [
+                                "name": "Public administration %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 206,
+                                        "column": 206
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 207,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 207
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_retail_trade',
-                name: 'Retail trade %',
-                contents: [
+                "id": "industry_retail_trade",
+                "name": "Retail trade %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Retail trade %',
-                                stats: [
+                                "name": "Retail trade %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 210,
+                                        "column": 210
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 211,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 211
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_transportation_and_warehousing',
-                name: 'Transportation and warehousing %',
-                contents: [
+                "id": "industry_transportation_and_warehousing",
+                "name": "Transportation and warehousing %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Transportation and warehousing %',
-                                stats: [
+                                "name": "Transportation and warehousing %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 212,
+                                        "column": 212
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 213,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 213
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_utilities',
-                name: 'Utilities %',
-                contents: [
+                "id": "industry_utilities",
+                "name": "Utilities %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Utilities %',
-                                stats: [
+                                "name": "Utilities %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 214,
+                                        "column": 214
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 215,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 215
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'industry_wholesale_trade',
-                name: 'Wholesale trade %',
-                contents: [
+                "id": "industry_wholesale_trade",
+                "name": "Wholesale trade %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Wholesale trade %',
-                                stats: [
+                                "name": "Wholesale trade %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 216,
+                                        "column": 216
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 217,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "column": 217
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'occupation',
-        name: 'Occupation',
-        contents: [
+        "id": "occupation",
+        "name": "Occupation",
+        "contents": [
             {
-                id: 'occupation_architecture_and_engineering_occupations',
-                name: 'Architecture and engineering occupations %',
-                contents: [
+                "id": "occupation_architecture_and_engineering_occupations",
+                "name": "Architecture and engineering occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Architecture and engineering occupations %',
-                                stats: [
+                                "name": "Architecture and engineering occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 250,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 250
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_computer_and_mathematical_occupations',
-                name: 'Computer and mathematical occupations %',
-                contents: [
+                "id": "occupation_computer_and_mathematical_occupations",
+                "name": "Computer and mathematical occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Computer and mathematical occupations %',
-                                stats: [
+                                "name": "Computer and mathematical occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 255,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 255
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_life,_physical,_and_social_science_occupations',
-                name: 'Life, physical, and social science occupations %',
-                contents: [
+                "id": "occupation_life,_physical,_and_social_science_occupations",
+                "name": "Life, physical, and social science occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Life, physical, and social science occupations %',
-                                stats: [
+                                "name": "Life, physical, and social science occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 267,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 267
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_arts,_design,_entertainment,_sports,_and_media_occupations',
-                name: 'Arts, design, entertainment, sports, and media occupations %',
-                contents: [
+                "id": "occupation_arts,_design,_entertainment,_sports,_and_media_occupations",
+                "name": "Arts, design, entertainment, sports, and media occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Arts, design, entertainment, sports, and media occupations %',
-                                stats: [
+                                "name": "Arts, design, entertainment, sports, and media occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 251,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 251
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_community_and_social_service_occupations',
-                name: 'Community and social service occupations %',
-                contents: [
+                "id": "occupation_community_and_social_service_occupations",
+                "name": "Community and social service occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Community and social service occupations %',
-                                stats: [
+                                "name": "Community and social service occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 254,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 254
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_educational_instruction,_and_library_occupations',
-                name: 'Educational instruction, and library occupations %',
-                contents: [
+                "id": "occupation_educational_instruction,_and_library_occupations",
+                "name": "Educational instruction, and library occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Educational instruction, and library occupations %',
-                                stats: [
+                                "name": "Educational instruction, and library occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 257,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 257
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_legal_occupations',
-                name: 'Legal occupations %',
-                contents: [
+                "id": "occupation_legal_occupations",
+                "name": "Legal occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Legal occupations %',
-                                stats: [
+                                "name": "Legal occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 266,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 266
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations',
-                name: 'Health diagnosing and treating practitioners and other technical occupations %',
-                contents: [
+                "id": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+                "name": "Health diagnosing and treating practitioners and other technical occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Health diagnosing and treating practitioners and other technical occupations %',
-                                stats: [
+                                "name": "Health diagnosing and treating practitioners and other technical occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 261,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 261
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_health_technologists_and_technicians',
-                name: 'Health technologists and technicians %',
-                contents: [
+                "id": "occupation_health_technologists_and_technicians",
+                "name": "Health technologists and technicians %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Health technologists and technicians %',
-                                stats: [
+                                "name": "Health technologists and technicians %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 262,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 262
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_business_and_financial_operations_occupations',
-                name: 'Business and financial operations occupations %',
-                contents: [
+                "id": "occupation_business_and_financial_operations_occupations",
+                "name": "Business and financial operations occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Business and financial operations occupations %',
-                                stats: [
+                                "name": "Business and financial operations occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 253,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 253
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_management_occupations',
-                name: 'Management occupations %',
-                contents: [
+                "id": "occupation_management_occupations",
+                "name": "Management occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Management occupations %',
-                                stats: [
+                                "name": "Management occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 268,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 268
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_construction_and_extraction_occupations',
-                name: 'Construction and extraction occupations %',
-                contents: [
+                "id": "occupation_construction_and_extraction_occupations",
+                "name": "Construction and extraction occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Construction and extraction occupations %',
-                                stats: [
+                                "name": "Construction and extraction occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 256,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 256
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_farming,_fishing,_and_forestry_occupations',
-                name: 'Farming, fishing, and forestry occupations %',
-                contents: [
+                "id": "occupation_farming,_fishing,_and_forestry_occupations",
+                "name": "Farming, fishing, and forestry occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Farming, fishing, and forestry occupations %',
-                                stats: [
+                                "name": "Farming, fishing, and forestry occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 258,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 258
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_installation,_maintenance,_and_repair_occupations',
-                name: 'Installation, maintenance, and repair occupations %',
-                contents: [
+                "id": "occupation_installation,_maintenance,_and_repair_occupations",
+                "name": "Installation, maintenance, and repair occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Installation, maintenance, and repair occupations %',
-                                stats: [
+                                "name": "Installation, maintenance, and repair occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 264,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 264
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_material_moving_occupations',
-                name: 'Material moving occupations %',
-                contents: [
+                "id": "occupation_material_moving_occupations",
+                "name": "Material moving occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Material moving occupations %',
-                                stats: [
+                                "name": "Material moving occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 269,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 269
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_production_occupations',
-                name: 'Production occupations %',
-                contents: [
+                "id": "occupation_production_occupations",
+                "name": "Production occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Production occupations %',
-                                stats: [
+                                "name": "Production occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 272,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 272
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_transportation_occupations',
-                name: 'Transportation occupations %',
-                contents: [
+                "id": "occupation_transportation_occupations",
+                "name": "Transportation occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Transportation occupations %',
-                                stats: [
+                                "name": "Transportation occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 274,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 274
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_office_and_administrative_support_occupations',
-                name: 'Office and administrative support occupations %',
-                contents: [
+                "id": "occupation_office_and_administrative_support_occupations",
+                "name": "Office and administrative support occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Office and administrative support occupations %',
-                                stats: [
+                                "name": "Office and administrative support occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 270,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 270
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_sales_and_related_occupations',
-                name: 'Sales and related occupations %',
-                contents: [
+                "id": "occupation_sales_and_related_occupations",
+                "name": "Sales and related occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Sales and related occupations %',
-                                stats: [
+                                "name": "Sales and related occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 273,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 273
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_building_and_grounds_cleaning_and_maintenance_occupations',
-                name: 'Building and grounds cleaning and maintenance occupations %',
-                contents: [
+                "id": "occupation_building_and_grounds_cleaning_and_maintenance_occupations",
+                "name": "Building and grounds cleaning and maintenance occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Building and grounds cleaning and maintenance occupations %',
-                                stats: [
+                                "name": "Building and grounds cleaning and maintenance occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 252,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 252
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_food_preparation_and_serving_related_occupations',
-                name: 'Food preparation and serving related occupations %',
-                contents: [
+                "id": "occupation_food_preparation_and_serving_related_occupations",
+                "name": "Food preparation and serving related occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Food preparation and serving related occupations %',
-                                stats: [
+                                "name": "Food preparation and serving related occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 260,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 260
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_healthcare_support_occupations',
-                name: 'Healthcare support occupations %',
-                contents: [
+                "id": "occupation_healthcare_support_occupations",
+                "name": "Healthcare support occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Healthcare support occupations %',
-                                stats: [
+                                "name": "Healthcare support occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 263,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 263
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_personal_care_and_service_occupations',
-                name: 'Personal care and service occupations %',
-                contents: [
+                "id": "occupation_personal_care_and_service_occupations",
+                "name": "Personal care and service occupations %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Personal care and service occupations %',
-                                stats: [
+                                "name": "Personal care and service occupations %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 271,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 271
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors',
-                name: 'Firefighting and prevention, and other protective service workers including supervisors %',
-                contents: [
+                "id": "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
+                "name": "Firefighting and prevention, and other protective service workers including supervisors %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Firefighting and prevention, and other protective service workers including supervisors %',
-                                stats: [
+                                "name": "Firefighting and prevention, and other protective service workers including supervisors %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 259,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 259
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'occupation_law_enforcement_workers_including_supervisors',
-                name: 'Law enforcement workers including supervisors %',
-                contents: [
+                "id": "occupation_law_enforcement_workers_including_supervisors",
+                "name": "Law enforcement workers including supervisors %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Law enforcement workers including supervisors %',
-                                stats: [
+                                "name": "Law enforcement workers including supervisors %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 265,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 265
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'relationships',
-        name: 'Relationships',
-        contents: [
+        "id": "relationships",
+        "name": "Relationships",
+        "contents": [
             {
-                id: 'sors_unpartnered_householder',
-                name: 'Not Cohabiting With Partner %',
-                contents: [
+                "id": "sors_unpartnered_householder",
+                "name": "Not Cohabiting With Partner %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Not Cohabiting With Partner %',
-                                stats: [
+                                "name": "Not Cohabiting With Partner %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 317,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 317
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'sors_cohabiting_partnered_gay',
-                name: 'Cohabiting With Partner (Gay) %',
-                contents: [
+                "id": "sors_cohabiting_partnered_gay",
+                "name": "Cohabiting With Partner (Gay) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Cohabiting With Partner (Gay) %',
-                                stats: [
+                                "name": "Cohabiting With Partner (Gay) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 314,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 314
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'sors_cohabiting_partnered_straight',
-                name: 'Cohabiting With Partner (Straight) %',
-                contents: [
+                "id": "sors_cohabiting_partnered_straight",
+                "name": "Cohabiting With Partner (Straight) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Cohabiting With Partner (Straight) %',
-                                stats: [
+                                "name": "Cohabiting With Partner (Straight) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 315,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 315
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'sors_child',
-                name: 'Living With Parents %',
-                contents: [
+                "id": "sors_child",
+                "name": "Living With Parents %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Living With Parents %',
-                                stats: [
+                                "name": "Living With Parents %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 313,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 313
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'sors_other',
-                name: 'Other Living Situation %',
-                contents: [
+                "id": "sors_other",
+                "name": "Other Living Situation %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Other Living Situation %',
-                                stats: [
+                                "name": "Other Living Situation %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 316,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 316
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'marriage_never_married',
-                name: 'Never Married %',
-                contents: [
+                "id": "marriage_never_married",
+                "name": "Never Married %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Never Married %',
-                                stats: [
+                                "name": "Never Married %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 234,
+                                        "column": 234
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 235,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 235
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'marriage_married_not_divorced',
-                name: 'Married (not divorced) %',
-                contents: [
+                "id": "marriage_married_not_divorced",
+                "name": "Married (not divorced) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Married (not divorced) %',
-                                stats: [
+                                "name": "Married (not divorced) %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 232,
+                                        "column": 232
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 233,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "column": 233
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'marriage_divorced',
-                name: 'Divorced %',
-                contents: [
+                "id": "marriage_divorced",
+                "name": "Divorced %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Divorced %',
-                                stats: [
+                                "name": "Divorced %",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 230,
+                                        "column": 230
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 231,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "column": 231
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'election',
-        name: 'Election',
-        contents: [
+        "id": "election",
+        "name": "Election",
+        "contents": [
             {
-                id: '2020 Presidential Election-margin',
-                name: '2020 Presidential Election',
-                contents: [
+                "id": "2020 Presidential Election-margin",
+                "name": "2020 Presidential Election",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2020 Presidential Election',
-                                stats: [
+                                "name": "2020 Presidential Election",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 2,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 2
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: '2016 Presidential Election-margin',
-                name: '2016 Presidential Election',
-                contents: [
+                "id": "2016 Presidential Election-margin",
+                "name": "2016 Presidential Election",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2016 Presidential Election',
-                                stats: [
+                                "name": "2016 Presidential Election",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 0,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 0
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: '2016-2020 Swing-margin',
-                name: '2016-2020 Swing',
-                contents: [
+                "id": "2016-2020 Swing-margin",
+                "name": "2016-2020 Swing",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: '2016-2020 Swing',
-                                stats: [
+                                "name": "2016-2020 Swing",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 1,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 1
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'distance_from_features',
-        name: 'Distance from Features',
-        contents: [
+        "id": "distance_from_features",
+        "name": "Distance from Features",
+        "contents": [
             {
-                id: 'park_percent_1km_v2',
-                name: 'PW Mean % of parkland within 1km',
-                contents: [
+                "id": "park_percent_1km_v2",
+                "name": "PW Mean % of parkland within 1km",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Mean % of parkland within 1km',
-                                stats: [
+                                "name": "PW Mean % of parkland within 1km",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 278,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 278
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'within_Hospital_10',
-                name: 'Within 10km of Hospital %',
-                contents: [
+                "id": "within_Hospital_10",
+                "name": "Within 10km of Hospital %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 10km of Hospital %',
-                                stats: [
+                                "name": "Within 10km of Hospital %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 347,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 347
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_dist_Hospital_updated',
-                name: 'Mean distance to nearest Hospital',
-                contents: [
+                "id": "mean_dist_Hospital_updated",
+                "name": "Mean distance to nearest Hospital",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean distance to nearest Hospital',
-                                stats: [
+                                "name": "Mean distance to nearest Hospital",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 238,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 238
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'within_Public School_2',
-                name: 'Within 2km of Public School %',
-                contents: [
+                "id": "within_Public School_2",
+                "name": "Within 2km of Public School %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 2km of Public School %',
-                                stats: [
+                                "name": "Within 2km of Public School %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 348,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 348
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_dist_Public School_updated',
-                name: 'Mean distance to nearest Public School',
-                contents: [
+                "id": "mean_dist_Public School_updated",
+                "name": "Mean distance to nearest Public School",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean distance to nearest Public School',
-                                stats: [
+                                "name": "Mean distance to nearest Public School",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 239,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 239
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'within_Airport_30',
-                name: 'Within 30km of Airport %',
-                contents: [
+                "id": "within_Airport_30",
+                "name": "Within 30km of Airport %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 30km of Airport %',
-                                stats: [
+                                "name": "Within 30km of Airport %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 346,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 346
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_dist_Airport_updated',
-                name: 'Mean distance to nearest Airport',
-                contents: [
+                "id": "mean_dist_Airport_updated",
+                "name": "Mean distance to nearest Airport",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean distance to nearest Airport',
-                                stats: [
+                                "name": "Mean distance to nearest Airport",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 237,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 237
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'within_Active Superfund Site_10',
-                name: 'Within 10km of Active Superfund Site %',
-                contents: [
+                "id": "within_Active Superfund Site_10",
+                "name": "Within 10km of Active Superfund Site %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 10km of Active Superfund Site %',
-                                stats: [
+                                "name": "Within 10km of Active Superfund Site %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 345,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 345
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_dist_Active Superfund Site_updated',
-                name: 'Mean distance to nearest Active Superfund Site',
-                contents: [
+                "id": "mean_dist_Active Superfund Site_updated",
+                "name": "Mean distance to nearest Active Superfund Site",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean distance to nearest Active Superfund Site',
-                                stats: [
+                                "name": "Mean distance to nearest Active Superfund Site",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 236,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 236
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'lapophalfshare_usda_fra_1',
-                name: 'Within 0.5mi of a grocery store %',
-                contents: [
+                "id": "lapophalfshare_usda_fra_1",
+                "name": "Within 0.5mi of a grocery store %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 0.5mi of a grocery store %',
-                                stats: [
+                                "name": "Within 0.5mi of a grocery store %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 228,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 228
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'lapop1share_usda_fra_1',
-                name: 'Within 1mi of a grocery store %',
-                contents: [
+                "id": "lapop1share_usda_fra_1",
+                "name": "Within 1mi of a grocery store %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 1mi of a grocery store %',
-                                stats: [
+                                "name": "Within 1mi of a grocery store %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 226,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 226
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'lapop10share_usda_fra_1',
-                name: 'Within 10mi of a grocery store %',
-                contents: [
+                "id": "lapop10share_usda_fra_1",
+                "name": "Within 10mi of a grocery store %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 10mi of a grocery store %',
-                                stats: [
+                                "name": "Within 10mi of a grocery store %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 225,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 225
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'lapop20share_usda_fra_1',
-                name: 'Within 20mi of a grocery store %',
-                contents: [
+                "id": "lapop20share_usda_fra_1",
+                "name": "Within 20mi of a grocery store %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Within 20mi of a grocery store %',
-                                stats: [
+                                "name": "Within 20mi of a grocery store %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 227,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 227
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'weather',
-        name: 'Weather',
-        contents: [
+        "id": "weather",
+        "name": "Weather",
+        "contents": [
             {
-                id: 'mean_high_temp_4',
-                name: 'Mean high temp',
-                contents: [
+                "id": "mean_high_temp_4",
+                "name": "Mean high temp",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high temp',
-                                stats: [
+                                "name": "Mean high temp",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 242,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 242
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_heat_index_4',
-                name: 'Mean high heat index',
-                contents: [
+                "id": "mean_high_heat_index_4",
+                "name": "Mean high heat index",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high heat index',
-                                stats: [
+                                "name": "Mean high heat index",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 241,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 241
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_dewpoint_4',
-                name: 'Mean high dewpt',
-                contents: [
+                "id": "mean_high_dewpoint_4",
+                "name": "Mean high dewpt",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high dewpt',
-                                stats: [
+                                "name": "Mean high dewpt",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 240,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 240
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_above_90_4',
-                name: 'High temperature Above 90\u00b0F %',
-                contents: [
+                "id": "days_above_90_4",
+                "name": "High temperature Above 90\u00b0F %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High temperature Above 90\u00b0F %',
-                                stats: [
+                                "name": "High temperature Above 90\u00b0F %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 93,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 93
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_between_40_and_90_4',
-                name: 'High temperature Between 40 and 90\u00b0F %',
-                contents: [
+                "id": "days_between_40_and_90_4",
+                "name": "High temperature Between 40 and 90\u00b0F %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High temperature Between 40 and 90\u00b0F %',
-                                stats: [
+                                "name": "High temperature Between 40 and 90\u00b0F %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 95,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 95
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_below_40_4',
-                name: 'High temperature Below 40\u00b0F %',
-                contents: [
+                "id": "days_below_40_4",
+                "name": "High temperature Below 40\u00b0F %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High temperature Below 40\u00b0F %',
-                                stats: [
+                                "name": "High temperature Below 40\u00b0F %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 94,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 94
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_dewpoint_70_inf_4',
-                name: 'Humid days (dewpt > 70\u00b0F) %',
-                contents: [
+                "id": "days_dewpoint_70_inf_4",
+                "name": "Humid days (dewpt > 70\u00b0F) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Humid days (dewpt > 70\u00b0F) %',
-                                stats: [
+                                "name": "Humid days (dewpt > 70\u00b0F) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 98,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 98
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_dewpoint_50_70_4',
-                name: 'Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %',
-                contents: [
+                "id": "days_dewpoint_50_70_4",
+                "name": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %',
-                                stats: [
+                                "name": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 97,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 97
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'days_dewpoint_-inf_50_4',
-                name: 'Dry days (dewpt < 50\u00b0F) %',
-                contents: [
+                "id": "days_dewpoint_-inf_50_4",
+                "name": "Dry days (dewpt < 50\u00b0F) %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Dry days (dewpt < 50\u00b0F) %',
-                                stats: [
+                                "name": "Dry days (dewpt < 50\u00b0F) %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 96,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 96
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'hours_sunny_4',
-                name: 'Mean sunny hours',
-                contents: [
+                "id": "hours_sunny_4",
+                "name": "Mean sunny hours",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean sunny hours',
-                                stats: [
+                                "name": "Mean sunny hours",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 162,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 162
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'rainfall_4',
-                name: 'Rainfall',
-                contents: [
+                "id": "rainfall_4",
+                "name": "Rainfall",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Rainfall',
-                                stats: [
+                                "name": "Rainfall",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 287,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 287
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'snowfall_4',
-                name: 'Snowfall [rain-equivalent]',
-                contents: [
+                "id": "snowfall_4",
+                "name": "Snowfall [rain-equivalent]",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Snowfall [rain-equivalent]',
-                                stats: [
+                                "name": "Snowfall [rain-equivalent]",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 312,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 312
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'wind_speed_over_10mph_4',
-                name: 'High windspeed (>10mph) days %',
-                contents: [
+                "id": "wind_speed_over_10mph_4",
+                "name": "High windspeed (>10mph) days %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'High windspeed (>10mph) days %',
-                                stats: [
+                                "name": "High windspeed (>10mph) days %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 344,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 344
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_temp_summer_4',
-                name: 'Mean high temperature in summer',
-                contents: [
+                "id": "mean_high_temp_summer_4",
+                "name": "Mean high temperature in summer",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high temperature in summer',
-                                stats: [
+                                "name": "Mean high temperature in summer",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 245,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 245
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_temp_winter_4',
-                name: 'Mean high temperature in winter',
-                contents: [
+                "id": "mean_high_temp_winter_4",
+                "name": "Mean high temperature in winter",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high temperature in winter',
-                                stats: [
+                                "name": "Mean high temperature in winter",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 246,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 246
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_temp_fall_4',
-                name: 'Mean high temperature in fall',
-                contents: [
+                "id": "mean_high_temp_fall_4",
+                "name": "Mean high temperature in fall",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high temperature in fall',
-                                stats: [
+                                "name": "Mean high temperature in fall",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 243,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 243
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'mean_high_temp_spring_4',
-                name: 'Mean high temperature in spring',
-                contents: [
+                "id": "mean_high_temp_spring_4",
+                "name": "Mean high temperature in spring",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Mean high temperature in spring',
-                                stats: [
+                                "name": "Mean high temperature in spring",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 244,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 244
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'misc',
-        name: 'Miscellaneous',
-        contents: [
+        "id": "misc",
+        "name": "Miscellaneous",
+        "contents": [
             {
-                id: 'internet_no_access',
-                name: 'No internet access %',
-                contents: [
+                "id": "internet_no_access",
+                "name": "No internet access %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'No internet access %',
-                                stats: [
+                                "name": "No internet access %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 221,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 221
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'insurance_coverage_none',
-                name: 'Uninsured %',
-                contents: [
+                "id": "insurance_coverage_none",
+                "name": "Uninsured %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Uninsured %',
-                                stats: [
+                                "name": "Uninsured %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 219,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 219
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'insurance_coverage_govt',
-                name: 'Public Insurance %',
-                contents: [
+                "id": "insurance_coverage_govt",
+                "name": "Public Insurance %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Public Insurance %',
-                                stats: [
+                                "name": "Public Insurance %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 218,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 218
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'insurance_coverage_private',
-                name: 'Private Insurance %',
-                contents: [
+                "id": "insurance_coverage_private",
+                "name": "Private Insurance %",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'Private Insurance %',
-                                stats: [
+                                "name": "Private Insurance %",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 220,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
+                                        "source": null,
+                                        "column": 220
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        id: 'other_densities',
-        name: 'Other Density Metrics',
-        contents: [
+        "id": "other_densities",
+        "name": "Other Density Metrics",
+        "contents": [
             {
-                id: 'ad_0.25',
-                name: 'PW Density (r=250m)',
-                contents: [
+                "id": "ad_0.25",
+                "name": "PW Density (r=250m)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=250m)',
-                                stats: [
+                                "name": "PW Density (r=250m)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 29,
+                                        "column": 29
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 99,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 99
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=250m) (2010)',
-                                stats: [
+                                "name": "PW Density (r=250m) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 31,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 31
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=250m) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=250m) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 33,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 33
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=250m) (2000)',
-                                stats: [
+                                "name": "PW Density (r=250m) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 30,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 30
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=250m) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=250m) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 32,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 32
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_0.5',
-                name: 'PW Density (r=500m)',
-                contents: [
+                "id": "ad_0.5",
+                "name": "PW Density (r=500m)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=500m)',
-                                stats: [
+                                "name": "PW Density (r=500m)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 34,
+                                        "column": 34
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 100,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 100
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=500m) (2010)',
-                                stats: [
+                                "name": "PW Density (r=500m) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 36,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 36
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=500m) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=500m) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 38,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 38
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=500m) (2000)',
-                                stats: [
+                                "name": "PW Density (r=500m) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 35,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 35
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=500m) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=500m) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 37,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 37
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_1.609344',
-                name: 'PW Density (r=1mi)',
-                contents: [
+                "id": "ad_1.609344",
+                "name": "PW Density (r=1mi)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1mi)',
-                                stats: [
+                                "name": "PW Density (r=1mi)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 40,
+                                        "column": 40
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 101,
+                                        "column": 101
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 136,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 136
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1mi) (2010)',
-                                stats: [
+                                "name": "PW Density (r=1mi) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 42,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 42
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=1mi) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=1mi) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 44,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 44
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=1mi) (2000)',
-                                stats: [
+                                "name": "PW Density (r=1mi) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 41,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 41
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=1mi) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=1mi) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 43,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 43
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_2',
-                name: 'PW Density (r=2km)',
-                contents: [
+                "id": "ad_2",
+                "name": "PW Density (r=2km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=2km)',
-                                stats: [
+                                "name": "PW Density (r=2km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 54,
+                                        "column": 54
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 104,
+                                        "column": 104
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 138,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 138
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=2km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=2km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 56,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 56
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=2km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=2km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 58,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 58
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=2km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=2km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 55,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 55
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=2km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=2km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 57,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 57
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_4',
-                name: 'PW Density (r=4km)',
-                contents: [
+                "id": "ad_4",
+                "name": "PW Density (r=4km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=4km)',
-                                stats: [
+                                "name": "PW Density (r=4km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 64,
+                                        "column": 64
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 106,
+                                        "column": 106
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 140,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 140
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=4km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=4km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 66,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 66
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=4km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=4km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 68,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 68
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=4km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=4km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 65,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 65
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=4km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=4km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 67,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 67
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_8',
-                name: 'PW Density (r=8km)',
-                contents: [
+                "id": "ad_8",
+                "name": "PW Density (r=8km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=8km)',
-                                stats: [
+                                "name": "PW Density (r=8km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 74,
+                                        "column": 74
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 108,
+                                        "column": 108
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 142,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 142
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=8km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=8km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 76,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 76
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=8km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=8km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 78,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 78
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=8km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=8km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 75,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 75
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=8km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=8km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 77,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 77
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_16',
-                name: 'PW Density (r=16km)',
-                contents: [
+                "id": "ad_16",
+                "name": "PW Density (r=16km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=16km)',
-                                stats: [
+                                "name": "PW Density (r=16km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 45,
+                                        "column": 45
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 102,
+                                        "column": 102
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 137,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 137
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=16km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=16km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 47,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 47
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=16km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=16km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 49,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 49
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=16km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=16km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 46,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 46
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=16km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=16km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 48,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 48
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_32',
-                name: 'PW Density (r=32km)',
-                contents: [
+                "id": "ad_32",
+                "name": "PW Density (r=32km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=32km)',
-                                stats: [
+                                "name": "PW Density (r=32km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 59,
+                                        "column": 59
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 105,
+                                        "column": 105
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 139,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 139
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=32km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=32km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 61,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 61
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=32km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=32km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 63,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 63
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=32km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=32km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 60,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 60
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=32km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=32km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 62,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                                        "source": null,
+                                        "column": 62
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
             },
             {
-                id: 'ad_64',
-                name: 'PW Density (r=64km)',
-                contents: [
+                "id": "ad_64",
+                "name": "PW Density (r=64km)",
+                "contents": [
                     {
-                        year: 2020,
-                        stats_by_source: [
+                        "year": 2020,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=64km)',
-                                stats: [
+                                "name": "PW Density (r=64km)",
+                                "stats": [
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'US Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
                                         },
-                                        column: 69,
+                                        "column": 69
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'Canadian Census',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
                                         },
-                                        column: 107,
+                                        "column": 107
                                     },
                                     {
-                                        source: {
-                                            category: 'Population',
-                                            name: 'GHSL',
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "GHSL"
                                         },
-                                        column: 141,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "column": 141
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2010,
-                        stats_by_source: [
+                        "year": 2010,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=64km) (2010)',
-                                stats: [
+                                "name": "PW Density (r=64km) (2010)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 71,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 71
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=64km) Change (2010-2020)',
-                                stats: [
+                                "name": "PW Density (r=64km) Change (2010-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 73,
-                                    },
-                                ],
-                            },
-                        ],
+                                        "source": null,
+                                        "column": 73
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
-                        year: 2000,
-                        stats_by_source: [
+                        "year": 2000,
+                        "stats_by_source": [
                             {
-                                name: 'PW Density (r=64km) (2000)',
-                                stats: [
+                                "name": "PW Density (r=64km) (2000)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 70,
-                                    },
-                                ],
+                                        "source": null,
+                                        "column": 70
+                                    }
+                                ]
                             },
                             {
-                                name: 'PW Density (r=64km) Change (2000-2020)',
-                                stats: [
+                                "name": "PW Density (r=64km) Change (2000-2020)",
+                                "stats": [
                                     {
-                                        source: null,
-                                        column: 72,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    },
+                                        "source": null,
+                                        "column": 72
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
 ] as const
