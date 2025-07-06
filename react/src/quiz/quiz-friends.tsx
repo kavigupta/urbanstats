@@ -126,7 +126,7 @@ export function QuizFriendsPanel(props: {
                                         requestee: props.quizFriends[idx][1],
                                     },
                                 })
-                                const newQuizFriends = props.quizFriends.map<[string | null, string, number | null | undefined]>(([name, id, timestamp]) => name === friendScore.name ? [null, id, Date.now()] : [name, id, timestamp])
+                                const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
                                 props.setQuizFriends(newQuizFriends)
                             }}
                             quizFriends={props.quizFriends}
