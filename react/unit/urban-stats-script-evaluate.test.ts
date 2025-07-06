@@ -1180,6 +1180,7 @@ void test('evaluate conditions', (): void => {
     )
 })
 
+/* eslint-disable no-restricted-syntax -- Just for testing */
 void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
@@ -1311,6 +1312,7 @@ void test('ramps', (): void => {
         undocValue({ type: 'opaque', value: [[0, '#0000ff'], [0.7, '#808080'], [1, '#ff0000']] }, { type: 'opaque', name: 'ramp' }),
     )
 })
+/* eslint-enable no-restricted-syntax */
 
 function assertScale(descriptor: ScaleDescriptor, values: number[], proportions: number[]): void {
     const scale = instantiate(descriptor)
@@ -1394,6 +1396,7 @@ void test('custom map', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    // eslint-disable-next-line no-restricted-syntax -- Just for testing
     assert.deepStrictEqual(resultMapRaw.ramp, [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
 })
