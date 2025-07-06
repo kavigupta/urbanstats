@@ -9,6 +9,7 @@ export interface UnitDisplay {
         value: ReactNode
         unit: ReactNode
     }
+    unitName: string
 }
 
 export const unitDisplayMap: Record<string, UnitDisplay> = {
@@ -19,6 +20,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>%</span>,
             }
         },
+        unitName: 'Percentage',
     },
     fatalities: {
         renderValue: (value: number) => {
@@ -27,6 +29,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>&nbsp;</span>,
             }
         },
+        unitName: 'Fatalities',
     },
     fatalitiesPerCapita: {
         renderValue: (value: number) => {
@@ -35,6 +38,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>/100k</span>,
             }
         },
+        unitName: 'Fatalities Per Capita',
     },
     density: {
         renderValue: (value: number, useImperial?: boolean) => {
@@ -62,20 +66,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 ),
             }
         },
-    },
-    elevation: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let unitName = 'm'
-            let adjustedValue = value
-            if (useImperial) {
-                unitName = 'ft'
-                adjustedValue *= 3.28084
-            }
-            return {
-                value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
-                unit: <span>{unitName}</span>,
-            }
-        },
+        unitName: 'Density',
     },
     population: {
         renderValue: (value: number) => {
@@ -104,6 +95,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 }
             }
         },
+        unitName: 'Population',
     },
     area: {
         renderValue: (value: number, useImperial?: boolean) => {
@@ -162,8 +154,9 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit,
             }
         },
+        unitName: 'Area',
     },
-    distance: {
+    distanceInKm: {
         renderValue: (value: number, useImperial?: boolean) => {
             let unit = <span>km</span>
             let adjustedValue = value
@@ -176,6 +169,22 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit,
             }
         },
+        unitName: 'Distance [km]',
+    },
+    distanceInM: {
+        renderValue: (value: number, useImperial?: boolean) => {
+            let unitName = 'm'
+            let adjustedValue = value
+            if (useImperial) {
+                unitName = 'ft'
+                adjustedValue *= 3.28084
+            }
+            return {
+                value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
+                unit: <span>{unitName}</span>,
+            }
+        },
+        unitName: 'Distance [m]',
     },
     democraticMargin: {
         renderValue: (value: number) => {
@@ -184,6 +193,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>%</span>,
             }
         },
+        unitName: 'Democratic Margin',
     },
     temperature: {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -198,6 +208,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit,
             }
         },
+        unitName: 'Temperature',
     },
     time: {
         renderValue: (value: number) => {
@@ -214,6 +225,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>&nbsp;</span>,
             }
         },
+        unitName: 'Time',
     },
     distancePerYear: {
         renderValue: (value: number, useImperial?: boolean) => {
@@ -233,6 +245,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 ),
             }
         },
+        unitName: 'Distance Per Year',
     },
     contaminantLevel: {
         renderValue: (value: number) => {
@@ -246,6 +259,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 ),
             }
         },
+        unitName: 'Contaminant Level',
     },
     default: {
         renderValue: (value: number) => {
@@ -254,6 +268,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
                 unit: <span>&nbsp;</span>,
             }
         },
+        unitName: 'Default',
     },
 }
 
