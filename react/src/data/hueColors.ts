@@ -1,7 +1,7 @@
 export default {
     "blue": "#5a7dc3",
     "orange": "#f7aa41",
-    "darkOrange": "#af6707",
+    "brown": "#af6707",
     "purple": "#975ac3",
     "red": "#f96d6d",
     "grey": "#8e8e8e",
