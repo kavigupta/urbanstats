@@ -531,21 +531,25 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
     )
 }
 
+function isVisible(basemap: Basemap, layer: maplibregl.LayerSpecification): boolean {
+    switch (basemap.type) {
+        case 'none':
+            return false
+        case 'osm':
+            if (basemap.disableBasemap && layer.type === 'symbol') {
+                return false
+            }
+            return true
+    }
+}
+
 function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
     map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
         if (layerspec.id === 'background') {
             return
         }
         const layer = map.getLayer(layerspec.id)!
-        if (basemap.type === 'none') {
-            layer.setLayoutProperty('visibility', 'none')
-        }
-        else {
-            if (basemap.disableBasemap && layerspec.type === 'symbol' && map.getLayer(layerspec.id)) {
-                map.removeLayer(layerspec.id)
-            }
-            layer.setLayoutProperty('visibility', 'visible')
-        }
+        layer.setLayoutProperty('visibility', isVisible(basemap, layerspec) ? 'visible' : 'none')
     })
 }
 
