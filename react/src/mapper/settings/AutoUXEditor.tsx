@@ -255,6 +255,21 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
             }
         }
 
+        // Sort variables by priority (lower numbers first)
+        variables.sort((a, b) => {
+            const aPriority = a.type === 'variable' ? (env.get(a.name)?.documentation?.priority ?? 1) : 1
+            const bPriority = b.type === 'variable' ? (env.get(b.name)?.documentation?.priority ?? 1) : 1
+            return aPriority - bPriority
+        })
+
+        // Sort functions by priority (functions get priority 0 by default)
+        functions.sort((a, b) => {
+            const aPriority = a.type === 'function' ? (env.get(a.name)?.documentation?.priority ?? 0) : 0
+            const bPriority = b.type === 'function' ? (env.get(b.name)?.documentation?.priority ?? 0) : 0
+            return aPriority - bPriority
+        })
+
+        // Functions first, then variables
         results.push(...functions)
         results.push(...variables)
     }

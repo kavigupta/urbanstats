@@ -88,6 +88,7 @@ export type USSRawValue = (
 
 export interface Documentation {
     humanReadableName: string
+    priority?: number
 }
 
 export interface USSDocumentedType {

@@ -90,7 +90,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
         this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label })
         const colors = cMap.data.map(
-            val => interpolateColor(ramp, scale.forward(val)),
+            val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
         const styles = colors.map(
             // use outline color from cMap, convert Color object to hex string

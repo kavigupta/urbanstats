@@ -1,7 +1,7 @@
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 
-import { defaultTypeEnvironment } from './MapperSettings'
+import { defaultTypeEnvironment } from '../context'
 import { defaultTopLevelEditor } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]

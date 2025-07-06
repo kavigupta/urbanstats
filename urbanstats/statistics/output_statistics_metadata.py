@@ -33,6 +33,15 @@ def statistic_internal_to_display_name():
 
 
 @lru_cache(maxsize=1)
+def internal_statistic_names_in_tree_order():
+    """
+    List of internal statistic names in the order they appear in the statistics tree.
+    This preserves the natural order of the tree structure.
+    """
+    return statistics_tree.internal_statistics()
+
+
+@lru_cache(maxsize=1)
 def internal_statistic_names():
     """
     List of internal statistic names in the order they are stored in the database. This is designed to be a
@@ -105,7 +114,7 @@ def statistic_variables_info():
     multi_source = {}
     multi_source_variable_names = set()
     multi_source_stats = list(multi_source_statistics())
-    for stat in multi_source_stats:
+    for i, stat in enumerate(multi_source_stats):
         ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
         assert len(set(ms_name)) == 1, f"Multiple variable names for {stat}: {ms_name}"
         ms_name = ms_name[0]
@@ -122,7 +131,9 @@ def statistic_variables_info():
         )
 
     variable_objects = []
-    for stat in internal_statistic_names():
+    for i, stat in enumerate(internal_statistic_names_in_tree_order()):
+        # Find the index in the lexicographically sorted array
+        lexicographic_index = internal_statistic_names().index(stat)
         variable_objects.append(
             {
                 "varName": internal_to_actual_variable[stat],
@@ -134,6 +145,8 @@ def statistic_variables_info():
                 ),
                 "comesFromMultiSourceSet": internal_to_actual_variable[stat]
                 in multi_source_variable_names,
+                "order": i,
+                "index": lexicographic_index
             }
         )
 
