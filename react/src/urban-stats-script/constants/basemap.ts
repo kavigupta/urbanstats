@@ -11,7 +11,7 @@ export const osmBasemap: USSValue = {
         type: 'function',
         posArgs: [],
         namedArgs: {
-            disableBasemap: {
+            noLabels: {
                 type: { type: 'concrete', value: { type: 'boolean' } },
                 defaultValue: rawDefaultValue(false),
             },
@@ -20,8 +20,8 @@ export const osmBasemap: USSValue = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
-        const disableBasemap = namedArgs.disableBasemap as boolean
-        return { type: 'opaque', value: { type: 'osm', disableBasemap } }
+        const noLabels = namedArgs.noLabels as boolean
+        return { type: 'opaque', value: { type: 'osm', noLabels } }
     },
     documentation: { humanReadableName: 'OSM Basemap', isDefault: true },
 } satisfies USSValue

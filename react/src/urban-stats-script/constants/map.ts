@@ -83,7 +83,7 @@ export const cMap: USSValue = {
             },
             basemap: {
                 type: { type: 'concrete', value: basemapType },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', disableBasemap: false } }),
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', noLabels: false } }),
             },
         },
         returnType: { type: 'concrete', value: cMapType },
