@@ -1,6 +1,6 @@
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
-import { USSRawValue, USSType, USSValue } from '../types-values'
+import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../types-values'
 
 import { Color, doRender } from './color'
 
@@ -24,6 +24,15 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
         type: 'opaque',
         value: ramp.map(([value, color]) => [value, doRender(color)] as [number, string]) satisfies RampT,
     }
+}
+
+export function divergingRamp(first: Color, last: Color, middle: Color = { r: 255, g: 255, b: 255 }): USSRawValue {
+    const ramp: [number, Color][] = [
+        [0, first],
+        [0.5, middle],
+        [1, last],
+    ]
+    return constructRamp(ramp)
 }
 
 export function reverseRamp(ramp: RampT): RampT {
@@ -83,6 +92,30 @@ export const reverseRampValue: USSValue = {
         }
     },
     documentation: { humanReadableName: 'Reverse Ramp' },
+}
+
+export const divergingRampValue: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            first: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
+            middle: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { r: 255, g: 255, b: 255 } }),
+            },
+            last: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
+        },
+        returnType: { type: 'concrete', value: rampType },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const first = (namedArgs.first as { type: 'opaque', value: Color }).value
+        const last = (namedArgs.last as { type: 'opaque', value: Color }).value
+        const middle = (namedArgs.middle as { type: 'opaque', value: Color }).value
+        return divergingRamp(first, last, middle)
+    },
+    documentation: { humanReadableName: 'Diverging Ramp' },
 }
 
 export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map(([name, ramp]) => [
