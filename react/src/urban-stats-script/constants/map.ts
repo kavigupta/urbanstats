@@ -41,7 +41,7 @@ export const constructOutline = {
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(0),
+                defaultValue: rawDefaultValue(0.5),
             },
         },
         returnType: { type: 'concrete', value: outlineType },
@@ -52,7 +52,7 @@ export const constructOutline = {
         const weight = namedArgs.weight as number
         return { type: 'opaque', value: { color, weight } }
     },
-    documentation: { humanReadableName: 'Construct  Outline' },
+    documentation: { humanReadableName: 'Construct  Outline', isDefault: true },
 } satisfies USSValue
 
 export const cMap: USSValue = {
@@ -106,5 +106,5 @@ export const cMap: USSValue = {
             value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline } satisfies CMap,
         }
     },
-    documentation: { humanReadableName: 'Choropleth Map' },
+    documentation: { humanReadableName: 'Choropleth Map', isDefault: true },
 }
