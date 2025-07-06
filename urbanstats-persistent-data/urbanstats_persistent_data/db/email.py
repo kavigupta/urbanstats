@@ -39,3 +39,9 @@ def get_user_users(c: sqlite3.Cursor, user: int) -> t.Set[int]:
     if email is None:
         return {user}
     return get_email_users(c, email)
+
+
+def get_email_or_user_users(c: sqlite3.Cursor, identifier: int | str) -> t.Set[int]:
+    if isinstance(identifier, str):
+        return get_email_users(c, identifier)
+    return get_user_users(c, identifier)

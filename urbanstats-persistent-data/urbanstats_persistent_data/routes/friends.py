@@ -1,6 +1,6 @@
 import typing as t
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from ..db.friends import (
     Corrects,
@@ -18,7 +18,7 @@ from ..utils import Hexadecimal
 
 
 class Requestee(BaseModel):
-    requestee: t.Annotated[int, Hexadecimal]
+    requestee: t.Annotated[int, Hexadecimal] | EmailStr
 
 
 @app.post(
@@ -34,7 +34,7 @@ def juxtastat_unfriend(body: Requestee, req: AuthenticateRequest) -> None:
 
 
 class ScoreRequestBody(BaseModel):
-    requesters: t.List[t.Annotated[int, Hexadecimal]]
+    requesters: t.List[t.Annotated[int, Hexadecimal] | EmailStr]
     date: int
     quiz_kind: QuizKind
 
@@ -58,7 +58,7 @@ def juxtastat_todays_score_for(
 
 
 class InfiniteScoreRequestBody(BaseModel):
-    requesters: t.List[t.Annotated[int, Hexadecimal]]
+    requesters: t.List[t.Annotated[int, Hexadecimal] | EmailStr]
     seed: str
     version: int
 

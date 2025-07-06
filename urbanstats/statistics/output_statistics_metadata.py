@@ -79,10 +79,9 @@ def get_human_readable_name_for_variable(
     """
     Get the appropriate human-readable name for a variable, including source information for multi-source variables.
     """
-    var_name = internal_to_actual_variable[stat]
     base_name = statistic_internal_to_display_name()[stat]
 
-    if var_name not in multi_source_variable_names:
+    if internal_to_actual_variable[stat] not in multi_source_variable_names:
         return base_name
 
     # Find the source for this specific variable
@@ -91,12 +90,10 @@ def get_human_readable_name_for_variable(
             if stat_name == stat:
                 if source is None:
                     return base_name
-                else:
-                    # Only add source information if the base name doesn't already contain source info
-                    if " [" in base_name and "]" in base_name:
-                        return base_name
-                    else:
-                        return f"{base_name} [{source.name}]"
+                # Only add source information if the base name doesn't already contain source info
+                if " [" in base_name and "]" in base_name:
+                    return base_name
+                return f"{base_name} [{source.name}]"
 
     return base_name
 
@@ -114,7 +111,7 @@ def statistic_variables_info():
     multi_source = {}
     multi_source_variable_names = set()
     multi_source_stats = list(multi_source_statistics())
-    for i, stat in enumerate(multi_source_stats):
+    for stat in multi_source_stats:
         ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
         assert len(set(ms_name)) == 1, f"Multiple variable names for {stat}: {ms_name}"
         ms_name = ms_name[0]
@@ -130,9 +127,22 @@ def statistic_variables_info():
             humanReadableName=stat.compute_name(statistic_internal_to_display_name()),
         )
 
+    variable_objects = construct_variable_objects(
+        internal_to_actual_variable, multi_source_variable_names, multi_source_stats
+    )
+
+    result = {
+        "variableNames": variable_objects,
+        "multiSourceVariables": list(multi_source.items()),
+    }
+    return result
+
+
+def construct_variable_objects(
+    internal_to_actual_variable, multi_source_variable_names, multi_source_stats
+):
     variable_objects = []
     for i, stat in enumerate(internal_statistic_names_in_tree_order()):
-        # Find the index in the lexicographically sorted array
         lexicographic_index = internal_statistic_names().index(stat)
         variable_objects.append(
             {
@@ -146,7 +156,7 @@ def statistic_variables_info():
                 "comesFromMultiSourceSet": internal_to_actual_variable[stat]
                 in multi_source_variable_names,
                 "order": i,
-                "index": lexicographic_index
+                "index": lexicographic_index,
             }
         )
 
@@ -158,11 +168,7 @@ def statistic_variables_info():
             "This is likely due to multiple statistics having the same variable name."
         )
 
-    result = {
-        "variableNames": variable_objects,
-        "multiSourceVariables": list(multi_source.items()),
-    }
-    return result
+    return variable_objects
 
 
 def multi_source_statistics():
