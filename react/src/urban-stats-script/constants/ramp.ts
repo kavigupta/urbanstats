@@ -90,6 +90,6 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
     {
         type: rampType,
         value: { type: 'opaque', value: ramp satisfies RampT } satisfies USSRawValue,
-        documentation: { humanReadableName: name },
+        documentation: { humanReadableName: name, isDefault: name === 'Uridis' },
     },
 ])

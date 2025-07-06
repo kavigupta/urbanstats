@@ -117,7 +117,7 @@ export const linearScaleValue: USSValue = {
             value: (values: number[]) => linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
         }
     },
-    documentation: { humanReadableName: 'Linear Scale' },
+    documentation: { humanReadableName: 'Linear Scale', isDefault: true },
 }
 
 export const logScaleValue: USSValue = {

@@ -89,6 +89,10 @@ export type USSRawValue = (
 export interface Documentation {
     humanReadableName: string
     priority?: number
+    /**
+     * True if this is the canonical default value for its type (e.g., the default ramp or scale).
+     */
+    isDefault?: boolean
 }
 
 export interface USSDocumentedType {

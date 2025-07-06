@@ -20,12 +20,23 @@ function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
 
-function createDefaultExpression(type: USSType, blockIdent: string): UrbanStatsASTExpression {
+function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
     if (type.type === 'string') {
         return { type: 'constant', value: { node: { type: 'string', value: '' }, location: emptyLocation(blockIdent) } }
+    }
+    for (const [name, tdoc] of typeEnvironment) {
+        if (!tdoc.documentation?.isDefault) {
+            continue
+        }
+        if (renderType(tdoc.type) === renderType(type)) {
+            return getDefaultVariable({ type: 'variable', name }, typeEnvironment, blockIdent)
+        }
+        if (tdoc.type.type === 'function' && tdoc.type.returnType.type !== 'inferFromPrimitive' && renderType(tdoc.type.returnType.value) === renderType(type)) {
+            return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
+        }
     }
     return parseNoErrorAsExpression('', blockIdent, type)
 }
@@ -59,7 +70,7 @@ function ArgumentEditor(props: {
                             const newArgs = [...functionUss.args, {
                                 type: 'named' as const,
                                 name: { node: props.name, location: emptyLocation(subident) },
-                                value: createDefaultExpression(arg.value, subident),
+                                value: createDefaultExpression(arg.value, subident, props.typeEnvironment),
                             }]
                             props.setUss({ ...functionUss, args: newArgs })
                         }
@@ -477,6 +488,43 @@ function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, select
     return doc ?? selection.name
 }
 
+function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
+    const varType = typeEnvironment.get(selection.name)?.type
+    assert(varType, `Variable ${selection.name} not found in type environment`)
+    return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
+}
+
+function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
+    const fn = typeEnvironment.get(selection.name)
+    assert(fn && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
+    const args: UrbanStatsASTArg[] = []
+    // Only include positional arguments by default, not named arguments with defaults
+    for (let i = 0; i < fn.type.posArgs.length; i++) {
+        const arg = fn.type.posArgs[i]
+        assert(arg.type === 'concrete', `Positional argument must be concrete`)
+        args.push({
+            type: 'unnamed',
+            value: createDefaultExpression(arg.value, `${blockIdent}_pos_${i}`, typeEnvironment),
+        })
+    }
+    const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
+    for (const [name, argWDefault] of needed) {
+        const arg = argWDefault.type
+        assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
+        args.push({
+            type: 'named',
+            name: { node: name, location: emptyLocation(blockIdent) },
+            value: createDefaultExpression(arg.value, `${blockIdent}_${name}`, typeEnvironment),
+        })
+    }
+    return {
+        type: 'function',
+        fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
+        args,
+        entireLoc: emptyLocation(blockIdent),
+    }
+}
+
 function defaultForSelection(
     selection: Selection,
     current: UrbanStatsASTExpression,
@@ -484,46 +532,15 @@ function defaultForSelection(
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
-    // TODO actually attempt to parse the current expression and use it as a default
     switch (selection.type) {
         case 'custom':
             return parseNoErrorAsExpression('', blockIdent, type)
         case 'constant':
-            return createDefaultExpression(type, blockIdent)
+            return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
-            const varType = typeEnvironment.get(selection.name)?.type
-            assert(varType, `Variable ${selection.name} not found in type environment`)
-            return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
+            return getDefaultVariable(selection as Selection & { type: 'variable' }, typeEnvironment, blockIdent)
         case 'function':
-            const fn = typeEnvironment.get(selection.name)
-            assert(fn && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
-            const args: UrbanStatsASTArg[] = []
-            // Only include positional arguments by default, not named arguments with defaults
-            for (let i = 0; i < fn.type.posArgs.length; i++) {
-                const arg = fn.type.posArgs[i]
-                assert(arg.type === 'concrete', `Positional argument must be concrete`)
-                args.push({
-                    type: 'unnamed',
-                    value: createDefaultExpression(arg.value, `${blockIdent}_pos_${i}`),
-                })
-            }
-            // Include named arguments that don't have defaults
-            const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
-            for (const [name, argWDefault] of needed) {
-                const arg = argWDefault.type
-                assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-                args.push({
-                    type: 'named',
-                    name: { node: name, location: emptyLocation(blockIdent) },
-                    value: createDefaultExpression(arg.value, `${blockIdent}_${name}`),
-                })
-            }
-            return {
-                type: 'function',
-                fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
-                args,
-                entireLoc: emptyLocation(blockIdent),
-            }
+            return getDefaultFunction(selection as Selection & { type: 'function' }, typeEnvironment, blockIdent)
     }
 }
 
