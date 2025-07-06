@@ -1,4 +1,3 @@
-import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
@@ -26,15 +25,15 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
                 documentation: { humanReadableName: 'Geography Name' },
             }
         }
-        const index = statistic_variables_info.variableNames.indexOf(name as ElementOf<typeof statistic_variables_info.variableNames>)
-        if (index === -1) {
+        const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
+        if (!variableInfo) {
             return undefined
         }
+        const index = statistic_variables_info.variableNames.indexOf(variableInfo)
         return {
             type: { type: 'vector', elementType: { type: 'number' } },
             value: statisticsForGeography.map(stat => stat.stats[index]),
-            // TODO use human readable name
-            documentation: { humanReadableName: statistic_name_list[index] },
+            documentation: { humanReadableName: variableInfo.humanReadableName },
         }
     }
 
@@ -45,7 +44,7 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
 function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames, 'geo']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
 
     variables.forEach((name) => {
         if (!ids.has(name)) {
