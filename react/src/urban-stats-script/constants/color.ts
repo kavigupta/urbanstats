@@ -1,10 +1,18 @@
 import ColorLib from 'color'
 
+import hueColors from '../../data/hueColors'
 import { Context } from '../context'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
+
+function hexToColor(hex: string): Color {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return { r, g, b }
+}
 
 function rgbToColor(red: number, green: number, blue: number): Color {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
@@ -83,3 +91,15 @@ export function doRender(color: Color): string {
     }
     return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
 }
+
+function colorConstant(name: string, value: string): [string, USSValue] {
+    return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName: name } }] satisfies [string, USSValue]
+}
+
+export const colorConstants = [
+    ...Object.entries(hueColors).map(([name, value]) => colorConstant(name, value)),
+    // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
+    colorConstant('white', '#ffffff'),
+    // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
+    colorConstant('black', '#000000'),
+]

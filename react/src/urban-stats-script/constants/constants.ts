@@ -2,7 +2,7 @@ import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { USSRawValue, USSValue } from '../types-values'
 
-import { hsv, renderColor, rgb } from './color'
+import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
 import { cMap, constructOutline } from './map'
 import { constructRampValue, reverseRampValue, rampConsts } from './ramp'
@@ -96,6 +96,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['pi', { type: { type: 'number' }, value: Math.PI, documentation: { humanReadableName: 'π' } }] satisfies [string, USSValue],
     ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN' } }] satisfies [string, USSValue],
+    ...colorConstants,
     numericUnaryFunction('abs', Math.abs),
     numericUnaryFunction('sqrt', Math.sqrt),
     numericUnaryFunction('ln', Math.log),
