@@ -192,9 +192,13 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     }
 }
 
-export const safeClearLocalStorage = ClientFunction(() => {
-    (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
-})
+export async function safeClearLocalStorage(): Promise<void> {
+    await flaky(() =>
+        ClientFunction(() => {
+            (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
+        })(),
+    )
+}
 
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
@@ -216,6 +220,15 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
                 await beforeEach(t)
             }
         }).skipJsErrors({ pageUrl: /google\.com/ })
+}
+
+export async function flaky<T>(doThing: () => Promise<T>): Promise<T> {
+    while (true) {
+        try {
+            return await doThing()
+        }
+        catch {}
+    }
 }
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
