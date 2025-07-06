@@ -19,8 +19,8 @@ def friend_request(req: AuthenticatedRequest, requestee: int | str) -> None:
 
 def unfriend(req: AuthenticatedRequest, requestee: int | str) -> None:
     req.s.c.execute(
-        "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
-        (requestee, req.email or req.user_id),
+        "DELETE FROM FriendRequests WHERE requestee=? AND requester IN (?, ?)",
+        (requestee, req.email, req.user_id),
     )
 
 
