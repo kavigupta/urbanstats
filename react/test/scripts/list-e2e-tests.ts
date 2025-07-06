@@ -1,17 +1,16 @@
 import { globSync } from 'glob'
 import { z } from 'zod'
+import { argumentParser } from 'zodcli'
+
+const options = argumentParser({
+    options: z.object({
+        testDurations: z.string(),
+    }).strict(),
+}).parse(process.argv.slice(2))
 
 const tests = globSync('test/**/*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1]).sort()
 
-const variableValue = process.env.TEST_DURATIONS
-
-if (variableValue === undefined) {
-    // Naively run each test in its own runner
-    process.stdout.write(JSON.stringify(tests))
-    process.exit(0)
-}
-
-const testDurations = z.record(z.number()).parse(JSON.parse(variableValue))
+const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations))
 const groupings: { tests: string[], duration: number }[] = []
 const durationLimit = 4.5 * 60 * 1000
 

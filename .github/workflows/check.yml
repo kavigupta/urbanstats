@@ -125,9 +125,10 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*.test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.test\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
-        working-directory: react/test
+        run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts -- --test-durations='${{ vars.e2eTestDurations }}')" >> $GITHUB_OUTPUT
+        working-directory: react
 
   resolve-proxy-branch:
     runs-on: ubuntu-22.04
@@ -187,6 +188,10 @@ jobs:
         with:
           name: changed_screenshots-${{ matrix.test-file }}
           path: react/changed_screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: durations-${{ matrix.test-file }}
+          path: react/durations
 
   merge-screenshots:
     runs-on: ubuntu-22.04
@@ -209,6 +214,21 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
+
+  merge-and-save-durations:
+    runs-on: ubuntu-22.04
+    needs: [run-e2e-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "durations-*"
+          path: react
+      - run: |
+          npx tsx test/scripts/save-durations.ts -- \
+            --github-token={{ github.token }}
+        working-directory: react
 
   run-unit-tests:
     runs-on: ubuntu-22.04
