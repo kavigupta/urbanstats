@@ -151,6 +151,8 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
         )
     }
 
+    const width = `${100 / values.length}%`
+
     return (
         <div>
             <table style={{ width: '100%', height: '100%' }}>
@@ -162,7 +164,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                                     key={i}
                                     style={
                                         {
-                                            width: '10%', height: '1em',
+                                            width, height: '1em',
                                             backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x)),
                                         }
                                     }
@@ -174,7 +176,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                     <tr>
                         {
                             values.map((x, i) => (
-                                <td key={i} style={{ width: '10%', height: '1em' }}>
+                                <td key={i} style={{ width, height: '1em' }}>
                                     {createValue(x)}
                                 </td>
                             ))
