@@ -11,7 +11,7 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { consolidatedShapeLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -19,7 +19,6 @@ import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { toSExp } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
@@ -73,10 +72,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-        console.log('statements', toSExp(stmts))
-        console.log('statements', stmts)
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
-        console.log('result', result)
         if (!result.success) {
             this.props.setErrors([result.error])
             return { polygons: [], zoomIndex: -1 }

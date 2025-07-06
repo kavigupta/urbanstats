@@ -3,6 +3,7 @@ import assert from 'assert'
 import React, { ReactNode, useState } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
+import { useColors } from '../../page_template/colors'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -270,6 +271,7 @@ export function Selector(props: {
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
+    const colors = useColors()
     const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
     const selected = classifyExpr(props.uss)
@@ -371,7 +373,7 @@ export function Selector(props: {
                         top: '100%',
                         left: 0,
                         right: 0,
-                        backgroundColor: 'white',
+                        backgroundColor: colors.background,
                         border: '1px solid #ccc',
                         borderRadius: '4px',
                         maxHeight: '200px',
@@ -388,22 +390,10 @@ export function Selector(props: {
                                     padding: '8px 12px',
                                     cursor: 'pointer',
                                     borderBottom: index < filteredOptions.length - 1 ? '1px solid #eee' : 'none',
-                                    backgroundColor: index === highlightedIndex
-                                        ? '#007bff'
-                                        : option === selectedRendered ? '#f0f0f0' : 'transparent',
-                                    color: index === highlightedIndex ? 'white' : 'inherit',
+                                    backgroundColor: index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
+                                    color: colors.textMain,
                                 }}
-                                onMouseEnter={(e) => {
-                                    setHighlightedIndex(index)
-                                    e.currentTarget.style.backgroundColor = index === highlightedIndex ? '#007bff' : '#f5f5f5'
-                                    e.currentTarget.style.color = index === highlightedIndex ? 'white' : 'inherit'
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = index === highlightedIndex
-                                        ? '#007bff'
-                                        : option === selectedRendered ? '#f0f0f0' : 'transparent'
-                                    e.currentTarget.style.color = index === highlightedIndex ? 'white' : 'inherit'
-                                }}
+                                onMouseEnter={() => { setHighlightedIndex(index) }}
                             >
                                 {option}
                             </div>

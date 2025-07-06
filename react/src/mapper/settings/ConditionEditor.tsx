@@ -4,11 +4,10 @@ import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse } from '../../urban-stats-script/parser'
+import { unparse, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
-import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 
 export function ConditionEditor({
     condition,

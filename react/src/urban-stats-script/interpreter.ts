@@ -162,7 +162,6 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
             if (expr.result.length === 0) {
                 return undocValue(null, { type: 'null' })
             }
-            console.log('ABC', expr.result[0])
             let result: USSValue = execute(expr.result[0], env)
             for (const statement of expr.result.slice(1)) {
                 result = execute(statement, env)
