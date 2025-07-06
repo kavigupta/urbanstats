@@ -26,6 +26,6 @@ await octokit.rest.actions.updateRepoVariable({
     owner: 'kavigupta',
     // eslint-disable-next-line no-restricted-syntax -- Repo identifier not branding
     repo: 'urbanstats',
-    name: 'e2eTestDurations',
+    name: 'E2E_TEST_DURATIONS',
     value: JSON.stringify(durations),
 })
