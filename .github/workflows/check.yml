@@ -169,11 +169,10 @@ jobs:
             --proxy=true \
             --browser=chromium \
             --test=test/${{ matrix.test-file }}.test.ts \
-            --parallel=1 \
             --headless=true \
             --compare=true \
             --time-limit-seconds=300 \
-            --min-time-seconds=150
+            --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
