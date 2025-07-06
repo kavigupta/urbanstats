@@ -10,7 +10,7 @@ const options = argumentParser({
 
 const tests = globSync('test/**/*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1]).sort()
 
-const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations))
+const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations === '' ? '{}' : options.testDurations))
 const groupings: { tests: string[], duration: number }[] = []
 const durationLimit = 4.5 * 60 * 1000
 
