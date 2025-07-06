@@ -64,6 +64,34 @@ def get_explanation_page():
     return result
 
 
+def get_human_readable_name_for_variable(
+    stat, internal_to_actual_variable, multi_source_variable_names, multi_source_stats
+):
+    """
+    Get the appropriate human-readable name for a variable, including source information for multi-source variables.
+    """
+    var_name = internal_to_actual_variable[stat]
+    base_name = statistic_internal_to_display_name()[stat]
+
+    if var_name not in multi_source_variable_names:
+        return base_name
+
+    # Find the source for this specific variable
+    for multi_source_stat in multi_source_stats:
+        for source, stat_name in multi_source_stat.by_source.items():
+            if stat_name == stat:
+                if source is None:
+                    return base_name
+                else:
+                    # Only add source information if the base name doesn't already contain source info
+                    if " [" in base_name and "]" in base_name:
+                        return base_name
+                    else:
+                        return f"{base_name} [{source.name}]"
+
+    return base_name
+
+
 def statistic_variables_info():
     """
     Create the metadata files for the statistics.
@@ -75,7 +103,9 @@ def statistic_variables_info():
     assert set(internal_to_variable.keys()) == set(internal_statistic_names())
     internal_to_actual_variable = internal_to_variable.copy()
     multi_source = {}
-    for stat in multi_source_statistics():
+    multi_source_variable_names = set()
+    multi_source_stats = list(multi_source_statistics())
+    for stat in multi_source_stats:
         ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
         assert len(set(ms_name)) == 1, f"Multiple variable names for {stat}: {ms_name}"
         ms_name = ms_name[0]
@@ -85,23 +115,38 @@ def statistic_variables_info():
             assert s in internal_to_actual_variable
             internal_to_actual_variable[s] = variable
             combo.append(variable)
+            multi_source_variable_names.add(variable)
         multi_source[ms_name] = dict(
             individualVariables=combo,
             humanReadableName=stat.compute_name(statistic_internal_to_display_name()),
         )
-    internal_to_actual_list = [
-        internal_to_actual_variable[stat] for stat in internal_statistic_names()
-    ]
-    duplicated = [
-        item for item, count in Counter(internal_to_actual_list).items() if count > 1
-    ]
+
+    variable_objects = []
+    for stat in internal_statistic_names():
+        variable_objects.append(
+            {
+                "varName": internal_to_actual_variable[stat],
+                "humanReadableName": get_human_readable_name_for_variable(
+                    stat,
+                    internal_to_actual_variable,
+                    multi_source_variable_names,
+                    multi_source_stats,
+                ),
+                "comesFromMultiSourceSet": internal_to_actual_variable[stat]
+                in multi_source_variable_names,
+            }
+        )
+
+    var_names = [obj["varName"] for obj in variable_objects]
+    duplicated = [item for item, count in Counter(var_names).items() if count > 1]
     if duplicated:
         raise ValueError(
             f"Duplicated variable names in statistics: {duplicated}. "
             "This is likely due to multiple statistics having the same variable name."
         )
+
     result = {
-        "variableNames": internal_to_actual_list,
+        "variableNames": variable_objects,
         "multiSourceVariables": list(multi_source.items()),
     }
     return result
