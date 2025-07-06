@@ -19,7 +19,13 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 const continueButton = Selector('button').withExactText('Continue')
 
 async function googleSignIn(t: TestController): Promise<void> {
-    await t.navigateTo('https://accounts.google.com')
+    while (true) {
+        try {
+            await t.navigateTo('https://accounts.google.com') // flaky
+            break
+        }
+        catch {}
+    }
     await t.typeText('input[type=email]', email)
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))

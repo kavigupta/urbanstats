@@ -398,7 +398,7 @@ export interface components {
         /** InfiniteScoreRequestBody */
         InfiniteScoreRequestBody: {
             /** Requesters */
-            requesters: string[];
+            requesters: (string)[];
             /** Seed */
             seed: string;
             /** Version */
@@ -452,7 +452,7 @@ export interface components {
         /** ScoreRequestBody */
         ScoreRequestBody: {
             /** Requesters */
-            requesters: string[];
+            requesters: (string)[];
             /** Date */
             date: number;
             quiz_kind: components["schemas"]["QuizKind"];

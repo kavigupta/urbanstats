@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { StatPath, StatName } from '../page_template/statistic-tree'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
-import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 import { historyConflicts, mergeHistories } from './sync'
@@ -262,47 +261,6 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
             'x-secure-id': this.uniqueSecureId.value,
         }
     }
-
-    async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
-        const user = this.uniquePersistentId.value
-        if (friendID === '') {
-            return { errorMessage: 'Friend ID cannot be empty', problemDomain: 'friendID' }
-        }
-        if (friendID === user) {
-            return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
-        }
-        let dupFriend
-        if ((dupFriend = this.friends.value.find(([name, id]) => name !== null && id === friendID))) {
-            return { errorMessage: `Friend ID ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
-        }
-        if (friendName === '') {
-            return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
-        }
-        if (this.friends.value.map(x => x[0]).includes(friendName)) {
-            return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
-        }
-        try {
-            const { response, error } = await persistentClient.POST('/juxtastat/friend_request', {
-                body: { requestee: friendID },
-                params: {
-                    header: this.userHeaders(),
-                },
-            })
-
-            if (response.status === 422) {
-                return { errorMessage: 'Invalid Friend ID', problemDomain: 'friendID' }
-            }
-            if (error !== undefined) {
-                return { errorMessage: 'Unknown Error', problemDomain: 'other' }
-            }
-
-            this.friends.value = [...this.friends.value.filter(([,id]) => id !== friendID), [friendName, friendID, Date.now()]]
-            return undefined
-        }
-        catch {
-            return { errorMessage: 'Network Error', problemDomain: 'other' }
-        }
-    }
 }
 
 function createAndStoreId(key: string): string {
@@ -314,24 +272,6 @@ function createAndStoreId(key: string): string {
         localStorage.setItem(key, randomID())
     }
     return localStorage.getItem(key)!
-}
-
-export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizModel.shared.addFriend(friendID, friendName)
-    if (result === undefined) {
-        alert(`Friend added: ${friendName} !`)
-    }
-    else {
-        if (result.problemDomain === 'friendName') {
-            const newFriendName = prompt(`Could not add friend: ${result.errorMessage}\n\nPlease correct the friend name:`, friendName)
-            if (newFriendName !== null) {
-                await addFriendFromLink(friendID, newFriendName.trim())
-            }
-        }
-        else {
-            alert(`Could not add friend: ${result.errorMessage}`)
-        }
-    }
 }
 
 // represents a quiz, which is a collection of questions. Designed so quizzes can be infinite

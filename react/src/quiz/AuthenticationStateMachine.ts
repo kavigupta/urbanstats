@@ -62,6 +62,10 @@ export class AuthenticationStateMachine {
 
     private _state: State
 
+    get state(): State {
+        return this._state
+    }
+
     private setState(newState: State): void {
         this._state = newState
         localStorage.setItem(localStorageKey, JSON.stringify(newState))

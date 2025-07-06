@@ -10,17 +10,17 @@ from . import email, stats
 from .utils import QuizKind, problem_id_for_quiz_kind, sqlTuple, table_for_quiz_kind
 
 
-def friend_request(req: AuthenticatedRequest, requestee: int) -> None:
+def friend_request(req: AuthenticatedRequest, requestee: int | str) -> None:
     req.s.c.execute(
         "INSERT INTO FriendRequests VALUES (?, ?)",
-        (requestee, req.user_id),
+        (requestee, req.email or req.user_id),
     )
 
 
-def unfriend(req: AuthenticatedRequest, requestee: int) -> None:
+def unfriend(req: AuthenticatedRequest, requestee: int | str) -> None:
     req.s.c.execute(
-        "DELETE FROM FriendRequests WHERE requestee=? AND requester=?",
-        (requestee, req.user_id),
+        "DELETE FROM FriendRequests WHERE requestee=? AND requester IN (?, ?)",
+        (requestee, req.email, req.user_id),
     )
 
 
@@ -44,7 +44,10 @@ class InfiniteResult(PositiveResult):
 
 
 def todays_score_for(
-    req: AuthenticatedRequest, requesters: t.List[int], date: int, quiz_kind: QuizKind
+    req: AuthenticatedRequest,
+    requesters: t.List[int | str],
+    date: int,
+    quiz_kind: QuizKind,
 ) -> t.List[NegativeResult | Corrects]:
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
@@ -60,7 +63,7 @@ def todays_score_for(
 
 
 def infinite_results(
-    req: AuthenticatedRequest, requesters: t.List[int], seed: str, version: int
+    req: AuthenticatedRequest, requesters: t.List[int | str], seed: str, version: int
 ) -> t.List[NegativeResult | InfiniteResult]:
     """
     For each `requseter` returns the pattern of correct answers if `(requester, requestee)` is a friend pair.
@@ -78,20 +81,25 @@ Result = t.TypeVar("Result", Corrects, InfiniteResult)
 
 def _compute_friend_results(
     req: AuthenticatedRequest,
-    requesters: t.List[int],
+    requesters: t.List[int | str],
     compute_fn: t.Callable[[sqlite3.Cursor, t.Set[int]], Result],
 ) -> t.List[NegativeResult | Result]:
     # query the table to see if each pair is a friend pair
+    requestees = req.associated_user_ids | ({req.email} if req.email else set[str]())
 
     req.s.c.execute(
-        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(req.associated_user_ids))}",
-        list(req.associated_user_ids),
+        f"SELECT DISTINCT requester FROM FriendRequests WHERE requestee IN {sqlTuple(len(requestees))}",
+        list(requestees),
     )
-    friends = {x[0] for x in req.s.c.fetchall()}
+    friends = {
+        friend
+        for x in req.s.c.fetchall()
+        for friend in email.get_email_or_user_users(req.s.c, x[0])
+    }
 
     results: t.List[NegativeResult | Result] = []
     for requester in requesters:
-        associated_requesters = email.get_user_users(req.s.c, requester)
+        associated_requesters = email.get_email_or_user_users(req.s.c, requester)
         if len(associated_requesters & friends) > 0:
             results.append(compute_fn(req.s.c, associated_requesters))
         else:
