@@ -303,3 +303,48 @@ def test_friends_disassociate_from_email(client):
     # But a can still see b since b is still associated with their email
     result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
     assert result == {"results": [{"friends": False}]}
+
+
+def test_unfriend_after_email_association(client):
+    # Associate only user b with email initially
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Send friend request from a to b (a is not associated with email yet)
+    send_friend_request(client, identity_a, "b")
+
+    # Send friend request from b to a using email
+    send_friend_request_with_email(client, identity_b, "a")
+
+    # Verify they can see each other's scores
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Now associate a with an email
+    associate_email(client, identity_a, "alice@example.com")
+
+    # Verify they can still see each other's scores
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Now a should be able to unfriend b successfully
+    unfriend_user(client, identity_a, "b")
+
+    # Verify b can no longer see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b has friended them
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
