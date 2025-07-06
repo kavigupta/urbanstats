@@ -410,7 +410,7 @@ export function Selector(props: {
                     placeholder="Search options..."
                     style={{
                         width: '100%',
-                        padding: '8px 12px',
+                        padding: '4px 8px',
                         border: '1px solid #ccc',
                         borderRadius: '4px',
                         fontSize: '14px',
