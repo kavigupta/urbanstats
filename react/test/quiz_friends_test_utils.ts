@@ -59,7 +59,7 @@ export async function addFriend(t: TestController, friendName: string, friendID:
     if (friendName !== '') {
         await t.typeText(friendNameField, friendName)
     }
-    const friendIDField = Selector('input').withAttribute('placeholder', 'Friend ID')
+    const friendIDField = Selector('input[placeholder="Friend ID"], input[placeholder="Friend ID or Email"]')
     await t.click(friendIDField)
     await t.pressKey('ctrl+a delete')
     if (friendID !== '') {

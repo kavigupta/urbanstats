@@ -178,7 +178,7 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 <div style={{ display: 'inline-block', marginInlineStart: '1em' }} />
                 <div style={{ display: 'inline-block' }}>
                     <button
-                        style={buttonStyle(colors.hueColors.red)}
+                        style={buttonStyle(colors.hueColors.red, colors.buttonTextWhite)}
                         onClick={() => {
                         // check if they are sure
                             if (window.confirm('Are you sure you want to reset your progress?')) {
@@ -239,7 +239,7 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
             {props.longnames.map((name, idx) => {
                 const ordinal = props.populationOrdinals[idx]
                 const guessed = props.isGuessed[idx]
-                const color = guessed ? 'white' : colors.textMain
+                const color = guessed ? colors.buttonTextWhite : colors.textMain
 
                 const linkProps = guessed
                     ? navContext.link({

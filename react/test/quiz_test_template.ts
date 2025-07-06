@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap, getLocation, safeClearLocalStorage } from './test_utils'
+import { target, mostRecentDownloadPath, safeReload, screencap, safeClearLocalStorage } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
@@ -412,6 +412,10 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
             }),
             persistent_id: 'b0bacafe',
             secure_id: 'baddecaf',
+            quiz_friends: JSON.stringify([
+                ['name', 'id'],
+                [null, 'id2', 1234],
+            ]),
         },
         '',
         platform,
@@ -454,7 +458,10 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 ],
             },
         },
-        quiz_friends: [],
+        quiz_friends: [
+            ['name', 'id'],
+            [null, 'id2', 1234],
+        ],
     }
 
     test('export quiz progress', async (t) => {
@@ -823,8 +830,9 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         await t.expect(lines[3]).eql('')
         await t.expect(lines[4]).match(/^https:\/\/s\.urbanstats\.org\/s\?c=.*$/)
         // navigate to the url, should bring us back to the same quiz
-        await t.navigateTo(lines[4])
-        await t.expect(getLocation()).eql(customQuizURL(quiz5Q))
+        const response = await fetch(lines[4].replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), { redirect: 'manual' })
+        await t.expect(response.status).eql(302)
+        await t.expect(response.headers.get('Location')).eql(customQuizURL(quiz5Q).replaceAll(target, 'https://urbanstats.org'))
     })
 
     const quiz3Q = {
