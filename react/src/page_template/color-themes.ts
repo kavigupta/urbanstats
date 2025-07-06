@@ -3,7 +3,7 @@ import hueColors from '../data/hueColors'
 export interface HueColors {
     blue: string
     orange: string
-    darkOrange: string
+    brown: string
     purple: string
     red: string
     grey: string
