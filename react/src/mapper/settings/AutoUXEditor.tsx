@@ -295,7 +295,7 @@ export function Selector(props: {
 
     const [searchValue, setSearchValue] = useState(selectedRendered)
     const [isOpen, setIsOpen] = useState(false)
-    const [highlightedIndex, setHighlightedIndex] = useState(-1)
+    const [highlightedIndex, setHighlightedIndex] = useState(0)
 
     // Filter options based on search value
     const filteredOptions = renderedSelectionPossibilities.filter(option =>
@@ -314,7 +314,7 @@ export function Selector(props: {
         props.setSelection(selection)
         setSearchValue(option)
         setIsOpen(false)
-        setHighlightedIndex(-1)
+        setHighlightedIndex(0)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
@@ -342,7 +342,7 @@ export function Selector(props: {
             case 'Escape':
                 e.preventDefault()
                 setIsOpen(false)
-                setHighlightedIndex(-1)
+                setHighlightedIndex(0)
                 break
         }
     }
@@ -356,7 +356,7 @@ export function Selector(props: {
                     onChange={(e) => {
                         setSearchValue(e.target.value)
                         setIsOpen(true)
-                        setHighlightedIndex(-1)
+                        setHighlightedIndex(0)
                     }}
                     onKeyDown={handleKeyDown}
                     onClick={(e) => {
@@ -364,13 +364,13 @@ export function Selector(props: {
                     }}
                     onFocus={() => {
                         setIsOpen(true)
-                        setHighlightedIndex(-1)
+                        setHighlightedIndex(0)
                     }}
                     onBlur={() => {
                         // Delay closing to allow clicking on options
                         setTimeout(() => {
                             setIsOpen(false)
-                            setHighlightedIndex(-1)
+                            setHighlightedIndex(0)
                         }, 150)
                     }}
                     placeholder="Search options..."
