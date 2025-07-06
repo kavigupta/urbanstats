@@ -479,9 +479,8 @@ def test_friends_disassociate_from_email(client):
 
     # Disassociate a from their email
     response = client.post(
-        "/juxtastat/disassociate_from_email",
+        "/juxtastat/dissociate_email",
         headers=identity_a,
-        json={"email": "alice@example.com"},
     )
     assert response.status_code == 204
 
@@ -507,4 +506,4 @@ def test_friends_disassociate_from_email(client):
         json={"requesters": ["b"], "date": "1", "quiz_kind": "juxtastat"},
     )
     assert response.status_code == 200
-    assert response.json() == {"results": [{"corrects": None, "friends": True}]}
+    assert response.json() == {"results": [{"friends": False}]}
