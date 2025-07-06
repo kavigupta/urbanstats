@@ -163,7 +163,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             }
         },
     },
-    meanDistance: {
+    distance: {
         renderValue: (value: number, useImperial?: boolean) => {
             let unit = <span>km</span>
             let adjustedValue = value
@@ -177,7 +177,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             }
         },
     },
-    election: {
+    democraticMargin: {
         renderValue: (value: number) => {
             return {
                 value: <ElectionResult value={value} />,
@@ -199,7 +199,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             }
         },
     },
-    sunnyHours: {
+    time: {
         renderValue: (value: number) => {
             const hours = Math.floor(value)
             const minutes = Math.floor((value - hours) * 60)
@@ -215,7 +215,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             }
         },
     },
-    rainfall: {
+    distancePerYear: {
         renderValue: (value: number, useImperial?: boolean) => {
             let adjustedValue = value * 100
             let unit = 'cm'
@@ -234,7 +234,7 @@ export const unitDisplayMap: Record<string, UnitDisplay> = {
             }
         },
     },
-    pollution: {
+    contaminantLevel: {
         renderValue: (value: number) => {
             return {
                 value: <span>{value.toFixed(2)}</span>,
