@@ -29,7 +29,7 @@ export default [
     ],
     [
         "Kavi",
-        "darkOrange"
+        "brown"
     ],
     [
         "School",
