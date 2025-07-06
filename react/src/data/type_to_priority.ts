@@ -63,6 +63,6 @@ const value: number[] = [
     7,
     7,
     7,
-    7,
+    7
 ]
 export default value
