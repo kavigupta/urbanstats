@@ -6,8 +6,9 @@ import { QuizModel } from './quiz'
 export async function addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
     const user = QuizModel.shared.uniquePersistentId.value
     const email = AuthenticationStateMachine.shared.state.email
+    const idOrEmail = `Friend ID${QuizModel.shared.enableAuthFeatures.value ? ' or Email' : ''}`
     if (friendID === '') {
-        return { errorMessage: `Friend ID${QuizModel.shared.enableAuthFeatures.value ? ' or Email' : ''} cannot be empty`, problemDomain: 'friendID' }
+        return { errorMessage: `${idOrEmail} cannot be empty`, problemDomain: 'friendID' }
     }
     if (friendID === user) {
         return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
@@ -17,7 +18,7 @@ export async function addFriend(friendID: string, friendName: string): Promise<u
     }
     let dupFriend
     if ((dupFriend = QuizModel.shared.friends.value.find(([name, id]) => name !== null && id === friendID))) {
-        return { errorMessage: `Friend ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
+        return { errorMessage: `${idOrEmail} ${friendID} already exists as ${dupFriend[0]}`, problemDomain: 'friendID' }
     }
     if (friendName === '') {
         return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
@@ -34,7 +35,7 @@ export async function addFriend(friendID: string, friendName: string): Promise<u
         })
 
         if (response.status === 422) {
-            return { errorMessage: `Invalid Friend ID${QuizModel.shared.enableAuthFeatures.value ? ' or Email' : ''}`, problemDomain: 'friendID' }
+            return { errorMessage: `Invalid ${idOrEmail}`, problemDomain: 'friendID' }
         }
         if (error !== undefined) {
             return { errorMessage: 'Unknown Error', problemDomain: 'other' }
