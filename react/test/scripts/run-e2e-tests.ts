@@ -80,7 +80,7 @@ for (const test of tests) {
     let killTimer: NodeJS.Timeout | undefined
     if (options.timeLimitSeconds !== undefined) {
         const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
-        setTimeout(() => {
+        killTimer = setTimeout(() => {
             console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
             process.exit(1)
         }, timeLimit * 1000)
