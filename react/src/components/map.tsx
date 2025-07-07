@@ -136,7 +136,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
-            style: 'https://tiles.openfreemap.org/styles/bright',
+            style: '/icons/map-styles/openfreemap-bright.json',
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
