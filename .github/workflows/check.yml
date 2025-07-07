@@ -229,11 +229,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: "durations-*"
-          path: react
+          path: react/durations
           merge-multiple: true
       - run: |
           npx tsx test/scripts/save-durations.ts
-        working-directory: react/durations
+        working-directory: react
         env:
           FINE_GRAINED_TOKEN_FOR_VARIABLES: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
 
