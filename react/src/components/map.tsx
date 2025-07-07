@@ -136,7 +136,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     subnationalOutlines(): maplibregl.LayerSpecification[] {
-        if (this.props.basemap.type !== 'osm' || !this.props.basemap.subnationalOutlines) {
+        const basemap = this.props.basemap
+        if (basemap.type !== 'osm' || !basemap.subnationalOutlines) {
             return []
         }
         return [
@@ -180,8 +181,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     ],
                 ],
                 'paint': {
-                    'line-color': this.props.basemap.subnationalOutlines.color,
-                    'line-width': this.props.basemap.subnationalOutlines.weight,
+                    'line-color': basemap.subnationalOutlines.color,
+                    'line-width': basemap.subnationalOutlines.weight,
                 },
             },
         ]
@@ -513,6 +514,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 },
             }, labelId)
             source = map.getSource('polygon')!
+            for (const layer of this.subnationalOutlines()) {
+                if (map.getLayer(layer.id) === undefined) {
+                    map.addLayer(layer, labelId)
+                }
+            }
         }
         source.setData(data)
     }
