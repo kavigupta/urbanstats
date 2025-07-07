@@ -41,9 +41,18 @@ export interface LineStyle {
 
 }
 
+export interface Outline {
+    color: string
+    weight: number
+}
+
+// eslint-disable-next-line no-restricted-syntax -- This represents global defaults
+const noOutline: Outline = { color: '#000000', weight: 0 }
+
 export type Basemap = {
     type: 'osm'
     noLabels?: boolean
+    subnationalOutlines?: Outline
 } | { type: 'none' }
 
 export interface FilterSettings {
@@ -88,6 +97,7 @@ export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
         },
         basemap: {
             type: 'osm',
+            subnationalOutlines: noOutline,
         },
     }
     return merge(addTo, defaults)

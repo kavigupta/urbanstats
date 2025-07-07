@@ -5,6 +5,7 @@ import React, { ReactNode } from 'react'
 
 import './map.css'
 
+import { loadJSON } from '../load_json'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
@@ -134,9 +135,64 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    subnationalOutlines(): maplibregl.LayerSpecification[] {
+        if (this.props.basemap.type !== 'osm' || !this.props.basemap.subnationalOutlines) {
+            return []
+        }
+        return [
+            {
+                'id': 'boundary_subn_overlayed',
+                'type': 'line',
+                'source': 'openmaptiles',
+                'source-layer': 'boundary',
+                'filter': [
+                    'all',
+                    [
+                        '<=',
+                        [
+                            'get',
+                            'admin_level',
+                        ],
+                        4,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'maritime',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'disputed',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!',
+                        [
+                            'has',
+                            'claimed_by',
+                        ],
+                    ],
+                ],
+                'paint': {
+                    'line-color': this.props.basemap.subnationalOutlines.color,
+                    'line-width': this.props.basemap.subnationalOutlines.weight,
+                },
+            },
+        ]
+    }
+
     override async componentDidMount(): Promise<void> {
+        // using a local version of https://tiles.openfreemap.org/styles/bright for CORS reasons
+        const style = await loadJSON('/icons/map-styles/openfreemap-bright.json') as maplibregl.StyleSpecification
+        style.layers.push()
         const map = new maplibregl.Map({
-            style: '/icons/map-styles/openfreemap-bright.json',
+            style,
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
@@ -277,7 +333,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000) {
+        if (delta < 1000 || this.map === undefined) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
