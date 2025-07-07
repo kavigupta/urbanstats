@@ -34,6 +34,7 @@ const knownTests = tests.filter(test => test in testDurations).sort((a, b) => {
     return testDurations[b] - testDurations[a]
 })
 
+// For tests where we don't know their durations, we'll give them their own jobs at the end
 const unknownTests = tests.filter(test => !(test in testDurations))
 
 const model = new Model()
@@ -103,16 +104,17 @@ fs.readFileSync('test/scripts/solution', 'utf-8')
     .map(line => line.split(' '))
     .forEach(([name, value]) => model.variables.get(name)!.value = parseInt(value))
 
-const bins = new DefaultMap<number, string[]>(() => [])
+// Here we aassemble the assigned tests into their jobs
+const jobs = new DefaultMap<number, string[]>(() => [])
 
 for (let t = 0; t < knownTests.length; t++) {
     for (let job = 0; job < knownTests.length; job++) {
         if (testInJob[`${t}_${job}`].value === 1) {
-            bins.get(job).push(knownTests[t])
+            jobs.get(job).push(knownTests[t])
         }
     }
 }
 
-process.stdout.write(JSON.stringify(Array.from(bins.values())
+process.stdout.write(JSON.stringify(Array.from(jobs.values())
     .map(jobTests => jobTests.length > 1 ? `{${jobTests.join(',')}}` : jobTests[0])
     .concat(unknownTests)))
