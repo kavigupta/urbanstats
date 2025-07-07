@@ -13,7 +13,7 @@ for (const durationFile of durationsFiles) {
     durations[test] = duration
 }
 
-const octokit = new Octokit({ auth: z.string().parse(process.env.GITHUB_TOKEN) })
+const octokit = new Octokit({ auth: z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES) })
 
 await octokit.rest.actions.updateRepoVariable({
     owner: 'kavigupta',

@@ -233,6 +233,8 @@ jobs:
       - run: |
           npx tsx test/scripts/save-durations.ts
         working-directory: react
+        env:
+          FINE_GRAINED_TOKEN_FOR_VARIABLES: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
 
   run-unit-tests:
     runs-on: ubuntu-22.04
