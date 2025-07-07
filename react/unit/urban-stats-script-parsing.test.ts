@@ -567,7 +567,7 @@ void test('collect identifiers', (): void => {
     )
     assert.deepStrictEqual(
         ids('cMap(data=population, scale=linearScale())'),
-        new Set(['cMap', 'population', 'linearScale', 'geo']),
+        new Set(['cMap', 'population', 'linearScale', 'osmBasemap', 'geo']),
     )
     assert.deepStrictEqual(
         allIdentifiers(parseNoErrorAsExpression('++', 'test'), emptyContext()),
