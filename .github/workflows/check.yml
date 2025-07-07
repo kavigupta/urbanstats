@@ -233,7 +233,7 @@ jobs:
           merge-multiple: true
       - run: |
           npx tsx test/scripts/save-durations.ts
-        working-directory: react
+        working-directory: react/durations
         env:
           FINE_GRAINED_TOKEN_FOR_VARIABLES: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
 
