@@ -34,6 +34,7 @@ export interface LineStyle {
 export type Basemap = {
     type: 'osm'
     noLabels?: boolean
+    subnationalOutlines?: LineStyle
 } | { type: 'none' }
 
 export interface FilterSettings {

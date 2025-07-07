@@ -157,6 +157,11 @@ jobs:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+      - name: allow all directories
+        # This is needed because git complains about git repositories outside the user directory
+        run: git config --global --add safe.directory '*'
+      - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
+        if: ${{ github.base_ref != '' }}
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
@@ -169,10 +174,10 @@ jobs:
             --proxy=true \
             --browser=chromium \
             --test=test/${{ matrix.test-file }}.test.ts \
-            --parallel=1 \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=500
+            --time-limit-seconds=300 \
+            --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}

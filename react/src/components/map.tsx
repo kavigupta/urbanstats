@@ -5,6 +5,7 @@ import React, { ReactNode } from 'react'
 
 import './map.css'
 
+import { loadJSON } from '../load_json'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
@@ -132,6 +133,59 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
+    }
+
+    subnationalOutlines(): maplibregl.LayerSpecification[] {
+        const basemap = this.props.basemap
+        if (basemap.type !== 'osm' || !basemap.subnationalOutlines) {
+            return []
+        }
+        return [
+            {
+                'id': 'boundary_subn_overlayed',
+                'type': 'line',
+                'source': 'openmaptiles',
+                'source-layer': 'boundary',
+                'filter': [
+                    'all',
+                    [
+                        '<=',
+                        [
+                            'get',
+                            'admin_level',
+                        ],
+                        4,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'maritime',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'disputed',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!',
+                        [
+                            'has',
+                            'claimed_by',
+                        ],
+                    ],
+                ],
+                'paint': {
+                    'line-color': basemap.subnationalOutlines.color,
+                    'line-width': basemap.subnationalOutlines.weight,
+                },
+            },
+        ]
     }
 
     override async componentDidMount(): Promise<void> {
@@ -277,7 +331,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000) {
+        if (delta < 1000 || this.map === undefined) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
@@ -457,6 +511,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 },
             }, labelId)
             source = map.getSource('polygon')!
+            for (const layer of this.subnationalOutlines()) {
+                if (map.getLayer(layer.id) === undefined) {
+                    map.addLayer(layer, labelId)
+                }
+            }
         }
         source.setData(data)
     }
