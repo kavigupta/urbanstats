@@ -511,11 +511,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 },
             }, labelId)
             source = map.getSource('polygon')!
-            for (const layer of this.subnationalOutlines()) {
-                if (map.getLayer(layer.id) === undefined) {
-                    map.addLayer(layer, labelId)
-                }
+        }
+        for (const layer of this.subnationalOutlines()) {
+            if (map.getLayer(layer.id) !== undefined) {
+                map.removeLayer(layer.id)
             }
+            map.addLayer(layer, labelId)
         }
         source.setData(data)
     }
