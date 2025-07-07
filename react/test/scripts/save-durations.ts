@@ -22,3 +22,5 @@ await octokit.rest.actions.updateRepoVariable({
     name: 'E2E_TEST_DURATIONS',
     value: JSON.stringify(durations),
 })
+
+console.warn('Success!')
