@@ -28,7 +28,6 @@ export type RampDescriptor = ConstantRampDescriptor | CommonRampDescriptor & { t
 
 export function getRamps(): Record<string, RampT> {
     return {
-        ...RAMPS,
         Uridis: [
             [0, hueColors.purple],
             [0.25, hueColors.blue],
@@ -36,6 +35,7 @@ export function getRamps(): Record<string, RampT> {
             [0.75, hueColors.green],
             [1, hueColors.yellow],
         ],
+        ...RAMPS,
     }
 }
 
