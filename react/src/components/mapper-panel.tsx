@@ -24,6 +24,7 @@ import { interpolateColor } from '../utils/color'
 import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
+import { UnitType } from '../utils/unit'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
 import { Statistic } from './table'
@@ -89,7 +90,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const ramp = cMap.ramp
         const scale = instantiate(cMap.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label })
+        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
         this.props.basemapCallback(cMap.basemap)
         const colors = cMap.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
@@ -135,6 +136,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     }
     const label = props.ramp.label
     const values = props.ramp.interpolations
+    const unit = props.ramp.unit
 
     const createValue = (stat: number): ReactNode => {
         return (
@@ -143,11 +145,13 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                     statname={label}
                     value={stat}
                     isUnit={false}
+                    unit={unit}
                 />
                 <Statistic
                     statname={label}
                     value={stat}
                     isUnit={true}
+                    unit={unit}
                 />
             </div>
         )
@@ -206,6 +210,7 @@ interface EmpiricalRamp {
     scale: ScaleInstance
     interpolations: number[]
     label: string
+    unit?: UnitType
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {

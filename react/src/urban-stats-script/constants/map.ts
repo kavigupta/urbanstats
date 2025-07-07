@@ -1,4 +1,5 @@
 import { Basemap } from '../../mapper/settings/utils'
+import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
 import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
@@ -21,6 +22,7 @@ export interface CMap {
     label: string
     outline: Outline
     basemap: Basemap
+    unit?: UnitType
 }
 
 export const cMapType = {
@@ -92,6 +94,10 @@ export const cMap: USSValue = {
                 type: { type: 'concrete', value: basemapType },
                 defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', noLabels: false } }),
             },
+            unit: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
+                defaultValue: rawDefaultValue(null),
+            },
         },
         returnType: { type: 'concrete', value: cMapType },
     },
@@ -103,6 +109,8 @@ export const cMap: USSValue = {
         const labelPassedIn = namedArgs.label as string | null
         const outline = (namedArgs.outline as { type: 'opaque', value: Outline }).value
         const basemap = (namedArgs.basemap as { type: 'opaque', value: Basemap }).value
+        const unitArg = namedArgs.unit as { type: 'opaque', value: { unit: string } } | null
+        const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
         if (geo.length !== data.length) {
             throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -118,7 +126,7 @@ export const cMap: USSValue = {
 
         return {
             type: 'opaque',
-            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap } satisfies CMap,
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, unit } satisfies CMap,
         }
     },
     documentation: {
@@ -132,6 +140,7 @@ export const cMap: USSValue = {
             geo: 'Geography',
             outline: 'Outline',
             basemap: 'Basemap',
+            unit: 'Unit',
         },
     },
 }
