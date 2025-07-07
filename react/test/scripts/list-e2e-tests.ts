@@ -19,15 +19,18 @@ import { DefaultMap } from '../../src/utils/DefaultMap'
  * This approach has reduced the number of jobs in the pipeline from 55 to 35.
  */
 
+// This is a command line tool, we take in the test durations via JSON passed to a CLI flag
 const options = argumentParser({
     options: z.object({
         testDurations: z.string(),
     }).strict(),
 }).parse(process.argv.slice(2))
 
-const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations === '' ? '{}' : options.testDurations))
+// All the tests that might run
 const tests = globSync('test/**/*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1])
-const durationLimit = 5 * 60 * 1000
+
+// Durations might be empty (running on a fork), so we should handle that and assume it's empty
+const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations === '' ? '{}' : options.testDurations))
 
 // sort from largest to smallest
 const knownTests = tests.filter(test => test in testDurations).sort((a, b) => {
@@ -69,6 +72,9 @@ for (let t = 0; t < knownTests.length; t++) {
     }
     model.addConstr(constr, '==', 1)
 }
+
+// The longest we want a job to be
+const durationLimit = 5 * 60 * 1000
 
 // If a test is in a job, that job must be used
 // Also, the tests in a job should not exceed how long we want jobs to be
