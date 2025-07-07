@@ -224,6 +224,7 @@ jobs:
   merge-and-save-durations:
     runs-on: ubuntu-22.04
     needs: [e2e]
+    if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/node_modules
