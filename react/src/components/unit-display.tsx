@@ -10,7 +10,6 @@ export interface UnitDisplay {
         value: ReactNode
         unit: ReactNode
     }
-    unitName: string
 }
 
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
@@ -23,7 +22,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
-                unitName: 'Percentage',
             }
         case 'fatalities':
             return {
@@ -33,7 +31,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
-                unitName: 'Fatalities',
             }
         case 'fatalitiesPerCapita':
             return {
@@ -43,7 +40,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>/100k</span>,
                     }
                 },
-                unitName: 'Fatalities Per Capita',
             }
         case 'density':
             return {
@@ -72,7 +68,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
-                unitName: 'Density',
             }
         case 'population':
             return {
@@ -102,7 +97,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
-                unitName: 'Population',
             }
         case 'area':
             return {
@@ -162,7 +156,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
-                unitName: 'Area',
             }
         case 'distanceInKm':
             return {
@@ -178,7 +171,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
-                unitName: 'Distance [km]',
             }
         case 'distanceInM':
             return {
@@ -194,7 +186,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>{unitName}</span>,
                     }
                 },
-                unitName: 'Distance [m]',
             }
         case 'democraticMargin':
             return {
@@ -204,7 +195,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
-                unitName: 'Democratic Margin',
             }
         case 'temperature':
             return {
@@ -220,7 +210,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
-                unitName: 'Temperature',
             }
         case 'time':
             return {
@@ -238,7 +227,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
-                unitName: 'Time',
             }
         case 'distancePerYear':
             return {
@@ -259,7 +247,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
-                unitName: 'Distance Per Year',
             }
         case 'contaminantLevel':
             return {
@@ -274,7 +261,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
-                unitName: 'Contaminant Level',
             }
         case 'default':
             return {
@@ -284,7 +270,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
-                unitName: 'Default',
             }
     }
 }
