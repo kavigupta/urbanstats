@@ -67,7 +67,7 @@ for (const test of tests) {
     }
 
     const testFileDidChange = options.baseRef !== ''
-        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false, stdio: 'inherit' }).then(({ exitCode }) => {
+        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false }).then(({ exitCode }) => {
             if (exitCode === 0 || exitCode === 1) {
                 return exitCode === 1
             }
