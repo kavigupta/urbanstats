@@ -15,7 +15,7 @@ for (const durationFile of durationsFiles) {
 
 const octokit = new Octokit({ auth: z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES) })
 
-await octokit.rest.actions.updateRepoVariable({
+const response = await octokit.rest.actions.updateRepoVariable({
     owner: 'kavigupta',
     // eslint-disable-next-line no-restricted-syntax -- Repo identifier not branding
     repo: 'urbanstats',
@@ -23,4 +23,4 @@ await octokit.rest.actions.updateRepoVariable({
     value: JSON.stringify(durations),
 })
 
-console.warn('Success!')
+console.warn(`Updated variable with response code ${response.status}. New value: ${JSON.stringify(durations, null, 2)}`)
