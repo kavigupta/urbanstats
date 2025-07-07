@@ -2,6 +2,29 @@ export type UnitType = 'percentage' | 'fatalities' | 'fatalitiesPerCapita' | 'de
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
     | 'contaminantLevel' | 'default'
 
+// Validated list of all unit types - this ensures we have every value from UnitType
+export const allUnitTypes = [
+    'percentage',
+    'fatalities',
+    'fatalitiesPerCapita',
+    'density',
+    'population',
+    'area',
+    'distanceInKm',
+    'distanceInM',
+    'democraticMargin',
+    'temperature',
+    'time',
+    'distancePerYear',
+    'contaminantLevel',
+    'default',
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- just to check that all unit types are covered
+function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
+    return unitType
+}
+
 export function getUnitName(unitType: UnitType): string {
     switch (unitType) {
         case 'percentage':

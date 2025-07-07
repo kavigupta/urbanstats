@@ -9,6 +9,7 @@ import { cMap, constructOutline } from './map'
 import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
 import { linearScaleValue, logScaleValue } from './scale'
+import { unitConstants } from './units'
 
 type Constants = Map<string, USSValue>
 
@@ -98,6 +99,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN' } }] satisfies [string, USSValue],
     ...colorConstants,
+    ...unitConstants,
     numericUnaryFunction('abs', Math.abs),
     numericUnaryFunction('sqrt', Math.sqrt),
     numericUnaryFunction('ln', Math.log),
