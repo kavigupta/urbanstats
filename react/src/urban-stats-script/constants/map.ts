@@ -4,7 +4,7 @@ import { Context } from '../context'
 import { noLocation } from '../lexer'
 import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
-import { basemapType } from './basemap'
+import { basemapType, outlineType } from './basemap'
 import { Color } from './color'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
@@ -28,11 +28,6 @@ export interface CMap {
 export const cMapType = {
     type: 'opaque',
     name: 'cMap',
-} satisfies USSType
-
-export const outlineType = {
-    type: 'opaque',
-    name: 'outline',
 } satisfies USSType
 
 export const constructOutline = {
@@ -92,7 +87,7 @@ export const cMap: USSValue = {
             },
             basemap: {
                 type: { type: 'concrete', value: basemapType },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', noLabels: false } }),
+                defaultValue: expressionDefaultValue({ type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation }),
             },
             unit: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
