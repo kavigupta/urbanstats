@@ -24,3 +24,5 @@ const response = await octokit.rest.actions.updateRepoVariable({
 })
 
 console.warn(`Updated variable with response code ${response.status}. New value: ${JSON.stringify(durations, null, 2)}`)
+
+//
