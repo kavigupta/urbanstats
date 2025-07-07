@@ -23,6 +23,7 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
         assert(typeInfo !== undefined, `Type info for ${name} not found`)
         return {
             type: typeInfo.type,
+            documentation: typeInfo.documentation,
             value: val,
         }
     }
