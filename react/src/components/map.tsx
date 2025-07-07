@@ -525,7 +525,7 @@ function isVisible(basemap: Basemap, layer: maplibregl.LayerSpecification): bool
         case 'none':
             return false
         case 'osm':
-            if (basemap.disableBasemap && layer.type === 'symbol') {
+            if (basemap.noLabels && layer.type === 'symbol') {
                 return false
             }
             return true
