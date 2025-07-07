@@ -94,7 +94,7 @@ for (const test of tests) {
 
     const duration = Date.now() - start
 
-    console.warn(chalkTemplate`{cyan ${testFile} done...}`)
+    console.warn(chalkTemplate`{cyan ${testFile} done}`)
 
     clearTimeout(killTimer)
 

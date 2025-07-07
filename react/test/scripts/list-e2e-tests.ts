@@ -42,4 +42,4 @@ tests: for (const test of tests) {
     }
 }
 
-process.stdout.write(JSON.stringify(groupings.map(g => `{${g.tests.join(',')}}`).concat(leftovers)))
+process.stdout.write(JSON.stringify(groupings.map(g => g.tests.length > 1 ? `{${g.tests.join(',')}}` : g.tests[0]).concat(leftovers)))
