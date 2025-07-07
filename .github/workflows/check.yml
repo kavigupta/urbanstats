@@ -9,7 +9,7 @@ env:
   # we can test against non-production data
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  COLOR: 1
+  FORCE_COLOR: 1
 jobs:
   lint:
     runs-on: ubuntu-22.04
@@ -144,7 +144,7 @@ jobs:
         env:
           OUTPUTS: ${{ toJSON(steps.resolve-proxy-branch.outputs) }}
 
-  run-e2e-tests:
+  e2e:
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
@@ -201,7 +201,7 @@ jobs:
 
   merge-screenshots:
     runs-on: ubuntu-22.04
-    needs: [run-e2e-tests]
+    needs: [e2e]
     if: "!cancelled()"
     steps:
       - uses: actions/upload-artifact/merge@v4
@@ -223,7 +223,7 @@ jobs:
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04
-    needs: [run-e2e-tests]
+    needs: [e2e]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/node_modules
