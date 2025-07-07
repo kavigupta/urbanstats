@@ -15,7 +15,7 @@ import { displayType } from '../utils/text'
 
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
-import { classifyStatistic, unitDisplayMap } from './unit-display'
+import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -556,7 +556,7 @@ export function Statistic(props: { style?: React.CSSProperties, statname: string
     const [temperatureUnit] = useSetting('temperature_unit')
 
     const statisticType = classifyStatistic(props.statname)
-    const unitDisplay = unitDisplayMap[statisticType]
+    const unitDisplay = getUnitDisplay(statisticType)
     const { value, unit } = unitDisplay.renderValue(props.value, useImperial, temperatureUnit)
 
     return (
