@@ -230,6 +230,7 @@ jobs:
         with:
           pattern: "durations-*"
           path: react
+          merge-multiple: true
       - run: |
           npx tsx test/scripts/save-durations.ts
         working-directory: react
