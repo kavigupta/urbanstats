@@ -2,10 +2,11 @@ import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { USSRawValue, USSValue } from '../types-values'
 
-import { hsv, renderColor, rgb } from './color'
+import { osmBasemap, noBasemap } from './basemap'
+import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
-import { cMap } from './map'
-import { constructRampValue, reverseRampValue, rampConsts } from './ramp'
+import { cMap, constructOutline } from './map'
+import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
 import { linearScaleValue, logScaleValue } from './scale'
 
@@ -89,13 +90,14 @@ function numericAggregationFunction(
 }
 
 export const defaultConstants: Constants = new Map<string, USSValue>([
-    ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true' } }] satisfies [string, USSValue],
+    ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', isDefault: true } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false' } }] satisfies [string, USSValue],
-    ['null', { type: { type: 'null' }, value: null, documentation: { humanReadableName: 'null' } }] satisfies [string, USSValue],
+    ['null', { type: { type: 'null' }, value: null, documentation: { humanReadableName: 'null', isDefault: true } }] satisfies [string, USSValue],
     ['inf', { type: { type: 'number' }, value: Infinity, documentation: { humanReadableName: '+Infinity' } }] satisfies [string, USSValue],
     ['pi', { type: { type: 'number' }, value: Math.PI, documentation: { humanReadableName: 'π' } }] satisfies [string, USSValue],
     ['E', { type: { type: 'number' }, value: Math.E, documentation: { humanReadableName: 'e' } }] satisfies [string, USSValue],
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN' } }] satisfies [string, USSValue],
+    ...colorConstants,
     numericUnaryFunction('abs', Math.abs),
     numericUnaryFunction('sqrt', Math.sqrt),
     numericUnaryFunction('ln', Math.log),
@@ -135,8 +137,12 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['renderColor', renderColor],
     ['constructRamp', constructRampValue],
     ['reverseRamp', reverseRampValue],
+    ['divergingRamp', divergingRampValue],
     ...rampConsts,
     ['linearScale', linearScaleValue],
     ['logScale', logScaleValue],
     ['cMap', cMap],
+    ['constructOutline', constructOutline],
+    ['osmBasemap', osmBasemap],
+    ['noBasemap', noBasemap],
 ] satisfies [string, USSValue][])

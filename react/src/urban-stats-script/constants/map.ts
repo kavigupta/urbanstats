@@ -1,8 +1,17 @@
+import { Basemap } from '../../mapper/settings'
+import { Context } from '../context'
 import { noLocation } from '../lexer'
-import { USSType, USSValue, expressionDefaultValue, rawDefaultValue } from '../types-values'
+import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
+import { basemapType } from './basemap'
+import { Color } from './color'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
+
+export interface Outline {
+    color: Color
+    weight: number
+}
 
 export interface CMap {
     geo: string[]
@@ -10,12 +19,51 @@ export interface CMap {
     scale: ScaleDescriptor
     ramp: RampT
     label: string
+    outline: Outline
+    basemap: Basemap
 }
 
 export const cMapType = {
     type: 'opaque',
     name: 'cMap',
 } satisfies USSType
+
+export const outlineType = {
+    type: 'opaque',
+    name: 'outline',
+} satisfies USSType
+
+export const constructOutline = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            color: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { r: 0, g: 0, b: 0 } }),
+            },
+            weight: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: rawDefaultValue(0.5),
+            },
+        },
+        returnType: { type: 'concrete', value: outlineType },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
+        const color = (namedArgs.color as { type: 'opaque', value: Color }).value
+        const weight = namedArgs.weight as number
+        return { type: 'opaque', value: { color, weight } }
+    },
+    documentation: {
+        humanReadableName: 'Outline',
+        isDefault: true,
+        namedArgs: {
+            color: 'Border Color',
+            weight: 'Border Width',
+        },
+    },
+} satisfies USSValue
 
 export const cMap: USSValue = {
     type: {
@@ -36,6 +84,14 @@ export const cMap: USSValue = {
                     name: { node: 'geo', location: noLocation },
                 }),
             },
+            outline: {
+                type: { type: 'concrete', value: outlineType },
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
+            },
+            basemap: {
+                type: { type: 'concrete', value: basemapType },
+                defaultValue: rawDefaultValue({ type: 'opaque', value: { type: 'osm', noLabels: false } }),
+            },
         },
         returnType: { type: 'concrete', value: cMapType },
     },
@@ -45,6 +101,8 @@ export const cMap: USSValue = {
         const scale = (namedArgs.scale as { type: 'opaque', value: Scale }).value
         const ramp = (namedArgs.ramp as { type: 'opaque', value: RampT }).value
         const labelPassedIn = namedArgs.label as string | null
+        const outline = (namedArgs.outline as { type: 'opaque', value: Outline }).value
+        const basemap = (namedArgs.basemap as { type: 'opaque', value: Basemap }).value
 
         if (geo.length !== data.length) {
             throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -60,8 +118,20 @@ export const cMap: USSValue = {
 
         return {
             type: 'opaque',
-            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]' } satisfies CMap,
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap } satisfies CMap,
         }
     },
-    documentation: { humanReadableName: 'Choropleth Map' },
+    documentation: {
+        humanReadableName: 'Choropleth Map',
+        isDefault: true,
+        namedArgs: {
+            data: 'Data',
+            scale: 'Scale',
+            ramp: 'Ramp',
+            label: 'Label',
+            geo: 'Geography',
+            outline: 'Outline',
+            basemap: 'Basemap',
+        },
+    },
 }

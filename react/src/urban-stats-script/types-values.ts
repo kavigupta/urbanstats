@@ -88,6 +88,15 @@ export type USSRawValue = (
 
 export interface Documentation {
     humanReadableName: string
+    priority?: number
+    /**
+     * True if this is the canonical default value for its type (e.g., the default ramp or scale).
+     */
+    isDefault?: boolean
+    /**
+     * Human-readable names for named arguments. Maps argument name to display name.
+     */
+    namedArgs?: Record<string, string>
 }
 
 export interface USSDocumentedType {
@@ -135,6 +144,7 @@ export function renderType(type: USSType): string {
         return `[${type.elementType.type === 'elementOfEmptyVector' ? '' : renderType(type.elementType)}]`
     }
     if (type.type === 'object') {
+        assert(type.properties instanceof Map, `Expected properties to be a Map, got ${typeof type.properties}`)
         return `{${[...type.properties.entries()].sort().map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
     }
     if (type.type === 'null') {
