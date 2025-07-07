@@ -13,7 +13,7 @@ test('legacy settings param produces expected results', async (t) => {
 
 urbanstatsFixture('article with election category param', `${target}/article.html?longname=CA-09%2C+USA&category=election`)
 
-test.only('contains only stats for election', async (t) => {
+test('contains only stats for election', async (t) => {
     const statisticLinkTests = ClientFunction(() => Array.from(document.querySelectorAll('[data-test-id=statistic-link]')).map(element => element.textContent))
     await t.expect(statisticLinkTests()).eql(['2020 Presidential Election', '2016 Presidential Election', '2016-2020 Swing'])
 })
