@@ -66,11 +66,8 @@ for (const test of tests) {
         })
     }
 
-    console.log({ test, baseRef: options.baseRef })
-
     const testFileDidChange = options.baseRef !== ''
         ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false, stdio: 'inherit' }).then(({ exitCode }) => {
-            console.log({ test, exitCode })
             if (exitCode === 0 || exitCode === 1) {
                 return exitCode === 1
             }
@@ -80,12 +77,14 @@ for (const test of tests) {
         })
         : false
 
-    const killTimer = options.timeLimitSeconds
-        ? setTimeout(() => {
-            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
+    let killTimer: NodeJS.Timeout | undefined
+    if (options.timeLimitSeconds !== undefined) {
+        const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
+        setTimeout(() => {
+            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
             process.exit(1)
-        }, options.timeLimitSeconds * (testFileDidChange ? 1 : 2) * 1000)
-        : undefined
+        }, timeLimit * 1000)
+    }
 
     testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
