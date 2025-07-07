@@ -231,8 +231,7 @@ jobs:
           pattern: "durations-*"
           path: react
       - run: |
-          npx tsx test/scripts/save-durations.ts \
-            --github-token={{ github.token }}
+          npx tsx test/scripts/save-durations.ts
         working-directory: react
 
   run-unit-tests:

@@ -3,13 +3,6 @@ import fs from 'fs'
 import { globSync } from 'glob'
 import { Octokit } from 'octokit'
 import { z } from 'zod'
-import { argumentParser } from 'zodcli'
-
-const options = argumentParser({
-    options: z.object({
-        githubToken: z.string(),
-    }).strict(),
-}).parse(process.argv.slice(2))
 
 const durationsFiles = globSync('durations/*.json')
 const durations: Record<string, number> = {}
@@ -20,7 +13,7 @@ for (const durationFile of durationsFiles) {
     durations[test] = duration
 }
 
-const octokit = new Octokit({ auth: options.githubToken })
+const octokit = new Octokit({ auth: z.string().parse(process.env.GITHUB_TOKEN) })
 
 await octokit.rest.actions.updateRepoVariable({
     owner: 'kavigupta',
