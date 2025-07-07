@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { separateNumber } from '../utils/text'
+import { UnitType } from '../utils/unit'
 
 import { ElectionResult } from './table'
 
@@ -12,267 +13,283 @@ export interface UnitDisplay {
     unitName: string
 }
 
-export const unitDisplayMap: Record<string, UnitDisplay> = {
-    percentage: {
-        renderValue: (value: number) => {
+export function getUnitDisplay(unitType: UnitType): UnitDisplay {
+    switch (unitType) {
+        case 'percentage':
             return {
-                value: <span>{(value * 100).toFixed(2)}</span>,
-                unit: <span>%</span>,
+                renderValue: (value: number) => {
+                    return {
+                        value: <span>{(value * 100).toFixed(2)}</span>,
+                        unit: <span>%</span>,
+                    }
+                },
+                unitName: 'Percentage',
             }
-        },
-        unitName: 'Percentage',
-    },
-    fatalities: {
-        renderValue: (value: number) => {
+        case 'fatalities':
             return {
-                value: <span>{separateNumber(value.toFixed(0))}</span>,
-                unit: <span>&nbsp;</span>,
+                renderValue: (value: number) => {
+                    return {
+                        value: <span>{separateNumber(value.toFixed(0))}</span>,
+                        unit: <span>&nbsp;</span>,
+                    }
+                },
+                unitName: 'Fatalities',
             }
-        },
-        unitName: 'Fatalities',
-    },
-    fatalitiesPerCapita: {
-        renderValue: (value: number) => {
+        case 'fatalitiesPerCapita':
             return {
-                value: <span>{(100_000 * value).toFixed(2)}</span>,
-                unit: <span>/100k</span>,
+                renderValue: (value: number) => {
+                    return {
+                        value: <span>{(100_000 * value).toFixed(2)}</span>,
+                        unit: <span>/100k</span>,
+                    }
+                },
+                unitName: 'Fatalities Per Capita',
             }
-        },
-        unitName: 'Fatalities Per Capita',
-    },
-    density: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let unitName = 'km'
-            let adjustedValue = value
-            if (useImperial) {
-                unitName = 'mi'
-                adjustedValue *= 1.60934 * 1.60934
-            }
-            let places = 2
-            if (adjustedValue > 10) {
-                places = 0
-            }
-            else if (adjustedValue > 1) {
-                places = 1
-            }
+        case 'density':
             return {
-                value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
-                unit: (
-                    <span>
-                        /&nbsp;
-                        {unitName}
-                        <sup>2</sup>
-                    </span>
-                ),
+                renderValue: (value: number, useImperial?: boolean) => {
+                    let unitName = 'km'
+                    let adjustedValue = value
+                    if (useImperial) {
+                        unitName = 'mi'
+                        adjustedValue *= 1.60934 * 1.60934
+                    }
+                    let places = 2
+                    if (adjustedValue > 10) {
+                        places = 0
+                    }
+                    else if (adjustedValue > 1) {
+                        places = 1
+                    }
+                    return {
+                        value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
+                        unit: (
+                            <span>
+                                /&nbsp;
+                                {unitName}
+                                <sup>2</sup>
+                            </span>
+                        ),
+                    }
+                },
+                unitName: 'Density',
             }
-        },
-        unitName: 'Density',
-    },
-    population: {
-        renderValue: (value: number) => {
-            if (value > 1e9) {
-                return {
-                    value: <span>{(value / 1e9).toPrecision(3)}</span>,
-                    unit: <span>B</span>,
-                }
-            }
-            if (value > 1e6) {
-                return {
-                    value: <span>{(value / 1e6).toPrecision(3)}</span>,
-                    unit: <span>m</span>,
-                }
-            }
-            else if (value > 1e4) {
-                return {
-                    value: <span>{(value / 1e3).toPrecision(3)}</span>,
-                    unit: <span>k</span>,
-                }
-            }
-            else {
-                return {
-                    value: <span>{separateNumber(value.toFixed(0))}</span>,
-                    unit: <span>&nbsp;</span>,
-                }
-            }
-        },
-        unitName: 'Population',
-    },
-    area: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let adjustedValue = value
-            let unit: React.ReactElement
-            if (useImperial) {
-                adjustedValue /= 1.60934 * 1.60934
-                if (adjustedValue < 1) {
-                    unit = <span>acres</span>
-                    adjustedValue *= 640
-                }
-                else {
-                    unit = (
-                        <span>
-                            mi
-                            <sup>2</sup>
-                        </span>
-                    )
-                }
-            }
-            else {
-                if (adjustedValue < 0.01) {
-                    adjustedValue *= 1000 * 1000
-                    unit = (
-                        <span>
-                            m
-                            <sup>2</sup>
-                        </span>
-                    )
-                }
-                else {
-                    unit = (
-                        <span>
-                            km
-                            <sup>2</sup>
-                        </span>
-                    )
-                }
-            }
-            let places = 3
-            if (adjustedValue > 100) {
-                places = 0
-            }
-            else if (adjustedValue > 10) {
-                places = 1
-            }
-            else if (adjustedValue > 1) {
-                places = 2
-            }
-            let rendered = adjustedValue.toFixed(places)
-            if (places === 0) {
-                rendered = separateNumber(rendered)
-            }
+        case 'population':
             return {
-                value: <span>{rendered}</span>,
-                unit,
+                renderValue: (value: number) => {
+                    if (value > 1e9) {
+                        return {
+                            value: <span>{(value / 1e9).toPrecision(3)}</span>,
+                            unit: <span>B</span>,
+                        }
+                    }
+                    if (value > 1e6) {
+                        return {
+                            value: <span>{(value / 1e6).toPrecision(3)}</span>,
+                            unit: <span>m</span>,
+                        }
+                    }
+                    else if (value > 1e4) {
+                        return {
+                            value: <span>{(value / 1e3).toPrecision(3)}</span>,
+                            unit: <span>k</span>,
+                        }
+                    }
+                    else {
+                        return {
+                            value: <span>{separateNumber(value.toFixed(0))}</span>,
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                },
+                unitName: 'Population',
             }
-        },
-        unitName: 'Area',
-    },
-    distanceInKm: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let unit = <span>km</span>
-            let adjustedValue = value
-            if (useImperial) {
-                unit = <span>mi</span>
-                adjustedValue /= 1.60934
-            }
+        case 'area':
             return {
-                value: <span>{adjustedValue.toFixed(2)}</span>,
-                unit,
+                renderValue: (value: number, useImperial?: boolean) => {
+                    let adjustedValue = value
+                    let unit: React.ReactElement
+                    if (useImperial) {
+                        adjustedValue /= 1.60934 * 1.60934
+                        if (adjustedValue < 1) {
+                            unit = <span>acres</span>
+                            adjustedValue *= 640
+                        }
+                        else {
+                            unit = (
+                                <span>
+                                    mi
+                                    <sup>2</sup>
+                                </span>
+                            )
+                        }
+                    }
+                    else {
+                        if (adjustedValue < 0.01) {
+                            adjustedValue *= 1000 * 1000
+                            unit = (
+                                <span>
+                                    m
+                                    <sup>2</sup>
+                                </span>
+                            )
+                        }
+                        else {
+                            unit = (
+                                <span>
+                                    km
+                                    <sup>2</sup>
+                                </span>
+                            )
+                        }
+                    }
+                    let places = 3
+                    if (adjustedValue > 100) {
+                        places = 0
+                    }
+                    else if (adjustedValue > 10) {
+                        places = 1
+                    }
+                    else if (adjustedValue > 1) {
+                        places = 2
+                    }
+                    let rendered = adjustedValue.toFixed(places)
+                    if (places === 0) {
+                        rendered = separateNumber(rendered)
+                    }
+                    return {
+                        value: <span>{rendered}</span>,
+                        unit,
+                    }
+                },
+                unitName: 'Area',
             }
-        },
-        unitName: 'Distance [km]',
-    },
-    distanceInM: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let unitName = 'm'
-            let adjustedValue = value
-            if (useImperial) {
-                unitName = 'ft'
-                adjustedValue *= 3.28084
-            }
+        case 'distanceInKm':
             return {
-                value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
-                unit: <span>{unitName}</span>,
+                renderValue: (value: number, useImperial?: boolean) => {
+                    let unit = <span>km</span>
+                    let adjustedValue = value
+                    if (useImperial) {
+                        unit = <span>mi</span>
+                        adjustedValue /= 1.60934
+                    }
+                    return {
+                        value: <span>{adjustedValue.toFixed(2)}</span>,
+                        unit,
+                    }
+                },
+                unitName: 'Distance [km]',
             }
-        },
-        unitName: 'Distance [m]',
-    },
-    democraticMargin: {
-        renderValue: (value: number) => {
+        case 'distanceInM':
             return {
-                value: <ElectionResult value={value} />,
-                unit: <span>%</span>,
+                renderValue: (value: number, useImperial?: boolean) => {
+                    let unitName = 'm'
+                    let adjustedValue = value
+                    if (useImperial) {
+                        unitName = 'ft'
+                        adjustedValue *= 3.28084
+                    }
+                    return {
+                        value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
+                        unit: <span>{unitName}</span>,
+                    }
+                },
+                unitName: 'Distance [m]',
             }
-        },
-        unitName: 'Democratic Margin',
-    },
-    temperature: {
-        renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-            let unit = <span>&deg;F</span>
-            let adjustedValue = value
-            if (temperatureUnit === 'celsius') {
-                unit = <span>&deg;C</span>
-                adjustedValue = (value - 32) * (5 / 9)
-            }
+        case 'democraticMargin':
             return {
-                value: <span>{adjustedValue.toFixed(1)}</span>,
-                unit,
+                renderValue: (value: number) => {
+                    return {
+                        value: <ElectionResult value={value} />,
+                        unit: <span>%</span>,
+                    }
+                },
+                unitName: 'Democratic Margin',
             }
-        },
-        unitName: 'Temperature',
-    },
-    time: {
-        renderValue: (value: number) => {
-            const hours = Math.floor(value)
-            const minutes = Math.floor((value - hours) * 60)
+        case 'temperature':
             return {
-                value: (
-                    <span>
-                        {hours}
-                        :
-                        {minutes.toString().padStart(2, '0')}
-                    </span>
-                ),
-                unit: <span>&nbsp;</span>,
+                renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+                    let unit = <span>&deg;F</span>
+                    let adjustedValue = value
+                    if (temperatureUnit === 'celsius') {
+                        unit = <span>&deg;C</span>
+                        adjustedValue = (value - 32) * (5 / 9)
+                    }
+                    return {
+                        value: <span>{adjustedValue.toFixed(1)}</span>,
+                        unit,
+                    }
+                },
+                unitName: 'Temperature',
             }
-        },
-        unitName: 'Time',
-    },
-    distancePerYear: {
-        renderValue: (value: number, useImperial?: boolean) => {
-            let adjustedValue = value * 100
-            let unit = 'cm'
-            if (useImperial) {
-                unit = 'in'
-                adjustedValue /= 2.54
-            }
+        case 'time':
             return {
-                value: <span>{adjustedValue.toFixed(1)}</span>,
-                unit: (
-                    <span>
-                        {unit}
-                        /yr
-                    </span>
-                ),
+                renderValue: (value: number) => {
+                    const hours = Math.floor(value)
+                    const minutes = Math.floor((value - hours) * 60)
+                    return {
+                        value: (
+                            <span>
+                                {hours}
+                                :
+                                {minutes.toString().padStart(2, '0')}
+                            </span>
+                        ),
+                        unit: <span>&nbsp;</span>,
+                    }
+                },
+                unitName: 'Time',
             }
-        },
-        unitName: 'Distance Per Year',
-    },
-    contaminantLevel: {
-        renderValue: (value: number) => {
+        case 'distancePerYear':
             return {
-                value: <span>{value.toFixed(2)}</span>,
-                unit: (
-                    <span>
-                        &mu;g/m
-                        <sup>3</sup>
-                    </span>
-                ),
+                renderValue: (value: number, useImperial?: boolean) => {
+                    let adjustedValue = value * 100
+                    let unit = 'cm'
+                    if (useImperial) {
+                        unit = 'in'
+                        adjustedValue /= 2.54
+                    }
+                    return {
+                        value: <span>{adjustedValue.toFixed(1)}</span>,
+                        unit: (
+                            <span>
+                                {unit}
+                                /yr
+                            </span>
+                        ),
+                    }
+                },
+                unitName: 'Distance Per Year',
             }
-        },
-        unitName: 'Contaminant Level',
-    },
-    default: {
-        renderValue: (value: number) => {
+        case 'contaminantLevel':
             return {
-                value: <span>{value.toFixed(3)}</span>,
-                unit: <span>&nbsp;</span>,
+                renderValue: (value: number) => {
+                    return {
+                        value: <span>{value.toFixed(2)}</span>,
+                        unit: (
+                            <span>
+                                &mu;g/m
+                                <sup>3</sup>
+                            </span>
+                        ),
+                    }
+                },
+                unitName: 'Contaminant Level',
             }
-        },
-        unitName: 'Default',
-    },
+        case 'default':
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <span>{value.toFixed(3)}</span>,
+                        unit: <span>&nbsp;</span>,
+                    }
+                },
+                unitName: 'Default',
+            }
+    }
 }
 
-export function classifyStatistic(statname: string): keyof typeof unitDisplayMap {
+export function classifyStatistic(statname: string): UnitType {
     if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
         return 'percentage'
     }
@@ -286,7 +303,7 @@ export function classifyStatistic(statname: string): keyof typeof unitDisplayMap
         return 'density'
     }
     if (statname.includes('Elevation')) {
-        return 'elevation'
+        return 'distanceInM'
     }
     if (statname.startsWith('Population')) {
         return 'population'
@@ -295,22 +312,22 @@ export function classifyStatistic(statname: string): keyof typeof unitDisplayMap
         return 'area'
     }
     if (statname.includes('Mean distance')) {
-        return 'meanDistance'
+        return 'distanceInKm'
     }
     if (statname.includes('Election') || statname.includes('Swing')) {
-        return 'election'
+        return 'democraticMargin'
     }
     if (statname.includes('high temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
         return 'temperature'
     }
     if (statname === 'Mean sunny hours') {
-        return 'sunnyHours'
+        return 'time'
     }
     if (statname === 'Rainfall' || statname === 'Snowfall [rain-equivalent]') {
-        return 'rainfall'
+        return 'distancePerYear'
     }
     if (statname.includes('Pollution')) {
-        return 'pollution'
+        return 'contaminantLevel'
     }
     return 'default'
 }
