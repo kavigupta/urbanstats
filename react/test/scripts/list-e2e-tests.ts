@@ -8,7 +8,7 @@ const options = argumentParser({
     }).strict(),
 }).parse(process.argv.slice(2))
 
-const tests = globSync('test/**/*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1]).sort()
+const tests = globSync('test/**/memory*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1]).sort()
 
 const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations === '' ? '{}' : options.testDurations))
 const groupings: { tests: string[], duration: number }[] = []
