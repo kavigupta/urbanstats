@@ -402,6 +402,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
+    async firstLabelId(): Promise<string | undefined> {
+        await this.ensureStyleLoaded!
+        for (const layer of this.map!.style.stylesheet.layers) {
+            if (layer.type === 'symbol' && layer.id.startsWith('label')) {
+                return layer.id
+            }
+        }
+        return undefined
+    }
+
     async updateSources(force = false): Promise<void> {
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
@@ -422,6 +432,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        const labelId = await this.firstLabelId()
         if (source === undefined) {
             map.addSource('polygon', {
                 type: 'geojson',
@@ -435,7 +446,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
                 },
-            })
+            }, labelId)
             map.addLayer({
                 id: 'polygon-outline',
                 type: 'line',
@@ -444,7 +455,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
                 },
-            })
+            }, labelId)
             source = map.getSource('polygon')!
         }
         source.setData(data)
