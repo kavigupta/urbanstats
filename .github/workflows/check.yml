@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*.test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.test\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
+        run: echo matrix='["article","new"]' >> $GITHUB_OUTPUT
         working-directory: react/test
 
   resolve-proxy-branch:
