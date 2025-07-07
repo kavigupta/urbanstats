@@ -19,7 +19,7 @@ const options = argumentParser({
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
-        baseRef: z.optional(z.string()),
+        baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -68,7 +68,7 @@ for (const test of tests) {
 
     console.log({ test, baseRef: options.baseRef })
 
-    const testFileDidChange = options.baseRef
+    const testFileDidChange = options.baseRef !== ''
         ? await execa('git', ['diff', '--exit-code', options.baseRef, '--', testFile], { reject: false, stdio: 'inherit' }).then(({ exitCode }) => {
             console.log({ test, exitCode })
             if (exitCode === 0 || exitCode === 1) {
