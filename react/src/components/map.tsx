@@ -189,11 +189,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        // using a local version of https://tiles.openfreemap.org/styles/bright for CORS reasons
-        const style = await loadJSON('/icons/map-styles/openfreemap-bright.json') as maplibregl.StyleSpecification
-        style.layers.push()
         const map = new maplibregl.Map({
-            style,
+            style: 'https://tiles.openfreemap.org/styles/bright',
             container: this.id,
             scrollZoom: true,
             dragRotate: false,
