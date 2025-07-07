@@ -9,6 +9,7 @@ env:
   # we can test against non-production data
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  COLOR: 1
 jobs:
   lint:
     runs-on: ubuntu-22.04

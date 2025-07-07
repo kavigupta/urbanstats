@@ -86,11 +86,15 @@ for (const test of tests) {
         }, timeLimit * 1000)
     }
 
+    console.warn(chalkTemplate`{cyan ${testFile} running...}`)
+
     const start = Date.now()
 
     testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
     const duration = Date.now() - start
+
+    console.warn(chalkTemplate`{cyan ${testFile} done...}`)
 
     clearTimeout(killTimer)
 
