@@ -86,9 +86,16 @@ for (const test of tests) {
         }, timeLimit * 1000)
     }
 
+    const start = Date.now()
+
     testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
+    const duration = Date.now() - start
+
     clearTimeout(killTimer)
+
+    await fs.mkdir('durations', { recursive: true })
+    await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
 }
 
 if (options.compare) {
