@@ -5,7 +5,6 @@ import React, { ReactNode } from 'react'
 
 import './map.css'
 
-import { loadJSON } from '../load_json'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
