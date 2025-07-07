@@ -19,7 +19,7 @@ const options = argumentParser({
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
-        baseRef: z.optional(z.string()),
+        baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -66,8 +66,8 @@ for (const test of tests) {
         })
     }
 
-    const testFileDidChange = options.baseRef
-        ? await execa('git', ['diff', '--exit-code', options.baseRef, '--', testFile], { reject: false }).then(({ exitCode }) => {
+    const testFileDidChange = options.baseRef !== ''
+        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false, stdio: 'inherit' }).then(({ exitCode }) => {
             if (exitCode === 0 || exitCode === 1) {
                 return exitCode === 1
             }
@@ -77,12 +77,14 @@ for (const test of tests) {
         })
         : false
 
-    const killTimer = options.timeLimitSeconds
-        ? setTimeout(() => {
-            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
+    let killTimer: NodeJS.Timeout | undefined
+    if (options.timeLimitSeconds !== undefined) {
+        const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
+        setTimeout(() => {
+            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
             process.exit(1)
-        }, options.timeLimitSeconds * (testFileDidChange ? 1 : 2) * 1000)
-        : undefined
+        }, timeLimit * 1000)
+    }
 
     testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
 
