@@ -289,7 +289,6 @@ ${indent}}`
 }
 
 export function canUnifyTo(a: USSType, b: USSType): boolean {
-    console.log(a, b)
     // returns true iff a can be used in a context where b is expected
     if (renderType(a) === renderType(b)) {
         return true
