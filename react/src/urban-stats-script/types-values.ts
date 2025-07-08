@@ -287,3 +287,36 @@ ${indent}}`
     }
     return helper(input, '')
 }
+
+export function canUnifyTo(a: USSType, b: USSType): boolean {
+    // returns true iff a can be used in a context where b is expected
+    if (renderType(a) === renderType(b)) {
+        return true
+    }
+    // at this point, the types are different
+    switch (b.type) {
+        case 'number':
+        case 'string':
+        case 'boolean':
+        case 'null':
+        case 'opaque':
+            // these are all primitive types, so no way to substitute them
+            return false
+        case 'vector':
+            assert(b.elementType.type !== 'elementOfEmptyVector', `Unreachable`)
+            return canUnifyTo(a, b.elementType)
+        case 'object':
+            if (a.type !== 'object') {
+                return false
+            }
+            if (a.properties.size !== b.properties.size) {
+                return false
+            }
+            if (![...a.properties.keys()].every(key => b.properties.has(key))) {
+                return false
+            }
+            return [...a.properties.keys()].every(key => canUnifyTo(a.properties.get(key)!, b.properties.get(key)!))
+        case 'function':
+            return false
+    }
+}
