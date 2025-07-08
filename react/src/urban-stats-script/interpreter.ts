@@ -6,7 +6,7 @@ import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broa
 import { LocInfo, parseNumber } from './lexer'
 import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
-import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue } from './types-values'
+import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
 
 export interface Effect { type: 'warning', message: string }
 
@@ -130,7 +130,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const result = execute(expr.expr, env)
 
             // Check type if expectedType is provided
-            if (expr.expectedType && renderType(result.type) !== renderType(expr.expectedType)) {
+            if (expr.expectedType && !canUnifyTo(result.type, expr.expectedType)) {
                 throw env.error(
                     `Custom expression expected to return type ${renderType(expr.expectedType)}, but got ${renderType(result.type)}`,
                     locationOf(expr),

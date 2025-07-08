@@ -33,7 +33,7 @@ export function ConditionEditor({
                     if (checked) {
                         // Enable condition - keep current condition or set to 'true'
                         const currentCondition = unparse(condition) || 'true'
-                        const conditionExpr = parseNoErrorAsExpression(currentCondition, blockIdent, { type: 'boolean' })
+                        const conditionExpr = parseNoErrorAsExpression(currentCondition, blockIdent, { type: 'vector', elementType: { type: 'boolean' } })
                         setCondition(conditionExpr)
                     }
                     else {

@@ -9,7 +9,7 @@ import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/c
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { parseNoErrorAsExpression } from '../src/urban-stats-script/parser'
-import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
+import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs, canUnifyTo } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
@@ -1768,4 +1768,10 @@ void test('test basic map with outline', () => {
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0 }, weight: 2 })
+})
+
+void test('test canUnifyTo', () => {
+    assert(canUnifyTo(numType, numType))
+    assert(canUnifyTo(numType, { type: 'vector', elementType: numType }))
+    assert(!canUnifyTo({ type: 'vector', elementType: numType }, numType))
 })

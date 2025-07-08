@@ -158,7 +158,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
     let conditionExpr: UrbanStatsASTExpression
     let conditionRest: UrbanStatsASTStatement[]
     if (conditionStmt?.type === 'condition') {
-        conditionExpr = parseNoErrorAsExpression(unparse(conditionStmt.condition), idCondition, { type: 'boolean' })
+        conditionExpr = parseNoErrorAsExpression(unparse(conditionStmt.condition), idCondition, { type: 'vector', elementType: { type: 'boolean' } })
         conditionRest = conditionStmt.rest
     }
     else {
