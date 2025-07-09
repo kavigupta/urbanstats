@@ -125,6 +125,15 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 locationOf(expr.condition),
                 locationOf(expr),
             )
+        case 'do':
+            if (expr.statements.length === 0) {
+                return undocValue(null, { type: 'null' })
+            }
+            let doResult: USSValue = execute(expr.statements[0], env)
+            for (const statement of expr.statements.slice(1)) {
+                doResult = execute(statement, env)
+            }
+            return doResult
         case 'customNode':
             // This is a custom node for internal purposes, we just evaluate the expression
             const result = execute(expr.expr, env)

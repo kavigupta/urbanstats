@@ -20,9 +20,11 @@ export type UrbanStatsASTExpression = (
     { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
-    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement }) |
+    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
+    { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
     { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType }
+)
 
 export type UrbanStatsASTStatement = (
     { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression } |
@@ -67,19 +69,16 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'binaryOperator':
             return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
         case 'objectLiteral':
-            return node.entireLoc
         case 'vectorLiteral':
+        case 'if':
+        case 'do':
+        case 'condition':
+        case 'statements':
             return node.entireLoc
         case 'assignment':
             return unify(locationOf(node.lhs), locationOf(node.value))
         case 'expression':
             return locationOf(node.value)
-        case 'statements':
-            return node.entireLoc
-        case 'if':
-            return node.entireLoc
-        case 'condition':
-            return node.entireLoc
         case 'parseError':
             assert(node.errors.length > 0, 'parseError node must have at least one error')
             return node.errors[0].location
@@ -146,6 +145,9 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
                 if (n.else) {
                     collectErrors(n.else)
                 }
+                break
+            case 'do':
+                n.statements.forEach(collectErrors)
                 break
             case 'assignment':
                 collectErrors(n.lhs)
