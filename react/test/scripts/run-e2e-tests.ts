@@ -15,11 +15,11 @@ const options = argumentParser({
         proxy: booleanArgument({ defaultValue: false }),
         browser: z.union([z.literal('chrome'), z.literal('chromium')]).default('chrome'),
         test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:e2e -- --test='test/*.test.ts'`) }),
-        parallel: z.string().transform(string => parseInt(string)).default('1'),
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
-        timeLimitSeconds: z.optional(z.coerce.number().int()),
+        timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
+        baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -49,17 +49,14 @@ const testcafe = await createTestCafe('localhost', 1337, 1338)
 const testsPattern = tests.length === 1 ? tests[0] : `{${tests.join(',')}}`
 await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${testsPattern}/**`, { nodir: true }).map(file => fs.rm(file)))
 
-const testsToRun = [...tests]
+// Run tests
 
-const runTest = async (): Promise<number> => {
-    const test = testsToRun.shift()
+let testsFailed = 0
 
-    if (test === undefined) {
-        return Promise.resolve(0)
-    }
-
+for (const test of tests) {
+    const testFile = `test/${test}.test.ts`
     let runner = testcafe.createRunner()
-        .src(`test/${test}.test.ts`)
+        .src(testFile)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
         .screenshots(`screenshots/${test}`)
 
@@ -69,21 +66,41 @@ const runTest = async (): Promise<number> => {
         })
     }
 
-    const failedTests = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+    const testFileDidChange = options.baseRef !== ''
+        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false }).then(({ exitCode }) => {
+            if (exitCode === 0 || exitCode === 1) {
+                return exitCode === 1
+            }
+            else {
+                throw new Error(`Unexpected exit code ${exitCode}`)
+            }
+        })
+        : false
 
-    return failedTests + await runTest()
+    let killTimer: NodeJS.Timeout | undefined
+    if (options.timeLimitSeconds !== undefined) {
+        const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
+        killTimer = setTimeout(() => {
+            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
+            process.exit(1)
+        }, timeLimit * 1000)
+    }
+
+    console.warn(chalkTemplate`{cyan ${testFile} running...}`)
+
+    const start = Date.now()
+
+    testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+
+    const duration = Date.now() - start
+
+    console.warn(chalkTemplate`{cyan ${testFile} done}`)
+
+    clearTimeout(killTimer)
+
+    await fs.mkdir('durations', { recursive: true })
+    await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
 }
-
-const killTimer = options.timeLimitSeconds
-    ? setTimeout(() => {
-        console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${options.timeLimitSeconds}s)}`)
-        process.exit(1)
-    }, options.timeLimitSeconds * 1000)
-    : undefined
-
-const testsFailed = (await Promise.all(Array.from({ length: options.parallel }).map(runTest))).reduce((a, n) => a + n, 0)
-
-clearTimeout(killTimer)
 
 if (options.compare) {
     const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {

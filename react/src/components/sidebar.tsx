@@ -155,6 +155,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                     <li>
                         <CheckboxSetting
+                            // eslint-disable-next-line no-restricted-syntax -- these aren't colors, they're just names and also they're part of the settings
                             name={`${currentTheme === 'Dark Mode' ? 'Black' : 'White'} Background`}
                             settingKey="clean_background"
                         />

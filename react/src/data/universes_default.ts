@@ -1,5 +1,5 @@
 export default [
-    'world',
-    'USA',
-    'Canada',
+    "world",
+    "USA",
+    "Canada"
 ] as const

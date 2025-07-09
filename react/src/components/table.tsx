@@ -12,10 +12,11 @@ import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { UnitType } from '../utils/unit'
 
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
-import { classifyStatistic, unitDisplayMap } from './unit-display'
+import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -551,12 +552,12 @@ export function TableRowContainer({ children, index, minHeight }: { children: Re
     )
 }
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean }): ReactNode {
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit?: UnitType }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
 
-    const statisticType = classifyStatistic(props.statname)
-    const unitDisplay = unitDisplayMap[statisticType]
+    const statisticType = props.unit ?? classifyStatistic(props.statname)
+    const unitDisplay = getUnitDisplay(statisticType)
     const { value, unit } = unitDisplay.renderValue(props.value, useImperial, temperatureUnit)
 
     return (

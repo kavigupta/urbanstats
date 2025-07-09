@@ -3,7 +3,7 @@ import hueColors from '../data/hueColors'
 export interface HueColors {
     blue: string
     orange: string
-    darkOrange: string
+    brown: string
     purple: string
     red: string
     grey: string
@@ -31,6 +31,8 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
+    mapInvalidFillColor: string
+    buttonTextWhite: string
     bannerURL: string
     mixPct: number
     hueColors: HueColors
@@ -50,6 +52,7 @@ const defaultHueColors: HueColors = hueColors
 
 export type Theme = 'Light Mode' | 'Dark Mode'
 
+/* eslint-disable no-restricted-syntax -- Allowing hex colors for themes */
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
@@ -68,6 +71,8 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
+        mapInvalidFillColor: '#000000',
+        buttonTextWhite: '#ffffff',
         bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
@@ -90,9 +95,12 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
         blueLink: '#aaaaff',
+        mapInvalidFillColor: '#000000',
+        buttonTextWhite: '#ffffff',
         bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
     },
 }
+/* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

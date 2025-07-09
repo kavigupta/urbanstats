@@ -134,6 +134,59 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    subnationalOutlines(): maplibregl.LayerSpecification[] {
+        const basemap = this.props.basemap
+        if (basemap.type !== 'osm' || !basemap.subnationalOutlines) {
+            return []
+        }
+        return [
+            {
+                'id': 'boundary_subn_overlayed',
+                'type': 'line',
+                'source': 'openmaptiles',
+                'source-layer': 'boundary',
+                'filter': [
+                    'all',
+                    [
+                        '<=',
+                        [
+                            'get',
+                            'admin_level',
+                        ],
+                        4,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'maritime',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!=',
+                        [
+                            'get',
+                            'disputed',
+                        ],
+                        1,
+                    ],
+                    [
+                        '!',
+                        [
+                            'has',
+                            'claimed_by',
+                        ],
+                    ],
+                ],
+                'paint': {
+                    'line-color': basemap.subnationalOutlines.color,
+                    'line-width': basemap.subnationalOutlines.weight,
+                },
+            },
+        ]
+    }
+
     override async componentDidMount(): Promise<void> {
         const map = new maplibregl.Map({
             style: 'https://tiles.openfreemap.org/styles/bright',
@@ -277,7 +330,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000) {
+        if (delta < 1000 || this.map === undefined) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
@@ -402,6 +455,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
+    async firstLabelId(): Promise<string | undefined> {
+        await this.ensureStyleLoaded!
+        for (const layer of this.map!.style.stylesheet.layers) {
+            if (layer.type === 'symbol' && layer.id.startsWith('label')) {
+                return layer.id
+            }
+        }
+        return undefined
+    }
+
     async updateSources(force = false): Promise<void> {
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
@@ -422,6 +485,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        const labelId = await this.firstLabelId()
         if (source === undefined) {
             map.addSource('polygon', {
                 type: 'geojson',
@@ -435,7 +499,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
                 },
-            })
+            }, labelId)
             map.addLayer({
                 id: 'polygon-outline',
                 type: 'line',
@@ -444,8 +508,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
                 },
-            })
+            }, labelId)
             source = map.getSource('polygon')!
+        }
+        for (const layer of this.subnationalOutlines()) {
+            if (map.getLayer(layer.id) !== undefined) {
+                map.removeLayer(layer.id)
+            }
+            map.addLayer(layer, labelId)
         }
         source.setData(data)
     }
@@ -520,21 +590,25 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
     )
 }
 
+function isVisible(basemap: Basemap, layer: maplibregl.LayerSpecification): boolean {
+    switch (basemap.type) {
+        case 'none':
+            return false
+        case 'osm':
+            if (basemap.noLabels && layer.type === 'symbol') {
+                return false
+            }
+            return true
+    }
+}
+
 function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
     map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
         if (layerspec.id === 'background') {
             return
         }
         const layer = map.getLayer(layerspec.id)!
-        if (basemap.type === 'none') {
-            layer.setLayoutProperty('visibility', 'none')
-        }
-        else {
-            if (basemap.disableBasemap && layerspec.type === 'symbol' && map.getLayer(layerspec.id)) {
-                map.removeLayer(layerspec.id)
-            }
-            layer.setLayoutProperty('visibility', 'visible')
-        }
+        layer.setLayoutProperty('visibility', isVisible(basemap, layerspec) ? 'visible' : 'none')
     })
 }
 
