@@ -1,4 +1,4 @@
-import { Basemap } from '../../mapper/settings'
+import { Basemap } from '../../mapper/settings/utils'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'

@@ -4,7 +4,8 @@ from collections import Counter
 import numpy as np
 from parameterized import parameterized
 
-from urbanstats.utils import DiscreteDistribution, compute_bins, compute_bins_slow
+from urbanstats.utils import (DiscreteDistribution, compute_bins,
+                              compute_bins_slow)
 
 
 class TestComputeBinsSlowWorksAsIntended(unittest.TestCase):
