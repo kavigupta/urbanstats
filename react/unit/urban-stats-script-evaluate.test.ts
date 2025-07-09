@@ -1775,3 +1775,75 @@ void test('test canUnifyTo', () => {
     assert(canUnifyTo(numType, { type: 'vector', elementType: numType }))
     assert(!canUnifyTo({ type: 'vector', elementType: numType }, numType))
 })
+
+void test('evaluate do nodes', (): void => {
+    // Basic do node
+    assert.deepStrictEqual(
+        evaluate(parseExpr('do { 1; 2; 3 }'), emptyContext()),
+        undocValue(3, numType),
+    )
+
+    // Do node with variable assignment
+    assert.deepStrictEqual(
+        evaluate(parseExpr('do { x = 1; y = x + 2; y }'), emptyContext()),
+        undocValue(3, numType),
+    )
+
+    // Do node with conditional
+    const ctxWithX = emptyContext()
+    ctxWithX.assignVariable('x', undocValue(3, numType))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('do { if (x > 2) { y = 1 } else { y = 2 }; y }'), ctxWithX),
+        undocValue(1, numType),
+    )
+
+    // Do node with multiple statements
+    assert.deepStrictEqual(
+        evaluate(parseExpr('do { x = 1; y = 2; z = x + y; z }'), emptyContext()),
+        undocValue(3, numType),
+    )
+
+    // Do node with error
+    assert.throws(
+        () => evaluate(parseExpr('do { x = 1; y = x + "hello"; y }'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Invalid types for operator +: number and string at 1:17-27'
+        },
+    )
+
+    // Nested do nodes
+    assert.deepStrictEqual(
+        evaluate(parseExpr('do { x = 1; do { y = x + 2 }; y }'), emptyContext()),
+        undocValue(3, numType),
+    )
+
+    // Do node with undefined variable
+    assert.throws(
+        () => evaluate(parseExpr('do { x = 1; y = z + 2; y }'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Undefined variable: z at 1:17'
+        },
+    )
+
+    // Do node as part of an operator expression
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 + (do { x = 3 + 4; x })'), emptyContext()),
+        undocValue(9, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('(do { x = 3 + 4; x }) + 2'), emptyContext()),
+        undocValue(9, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('2 + (do { x = 3 + 4; x }) + (do { y = 10; y })'), emptyContext()),
+        undocValue(19, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('(do { x = 3 + 4; x }) + x'), emptyContext()),
+        undocValue(14, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('(do { x = 1; do { y = x + 2 }; y }) + 1'), emptyContext()),
+        undocValue(4, numType),
+    )
+})

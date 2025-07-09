@@ -48,6 +48,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(statements ${node.result.map(toSExp).join(' ')})`
         case 'if':
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
+        case 'do':
+            return `(do ${node.statements.map(toSExp).join(' ')})`
         case 'condition':
             return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
         case 'parseError':
@@ -289,6 +291,10 @@ class ParseState {
             return this.parseIfExpression()
         }
 
+        if (this.consumeIdentifier('do')) {
+            return this.parseDoExpression()
+        }
+
         const operatorExpSequence: USSInfixSequenceElement[] = []
         // State Machine with states expressionOrUnaryOperator; binaryOperator
         let state: 'expressionOrUnaryOperator' | 'binaryOperator' = 'expressionOrUnaryOperator'
@@ -390,6 +396,7 @@ class ParseState {
             case 'vectorLiteral':
             case 'objectLiteral':
             case 'if':
+            case 'do':
             case 'customNode':
                 return { type: 'error', value: 'Cannot assign to this expression', location: locationOf(expr) }
         }
@@ -455,6 +462,23 @@ class ParseState {
             condition,
             then,
             else: elseBranch,
+        }
+    }
+
+    parseDoExpression(): UrbanStatsASTExpression | ParseError {
+        const doToken = this.tokens[this.index - 1]
+        if (!this.consumeBracket('{')) {
+            return { type: 'error', value: 'Expected opening bracket { after do', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        const statements = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after do block')
+        if (statements.type === 'error') {
+            return statements
+        }
+        const lastToken = this.tokens[this.index - 1]
+        return {
+            type: 'do',
+            entireLoc: unify(doToken.location, lastToken.location),
+            statements: statements.type === 'statements' ? statements.result : [statements],
         }
     }
 
@@ -631,6 +655,9 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                     helper(n.else)
                 }
                 return true
+            case 'do':
+                n.statements.forEach(helper)
+                return true
             case 'condition':
                 helper(n.condition)
                 n.rest.forEach(helper)
@@ -696,6 +723,18 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     switch (node.type) {
         case 'customNode':
+            // If the custom node contains multiple statements, convert it to a do expression
+            if (node.expr.type === 'statements') {
+                if (node.expr.result.length === 0) {
+                    return 'do {  }'
+                }
+                if (node.expr.result.length > 1) {
+                    const doStatements = { type: 'statements' as const, result: node.expr.result, entireLoc: node.expr.entireLoc }
+                    const doStr = unparse(doStatements, indent + 1, true) // <-- inline = true
+                    return `do { ${doStr} }`
+                }
+            }
+            // For single statements or other types, return the original code
             return node.originalCode
         case 'parseError':
             return node.originalCode
@@ -770,7 +809,9 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'expression':
             return inline ? unparse(node.value, indent, inline) : `${indentSpaces(indent)}${unparse(node.value, indent, inline)}`
         case 'statements':
-            const statementsStr = node.result.map(stmt => unparse(stmt, indent, inline)).filter(s => s !== '')
+            const statementsStr = node.result
+                .map(stmt => unparse(stmt, indent, inline))
+                .filter(s => s !== '' && s !== 'do {  }')
             return statementsStr.join(inline ? '; ' : ';\n')
         case 'if':
             const conditionStr = unparse(node.condition, indent, inline)
@@ -785,6 +826,12 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                     : ` else {\n${elseStr}\n${indentSpaces(indent)}}`
             }
             return ifStr
+        case 'do':
+            const doStatements = { type: 'statements' as const, result: node.statements, entireLoc: node.entireLoc }
+            const doStr = unparse(doStatements, indent + 1, inline)
+            return inline
+                ? `do { ${doStr} }`
+                : `do {\n${doStr}\n${indentSpaces(indent)}}`
         case 'condition':
             const condStr = unparse(node.condition, indent, inline)
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
