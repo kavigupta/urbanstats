@@ -594,6 +594,9 @@ function attemptParseExpr(
         case 'parseError':
         case 'attribute':
             return undefined
+        case 'do':
+            const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
+            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment) ?? parseNoErrorAsExpression(unparse(stmts), blockIdent, type)
         case 'customNode':
             return parseExpr(expr.expr, blockIdent, type, typeEnvironment)
         case 'statements':
