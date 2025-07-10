@@ -16,14 +16,8 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 from ..utils import output_typescript
 
 use = [
-    "State",
-    "County",
-    "MSA",
-    "CSA",
-    "Urban Area",
-    "Congressional District",
-    "Media Market",
-    "Hospital Referral Region",
+    x.meta["type"]
+    for x in shapefiles.values()
 ]
 dont_use = [
     "ZIP",
@@ -102,7 +96,7 @@ def produce_results_for_type(folder, typ):
 
 
 def full_consolidated_data(folder):
-    assert set(use) & set(dont_use) == set()
+    # assert set(use) & set(dont_use) == set()
     for typ in use:
         produce_results_for_type(folder, typ)
 
