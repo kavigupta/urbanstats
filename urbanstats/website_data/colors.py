@@ -6,7 +6,7 @@ from urbanstats.geometry.relationship import type_to_type_category
 hue_colors = {
     "blue": "#5a7dc3",
     "orange": "#f7aa41",
-    "darkOrange": "#af6707",
+    "brown": "#af6707",
     "purple": "#975ac3",
     "red": "#f96d6d",
     "grey": "#8e8e8e",
@@ -25,7 +25,7 @@ related_button_colors = {
     "Census": "cyan",
     "Political": "purple",
     "Oddball": "darkGrey",
-    "Kavi": "darkOrange",
+    "Kavi": "brown",
     "School": "yellow",
     "Small": "pink",
     "Native": "green",

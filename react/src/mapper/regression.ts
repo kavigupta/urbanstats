@@ -2,41 +2,6 @@ import assert from 'assert'
 
 import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from 'mathjs'
 
-import { ColorStat, StatisticsForGeography } from './settings'
-
-export class Regression {
-    constructor(
-        readonly independentFn: ColorStat, readonly dependentFns: ColorStat[], readonly dependentNames: string[],
-        readonly interceptName: string, readonly residualName: string,
-        readonly weightByPopulation: boolean, readonly populationIdx: number,
-    ) {
-    }
-
-    compute(statistics_for_geography: StatisticsForGeography, variables: Record<string, number[]>): Record<string, number[]> {
-        const independent = this.independentFn.compute(statistics_for_geography, variables)
-        const dependent = this.dependentFns.map(fn => fn.compute(statistics_for_geography, variables))
-        const w = this.weightByPopulation ? statistics_for_geography.map(sfg => sfg.stats[this.populationIdx]) : undefined
-        const { residuals, weights, intercept } = calculateRegression(independent, dependent, w)
-
-        const result: Record<string, number[]> = {}
-        for (let i = 0; i < this.dependentNames.length; i++) {
-            if (this.dependentNames[i] === '') {
-                continue
-            }
-            result[this.dependentNames[i]] = residuals.map(() => weights[i])
-        }
-        if (this.interceptName !== '') {
-            result[this.interceptName] = residuals.map(() => intercept)
-        }
-
-        if (this.residualName !== '') {
-            result[this.residualName] = residuals
-        }
-
-        return result
-    }
-}
-
 export function calculateRegression(independent: number[], dependent: number[][], w: number[] | undefined, noIntercept: boolean = false): {
     residuals: number[]
     weights: number[]
@@ -85,7 +50,16 @@ export function calculateRegression(independent: number[], dependent: number[][]
     const preds = multiply(A, wsCol).map(pred => (pred as number[])[0])
 
     const residuals = preds.map((pred, i) => y[i][0] - pred)
-    return { residuals, weights: weights as number[], intercept: intercept as number }
+    const residualsWithNans = Array(independent.length).fill(NaN) as number[]
+    let idx = 0
+    for (let i = 0; i < independent.length; i++) {
+        if (isNan[i]) {
+            continue
+        }
+        residualsWithNans[idx] = residuals[idx]
+        idx++
+    }
+    return { residuals: residualsWithNans, weights: weights as number[], intercept: intercept as number }
 }
 
 export function computePearsonR2(
@@ -100,6 +74,10 @@ export function computePearsonR2(
     if (w === undefined) {
         w = Array(dependent.length).fill(1)
     }
+    const anyNaN = dependent.map((val, i) => isNaN(val) || isNaN(residuals[i]) || (w && isNaN(w[i])))
+    dependent = dependent.filter((_, i) => !anyNaN[i])
+    residuals = residuals.filter((_, i) => !anyNaN[i])
+    w = w.filter((_, i) => !anyNaN[i])
     // https://en.wikipedia.org/wiki/Coefficient_of_determination
     // the most general definition of R^2 is:
     // R^2 = 1 - SS_res / SS_tot

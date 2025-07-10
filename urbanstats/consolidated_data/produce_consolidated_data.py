@@ -103,7 +103,7 @@ def full_consolidated_data(folder):
 
 def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
-        output_typescript(use, f, data_type="string[]")
+        output_typescript(use, f)
 
 
 def output_boundaries(folder):
