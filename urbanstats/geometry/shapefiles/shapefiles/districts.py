@@ -173,7 +173,9 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
         result.loc[state_idxs, "end_date"] = 2024
         result = result.copy()
         for_state = for_state[list(result)]
-        result = pd.concat([result, for_state]).reset_index(drop=True)
+        result = pd.concat(
+            [result.to_crs("epsg:4326"), for_state.to_crs("epsg:4326")]
+        ).reset_index(drop=True)
     result.district = consistent_district_padding(
         result.state, result.district.apply(str), minimum_length=minimum_district_length
     )

@@ -11,7 +11,7 @@ fire
 git+https://github.com/kavigupta/python-us.git
 jellyfish==1.1.0
 pycountry
-geopandas==0.10.2
+geopandas==1.1.1
 # pygeos being installed is ABSOLUTELY NECESSARY if you want
 # to be able to load old caches
 # if not included, you will get an error with unpickling.
