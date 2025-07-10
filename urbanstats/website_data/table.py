@@ -4,8 +4,9 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import stable_hash
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
@@ -15,8 +16,8 @@ from urbanstats.universe.universe_provider.compute_universes import (
 )
 
 
-@permacache(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_36",
+@permacache_with_remapping_pickle(
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_37",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {

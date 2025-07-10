@@ -1,6 +1,7 @@
 import numpy as np
 from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
 from urbanstats.data.census_blocks import RADII, format_radius
 from urbanstats.data.census_histogram import census_histogram_canada
@@ -95,7 +96,7 @@ class CensusCanada(CanadaStatistics):
         }
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/census_canada/compute_census_stats_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )

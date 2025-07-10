@@ -7,6 +7,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
+from urbanstats.compatibility.compatibility import remapping_pickle
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -152,7 +153,7 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
         f"named_region_shapefiles/current_district_shapefiles/shapefiles/{file_name}.pkl",
         "rb",
     ) as f:
-        result = pickle.load(f)
+        result = remapping_pickle().Unpickler(f).load()
 
     result = result[["state", "district", "geometry"]].reset_index(drop=True)
 

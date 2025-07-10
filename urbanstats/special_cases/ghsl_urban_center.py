@@ -2,8 +2,8 @@ from collections import Counter
 
 import geopandas as gpd
 import numpy as np
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 
@@ -21,7 +21,7 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
-@permacache("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
+@permacache_with_remapping_pickle("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
 def load_ghsl_urban_center():
     # pylint: disable=unsupported-assignment-operation
     areas = load_ghsl_urban_center_no_names()
@@ -34,7 +34,7 @@ def load_ghsl_urban_center():
     return areas
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_4"
 )
 def load_ghsl_urban_center_no_names():

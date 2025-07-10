@@ -2,8 +2,10 @@ import itertools
 import json
 import os
 from dataclasses import dataclass
+import pickle
 
 import numpy as np
+import permacache
 import zarr
 from permacache import stable_hash
 
