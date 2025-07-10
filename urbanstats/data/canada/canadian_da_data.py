@@ -20,7 +20,9 @@ class CensusTables:
         return compute_other_census_stats(self, year, shapefile)
 
 
-@permacache_with_remapping_pickle("urbanstats/data/canada/canadian_da_data/get_da_table_for_census_tables")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/canada/canadian_da_data/get_da_table_for_census_tables"
+)
 def get_da_table_for_census_tables(census_tables: CensusTables, year):
     return get_da_table(
         census_tables.tables,

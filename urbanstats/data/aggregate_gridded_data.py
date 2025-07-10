@@ -147,13 +147,17 @@ def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
     return agg
 
 
-@permacache_with_remapping_pickle("urbanstats/data/aggregate_gridded_data/stats_by_blocks")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/aggregate_gridded_data/stats_by_blocks"
+)
 def stats_by_blocks(gridded_data_sources, year):
     _, _, _, _, coordinates = load_raw_census(year)
     return disaggregate_both_to_blocks(gridded_data_sources, coordinates)
 
 
-@permacache_with_remapping_pickle("urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks"
+)
 def stats_by_canada_blocks(gridded_data_sources, year):
     geos = load_canada_db_shapefile(year).geometry
     coordinates = np.array([geos.y, geos.x]).T

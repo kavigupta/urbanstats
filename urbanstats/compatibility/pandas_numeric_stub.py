@@ -4,17 +4,22 @@ from pandas.core.indexes.base import Index
 # pylint: disable=abstract-method
 # Disabling abstract-method because these classes are stubs and do not implement any methods.
 
+
 class NumericIndex(Index):
     pass
+
 
 class IntegerIndex(NumericIndex):
     pass
 
+
 class Int64Index(IntegerIndex):
     pass
 
+
 class UInt64Index(IntegerIndex):
     pass
+
 
 class Float64Index(NumericIndex):
     pass

@@ -3,6 +3,7 @@ Sadly, this class is necessary because certain module upgrades break pickles.
 """
 
 import pickle
+
 from permacache import permacache, swap_unpickler_context_manager
 
 MODULE_RENAME_MAP = {

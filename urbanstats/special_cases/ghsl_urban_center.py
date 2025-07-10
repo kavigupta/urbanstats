@@ -21,7 +21,9 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
-@permacache_with_remapping_pickle("urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10")
+@permacache_with_remapping_pickle(
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10"
+)
 def load_ghsl_urban_center():
     # pylint: disable=unsupported-assignment-operation
     areas = load_ghsl_urban_center_no_names()

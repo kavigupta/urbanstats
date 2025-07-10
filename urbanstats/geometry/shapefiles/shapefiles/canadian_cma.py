@@ -1,4 +1,5 @@
 import pandas as pd
+
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,

@@ -40,7 +40,9 @@ def is_pedestrian_plus(x):
     return x in pedestrian_plus
 
 
-@permacache_with_remapping_pickle("urbanstats/data/accidents/accidents_dataframe_for_year_3")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/accidents/accidents_dataframe_for_year_3"
+)
 def accidents_dataframe_for_year(year):
     acc = pull_data(year, "accident")
     p = pedestrian_fatalities_by_case(year)
