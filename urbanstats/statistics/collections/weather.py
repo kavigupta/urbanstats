@@ -1,5 +1,4 @@
 import pandas as pd
-from permacache import permacache
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd

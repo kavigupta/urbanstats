@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import tqdm.auto as tqdm
-from permacache import permacache
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.protobuf import data_files_pb2

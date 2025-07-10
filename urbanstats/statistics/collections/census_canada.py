@@ -1,5 +1,4 @@
 import numpy as np
-from permacache import permacache
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities

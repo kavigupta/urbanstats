@@ -1,10 +1,16 @@
+"""
+Sadly, this class is necessary because certain module upgrades break pickles.
+"""
+
 import pickle
 from permacache import permacache, swap_unpickler_context_manager
+
 MODULE_RENAME_MAP = {
     "pandas.core.indexes.numeric": "urbanstats.compatibility.pandas_numeric_stub",
 }
 
 SYMBOL_RENAME_MAP = {}
+
 
 class renamed_symbol_unpickler(pickle.Unpickler):
     """
@@ -17,11 +23,10 @@ class renamed_symbol_unpickler(pickle.Unpickler):
             assert module not in MODULE_RENAME_MAP
             module, name = SYMBOL_RENAME_MAP[(module, name)]
             assert module not in MODULE_RENAME_MAP
-        if module in MODULE_RENAME_MAP:
-            module = MODULE_RENAME_MAP[module]
+        module = MODULE_RENAME_MAP.get(module, module)
 
         try:
-            return super(renamed_symbol_unpickler, self).find_class(module, name)
+            return super().find_class(module, name)
         except:
             print("Could not find", (module, name))
             raise
@@ -41,15 +46,6 @@ class remapping_pickle:
 
     def __hasattr__(self, name):
         return hasattr(pickle, name)
-
-
-def load_with_remapping_pickle(*args, **kwargs):
-    """
-    Behaves like torch.load, but re-maps modules.
-    """
-    import torch
-
-    return torch.load(*args, **kwargs, pickle_module=remapping_pickle())
 
 
 def permacache_with_remapping_pickle(*args, **kwargs):
