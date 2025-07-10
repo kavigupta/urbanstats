@@ -15,6 +15,8 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
+simplify_amount=6/3600
+
 use = [
     x.meta["type"]
     for x in shapefiles.values()
@@ -42,7 +44,7 @@ dont_use = [
 
 
 def produce_results(row_geo, row):
-    res = row_geo.geometry.simplify(0.01)
+    res = row_geo.geometry
     geo = convert_to_protobuf(res)
     results = data_files_pb2.AllStats()
     for stat in internal_statistic_names():
@@ -51,6 +53,8 @@ def produce_results(row_geo, row):
 
 
 def produce_all_results_from_tables(geo_table, data_table):
+    # TODO simplify coverage only should be used for things that can't overlap
+    geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
     stats = data_files_pb2.ConsolidatedStatistics()
     for longname in tqdm.tqdm(data_table.index):
@@ -65,7 +69,7 @@ def produce_all_results_from_tables(geo_table, data_table):
     return shapes, stats
 
 
-def produce_just_shapes_from_shapefile(geo_table, simplify_amount=0.01):
+def produce_just_shapes_from_shapefile(geo_table):
     geo_table = geo_table.load_file().set_index("longname")
     shapes = data_files_pb2.ConsolidatedShapes()
     for longname in tqdm.tqdm(geo_table.index):
