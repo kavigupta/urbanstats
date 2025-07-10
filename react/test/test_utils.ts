@@ -185,7 +185,10 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (checkString) {
         const expected = fs.readFileSync(pathToFile, 'utf8')
-        await t.expect(string).eql(expected)
+        if (string !== expected) {
+            // Using this because these strings are massive and the diff generation times out
+            await t.expect(false).ok(`String does not match expected value`)
+        }
     }
     else {
         fs.writeFileSync(pathToFile, string)
