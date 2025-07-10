@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { interpolateColor } from '../utils/color'
 
-import { ColorMap, EncodedColorMap, RAMPS, RampDescriptor, parseCustomColormap } from './ramps'
+import { ColorMap, EncodedColorMap, getRamps, RampDescriptor, parseCustomColormap } from './ramps'
 import { useSettingSubNameStyle } from './style'
 
 export function RampColormapSelector(props: { ramp: RampDescriptor, setRamp: (newValue: RampDescriptor) => void, name?: string }): ReactNode {
@@ -43,7 +43,7 @@ export function RampColormapSelector(props: { ramp: RampDescriptor, setRamp: (ne
     const options = [
         '',
         'Custom',
-        ...Object.keys(RAMPS),
+        ...Object.keys(getRamps()),
     ]
 
     let colormapSelection: string
