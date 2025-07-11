@@ -91,12 +91,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override render(): ReactNode {
+        const names = this.state.polygonByName.keys()
+        console.warn('Names', names)
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
                 <div style={{ display: 'none' }}>
-                    {Array.from(this.state.polygonByName.keys()).map(name =>
+                    {Array.from(names).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
                         <div key={name} clickable-polygon={name} onClick={() => { this.onClick(name) }} />,
                     )}
