@@ -227,16 +227,19 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             if (!consoleEnabled.get(cdp)) {
                 consoleEnabled.set(cdp, true)
                 cdp.Console.on('messageAdded', (event) => {
+                    const timestamp = new Date().toISOString()
+                    let text: string
                     switch (event.message.level) {
                         case 'error':
-                            console.warn(chalkTemplate`From Browser: {red ${event.message.text}}`)
+                            text = chalkTemplate`{red ${event.message.text}}`
                             break
                         case 'warning':
-                            console.warn(chalkTemplate`From Browser: {yellow ${event.message.text}}`)
+                            text = chalkTemplate`{yellow ${event.message.text}}`
                             break
                         default:
-                            console.warn(`From Browser: ${event.message.text}`)
+                            text = event.message.text
                     }
+                    console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
                 })
                 await cdp.Console.enable()
             }
@@ -315,8 +318,6 @@ export function mapElement(r: RegExp): Selector {
 
 export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
     const element = mapElement(r)
-    const names = (await getAllElements(Selector('div[clickable-polygon]'))).map(e => e.getAttribute?.('clickable-polygon'))
-    console.log(`Available map elements`, names)
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
     await t.eval(() => {
         const cm = (window as unknown as {
