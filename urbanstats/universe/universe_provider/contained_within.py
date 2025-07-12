@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import List
 
-from permacache import drop_if_equal, permacache
+from permacache import drop_if_equal
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.geometry.shapefile_geometry import compute_contained_in_direct
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
@@ -39,7 +40,7 @@ PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
 )
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/universe/universe_provider/contained_within/compute_contained_in",
     key_function=dict(
         shapefile=lambda a: a.hash_key,

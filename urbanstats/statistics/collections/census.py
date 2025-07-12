@@ -1,8 +1,8 @@
 from abc import abstractmethod
 
 import numpy as np
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import (
     RADII,
     all_densities_gpd,
@@ -343,7 +343,7 @@ class CensusChange2000(CensusChange):
         return 2000
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/aggregate_basics_of_year_4",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
@@ -368,7 +368,7 @@ def extract_state_fips_from_geoid(geoid):
     return geoid[len(prefix) :][:2]
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/compute_population_for_year_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
@@ -385,7 +385,7 @@ def compute_population_for_year(shapefile, *, no_pr):
     return agg["population"]
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/population_by_year_4",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )

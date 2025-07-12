@@ -2,8 +2,9 @@ import re
 from functools import lru_cache
 
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
+from permacache import stable_hash
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.circle import naive_directions_for_rows_with_names
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
@@ -109,7 +110,7 @@ def shapefile_hash_key(sf_key):
     return shapefiles[sf_key].hash_key
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "stats_for_shapefile/locate_rows_3",
     key_function=dict(
         shape=lambda g: stable_hash(g.__geo_interface__),

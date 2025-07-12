@@ -1,6 +1,6 @@
 import pandas as pd
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
@@ -94,7 +94,7 @@ class USFeatureDistanceStatistics(USAStatistics):
         return statistics_table
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/feature/features_by_region",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )

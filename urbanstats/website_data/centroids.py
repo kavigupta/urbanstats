@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 import tqdm.auto as tqdm
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
@@ -23,7 +23,7 @@ def compute_internal_point(geo):
     return geo.representative_point()
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/website_data/centroids/compute_centroids_4",
     key_function=dict(sf=lambda x: x.hash_key),
     multiprocess_safe=True,

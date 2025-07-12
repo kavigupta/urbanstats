@@ -7,6 +7,7 @@ import us
 from cached_property import cached_property
 from permacache import permacache, stable_hash
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
@@ -166,7 +167,7 @@ class ACSDataEntity:
         return {k: sorted(v) for k, v in self._categories.items() if k is not None}
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "population_density/acs/get_acs_data_3",
     key_function=dict(acs_data_entity=stable_hash),
 )
@@ -197,7 +198,7 @@ def combine_us_pr(us_entity, pr_entity):
     return us_entity.fillna(0) + pr_entity.fillna(0)
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "population_density/acs/aggregated_acs_data",
     key_function=dict(entity=stable_hash, shapefile=lambda x: x.hash_key),
 )
@@ -209,7 +210,7 @@ def aggregated_acs_data(year, entity, shapefile):
     return acs_data
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "population_density/acs/aggregated_acs_data_us_pr",
     key_function=dict(
         entity_us=stable_hash, entity_pr=stable_hash, shapefile=lambda x: x.hash_key
