@@ -1,10 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
+import chalkTemplate from 'chalk-template'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
+import { DefaultMap } from '../src/utils/DefaultMap'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
@@ -200,6 +202,8 @@ export async function safeClearLocalStorage(): Promise<void> {
     )
 }
 
+const consoleEnabled = new DefaultMap<unknown, boolean>(() => false)
+
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
@@ -213,6 +217,24 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            const cdp = await t.getCurrentCDPSession()
+            if (!consoleEnabled.get(cdp)) {
+                consoleEnabled.set(cdp, true)
+                cdp.Console.on('messageAdded', (event) => {
+                    switch (event.message.level) {
+                        case 'error':
+                            console.warn(chalkTemplate`From Browser: {red ${event.message.text}}`)
+                            break
+                        case 'warning':
+                            console.warn(chalkTemplate`From Browser: {yellow ${event.message.text}}`)
+                            break
+                        default:
+                            console.warn(`From Browser: ${event.message.text}`)
+                    }
+                })
+                await cdp.Console.enable()
+            }
+
             screenshotNumber = 0
             await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
