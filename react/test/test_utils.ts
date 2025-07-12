@@ -101,14 +101,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
                 x.style.visibility = 'hidden'
             }
         }
-        const currentVersion = document.getElementById('current-version')
-        if (currentVersion !== null) {
-            currentVersion.innerHTML = '&lt;VERSION&gt;'
-        }
-        const lastUpdated = document.getElementById('last-updated')
-        if (lastUpdated !== null) {
-            lastUpdated.innerHTML = '&lt;LAST UPDATED&gt;'
-        }
+
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
