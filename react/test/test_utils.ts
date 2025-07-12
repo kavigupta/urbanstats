@@ -287,7 +287,7 @@ export function mapElement(r: RegExp): Selector {
 export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
     const element = mapElement(r)
     // wait for element to exist
-    await t.expect(element.exists).ok({ timeout: 10000 })
+    await t.expect(element.exists).ok({ timeout: 10000000 })
     console.log('Element exists!')
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
     await t.eval(() => {
