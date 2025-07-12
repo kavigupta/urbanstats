@@ -34,7 +34,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.click(Selector('a').withText(/New York/))
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.scroll(0, 400)
-    console.log('messages', await t.getBrowserConsoleMessages())
+    console.log(JSON.stringify(await t.getBrowserConsoleMessages()))
     await clickMapElement(t, /Connecticut/)
     await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
