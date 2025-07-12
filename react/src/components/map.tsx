@@ -10,7 +10,6 @@ import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
-import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
@@ -344,7 +343,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async updateFn(): Promise<void> {
         const time = Date.now()
-        debugPerformance('Loading map...')
+        console.warn('Loading map...')
         this.setState({ loading: true })
 
         if (this.attributionControl !== undefined) {
@@ -366,18 +365,18 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         await this.populateMap(this.map, time)
         this.setState({ loading: false })
-        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
-        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
+        console.warn(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
+        console.warn(`No longer loading map; took ${Date.now() - time}ms`)
     }
 
     async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
-        debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
+        console.warn(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.addPolygons(map, polygons, zoomIndex)
 
-        debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
+        console.warn(`Added polygons; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
         // Must do this before map render or zooms are incorrect (they try to zoom to previous regions)
@@ -387,11 +386,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
 
-        debugPerformance(`Removed polygons; at ${Date.now() - timeBasis}ms`)
+        console.warn(`Removed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.mapDidRender()
 
-        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
+        console.warn(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         await this.updateSources(true)
     }
@@ -481,7 +480,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
-        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
+        console.warn(`Loaded style, took ${Date.now() - time}ms`)
         const map = this.map
         const data = {
             type: 'FeatureCollection',
