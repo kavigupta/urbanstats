@@ -124,8 +124,13 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
 }
 
 let screenshotNumber = 0
+let debugScreenshotNumber = 0
 
-function screenshotPath(t: TestController): string {
+function screenshotPath(t: TestController, debug: boolean): string {
+    if (debug) {
+        debugScreenshotNumber++
+        return `${t.browser.name}/${t.test.name}-debug-${debugScreenshotNumber}.png`
+    }
     screenshotNumber++
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
@@ -134,7 +139,15 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
     await prepForImage(t, { hover: fullPage, wait })
     return t.takeScreenshot({
         // include the browser name in the screenshot path
-        path: screenshotPath(t),
+        path: screenshotPath(t, false),
+        fullPage,
+    })
+}
+
+export async function debugScreencap(t: TestController, { fullPage = true }: { fullPage?: boolean } = {}): Promise<void> {
+    return t.takeScreenshot({
+        // include the browser name in the screenshot path
+        path: screenshotPath(t, true),
         fullPage,
     })
 }
@@ -169,7 +182,7 @@ function copyMostRecentFile(t: TestController): void {
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
+    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t, false)))
 }
 
 export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
@@ -308,8 +321,13 @@ export function mapElement(r: RegExp): Selector {
 }
 
 export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
+    await t.wait(5000)
     const element = mapElement(r)
-    console.log(`Available map elements`, (await getAllElements(Selector('div[clickable-polygon]'))).map(e => e.getAttribute?.('clickable-polygon')))
+    const names = (await getAllElements(Selector('div[clickable-polygon]'))).map(e => e.getAttribute?.('clickable-polygon'))
+    console.log(`Available map elements`, names)
+    if (names.length === 0) {
+        await debugScreencap(t)
+    }
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
     await t.eval(() => {
         const cm = (window as unknown as {
