@@ -10,6 +10,7 @@ import { Basemap } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
@@ -90,15 +91,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override render(): ReactNode {
-        const names = this.state.polygonByName.keys()
-        console.warn('current page href', window.location.href)
-        console.warn('Names', ...names)
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
                 <div style={{ display: 'none' }}>
-                    {Array.from(names).map(name =>
+                    {Array.from(this.state.polygonByName.keys()).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
                         <div key={name} clickable-polygon={name} onClick={() => { this.onClick(name) }} />,
                     )}
@@ -343,7 +341,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async updateFn(): Promise<void> {
         const time = Date.now()
-        console.warn('Loading map...')
+        debugPerformance('Loading map...')
         this.setState({ loading: true })
 
         if (this.attributionControl !== undefined) {
@@ -365,18 +363,18 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         await this.populateMap(this.map, time)
         this.setState({ loading: false })
-        console.warn(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
-        console.warn(`No longer loading map; took ${Date.now() - time}ms`)
+        debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
+        debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
     }
 
     async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
-        console.warn(`Computed polygons; at ${Date.now() - timeBasis}ms`)
+        debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.addPolygons(map, polygons, zoomIndex)
 
-        console.warn(`Added polygons; at ${Date.now() - timeBasis}ms`)
+        debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
 
         // Remove polygons that no longer exist
         // Must do this before map render or zooms are incorrect (they try to zoom to previous regions)
@@ -386,11 +384,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
 
-        console.warn(`Removed polygons; at ${Date.now() - timeBasis}ms`)
+        debugPerformance(`Removed polygons; at ${Date.now() - timeBasis}ms`)
 
         await this.mapDidRender()
 
-        console.warn(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
+        debugPerformance(`Finished waiting for mapDidRender; at ${Date.now() - timeBasis}ms`)
 
         await this.updateSources(true)
     }
@@ -425,7 +423,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
          * Waiting for all the polygons to load before adding them produces an unacceptable delay
          */
         const time = Date.now()
-        console.warn('Adding polygons...')
+        debugPerformance('Adding polygons...')
         let adderIndex = 0
         const adders = new Map<number, () => Promise<void>>()
         const addDone = async (): Promise<void> => {
@@ -440,9 +438,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             adders.set(i, adder)
             await addDone()
         }))
-        console.warn(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
+        debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
         await this.updateSources(true)
-        console.warn(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
+        debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
     async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
@@ -480,7 +478,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
-        console.warn(`Loaded style, took ${Date.now() - time}ms`)
+        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
         const map = this.map
         const data = {
             type: 'FeatureCollection',
@@ -532,10 +530,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
             return () => Promise.resolve()
         }
-        const time = Date.now()
-        console.warn(`Adding polygon ${polygon.name}...`)
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
-        console.warn(`Added polygon ${polygon.name} [addPolygon]. Took ${Date.now() - time}ms`)
         if (fit_bounds) {
             this.zoomToItems([geojson], { animate: false })
         }

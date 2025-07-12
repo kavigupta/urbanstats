@@ -179,8 +179,7 @@ jobs:
             --headless=true \
             --compare=true \
             --time-limit-seconds=300 \
-            --base-ref=${{ github.base_ref }} \
-            --video=true
+            --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}

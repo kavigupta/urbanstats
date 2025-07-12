@@ -69,7 +69,6 @@
     "@badgateway/oauth2-client": "github:lukebrody/oauth2-client#fixRaceCondition-build",
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@fontsource/jost": "^5.0.18",
     "@mapbox/geojson-extent": "^1.0.1",
     "@observablehq/plot": "^0.6.16",
