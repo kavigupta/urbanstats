@@ -58,7 +58,9 @@ for (const test of tests) {
     let runner = testcafe.createRunner()
         .src(testFile)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
-        .screenshots(`screenshots/${test}`)
+        // Explicitly interpolate test here so we don't add the error to the directory
+        // Pattern is only used for take on fail, we make our own pattern otherwise
+        .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}-error.png`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {

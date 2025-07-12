@@ -314,13 +314,9 @@ export function mapElement(r: RegExp): Selector {
 }
 
 export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
-    await t.wait(5000)
     const element = mapElement(r)
     const names = (await getAllElements(Selector('div[clickable-polygon]'))).map(e => e.getAttribute?.('clickable-polygon'))
     console.log(`Available map elements`, names)
-    if (names.length === 0) {
-        await debugScreencap(t)
-    }
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
     await t.eval(() => {
         const cm = (window as unknown as {
