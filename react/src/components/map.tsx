@@ -71,8 +71,6 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
-let shapeLoadsInProgress = 0
-
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -133,11 +131,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        shapeLoadsInProgress++
-        return await loadShapeFromPossibleSymlink(name).finally(() => {
-            shapeLoadsInProgress--
-            console.log('Shape loads in progress', shapeLoadsInProgress)
-        }) as NormalizeProto<Feature>
+        return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
     subnationalOutlines(): maplibregl.LayerSpecification[] {
