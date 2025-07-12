@@ -288,7 +288,8 @@ export async function clickMapElement(t: TestController, r: RegExp): Promise<voi
     const element = mapElement(r)
     // wait for element to exist
     await t.wait(10000) // Wait for the element to appear
-    console.log(JSON.stringify(await t.getBrowserConsoleMessages()))
+    console.log('Messages!')
+    console.log((await t.getBrowserConsoleMessages()).warn.join('\n'))
     await t.expect(element.exists).ok({ timeout: 10000 })
     console.log('Element exists!')
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
