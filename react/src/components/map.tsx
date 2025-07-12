@@ -92,7 +92,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override render(): ReactNode {
         const names = this.state.polygonByName.keys()
-        console.warn('Names', names)
+        console.warn('Names', ...names)
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
