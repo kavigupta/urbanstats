@@ -299,12 +299,17 @@ export async function createComparison(t: TestController, searchTerm: string, ex
     await t.pressKey('enter')
 }
 
+export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
+    return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
+}
+
 export function mapElement(r: RegExp): Selector {
     return Selector('div').withAttribute('clickable-polygon', r)
 }
 
 export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
     const element = mapElement(r)
+    console.log(`Available map elements`, (await getAllElements(Selector('div[clickable-polygon]'))).map(e => e.getAttribute?.('clickable-polygon')))
     const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
     await t.eval(() => {
         const cm = (window as unknown as {
