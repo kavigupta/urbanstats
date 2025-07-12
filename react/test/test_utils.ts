@@ -245,7 +245,9 @@ export async function flaky<T>(doThing: () => Promise<T>): Promise<T> {
         try {
             return await doThing()
         }
-        catch {}
+        catch (error) {
+            console.error(chalkTemplate`{red flaky failed with error}`, error)
+        }
     }
 }
 
