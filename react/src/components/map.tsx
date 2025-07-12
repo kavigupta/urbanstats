@@ -92,6 +92,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override render(): ReactNode {
         const names = this.state.polygonByName.keys()
+        console.warn('current page href', window.location.href)
         console.warn('Names', ...names)
         return (
             <>
@@ -425,7 +426,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
          * Waiting for all the polygons to load before adding them produces an unacceptable delay
          */
         const time = Date.now()
-        debugPerformance('Adding polygons...')
+        console.warn('Adding polygons...')
         let adderIndex = 0
         const adders = new Map<number, () => Promise<void>>()
         const addDone = async (): Promise<void> => {
@@ -440,9 +441,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             adders.set(i, adder)
             await addDone()
         }))
-        debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
+        console.warn(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
         await this.updateSources(true)
-        debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
+        console.warn(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
     async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
