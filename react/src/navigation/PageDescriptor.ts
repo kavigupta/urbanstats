@@ -669,6 +669,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     result = { success: false, error: e.message }
                 }
                 else {
+                    console.error('OAuth error', e)
                     result = { success: false, error: 'Unknown error' }
                 }
             }
