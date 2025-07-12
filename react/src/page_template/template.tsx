@@ -15,6 +15,7 @@ import { ScreencapElements, ScreenshotContext, createScreenshot } from '../compo
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
+import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 
 import { useColors, useJuxtastatColors } from './colors'
@@ -138,11 +139,19 @@ function TemplateFooter(): ReactNode {
 }
 
 function Version(): ReactNode {
-    return <span id="current-version">26.1.0</span>
+    return (
+        <span id="current-version">
+            {TestUtils.shared.isTesting ? '<VERSION>' : '26.1.0'}
+        </span>
+    )
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2025-06-21</span>
+    return (
+        <span id="last-updated">
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-06-21'}
+        </span>
+    )
 }
 
 function MainCredits(): ReactNode {

@@ -1,10 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
+import chalkTemplate from 'chalk-template'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
+import { DefaultMap } from '../src/utils/DefaultMap'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
@@ -99,14 +101,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
                 x.style.visibility = 'hidden'
             }
         }
-        const currentVersion = document.getElementById('current-version')
-        if (currentVersion !== null) {
-            currentVersion.innerHTML = '&lt;VERSION&gt;'
-        }
-        const lastUpdated = document.getElementById('last-updated')
-        if (lastUpdated !== null) {
-            lastUpdated.innerHTML = '&lt;LAST UPDATED&gt;'
-        }
+
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
@@ -203,6 +198,8 @@ export async function safeClearLocalStorage(): Promise<void> {
     )
 }
 
+const consoleEnabled = new DefaultMap<unknown, boolean>(() => false)
+
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
@@ -216,6 +213,27 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            const cdp = await t.getCurrentCDPSession()
+            if (!consoleEnabled.get(cdp)) {
+                consoleEnabled.set(cdp, true)
+                cdp.Console.on('messageAdded', (event) => {
+                    const timestamp = new Date().toISOString()
+                    let text: string
+                    switch (event.message.level) {
+                        case 'error':
+                            text = chalkTemplate`{red ${event.message.text}}`
+                            break
+                        case 'warning':
+                            text = chalkTemplate`{yellow ${event.message.text}}`
+                            break
+                        default:
+                            text = event.message.text
+                    }
+                    console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
+                })
+                await cdp.Console.enable()
+            }
+
             screenshotNumber = 0
             await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
@@ -278,6 +296,10 @@ export async function createComparison(t: TestController, searchTerm: string, ex
         await t.expect(result).eql(expectResult)
     }
     await t.pressKey('enter')
+}
+
+export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
+    return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
 }
 
 export function mapElement(r: RegExp): Selector {
