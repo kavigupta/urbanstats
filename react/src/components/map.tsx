@@ -532,9 +532,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
             return () => Promise.resolve()
         }
+        const time = Date.now()
         console.warn(`Adding polygon ${polygon.name}...`)
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
-        console.warn(`Added polygon ${polygon.name} [addPolygon]`)
+        console.warn(`Added polygon ${polygon.name} [addPolygon]. Took ${Date.now() - time}ms`)
         if (fit_bounds) {
             this.zoomToItems([geojson], { animate: false })
         }
