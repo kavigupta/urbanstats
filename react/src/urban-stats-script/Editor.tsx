@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState, createPlaceholderDiv } from './editor-utils'
 import { USSDocumentedType } from './types-values'
 
 const setScriptDelay = 500
@@ -16,15 +16,14 @@ const undoHistory = 100
 interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
 
 export function Editor(
-    props: {
+    { uss, setUss, typeEnvironment, errors, placeholder }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: Map<string, USSDocumentedType>
         errors: EditorError[]
+        placeholder?: string
     },
 ): ReactNode {
-    const { setUss, uss, errors, typeEnvironment } = props
-
     const setUssRef = useRef(setUss)
 
     useEffect(() => {
@@ -72,6 +71,9 @@ export function Editor(
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.div)
             }
+            if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
+                content.push(createPlaceholderDiv(colors, placeholder))
+            }
         })
 
         const editor = editorRef.current!
@@ -82,7 +84,7 @@ export function Editor(
             inhibitRangeUpdateEvents.current++
             setRange(editor, rangeBefore)
         }
-    }, [colors, errors, autocompleteState])
+    }, [colors, errors, autocompleteState, placeholder])
 
     useEffect(() => {
         renderScript(script, undefined)

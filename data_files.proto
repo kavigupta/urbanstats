@@ -137,12 +137,6 @@ message ConsolidatedShapes {
     repeated Feature shapes = 2;
 }
 
-message ConsolidatedStatistics {
-    repeated string longnames = 1;
-    repeated string shortnames = 2;
-    repeated AllStats stats = 3;
-}
-
 // quiz sampling data
 
 message QuizDataForStat {

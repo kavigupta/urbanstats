@@ -4,13 +4,11 @@ import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
 import { InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
-import { USSDocumentedType, USSRawValue, USSValue } from '../urban-stats-script/types-values'
+import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
-import { StatisticsForGeography } from './settings/utils'
-
-export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeography: StatisticsForGeography, longnames: string[]): Context {
+export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<Context> {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -18,72 +16,62 @@ export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeogra
         new Map(),
     )
 
-    const annotateType = (name: string, val: USSRawValue): USSValue => {
-        const typeInfo = defaultTypeEnvironment.get(name)
-        assert(typeInfo !== undefined, `Type info for ${name} not found`)
-        return {
-            type: typeInfo.type,
-            documentation: typeInfo.documentation,
-            value: val,
-        }
-    }
-
-    const getVariable = (name: string): USSValue | undefined => {
-        if (name === 'geo') {
-            return annotateType('geo', longnames)
-        }
-        const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
-        if (!variableInfo) {
-            return undefined
-        }
-        const index = variableInfo.index
-        return annotateType(name, statisticsForGeography.map(stat => stat.stats[index]))
-    }
-
-    addVariablesToContext(ctx, stmts, getVariable)
+    await addVariablesToContext(ctx, stmts, getVariable)
     return ctx
 }
 
-function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
+async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<void> {
     const ids = allIdentifiers(stmts, ctx)
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
 
-    variables.forEach((name) => {
-        if (!ids.has(name)) {
-            return
-        }
-        const va = getVariable(name)
-        if (va !== undefined) {
-            ctx.assignVariable(name, va)
-        }
-    })
-
-    statistic_variables_info.multiSourceVariables.forEach((content) => {
-        const [name, info] = content
-        const subvars = info.individualVariables
-        if (!ids.has(name)) {
-            return
-        }
-        const vs: (USSValue | undefined)[] = subvars.map((subvar) => {
-            const existing = ctx.getVariable(subvar)
-            return existing ?? getVariable(subvar)
+    // Load all variables in parallel
+    const variablePromises = variables
+        .filter(name => ids.has(name))
+        .map(async (name) => {
+            const va = await getVariable(name)
+            if (va !== undefined) {
+                ctx.assignVariable(name, va)
+            }
         })
-        const values = vs.map(v => v?.value as (undefined | number[]))
-        if (values.some(v => v === undefined)) {
-            return
-        }
-        const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
-        const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
 
-        const typeInfo = defaultTypeEnvironment.get(name)!
-        ctx.assignVariable(name, {
-            type: typeInfo.type,
-            value,
-            documentation: typeInfo.documentation,
+    await Promise.all(variablePromises)
+
+    // Handle multi-source variables in parallel
+    const multiSourcePromises = statistic_variables_info.multiSourceVariables
+        .filter(([name]) => ids.has(name))
+        .map(async ([name, info]) => {
+            const subvars = info.individualVariables
+            const vsPromise: Promise<USSValue | undefined>[] = []
+            for (const subvar of subvars) {
+                const existing = ctx.getVariable(subvar)
+                if (existing !== undefined) {
+                    vsPromise.push(Promise.resolve(existing))
+                }
+                else {
+                    vsPromise.push(getVariable(subvar))
+                }
+            }
+            const vs = await Promise.all(vsPromise)
+            const values = vs.map(v => v?.value as (undefined | number[]))
+            if (values.some(v => v === undefined)) {
+                return
+            }
+            const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
+            const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
+
+            const typeInfo = defaultTypeEnvironment.get(name)!
+            ctx.assignVariable(name, {
+                type: typeInfo.type,
+                value,
+                documentation: typeInfo.documentation,
+            })
         })
-    })
-} export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
+
+    await Promise.all(multiSourcePromises)
+}
+
+export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
     const te = new Map<string, USSDocumentedType>()
 
     for (const [key, value] of defaultConstants) {
