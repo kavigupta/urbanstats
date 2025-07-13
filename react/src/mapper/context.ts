@@ -42,11 +42,17 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
         .filter(([name]) => ids.has(name))
         .map(async ([name, info]) => {
             const subvars = info.individualVariables
-            const vs: (USSValue | undefined)[] = []
+            const vsPromise: Promise<USSValue | undefined>[] = []
             for (const subvar of subvars) {
                 const existing = ctx.getVariable(subvar)
-                vs.push(existing ?? await getVariable(subvar))
+                if (existing !== undefined) {
+                    vsPromise.push(Promise.resolve(existing))
+                }
+                else {
+                    vsPromise.push(getVariable(subvar))
+                }
             }
+            const vs = await Promise.all(vsPromise)
             const values = vs.map(v => v?.value as (undefined | number[]))
             if (values.some(v => v === undefined)) {
                 return

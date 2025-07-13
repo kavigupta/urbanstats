@@ -35,21 +35,18 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
 
                 // Load geography names and set up cache
                 let longnames: string[]
-                let dataCache: Map<string, number[]>
 
                 if (mapperCache?.geographyKind === geographyKind) {
                     longnames = mapperCache.longnames
-                    dataCache = mapperCache.dataCache
                 }
                 else {
                     // Load geography names from index
                     const indexData = await loadProtobuf(indexLink('world', geographyKind), 'ArticleOrderingList')
                     longnames = indexData.longnames
-                    dataCache = new Map()
                     mapperCache = {
                         geographyKind,
                         longnames,
-                        dataCache,
+                        dataCache: new Map(),
                     }
                 }
 
@@ -64,6 +61,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 }
 
                 const getVariable = async (name: string): Promise<USSValue | undefined> => {
+                    assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
                     if (name === 'geo') {
                         return annotateType('geo', longnames)
                     }
@@ -74,8 +72,9 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                     const index = variableInfo.index
 
                     // Check cache first
-                    if (dataCache.has(name)) {
-                        return annotateType(name, dataCache.get(name)!)
+                    const existing = mapperCache.dataCache.get(name)
+                    if (existing !== undefined) {
+                        return annotateType(name, existing)
                     }
 
                     const statpath = statistic_path_list[index]
@@ -83,7 +82,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                     const dataLists = await loadOrderingProtobuf('world', statpath, geographyKind, true)
                     const variableData = dataLists.value
                     assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
-                    dataCache.set(name, variableData)
+                    mapperCache.dataCache.set(name, variableData)
                     return annotateType(name, variableData)
                 }
 
