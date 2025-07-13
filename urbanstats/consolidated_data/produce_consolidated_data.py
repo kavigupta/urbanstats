@@ -58,17 +58,13 @@ def produce_results(row_geo, row):
 
 def produce_all_results_from_tables(geo_table, data_table):
     shapes = data_files_pb2.ConsolidatedShapes()
-    stats = data_files_pb2.ConsolidatedStatistics()
     for longname in tqdm.tqdm(data_table.index):
         row_geo = geo_table.loc[longname]
         row = data_table.loc[longname]
         g, s = produce_results(row_geo, row)
         shapes.longnames.append(longname)
-        stats.longnames.append(longname)
-        stats.shortnames.append(row.shortname)
         shapes.shapes.append(g)
-        stats.stats.append(s)
-    return shapes, stats
+    return shapes
 
 
 def produce_just_shapes_from_shapefile(geo_table, simplify_amount=0.01):
@@ -96,9 +92,8 @@ def produce_results_for_type(folder, typ):
     # geo_table = sh.load_file()
     geo_table = load_file_for_type(typ)
     geo_table = geo_table.set_index("longname")
-    shapes, stats = produce_all_results_from_tables(geo_table, data_table)
+    shapes = produce_all_results_from_tables(geo_table, data_table)
     write_gzip(shapes, f"{folder}/shapes__{typ}.gz")
-    write_gzip(stats, f"{folder}/stats__{typ}.gz")
 
 
 def full_consolidated_data(folder):
