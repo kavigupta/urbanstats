@@ -9,6 +9,7 @@ env:
   # we can test against non-production data
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  FORCE_COLOR: 1
 jobs:
   lint:
     runs-on: ubuntu-22.04
@@ -125,9 +126,10 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
       - id: set-matrix
-        run: echo "matrix=$(find . -name '*.test.ts' | jq -R -s -c 'gsub("\\./"; "") | gsub("\\.test\\.ts"; "") | split("\n")[:-1]')" >> $GITHUB_OUTPUT
-        working-directory: react/test
+        run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
+        working-directory: react
 
   resolve-proxy-branch:
     runs-on: ubuntu-22.04
@@ -142,7 +144,7 @@ jobs:
         env:
           OUTPUTS: ${{ toJSON(steps.resolve-proxy-branch.outputs) }}
 
-  run-e2e-tests:
+  e2e:
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
@@ -192,10 +194,14 @@ jobs:
         with:
           name: changed_screenshots-${{ matrix.test-file }}
           path: react/changed_screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: durations-${{ matrix.test-file }}
+          path: react/durations
 
   merge-screenshots:
     runs-on: ubuntu-22.04
-    needs: [run-e2e-tests]
+    needs: [e2e]
     if: "!cancelled()"
     steps:
       - uses: actions/upload-artifact/merge@v4
@@ -214,6 +220,24 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
+
+  merge-and-save-durations:
+    runs-on: ubuntu-22.04
+    needs: [e2e]
+    if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "durations-*"
+          path: react/durations
+          merge-multiple: true
+      - run: |
+          npx tsx test/scripts/save-durations.ts
+        working-directory: react
+        env:
+          FINE_GRAINED_TOKEN_FOR_VARIABLES: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
 
   run-unit-tests:
     runs-on: ubuntu-22.04

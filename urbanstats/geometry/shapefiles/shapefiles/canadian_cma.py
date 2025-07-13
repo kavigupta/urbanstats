@@ -1,3 +1,5 @@
+import pandas as pd
+
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
@@ -35,7 +37,7 @@ def load_cmas():
     merge_row["CMANAME"] = "Ottawa - Gatineau"
     merge_row["PRUID"] = sorted([x for xs in merge_rows["PRUID"] for x in xs])
 
-    data = data.append(merge_row)
+    data = pd.concat([data, merge_row.to_frame().T], ignore_index=True)
 
     return data
 
@@ -52,7 +54,7 @@ def longname_extractor(row):
 
 
 CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
-    hash_key="census_cmas",
+    hash_key="census_cmas_2",
     path=load_cmas,
     shortname_extractor=shortname_extractor,
     longname_extractor=longname_extractor,
