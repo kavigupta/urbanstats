@@ -128,6 +128,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 }
 
 function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
+    const colors = useColors()
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -171,7 +172,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                                     style={
                                         {
                                             width, height: '1em',
-                                            backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x)),
+                                            backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
                                         }
                                     }
                                 >
