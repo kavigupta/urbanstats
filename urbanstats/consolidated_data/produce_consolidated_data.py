@@ -1,6 +1,8 @@
+import gzip
 import os
 
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     filter_table_for_type,
@@ -8,7 +10,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
+from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
@@ -40,25 +42,46 @@ dont_use = [
 ]
 
 
-def produce_results(row_geo, row):
+def produce_results(row_geo):
     res = row_geo.geometry
     geo = convert_to_protobuf(res)
-    results = data_files_pb2.AllStats()
-    for stat in internal_statistic_names():
-        results.stats.append(row[stat])
-    return geo, results
+    return geo
 
 
-def produce_all_results_from_tables(geo_table, data_table, longnames):
+@permacache(
+    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables",
+    key_function=dict(loaded_shapefile=lambda x: x.hash_key, longnames=stable_hash),
+)
+def produce_all_results_from_tables(loaded_shapefile, longnames, limit=5 * 1024 * 1024):
     # TODO simplify coverage only should be used for things that can't overlap
     # TODO dynamically determine simplify amount
+    simplify_amount = 0
+    while True:
+        shapes = produce_results_from_tables_at_simplify_amount(
+            loaded_shapefile, longnames, simplify_amount
+        )
+        if shapes.ByteSize() < limit:
+            return shapes.SerializeToString(), simplify_amount
+        simplify_amount = (
+            simplify_amount + 1 / 3600
+            if simplify_amount == 0
+            else simplify_amount * 1.5
+        )
+
+
+def produce_results_from_tables_at_simplify_amount(
+    loaded_shapefile, longnames, simplify_amount
+):
+    geo_table = loaded_shapefile.load_file()
+
+    geo_table = geo_table.set_index("longname")
     geo_table = geo_table.loc[longnames].copy()
-    geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
+    if simplify_amount != 0:
+        geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
-    for longname in tqdm.tqdm(data_table.index):
+    for longname in tqdm.tqdm(longnames):
         row_geo = geo_table.loc[longname]
-        row = data_table.loc[longname]
-        g, s = produce_results(row_geo, row)
+        g = produce_results(row_geo)
         shapes.longnames.append(longname)
         shapes.shapes.append(g)
     return shapes
@@ -83,16 +106,18 @@ def produce_results_for_type(folder, typ):
     except FileExistsError:
         pass
     full = shapefile_without_ordinals()
-    data_table = filter_table_for_type(full, typ)
-    data_table = data_table.set_index("longname")
+    data_table = full[full.type == typ]
     # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     # geo_table = sh.load_file()
     [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    geo_table = loaded_shapefile.load_file()
-
-    geo_table = geo_table.set_index("longname")
-    shapes = produce_all_results_from_tables(geo_table, data_table)
-    write_gzip(shapes, f"{folder}/shapes__{typ}.gz")
+    shapes, simplification = produce_all_results_from_tables(
+        loaded_shapefile, sorted(data_table.longname)
+    )
+    print(f"Simplification amount: {simplification * 3600:.0f}\" of arc")
+    path = f"{folder}/shapes__{typ}.gz"
+    ensure_writeable(path)
+    with gzip.GzipFile(path, "wb", mtime=0) as f:
+        f.write(shapes)
 
 
 def full_consolidated_data(folder):
