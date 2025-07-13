@@ -241,6 +241,7 @@ def districts(
     overrides=None,
     data_credit,
     minimum_district_length,
+    does_overlap_self,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
@@ -258,6 +259,7 @@ def districts(
         + ", USA",
         meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
+        does_overlap_self=does_overlap_self,
         universe_provider=us_domestic_provider(overrides),
         subset_masks={"USA": SelfSubset()},
         abbreviation=abbreviation,
@@ -288,6 +290,7 @@ CONGRESSIONAL_DISTRICTS = districts(
         link="https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/CD",
     ),
     minimum_district_length=2,
+    does_overlap_self=False,
 )
 
 district_shapefiles = dict(
@@ -308,6 +311,7 @@ district_shapefiles = dict(
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDL/",
         ),
         minimum_district_length=0,
+        does_overlap_self=False,
     ),
     state_senate=districts(
         "sldu",
@@ -320,5 +324,6 @@ district_shapefiles = dict(
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDU/",
         ),
         minimum_district_length=0,
+        does_overlap_self=False,
     ),
 )

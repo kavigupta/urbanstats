@@ -27,6 +27,7 @@ CANADIAN_DISTRICTS = Shapefile(
         source="StatCan",
         type_category="Political",
     ),
+    does_overlap_self=False,
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="RDNG",

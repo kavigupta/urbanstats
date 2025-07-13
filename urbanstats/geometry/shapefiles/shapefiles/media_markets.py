@@ -13,6 +13,7 @@ MEDIA_MARKETS = Shapefile(
         source="Nielsen via Kenneth C Black",
         type_category="Oddball",
     ),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="MMAR",

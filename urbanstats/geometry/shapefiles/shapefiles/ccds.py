@@ -9,6 +9,7 @@ CCDs = Shapefile(
     longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
     filter=lambda x: True,
     meta=dict(type="CCD", source="Census", type_category="Census"),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="CCD",

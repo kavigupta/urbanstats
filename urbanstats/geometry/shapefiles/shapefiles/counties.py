@@ -27,6 +27,7 @@ COUNTIES = Shapefile(
     additional_columns_computer={"geoid": compute_geoid},
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="COU",
