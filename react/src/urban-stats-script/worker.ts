@@ -1,8 +1,10 @@
 import { emptyContext } from '../../unit/urban-stats-script-utils'
 import validGeographies from '../data/mapper/used_geographies'
+import statistic_variables_info from '../data/statistic_variables_info'
 import { loadProtobuf } from '../load_json'
-import { mapperContext } from '../mapper/context'
+import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
 import { consolidatedStatsLink } from '../navigation/links'
+import { assert } from '../utils/defensive'
 import { ConsolidatedStatistics } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
@@ -37,7 +39,30 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                     )) as NormalizeProto<ConsolidatedStatistics>
                     mapperCache = { stats, geographyKind: request.descriptor.geographyKind }
                 }
-                const context = mapperContext(request.stmts, stats.stats, stats.longnames)
+
+                const annotateType = (name: string, val: USSRawValue): USSValue => {
+                    const typeInfo = defaultTypeEnvironment.get(name)
+                    assert(typeInfo !== undefined, `Type info for ${name} not found`)
+                    return {
+                        type: typeInfo.type,
+                        documentation: typeInfo.documentation,
+                        value: val,
+                    }
+                }
+
+                const getVariable = (name: string): USSValue | undefined => {
+                    if (name === 'geo') {
+                        return annotateType('geo', stats.longnames)
+                    }
+                    const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
+                    if (!variableInfo) {
+                        return undefined
+                    }
+                    const index = variableInfo.index
+                    return annotateType(name, stats.stats.map(stat => stat.stats[index]))
+                }
+
+                const context = mapperContext(request.stmts, getVariable)
                 result = execute(request.stmts, context)
                 if (renderType(result.type) !== 'cMap') {
                     throw new InterpretationError(`USS expression did not return a cMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))

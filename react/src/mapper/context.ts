@@ -4,41 +4,17 @@ import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
 import { InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
-import { USSDocumentedType, USSRawValue, USSValue } from '../urban-stats-script/types-values'
+import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
-import { StatisticsForGeography } from './settings/utils'
-
-export function mapperContext(stmts: UrbanStatsASTStatement, statisticsForGeography: StatisticsForGeography, longnames: string[]): Context {
+export function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): Context {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
         defaultConstants,
         new Map(),
     )
-
-    const annotateType = (name: string, val: USSRawValue): USSValue => {
-        const typeInfo = defaultTypeEnvironment.get(name)
-        assert(typeInfo !== undefined, `Type info for ${name} not found`)
-        return {
-            type: typeInfo.type,
-            documentation: typeInfo.documentation,
-            value: val,
-        }
-    }
-
-    const getVariable = (name: string): USSValue | undefined => {
-        if (name === 'geo') {
-            return annotateType('geo', longnames)
-        }
-        const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
-        if (!variableInfo) {
-            return undefined
-        }
-        const index = variableInfo.index
-        return annotateType(name, statisticsForGeography.map(stat => stat.stats[index]))
-    }
 
     addVariablesToContext(ctx, stmts, getVariable)
     return ctx
