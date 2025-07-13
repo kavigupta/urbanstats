@@ -8,7 +8,7 @@ import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
-export function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): Context {
+export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<Context> {
     const ctx = new Context(
         () => undefined,
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -16,38 +16,39 @@ export function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name:
         new Map(),
     )
 
-    addVariablesToContext(ctx, stmts, getVariable)
+    await addVariablesToContext(ctx, stmts, getVariable)
     return ctx
 }
 
-function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => USSValue | undefined): void {
+async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<void> {
     const ids = allIdentifiers(stmts, ctx)
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
 
-    variables.forEach((name) => {
+    for (const name of variables) {
         if (!ids.has(name)) {
-            return
+            continue
         }
-        const va = getVariable(name)
+        const va = await getVariable(name)
         if (va !== undefined) {
             ctx.assignVariable(name, va)
         }
-    })
+    }
 
-    statistic_variables_info.multiSourceVariables.forEach((content) => {
+    for (const content of statistic_variables_info.multiSourceVariables) {
         const [name, info] = content
         const subvars = info.individualVariables
         if (!ids.has(name)) {
-            return
+            continue
         }
-        const vs: (USSValue | undefined)[] = subvars.map((subvar) => {
+        const vs: (USSValue | undefined)[] = []
+        for (const subvar of subvars) {
             const existing = ctx.getVariable(subvar)
-            return existing ?? getVariable(subvar)
-        })
+            vs.push(existing ?? await getVariable(subvar))
+        }
         const values = vs.map(v => v?.value as (undefined | number[]))
         if (values.some(v => v === undefined)) {
-            return
+            continue
         }
         const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
         const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
@@ -58,8 +59,10 @@ function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getV
             value,
             documentation: typeInfo.documentation,
         })
-    })
-} export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
+    }
+}
+
+export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
     const te = new Map<string, USSDocumentedType>()
 
     for (const [key, value] of defaultConstants) {

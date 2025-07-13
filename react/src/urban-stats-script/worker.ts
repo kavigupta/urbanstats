@@ -1,19 +1,22 @@
 import { emptyContext } from '../../unit/urban-stats-script-utils'
 import validGeographies from '../data/mapper/used_geographies'
+import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { loadProtobuf } from '../load_json'
+import { loadOrderingProtobuf, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
-import { consolidatedStatsLink } from '../navigation/links'
+import { indexLink, orderingDataLink } from '../navigation/links'
 import { assert } from '../utils/defensive'
-import { ConsolidatedStatistics } from '../utils/protos'
-import { NormalizeProto } from '../utils/types'
 
 import { locationOf, locationOfLastExpression } from './ast'
 import { execute, InterpretationError } from './interpreter'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
-let mapperCache: { stats: NormalizeProto<ConsolidatedStatistics>, geographyKind: typeof validGeographies[number] } | undefined
+let mapperCache: {
+    geographyKind: typeof validGeographies[number]
+    longnames: string[]
+    dataCache: Map<string, number[]>
+} | undefined
 
 async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
     try {
@@ -25,19 +28,29 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
             case 'mapper': {
-                if (!validGeographies.includes(request.descriptor.geographyKind)) {
+                const geographyKind = request.descriptor.geographyKind
+                if (!validGeographies.includes(geographyKind)) {
                     throw new Error('invalid geography')
                 }
-                let stats
-                if (mapperCache?.geographyKind === request.descriptor.geographyKind) {
-                    stats = mapperCache.stats
+
+                // Load geography names and set up cache
+                let longnames: string[]
+                let dataCache: Map<string, number[]>
+
+                if (mapperCache?.geographyKind === geographyKind) {
+                    longnames = mapperCache.longnames
+                    dataCache = mapperCache.dataCache
                 }
                 else {
-                    stats = (await loadProtobuf(
-                        consolidatedStatsLink(request.descriptor.geographyKind),
-                        'ConsolidatedStatistics',
-                    )) as NormalizeProto<ConsolidatedStatistics>
-                    mapperCache = { stats, geographyKind: request.descriptor.geographyKind }
+                    // Load geography names from index
+                    const indexData = await loadProtobuf(indexLink('world', geographyKind), 'ArticleOrderingList')
+                    longnames = indexData.longnames
+                    dataCache = new Map()
+                    mapperCache = {
+                        geographyKind,
+                        longnames,
+                        dataCache,
+                    }
                 }
 
                 const annotateType = (name: string, val: USSRawValue): USSValue => {
@@ -50,19 +63,31 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                     }
                 }
 
-                const getVariable = (name: string): USSValue | undefined => {
+                const getVariable = async (name: string): Promise<USSValue | undefined> => {
                     if (name === 'geo') {
-                        return annotateType('geo', stats.longnames)
+                        return annotateType('geo', longnames)
                     }
                     const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
                     if (!variableInfo) {
                         return undefined
                     }
                     const index = variableInfo.index
-                    return annotateType(name, stats.stats.map(stat => stat.stats[index]))
+
+                    // Check cache first
+                    if (dataCache.has(name)) {
+                        return annotateType(name, dataCache.get(name)!)
+                    }
+
+                    const statpath = statistic_path_list[index]
+
+                    const dataLists = await loadOrderingProtobuf('world', statpath, geographyKind, true)
+                    const variableData = dataLists.value
+                    assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
+                    dataCache.set(name, variableData)
+                    return annotateType(name, variableData)
                 }
 
-                const context = mapperContext(request.stmts, getVariable)
+                const context = await mapperContext(request.stmts, getVariable)
                 result = execute(request.stmts, context)
                 if (renderType(result.type) !== 'cMap') {
                     throw new InterpretationError(`USS expression did not return a cMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
