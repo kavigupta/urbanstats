@@ -15,12 +15,9 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
-simplify_amount=6/3600
+simplify_amount = 6 / 3600
 
-use = [
-    x.meta["type"]
-    for x in shapefiles.values()
-]
+use = [x.meta["type"] for x in shapefiles.values()]
 dont_use = [
     "ZIP",
     "CCD",
@@ -52,8 +49,10 @@ def produce_results(row_geo, row):
     return geo, results
 
 
-def produce_all_results_from_tables(geo_table, data_table):
+def produce_all_results_from_tables(geo_table, data_table, longnames):
     # TODO simplify coverage only should be used for things that can't overlap
+    # TODO dynamically determine simplify amount
+    geo_table = geo_table.loc[longnames].copy()
     geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
     stats = data_files_pb2.ConsolidatedStatistics()
@@ -92,9 +91,13 @@ def produce_results_for_type(folder, typ):
     data_table = data_table.set_index("longname")
     # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     # geo_table = sh.load_file()
-    geo_table = load_file_for_type(typ)
+    [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    geo_table = loaded_shapefile.load_file()
+
     geo_table = geo_table.set_index("longname")
-    shapes, stats = produce_all_results_from_tables(geo_table, data_table)
+    shapes, stats = produce_all_results_from_tables(
+        geo_table, data_table, sorted(full.longname[full.type == typ])
+    )
     write_gzip(shapes, f"{folder}/shapes__{typ}.gz")
     write_gzip(stats, f"{folder}/stats__{typ}.gz")
 
