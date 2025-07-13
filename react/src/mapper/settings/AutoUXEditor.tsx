@@ -557,7 +557,7 @@ function defaultForSelection(
 ): UrbanStatsASTExpression {
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsExpression('', blockIdent, type)
+            return parseNoErrorAsExpression(unparse(current), blockIdent, type)
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
