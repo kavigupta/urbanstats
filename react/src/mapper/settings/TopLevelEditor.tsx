@@ -81,6 +81,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
+                    placeholder="Variables here can be used by all custom expressions."
                 />
                 {/* Condition */}
                 <ConditionEditor

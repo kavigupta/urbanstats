@@ -53,6 +53,7 @@ export function EditorPanel(): ReactNode {
                 setUss={updateUss}
                 typeEnvironment={typeEnvironment}
                 errors={errors}
+                placeholder="Enter Urban Stats Script"
             />
             { result === undefined
                 ? null

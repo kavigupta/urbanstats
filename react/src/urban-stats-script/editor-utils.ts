@@ -276,3 +276,21 @@ export function createAutocompleteMenuDiv(colors: Colors): HTMLDivElement {
 
     return result
 }
+
+export function createPlaceholderDiv(colors: Colors, placeholderText: string): HTMLDivElement {
+    const style = {
+        'position': 'absolute',
+        'user-select': 'none',
+        'white-space': 'pre',
+        'color': colors.hueColors.grey,
+        'pointer-events': 'none',
+    }
+
+    const result = document.createElement('div')
+    result.setAttribute('contenteditable', 'false')
+    result.setAttribute('style', styleToString(style))
+
+    result.textContent = placeholderText
+
+    return result
+}

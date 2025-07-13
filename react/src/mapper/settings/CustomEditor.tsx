@@ -12,12 +12,14 @@ export function CustomEditor({
     typeEnvironment,
     errors,
     blockIdent,
+    placeholder,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
+    placeholder?: string
 }): ReactNode {
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
@@ -30,6 +32,7 @@ export function CustomEditor({
             }}
             typeEnvironment={typeEnvironment}
             errors={ourErrors}
+            placeholder={placeholder}
         />
     )
 }
