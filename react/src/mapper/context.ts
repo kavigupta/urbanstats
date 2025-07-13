@@ -25,41 +25,44 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
 
-    for (const name of variables) {
-        if (!ids.has(name)) {
-            continue
-        }
-        const va = await getVariable(name)
-        if (va !== undefined) {
-            ctx.assignVariable(name, va)
-        }
-    }
-
-    for (const content of statistic_variables_info.multiSourceVariables) {
-        const [name, info] = content
-        const subvars = info.individualVariables
-        if (!ids.has(name)) {
-            continue
-        }
-        const vs: (USSValue | undefined)[] = []
-        for (const subvar of subvars) {
-            const existing = ctx.getVariable(subvar)
-            vs.push(existing ?? await getVariable(subvar))
-        }
-        const values = vs.map(v => v?.value as (undefined | number[]))
-        if (values.some(v => v === undefined)) {
-            continue
-        }
-        const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
-        const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
-
-        const typeInfo = defaultTypeEnvironment.get(name)!
-        ctx.assignVariable(name, {
-            type: typeInfo.type,
-            value,
-            documentation: typeInfo.documentation,
+    // Load all variables in parallel
+    const variablePromises = variables
+        .filter(name => ids.has(name))
+        .map(async (name) => {
+            const va = await getVariable(name)
+            if (va !== undefined) {
+                ctx.assignVariable(name, va)
+            }
         })
-    }
+
+    await Promise.all(variablePromises)
+
+    // Handle multi-source variables in parallel
+    const multiSourcePromises = statistic_variables_info.multiSourceVariables
+        .filter(([name]) => ids.has(name))
+        .map(async ([name, info]) => {
+            const subvars = info.individualVariables
+            const vs: (USSValue | undefined)[] = []
+            for (const subvar of subvars) {
+                const existing = ctx.getVariable(subvar)
+                vs.push(existing ?? await getVariable(subvar))
+            }
+            const values = vs.map(v => v?.value as (undefined | number[]))
+            if (values.some(v => v === undefined)) {
+                return
+            }
+            const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
+            const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
+
+            const typeInfo = defaultTypeEnvironment.get(name)!
+            ctx.assignVariable(name, {
+                type: typeInfo.type,
+                value,
+                documentation: typeInfo.documentation,
+            })
+        })
+
+    await Promise.all(multiSourcePromises)
 }
 
 export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
