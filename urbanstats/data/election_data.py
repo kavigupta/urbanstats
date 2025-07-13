@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 import us
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
@@ -68,14 +68,14 @@ vest_elections = [
 ]
 
 
-@permacache("election_data/read_2")
+@permacache_with_remapping_pickle("election_data/read_2")
 def read(path):
     frame = gpd.read_file(path)
     frame = frame.to_crs("epsg:4326")
     return frame
 
 
-@permacache("election_data/read_full_vest_data_2")
+@permacache_with_remapping_pickle("election_data/read_full_vest_data_2")
 def read_full_vest_data(path):
     frames = []
     for state in tqdm.tqdm(us.states.STATES + [us.states.DC]):
@@ -95,7 +95,7 @@ def read_full_vest_data(path):
     return gpd.GeoDataFrame(pd.concat(frames, ignore_index=True))
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "election_data/disaggregate_to_blocks_3",
     key_function=dict(election=lambda x: x.key),
 )
@@ -124,7 +124,7 @@ def disaggregate_to_blocks(election):
     return mask, disaggregated
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "election_data/aggregated_election_results",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )

@@ -2,8 +2,9 @@ from typing import List
 
 import attr
 import pandas as pd
-from permacache import permacache, stable_hash
+from permacache import stable_hash
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.canada.canada_blocks import disaggregated_from_da
 from urbanstats.data.canada.canada_metadata import metadata_by_table
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
@@ -19,7 +20,9 @@ class CensusTables:
         return compute_other_census_stats(self, year, shapefile)
 
 
-@permacache("urbanstats/data/canada/canadian_da_data/get_da_table_for_census_tables")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/canada/canadian_da_data/get_da_table_for_census_tables"
+)
 def get_da_table_for_census_tables(census_tables: CensusTables, year):
     return get_da_table(
         census_tables.tables,
@@ -29,7 +32,7 @@ def get_da_table_for_census_tables(census_tables: CensusTables, year):
     )
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/data/canada/canadian_da_data/compute_other_census_stats",
     key_function=dict(census_tables=stable_hash, shapefile=lambda x: x.hash_key),
 )

@@ -4,7 +4,8 @@ import pandas as pd
 import shapely
 import tqdm.auto as tqdm
 import us
-from permacache import permacache
+
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 
 from ..features.within_distance import census_block_coordinates, point_to_radius
 from ..geometry.deduplicate import deduplicate_polygons
@@ -44,7 +45,7 @@ def parks_for_state(state):
     return query_to_geopandas(query)
 
 
-@permacache("urbanstats/osm/query/parks_2")
+@permacache_with_remapping_pickle("urbanstats/osm/query/parks_2")
 def parks():
     return gpd.GeoDataFrame(
         pd.concat(
@@ -56,7 +57,7 @@ def parks():
     )
 
 
-@permacache("urbanstats/osm/query/parks_exploded_2")
+@permacache_with_remapping_pickle("urbanstats/osm/query/parks_exploded_2")
 def parks_exploded():
     return deduplicate_polygons(parks().geometry)
 
@@ -75,7 +76,7 @@ def park_overlaps(blocks, parks_df, r):
     return park_area
 
 
-@permacache("urbanstats/osm/query/park_overlap_percentages_2")
+@permacache_with_remapping_pickle("urbanstats/osm/query/park_overlap_percentages_2")
 def park_overlap_percentages(r):
     chunk_size = 10_000
     census_blocks = census_block_coordinates()
@@ -89,7 +90,7 @@ def park_overlap_percentages(r):
     return pd.concat(results)
 
 
-@permacache("urbanstats/osm/query/park_overlap_percentages_all_2")
+@permacache_with_remapping_pickle("urbanstats/osm/query/park_overlap_percentages_all_2")
 def park_overlap_percentages_all(r):
     census_blocks = census_block_coordinates()
     pcts = park_overlap_percentages(r=r)

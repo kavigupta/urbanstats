@@ -6,6 +6,7 @@ import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs_30_arcsec
@@ -107,7 +108,7 @@ def statistics_for_shapefile(gridded_data_sources, shapefile):
     return result
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/data/aggregate_gridded_data/statistics_for_american_shapefile",
     key_function=dict(sf=lambda x: x.hash_key),
 )
@@ -124,7 +125,7 @@ def statistics_for_american_shapefile(gridded_data_sources, sf):
     return result
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/data/aggregate_gridded_data/statistics_for_canada_shapefile",
     key_function=dict(sf=lambda x: x.hash_key),
 )
@@ -146,13 +147,17 @@ def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
     return agg
 
 
-@permacache("urbanstats/data/aggregate_gridded_data/stats_by_blocks")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/aggregate_gridded_data/stats_by_blocks"
+)
 def stats_by_blocks(gridded_data_sources, year):
     _, _, _, _, coordinates = load_raw_census(year)
     return disaggregate_both_to_blocks(gridded_data_sources, coordinates)
 
 
-@permacache("urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks"
+)
 def stats_by_canada_blocks(gridded_data_sources, year):
     geos = load_canada_db_shapefile(year).geometry
     coordinates = np.array([geos.y, geos.x]).T
