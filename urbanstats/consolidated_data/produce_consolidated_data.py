@@ -49,25 +49,25 @@ def produce_results(row_geo):
 
 
 @permacache(
-    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables",
+    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_4",
     key_function=dict(loaded_shapefile=lambda x: x.hash_key, longnames=stable_hash),
 )
 def produce_all_results_from_tables(loaded_shapefile, longnames, limit=5 * 1024 * 1024):
     # TODO simplify coverage only should be used for things that can't overlap
     # TODO dynamically determine simplify amount
     simplify_amount = 0
-    while True:
+    while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
             loaded_shapefile, longnames, simplify_amount
         )
         if shapes.ByteSize() < limit:
-            return shapes.SerializeToString(), simplify_amount
+            break
         simplify_amount = (
             simplify_amount + 1 / 3600
             if simplify_amount == 0
             else simplify_amount * 1.5
         )
-
+    return shapes.SerializeToString(), simplify_amount
 
 def produce_results_from_tables_at_simplify_amount(
     loaded_shapefile, longnames, simplify_amount
@@ -77,7 +77,12 @@ def produce_results_from_tables_at_simplify_amount(
     geo_table = geo_table.set_index("longname")
     geo_table = geo_table.loc[longnames].copy()
     if simplify_amount != 0:
-        geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
+        if loaded_shapefile.does_overlap_self:
+            # can't use simplify_coverage for overlapping geometries
+            # because it will not work correctly
+            geo_table.geometry = geo_table.geometry.simplify(simplify_amount)
+        else:
+            geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
     for longname in tqdm.tqdm(longnames):
         row_geo = geo_table.loc[longname]
