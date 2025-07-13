@@ -1,4 +1,4 @@
-from permacache import permacache
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 
 
 def compute_universes_for_shapefile(shapefiles, shapefile):
@@ -17,7 +17,7 @@ def compute_universes_for_shapefile(shapefiles, shapefile):
     )
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/universe/universe_provider/universe_provider/_compute_universes_for_shapefile_cached_3",
     key_function=dict(
         provider=lambda provider: provider.hash_key(),

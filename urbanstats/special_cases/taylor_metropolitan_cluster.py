@@ -1,6 +1,6 @@
 import geopandas as gpd
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.ghsl_urban_center import (
     attach_subnational_suffxes,
@@ -8,7 +8,7 @@ from urbanstats.special_cases.ghsl_urban_center import (
 )
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_2"
 )
 def load_taylor_metropolitan_clusters_post_pruning(min_km2=0.5):

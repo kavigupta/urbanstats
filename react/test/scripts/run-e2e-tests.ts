@@ -58,7 +58,9 @@ for (const test of tests) {
     let runner = testcafe.createRunner()
         .src(testFile)
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
-        .screenshots(`screenshots/${test}`)
+        // Explicitly interpolate test here so we don't add the error to the directory
+        // Pattern is only used for take on fail, we make our own pattern otherwise
+        .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
@@ -86,9 +88,26 @@ for (const test of tests) {
         }, timeLimit * 1000)
     }
 
-    testsFailed += await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+    console.warn(chalkTemplate`{cyan ${testFile} running...}`)
+
+    const start = Date.now()
+
+    const failedThisTest = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+    testsFailed += failedThisTest
+
+    const duration = Date.now() - start
+
+    console.warn(chalkTemplate`{cyan ${testFile} done}`)
 
     clearTimeout(killTimer)
+
+    await fs.mkdir('durations', { recursive: true })
+    await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
+
+    // If there were no failures, delete any generated .error.png so they don't set off the comparison
+    if (failedThisTest === 0) {
+        await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+    }
 }
 
 if (options.compare) {
