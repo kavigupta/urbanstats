@@ -6,7 +6,6 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     pruid_to_province_abbr,
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
     canadian_census_kwargs,
 )
@@ -14,7 +13,6 @@ from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
-from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 
 @permacache(
