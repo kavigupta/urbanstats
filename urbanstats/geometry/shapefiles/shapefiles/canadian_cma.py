@@ -51,20 +51,26 @@ def longname_extractor(row):
     return f"{sh}, {provinces_render}, Canada"
 
 
+def canadian_census_kwargs(typ, category):
+    return dict(
+        filter=lambda x: True,
+        meta=dict(
+            type=typ,
+            source="StatCan",
+            type_category=category,
+        ),
+        does_overlap_self=False,
+        universe_provider=canada_domestic_provider(),
+        subset_masks={"Canada": SelfSubset()},
+    )
+
+
 CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     hash_key="census_cmas",
     path=load_cmas,
     shortname_extractor=shortname_extractor,
     longname_extractor=longname_extractor,
-    filter=lambda x: True,
-    meta=dict(
-        type="CA CMA",
-        source="StatCan",
-        type_category="Census",
-    ),
-    does_overlap_self=False,
-    universe_provider=canada_domestic_provider(),
-    subset_masks={"Canada": SelfSubset()},
+    **canadian_census_kwargs("CA CMA", "Census"),
     abbreviation="CMA",
     data_credit=dict(
         linkText="Canadian Census",
