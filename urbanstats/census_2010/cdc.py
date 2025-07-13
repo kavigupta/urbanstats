@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
-from permacache import permacache
 
 from urbanstats.acs.load import extract_tract_geoid
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
-@permacache("urbanstats/census_2010/cdc_table")
+@permacache_with_remapping_pickle("urbanstats/census_2010/cdc_table")
 def cdc_table():
     cdc = pd.read_csv(
         "named_region_shapefiles/PLACES__Local_Data_for_Better_Health__Census_Tract_Data_2023_release_20240531.csv"
@@ -49,7 +49,7 @@ def compute_disaggregated_geoids(tracts, blocks, ignore_pr=False):
     return indices, bad, ignored
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/census_2010/aggregated_cdc_table",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
