@@ -242,7 +242,8 @@ def build_urbanstats(
                 longname_to_type=dict(zip(table.longname, table.type)),
             )
 
-        full_consolidated_data(site_folder)
+    full_consolidated_data(site_folder)
+    if not no_data:
         export_centroids(site_folder, shapefiles, all_ordinals())
 
         if not no_sitemap:
@@ -270,6 +271,7 @@ def build_urbanstats(
         "about",
         "data-credit",
         "mapper",
+        "editor",
         "oauth-callback",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f:

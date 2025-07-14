@@ -1,6 +1,6 @@
 
 git+https://github.com/kavigupta/python-overpy@master
-shapely==2.0.2
+shapely==2.1.0
 cdsapi
 xarray
 suncalc
@@ -30,6 +30,7 @@ openpyxl==3.1.3
 netCDF4==1.6.5
 Pillow==9.5.0
 dask==2025.4.1
+scikit-learn
 
 # only for linting/testing
 pylint==3.3.1

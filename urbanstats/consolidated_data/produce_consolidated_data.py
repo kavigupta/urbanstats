@@ -1,29 +1,26 @@
+import gzip
 import os
 
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     filter_table_for_type,
     load_file_for_type,
+    shapefiles,
 )
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
+from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
-use = [
-    "State",
-    "County",
-    "MSA",
-    "CSA",
-    "Urban Area",
-    "Congressional District",
-    "Media Market",
-    "Hospital Referral Region",
-]
+simplify_amount = 6 / 3600
+
+use = [x.meta["type"] for x in shapefiles.values()]
 dont_use = [
     "ZIP",
     "CCD",
@@ -46,28 +43,66 @@ dont_use = [
 ]
 
 
-def produce_results(row_geo, row):
-    res = row_geo.geometry.simplify(0.01)
+def produce_results(row_geo):
+    res = row_geo.geometry
     geo = convert_to_protobuf(res)
-    results = data_files_pb2.AllStats()
-    for stat in internal_statistic_names():
-        results.stats.append(row[stat])
-    return geo, results
+    return geo
 
 
-def produce_all_results_from_tables(geo_table, data_table):
+@permacache(
+    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_5",
+    key_function=dict(
+        loaded_shapefile=lambda x: x.hash_key,
+        longnames=stable_hash,
+        universes=stable_hash,
+    ),
+)
+def produce_all_results_from_tables(
+    loaded_shapefile, longnames, universes, limit=5 * 1024 * 1024
+):
+    # TODO simplify coverage only should be used for things that can't overlap
+    # TODO dynamically determine simplify amount
+    simplify_amount = 0
+    while simplify_amount < 20 / 3600:
+        shapes = produce_results_from_tables_at_simplify_amount(
+            loaded_shapefile, longnames, universes, simplify_amount
+        )
+        if shapes.ByteSize() < limit:
+            break
+        simplify_amount = (
+            simplify_amount + 1 / 3600
+            if simplify_amount == 0
+            else simplify_amount * 1.5
+        )
+    return shapes.SerializeToString(), simplify_amount
+
+
+def produce_results_from_tables_at_simplify_amount(
+    loaded_shapefile, longnames, universes, simplify_amount
+):
+    geo_table = loaded_shapefile.load_file()
+
+    geo_table = geo_table.set_index("longname")
+    geo_table = geo_table.loc[longnames].copy()
+    if simplify_amount != 0:
+        if loaded_shapefile.does_overlap_self:
+            # can't use simplify_coverage for overlapping geometries
+            # because it will not work correctly
+            geo_table.geometry = geo_table.geometry.simplify(simplify_amount)
+        else:
+            geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
-    stats = data_files_pb2.ConsolidatedStatistics()
-    for longname in tqdm.tqdm(data_table.index):
+    for longname, universe_for_this in tqdm.tqdm(
+        zip(longnames, universes), total=len(longnames)
+    ):
         row_geo = geo_table.loc[longname]
-        row = data_table.loc[longname]
-        g, s = produce_results(row_geo, row)
+        g = produce_results(row_geo)
         shapes.longnames.append(longname)
-        stats.longnames.append(longname)
-        stats.shortnames.append(row.shortname)
         shapes.shapes.append(g)
-        stats.stats.append(s)
-    return shapes, stats
+        shapes.universes.append(
+            data_files_pb2.Universes(universe_idxs=universe_for_this)
+        )
+    return shapes
 
 
 def produce_results_for_type(folder, typ):
@@ -78,23 +113,51 @@ def produce_results_for_type(folder, typ):
     except FileExistsError:
         pass
     full = shapefile_without_ordinals()
-    data_table = filter_table_for_type(full, typ)
-    data_table = data_table.set_index("longname")
+    data_table = full[full.type == typ]
     # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     # geo_table = sh.load_file()
-    geo_table = load_file_for_type(typ)
-    geo_table = geo_table.set_index("longname")
-    shapes, stats = produce_all_results_from_tables(geo_table, data_table)
-    write_gzip(shapes, f"{folder}/shapes__{typ}.gz")
+    [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    longnames = sorted(data_table.longname)
+    universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
+    universes = (
+        data_table[["universes", "longname"]]
+        .set_index("longname")
+        .universes.loc[longnames]
+        .apply(lambda x: [universe_to_idx[universe] for universe in x])
+        .tolist()
+    )
+    shapes, simplification = produce_all_results_from_tables(
+        loaded_shapefile, longnames, universes
+    )
+    print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
+    path = f"{folder}/shapes__{typ}.gz"
+    ensure_writeable(path)
+    with gzip.GzipFile(path, "wb", mtime=0) as f:
+        f.write(shapes)
+    stats = compute_statistics(data_table, typ)
     write_gzip(stats, f"{folder}/stats__{typ}.gz")
 
 
+def compute_statistics(data_table, typ):
+    stats = data_files_pb2.ConsolidatedStatistics()
+    stats.longnames.extend(data_table.longname)
+    stats.shortnames.extend(data_table.shortname)
+    for longname in data_table.longname:
+        row = data_table.loc[longname]
+        stat = stats.stats.add()
+        stat.longname = longname
+        stat.type = typ
+        for name in internal_statistic_names:
+            stat.stats.append(row[name])
+    return stats
+
+
 def full_consolidated_data(folder):
-    assert set(use) & set(dont_use) == set()
+    # assert set(use) & set(dont_use) == set()
     for typ in use:
         produce_results_for_type(folder, typ)
 
 
 def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
-        output_typescript(use, f, data_type="string[]")
+        output_typescript(use, f)

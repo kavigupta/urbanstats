@@ -301,31 +301,25 @@ class AllStats(_message.Message):
     stats: _containers.RepeatedScalarFieldContainer[float]
     def __init__(self, stats: _Optional[_Iterable[float]] = ...) -> None: ...
 
+class Universes(_message.Message):
+    __slots__ = ("universe_idxs",)
+    UNIVERSE_IDXS_FIELD_NUMBER: _ClassVar[int]
+    universe_idxs: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, universe_idxs: _Optional[_Iterable[int]] = ...) -> None: ...
+
 class ConsolidatedShapes(_message.Message):
-    __slots__ = ("longnames", "shapes")
+    __slots__ = ("longnames", "universes", "shapes")
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]
+    UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     SHAPES_FIELD_NUMBER: _ClassVar[int]
     longnames: _containers.RepeatedScalarFieldContainer[str]
+    universes: _containers.RepeatedCompositeFieldContainer[Universes]
     shapes: _containers.RepeatedCompositeFieldContainer[Feature]
     def __init__(
         self,
         longnames: _Optional[_Iterable[str]] = ...,
+        universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...,
         shapes: _Optional[_Iterable[_Union[Feature, _Mapping]]] = ...,
-    ) -> None: ...
-
-class ConsolidatedStatistics(_message.Message):
-    __slots__ = ("longnames", "shortnames", "stats")
-    LONGNAMES_FIELD_NUMBER: _ClassVar[int]
-    SHORTNAMES_FIELD_NUMBER: _ClassVar[int]
-    STATS_FIELD_NUMBER: _ClassVar[int]
-    longnames: _containers.RepeatedScalarFieldContainer[str]
-    shortnames: _containers.RepeatedScalarFieldContainer[str]
-    stats: _containers.RepeatedCompositeFieldContainer[AllStats]
-    def __init__(
-        self,
-        longnames: _Optional[_Iterable[str]] = ...,
-        shortnames: _Optional[_Iterable[str]] = ...,
-        stats: _Optional[_Iterable[_Union[AllStats, _Mapping]]] = ...,
     ) -> None: ...
 
 class QuizDataForStat(_message.Message):
