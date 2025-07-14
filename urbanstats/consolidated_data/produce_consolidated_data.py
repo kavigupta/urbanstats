@@ -92,17 +92,6 @@ def produce_results_from_tables_at_simplify_amount(
     return shapes
 
 
-def produce_just_shapes_from_shapefile(geo_table):
-    geo_table = geo_table.load_file().set_index("longname")
-    shapes = data_files_pb2.ConsolidatedShapes()
-    for longname in tqdm.tqdm(geo_table.index):
-        row_geo = geo_table.loc[longname]
-        g = convert_to_protobuf(row_geo.geometry.simplify(simplify_amount))
-        shapes.longnames.append(longname)
-        shapes.shapes.append(g)
-    return shapes
-
-
 def produce_results_for_type(folder, typ):
     print(typ)
     folder = f"{folder}/consolidated/"
@@ -135,9 +124,3 @@ def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
         output_typescript(use, f)
 
-
-def output_boundaries(folder):
-    write_gzip(
-        produce_just_shapes_from_shapefile(shapefiles["subnational_regions"]),
-        f"{folder}/consolidated/syau_boundaries.gz",
-    )
