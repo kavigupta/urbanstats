@@ -13,6 +13,7 @@ import { USSDocumentedType, USSType } from '../../urban-stats-script/types-value
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
+import { PreambleEditor } from './PreambleEditor'
 import { makeStatements, rootBlockIdent } from './utils'
 
 const cMap = { type: 'opaque', name: 'cMap' } satisfies USSType
@@ -37,7 +38,6 @@ export function TopLevelEditor({
             uss.type === 'statements'
             && uss.result.length === 2
             && uss.result[0].type === 'expression'
-            && uss.result[0].value.type === 'customNode'
             && uss.result[1].type === 'condition'
             && uss.result[1].rest.length === 1
             && uss.result[1].rest[0].type === 'expression'
@@ -49,7 +49,7 @@ export function TopLevelEditor({
         {
             type: 'statements'
             result: [
-                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
+                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression },
                 UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
             ]
         }
@@ -69,9 +69,9 @@ export function TopLevelEditor({
         return (
             <div>
                 {/* Preamble */}
-                <CustomEditor
-                    uss={ussToUse.result[0].value}
-                    setUss={(u: UrbanStatsASTExpression) => {
+                <PreambleEditor
+                    preamble={ussToUse.result[0].value}
+                    setPreamble={(u: UrbanStatsASTExpression) => {
                         const preamble = {
                             type: 'expression',
                             value: u,
@@ -81,7 +81,6 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
-                    placeholder="Variables here can be used by all custom expressions."
                 />
                 {/* Condition */}
                 <ConditionEditor
@@ -176,7 +175,9 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: parseNoErrorAsExpression(unparse(preamble), idPreamble) },
+            { type: 'expression', value: preamble.result.length > 0
+                ? parseNoErrorAsExpression(unparse(preamble), idPreamble)
+                : { type: 'do', entireLoc: emptyLocation(idPreamble), statements: [] } },
             condition,
         ],
         entireLoc: locationOf(stmt),

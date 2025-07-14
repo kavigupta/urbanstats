@@ -827,6 +827,9 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             }
             return ifStr
         case 'do':
+            if (node.statements.length === 0) {
+                return ''
+            }
             const doStatements = { type: 'statements' as const, result: node.statements, entireLoc: node.entireLoc }
             const doStr = unparse(doStatements, indent + 1, inline)
             return inline
