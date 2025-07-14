@@ -16,6 +16,7 @@ NEIGHBORHOODS = Shapefile(
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),
+    does_overlap_self=False,
     drop_dup="cousub",
     universe_provider=us_domestic_provider(
         {
