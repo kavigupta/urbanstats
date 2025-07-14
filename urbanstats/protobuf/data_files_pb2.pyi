@@ -322,6 +322,21 @@ class ConsolidatedShapes(_message.Message):
         shapes: _Optional[_Iterable[_Union[Feature, _Mapping]]] = ...,
     ) -> None: ...
 
+class ConsolidatedStatistics(_message.Message):
+    __slots__ = ("longnames", "shortnames", "stats")
+    LONGNAMES_FIELD_NUMBER: _ClassVar[int]
+    SHORTNAMES_FIELD_NUMBER: _ClassVar[int]
+    STATS_FIELD_NUMBER: _ClassVar[int]
+    longnames: _containers.RepeatedScalarFieldContainer[str]
+    shortnames: _containers.RepeatedScalarFieldContainer[str]
+    stats: _containers.RepeatedCompositeFieldContainer[AllStats]
+    def __init__(
+        self,
+        longnames: _Optional[_Iterable[str]] = ...,
+        shortnames: _Optional[_Iterable[str]] = ...,
+        stats: _Optional[_Iterable[_Union[AllStats, _Mapping]]] = ...,
+    ) -> None: ...
+
 class QuizDataForStat(_message.Message):
     __slots__ = ("stats",)
     STATS_FIELD_NUMBER: _ClassVar[int]

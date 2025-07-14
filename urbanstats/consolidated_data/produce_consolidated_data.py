@@ -114,8 +114,17 @@ def produce_results_for_type(folder, typ):
         pass
     full = shapefile_without_ordinals()
     data_table = full[full.type == typ]
-    # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    # geo_table = sh.load_file()
+    data_table, shapes, simplification = compute_geography(typ, data_table)
+    print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
+    path = f"{folder}/shapes__{typ}.gz"
+    ensure_writeable(path)
+    with gzip.GzipFile(path, "wb", mtime=0) as f:
+        f.write(shapes)
+    stats = compute_statistics(data_table)
+    write_gzip(stats, f"{folder}/stats__{typ}.gz")
+
+
+def compute_geography(typ, data_table):
     [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     longnames = sorted(data_table.longname)
     universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
@@ -129,26 +138,26 @@ def produce_results_for_type(folder, typ):
     shapes, simplification = produce_all_results_from_tables(
         loaded_shapefile, longnames, universes
     )
-    print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
-    path = f"{folder}/shapes__{typ}.gz"
-    ensure_writeable(path)
-    with gzip.GzipFile(path, "wb", mtime=0) as f:
-        f.write(shapes)
-    stats = compute_statistics(data_table, typ)
-    write_gzip(stats, f"{folder}/stats__{typ}.gz")
+
+    return data_table, shapes, simplification
 
 
-def compute_statistics(data_table, typ):
+def compute_statistics_for_row(row):
+    results = data_files_pb2.AllStats()
+    for stat in internal_statistic_names():
+        results.stats.append(row[stat])
+    return results
+
+
+def compute_statistics(data_table):
+    data_table = data_table.set_index("longname")
     stats = data_files_pb2.ConsolidatedStatistics()
-    stats.longnames.extend(data_table.longname)
-    stats.shortnames.extend(data_table.shortname)
-    for longname in data_table.longname:
+    for longname in tqdm.tqdm(data_table.index):
         row = data_table.loc[longname]
-        stat = stats.stats.add()
-        stat.longname = longname
-        stat.type = typ
-        for name in internal_statistic_names:
-            stat.stats.append(row[name])
+        s = compute_statistics_for_row(row)
+        stats.longnames.append(longname)
+        stats.shortnames.append(row.shortname)
+        stats.stats.append(s)
     return stats
 
 
