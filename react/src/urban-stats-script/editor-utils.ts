@@ -150,6 +150,8 @@ export function getContainerOffset(node: Node, position: number): [Node, number]
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
     const brackets = new DefaultMap<string, number>(() => 0)
 
+    const keywords = ['if', 'else', 'do', 'condition', 'true', 'false']
+
     return (token, content) => {
         const style: Record<string, string> = { position: 'relative' }
         let title: string | undefined
@@ -207,6 +209,11 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                 break
             case 'operator':
                 style.color = colors.hueColors.orange
+                break
+            case 'identifier':
+                if (keywords.includes(token.value)) {
+                    style.color = colors.hueColors.orange
+                }
                 break
         }
 
@@ -268,6 +275,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'max-height': `10lh`,
         'border-radius': '0.5em',
         'border': `1px solid ${colors.borderNonShadow}`,
+        'color': colors.textMain,
     }
 
     const result = document.createElement('div')
