@@ -767,6 +767,7 @@ def circle_shapefile_object(country_shapefile, population):
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         filter=lambda x: True,
+        does_overlap_self=False,
         special_data_sources=["international_gridded_data"],
         tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(

@@ -24,6 +24,7 @@ COUNTRIES = Shapefile(
     longname_extractor=extract_country_longname,
     filter=lambda x: iso_to_country(x.ISO_CC) is not None,
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
+    does_overlap_self=False,
     special_data_sources=["international_gridded_data"],
     chunk_size=1,
     universe_provider=CombinedUniverseProvider(

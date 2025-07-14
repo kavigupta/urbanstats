@@ -70,6 +70,7 @@ COUNTY_CROSS_CD = Shapefile(
     longname_sans_date_extractor=lambda x: x["longname_sans_date"],
     filter=lambda x: True,
     meta=dict(type="County Cross CD", source="Census", type_category="Political"),
+    does_overlap_self=False,
     chunk_size=100,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
