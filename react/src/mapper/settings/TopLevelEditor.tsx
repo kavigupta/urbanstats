@@ -38,6 +38,7 @@ export function TopLevelEditor({
             uss.type === 'statements'
             && uss.result.length === 2
             && uss.result[0].type === 'expression'
+            && uss.result[0].value.type === 'customNode'
             && uss.result[1].type === 'condition'
             && uss.result[1].rest.length === 1
             && uss.result[1].rest[0].type === 'expression'
@@ -49,7 +50,7 @@ export function TopLevelEditor({
         {
             type: 'statements'
             result: [
-                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression },
+                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
                 UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
             ]
         }
@@ -175,9 +176,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: preamble.result.length > 0
-                ? parseNoErrorAsExpression(unparse(preamble), idPreamble)
-                : { type: 'do', entireLoc: emptyLocation(idPreamble), statements: [] } },
+            { type: 'expression', value: parseNoErrorAsExpression(unparse(preamble), idPreamble) },
             condition,
         ],
         entireLoc: locationOf(stmt),
