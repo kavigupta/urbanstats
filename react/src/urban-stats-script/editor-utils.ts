@@ -25,7 +25,7 @@ export function makeScript(uss: string): Script {
 export type AutocompleteState = {
     location: LocInfo
     options: string[]
-    div: HTMLDivElement
+    element: HTMLElement
     apply: (optionIdx: number) => void
 } | undefined
 
@@ -257,7 +257,7 @@ export function getAutocompleteOptions(typeEnvironment: Map<string, USSDocumente
     return sortedIdentifiers
 }
 
-export function createAutocompleteMenuDiv(colors: Colors): HTMLDivElement {
+export function createAutocompleteMenu(colors: Colors): HTMLElement {
     const style = {
         'position': 'absolute',
         'top': '100%',
@@ -277,7 +277,7 @@ export function createAutocompleteMenuDiv(colors: Colors): HTMLDivElement {
     return result
 }
 
-export function createPlaceholderDiv(colors: Colors, placeholderText: string): HTMLDivElement {
+export function createPlaceholder(colors: Colors, placeholderText: string): HTMLElement {
     const style = {
         'position': 'absolute',
         'user-select': 'none',
@@ -286,7 +286,7 @@ export function createPlaceholderDiv(colors: Colors, placeholderText: string): H
         'pointer-events': 'none',
     }
 
-    const result = document.createElement('div')
+    const result = document.createElement('span')
     result.setAttribute('contenteditable', 'false')
     result.setAttribute('style', styleToString(style))
 
