@@ -16,7 +16,7 @@ import { CustomEditor } from './CustomEditor'
 import { PreambleEditor } from './PreambleEditor'
 import { makeStatements, rootBlockIdent } from './utils'
 
-const cMap = { type: 'opaque', name: 'cMap' } satisfies USSType
+const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
 const idOutput = `${rootBlockIdent}o`

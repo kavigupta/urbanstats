@@ -251,7 +251,7 @@ export function AutoUXEditor(props: {
 }
 
 function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Selection[] {
-    const results: Selection[] = [{ type: 'custom' }]
+    const results: Selection[] = target.type === 'opaque' && target.allowCustomExpression === false ? [] : [{ type: 'custom' }]
 
     // Add constant option for numbers and strings
     if (shouldShowConstant(target)) {
@@ -313,6 +313,10 @@ export function Selector(props: {
     const [searchValue, setSearchValue] = useState(selectedRendered)
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
+
+    if (selectionPossibilities.length < 2) {
+        return undefined
+    }
 
     // Create pairs of options and their selections, then sort them
     const optionSelectionPairs = selectionPossibilities.map((selection, index) => ({
