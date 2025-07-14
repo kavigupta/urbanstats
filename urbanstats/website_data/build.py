@@ -242,8 +242,7 @@ def build_urbanstats(
                 longname_to_type=dict(zip(table.longname, table.type)),
             )
 
-    full_consolidated_data(site_folder)
-    if not no_data:
+        full_consolidated_data(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
 
         if not no_sitemap:

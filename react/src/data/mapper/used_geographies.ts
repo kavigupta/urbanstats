@@ -1,4 +1,4 @@
-export default [
+const value: string[] = [
     "County",
     "MSA",
     "CSA",
@@ -64,4 +64,5 @@ export default [
     "200M Person Circle",
     "500M Person Circle",
     "1B Person Circle"
-] as const
+]
+export default value

@@ -6,6 +6,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import (
     filter_table_for_type,
+    shapefiles,
     load_file_for_type,
 )
 from urbanstats.protobuf import data_files_pb2
