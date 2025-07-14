@@ -12,6 +12,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
 
@@ -49,16 +50,22 @@ def produce_results(row_geo):
 
 
 @permacache(
-    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_4",
-    key_function=dict(loaded_shapefile=lambda x: x.hash_key, longnames=stable_hash),
+    "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_5",
+    key_function=dict(
+        loaded_shapefile=lambda x: x.hash_key,
+        longnames=stable_hash,
+        universes=stable_hash,
+    ),
 )
-def produce_all_results_from_tables(loaded_shapefile, longnames, limit=5 * 1024 * 1024):
+def produce_all_results_from_tables(
+    loaded_shapefile, longnames, universes, limit=5 * 1024 * 1024
+):
     # TODO simplify coverage only should be used for things that can't overlap
     # TODO dynamically determine simplify amount
     simplify_amount = 0
     while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
-            loaded_shapefile, longnames, simplify_amount
+            loaded_shapefile, longnames, universes, simplify_amount
         )
         if shapes.ByteSize() < limit:
             break
@@ -69,8 +76,9 @@ def produce_all_results_from_tables(loaded_shapefile, longnames, limit=5 * 1024 
         )
     return shapes.SerializeToString(), simplify_amount
 
+
 def produce_results_from_tables_at_simplify_amount(
-    loaded_shapefile, longnames, simplify_amount
+    loaded_shapefile, longnames, universes, simplify_amount
 ):
     geo_table = loaded_shapefile.load_file()
 
@@ -84,11 +92,16 @@ def produce_results_from_tables_at_simplify_amount(
         else:
             geo_table.geometry = geo_table.geometry.simplify_coverage(simplify_amount)
     shapes = data_files_pb2.ConsolidatedShapes()
-    for longname in tqdm.tqdm(longnames):
+    for longname, universe_for_this in tqdm.tqdm(
+        zip(longnames, universes), total=len(longnames)
+    ):
         row_geo = geo_table.loc[longname]
         g = produce_results(row_geo)
         shapes.longnames.append(longname)
         shapes.shapes.append(g)
+        shapes.universes.append(
+            data_files_pb2.Universes(universe_idxs=universe_for_this)
+        )
     return shapes
 
 
@@ -104,10 +117,19 @@ def produce_results_for_type(folder, typ):
     # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     # geo_table = sh.load_file()
     [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    shapes, simplification = produce_all_results_from_tables(
-        loaded_shapefile, sorted(data_table.longname)
+    longnames = sorted(data_table.longname)
+    universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
+    universes = (
+        data_table[["universes", "longname"]]
+        .set_index("longname")
+        .universes.loc[longnames]
+        .apply(lambda x: [universe_to_idx[universe] for universe in x])
+        .tolist()
     )
-    print(f"Simplification amount: {simplification * 3600:.0f}\" of arc")
+    shapes, simplification = produce_all_results_from_tables(
+        loaded_shapefile, longnames, universes
+    )
+    print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
     path = f"{folder}/shapes__{typ}.gz"
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
@@ -123,4 +145,3 @@ def full_consolidated_data(folder):
 def output_names(mapper_folder):
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
         output_typescript(use, f)
-

@@ -132,8 +132,14 @@ message AllStats {
     repeated float stats = 1;
 }
 
+message Universes {
+    // indexes into universes_ordered.ts
+    repeated int32 universe_idxs = 1;
+}
+
 message ConsolidatedShapes {
     repeated string longnames = 1;
+    repeated Universes universes = 3;
     repeated Feature shapes = 2;
 }
 
