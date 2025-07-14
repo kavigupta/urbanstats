@@ -44,6 +44,9 @@ SCHOOL_DISTRICTS = Shapefile(
     longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
     filter=lambda x: True,
     meta=dict(type="School District", source="Census", type_category="School"),
+    # This has all kinds of districts, some of which are not unified
+    # So e.g., elementary districts can overlap with high school districts
+    does_overlap_self=True,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="SCLD",

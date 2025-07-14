@@ -119,6 +119,7 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
         source="StatCan",
         type_category="Census",
     ),
+    does_overlap_self=False,
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="CSUB",

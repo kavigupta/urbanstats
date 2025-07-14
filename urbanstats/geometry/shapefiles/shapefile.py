@@ -14,6 +14,7 @@ class Shapefile:
     longname_extractor = attr.ib()
     filter = attr.ib()
     meta = attr.ib()
+    does_overlap_self = attr.ib()
     additional_columns_computer = attr.ib(default=attr.Factory(dict))
     additional_columns_to_keep = attr.ib(default=())
     drop_dup = attr.ib(default=False)
