@@ -1,9 +1,8 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
@@ -16,33 +15,27 @@ export function PreambleEditor({
     errors,
     blockIdent,
 }: {
-    preamble: UrbanStatsASTExpression
+    preamble: UrbanStatsASTExpression & { type: 'customNode' }
     setPreamble: (conditionExpr: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
-    const preambleExists = preamble.type === 'customNode'
+    const [showPreamble, setShowPreamble] = useState(preamble.originalCode.trim() !== '')
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
             <CheckboxSettingCustom
                 name="Preamble"
-                checked={preambleExists}
+                checked={showPreamble}
                 onChange={(checked) => {
-                    if (checked) {
-                        // Enable preamble
-                        const preambleExpr = parseNoErrorAsExpression('', blockIdent)
-                        setPreamble(preambleExpr)
-                    }
-                    else {
-                        // Disable preamble - set to empty do
-                        const conditionExpr = { type: 'do', entireLoc: emptyLocation(blockIdent), statements: [] } satisfies UrbanStatsASTExpression
-                        setPreamble(conditionExpr)
-                    }
+                    // Enable/disable preamble
+                    const preambleExpr = parseNoErrorAsExpression('', blockIdent)
+                    setPreamble(preambleExpr)
+                    setShowPreamble(checked)
                 }}
             />
-            {preambleExists && (
+            {showPreamble && (
                 <CustomEditor
                     uss={preamble as UrbanStatsASTExpression & { type: 'customNode' }}
                     setUss={setPreamble}
