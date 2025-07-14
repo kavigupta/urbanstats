@@ -2,7 +2,7 @@ import { emptyContext } from '../../unit/urban-stats-script-utils'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { loadOrderingProtobuf, loadProtobuf } from '../load_json'
+import { loadDataInIndexOrder, loadOrderingProtobuf, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
 import { indexLink, orderingDataLink } from '../navigation/links'
 import { assert } from '../utils/defensive'
@@ -79,8 +79,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
 
                     const statpath = statistic_path_list[index]
 
-                    const dataLists = await loadOrderingProtobuf('world', statpath, geographyKind, true)
-                    const variableData = dataLists.value
+                    const variableData = await loadDataInIndexOrder('world', statpath, geographyKind)
                     assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
                     mapperCache.dataCache.set(name, variableData)
                     return annotateType(name, variableData)

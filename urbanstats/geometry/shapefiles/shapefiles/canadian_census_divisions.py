@@ -51,6 +51,7 @@ CANADIAN_CENSUS_DIVISIONS = Shapefile(
     meta=dict(
         type="CA Census Division", source="StatCan", type_category="US Subdivision"
     ),
+    does_overlap_self=False,
     universe_provider=canada_domestic_provider(),
     subset_masks={"Canada": SelfSubset()},
     abbreviation="CDIV",

@@ -10,6 +10,7 @@ CSAs = Shapefile(
     longname_extractor=lambda x: ", ".join(name_components("CSA", x, abbreviate=True)),
     filter=lambda x: True,
     meta=dict(type="CSA", source="Census", type_category="Census"),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="CSA",

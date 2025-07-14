@@ -37,6 +37,7 @@ SUBNATIONAL_REGIONS = Shapefile(
     longname_extractor=lambda x: x["fullname"],
     filter=lambda x: x.COUNTRY is not None,
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
+    does_overlap_self=False,
     special_data_sources=["international_gridded_data"],
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]

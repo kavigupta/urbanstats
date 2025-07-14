@@ -83,6 +83,8 @@ HISTORICAL_CONGRESSIONALs = {
             source="UCLA",
             type_category="Political",
         ),
+        # Historical congressional districts do not overlap themselves, because we group together everything in a decade
+        does_overlap_self=True,
         abbreviation="CONG",
         universe_provider=us_domestic_provider(),
         subset_masks={"USA": SelfSubset()},
@@ -114,6 +116,8 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
         source="Census",
         type_category="Political",
     ),
+    # See above
+    does_overlap_self=True,
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},

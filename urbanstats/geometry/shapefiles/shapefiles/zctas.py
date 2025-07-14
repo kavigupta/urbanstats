@@ -9,6 +9,7 @@ ZCTAs = Shapefile(
     longname_extractor=lambda x: f"{x.ZCTA5CE10}, USA",
     filter=lambda x: True,
     meta=dict(type="ZIP", source="Census", type_category="Small"),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="ZIP",
