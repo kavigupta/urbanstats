@@ -6,12 +6,13 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     pruid_to_province_abbr,
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
+    canadian_census_kwargs,
+)
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
-from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 
 @permacache(
@@ -57,15 +58,7 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     path=load_pcs,
     shortname_extractor=shortname_extractor,
     longname_extractor=longname_extractor,
-    filter=lambda x: True,
-    meta=dict(
-        type="CA Population Center",
-        source="StatCan",
-        type_category="US Subdivision",
-    ),
-    does_overlap_self=False,
-    universe_provider=canada_domestic_provider(),
-    subset_masks={"Canada": SelfSubset()},
+    **canadian_census_kwargs("CA Population Center", "US Subdivision"),
     abbreviation="PC",
     data_credit=dict(
         linkText="Canadian Census",
