@@ -4,11 +4,7 @@ import os
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles_list import (
-    filter_table_for_type,
-    shapefiles,
-    load_file_for_type,
-)
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -18,29 +14,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
-simplify_amount = 6 / 3600
-
 use = [x.meta["type"] for x in shapefiles.values()]
-dont_use = [
-    "ZIP",
-    "CCD",
-    "City",
-    "Neighborhood",
-    "State House District",
-    "State Senate District",
-    "Native Area",
-    "Native Statistical Area",
-    "Native Subdivision",
-    "School District",
-    "Judicial District",
-    "Judicial Circuit",
-    "Continent",
-    "Country",
-    "Subnational Region",
-    "County Cross CD",
-    "USDA County Type",
-    "Hospital Service Area",
-]
 
 
 def produce_results(row_geo):
@@ -60,8 +34,6 @@ def produce_results(row_geo):
 def produce_all_results_from_tables(
     loaded_shapefile, longnames, universes, limit=5 * 1024 * 1024
 ):
-    # TODO simplify coverage only should be used for things that can't overlap
-    # TODO dynamically determine simplify amount
     simplify_amount = 0
     while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
@@ -162,7 +134,6 @@ def compute_statistics(data_table):
 
 
 def full_consolidated_data(folder):
-    # assert set(use) & set(dont_use) == set()
     for typ in use:
         produce_results_for_type(folder, typ)
 
