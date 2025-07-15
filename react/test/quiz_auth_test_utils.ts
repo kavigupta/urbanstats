@@ -39,7 +39,10 @@ async function googleSignIn(t: TestController): Promise<void> {
         }
         catch {
             // Wait until the code expires so we don't spam the same code
-            await t.wait(expires - Date.now())
+            const wait = expires - Date.now()
+            if (wait > 0) {
+                await t.wait(wait)
+            }
         }
     }
 }
