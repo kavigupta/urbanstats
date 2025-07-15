@@ -2323,11 +2323,111 @@ export class AllStats implements IAllStats {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of an Universes. */
+export interface IUniverses {
+
+    /** Universes universeIdxs */
+    universeIdxs?: (number[]|null);
+}
+
+/** Represents an Universes. */
+export class Universes implements IUniverses {
+
+    /**
+     * Constructs a new Universes.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IUniverses);
+
+    /** Universes universeIdxs. */
+    public universeIdxs: number[];
+
+    /**
+     * Creates a new Universes instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns Universes instance
+     */
+    public static create(properties?: IUniverses): Universes;
+
+    /**
+     * Encodes the specified Universes message. Does not implicitly {@link Universes.verify|verify} messages.
+     * @param message Universes message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IUniverses, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified Universes message, length delimited. Does not implicitly {@link Universes.verify|verify} messages.
+     * @param message Universes message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IUniverses, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes an Universes message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns Universes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): Universes;
+
+    /**
+     * Decodes an Universes message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns Universes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): Universes;
+
+    /**
+     * Verifies an Universes message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates an Universes message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns Universes
+     */
+    public static fromObject(object: { [k: string]: any }): Universes;
+
+    /**
+     * Creates a plain object from an Universes message. Also converts values to other types if specified.
+     * @param message Universes
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: Universes, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this Universes to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Universes
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a ConsolidatedShapes. */
 export interface IConsolidatedShapes {
 
     /** ConsolidatedShapes longnames */
     longnames?: (string[]|null);
+
+    /** ConsolidatedShapes universes */
+    universes?: (IUniverses[]|null);
 
     /** ConsolidatedShapes shapes */
     shapes?: (IFeature[]|null);
@@ -2344,6 +2444,9 @@ export class ConsolidatedShapes implements IConsolidatedShapes {
 
     /** ConsolidatedShapes longnames. */
     public longnames: string[];
+
+    /** ConsolidatedShapes universes. */
+    public universes: IUniverses[];
 
     /** ConsolidatedShapes shapes. */
     public shapes: IFeature[];
