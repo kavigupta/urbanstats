@@ -29,14 +29,14 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=tel]', TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)).otp)
     await t.click(Selector('button').withExactText('Next'))
-    await t.wait(1000) // wait for redirect
+    await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
     await flaky(async () => {
         await t.navigateTo('https://accounts.google.com/Logout')
     })
-    await t.wait(1000) // wait for redirect
+    await t.expect(Selector('h1').withExactText('Choose an account').exists).ok()
 }
 
 export async function corruptTokens(t: TestController): Promise<void> {
