@@ -54,7 +54,15 @@ async function waitForServerToBeAvailable(): Promise<void> {
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile', beforeEach?: (t: TestController) => Promise<void>): void {
+export function quizFixture(
+    fixName: string,
+    url: string,
+    newLocalstorage: Record<string, string>,
+    sqlStatements: string,
+    platform: 'desktop' | 'mobile',
+    beforeEach?: (t: TestController) => Promise<void>,
+    afterEach?: (t: TestController) => Promise<void>,
+): void {
     urbanstatsFixture(fixName, url, async (t) => {
         const tempfile = `${tempfileName()}.sql`
         // Delete the database and recreate it with the given SQL statements
@@ -81,6 +89,8 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
                 break
         }
         await beforeEach?.(t)
+    }).afterEach(async (t) => {
+        await afterEach?.(t)
     })
 }
 
