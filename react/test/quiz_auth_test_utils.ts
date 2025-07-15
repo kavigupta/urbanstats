@@ -1,4 +1,5 @@
 import { ClientFunction, Selector } from 'testcafe'
+import { TOTP } from 'totp-generator'
 import { z } from 'zod'
 
 import { TestWindow } from '../src/utils/TestUtils'
@@ -26,6 +27,15 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
+    await t.typeText('input[type=tel]', TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)).otp)
+    await t.click(Selector('button').withExactText('Next'))
+    await t.wait(1000) // wait for redirect
+}
+
+async function googleSignOut(t: TestController): Promise<void> {
+    await flaky(async () => {
+        await t.navigateTo('https://accounts.google.com/Logout')
+    })
     await t.wait(1000) // wait for redirect
 }
 
@@ -82,11 +92,15 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
 
 export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
     const beforeEach = args[5]
+    const afterEach = args[6]
     quizFixture(args[0], args[1], args[2], args[3], args[4], async (t) => {
         await googleSignIn(t)
         await beforeEach?.(t)
         await t.navigateTo(args[1])
         await waitForPageLoaded(t)
+    }, async (t) => {
+        await googleSignOut(t)
+        await afterEach?.(t)
     })
 }
 
