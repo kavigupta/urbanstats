@@ -114,6 +114,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
+    const colors = useColors()
     if (props.ramp === undefined) {
         return <div></div>
     }
@@ -148,7 +149,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                                     style={
                                         {
                                             width: '10%', height: '1em',
-                                            backgroundColor: interpolateColor(props.ramp!.ramp, x),
+                                            backgroundColor: interpolateColor(props.ramp!.ramp, x, colors.mapInvalidFillColor),
                                         }
                                     }
                                 >
