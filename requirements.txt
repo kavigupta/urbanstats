@@ -1,6 +1,6 @@
 
 git+https://github.com/kavigupta/python-overpy@master
-shapely==2.0.2
+shapely==2.1.0
 cdsapi
 xarray
 suncalc
