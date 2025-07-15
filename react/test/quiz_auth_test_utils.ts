@@ -28,12 +28,20 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
 
-    await flaky(async () => {
+    while (true) {
         // TOTP codes conflict on concurrent logins
-        await t.typeText('input[type=tel]', TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)).otp, { replace: true })
+        const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+        await t.typeText('input[type=tel]', otp, { replace: true })
         await t.click(Selector('button').withExactText('Next'))
-        await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
-    })
+        try {
+            await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+            break
+        }
+        catch {
+            // Wait until the code expires so we don't spam the same code
+            await t.wait(expires - Date.now())
+        }
+    }
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
