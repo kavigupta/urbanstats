@@ -27,9 +27,13 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
-    await t.typeText('input[type=tel]', TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)).otp)
-    await t.click(Selector('button').withExactText('Next'))
-    await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+
+    await flaky(async () => {
+        // TOTP codes conflict on concurrent logins
+        await t.typeText('input[type=tel]', TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)).otp, { replace: true })
+        await t.click(Selector('button').withExactText('Next'))
+        await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+    })
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
