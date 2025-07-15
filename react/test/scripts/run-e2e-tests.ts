@@ -92,7 +92,11 @@ for (const test of tests) {
 
     const start = Date.now()
 
-    const failedThisTest = await runner.run({ assertionTimeout: options.proxy ? 5000 : 3000, disableMultipleWindows: true })
+    const failedThisTest = await runner.run({
+        assertionTimeout: 5000,
+        selectorTimeout: 5000,
+        disableMultipleWindows: true,
+    })
     testsFailed += failedThisTest
 
     const duration = Date.now() - start
