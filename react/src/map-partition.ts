@@ -63,7 +63,7 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
     return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
 }
 
-function performPartitioning(
+export function performPartitioning(
     boundingBoxes: maplibregl.LngLatBounds[],
 ): number[][] {
     const fillThreshold = 0.1
