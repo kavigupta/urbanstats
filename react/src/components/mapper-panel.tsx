@@ -39,6 +39,7 @@ interface DisplayedMapProps extends MapGenericProps {
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     name_to_index: undefined | Map<string, number>
+    private hasZoomed: boolean = false
 
     async guaranteeNameToIndex(): Promise<void> {
         if (this.name_to_index === undefined) {
@@ -100,8 +101,12 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override mapDidRender(): Promise<void> {
-    // zoom map to fit united states
-    // do so instantly
+        // zoom map to fit united states
+        // do so instantly
+        if (this.hasZoomed) {
+            return Promise.resolve()
+        }
+        this.hasZoomed = true
         this.map!.fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
