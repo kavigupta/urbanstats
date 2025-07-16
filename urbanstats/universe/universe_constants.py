@@ -1,3 +1,13 @@
+ZERO_POPULATION_UNIVERSES = {
+    # 0 population countries. these are not in COUNTRIES
+    "Antarctica",
+    "Bouvet Island",
+    "South Georgia and the South Sandwich Islands",
+    "Heard Island and McDonald Islands",
+    "British Indian Ocean Territory",
+    "United States Minor Outlying Islands",
+}
+
 CONTINENTS = [
     "Africa",
     "Asia",
