@@ -67,6 +67,7 @@ interface Shapes { geographyKind: string, universe: string, data: Promise<Shapes
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
+    private hasZoomed: boolean = false
 
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
@@ -135,8 +136,12 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override mapDidRender(): Promise<void> {
-    // zoom map to fit united states
-    // do so instantly
+        // zoom map to fit united states
+        // do so instantly
+        if (this.hasZoomed) {
+            return Promise.resolve()
+        }
+        this.hasZoomed = true
         this.map!.fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
