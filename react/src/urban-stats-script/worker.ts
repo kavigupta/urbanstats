@@ -13,6 +13,7 @@ import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
 let mapperCache: {
+    universe: string
     geographyKind: typeof validGeographies[number]
     longnames: string[]
     dataCache: Map<string, number[]>
@@ -29,6 +30,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             }
             case 'mapper': {
                 const geographyKind = request.descriptor.geographyKind
+                const universe = request.descriptor.universe
                 if (!validGeographies.includes(geographyKind)) {
                     throw new Error('invalid geography')
                 }
@@ -36,14 +38,15 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 // Load geography names and set up cache
                 let longnames: string[]
 
-                if (mapperCache?.geographyKind === geographyKind) {
+                if (mapperCache?.geographyKind === geographyKind && mapperCache.universe === universe) {
                     longnames = mapperCache.longnames
                 }
                 else {
                     // Load geography names from index
-                    const indexData = await loadProtobuf(indexLink('world', geographyKind), 'ArticleOrderingList')
+                    const indexData = await loadProtobuf(indexLink(universe, geographyKind), 'ArticleOrderingList')
                     longnames = indexData.longnames
                     mapperCache = {
+                        universe,
                         geographyKind,
                         longnames,
                         dataCache: new Map(),
@@ -79,7 +82,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
 
                     const statpath = statistic_path_list[index]
 
-                    const variableData = await loadDataInIndexOrder('world', statpath, geographyKind)
+                    const variableData = await loadDataInIndexOrder(universe, statpath, geographyKind)
                     assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
                     mapperCache.dataCache.set(name, variableData)
                     return annotateType(name, variableData)

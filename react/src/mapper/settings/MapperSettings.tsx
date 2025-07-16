@@ -1,6 +1,7 @@
 import React, { ReactNode, useCallback } from 'react'
 
 import valid_geographies from '../../data/mapper/used_geographies'
+import universes_ordered from '../../data/universes_ordered'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { DataListSelector } from '../DataListSelector'
 import { defaultTypeEnvironment } from '../context'
@@ -23,6 +24,19 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
 
     return (
         <div>
+            <DataListSelector
+                overallName="Universe:"
+                names={universes_ordered}
+                initialValue={mapSettings.universe}
+                onChange={
+                    (name) => {
+                        setMapSettings(s => ({
+                            ...s,
+                            universe: name,
+                        }))
+                    }
+                }
+            />
             <DataListSelector
                 overallName="Geography Kind:"
                 names={valid_geographies}

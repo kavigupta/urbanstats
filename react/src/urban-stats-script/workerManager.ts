@@ -5,13 +5,13 @@ import { CMap } from './constants/map'
 import { LocInfo } from './lexer'
 import { USSOpaqueType, USSValue } from './types-values'
 
-export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number] }
+export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: string }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export interface AsyncInterpretationError { type: 'error', value: string, location: LocInfo }
 
 export type USSExecutionResult<Value extends USSValue = USSValue> = { success: true, value: Value } | { success: false, error: AsyncInterpretationError }
 
-export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: { type: 'opaque', value: CMap } }>>
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: string }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: { type: 'opaque', value: CMap } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
     if (sharedUSSWorker === undefined) {

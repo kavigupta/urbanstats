@@ -6,6 +6,7 @@ import { gzipSync } from 'zlib'
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
+import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
@@ -21,7 +22,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
-import { ConsolidatedShapes, Feature, IConsolidatedShapes } from '../utils/protos'
+import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
@@ -31,6 +32,7 @@ import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
+    universe: string
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
     height: number | string | undefined
@@ -39,24 +41,40 @@ interface DisplayedMapProps extends MapGenericProps {
     colors: Colors
 }
 
-interface Shapes { geographyKind: string, data: Promise<{ shapes: NormalizeProto<IConsolidatedShapes>, nameToIndex: Map<string, number> }> }
+interface ShapesForUniverse {
+    shapes: NormalizeProto<IFeature>[]
+    nameToIndex: Map<string, number>
+}
+
+async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
+    const universeIdx = universes_ordered.indexOf(universe as (typeof universes_ordered)[number])
+    const shapes = (await loadProtobuf(
+        consolidatedShapeLink(geographyKind),
+        'ConsolidatedShapes',
+    )) as NormalizeProto<ConsolidatedShapes>
+    const longnames: string[] = []
+    const features: NormalizeProto<IFeature>[] = []
+    for (let i = 0; i < shapes.longnames.length; i++) {
+        if (shapes.universes[i].universeIdxs.includes(universeIdx)) {
+            longnames.push(shapes.longnames[i])
+            features.push(shapes.shapes[i])
+        }
+    }
+    return { shapes: features, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+}
+
+interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
 
     private getShapes(): Shapes {
-        if (this.shapes?.geographyKind === this.props.geographyKind) {
+        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
             return this.shapes
         }
 
-        this.shapes = { geographyKind: this.props.geographyKind, data: (async () => {
-            const shapes = (await loadProtobuf(
-                consolidatedShapeLink(this.props.geographyKind),
-                'ConsolidatedShapes',
-            )) as NormalizeProto<ConsolidatedShapes>
-
-            const nameToIndex = new Map(shapes.longnames.map((r, i) => [r, i]))
-            return { shapes, nameToIndex }
+        this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
+            return loadShapes(this.props.geographyKind, this.props.universe)
         })() }
 
         return this.shapes
@@ -65,7 +83,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
         const index = nameToIndex.get(name)!
-        const data = shapes.shapes[index]
+        const data = shapes[index]
         return data as NormalizeProto<Feature>
     }
 
@@ -74,7 +92,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind }, stmts })
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
         if (!result.success) {
             this.props.setErrors([result.error])
             return { polygons: [], zoomIndex: -1 }
@@ -200,6 +218,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
 interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
+    universe: string
     mapRef: React.RefObject<DisplayedMap>
     height: number | string | undefined
     uss: UrbanStatsASTStatement | undefined
@@ -228,6 +247,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
             <div style={{ height: '90%', width: '100%' }}>
                 <DisplayedMap
                     geographyKind={props.geographyKind}
+                    universe={props.universe}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
                     basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
                     ref={props.mapRef}
@@ -347,6 +367,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             : (
                     <MapComponent
                         geographyKind={geographyKind}
+                        universe={mapSettings.universe}
                         uss={uss}
                         height={height}
                         mapRef={mapRef}
