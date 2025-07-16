@@ -63,17 +63,10 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
     return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
 }
 
-/**
- * Given many regions to be compared, determine how best to split them into multiple maps
- *
- * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
- *
- * Otherwise, weigh multiple groupings to determine the best one
- */
-export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
+function performPartitioning(
+    boundingBoxes: maplibregl.LngLatBounds[],
+): number[][] {
     const fillThreshold = 0.1
-
-    const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
     // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
     // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
@@ -98,5 +91,18 @@ export async function partitionLongnames(longnames: string[]): Promise<number[][
     }
 
     // Give up
-    return [longnames.map((_, i) => i)]
+    return [boundingBoxes.map((_, i) => i)]
+}
+
+/**
+ * Given many regions to be compared, determine how best to split them into multiple maps
+ *
+ * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
+ *
+ * Otherwise, weigh multiple groupings to determine the best one
+ */
+export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
+    const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
+
+    return performPartitioning(boundingBoxes)
 }
