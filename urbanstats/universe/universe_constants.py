@@ -16,7 +16,6 @@ COUNTRIES = [
     "Albania",
     "Armenia",
     "Angola",
-    "Antarctica",
     "Argentina",
     "Austria",
     "Australia",
