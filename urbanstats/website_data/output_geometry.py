@@ -16,7 +16,7 @@ def produce_shape_gzip(folder, r):
 
 
 @permacache(
-    "urbanstats/output_geometry/produce_geometry_json_cached_2",
+    "urbanstats/output_geometry/produce_geometry_json_cached_3",
     key_function=dict(
         r=lambda row: stable_hash(
             [row[x] for x in row.index if x != "geometry"]
