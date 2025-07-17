@@ -77,7 +77,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private version = 0
     private last_modified = 0
     private basemap_props: null | Basemap = null
-    protected map: maplibregl.Map | undefined = undefined
+    protected maps: maplibregl.Map[] | undefined = undefined
     private exist_this_time: string[] = []
     protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
@@ -200,31 +200,35 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             attributionControl: false,
         }).addControl(new maplibregl.FullscreenControl(), 'top-left')
 
-        this.map = map
+        this.maps = [map]
         this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
-        map.on('mouseover', 'polygon', () => {
-            map.getCanvas().style.cursor = 'pointer'
-        })
-        map.on('mouseleave', 'polygon', () => {
-            map.getCanvas().style.cursor = ''
-        })
-        map.on('click', 'polygon', (e) => {
-            const features = e.features!
-            const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
-            if (names.length === 0) {
-                return
-            }
-            this.onClick(names[0])
+        this.maps.forEach((m) => {
+            m.on('mouseover', 'polygon', () => {
+                m.getCanvas().style.cursor = 'pointer'
+            })
+            m.on('mouseleave', 'polygon', () => {
+                m.getCanvas().style.cursor = ''
+            })
+            m.on('click', 'polygon', (e) => {
+                const features = e.features!
+                const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+                if (names.length === 0) {
+                    return
+                }
+                this.onClick(names[0])
+            })
         })
         await this.componentDidUpdate(this.props, this.state)
     }
 
     onClick(name: string): void {
+        const element = this.maps?.[0]?.getContainer()
+        if (!element) return
         void this.context.navigate({
             kind: 'article',
             universe: this.context.universe,
             longname: name,
-        }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+        }, { history: 'push', scroll: { kind: 'element', element } })
     }
 
     /**
@@ -234,7 +238,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      */
     async exportAsSvg(): Promise<string> {
         const { polygons } = await this.computePolygons()
-        const mapBounds = this.map!.getBounds()
+        const mapBounds = this.maps?.[0]?.getBounds()
+        if (!mapBounds) throw new Error('No map available')
         const bounds = {
             left: mapBounds.getWest(),
             right: mapBounds.getEast(),
@@ -330,7 +335,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000 || this.map === undefined) {
+        if (delta < 1000 || this.maps === undefined) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
@@ -344,30 +349,31 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance('Loading map...')
         this.setState({ loading: true })
 
-        if (this.attributionControl !== undefined) {
-            this.map!.removeControl(this.attributionControl)
+        if (this.attributionControl !== undefined && this.maps) {
+            this.maps.forEach(map => map.removeControl(this.attributionControl!))
             this.attributionControl = undefined
         }
 
-        if (this.props.attribution !== 'none') {
+        if (this.props.attribution !== 'none' && this.maps) {
             this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
-            this.map!.addControl(this.attributionControl)
+            this.maps.forEach(map => map.addControl(this.attributionControl!))
         }
 
         this.exist_this_time = []
 
         this.attachBasemap()
 
-        while (this.map === undefined) {
+        while (this.maps === undefined) {
             await new Promise(resolve => setTimeout(resolve, 10))
         }
-        await this.populateMap(this.map, time)
+        // await Promise.all(this.maps.map(map => this.populateMap(map, time)))
+        this.populateMap(this.maps, time)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
     }
 
-    async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
+    async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
@@ -402,8 +408,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async stylesheetPresent(): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
-        if (this.map?.style.stylesheet !== undefined) {
+        if (this.maps?.[0]?.style.stylesheet !== undefined) {
             return
         }
         await new Promise(resolve => setTimeout(resolve, 10))
@@ -412,8 +417,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async loadBasemap(): Promise<void> {
         await this.stylesheetPresent()
-        // await this.ensureStyleLoaded()
-        setBasemap(this.map!, this.props.basemap)
+        if (this.maps) {
+            this.maps.forEach((map) => { setBasemap(map, this.props.basemap) })
+        }
     }
 
     async addPolygons(polygons: Polygon[], zoom_to: number): Promise<void> {
@@ -457,7 +463,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     async firstLabelId(): Promise<string | undefined> {
         await this.ensureStyleLoaded!
-        for (const layer of this.map!.style.stylesheet.layers) {
+        if (!this.maps) return undefined
+        for (const layer of this.maps[0].style.stylesheet.layers) {
             if (layer.type === 'symbol' && layer.id.startsWith('label')) {
                 return layer.id
             }
@@ -470,54 +477,57 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         const time = Date.now()
-        while (this.map === undefined) {
+        while (this.maps === undefined) {
             await new Promise(resolve => setTimeout(resolve, 10))
         }
-        if (!this.map.isStyleLoaded() && !force) {
+        if (this.maps.every(map => !map.isStyleLoaded()) && !force) {
             return
         }
         this.sources_last_updated = Date.now()
         await this.ensureStyleLoaded!
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
-        const map = this.map
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
-        let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         const labelId = await this.firstLabelId()
-        if (source === undefined) {
-            map.addSource('polygon', {
-                type: 'geojson',
-                data,
+        if (this.maps) {
+            this.maps.forEach((map) => {
+                let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+                if (source === undefined) {
+                    map.addSource('polygon', {
+                        type: 'geojson',
+                        data,
+                    })
+                    map.addLayer({
+                        id: 'polygon',
+                        type: 'fill',
+                        source: 'polygon',
+                        paint: {
+                            'fill-color': ['get', 'fillColor'],
+                            'fill-opacity': ['get', 'fillOpacity'],
+                        },
+                    }, labelId)
+                    map.addLayer({
+                        id: 'polygon-outline',
+                        type: 'line',
+                        source: 'polygon',
+                        paint: {
+                            'line-color': ['get', 'color'],
+                            'line-width': ['get', 'weight'],
+                        },
+                    }, labelId)
+                    source = map.getSource('polygon')!
+                }
+                for (const layer of this.subnationalOutlines()) {
+                    if (map.getLayer(layer.id) !== undefined) {
+                        map.removeLayer(layer.id)
+                    }
+                    map.addLayer(layer, labelId)
+                }
+                source.setData(data)
             })
-            map.addLayer({
-                id: 'polygon',
-                type: 'fill',
-                source: 'polygon',
-                paint: {
-                    'fill-color': ['get', 'fillColor'],
-                    'fill-opacity': ['get', 'fillOpacity'],
-                },
-            }, labelId)
-            map.addLayer({
-                id: 'polygon-outline',
-                type: 'line',
-                source: 'polygon',
-                paint: {
-                    'line-color': ['get', 'color'],
-                    'line-width': ['get', 'weight'],
-                },
-            }, labelId)
-            source = map.getSource('polygon')!
         }
-        for (const layer of this.subnationalOutlines()) {
-            if (map.getLayer(layer.id) !== undefined) {
-                map.removeLayer(layer.id)
-            }
-            map.addLayer(layer, labelId)
-        }
-        source.setData(data)
     }
 
     /*
@@ -542,11 +552,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
-        // zoom such that all items are visible
-        this.map?.fitBounds(
-            extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
-            { padding: defaultMapPadding, ...options },
-        )
+        if (this.maps) {
+            this.maps.forEach((map) => {
+                map.fitBounds(
+                    extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
+                    { padding: defaultMapPadding, ...options },
+                )
+            })
+        }
     }
 
     zoomToAll(padding: number = 0): void {
