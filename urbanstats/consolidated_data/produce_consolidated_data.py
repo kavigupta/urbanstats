@@ -8,6 +8,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.output_geometry import convert_to_protobuf
 from urbanstats.website_data.table import shapefile_without_ordinals
@@ -104,7 +105,13 @@ def compute_geography(typ, data_table):
         data_table[["universes", "longname"]]
         .set_index("longname")
         .universes.loc[longnames]
-        .apply(lambda x: [universe_to_idx[universe] for universe in x])
+        .apply(
+            lambda x: [
+                universe_to_idx[universe]
+                for universe in x
+                if universe not in ZERO_POPULATION_UNIVERSES
+            ]
+        )
         .tolist()
     )
     shapes, simplification = produce_all_results_from_tables(

@@ -155,6 +155,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
+    const colors = useColors()
     if (props.ramp === undefined) {
         return <div></div>
     }
