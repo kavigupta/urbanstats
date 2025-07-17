@@ -1,25 +1,49 @@
 from functools import lru_cache
 import json
+import shlex
 import subprocess
 
 from permacache import permacache, stable_hash
+import shapely
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
-@permacache(
-    "urbanstats/geometry/insets/compute_map_partition_2",
-    key_function=dict(bounding_boxes=stable_hash),
-    multiprocess_safe=True,
-)
-def compute_map_partition(frac, bounding_boxes):
-    results = (
-        subprocess.check_output(
-            ["npm", "run", "map-partition", str(frac), json.dumps(bounding_boxes)], cwd="react"
+def tight_bounds(geo):
+    """
+    Compute the tight bounding box of a geometry.
+    """
+    if geo.geom_type == "MultiPolygon":
+        polys = [g for g in geo.geoms if g.is_valid]
+        area_each = [p.area for p in polys]
+        indices_ordered = sorted(
+            range(len(area_each)), key=lambda i: area_each[i], reverse=True
         )
-        .decode("utf-8")
-        .split("\n")
-    )
+        result = []
+        area_so_far = 0
+        total_area = sum(area_each)
+        for i in indices_ordered:
+            result.append(polys[i])
+            area_so_far += area_each[i]
+            if area_so_far > total_area * 0.99:
+                break
+        return shapely.MultiPolygon(result).bounds
+
+    elif geo.geom_type == "Polygon":
+        return geo.bounds
+    else:
+        raise ValueError(f"Unsupported geometry type: {geo.geom_type}")
+
+
+# @permacache(
+#     "urbanstats/geometry/insets/compute_map_partition_2",
+#     key_function=dict(bounding_boxes=stable_hash),
+#     multiprocess_safe=True,
+# )
+def compute_map_partition(bounding_boxes):
+    cmd = ["npm", "run", "map-partition", json.dumps(bounding_boxes)]
+    print(" ".join(shlex.quote(arg) for arg in cmd))
+    results = subprocess.check_output(cmd, cwd="react").decode("utf-8").split("\n")
     assert not results[-1]
     return json.loads(results[-2])
 
@@ -69,18 +93,22 @@ def remove_subsets(boundses):
             filtered.append(bounds)
     return filtered
 
+
 def coord_less(a, b):
     """
     Check if coordinate a is less than coordinate b.
     """
     delta = b - a
     delta %= 360
-    return delta < 180 # if delta is less than 180, a is less than b in the coordinate system
+    return (
+        delta < 180
+    )  # if delta is less than 180, a is less than b in the coordinate system
 
-def compute_unified_bounding_boxes(frac, geo):
-    boundses = bounding_boxes_of_components(geo)
-    boundses = remove_subsets(boundses)
-    indices = compute_map_partition(frac, [[(w, s), (e, n)] for (w, s, e, n) in boundses])
+
+def compute_unified_bounding_boxes(boundses):
+    indices = compute_map_partition(
+        [[(w, s), (e, n)] for (w, s, e, n) in boundses]
+    )
     unified_bounds = []
     for index_set in indices:
         if not index_set:

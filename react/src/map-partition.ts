@@ -2,6 +2,7 @@ import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
 import { min } from 'mathjs'
 
+import { assert } from './utils/defensive'
 import { indexPartitions } from './utils/partition'
 import { Feature } from './utils/protos'
 import { loadShapeFromPossibleSymlink } from './utils/symlinks'
@@ -107,10 +108,94 @@ export async function partitionLongnames(longnames: string[]): Promise<number[][
     return performPartitioning(fillThreshold, boundingBoxes)
 }
 
+interface GroupedBounds {
+    idxs: number[]
+    overallBounds: maplibregl.LngLatBounds
+}
+
+function done(groupedBounds: GroupedBounds[]): boolean {
+    // If we have less than 4 groups, we are done
+    return groupedBounds.length <= 1
+}
+
+function mergeBounds(a: GroupedBounds, b: GroupedBounds): GroupedBounds {
+    const merged = new maplibregl.LngLatBounds(
+        a.overallBounds.getSouthWest().wrap(),
+        a.overallBounds.getNorthEast().wrap(),
+    ).extend(b.overallBounds)
+    return {
+        idxs: [...a.idxs, ...b.idxs],
+        overallBounds: merged,
+    }
+}
+
+function mergeBest(groupedBounds: GroupedBounds[]): GroupedBounds[] {
+    let bestI = -1
+    let bestJ = -1
+    let bestMerged: GroupedBounds | null = null
+    let bestDelta = Infinity
+    for (let i = 0; i < groupedBounds.length; i++) {
+        for (let j = i + 1; j < groupedBounds.length; j++) {
+            const merged = mergeBounds(groupedBounds[i], groupedBounds[j])
+            const delta = area(merged.overallBounds) - area(groupedBounds[i].overallBounds) - area(groupedBounds[j].overallBounds)
+            if (delta < bestDelta) {
+                bestDelta = delta
+                bestMerged = merged
+                bestI = i
+                bestJ = j
+            }
+        }
+    }
+    console.log(`Merging bounds ${bestI} and ${bestJ} with delta ${bestDelta}`)
+    assert(bestMerged !== null, 'No best merged bounds found')
+    groupedBounds = groupedBounds.filter((_, idx) => idx !== bestI && idx !== bestJ)
+    groupedBounds.push(bestMerged)
+    return groupedBounds
+}
+
+function removeSmallBounds(groupedBounds: GroupedBounds[], minArea: number): [GroupedBounds[], GroupedBounds[]] {
+    groupedBounds.sort((a, b) => area(a.overallBounds) - area(b.overallBounds))
+    // remove groups that are cumulatively less than 1% of the total area
+    let a = 0
+    let i = 0
+    while (i < groupedBounds.length) {
+        const areaThis = area(groupedBounds[i].overallBounds)
+        console.log(`Area of group ${i}: ${areaThis / minArea}`)
+        a += area(groupedBounds[i].overallBounds)
+        console.log(`Cumulative area: ${a}, minArea: ${minArea}`)
+        if (a > minArea) {
+            break
+        }
+        i++
+    }
+    return [groupedBounds.slice(0, i), groupedBounds.slice(i)]
+}
+
 /**
  * Similar to `performPartitioning`, but it prioritizes reducing the total amount of space covered while keeping the
  * number of maps low.
  */
 export function performInseting(boundingBoxes: maplibregl.LngLatBounds[]): number[][] {
-    return performPartitioning(0.01, boundingBoxes)
+    let groupedBounds = boundingBoxes.map((box, idx) => ({
+        idxs: [idx],
+        overallBounds: box,
+    })) satisfies GroupedBounds[]
+    const totalArea = groupedBounds.map(({ overallBounds }) => area(overallBounds)).reduce((a, b) => a + b, 0)
+    console.log(`Total area: ${totalArea}`)
+    // const [unused, used] = removeSmallBounds(groupedBounds, totalArea * 0.001)
+    // console.log(`Removed ${unused.length} small bounds, keeping ${used.length} used bounds`)
+    // groupedBounds = used
+    let minArea = totalArea
+    while (!done(groupedBounds)) {
+        const newGB = mergeBest(groupedBounds)
+        const ar = newGB.map(({ overallBounds }) => area(overallBounds)).reduce((a, b) => a + b, 0)
+        minArea = Math.min(minArea, ar)
+        console.log(`New area after merge: ${ar / totalArea}`)
+        if (ar > minArea * 1.15) {
+            console.log('Merged bounds exceeded total area, stopping')
+            break
+        }
+        groupedBounds = newGB
+    }
+    return groupedBounds.map(({ idxs }) => idxs)
 }
