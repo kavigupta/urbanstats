@@ -28,6 +28,10 @@ export interface MapGenericProps {
     attribution: 'none' | 'startHidden' | 'startVisible'
 }
 
+// Inset is an object with bottomLeft and topRight, each a [number, number] in [0, 1]
+export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
+// Insets is a list of insets
+export type Insets = Inset[]
 export interface Polygon {
     name: string
     style: PolygonStyle
@@ -79,22 +83,37 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private basemap_props: null | Basemap = null
     protected maps: maplibregl.Map[] | undefined = undefined
     private exist_this_time: string[] = []
-    protected id: string
     private ensureStyleLoaded: Promise<void> | undefined = undefined
     private attributionControl: CustomAttributionControl | undefined
 
+    // Add ids for each inset
+    protected ids: string[]
+
     constructor(props: P) {
         super(props)
-        this.id = `map-${Math.random().toString(36).substring(2)}`
+        const insets = this.computeInsets()
+        this.ids = insets.map(() => `map-${Math.random().toString(36).substring(2)}`)
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
     }
 
     override render(): ReactNode {
+        const insets = this.computeInsets()
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
+                <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
+                    {insets.map((bbox, i) => (
+                        <MapBody
+                            key={this.ids[i]}
+                            id={this.ids[i]}
+                            height={this.mapHeight()}
+                            buttons={this.buttons()}
+                            bbox={bbox}
+                            insetKey={i}
+                        />
+                    ))}
+                </div>
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.polygonByName.keys()).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
@@ -188,20 +207,22 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        const map = new maplibregl.Map({
-            style: 'https://tiles.openfreemap.org/styles/bright',
-            container: this.id,
-            scrollZoom: true,
-            dragRotate: false,
-            canvasContextAttributes: {
-                preserveDrawingBuffer: true,
-            },
-            pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
-            attributionControl: false,
-        }).addControl(new maplibregl.FullscreenControl(), 'top-left')
-
-        this.maps = [map]
-        this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
+        this.maps = this.ids.map(id =>
+            new maplibregl.Map({
+                style: 'https://tiles.openfreemap.org/styles/bright',
+                container: id,
+                scrollZoom: true,
+                dragRotate: false,
+                canvasContextAttributes: {
+                    preserveDrawingBuffer: true,
+                },
+                pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
+                attributionControl: false,
+            }).addControl(new maplibregl.FullscreenControl(), 'top-left'),
+        )
+        this.ensureStyleLoaded = Promise.all(
+            this.maps.map(map => new Promise(resolve => map.on('style.load', resolve))),
+        ) as unknown as Promise<void>
         this.maps.forEach((m) => {
             m.on('mouseover', 'polygon', () => {
                 m.getCanvas().style.cursor = 'pointer'
@@ -354,9 +375,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             this.attributionControl = undefined
         }
 
-        if (this.props.attribution !== 'none' && this.maps) {
+        if (this.props.attribution !== 'none' && this.maps?.[0]) {
             this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
-            this.maps.forEach(map => map.addControl(this.attributionControl!))
+            this.maps[0].addControl(this.attributionControl)
         }
 
         this.exist_this_time = []
@@ -367,7 +388,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             await new Promise(resolve => setTimeout(resolve, 10))
         }
         // await Promise.all(this.maps.map(map => this.populateMap(map, time)))
-        this.populateMap(this.maps, time)
+        void this.populateMap(this.maps, time)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
@@ -491,43 +512,41 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         const labelId = await this.firstLabelId()
-        if (this.maps) {
-            this.maps.forEach((map) => {
-                let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
-                if (source === undefined) {
-                    map.addSource('polygon', {
-                        type: 'geojson',
-                        data,
-                    })
-                    map.addLayer({
-                        id: 'polygon',
-                        type: 'fill',
-                        source: 'polygon',
-                        paint: {
-                            'fill-color': ['get', 'fillColor'],
-                            'fill-opacity': ['get', 'fillOpacity'],
-                        },
-                    }, labelId)
-                    map.addLayer({
-                        id: 'polygon-outline',
-                        type: 'line',
-                        source: 'polygon',
-                        paint: {
-                            'line-color': ['get', 'color'],
-                            'line-width': ['get', 'weight'],
-                        },
-                    }, labelId)
-                    source = map.getSource('polygon')!
+        this.maps.forEach((map) => {
+            let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+            if (source === undefined) {
+                map.addSource('polygon', {
+                    type: 'geojson',
+                    data,
+                })
+                map.addLayer({
+                    id: 'polygon',
+                    type: 'fill',
+                    source: 'polygon',
+                    paint: {
+                        'fill-color': ['get', 'fillColor'],
+                        'fill-opacity': ['get', 'fillOpacity'],
+                    },
+                }, labelId)
+                map.addLayer({
+                    id: 'polygon-outline',
+                    type: 'line',
+                    source: 'polygon',
+                    paint: {
+                        'line-color': ['get', 'color'],
+                        'line-width': ['get', 'weight'],
+                    },
+                }, labelId)
+                source = map.getSource('polygon')!
+            }
+            for (const layer of this.subnationalOutlines()) {
+                if (map.getLayer(layer.id) !== undefined) {
+                    map.removeLayer(layer.id)
                 }
-                for (const layer of this.subnationalOutlines()) {
-                    if (map.getLayer(layer.id) !== undefined) {
-                        map.removeLayer(layer.id)
-                    }
-                    map.addLayer(layer, labelId)
-                }
-                source.setData(data)
-            })
-        }
+                map.addLayer(layer, labelId)
+            }
+            source.setData(data)
+        })
     }
 
     /*
@@ -573,30 +592,51 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     static override contextType = Navigator.Context
 
     declare context: React.ContextType<typeof Navigator.Context>
+
+    // Compute insets (can be overridden by subclasses)
+    computeInsets(): Insets {
+        // Default: just one inset, covering the whole area
+        return [
+            { bottomLeft: [0, 0], topRight: [1, 1] },
+        ]
+    }
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
+function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox?: Inset, insetKey?: number }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
+    // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
+    let style: React.CSSProperties
+    if (props.bbox) {
+        const [x0, y0] = props.bbox.bottomLeft
+        const [x1, y1] = props.bbox.topRight
+        style = {
+            position: 'absolute',
+            left: `${x0 * 100}%`,
+            bottom: `${y0 * 100}%`,
+            width: `${(x1 - x0) * 100}%`,
+            height: `${(y1 - y0) * 100}%`,
+            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: `${mapBorderRadius}px`,
+            backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
+        }
+    }
+    else {
+        style = {
+            height: props.height,
+            width: '100%',
+            position: 'relative',
+            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: `${mapBorderRadius}px`,
+            backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
+        }
+    }
     return (
         <div
             id={props.id}
-            style={{
-                height: props.height,
-                width: '100%',
-                position: 'relative',
-                border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                borderRadius: `${mapBorderRadius}px`,
-                // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
-                // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
-                backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
-            }}
+            style={style}
         >
-            {/* place this on the right of the map */}
-            <div style={
-                { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }
-            }
-            >
+            <div style={{ zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '1em' }}>
                 {props.buttons}
             </div>
         </div>

@@ -21,6 +21,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
+import type { Insets } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -100,17 +101,33 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
     }
 
+    override computeInsets(): Insets {
+        // Mainland covers most of the US, Hawaii is a small box in the lower left
+        return [
+            { bottomLeft: [0, 0] as [number, number], topRight: [1, 1] as [number, number] }, // Mainland
+            { bottomLeft: [0.05, 0.05] as [number, number], topRight: [0.25, 0.15] as [number, number] }, // Hawaii inset
+        ]
+    }
+
     override mapDidRender(): Promise<void> {
-        // zoom map to fit united states
+        // zoom map to fit united states and hawaii
         // do so instantly
         if (this.hasZoomed) {
             return Promise.resolve()
         }
         this.hasZoomed = true
+        // Mainland
         this.maps![0].fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
         ], { animate: false })
+        // Hawaii (second inset)
+        if (this.maps![1]) {
+            this.maps![1].fitBounds([
+                [-160.5, 18.9], // Westernmost, southernmost point of Hawaii
+                [-154.8, 21.7], // Easternmost, northernmost point of Hawaii
+            ], { animate: false })
+        }
         return Promise.resolve()
     }
 }
