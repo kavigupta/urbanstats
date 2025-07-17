@@ -111,6 +111,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                             buttons={this.buttons()}
                             bbox={bbox}
                             insetKey={i}
+                            insetBoundary={i > 0}
                         />
                     ))}
                 </div>
@@ -207,8 +208,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        this.maps = this.ids.map(id =>
-            new maplibregl.Map({
+        this.maps = this.ids.map((id, i) => {
+            const map = new maplibregl.Map({
                 style: 'https://tiles.openfreemap.org/styles/bright',
                 container: id,
                 scrollZoom: true,
@@ -218,8 +219,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 },
                 pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
                 attributionControl: false,
-            }).addControl(new maplibregl.FullscreenControl(), 'top-left'),
-        )
+            })
+            if (i === 0) {
+                map.addControl(new maplibregl.FullscreenControl(), 'top-left')
+            }
+            return map
+        })
         this.ensureStyleLoaded = Promise.all(
             this.maps.map(map => new Promise(resolve => map.on('style.load', resolve))),
         ) as unknown as Promise<void>
@@ -602,7 +607,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox?: Inset, insetKey?: number }): ReactNode {
+interface MapBodyProps {
+    id: string
+    height: number | string
+    buttons: ReactNode
+    bbox?: Inset
+    insetKey?: number
+    insetBoundary?: boolean
+}
+
+function MapBody(props: MapBodyProps): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
@@ -619,6 +633,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
             border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
             borderRadius: `${mapBorderRadius}px`,
             backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
+            ...(props.insetBoundary ? { boxShadow: '0 0 0 3px #333, 0 0 8px 2px #fff' } : {}),
         }
     }
     else {
