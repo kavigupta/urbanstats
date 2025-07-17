@@ -1,11 +1,11 @@
 import maplibregl from 'maplibre-gl'
 
-import { performPartitioning } from './map-partition'
+import { performInseting } from './map-partition'
 
 function main(): void {
     const arg = process.argv[2]
     if (!arg) {
-        console.error('Usage: partition_script <bounding_boxes_json>')
+        console.error('Usage: map_partition_script <bounding_boxes_json>')
         process.exit(1)
     }
     let boxes: unknown
@@ -30,7 +30,7 @@ function main(): void {
             new maplibregl.LngLat(ne[0], ne[1]),
         ),
     )
-    const result = performPartitioning(bounds)
+    const result = performInseting(bounds)
     process.stdout.write(`${JSON.stringify(result)}\n`)
 }
 

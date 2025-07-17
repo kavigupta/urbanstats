@@ -64,10 +64,9 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
 }
 
 export function performPartitioning(
+    fillThreshold: number,
     boundingBoxes: maplibregl.LngLatBounds[],
 ): number[][] {
-    const fillThreshold = 0.1
-
     // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
     // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
     // Therefore, we need to sort the bounding boxes
@@ -102,7 +101,16 @@ export function performPartitioning(
  * Otherwise, weigh multiple groupings to determine the best one
  */
 export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
+    const fillThreshold = 0.1
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
-    return performPartitioning(boundingBoxes)
+    return performPartitioning(fillThreshold, boundingBoxes)
+}
+
+/**
+ * Similar to `performPartitioning`, but it prioritizes reducing the total amount of space covered while keeping the
+ * number of maps low.
+ */
+export function performInseting(boundingBoxes: maplibregl.LngLatBounds[]): number[][] {
+    return performPartitioning(0.01, boundingBoxes)
 }
