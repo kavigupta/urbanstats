@@ -102,16 +102,16 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override computeInsets(): Insets {
-        // Mainland covers most of the US, Hawaii is a small box in the lower left
+        // Mainland covers most of the US, Alaska is a large left-aligned inset, Hawaii is smaller and directly to the right of Alaska
         return [
-            { bottomLeft: [0, 0] as [number, number], topRight: [1, 1] as [number, number] }, // Mainland
-            { bottomLeft: [0.05, 0.05] as [number, number], topRight: [0.25, 0.15] as [number, number] }, // Hawaii inset
+            { bottomLeft: [0, 0], topRight: [1, 1] }, // Mainland
+            { bottomLeft: [0, 0], topRight: [0.18, 0.28] }, // Alaska: large, flush left, taller
+            { bottomLeft: [0.19, 0], topRight: [0.30, 0.14] }, // Hawaii: flush with Alaska
         ]
     }
 
     override mapDidRender(): Promise<void> {
-        // zoom map to fit united states and hawaii
-        // do so instantly
+        // zoom map to fit mainland, alaska, and hawaii
         if (this.hasZoomed) {
             return Promise.resolve()
         }
@@ -121,9 +121,16 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
         ], { animate: false })
-        // Hawaii (second inset)
+        // Alaska (second inset)
         if (this.maps![1]) {
             this.maps![1].fitBounds([
+                [-179.231086, 51.175092], // Westernmost, southernmost point of Alaska
+                [-129.9795, 71.441059], // Easternmost, northernmost point of Alaska
+            ], { animate: false })
+        }
+        // Hawaii (third inset)
+        if (this.maps![2]) {
+            this.maps![2].fitBounds([
                 [-160.5, 18.9], // Westernmost, southernmost point of Hawaii
                 [-154.8, 21.7], // Easternmost, northernmost point of Hawaii
             ], { animate: false })
