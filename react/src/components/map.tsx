@@ -372,7 +372,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
-        await this.addPolygons(map, polygons, zoomIndex)
+        await this.addPolygons(polygons, zoomIndex)
 
         debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
 
@@ -416,7 +416,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         setBasemap(this.map!, this.props.basemap)
     }
 
-    async addPolygons(map: maplibregl.Map, polygons: Polygon[], zoom_to: number): Promise<void> {
+    async addPolygons(polygons: Polygon[], zoom_to: number): Promise<void> {
         /*
          * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
          * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
@@ -434,7 +434,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
         }
         await Promise.all(polygons.map(async (polygon, i) => {
-            const adder = await this.addPolygon(map, polygon, i === zoom_to)
+            const adder = await this.addPolygon(polygon, i === zoom_to)
             adders.set(i, adder)
             await addDone()
         }))
@@ -524,7 +524,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * Returns a function that adds the polygon.
      * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
      */
-    async addPolygon(map: maplibregl.Map, polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
+    async addPolygon(polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
