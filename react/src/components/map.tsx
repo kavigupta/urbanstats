@@ -375,12 +375,15 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance('Loading map...')
         this.setState({ loading: true })
 
-        if (this.attributionControl !== undefined && this.maps) {
-            this.maps.forEach(map => map.removeControl(this.attributionControl!))
+        await this.stylesheetPresent()
+
+        const attrControl = this.attributionControl
+        if (attrControl !== undefined && this.maps) {
+            this.maps[0].removeControl(attrControl)
             this.attributionControl = undefined
         }
 
-        if (this.props.attribution !== 'none' && this.maps?.[0]) {
+        if (this.props.attribution !== 'none' && this.maps) {
             this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
             this.maps[0].addControl(this.attributionControl)
         }
@@ -434,7 +437,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async stylesheetPresent(): Promise<void> {
-        if (this.maps?.[0]?.style.stylesheet !== undefined) {
+        if (this.maps?.every(map => map.isStyleLoaded())) {
             return
         }
         await new Promise(resolve => setTimeout(resolve, 10))
