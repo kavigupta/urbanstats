@@ -361,13 +361,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         while (this.map === undefined) {
             await new Promise(resolve => setTimeout(resolve, 10))
         }
-        await this.populateMap(time)
+        await this.populateMap(this.map, time)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
     }
 
-    async populateMap(timeBasis: number): Promise<void> {
+    async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         const { polygons, zoomIndex } = await this.computePolygons()
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
