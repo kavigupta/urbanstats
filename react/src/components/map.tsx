@@ -536,56 +536,55 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
-        const time = Date.now()
-        while (this.handler.maps === undefined) {
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
-        if (this.handler.maps.every(map => !map.isStyleLoaded()) && !force) {
+        if (maps.every(map => !map.isStyleLoaded()) && !force) {
             return
         }
         this.sources_last_updated = Date.now()
         await this.handler.ensureStyleLoadedFn()
-        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         maps.forEach((map) => {
-            const labelId = this.firstLabelId(map)
-            let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
-            if (source === undefined) {
-                map.addSource('polygon', {
-                    type: 'geojson',
-                    data,
-                })
-                map.addLayer({
-                    id: 'polygon',
-                    type: 'fill',
-                    source: 'polygon',
-                    paint: {
-                        'fill-color': ['get', 'fillColor'],
-                        'fill-opacity': ['get', 'fillOpacity'],
-                    },
-                }, labelId)
-                map.addLayer({
-                    id: 'polygon-outline',
-                    type: 'line',
-                    source: 'polygon',
-                    paint: {
-                        'line-color': ['get', 'color'],
-                        'line-width': ['get', 'weight'],
-                    },
-                }, labelId)
-                source = map.getSource('polygon')!
-            }
-            for (const layer of this.subnationalOutlines()) {
-                if (map.getLayer(layer.id) !== undefined) {
-                    map.removeLayer(layer.id)
-                }
-                map.addLayer(layer, labelId)
-            }
-            source.setData(data)
+            this.setUpMap(map, data)
         })
+    }
+
+    setUpMap(map: maplibregl.Map, data: GeoJSON.FeatureCollection): void {
+        let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        const labelId = this.firstLabelId(map)
+        if (source === undefined) {
+            map.addSource('polygon', {
+                type: 'geojson',
+                data,
+            })
+            map.addLayer({
+                id: 'polygon',
+                type: 'fill',
+                source: 'polygon',
+                paint: {
+                    'fill-color': ['get', 'fillColor'],
+                    'fill-opacity': ['get', 'fillOpacity'],
+                },
+            }, labelId)
+            map.addLayer({
+                id: 'polygon-outline',
+                type: 'line',
+                source: 'polygon',
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': ['get', 'weight'],
+                },
+            }, labelId)
+            source = map.getSource('polygon')!
+        }
+        for (const layer of this.subnationalOutlines()) {
+            if (map.getLayer(layer.id) !== undefined) {
+                map.removeLayer(layer.id)
+            }
+            map.addLayer(layer, labelId)
+            source.setData(data)
+        }
     }
 
     /*
