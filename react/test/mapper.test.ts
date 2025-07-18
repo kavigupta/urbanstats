@@ -13,7 +13,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
     await downloadOrCheckString(t, mostRecentDownload, path, 'json')
 }
 
-urbanstatsFixture('mapping', `${target}/mapper.html?settings=H4sIAAAAAAAAA1WOzQ6CQAyEX8XUeCOGixeO%2BggejSEFy7Kh%2B5PdRSWEd7dLjMHe2plvpjMociqg76d60PYBFVwTJoICOs2JAlQzkMWGSbQOOZIoo22TdjZrafIk0O9UwBODzv4I1e2%2BLAW0jl2oo8RugKitYlrtPObDmbEddgcQIKDxGytrSxjgG2Rwq%2FlAkZJoFk3eL2NDPbF%2BQ27OpBRPUiTIiotnX64j0Iu06uWr8ngSd4OR%2FtNdNJLzAd2YY7skAQAA`)
+urbanstatsFixture('mapping', `${target}/mapper.html?settings=H4sIAAAAAAAAA4WQwUrEMBCGX2UZ2VuRvXjpUcGroEeRZVpn07DTpGQSd8uSd3emiK0nc0ryf%2F83ITdwFF3CaZiPZx8%2BoYW30gXMPgbk3Ss53UADJ8%2BZErQ3oIAdk4InZCFNSuiNtizPE6nh96qBL0zeeIH2%2FcOOXIx4Xgm6TolEFgNArQ30kWM6Ssa8cYoPjglWxSNjf97tQQsJx2mDsg%2BECX5EI24zm0VZs4CjnZ9KRwOxvy6TramDZx2klaWuzN1hWVq6kHeDvupw%2F6B0h0J%2F7VFGpWT9wJeSzSn%2F6Gqt3%2Bx7oSqJAQAA`)
 
 test('state-map', async (t) => {
     await screencap(t)

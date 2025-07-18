@@ -13,9 +13,10 @@ import { USSDocumentedType, USSType } from '../../urban-stats-script/types-value
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
+import { PreambleEditor } from './PreambleEditor'
 import { makeStatements, rootBlockIdent } from './utils'
 
-const cMap = { type: 'opaque', name: 'cMap' } satisfies USSType
+const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
 const idOutput = `${rootBlockIdent}o`
@@ -69,9 +70,9 @@ export function TopLevelEditor({
         return (
             <div>
                 {/* Preamble */}
-                <CustomEditor
-                    uss={ussToUse.result[0].value}
-                    setUss={(u: UrbanStatsASTExpression) => {
+                <PreambleEditor
+                    preamble={ussToUse.result[0].value}
+                    setPreamble={(u: UrbanStatsASTExpression) => {
                         const preamble = {
                             type: 'expression',
                             value: u,
@@ -81,7 +82,6 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
-                    placeholder="Variables here can be used by all custom expressions."
                 />
                 {/* Condition */}
                 <ConditionEditor

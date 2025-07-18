@@ -178,12 +178,13 @@ jobs:
             --test=test/${{ matrix.test-file }}.test.ts \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=300 \
+            --time-limit-seconds=500 \
             --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
           URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
+          URBAN_STATS_TEST_TOTP: ${{ secrets.URBAN_STATS_TEST_TOTP }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:

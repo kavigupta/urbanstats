@@ -10,11 +10,11 @@ from urbanstats.universe.universe_provider.constant_provider import (
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
 CONTINENTS = Shapefile(
-    hash_key="continents_6",
+    hash_key="continents_9",
     path=continents,
     shortname_extractor=lambda x: x.name_1,
     longname_extractor=lambda x: x.name_1,
-    filter=lambda x: True,
+    filter=lambda x: x.name_1 != "Antarctica",
     meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,
     special_data_sources=["international_gridded_data"],

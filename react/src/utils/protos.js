@@ -5844,6 +5844,233 @@ export const AllStats = $root.AllStats = (() => {
     return AllStats;
 })();
 
+export const Universes = $root.Universes = (() => {
+
+    /**
+     * Properties of an Universes.
+     * @exports IUniverses
+     * @interface IUniverses
+     * @property {Array.<number>|null} [universeIdxs] Universes universeIdxs
+     */
+
+    /**
+     * Constructs a new Universes.
+     * @exports Universes
+     * @classdesc Represents an Universes.
+     * @implements IUniverses
+     * @constructor
+     * @param {IUniverses=} [properties] Properties to set
+     */
+    function Universes(properties) {
+        this.universeIdxs = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * Universes universeIdxs.
+     * @member {Array.<number>} universeIdxs
+     * @memberof Universes
+     * @instance
+     */
+    Universes.prototype.universeIdxs = $util.emptyArray;
+
+    /**
+     * Creates a new Universes instance using the specified properties.
+     * @function create
+     * @memberof Universes
+     * @static
+     * @param {IUniverses=} [properties] Properties to set
+     * @returns {Universes} Universes instance
+     */
+    Universes.create = function create(properties) {
+        return new Universes(properties);
+    };
+
+    /**
+     * Encodes the specified Universes message. Does not implicitly {@link Universes.verify|verify} messages.
+     * @function encode
+     * @memberof Universes
+     * @static
+     * @param {IUniverses} message Universes message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Universes.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.universeIdxs != null && message.universeIdxs.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.universeIdxs.length; ++i)
+                writer.int32(message.universeIdxs[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified Universes message, length delimited. Does not implicitly {@link Universes.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof Universes
+     * @static
+     * @param {IUniverses} message Universes message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Universes.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an Universes message from the specified reader or buffer.
+     * @function decode
+     * @memberof Universes
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {Universes} Universes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Universes.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.Universes();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.universeIdxs && message.universeIdxs.length))
+                        message.universeIdxs = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.universeIdxs.push(reader.int32());
+                    } else
+                        message.universeIdxs.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an Universes message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof Universes
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {Universes} Universes
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Universes.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an Universes message.
+     * @function verify
+     * @memberof Universes
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    Universes.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.universeIdxs != null && message.hasOwnProperty("universeIdxs")) {
+            if (!Array.isArray(message.universeIdxs))
+                return "universeIdxs: array expected";
+            for (let i = 0; i < message.universeIdxs.length; ++i)
+                if (!$util.isInteger(message.universeIdxs[i]))
+                    return "universeIdxs: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates an Universes message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof Universes
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {Universes} Universes
+     */
+    Universes.fromObject = function fromObject(object) {
+        if (object instanceof $root.Universes)
+            return object;
+        let message = new $root.Universes();
+        if (object.universeIdxs) {
+            if (!Array.isArray(object.universeIdxs))
+                throw TypeError(".Universes.universeIdxs: array expected");
+            message.universeIdxs = [];
+            for (let i = 0; i < object.universeIdxs.length; ++i)
+                message.universeIdxs[i] = object.universeIdxs[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an Universes message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof Universes
+     * @static
+     * @param {Universes} message Universes
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    Universes.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.universeIdxs = [];
+        if (message.universeIdxs && message.universeIdxs.length) {
+            object.universeIdxs = [];
+            for (let j = 0; j < message.universeIdxs.length; ++j)
+                object.universeIdxs[j] = message.universeIdxs[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this Universes to JSON.
+     * @function toJSON
+     * @memberof Universes
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    Universes.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Universes
+     * @function getTypeUrl
+     * @memberof Universes
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Universes.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/Universes";
+    };
+
+    return Universes;
+})();
+
 export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
 
     /**
@@ -5851,6 +6078,7 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @exports IConsolidatedShapes
      * @interface IConsolidatedShapes
      * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
+     * @property {Array.<IUniverses>|null} [universes] ConsolidatedShapes universes
      * @property {Array.<IFeature>|null} [shapes] ConsolidatedShapes shapes
      */
 
@@ -5864,6 +6092,7 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      */
     function ConsolidatedShapes(properties) {
         this.longnames = [];
+        this.universes = [];
         this.shapes = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -5878,6 +6107,14 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @instance
      */
     ConsolidatedShapes.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes universes.
+     * @member {Array.<IUniverses>} universes
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.universes = $util.emptyArray;
 
     /**
      * ConsolidatedShapes shapes.
@@ -5917,6 +6154,9 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         if (message.shapes != null && message.shapes.length)
             for (let i = 0; i < message.shapes.length; ++i)
                 $root.Feature.encode(message.shapes[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.universes != null && message.universes.length)
+            for (let i = 0; i < message.universes.length; ++i)
+                $root.Universes.encode(message.universes[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
         return writer;
     };
 
@@ -5955,6 +6195,12 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     if (!(message.longnames && message.longnames.length))
                         message.longnames = [];
                     message.longnames.push(reader.string());
+                    break;
+                }
+            case 3: {
+                    if (!(message.universes && message.universes.length))
+                        message.universes = [];
+                    message.universes.push($root.Universes.decode(reader, reader.uint32()));
                     break;
                 }
             case 2: {
@@ -6005,6 +6251,15 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                 if (!$util.isString(message.longnames[i]))
                     return "longnames: string[] expected";
         }
+        if (message.universes != null && message.hasOwnProperty("universes")) {
+            if (!Array.isArray(message.universes))
+                return "universes: array expected";
+            for (let i = 0; i < message.universes.length; ++i) {
+                let error = $root.Universes.verify(message.universes[i]);
+                if (error)
+                    return "universes." + error;
+            }
+        }
         if (message.shapes != null && message.hasOwnProperty("shapes")) {
             if (!Array.isArray(message.shapes))
                 return "shapes: array expected";
@@ -6036,6 +6291,16 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             for (let i = 0; i < object.longnames.length; ++i)
                 message.longnames[i] = String(object.longnames[i]);
         }
+        if (object.universes) {
+            if (!Array.isArray(object.universes))
+                throw TypeError(".ConsolidatedShapes.universes: array expected");
+            message.universes = [];
+            for (let i = 0; i < object.universes.length; ++i) {
+                if (typeof object.universes[i] !== "object")
+                    throw TypeError(".ConsolidatedShapes.universes: object expected");
+                message.universes[i] = $root.Universes.fromObject(object.universes[i]);
+            }
+        }
         if (object.shapes) {
             if (!Array.isArray(object.shapes))
                 throw TypeError(".ConsolidatedShapes.shapes: array expected");
@@ -6065,6 +6330,7 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         if (options.arrays || options.defaults) {
             object.longnames = [];
             object.shapes = [];
+            object.universes = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -6075,6 +6341,11 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.shapes = [];
             for (let j = 0; j < message.shapes.length; ++j)
                 object.shapes[j] = $root.Feature.toObject(message.shapes[j], options);
+        }
+        if (message.universes && message.universes.length) {
+            object.universes = [];
+            for (let j = 0; j < message.universes.length; ++j)
+                object.universes[j] = $root.Universes.toObject(message.universes[j], options);
         }
         return object;
     };
