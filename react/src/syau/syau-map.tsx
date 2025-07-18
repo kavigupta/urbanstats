@@ -121,7 +121,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
-        const maps = this.maps
+        const maps = this.handler.maps
         if (!maps) return
         assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
         const map = maps[0]
@@ -218,7 +218,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
 
     override async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
         await super.populateMap(maps, timeBasis)
-        await this.stylesheetPresent()
+        await this.handler.stylesheetPresent()
 
         assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
 

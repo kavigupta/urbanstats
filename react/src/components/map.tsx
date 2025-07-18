@@ -13,6 +13,7 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
@@ -75,6 +76,49 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
+class MapHandler {
+    public ids: string[]
+    public maps: maplibregl.Map[] | undefined = undefined
+    private ensureStyleLoaded: Promise<void> | undefined = undefined
+
+    constructor(count: number) {
+        this.ids = Array.from({ length: count }, (_, i) => `map-${i}-${Math.random().toString(36).substring(2)}`)
+    }
+
+    initialize(onClick: (name: string) => void): void {
+        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, onClick)
+    }
+
+    container(): HTMLElement {
+        assert(this.maps !== undefined, 'Map must be initialized before accessing container')
+        return this.maps[0].getContainer()
+    }
+
+    async getMaps(): Promise<maplibregl.Map[]> {
+        while (this.maps === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        return this.maps
+    }
+
+    async ensureStyleLoadedFn(): Promise<maplibregl.Map[]> {
+        while (this.ensureStyleLoaded === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        await this.ensureStyleLoaded
+        return await this.getMaps()
+    }
+
+    async stylesheetPresent(): Promise<maplibregl.Map[]> {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
+        if (this.maps?.every(map => map.style.stylesheet !== undefined)) {
+            return this.maps
+        }
+        await new Promise(resolve => setTimeout(resolve, 10))
+        return await this.stylesheetPresent()
+    }
+}
+
 function createMap(
     id: string,
     onClick: (name: string) => void,
@@ -130,20 +174,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private version = 0
     private last_modified = 0
     private basemap_props: null | Basemap = null
-    protected maps: maplibregl.Map[] | undefined = undefined
     private exist_this_time: string[] = []
-    private ensureStyleLoaded: Promise<void> | undefined = undefined
     private attributionControl: CustomAttributionControl | undefined
-
-    // Add ids for each inset
-    protected ids: string[]
+    protected handler: MapHandler
 
     constructor(props: P) {
         super(props)
         const insets = this.computeInsets()
-        this.ids = insets.map(() => `map-${Math.random().toString(36).substring(2)}`)
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
+        this.handler = new MapHandler(insets.length)
     }
 
     override render(): ReactNode {
@@ -154,8 +194,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
                     {insets.map((bbox, i) => (
                         <MapBody
-                            key={this.ids[i]}
-                            id={this.ids[i]}
+                            key={this.handler.ids[i]}
+                            id={this.handler.ids[i]}
                             height={this.mapHeight()}
                             buttons={this.buttons()}
                             bbox={bbox}
@@ -257,18 +297,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, (x) => { this.onClick(x) })
+        this.handler.initialize((name) => { this.onClick(name) })
         await this.componentDidUpdate(this.props, this.state)
     }
 
     onClick(name: string): void {
-        const element = this.maps?.[0]?.getContainer()
-        if (!element) return
         void this.context.navigate({
             kind: 'article',
             universe: this.context.universe,
             longname: name,
-        }, { history: 'push', scroll: { kind: 'element', element } })
+        }, { history: 'push', scroll: { kind: 'element', element: this.handler.container() } })
     }
 
     /**
@@ -278,8 +316,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      */
     async exportAsSvg(): Promise<string> {
         const { polygons } = await this.computePolygons()
-        const mapBounds = this.maps?.[0]?.getBounds()
-        if (!mapBounds) throw new Error('No map available')
+        const mapBounds = (await this.handler.getMaps())[0].getBounds()
         const bounds = {
             left: mapBounds.getWest(),
             right: mapBounds.getEast(),
@@ -375,7 +412,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000 || this.maps === undefined) {
+        await this.handler.getMaps()
+        if (delta < 1000) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
@@ -388,29 +426,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance('Loading map...')
         this.setState({ loading: true })
+        const maps = await this.handler.getMaps()
 
-        await this.stylesheetPresent()
+        await this.handler.stylesheetPresent()
 
         const attrControl = this.attributionControl
-        if (attrControl !== undefined && this.maps) {
-            this.maps[0].removeControl(attrControl)
+        if (attrControl !== undefined) {
+            maps[0].removeControl(attrControl)
             this.attributionControl = undefined
         }
 
-        if (this.props.attribution !== 'none' && this.maps) {
+        if (this.props.attribution !== 'none') {
             this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
-            this.maps[0].addControl(this.attributionControl)
+            maps[0].addControl(this.attributionControl)
         }
 
         this.exist_this_time = []
 
         this.attachBasemap()
 
-        while (this.maps === undefined) {
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
-        // await Promise.all(this.maps.map(map => this.populateMap(map, time)))
-        void this.populateMap(this.maps, time)
+        await this.populateMap(maps, time)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
@@ -450,19 +485,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         void this.loadBasemap()
     }
 
-    async stylesheetPresent(): Promise<void> {
-        if (this.maps?.every(map => map.isStyleLoaded())) {
-            return
-        }
-        await new Promise(resolve => setTimeout(resolve, 10))
-        await this.stylesheetPresent()
-    }
-
     async loadBasemap(): Promise<void> {
-        await this.stylesheetPresent()
-        if (this.maps) {
-            this.maps.forEach((map) => { setBasemap(map, this.props.basemap) })
-        }
+        const maps = await this.handler.stylesheetPresent()
+        // await this.ensureStyleLoaded()
+        maps.forEach((map) => { setBasemap(map, this.props.basemap) })
     }
 
     progressivelyLoadPolygons(): boolean {
@@ -496,10 +522,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
-    async firstLabelId(): Promise<string | undefined> {
-        await this.ensureStyleLoaded!
-        if (!this.maps) return undefined
-        for (const layer of this.maps[0].style.stylesheet.layers) {
+    firstLabelId(map: maplibregl.Map): string | undefined {
+        for (const layer of map.style.stylesheet.layers) {
             if (layer.type === 'symbol' && layer.id.startsWith('label')) {
                 return layer.id
             }
@@ -508,25 +532,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateSources(force = false): Promise<void> {
+        const maps = await this.handler.getMaps()
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
         const time = Date.now()
-        while (this.maps === undefined) {
+        while (this.handler.maps === undefined) {
             await new Promise(resolve => setTimeout(resolve, 10))
         }
-        if (this.maps.every(map => !map.isStyleLoaded()) && !force) {
+        if (this.handler.maps.every(map => !map.isStyleLoaded()) && !force) {
             return
         }
         this.sources_last_updated = Date.now()
-        await this.ensureStyleLoaded!
+        await this.handler.ensureStyleLoadedFn()
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
-        const labelId = await this.firstLabelId()
-        this.maps.forEach((map) => {
+        maps.forEach((map) => {
+            const labelId = this.firstLabelId(map)
             let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
             if (source === undefined) {
                 map.addSource('polygon', {
@@ -580,14 +605,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
-        if (this.maps) {
-            this.maps.forEach((map) => {
-                map.fitBounds(
-                    extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
-                    { padding: defaultMapPadding, ...options },
-                )
-            })
-        }
+        this.handler.maps?.forEach((map) => {
+            map.fitBounds(
+                extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
+                { padding: defaultMapPadding, ...options },
+            )
+        })
     }
 
     zoomToAll(padding: number = 0): void {

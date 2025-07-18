@@ -121,20 +121,20 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
         this.hasZoomed = true
         // Mainland
-        this.maps![0].fitBounds([
+        this.handler.maps![0].fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
         ], { animate: false })
         // Alaska (second inset)
-        if (this.maps![1]) {
-            this.maps![1].fitBounds([
+        if (this.handler.maps![1]) {
+            this.handler.maps![1].fitBounds([
                 [-179.231086, 51.175092], // Westernmost, southernmost point of Alaska
                 [-129.9795, 71.441059], // Easternmost, northernmost point of Alaska
             ], { animate: false })
         }
         // Hawaii (third inset)
-        if (this.maps![2]) {
-            this.maps![2].fitBounds([
+        if (this.handler.maps![2]) {
+            this.handler.maps![2].fitBounds([
                 [-160.5, 18.9], // Westernmost, southernmost point of Hawaii
                 [-154.8, 21.7], // Easternmost, northernmost point of Hawaii
             ], { animate: false })
