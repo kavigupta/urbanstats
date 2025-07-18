@@ -23,10 +23,14 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 export const defaultMapPadding = 20
 
+export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
+export type Insets = Inset[]
+
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
+    insets?: Insets
 }
 
 export interface Polygon {
@@ -172,12 +176,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private basemap_props: null | Basemap = null
     private exist_this_time: string[] = []
     private attributionControl: CustomAttributionControl | undefined
-    protected handler: MapHandler = new MapHandler(1)
+    protected handler: MapHandler
 
     constructor(props: P) {
         super(props)
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
+        this.handler = new MapHandler(this.insets().length)
+    }
+
+    insets(): Insets {
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1] }]
     }
 
     override render(): ReactNode {
@@ -185,12 +194,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
-                    {[0].map((_, i) => (
+                    {this.insets().map((bbox, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
                             id={this.handler.ids[i]}
                             height={this.mapHeight()}
                             buttons={this.buttons()}
+                            bbox={bbox}
+                            insetBoundary={i > 0}
                         />
                     ))}
                 </div>
@@ -612,18 +623,23 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode }): ReactNode {
+function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
+    // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
+    const [x0, y0] = props.bbox.bottomLeft
+    const [x1, y1] = props.bbox.topRight
     return (
         <div
             id={props.id}
             style={{
-                height: props.height,
-                width: '100%',
-                position: 'relative',
-                border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                borderRadius: `${mapBorderRadius}px`,
+                left: `${x0 * 100}%`,
+                bottom: `${y0 * 100}%`,
+                width: `${(x1 - x0) * 100}%`,
+                height: `${(y1 - y0) * 100}%`,
+                position: 'absolute',
+                border: props.insetBoundary ? `2px solid black` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
                 backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
