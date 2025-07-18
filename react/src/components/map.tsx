@@ -416,12 +416,19 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         setBasemap(this.map!, this.props.basemap)
     }
 
+    progressivelyLoadPolygons(): boolean {
+        // Whether to attempt to refresh the map as polygons are added
+        return true
+    }
+
     async addPolygons(polygons: Polygon[], zoom_to: number): Promise<void> {
         const time = Date.now()
         debugPerformance('Adding polygons...')
         await Promise.all(polygons.map(async (polygon, i) => {
             await this.addPolygon(polygon, i === zoom_to)
-            await this.updateSources()
+            if (this.progressivelyLoadPolygons()) {
+                await this.updateSources()
+            }
         }))
         debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
         await this.updateSources(true)
