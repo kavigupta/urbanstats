@@ -26,13 +26,11 @@ export const defaultMapPadding = 20
 export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
 export type Insets = Inset[]
 
-export const defaultInsets: Insets = [{ bottomLeft: [0, 0], topRight: [1, 1] }]
-
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
-    insets: Insets
+    insets?: Insets
 }
 
 export interface Polygon {
@@ -184,7 +182,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         super(props)
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
-        this.handler = new MapHandler(props.insets.length)
+        this.handler = new MapHandler(this.insets().length)
+    }
+
+    insets(): Insets {
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1] }]
     }
 
     override render(): ReactNode {
@@ -192,7 +194,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
-                    {this.props.insets.map((bbox, i) => (
+                    {this.insets().map((bbox, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
                             id={this.handler.ids[i]}

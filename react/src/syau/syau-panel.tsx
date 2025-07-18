@@ -3,7 +3,6 @@ import React, { ReactNode, useContext } from 'react'
 import '../common.css'
 
 import { CountsByUT } from '../components/countsByArticleType'
-import { defaultInsets } from '../components/map'
 import { CheckboxSetting } from '../components/sidebar'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
@@ -149,7 +148,6 @@ export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUD
                 voroniHighlightColor={colors.hueColors.blue}
                 height={600}
                 attribution="startVisible"
-                insets={defaultInsets}
             />
             <div style={{ marginBlockEnd: '1em' }} />
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>

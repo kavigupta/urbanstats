@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
-import { defaultInsets, Map } from './map'
+import { Map } from './map'
 import { RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
@@ -76,7 +76,6 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             articleType={article.articleType}
                             basemap={{ type: 'osm' }}
                             attribution="startVisible"
-                            insets={defaultInsets}
                         />
                     </div>
 
