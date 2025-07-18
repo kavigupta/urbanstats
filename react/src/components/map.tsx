@@ -71,6 +71,40 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
+function createMap(
+    id: string,
+    onClick: (name: string) => void,
+): [maplibregl.Map, Promise<void>] {
+    const map = new maplibregl.Map({
+        style: 'https://tiles.openfreemap.org/styles/bright',
+        container: id,
+        scrollZoom: true,
+        dragRotate: false,
+        canvasContextAttributes: {
+            preserveDrawingBuffer: true,
+        },
+        pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
+        attributionControl: false,
+    }).addControl(new maplibregl.FullscreenControl(), 'top-left')
+
+    const ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve)) satisfies Promise<void>
+    map.on('mouseover', 'polygon', () => {
+        map.getCanvas().style.cursor = 'pointer'
+    })
+    map.on('mouseleave', 'polygon', () => {
+        map.getCanvas().style.cursor = ''
+    })
+    map.on('click', 'polygon', (e) => {
+        const features = e.features!
+        const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+        if (names.length === 0) {
+            return
+        }
+        onClick(names[0])
+    })
+    return [map, ensureStyleLoaded]
+}
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     private delta = 0.25
@@ -188,34 +222,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        const map = new maplibregl.Map({
-            style: 'https://tiles.openfreemap.org/styles/bright',
-            container: this.id,
-            scrollZoom: true,
-            dragRotate: false,
-            canvasContextAttributes: {
-                preserveDrawingBuffer: true,
-            },
-            pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
-            attributionControl: false,
-        }).addControl(new maplibregl.FullscreenControl(), 'top-left')
-
-        this.map = map
-        this.ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve))
-        map.on('mouseover', 'polygon', () => {
-            map.getCanvas().style.cursor = 'pointer'
-        })
-        map.on('mouseleave', 'polygon', () => {
-            map.getCanvas().style.cursor = ''
-        })
-        map.on('click', 'polygon', (e) => {
-            const features = e.features!
-            const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
-            if (names.length === 0) {
-                return
-            }
-            this.onClick(names[0])
-        })
+        [this.map, this.ensureStyleLoaded] = createMap(this.id, (x) => { this.onClick(x) })
         await this.componentDidUpdate(this.props, this.state)
     }
 
