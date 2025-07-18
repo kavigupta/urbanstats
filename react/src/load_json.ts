@@ -7,7 +7,7 @@ import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import { debugPerformance } from './search'
 import { assert } from './utils/defensive'
 import {
-    Article, ConsolidatedShapes, ConsolidatedStatistics, CountsByArticleUniverseAndType, DataLists,
+    Article, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IDataList, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
@@ -37,14 +37,13 @@ export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
-export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatistics'): Promise<ConsolidatedStatistics>
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | undefined> {
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -87,9 +86,6 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
     else if (name === 'ConsolidatedShapes') {
         return ConsolidatedShapes.decode(arr)
-    }
-    else if (name === 'ConsolidatedStatistics') {
-        return ConsolidatedStatistics.decode(arr)
     }
     else if (name === 'SearchIndex') {
         const result = SearchIndex.decode(arr)
