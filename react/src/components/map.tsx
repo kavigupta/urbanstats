@@ -428,11 +428,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.setState({ loading: true })
         const maps = await this.handler.getMaps()
 
-        await this.handler.stylesheetPresent()
-
-        const attrControl = this.attributionControl
-        if (attrControl !== undefined) {
-            maps[0].removeControl(attrControl)
+        if (this.attributionControl !== undefined) {
+            maps[0].removeControl(this.attributionControl)
             this.attributionControl = undefined
         }
 
@@ -532,11 +529,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateSources(force = false): Promise<void> {
-        const maps = await this.handler.getMaps()
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
-        if (maps.every(map => !map.isStyleLoaded()) && !force) {
+        const maps = await this.handler.getMaps()
+        if (maps.some(map => !map.isStyleLoaded()) && !force) {
             return
         }
         this.sources_last_updated = Date.now()
