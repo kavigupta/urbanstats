@@ -111,7 +111,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return Promise.resolve()
         }
         this.hasZoomed = true
-        this.handler.map!.fitBounds([
+        this.handler.maps![0].fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
         ], { animate: false })
