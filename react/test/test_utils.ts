@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { gzipSync, gunzipSync } from 'zlib'
 
 import chalkTemplate from 'chalk-template'
 import downloadsFolder from 'downloads-folder'
@@ -166,7 +167,7 @@ function copyMostRecentFile(t: TestController): void {
 }
 
 export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}`)
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}.gz`)
 
     switch (format) {
         case 'json':
@@ -179,14 +180,15 @@ export async function downloadOrCheckString(t: TestController, string: string, n
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (checkString) {
-        const expected = fs.readFileSync(pathToFile, 'utf8')
+        const expected = gunzipSync(fs.readFileSync(pathToFile)).toString('utf8')
         if (string !== expected) {
             // Using this because these strings are massive and the diff generation times out
             await t.expect(false).ok(`String does not match expected value`)
         }
     }
     else {
-        fs.writeFileSync(pathToFile, string)
+        fs.writeFileSync(pathToFile, gzipSync(string))
+        fs.utimesSync(pathToFile, 0, 0)
     }
 }
 

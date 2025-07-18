@@ -4,11 +4,7 @@ import os
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefiles_list import (
-    filter_table_for_type,
-    load_file_for_type,
-    shapefiles,
-)
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import ensure_writeable, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -18,30 +14,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
-simplify_amount = 6 / 3600
-
 use = [x.meta["type"] for x in shapefiles.values()]
-dont_use = [
-    "ZIP",
-    "CCD",
-    "City",
-    "Neighborhood",
-    "State House District",
-    "State Senate District",
-    "Native Area",
-    "Native Statistical Area",
-    "Native Subdivision",
-    "School District",
-    "Judicial District",
-    "Judicial Circuit",
-    "Continent",
-    "Country",
-    "Subnational Region",
-    "County Cross CD",
-    "USDA County Type",
-    "Hospital Service Area",
-]
-
 
 def produce_results(row_geo):
     res = row_geo.geometry
@@ -114,21 +87,7 @@ def produce_results_for_type(folder, typ):
         pass
     full = shapefile_without_ordinals()
     data_table = full[full.type == typ]
-    # [sh] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    # geo_table = sh.load_file()
-    [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
-    longnames = sorted(data_table.longname)
-    universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
-    universes = (
-        data_table[["universes", "longname"]]
-        .set_index("longname")
-        .universes.loc[longnames]
-        .apply(lambda x: [universe_to_idx[universe] for universe in x])
-        .tolist()
-    )
-    shapes, simplification = produce_all_results_from_tables(
-        loaded_shapefile, longnames, universes
-    )
+    data_table, shapes, simplification = compute_geography(typ, data_table)
     print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
     path = f"{folder}/shapes__{typ}.gz"
     ensure_writeable(path)
@@ -136,8 +95,31 @@ def produce_results_for_type(folder, typ):
         f.write(shapes)
 
 
+def compute_geography(typ, data_table):
+    [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    longnames = sorted(data_table.longname)
+    universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
+    universes = (
+        data_table[["universes", "longname"]]
+        .set_index("longname")
+        .universes.loc[longnames]
+        .apply(
+            lambda x: [
+                universe_to_idx[universe]
+                for universe in x
+                if universe not in ZERO_POPULATION_UNIVERSES
+            ]
+        )
+        .tolist()
+    )
+    shapes, simplification = produce_all_results_from_tables(
+        loaded_shapefile, longnames, universes
+    )
+
+    return data_table, shapes, simplification
+
+
 def full_consolidated_data(folder):
-    # assert set(use) & set(dont_use) == set()
     for typ in use:
         produce_results_for_type(folder, typ)
 

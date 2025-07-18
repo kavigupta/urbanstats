@@ -128,10 +128,6 @@ message DataLists {
 
 // unified result
 
-message AllStats {
-    repeated float stats = 1;
-}
-
 message Universes {
     // indexes into universes_ordered.ts
     repeated int32 universe_idxs = 1;

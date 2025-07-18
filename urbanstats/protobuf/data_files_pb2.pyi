@@ -295,12 +295,6 @@ class DataLists(_message.Message):
         data_lists: _Optional[_Iterable[_Union[DataList, _Mapping]]] = ...,
     ) -> None: ...
 
-class AllStats(_message.Message):
-    __slots__ = ("stats",)
-    STATS_FIELD_NUMBER: _ClassVar[int]
-    stats: _containers.RepeatedScalarFieldContainer[float]
-    def __init__(self, stats: _Optional[_Iterable[float]] = ...) -> None: ...
-
 class Universes(_message.Message):
     __slots__ = ("universe_idxs",)
     UNIVERSE_IDXS_FIELD_NUMBER: _ClassVar[int]

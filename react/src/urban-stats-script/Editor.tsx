@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenuDiv, AutocompleteState, createPlaceholderDiv } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
 import { USSDocumentedType } from './types-values'
 
 const setScriptDelay = 500
@@ -69,10 +69,10 @@ export function Editor(
     const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
         const fragment = renderCode(newScript, colors, errors, (token, content) => {
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                content.push(autocompleteState.div)
+                content.push(autocompleteState.element)
             }
             if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
-                content.push(createPlaceholderDiv(colors, placeholder))
+                content.push(createPlaceholder(colors, placeholder))
             }
         })
 
@@ -135,7 +135,7 @@ export function Editor(
                     setAutocompleteState({
                         location: token.location,
                         options,
-                        div: createAutocompleteMenuDiv(colors),
+                        element: createAutocompleteMenu(colors),
                         apply(optionIdx) {
                             const option = options[optionIdx]
                             const delta = option.length - tokenValue.length
@@ -266,7 +266,7 @@ export function Editor(
                         setSelectionIdx={setAutocompleteSelectionIdx}
                         apply={(i) => { autocompleteState.apply(i) }}
                     />,
-                    autocompleteState.div,
+                    autocompleteState.element,
                 )}
         </div>
     )

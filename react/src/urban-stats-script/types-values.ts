@@ -22,6 +22,7 @@ interface USSNullType {
 export interface USSOpaqueType {
     type: 'opaque'
     name: string
+    allowCustomExpression?: boolean
 }
 
 export interface USSVectorType {

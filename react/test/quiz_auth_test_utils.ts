@@ -1,4 +1,5 @@
 import { ClientFunction, Selector } from 'testcafe'
+import { TOTP } from 'totp-generator'
 import { z } from 'zod'
 
 import { TestWindow } from '../src/utils/TestUtils'
@@ -26,7 +27,31 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
-    await t.wait(1000) // wait for redirect
+
+    while (true) {
+        // TOTP codes conflict on concurrent logins
+        const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+        await t.typeText('input[type=tel]', otp, { replace: true })
+        await t.click(Selector('button').withExactText('Next'))
+        try {
+            await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+            break
+        }
+        catch {
+            // Wait until the code expires so we don't spam the same code
+            const wait = expires - Date.now()
+            if (wait > 0) {
+                await t.wait(wait)
+            }
+        }
+    }
+}
+
+async function googleSignOut(t: TestController): Promise<void> {
+    await flaky(async () => {
+        await t.navigateTo('https://accounts.google.com/Logout')
+    })
+    await t.expect(Selector('h1').withExactText('Choose an account').exists).ok()
 }
 
 export async function corruptTokens(t: TestController): Promise<void> {
@@ -82,11 +107,15 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
 
 export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
     const beforeEach = args[5]
+    const afterEach = args[6]
     quizFixture(args[0], args[1], args[2], args[3], args[4], async (t) => {
         await googleSignIn(t)
         await beforeEach?.(t)
         await t.navigateTo(args[1])
         await waitForPageLoaded(t)
+    }, async (t) => {
+        await googleSignOut(t)
+        await afterEach?.(t)
     })
 }
 
