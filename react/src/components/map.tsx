@@ -571,8 +571,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         )
     }
 
-    zoomToAll(padding: number = 0): void {
-        this.zoomToItems(this.state.polygonByName.values(), { padding })
+    zoomToAll(options: maplibregl.FitBoundsOptions = {}): void {
+        this.zoomToItems(this.state.polygonByName.values(), options)
     }
 
     zoomTo(name: string): void {
