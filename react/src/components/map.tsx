@@ -485,8 +485,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     sources_last_updated = 0
 
-    async firstLabelId(): Promise<string | undefined> {
-        const map = await this.handler.ensureStyleLoadedFn()
+    firstLabelId(map: maplibregl.Map): string | undefined {
         for (const layer of map.style.stylesheet.layers) {
             if (layer.type === 'symbol' && layer.id.startsWith('label')) {
                 return layer.id
@@ -499,20 +498,22 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
-        const time = Date.now()
         const map = await this.handler.getMap()
+        await this.setUpMap(map, force)
+    }
+
+    async setUpMap(map: maplibregl.Map, force: boolean): Promise<void> {
         if (!map.isStyleLoaded() && !force) {
             return
         }
         this.sources_last_updated = Date.now()
         await this.handler.ensureStyleLoadedFn()
-        debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
-        const labelId = await this.firstLabelId()
+        const labelId = this.firstLabelId(map)
         if (source === undefined) {
             map.addSource('polygon', {
                 type: 'geojson',
