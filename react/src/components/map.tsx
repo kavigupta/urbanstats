@@ -519,10 +519,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateSources(force = false): Promise<void> {
-        const maps = await this.handler.getMaps()
         if (this.sources_last_updated > Date.now() - 1000 && !force) {
             return
         }
+        const maps = await this.handler.getMaps()
         if (maps.some(map => !map.isStyleLoaded()) && !force) {
             return
         }
@@ -599,8 +599,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         })
     }
 
-    zoomToAll(padding: number = 0): void {
-        this.zoomToItems(this.state.polygonByName.values(), { padding })
+    zoomToAll(options: maplibregl.FitBoundsOptions = {}): void {
+        this.zoomToItems(this.state.polygonByName.values(), options)
     }
 
     zoomTo(name: string): void {
