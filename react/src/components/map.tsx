@@ -629,40 +629,27 @@ interface MapBodyProps {
     id: string
     height: number | string
     buttons: ReactNode
-    bbox?: Inset
-    insetKey?: number
-    insetBoundary?: boolean
+    bbox: Inset
+    insetKey: number
+    insetBoundary: boolean
 }
 
 function MapBody(props: MapBodyProps): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
-    let style: React.CSSProperties
-    if (props.bbox) {
-        const [x0, y0] = props.bbox.bottomLeft
-        const [x1, y1] = props.bbox.topRight
-        style = {
-            position: 'absolute',
-            left: `${x0 * 100}%`,
-            bottom: `${y0 * 100}%`,
-            width: `${(x1 - x0) * 100}%`,
-            height: `${(y1 - y0) * 100}%`,
-            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-            borderRadius: `${mapBorderRadius}px`,
-            backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
-            ...(props.insetBoundary ? { boxShadow: '0 0 0 3px #333, 0 0 8px 2px #fff' } : {}),
-        }
-    }
-    else {
-        style = {
-            height: props.height,
-            width: '100%',
-            position: 'relative',
-            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-            borderRadius: `${mapBorderRadius}px`,
-            backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
-        }
+    const [x0, y0] = props.bbox.bottomLeft
+    const [x1, y1] = props.bbox.topRight
+    const style: React.CSSProperties = {
+        position: 'absolute',
+        left: `${x0 * 100}%`,
+        bottom: `${y0 * 100}%`,
+        width: `${(x1 - x0) * 100}%`,
+        height: `${(y1 - y0) * 100}%`,
+        border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+        borderRadius: `${mapBorderRadius}px`,
+        backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
+        ...(props.insetBoundary ? { boxShadow: '0 0 0 3px #333, 0 0 8px 2px #fff' } : {}),
     }
     return (
         <div
