@@ -270,6 +270,7 @@ def build_urbanstats(
         "about",
         "data-credit",
         "mapper",
+        "editor",
         "oauth-callback",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f:
