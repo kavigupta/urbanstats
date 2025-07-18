@@ -120,7 +120,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
-        const map = this.map
+        const map = this.handler.map
         if (!map) return
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
@@ -215,7 +215,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
 
     override async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
         await super.populateMap(map, timeBasis)
-        await this.stylesheetPresent()
+        await this.handler.stylesheetPresent()
 
         this.fitBounds(map)
         const source = this.updateCentroidsSource(map)

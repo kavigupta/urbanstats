@@ -13,6 +13,7 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
@@ -71,6 +72,49 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
     }
 }
 
+class MapHandler {
+    public id: string
+    public map: maplibregl.Map | undefined = undefined
+    private ensureStyleLoaded: Promise<void> | undefined = undefined
+
+    constructor() {
+        this.id = `map-${Math.random().toString(36).substring(2)}`
+    }
+
+    initialize(onClick: (name: string) => void): void {
+        [this.map, this.ensureStyleLoaded] = createMap(this.id, onClick)
+    }
+
+    container(): HTMLElement {
+        assert(this.map !== undefined, 'Map must be initialized before accessing container')
+        return this.map.getContainer()
+    }
+
+    async getMap(): Promise<maplibregl.Map> {
+        while (this.map === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        return this.map
+    }
+
+    async ensureStyleLoadedFn(): Promise<maplibregl.Map> {
+        while (this.ensureStyleLoaded === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        await this.ensureStyleLoaded
+        return await this.getMap()
+    }
+
+    async stylesheetPresent(): Promise<maplibregl.Map> {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
+        if (this.map?.style.stylesheet !== undefined) {
+            return this.map
+        }
+        await new Promise(resolve => setTimeout(resolve, 10))
+        return await this.stylesheetPresent()
+    }
+}
+
 function createMap(
     id: string,
     onClick: (name: string) => void,
@@ -111,15 +155,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private version = 0
     private last_modified = 0
     private basemap_props: null | Basemap = null
-    protected map: maplibregl.Map | undefined = undefined
     private exist_this_time: string[] = []
-    protected id: string
-    private ensureStyleLoaded: Promise<void> | undefined = undefined
     private attributionControl: CustomAttributionControl | undefined
+    protected handler: MapHandler = new MapHandler()
 
     constructor(props: P) {
         super(props)
-        this.id = `map-${Math.random().toString(36).substring(2)}`
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
     }
@@ -128,7 +169,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <MapBody id={this.id} height={this.mapHeight()} buttons={this.buttons()} />
+                <MapBody id={this.handler.id} height={this.mapHeight()} buttons={this.buttons()} />
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.polygonByName.keys()).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
@@ -222,7 +263,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     override async componentDidMount(): Promise<void> {
-        [this.map, this.ensureStyleLoaded] = createMap(this.id, (x) => { this.onClick(x) })
+        this.handler.initialize((name) => { this.onClick(name) })
         await this.componentDidUpdate(this.props, this.state)
     }
 
@@ -231,7 +272,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             kind: 'article',
             universe: this.context.universe,
             longname: name,
-        }, { history: 'push', scroll: { kind: 'element', element: this.map!.getContainer() } })
+        }, { history: 'push', scroll: { kind: 'element', element: this.handler.container() } })
     }
 
     /**
@@ -241,7 +282,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      */
     async exportAsSvg(): Promise<string> {
         const { polygons } = await this.computePolygons()
-        const mapBounds = this.map!.getBounds()
+        const mapBounds = (await this.handler.getMap()).getBounds()
         const bounds = {
             left: mapBounds.getWest(),
             right: mapBounds.getEast(),
@@ -337,7 +378,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // check if at least 1s has passed since last update
         const now = Date.now()
         const delta = now - this.last_modified
-        if (delta < 1000 || this.map === undefined) {
+        await this.handler.getMap()
+        if (delta < 1000) {
             setTimeout(() => this.updateToVersion(version), 1000 - delta)
             return
         }
@@ -350,25 +392,23 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance('Loading map...')
         this.setState({ loading: true })
+        const map = await this.handler.getMap()
 
         if (this.attributionControl !== undefined) {
-            this.map!.removeControl(this.attributionControl)
+            map.removeControl(this.attributionControl)
             this.attributionControl = undefined
         }
 
         if (this.props.attribution !== 'none') {
             this.attributionControl = new CustomAttributionControl(this.props.attribution === 'startVisible')
-            this.map!.addControl(this.attributionControl)
+            map.addControl(this.attributionControl)
         }
 
         this.exist_this_time = []
 
         this.attachBasemap()
 
-        while (this.map === undefined) {
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
-        await this.populateMap(this.map, time)
+        await this.populateMap(map, time)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
@@ -408,19 +448,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         void this.loadBasemap()
     }
 
-    async stylesheetPresent(): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- it can in fact be undefined, this is undocumented
-        if (this.map?.style.stylesheet !== undefined) {
-            return
-        }
-        await new Promise(resolve => setTimeout(resolve, 10))
-        await this.stylesheetPresent()
-    }
-
     async loadBasemap(): Promise<void> {
-        await this.stylesheetPresent()
+        const map = await this.handler.stylesheetPresent()
         // await this.ensureStyleLoaded()
-        setBasemap(this.map!, this.props.basemap)
+        setBasemap(map, this.props.basemap)
     }
 
     progressivelyLoadPolygons(): boolean {
@@ -455,8 +486,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     sources_last_updated = 0
 
     async firstLabelId(): Promise<string | undefined> {
-        await this.ensureStyleLoaded!
-        for (const layer of this.map!.style.stylesheet.layers) {
+        const map = await this.handler.ensureStyleLoadedFn()
+        for (const layer of map.style.stylesheet.layers) {
             if (layer.type === 'symbol' && layer.id.startsWith('label')) {
                 return layer.id
             }
@@ -469,16 +500,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         const time = Date.now()
-        while (this.map === undefined) {
-            await new Promise(resolve => setTimeout(resolve, 10))
-        }
-        if (!this.map.isStyleLoaded() && !force) {
+        const map = await this.handler.getMap()
+        if (!map.isStyleLoaded() && !force) {
             return
         }
         this.sources_last_updated = Date.now()
-        await this.ensureStyleLoaded!
+        await this.handler.ensureStyleLoadedFn()
         debugPerformance(`Loaded style, took ${Date.now() - time}ms`)
-        const map = this.map
         const data = {
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
@@ -537,7 +565,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
         // zoom such that all items are visible
-        this.map?.fitBounds(
+        this.handler.map?.fitBounds(
             extendBoxes(Array.from(items).map(feature => boundingBox(feature.geometry))),
             { padding: defaultMapPadding, ...options },
         )
