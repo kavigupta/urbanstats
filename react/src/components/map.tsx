@@ -416,27 +416,19 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         setBasemap(this.map!, this.props.basemap)
     }
 
+    progressivelyLoadPolygons(): boolean {
+        // Whether to attempt to refresh the map as polygons are added
+        return true
+    }
+
     async addPolygons(polygons: Polygon[], zoom_to: number): Promise<void> {
-        /*
-         * We want to parallelize polygon loading, but we also need to add the polygons in a deterministic order for testing purposes (as well as to show contained polygons atop their parent)
-         * So, we start all the loads asynchronously, but actually add the polygons to the map only as they finish loading in order
-         * Waiting for all the polygons to load before adding them produces an unacceptable delay
-         */
         const time = Date.now()
         debugPerformance('Adding polygons...')
-        let adderIndex = 0
-        const adders = new Map<number, () => Promise<void>>()
-        const addDone = async (): Promise<void> => {
-            while (adders.has(adderIndex)) {
-                await adders.get(adderIndex)!()
-                adders.delete(adderIndex)
-                adderIndex++
-            }
-        }
         await Promise.all(polygons.map(async (polygon, i) => {
-            const adder = await this.addPolygon(polygon, i === zoom_to)
-            adders.set(i, adder)
-            await addDone()
+            await this.addPolygon(polygon, i === zoom_to)
+            if (this.progressivelyLoadPolygons()) {
+                await this.updateSources()
+            }
         }))
         debugPerformance(`Added polygons [addPolygons]; at ${Date.now() - time}ms`)
         await this.updateSources(true)
@@ -521,14 +513,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     /*
-     * Returns a function that adds the polygon.
-     * The reason for this is so that we can add the polygons in a specific order independent of the order in which they end up loading
+     * Returns whether or not we actually need to update the sources
      */
-    async addPolygon(polygon: Polygon, fit_bounds: boolean): Promise<() => Promise<void>> {
+    async addPolygon(polygon: Polygon, fit_bounds: boolean): Promise<void> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
-            return () => Promise.resolve()
         }
         const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
         if (fit_bounds) {
@@ -536,9 +526,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
 
         this.state.polygonByName.set(polygon.name, geojson)
-        return async () => {
-            await this.updateSources()
-        }
     }
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
