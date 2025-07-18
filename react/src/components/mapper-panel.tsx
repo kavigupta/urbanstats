@@ -110,6 +110,10 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         ]
     }
 
+    override progressivelyLoadPolygons(): boolean {
+        return false
+    }
+
     override mapDidRender(): Promise<void> {
         // zoom map to fit mainland, alaska, and hawaii
         if (this.hasZoomed) {
