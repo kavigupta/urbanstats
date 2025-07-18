@@ -4,7 +4,7 @@ import '../components/quiz.css'
 import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
-import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
+import { defaultInsets, MapGeneric, MapGenericProps, Polygons } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -190,6 +190,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
                     basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
                     attribution={letter === 'b' ? 'startHidden' : 'none'}
+                    insets={defaultInsets}
                 />
             )}
         />

@@ -24,6 +24,12 @@ import { MapGeneric, MapGenericProps, Polygons } from './map'
 import type { Insets } from './map'
 import { Statistic } from './table'
 
+export const usaInsets: Insets = [
+    { bottomLeft: [0, 0], topRight: [1, 1] }, // Mainland
+    { bottomLeft: [0, 0], topRight: [0.18, 0.28] }, // Alaska: large, flush left, taller
+    { bottomLeft: [0.19, 0], topRight: [0.30, 0.14] }, // Hawaii: flush with Alaska
+]
+
 interface DisplayedMapProps extends MapGenericProps {
     colorStat: ColorStat
     filter: ColorStat | undefined
@@ -99,15 +105,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             })),
             zoomIndex: -1,
         }
-    }
-
-    override computeInsets(): Insets {
-        // Mainland covers most of the US, Alaska is a large left-aligned inset, Hawaii is smaller and directly to the right of Alaska
-        return [
-            { bottomLeft: [0, 0], topRight: [1, 1] }, // Mainland
-            { bottomLeft: [0, 0], topRight: [0.18, 0.28] }, // Alaska: large, flush left, taller
-            { bottomLeft: [0.19, 0], topRight: [0.30, 0.14] }, // Hawaii: flush with Alaska
-        ]
     }
 
     override progressivelyLoadPolygons(): boolean {
@@ -255,6 +252,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     height={props.height}
                     attribution="startVisible"
                     colors={colors}
+                    insets={usaInsets}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>

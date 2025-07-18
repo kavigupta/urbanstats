@@ -20,7 +20,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { Icon } from './Icon'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
-import { MapGeneric, MapGenericProps, Polygons } from './map'
+import { defaultInsets, MapGeneric, MapGenericProps, Polygons } from './map'
 import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
@@ -359,6 +359,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             colors={props.articles.map((_, i) => color(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
                             mapPartitions={props.mapPartitions}
+                            insets={defaultInsets}
                         />
                     </div>
                 </div>

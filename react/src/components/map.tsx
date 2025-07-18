@@ -23,16 +23,18 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 export const defaultMapPadding = 20
 
+export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
+export type Insets = Inset[]
+
+export const defaultInsets: Insets = [{ bottomLeft: [0, 0], topRight: [1, 1] }]
+
 export interface MapGenericProps {
     height?: number | string
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
+    insets: Insets
 }
 
-// Inset is an object with bottomLeft and topRight, each a [number, number] in [0, 1]
-export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
-// Insets is a list of insets
-export type Insets = Inset[]
 export interface Polygon {
     name: string
     style: PolygonStyle
@@ -180,19 +182,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     constructor(props: P) {
         super(props)
-        const insets = this.computeInsets()
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
-        this.handler = new MapHandler(insets.length)
+        this.handler = new MapHandler(props.insets.length)
     }
 
     override render(): ReactNode {
-        const insets = this.computeInsets()
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
-                    {insets.map((bbox, i) => (
+                    {this.props.insets.map((bbox, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
                             id={this.handler.ids[i]}
@@ -623,14 +623,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     static override contextType = Navigator.Context
 
     declare context: React.ContextType<typeof Navigator.Context>
-
-    // Compute insets (can be overridden by subclasses)
-    computeInsets(): Insets {
-        // Default: just one inset, covering the whole area
-        return [
-            { bottomLeft: [0, 0], topRight: [1, 1] },
-        ]
-    }
 }
 
 interface MapBodyProps {
