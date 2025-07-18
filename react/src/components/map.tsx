@@ -583,8 +583,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 map.removeLayer(layer.id)
             }
             map.addLayer(layer, labelId)
-            source.setData(data)
         }
+        source.setData(data)
     }
 
     /*
