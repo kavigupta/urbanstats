@@ -499,10 +499,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             return
         }
         const map = await this.handler.getMap()
-        await this.setUpMap(map, force)
-    }
-
-    async setUpMap(map: maplibregl.Map, force: boolean): Promise<void> {
         if (!map.isStyleLoaded() && !force) {
             return
         }
@@ -512,6 +508,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             type: 'FeatureCollection',
             features: Array.from(this.state.polygonByName.values()),
         } satisfies GeoJSON.FeatureCollection
+        this.setUpMap(map, data)
+    }
+
+    setUpMap(map: maplibregl.Map, data: GeoJSON.FeatureCollection): void {
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         const labelId = this.firstLabelId(map)
         if (source === undefined) {
