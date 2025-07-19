@@ -398,7 +398,7 @@ def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
     inset = {
         "bottomLeft": [normalized_coords[0], normalized_coords[1]],
         "topRight": [normalized_coords[2], normalized_coords[3]],
-        "coordBox": bbox,  # Original bbox coordinates
+        "coordBox": list(bbox),
         "mainMap": main_map,
         "name": name,
     }
