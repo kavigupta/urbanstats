@@ -1,12 +1,12 @@
-from functools import lru_cache
 import json
 import shlex
 import subprocess
+from functools import lru_cache
 
 import numpy as np
-from permacache import permacache, stable_hash
 import shapely
 import tqdm
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
@@ -383,11 +383,43 @@ single_map = {
 }
 
 
+def bbox_to_inset(bbox, main_map=True, normalized_coords=None):
+    """
+    Convert a bounding box tuple (west, south, east, north) to an Inset dictionary.
+    """
+    if normalized_coords is None:
+        # Default to full space for single insets
+        normalized_coords = [0, 0, 1, 1]
+
+    return {
+        "bottomLeft": [normalized_coords[0], normalized_coords[1]],
+        "topRight": [normalized_coords[2], normalized_coords[3]],
+        "coordBox": bbox,  # Original bbox coordinates
+        "mainMap": main_map,
+    }
+
+
+def create_single_inset(bbox):
+    """
+    Create a single Inset from a bounding box, marked as main map.
+    Single insets span the full normalized space [0,0] to [1,1].
+    """
+    return [bbox_to_inset(bbox, main_map=True, normalized_coords=[0, 0, 1, 1])]
+
+
 def compute_insets(name_to_type, swo_subnats, u):
     result = automatically_compute_insets(name_to_type, swo_subnats, u)
+
     if len(result["bounding_boxes"]) == 1:
-        return result["bounding_boxes"]
+        # Single bounding box case - spans full [0,0] to [1,1] space
+        return create_single_inset(result["bounding_boxes"][0])
+
     if u in single_map:
-        return merge_all_boxes(result["bounding_boxes"])
+        # Merge all boxes into single map - spans full [0,0] to [1,1] space
+        merged_bbox = merge_all_boxes(result["bounding_boxes"])
+        return create_single_inset(merged_bbox)
+
     print(u)
-    return result["bounding_boxes"]
+
+    print(f"Multiple bounding boxes case not implemented for {u}")
+    return None

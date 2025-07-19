@@ -1,5 +1,4 @@
 import shapely
-
 from permacache import permacache, stable_hash
 
 boxes = [
