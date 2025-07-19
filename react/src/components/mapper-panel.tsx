@@ -37,6 +37,24 @@ export const usaInsets: Insets = [
         ),
         mainMap: true,
     },
+    {
+        bottomLeft: [0, 0],
+        topRight: [0.18, 0.28],
+        coordBox: new maplibregl.LngLatBounds(
+            [-179.231086, 51.175092],
+            [-129.9795, 71.441059],
+        ),
+        mainMap: false,
+    },
+    {
+        bottomLeft: [0.18, 0],
+        topRight: [0.30, 0.14],
+        coordBox: new maplibregl.LngLatBounds(
+            [-160.5, 18.9],
+            [-154.8, 21.7],
+        ),
+        mainMap: false,
+    },
 ]
 
 interface DisplayedMapProps extends MapGenericProps {
