@@ -3,6 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
+import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
@@ -28,7 +29,40 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
+import type { Insets } from './map'
 import { Statistic } from './table'
+
+export const usaInsets: Insets = [
+    {
+        bottomLeft: [0, 0],
+        topRight: [1, 1],
+        coordBox: new maplibregl.LngLatBounds(
+            [
+                [-124.7844079, 49.3457868],
+                [-66.9513812, 24.7433195],
+            ],
+        ),
+        mainMap: true,
+    },
+    {
+        bottomLeft: [0, 0],
+        topRight: [0.18, 0.28],
+        coordBox: new maplibregl.LngLatBounds(
+            [-179.231086, 51.175092],
+            [-129.9795, 71.441059],
+        ),
+        mainMap: false,
+    },
+    {
+        bottomLeft: [0.18, 0],
+        topRight: [0.30, 0.14],
+        coordBox: new maplibregl.LngLatBounds(
+            [-160.5, 18.9],
+            [-154.8, 21.7],
+        ),
+        mainMap: false,
+    },
+]
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
@@ -67,7 +101,6 @@ interface Shapes { geographyKind: string, universe: string, data: Promise<Shapes
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
-    private hasZoomed: boolean = false
 
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
@@ -137,20 +170,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override progressivelyLoadPolygons(): boolean {
         return false
-    }
-
-    override mapDidRender(): Promise<void> {
-        // zoom map to fit united states
-        // do so instantly
-        if (this.hasZoomed) {
-            return Promise.resolve()
-        }
-        this.hasZoomed = true
-        this.map!.fitBounds([
-            [-124.7844079, 49.3457868],
-            [-66.9513812, 24.7433195],
-        ], { animate: false })
-        return Promise.resolve()
     }
 }
 
@@ -266,6 +285,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
+                    insets={usaInsets}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
