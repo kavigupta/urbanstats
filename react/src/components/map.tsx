@@ -569,8 +569,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (!inset.mainMap && bbox !== undefined) {
             polys = polys.filter((poly) => {
                 const bounds = boundingBox(poly.geometry)
-                return bounds.getWest() >= bbox.getWest() && bounds.getEast() <= bbox.getEast()
-                    && bounds.getSouth() >= bbox.getSouth() && bounds.getNorth() <= bbox.getNorth()
+                // Check if the polygon overlaps the inset bounds
+                return bounds.getWest() < bbox.getEast() && bounds.getEast() > bbox.getWest()
+                    && bounds.getNorth() > bbox.getSouth() && bounds.getSouth() < bbox.getNorth()
             })
         }
         const data = {
