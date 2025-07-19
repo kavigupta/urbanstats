@@ -339,7 +339,7 @@ def perform_merges(bounding_boxes, tolerance):
     return merged_boxes, indices_each
 
 
-def locate_relevant_insets(name_to_type, swo_subnats, u):
+def automatically_compute_insets(name_to_type, swo_subnats, u):
     geo = load_geo(u, shapefiles_by_type[name_to_type[u]])
 
     filt_table = (
@@ -357,10 +357,7 @@ def locate_relevant_insets(name_to_type, swo_subnats, u):
 
     filt_table["geometry"] = make_consistent(filt_table.geometry, geo)
     bounds_each = [x.bounds for x in filt_table.geometry]
-    # if should_merge_into_just_one_box(merged_boxes):
-    #     merged_boxes = [merge_all_boxes(merged_boxes)]
-    #     indices_each = [list(range(len(filt_table)))]
-    merged_boxes, indices_each = perform_merges(bounds_each, tolerance=0.25)
+    merged_boxes, indices_each = merge_all_negative_cost(bounds_each, tolerance=0.25)
     population_each = [
         filt_table.best_population_estimate.iloc[i].sum() for i in indices_each
     ]
@@ -371,3 +368,26 @@ def locate_relevant_insets(name_to_type, swo_subnats, u):
         table=filt_table,
         population_each=population_each,
     )
+
+
+single_map = {
+    "Cape Verde",
+    "Comoros",
+    "East Timor",
+    "Kiribati",
+    "State of Palestine",
+    "Trinidad and Tobago",
+    "Tuvalu",
+    "Vanuatu",
+    "Micronesia",
+}
+
+
+def compute_insets(name_to_type, swo_subnats, u):
+    result = automatically_compute_insets(name_to_type, swo_subnats, u)
+    if len(result["bounding_boxes"]) == 1:
+        return result["bounding_boxes"]
+    if u in single_map:
+        return merge_all_boxes(result["bounding_boxes"])
+    print(u)
+    return result["bounding_boxes"]
