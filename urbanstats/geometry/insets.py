@@ -411,35 +411,45 @@ def create_single_inset(bbox, *, name):
     Create a single Inset from a bounding box, marked as main map.
     Single insets span the full normalized space [0,0] to [1,1].
     """
-    return [bbox_to_inset(bbox, main_map=True, normalized_coords=[0, 0, 1, 1], name=name)]
+    return [
+        bbox_to_inset(bbox, main_map=True, normalized_coords=[0, 0, 1, 1], name=name)
+    ]
+
+
+def area(coords):
+    """
+    Calculate the area of a rectangle defined by normalized coordinates.
+    """
+    return (coords[2] - coords[0]) * (coords[3] - coords[1])
 
 
 def compute_insets(name_to_type, swo_subnats, u):
     if u in qgis_layouts:
         layout_info = qgis_layouts[u]
         insets = []
-        
+
         for map_info in layout_info["maps"]:
             if map_info["extent"]:
                 bbox = map_info["extent"]
                 # Fix coordinate mirroring - flip Y coordinates
                 normalized_coords = [
                     map_info["relative_position"][0],
-                    1.0 - (map_info["relative_position"][1] + map_info["relative_size"][1]),
+                    1.0
+                    - (map_info["relative_position"][1] + map_info["relative_size"][1]),
                     map_info["relative_position"][0] + map_info["relative_size"][0],
                     1.0 - map_info["relative_position"][1],
                 ]
-                
+
                 inset = bbox_to_inset(
                     bbox=bbox,
-                    main_map=len(layout_info["maps"]) == 1,
+                    main_map=area(normalized_coords) > 0.99,
                     normalized_coords=normalized_coords,
-                    name=map_info["map_id"]
+                    name=map_info["map_id"],
                 )
                 insets.append(inset)
-        
+
         return insets
-    
+
     result = automatically_compute_insets(name_to_type, swo_subnats, u)
 
     if len(result["bounding_boxes"]) == 1:
