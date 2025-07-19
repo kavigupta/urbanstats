@@ -23,7 +23,7 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number] }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: maplibregl.LngLatBounds, mainMap: boolean }
 export type Insets = Inset[]
 
 export interface MapGenericProps {
@@ -78,15 +78,17 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
 
 class MapHandler {
     public ids: string[]
+    public mainMaps: boolean[] = []
     public maps: maplibregl.Map[] | undefined = undefined
     private ensureStyleLoaded: Promise<void> | undefined = undefined
 
-    constructor(count: number) {
-        this.ids = Array.from({ length: count }, (_, i) => `map-${i}-${Math.random().toString(36).substring(2)}`)
+    constructor(mainMaps: boolean[]) {
+        this.ids = Array.from({ length: mainMaps.length }, (_, i) => `map-${i}-${Math.random().toString(36).substring(2)}`)
+        this.mainMaps = mainMaps
     }
 
     initialize(onClick: (name: string) => void): void {
-        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, onClick)
+        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick)
     }
 
     container(): HTMLElement {
@@ -122,45 +124,52 @@ class MapHandler {
 function createMap(
     id: string,
     onClick: (name: string) => void,
+    fullMap: boolean,
 ): [maplibregl.Map, Promise<void>] {
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
         container: id,
-        scrollZoom: true,
+        scrollZoom: fullMap,
+        dragPan: fullMap,
         dragRotate: false,
         canvasContextAttributes: {
             preserveDrawingBuffer: true,
         },
         pixelRatio: TestUtils.shared.isTesting ? 0.1 : undefined, // e2e tests often run with a software renderer, this saves time
         attributionControl: false,
-    }).addControl(new maplibregl.FullscreenControl(), 'top-left')
+    })
+
+    if (fullMap) {
+        map.addControl(new maplibregl.FullscreenControl(), 'top-left')
+        map.on('mouseover', 'polygon', () => {
+            map.getCanvas().style.cursor = 'pointer'
+        })
+        map.on('mouseleave', 'polygon', () => {
+            map.getCanvas().style.cursor = ''
+        })
+        map.on('click', 'polygon', (e) => {
+            const features = e.features!
+            const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
+            if (names.length === 0) {
+                return
+            }
+            onClick(names[0])
+        })
+    }
 
     const ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve)) satisfies Promise<void>
-    map.on('mouseover', 'polygon', () => {
-        map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', 'polygon', () => {
-        map.getCanvas().style.cursor = ''
-    })
-    map.on('click', 'polygon', (e) => {
-        const features = e.features!
-        const names = features.filter(feature => !feature.properties.notClickable).map(feature => feature.properties.name as string)
-        if (names.length === 0) {
-            return
-        }
-        onClick(names[0])
-    })
     return [map, ensureStyleLoaded]
 }
 
 function createMaps(
     ids: string[],
+    mainMaps: boolean[],
     onClick: (name: string) => void,
 ): [maplibregl.Map[], Promise<void>] {
     const maps = []
     const ensureStyleLoadeds = []
-    for (const id of ids) {
-        const [map, ensureStyleLoaded] = createMap(id, onClick)
+    for (const [i, id] of ids.entries()) {
+        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i])
         maps.push(map)
         ensureStyleLoadeds.push(ensureStyleLoaded)
     }
@@ -177,16 +186,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     private exist_this_time: string[] = []
     private attributionControl: CustomAttributionControl | undefined
     protected handler: MapHandler
+    private hasZoomed = false
 
     constructor(props: P) {
         super(props)
         this.state = { loading: true, polygonByName: new Map() }
         activeMaps.push(this)
-        this.handler = new MapHandler(this.insets().length)
+        this.handler = new MapHandler(this.insets().map(inset => inset.mainMap))
     }
 
     insets(): Insets {
-        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1] }]
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
     }
 
     override render(): ReactNode {
@@ -299,6 +309,15 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidMount(): Promise<void> {
         this.handler.initialize((name) => { this.onClick(name) })
+        const insets = this.insets()
+        for (const i of insets.keys()) {
+            const map = this.handler.maps![i]
+            const { coordBox, mainMap } = insets[i]
+            if (coordBox && (!this.hasZoomed || mainMap)) {
+                map.fitBounds(coordBox, { animate: false })
+            }
+        }
+        this.hasZoomed = true
         await this.componentDidUpdate(this.props, this.state)
     }
 
@@ -539,16 +558,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.sources_last_updated = Date.now()
         await this.handler.ensureStyleLoadedFn()
-        const data = {
-            type: 'FeatureCollection',
-            features: Array.from(this.state.polygonByName.values()),
-        } satisfies GeoJSON.FeatureCollection
-        maps.forEach((map) => {
-            this.setUpMap(map, data)
+        const polys = Array.from(this.state.polygonByName.values())
+        maps.forEach((map, i) => {
+            this.setUpMap(map, polys, this.insets()[i])
         })
     }
 
-    setUpMap(map: maplibregl.Map, data: GeoJSON.FeatureCollection): void {
+    setUpMap(map: maplibregl.Map, polys: GeoJSON.Feature[], inset: Inset): void {
+        const bbox = inset.coordBox
+        if (!inset.mainMap && bbox !== undefined) {
+            polys = polys.filter((poly) => {
+                const bounds = boundingBox(poly.geometry)
+                // Check if the polygon overlaps the inset bounds
+                return bounds.getWest() < bbox.getEast() && bounds.getEast() > bbox.getWest()
+                    && bounds.getNorth() > bbox.getSouth() && bounds.getSouth() < bbox.getNorth()
+            })
+        }
+        const data = {
+            type: 'FeatureCollection',
+            features: polys,
+        } satisfies GeoJSON.FeatureCollection
         let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         const labelId = this.firstLabelId(map)
         if (source === undefined) {

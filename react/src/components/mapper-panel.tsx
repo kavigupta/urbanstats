@@ -3,6 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
+import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
@@ -21,7 +22,22 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
+import type { Insets } from './map'
 import { Statistic } from './table'
+
+export const usaInsets: Insets = [
+    {
+        bottomLeft: [0, 0],
+        topRight: [1, 1],
+        coordBox: new maplibregl.LngLatBounds(
+            [
+                [-124.7844079, 49.3457868],
+                [-66.9513812, 24.7433195],
+            ],
+        ),
+        mainMap: true,
+    },
+]
 
 interface DisplayedMapProps extends MapGenericProps {
     colorStat: ColorStat
@@ -39,7 +55,6 @@ interface DisplayedMapProps extends MapGenericProps {
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     name_to_index: undefined | Map<string, number>
-    private hasZoomed: boolean = false
 
     async guaranteeNameToIndex(): Promise<void> {
         if (this.name_to_index === undefined) {
@@ -102,20 +117,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override progressivelyLoadPolygons(): boolean {
         return false
-    }
-
-    override mapDidRender(): Promise<void> {
-        // zoom map to fit united states
-        // do so instantly
-        if (this.hasZoomed) {
-            return Promise.resolve()
-        }
-        this.hasZoomed = true
-        this.handler.maps![0].fitBounds([
-            [-124.7844079, 49.3457868],
-            [-66.9513812, 24.7433195],
-        ], { animate: false })
-        return Promise.resolve()
     }
 }
 
@@ -231,6 +232,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     height={props.height}
                     attribution="startVisible"
                     colors={colors}
+                    insets={usaInsets}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
