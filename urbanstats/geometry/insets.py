@@ -3,18 +3,21 @@ import json
 import shlex
 import subprocess
 
+import numpy as np
 from permacache import permacache, stable_hash
 import shapely
+import tqdm
 
+from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
-def tight_bounds(geo):
+def clean_shape(geo):
     """
     Compute the tight bounding box of a geometry.
     """
     if geo.geom_type == "MultiPolygon":
-        polys = [g for g in geo.geoms if g.is_valid]
+        polys = [g for g in geo.geoms]
         area_each = [p.area for p in polys]
         indices_ordered = sorted(
             range(len(area_each)), key=lambda i: area_each[i], reverse=True
@@ -25,12 +28,12 @@ def tight_bounds(geo):
         for i in indices_ordered:
             result.append(polys[i])
             area_so_far += area_each[i]
-            if area_so_far > total_area * 0.99:
+            if area_so_far > total_area * 0.95:
                 break
-        return shapely.MultiPolygon(result).bounds
+        return shapely.MultiPolygon(result)
 
     elif geo.geom_type == "Polygon":
-        return geo.bounds
+        return geo
     else:
         raise ValueError(f"Unsupported geometry type: {geo.geom_type}")
 
@@ -106,9 +109,7 @@ def coord_less(a, b):
 
 
 def compute_unified_bounding_boxes(boundses):
-    indices = compute_map_partition(
-        [[(w, s), (e, n)] for (w, s, e, n) in boundses]
-    )
+    indices = compute_map_partition([[(w, s), (e, n)] for (w, s, e, n) in boundses])
     unified_bounds = []
     for index_set in indices:
         if not index_set:
@@ -133,5 +134,240 @@ def output_bounding_boxes_as_shapefile(bounding_boxes, path):
     from shapely.geometry import box
 
     geometries = [box(*bbox) for bbox in bounding_boxes]
-    gdf = gpd.GeoDataFrame(geometry=geometries)
+    gdf = gpd.GeoDataFrame(dict(name=range(len(geometries))), geometry=geometries)
     gdf.to_file(path, driver="GeoJSON")
+
+
+def bounding_box_area(bbox):
+    """
+    Compute the area of a bounding box.
+    """
+    return (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+
+
+def merge_bounding_boxes(a, b):
+    """
+    Merge bounding boxes into a single bounding box.
+    """
+    return np.array(
+        [
+            np.minimum(a[0], b[0]),
+            np.minimum(a[1], b[1]),
+            np.maximum(a[2], b[2]),
+            np.maximum(a[3], b[3]),
+        ]
+    )
+
+
+def merge_cost(box_a, box_b):
+    return (
+        bounding_box_area(merge_bounding_boxes(box_a, box_b))
+        - bounding_box_area(box_a)
+        - bounding_box_area(box_b)
+    ) / bounding_box_area(merge_bounding_boxes(box_a, box_b))
+
+
+def do_overlap(box_a, box_b):
+    """
+    Check if two bounding boxes overlap.
+    """
+    return (
+        (box_a[0] < box_b[2])
+        & (box_a[2] > box_b[0])
+        & (box_a[1] < box_b[3])
+        & (box_a[3] > box_b[1])
+    )
+
+
+def best_merge(bounding_boxes):
+    bounding_boxes = np.array(bounding_boxes).T
+    bounding_boxes_a, bounding_boxes_b = (
+        bounding_boxes[:, None, :],
+        bounding_boxes[:, :, None],
+    )
+    overlap_mask = do_overlap(bounding_boxes_a, bounding_boxes_b)
+    overlap_mask[np.diag_indices_from(overlap_mask)] = False
+    if overlap_mask.any():
+        return np.unravel_index(np.argmax(overlap_mask), overlap_mask.shape) + (0,)
+    merged_bounding_boxes = merge_bounding_boxes(bounding_boxes_a, bounding_boxes_b)
+    area_merged = bounding_box_area(merged_bounding_boxes)
+    area_each = bounding_box_area(bounding_boxes)
+    area_a = area_each[:, None]
+    area_b = area_each[None, :]
+    cost = (area_merged - area_a - area_b) / area_merged
+    cost[np.diag_indices_from(cost)] = np.inf  # ignore self-merges
+    result = np.unravel_index(np.argmin(cost), cost.shape)
+    return result[0], result[1], cost[result[0], result[1]]
+
+
+def merge_all_negative_cost(bounding_boxes, tolerance=0.1):
+    """
+    Merge bounding boxes until no more negative cost merges are possible.
+    """
+    indices_each = [[i] for i in range(len(bounding_boxes))]
+    bounding_boxes = bounding_boxes[:]
+    while len(bounding_boxes) > 1:
+        i, j, cost = best_merge(bounding_boxes)
+        if cost < tolerance:
+            bounding_boxes[i] = merge_bounding_boxes(
+                bounding_boxes[i], bounding_boxes[j]
+            )
+            indices_each[i].extend(indices_each[j])
+            del bounding_boxes[j]
+            del indices_each[j]
+        else:
+            break
+    return bounding_boxes, indices_each
+
+
+def subset(zone_a, zone_b):
+    return set(zone_a).issubset(set(zone_b))
+
+
+def place_in_zone(geo, target_zone):
+    """
+    Check if a geometry is placed in a specific coordinate zone.
+    """
+    zone, geo = classify_coordinate_zone(geo)
+    if subset(zone, target_zone):
+        return geo
+    if min(target_zone) > min(zone):
+        geo = shapely.affinity.translate(geo, xoff=+360)
+        zone, geo = classify_coordinate_zone(geo)
+        assert subset(zone, target_zone)
+        return geo
+    if max(target_zone) < max(zone):
+        geo = shapely.affinity.translate(geo, xoff=-360)
+        zone, geo = classify_coordinate_zone(geo)
+        assert subset(zone, target_zone)
+        return geo
+    assert not "reachable"
+
+
+def make_consistent(geometries, overall_geometry):
+    zone_overall, _ = classify_coordinate_zone(overall_geometry)
+    return [place_in_zone(geo, zone_overall) for geo in geometries]
+
+
+def size_increase_all(bounding_boxes):
+    """
+    Compute the size increase of all bounding boxes.
+    """
+    overall = merge_all_boxes(bounding_boxes)
+    original_area = sum(bounding_box_area(bbox) for bbox in bounding_boxes)
+    overall_area = bounding_box_area(overall)
+    return (overall_area - original_area) / original_area
+
+
+def merge_all_boxes(bounding_boxes):
+    overall = bounding_boxes[0]
+    for bbox in bounding_boxes[1:]:
+        overall = merge_bounding_boxes(overall, bbox)
+    return overall
+
+
+# def should_merge_into_just_one_box(bounding_boxes):
+#     areas_each = [bounding_box_area(bbox) for bbox in bounding_boxes]
+#     # print(areas_each)
+#     if max(areas_each) / min(areas_each) < 2:
+#         return True
+#     # if size_increase_all(bounding_boxes) < 0.5:
+#     #     return True
+#     return False
+
+
+def merge_largest_if_too_similar_in_size(bounding_boxes, indices_each, tolerance=2 / 3):
+    """
+    Merge the largest bounding box with the smallest if they are too similar in size.
+    """
+    if len(bounding_boxes) < 2:
+        return bounding_boxes, indices_each
+    areas_each = [bounding_box_area(bbox) for bbox in bounding_boxes]
+    print("Areas each:", areas_each)
+    largest_idx, second_largest_idx = np.argsort(areas_each)[::-1][:2]
+    print("Highest areas:", areas_each[largest_idx], areas_each[second_largest_idx])
+    ratio = areas_each[largest_idx] / sum(areas_each)
+    print("Ratio:", ratio, "Tolerance:", tolerance)
+    if ratio > tolerance:
+        return bounding_boxes, indices_each
+    print("starting indices", indices_each)
+    merged_box = merge_bounding_boxes(
+        bounding_boxes[largest_idx], bounding_boxes[second_largest_idx]
+    )
+    merged_indices = indices_each[largest_idx] + indices_each[second_largest_idx]
+    bounding_boxes = [
+        bbox
+        for i, bbox in enumerate(bounding_boxes)
+        if i not in (largest_idx, second_largest_idx)
+    ]
+    indices_each = [
+        idx
+        for i, idx in enumerate(indices_each)
+        if i not in (largest_idx, second_largest_idx)
+    ]
+    bounding_boxes.append(merged_box)
+    indices_each.append(merged_indices)
+    print("ending indices", indices_each)
+    return bounding_boxes, indices_each
+
+
+def iterated_merge(bounding_boxes, indices, tolerance):
+    """
+    Do an iteration of merging, also merging the indices.
+    """
+    bounding_boxes, superindices = merge_all_negative_cost(bounding_boxes, tolerance)
+    indices = [
+        [idx for i in superindex for idx in indices[i]] for superindex in superindices
+    ]
+    return bounding_boxes, indices
+
+
+def perform_merges(bounding_boxes, tolerance):
+    count = len(bounding_boxes)
+    merged_boxes = bounding_boxes[:]
+    indices_each = [[i] for i in range(len(bounding_boxes))]
+    while True:
+        merged_boxes, indices_each = iterated_merge(
+            merged_boxes, indices_each, tolerance
+        )
+        merged_boxes, indices_each = merge_largest_if_too_similar_in_size(
+            merged_boxes, indices_each
+        )
+        if len(merged_boxes) == count:
+            break
+        count = len(merged_boxes)
+    return merged_boxes, indices_each
+
+
+def locate_relevant_insets(name_to_type, swo_subnats, u):
+    geo = load_geo(u, shapefiles_by_type[name_to_type[u]])
+
+    filt_table = (
+        swo_subnats[swo_subnats.universes.apply(lambda x: u in x)]
+        .set_index("longname")
+        .copy()
+    )
+    filt_table[
+        "priority"
+    ] = (
+        filt_table.best_population_estimate
+    )  # * filt_table.geometry.map(lambda x: x.area) ** 0.5
+    sorted_fracs = (filt_table.priority / filt_table.priority.sum()).sort_values()
+    filt_table = filt_table.loc[np.cumsum(sorted_fracs) > 0.001]
+
+    filt_table["geometry"] = make_consistent(filt_table.geometry, geo)
+    bounds_each = [x.bounds for x in filt_table.geometry]
+    # if should_merge_into_just_one_box(merged_boxes):
+    #     merged_boxes = [merge_all_boxes(merged_boxes)]
+    #     indices_each = [list(range(len(filt_table)))]
+    merged_boxes, indices_each = perform_merges(bounds_each, tolerance=0.25)
+    population_each = [
+        filt_table.best_population_estimate.iloc[i].sum() for i in indices_each
+    ]
+    return dict(
+        bounding_boxes=merged_boxes,
+        indices_each=indices_each,
+        geometries=filt_table.geometry,
+        table=filt_table,
+        population_each=population_each,
+    )

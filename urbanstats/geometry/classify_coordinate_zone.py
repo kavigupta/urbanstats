@@ -1,10 +1,16 @@
 import shapely
 
+from permacache import permacache, stable_hash
+
 boxes = [
     shapely.geometry.box(minx, -90, minx + 180, 90) for minx in (-360, -180, 0, 180)
 ]
 
 
+@permacache(
+    "urbanstats/geometry/classify_coordinate_zone/classify_coordinate_zone",
+    key_function=dict(geo=lambda x: stable_hash(shapely.to_geojson(x))),
+)
 def classify_coordinate_zone(geo):
     # pylint: disable=too-many-return-statements
     xmin, _, xmax, _ = geo.bounds
