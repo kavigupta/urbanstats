@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis projectname="" version="3.44.0-Solothurn" saveUser="root" saveUserFull="root" saveDateTime="2025-07-19T18:54:44">
+<qgis projectname="" version="3.44.0-Solothurn" saveUser="root" saveUserFull="root" saveDateTime="2025-07-19T19:23:18">
   <homePath path=""/>
   <title></title>
   <transaction mode="Disabled"/>
@@ -581,7 +581,7 @@
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="62.1871,-8.34807e-16,mm" zValue="2" positionLock="false" templateUuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" size="17.8129,25.1743,mm" itemRotation="0" labelMargin="0,mm" id="Map 1" excludeFromExports="0" positionOnPage="62.1871,-8.34807e-16,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="62.1871,-8.34807e-16,mm" zValue="2" positionLock="false" templateUuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" size="17.8129,25.1743,mm" itemRotation="0" labelMargin="0,mm" id="Barbuda" excludeFromExports="0" positionOnPage="62.1871,-8.34807e-16,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
         <FrameColor blue="0" alpha="255" red="0" green="0"/>
         <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
         <LayoutObject>
@@ -605,7 +605,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
       </LayoutItem>
-      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="0,0,mm" zValue="1" positionLock="false" templateUuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" size="80,60,mm" itemRotation="0" labelMargin="0,mm" id="Map 1" excludeFromExports="0" positionOnPage="0,0,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="0,0,mm" zValue="1" positionLock="false" templateUuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" size="80,60,mm" itemRotation="0" labelMargin="0,mm" id="Antigua" excludeFromExports="0" positionOnPage="0,0,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
         <FrameColor blue="0" alpha="255" red="0" green="0"/>
         <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
         <LayoutObject>
