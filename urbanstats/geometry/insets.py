@@ -10,6 +10,10 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+from urbanstats.geometry.read_qgis_layouts import load_qgis_layouts_and_maps
+
+# Load QGIS layouts at module level
+qgis_layouts = load_qgis_layouts_and_maps()
 
 
 def clean_shape(geo):
@@ -383,7 +387,7 @@ single_map = {
 }
 
 
-def bbox_to_inset(bbox, main_map=True, normalized_coords=None):
+def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
     """
     Convert a bounding box tuple (west, south, east, north) to an Inset dictionary.
     """
@@ -391,33 +395,58 @@ def bbox_to_inset(bbox, main_map=True, normalized_coords=None):
         # Default to full space for single insets
         normalized_coords = [0, 0, 1, 1]
 
-    return {
+    inset = {
         "bottomLeft": [normalized_coords[0], normalized_coords[1]],
         "topRight": [normalized_coords[2], normalized_coords[3]],
         "coordBox": bbox,  # Original bbox coordinates
         "mainMap": main_map,
+        "name": name,
     }
 
+    return inset
 
-def create_single_inset(bbox):
+
+def create_single_inset(bbox, *, name):
     """
     Create a single Inset from a bounding box, marked as main map.
     Single insets span the full normalized space [0,0] to [1,1].
     """
-    return [bbox_to_inset(bbox, main_map=True, normalized_coords=[0, 0, 1, 1])]
+    return [bbox_to_inset(bbox, main_map=True, normalized_coords=[0, 0, 1, 1], name=name)]
 
 
 def compute_insets(name_to_type, swo_subnats, u):
+    if u in qgis_layouts:
+        layout_info = qgis_layouts[u]
+        insets = []
+        
+        for map_info in layout_info["maps"]:
+            if map_info["extent"]:
+                bbox = map_info["extent"]
+                normalized_coords = [
+                    map_info["relative_position"][0],
+                    map_info["relative_position"][1],
+                    map_info["relative_position"][0] + map_info["relative_size"][0],
+                    map_info["relative_position"][1] + map_info["relative_size"][1],
+                ]
+                
+                inset = bbox_to_inset(
+                    bbox=bbox,
+                    main_map=len(layout_info["maps"]) == 1,
+                    normalized_coords=normalized_coords,
+                    name=map_info["map_id"]
+                )
+                insets.append(inset)
+        
+        return insets
+    
     result = automatically_compute_insets(name_to_type, swo_subnats, u)
 
     if len(result["bounding_boxes"]) == 1:
-        # Single bounding box case - spans full [0,0] to [1,1] space
-        return create_single_inset(result["bounding_boxes"][0])
+        return create_single_inset(result["bounding_boxes"][0], name=u)
 
     if u in single_map:
-        # Merge all boxes into single map - spans full [0,0] to [1,1] space
         merged_bbox = merge_all_boxes(result["bounding_boxes"])
-        return create_single_inset(merged_bbox)
+        return create_single_inset(merged_bbox, name=u)
 
     print(u)
 

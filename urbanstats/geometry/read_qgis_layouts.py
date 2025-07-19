@@ -58,7 +58,9 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
         # Process each LayoutItem that is a map (type 65639)
         for item in layout_elem.findall("LayoutItem"):
             if item.get("type") == "65639":  # Map item type
-                map_id = item.get("id", "Unknown Map")
+                map_id = item.get("id")
+                if map_id is None:
+                    raise ValueError(f"Map item in layout '{layout_name}' is missing required 'id' attribute")
 
                 # Extract position and size for calculating relative values
                 position_attr = item.get("position", "0,0,mm")
