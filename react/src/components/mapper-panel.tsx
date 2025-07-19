@@ -30,7 +30,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { MapGeneric, MapGenericProps, Polygons } from './map'
-import type { Insets } from './map'
+import type { Inset, Insets } from './map'
 import { Statistic } from './table'
 
 export const usaInsets: Insets = [
@@ -262,11 +262,29 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
+function loadInset(universe: string): Insets | undefined {
+    const insetsU = insets[universe as keyof typeof insets]
+    if (insetsU === null) {
+        return undefined
+    }
+    return insetsU.map((inset) => {
+        return {
+            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
+            topRight: [inset.topRight[0], inset.topRight[1]],
+            coordBox: new maplibregl.LngLatBounds(
+                [inset.coordBox[0], inset.coordBox[1]],
+                [inset.coordBox[2], inset.coordBox[3]],
+            ),
+            mainMap: inset.mainMap,
+        } satisfies Inset
+    })
+}
+
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
-    const insetsU = insets[props.universe as keyof typeof insets] as Insets | null
+    const insetsU = loadInset(props.universe)
 
     return (
         <div style={{
