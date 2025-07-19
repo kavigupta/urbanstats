@@ -398,7 +398,7 @@ def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
     inset = {
         "bottomLeft": [normalized_coords[0], normalized_coords[1]],
         "topRight": [normalized_coords[2], normalized_coords[3]],
-        "coordBox": bbox,  # Original bbox coordinates
+        "coordBox": bbox,
         "mainMap": main_map,
         "name": name,
     }
@@ -422,11 +422,12 @@ def compute_insets(name_to_type, swo_subnats, u):
         for map_info in layout_info["maps"]:
             if map_info["extent"]:
                 bbox = map_info["extent"]
+                # Fix coordinate mirroring - flip Y coordinates
                 normalized_coords = [
                     map_info["relative_position"][0],
-                    map_info["relative_position"][1],
+                    1.0 - (map_info["relative_position"][1] + map_info["relative_size"][1]),
                     map_info["relative_position"][0] + map_info["relative_size"][0],
-                    map_info["relative_position"][1] + map_info["relative_size"][1],
+                    1.0 - map_info["relative_position"][1],
                 ]
                 
                 inset = bbox_to_inset(
