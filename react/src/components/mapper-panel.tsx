@@ -218,7 +218,6 @@ interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
     universe: string
     mapRef: React.RefObject<DisplayedMap>
-    height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
 }
@@ -231,15 +230,15 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
-function loadInset(universe: string): Insets | undefined {
+function loadInset(universe: string): [Insets | undefined, number] {
     const insetsU = insets[universe as keyof typeof insets]
     if (insetsU === null) {
-        return undefined
+        return [undefined, 4 / 3]
     }
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    // insetsU[0].aspectRatio
-    return insetsU.map((inset) => {
+    const aspectRatio = insetsU[0].aspectRatio
+    const insetsProc = insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
             topRight: [inset.topRight[0], inset.topRight[1]],
@@ -250,13 +249,14 @@ function loadInset(universe: string): Insets | undefined {
             mainMap: inset.mainMap,
         } satisfies Inset
     })
+    return [insetsProc, aspectRatio]
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
-    const insetsU = loadInset(props.universe)
+    const [insetsU, aspectRatio] = loadInset(props.universe)
 
     return (
         <div style={{
@@ -272,7 +272,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
                     ref={props.mapRef}
                     uss={props.uss}
-                    height={props.height}
+                    height={{ type: 'aspect-ratio', value: aspectRatio }}
                     attribution="startVisible"
                     basemap={basemap}
                     setErrors={props.setErrors}
@@ -390,7 +390,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         geographyKind={geographyKind}
                         universe={mapSettings.universe}
                         uss={uss}
-                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                         mapRef={mapRef}
                         setErrors={setErrors}
                     />
