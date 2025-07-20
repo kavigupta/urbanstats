@@ -1,20 +1,20 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis projectname="" version="3.44.0-Solothurn" saveUser="root" saveUserFull="root" saveDateTime="2025-07-19T19:23:18">
+<qgis projectname="" version="3.44.0-Solothurn" saveUser="root" saveUserFull="root" saveDateTime="2025-07-20T14:47:38">
   <homePath path=""/>
   <title></title>
   <transaction mode="Disabled"/>
   <projectFlags set=""/>
   <projectCrs>
     <spatialrefsys nativeFormat="Wkt">
-      <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
-      <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
-      <srsid>3452</srsid>
-      <srid>4326</srid>
-      <authid>EPSG:4326</authid>
-      <description>WGS 84</description>
-      <projectionacronym>longlat</projectionacronym>
+      <wkt>PROJCRS["WGS_1984_Web_Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["WGS_1984_Web_Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Not known."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["ESRI",102113]]</wkt>
+      <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+      <srsid>60563</srsid>
+      <srid>520000563</srid>
+      <authid>ESRI:102113</authid>
+      <description>WGS_1984_Web_Mercator</description>
+      <projectionacronym>merc</projectionacronym>
       <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
-      <geographicflag>true</geographicflag>
+      <geographicflag>false</geographicflag>
     </spatialrefsys>
   </projectCrs>
   <verticalCrs>
@@ -50,25 +50,25 @@
   <relations/>
   <polymorphicRelations/>
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
-    <units>degrees</units>
+    <units>meters</units>
     <extent>
-      <xmin>-129.58730933802348773</xmin>
-      <ymin>-70.55383203434560357</ymin>
-      <xmax>170.16268346164986269</xmax>
-      <ymax>71.92004685253955643</ymax>
+      <xmin>-15912953.32223047688603401</xmin>
+      <ymin>-21315941.05989398434758186</ymin>
+      <xmax>17455063.24151657149195671</xmax>
+      <ymax>27023260.02727265283465385</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
       <spatialrefsys nativeFormat="Wkt">
-        <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
-        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
-        <srsid>3452</srsid>
-        <srid>4326</srid>
-        <authid>EPSG:4326</authid>
-        <description>WGS 84</description>
-        <projectionacronym>longlat</projectionacronym>
+        <wkt>PROJCRS["WGS_1984_Web_Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["WGS_1984_Web_Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Not known."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["ESRI",102113]]</wkt>
+        <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+        <srsid>60563</srsid>
+        <srid>520000563</srid>
+        <authid>ESRI:102113</authid>
+        <description>WGS_1984_Web_Mercator</description>
+        <projectionacronym>merc</projectionacronym>
         <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
-        <geographicflag>true</geographicflag>
+        <geographicflag>false</geographicflag>
       </spatialrefsys>
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
@@ -89,15 +89,15 @@
     <layername>Annotations</layername>
     <srs>
       <spatialrefsys nativeFormat="Wkt">
-        <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
-        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
-        <srsid>3452</srsid>
-        <srid>4326</srid>
-        <authid>EPSG:4326</authid>
-        <description>WGS 84</description>
-        <projectionacronym>longlat</projectionacronym>
+        <wkt>PROJCRS["WGS_1984_Web_Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["WGS_1984_Web_Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Not known."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["ESRI",102113]]</wkt>
+        <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+        <srsid>60563</srsid>
+        <srid>520000563</srid>
+        <authid>ESRI:102113</authid>
+        <description>WGS_1984_Web_Mercator</description>
+        <projectionacronym>merc</projectionacronym>
         <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
-        <geographicflag>true</geographicflag>
+        <geographicflag>false</geographicflag>
       </spatialrefsys>
     </srs>
     <resourceMetadata>
@@ -497,7 +497,7 @@
   </projectMetadata>
   <Annotations/>
   <Layouts>
-    <Layout worldFileMap="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" printResolution="300" name="Antigua and Barbuda" units="mm">
+    <Layout worldFileMap="{75a4c60b-88e0-4462-b21d-180ee5236be7}" printResolution="300" name="Antigua and Barbuda" units="mm">
       <Snapper snapToGrid="0" tolerance="5" snapToItems="1" snapToGuides="1"/>
       <Grid offsetX="0" offsetY="0" resUnits="mm" resolution="10" offsetUnits="mm"/>
       <PageCollection>
@@ -581,7 +581,7 @@
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="62.1871,-8.34807e-16,mm" zValue="2" positionLock="false" templateUuid="{c6069165-1762-4076-ad29-cc1cef1504e6}" size="17.8129,25.1743,mm" itemRotation="0" labelMargin="0,mm" id="Barbuda" excludeFromExports="0" positionOnPage="62.1871,-8.34807e-16,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{59618b91-b261-4980-a452-6432426632b4}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="58.9254,-0.15,mm" zValue="2" positionLock="false" templateUuid="{59618b91-b261-4980-a452-6432426632b4}" size="20.9246,27.7247,mm" itemRotation="0" labelMargin="0,mm" id="Barbuda" excludeFromExports="0" positionOnPage="58.9254,-0.15,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
         <FrameColor blue="0" alpha="255" red="0" green="0"/>
         <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
         <LayoutObject>
@@ -596,7 +596,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmax="-61.69994633373168824" ymax="17.78517153888867597" ymin="17.50425948983370006" xmin="-61.89871428758365823"/>
+        <Extent xmax="-6870970.08406391181051731" ymax="2007747.47334854141809046" ymin="1982005.83694573515094817" xmin="-6890398.05167858488857746"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -605,7 +605,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
       </LayoutItem>
-      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="0,0,mm" zValue="1" positionLock="false" templateUuid="{dd6ab3c7-d824-44ac-9489-8fa7404f0073}" size="80,60,mm" itemRotation="0" labelMargin="0,mm" id="Antigua" excludeFromExports="0" positionOnPage="0,0,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{75a4c60b-88e0-4462-b21d-180ee5236be7}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="0,0,mm" zValue="1" positionLock="false" templateUuid="{75a4c60b-88e0-4462-b21d-180ee5236be7}" size="80,60,mm" itemRotation="0" labelMargin="0,mm" id="Antigua" excludeFromExports="0" positionOnPage="0,0,mm" frame="true" keepLayerSet="false" followPresetName="" mapRotation="0">
         <FrameColor blue="0" alpha="255" red="0" green="0"/>
         <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
         <LayoutObject>
@@ -620,7 +620,219 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmax="-61.61171668319408212" ymax="17.21658637529592539" ymin="16.98656782193771875" xmin="-61.91840808767167204"/>
+        <Extent xmax="-6855192.28177149686962366" ymax="1947921.00835164450109005" ymin="1919205.09531220607459545" xmin="-6893480.16582408640533686"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
+      </LayoutItem>
+      <customproperties>
+        <Option type="Map">
+          <Option value="png" name="atlasRasterFormat" type="QString"/>
+          <Option value="true" name="singleFile" type="bool"/>
+        </Option>
+      </customproperties>
+      <Atlas coverageLayer="" pageNameExpression="" filterFeatures="0" sortFeatures="0" enabled="0" filenamePattern="'output_'||@atlas_featurenumber" hideCoverage="0"/>
+    </Layout>
+    <Layout worldFileMap="{75a4c60b-88e0-4462-b21d-180ee5236be7}" printResolution="300" name="USA" units="mm">
+      <Snapper snapToGrid="0" tolerance="5" snapToItems="1" snapToGuides="1"/>
+      <Grid offsetX="0" offsetY="0" resUnits="mm" resolution="10" offsetUnits="mm"/>
+      <PageCollection>
+        <symbol is_animated="0" force_rhr="0" alpha="1" frame_rate="10" name="" type="fill" clip_to_extent="1">
+          <data_defined_properties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </data_defined_properties>
+          <layer class="SimpleFill" pass="0" enabled="1" id="{c57b588f-26f3-4718-9046-fa9cee152c5b}" locked="0">
+            <Option type="Map">
+              <Option value="3x:0,0,0,0,0,0" name="border_width_map_unit_scale" type="QString"/>
+              <Option value="255,255,255,255,rgb:1,1,1,1" name="color" type="QString"/>
+              <Option value="miter" name="joinstyle" type="QString"/>
+              <Option value="0,0" name="offset" type="QString"/>
+              <Option value="3x:0,0,0,0,0,0" name="offset_map_unit_scale" type="QString"/>
+              <Option value="MM" name="offset_unit" type="QString"/>
+              <Option value="35,35,35,255,rgb:0.1372549,0.1372549,0.1372549,1" name="outline_color" type="QString"/>
+              <Option value="no" name="outline_style" type="QString"/>
+              <Option value="0.26" name="outline_width" type="QString"/>
+              <Option value="MM" name="outline_width_unit" type="QString"/>
+              <Option value="solid" name="style" type="QString"/>
+            </Option>
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" name="name" type="QString"/>
+                <Option name="properties"/>
+                <Option value="collection" name="type" type="QString"/>
+              </Option>
+            </data_defined_properties>
+          </layer>
+        </symbol>
+        <LayoutItem frameJoinStyle="miter" groupUuid="" opacity="1" outlineWidthM="0.3,mm" visibility="1" uuid="{d9fe09e1-d089-4ee0-8486-85392bf399db}" type="65638" background="true" blendMode="0" referencePoint="0" position="0,0,mm" zValue="0" positionLock="false" templateUuid="{d9fe09e1-d089-4ee0-8486-85392bf399db}" size="80,42,mm" itemRotation="0" id="" excludeFromExports="0" positionOnPage="0,0,mm" frame="false">
+          <FrameColor blue="0" alpha="255" red="0" green="0"/>
+          <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+          <LayoutObject>
+            <dataDefinedProperties>
+              <Option type="Map">
+                <Option value="" name="name" type="QString"/>
+                <Option name="properties"/>
+                <Option value="collection" name="type" type="QString"/>
+              </Option>
+            </dataDefinedProperties>
+            <customproperties>
+              <Option/>
+            </customproperties>
+          </LayoutObject>
+          <symbol is_animated="0" force_rhr="0" alpha="1" frame_rate="10" name="" type="fill" clip_to_extent="1">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" name="name" type="QString"/>
+                <Option name="properties"/>
+                <Option value="collection" name="type" type="QString"/>
+              </Option>
+            </data_defined_properties>
+            <layer class="SimpleFill" pass="0" enabled="1" id="{3d17e4e3-2f99-48c0-9c72-5bc5aa4ff06c}" locked="0">
+              <Option type="Map">
+                <Option value="3x:0,0,0,0,0,0" name="border_width_map_unit_scale" type="QString"/>
+                <Option value="255,255,255,255,rgb:1,1,1,1" name="color" type="QString"/>
+                <Option value="miter" name="joinstyle" type="QString"/>
+                <Option value="0,0" name="offset" type="QString"/>
+                <Option value="3x:0,0,0,0,0,0" name="offset_map_unit_scale" type="QString"/>
+                <Option value="MM" name="offset_unit" type="QString"/>
+                <Option value="35,35,35,255,rgb:0.1372549,0.1372549,0.1372549,1" name="outline_color" type="QString"/>
+                <Option value="no" name="outline_style" type="QString"/>
+                <Option value="0.26" name="outline_width" type="QString"/>
+                <Option value="MM" name="outline_width_unit" type="QString"/>
+                <Option value="solid" name="style" type="QString"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option value="" name="name" type="QString"/>
+                  <Option name="properties"/>
+                  <Option value="collection" name="type" type="QString"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </LayoutItem>
+        <GuideCollection visible="1"/>
+      </PageCollection>
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{6491c5ba-8077-4612-a56f-afff9bea0059}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="73.733,28.1116,mm" zValue="11" positionLock="false" templateUuid="{6491c5ba-8077-4612-a56f-afff9bea0059}" size="6.26695,8.21774,mm" itemRotation="0" labelMargin="0,mm" id="Guam" excludeFromExports="0" positionOnPage="73.733,28.1116,mm" frame="false" keepLayerSet="false" followPresetName="" mapRotation="0">
+        <FrameColor blue="0" alpha="255" red="0" green="0"/>
+        <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmax="16145937.38734984397888184" ymax="1558675.07395660132169724" ymin="1474610.07147711818106472" xmin="16081828.30291676893830299"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
+      </LayoutItem>
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{e92ce16b-7149-491e-b4bd-49fe1a69e725}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="67.4661,36.3293,mm" zValue="7" positionLock="false" templateUuid="{e92ce16b-7149-491e-b4bd-49fe1a69e725}" size="12.5339,6.55284,mm" itemRotation="0" labelMargin="0,mm" id="Puerto Rico + USVI" excludeFromExports="0" positionOnPage="67.4661,36.3293,mm" frame="false" keepLayerSet="false" followPresetName="" mapRotation="0">
+        <FrameColor blue="0" alpha="255" red="0" green="0"/>
+        <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmax="-7146371.14446275308728218" ymax="2147180.23811091762036085" ymin="1943943.90604564407840371" xmin="-7535110.4743702095001936"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
+      </LayoutItem>
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{f206a4e9-2e72-4563-9c3b-482340113c30}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="13.1162,34.7933,mm" zValue="4" positionLock="false" templateUuid="{f206a4e9-2e72-4563-9c3b-482340113c30}" size="13.0014,8.08886,mm" itemRotation="0" labelMargin="0,mm" id="Hawaii" excludeFromExports="0" positionOnPage="13.1162,34.7933,mm" frame="false" keepLayerSet="false" followPresetName="" mapRotation="0">
+        <FrameColor blue="0" alpha="255" red="0" green="0"/>
+        <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmax="-17110655.2614751048386097" ymax="2634715.84469507122412324" ymin="2090018.33901182888075709" xmin="-17986157.57804554328322411"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
+      </LayoutItem>
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{4c8eed83-7a96-46ce-b212-84a8f4505beb}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="3.91354e-15,28.8221,mm" zValue="2" positionLock="false" templateUuid="{4c8eed83-7a96-46ce-b212-84a8f4505beb}" size="13.1162,14.06,mm" itemRotation="0" labelMargin="0,mm" id="Alaska" excludeFromExports="0" positionOnPage="3.91354e-15,28.8221,mm" frame="false" keepLayerSet="false" followPresetName="" mapRotation="0">
+        <FrameColor blue="0" alpha="255" red="0" green="0"/>
+        <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmax="-14203244.28754860162734985" ymax="11728098.21055023744702339" ymin="6551495.07641094923019409" xmin="-19032372.17387260496616364"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" clippingType="1" enabled="0" clipSource=""/>
+      </LayoutItem>
+      <LayoutItem drawCanvasItems="true" frameJoinStyle="miter" groupUuid="" isTemporal="0" opacity="1" enableZRange="0" outlineWidthM="0.3,mm" visibility="1" uuid="{16f7c4e3-a753-4d83-a7ad-b7aa14a26c47}" type="65639" background="true" mapFlags="0" blendMode="0" referencePoint="0" followPreset="false" position="3.91354e-15,0,mm" zValue="1" positionLock="false" templateUuid="{16f7c4e3-a753-4d83-a7ad-b7aa14a26c47}" size="80,42.8821,mm" itemRotation="0" labelMargin="0,mm" id="Continental USA" excludeFromExports="0" positionOnPage="3.91354e-15,0,mm" frame="false" keepLayerSet="false" followPresetName="" mapRotation="0">
+        <FrameColor blue="0" alpha="255" red="0" green="0"/>
+        <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmax="-7234265.07662567310035229" ymax="6510185.75788361579179764" ymin="2636548.6237612902186811" xmin="-14460839.19246762245893478"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -643,17 +855,17 @@
   <Sensors/>
   <ProjectViewSettings UseProjectScales="0" rotation="0">
     <Scales/>
-    <DefaultViewExtent xmax="170.16268346164986269" ymax="103.88093332000146063" ymin="-102.51471850180750778" xmin="-129.58730933802348773">
+    <DefaultViewExtent xmax="35872751.74909327924251556" ymax="27023260.02727265283465385" ymin="-21315941.05989398434758186" xmin="-34330641.82980719208717346">
       <spatialrefsys nativeFormat="Wkt">
-        <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
-        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
-        <srsid>3452</srsid>
-        <srid>4326</srid>
-        <authid>EPSG:4326</authid>
-        <description>WGS 84</description>
-        <projectionacronym>longlat</projectionacronym>
+        <wkt>PROJCRS["WGS_1984_Web_Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["WGS_1984_Web_Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Not known."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["ESRI",102113]]</wkt>
+        <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+        <srsid>60563</srsid>
+        <srid>520000563</srid>
+        <authid>ESRI:102113</authid>
+        <description>WGS_1984_Web_Mercator</description>
+        <projectionacronym>merc</projectionacronym>
         <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
-        <geographicflag>true</geographicflag>
+        <geographicflag>false</geographicflag>
       </spatialrefsys>
     </DefaultViewExtent>
   </ProjectViewSettings>
