@@ -1,3 +1,4 @@
+import universes_ordered from '../../data/universes_ordered'
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { defaultTypeEnvironment } from '../context'
@@ -46,9 +47,11 @@ export interface MapperScriptSettings {
     uss: UrbanStatsASTExpression | UrbanStatsASTStatement
 }
 
+export type Universe = (typeof universes_ordered)[number]
+
 export interface MapSettings {
     geographyKind: string
-    universe: string
+    universe: Universe
     script: MapperScriptSettings
 }
 

@@ -12,7 +12,7 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
+import { MapSettings, computeUSS, Basemap, Universe } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
@@ -217,7 +217,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
 interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     mapRef: React.RefObject<DisplayedMap>
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
@@ -231,11 +231,8 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
-function loadInset(universe: string): [Insets | undefined, number] {
-    const insetsU = insets[universe as keyof typeof insets]
-    if (insetsU === null) {
-        return [undefined, 4 / 3]
-    }
+function loadInset(universe: Universe): [Insets | undefined, number] {
+    const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
     const aspectRatio = insetsU[0].aspectRatio
