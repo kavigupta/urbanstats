@@ -347,7 +347,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const [underlyingStats, setUnderlyingStats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
 
     useEffect(() => {
-        if (valid_geographies.includes(mapSettings.geography_kind)) {
+        if (valid_geographies.includes(mapSettings.geography_kind as typeof valid_geographies[number])) {
             setUnderlyingShapes(loadProtobuf(
                 consolidatedShapeLink(mapSettings.geography_kind),
                 'ConsolidatedShapes',
@@ -376,7 +376,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const mapperPanel = (): ReactNode => {
         const ramp = parseRamp(mapSettings.ramp)
-        const geographyKind = mapSettings.geography_kind
+        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
         const universe = 'USA'
         const colorStat = mapSettings.color_stat
         const filter = mapSettings.filter
