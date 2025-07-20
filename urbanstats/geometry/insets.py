@@ -386,6 +386,8 @@ single_map = {
     "Tuvalu",
     "Vanuatu",
     "Micronesia",
+    "Solomon Islands",
+    "Tonga",
 }
 
 
