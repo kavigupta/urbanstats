@@ -388,7 +388,7 @@ single_map = {
     "Tonga",
 }
 
-manual_bounds = {"world": (-168.36, -68, -168.36 + 360, 72)}
+manual_bounds = {"world": (-168.36, -57, -168.36 + 360, 72)}
 
 
 def webMercatorAspectRatio(bbox):
