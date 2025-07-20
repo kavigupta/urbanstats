@@ -253,6 +253,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     colorStat={colorStat}
                     filter={filter}
                     geographyKind={props.geographyKind}
+                    universe={props.universe}
                     underlyingShapes={props.underlyingShapes}
                     underlyingStats={props.underlyingStats}
                     ramp={props.ramp}
@@ -376,6 +377,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const mapperPanel = (): ReactNode => {
         const ramp = parseRamp(mapSettings.ramp)
         const geographyKind = mapSettings.geography_kind
+        const universe = 'USA'
         const colorStat = mapSettings.color_stat
         const filter = mapSettings.filter
 
@@ -386,6 +388,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         underlyingShapes={underlyingShapes}
                         underlyingStats={underlyingStats}
                         geographyKind={geographyKind}
+                        universe={universe}
                         ramp={ramp}
                         colorStat={colorStat}
                         filter={filter}
