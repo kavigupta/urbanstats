@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Fort Collins [Urban Area], CO, USA",
+      "longname_b": "Kissimmee-St. Cloud [Urban Area], FL, USA",
+      "stat_a": 0.3131461370604184,
+      "stat_b": 0.12285504672292154
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Alabama, USA",
+      "longname_b": "New Hampshire, USA",
+      "stat_a": 0.1463593315286646,
+      "stat_b": 0.16393141508013193
+    },
+    "a_ease": 0.6613569321533923,
+    "b_ease": 0.25442477876106195
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "MT-02 (2023), USA",
+      "longname_b": "ID-02 (2023), USA",
+      "stat_a": 0.007109226246094129,
+      "stat_b": 0.03911330806565303
+    },
+    "b": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Greater Vancouver Regional district, British Columbia, Canada",
+      "longname_b": "Division No. 6, Alberta, Canada",
+      "stat_a": 0.234942963532123,
+      "stat_b": 0.17894125782190395
+    },
+    "a_ease": 0.6160058737151248,
+    "b_ease": 0.2011747430249633
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Baton Rouge MSA, LA, USA",
+      "longname_b": "Charleston-North Charleston MSA, SC, USA",
+      "stat_a": 0.12472893632718653,
+      "stat_b": 0.1623981690153196
+    },
+    "b": {
+      "stat_column": "Administrative and support and waste management services %",
+      "stat_path": "industry_administrative_and_support_and_waste_management_services",
+      "question": "higher % of workers employed in the administrative/support/waste management services industries!TOOLTIP office administrative services, employment services, business support services, waste management and remediation services, etc.",
+      "longname_a": "R\u00edo Piedras [San Juan] Urban Center, USA",
+      "longname_b": "Madison Urban Center, USA",
+      "stat_a": 0.0585620357667789,
+      "stat_b": 0.02208685972205644
+    },
+    "a_ease": 0.8143678160919541,
+    "b_ease": 0.4104258443465492
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Coronary heart disease %",
+      "stat_path": "CHD_cdc_2",
+      "question": "higher % of adults with coronary heart disease",
+      "longname_a": "Norfolk-Portsmouth-Newport News VA Media Market, USA",
+      "longname_b": "Spokane WA Media Market, USA",
+      "stat_a": 0.0505123638353345,
+      "stat_b": 0.05950891587350608
+    },
+    "b": {
+      "stat_column": "Manufacturing %",
+      "stat_path": "industry_manufacturing",
+      "question": "higher % of workers employed in the manufacturing industry!TOOLTIP metal manufacturing, machinery manufacturing, cement and concrete product manufacturing, sawmills, wood product manufacturing, food and beverage manufacturing, textile mills, apparel manufacturing, paper manufacturing, printing, chemical manufacturing, plastics and rubber products manufacturing, etc.",
+      "longname_a": "Saskatchewan, Canada",
+      "longname_b": "Wisconsin, USA",
+      "stat_a": 0.04650836132443507,
+      "stat_b": 0.17975199090498375
+    },
+    "a_ease": 0.3228445563247325,
+    "b_ease": 0.7901785714285714
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Knoxville MSA, TN, USA",
+      "longname_b": "Provo-Orem MSA, UT, USA",
+      "stat_a": 0.00015233051293093427,
+      "stat_b": 5.4083449421545474e-05
+    },
+    "b": {
+      "stat_column": "Gen X %",
+      "stat_path": "generation_genx",
+      "question": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+      "longname_a": "Los Angeles CA Media Market, USA",
+      "longname_b": "Rapid City SD Media Market, USA",
+      "stat_a": 0.19765315765723987,
+      "stat_b": 0.16084217694796002
+    },
+    "a_ease": 0.8405612244897959,
+    "b_ease": 0.43908045977011495
+  }
+]
