@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUserFull="root" version="3.44.0-Solothurn" saveUser="root" projectname="" saveDateTime="2025-07-20T17:55:43">
+<qgis saveUserFull="root" version="3.44.0-Solothurn" saveUser="root" projectname="" saveDateTime="2025-07-20T18:09:42">
   <homePath path=""/>
   <title></title>
   <transaction mode="Disabled"/>
@@ -2613,7 +2613,7 @@
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem frame="false" uuid="{f6f4d61c-5fa6-4ade-ac6b-da2818eca709}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.6022,10.715,mm" referencePoint="0" templateUuid="{f6f4d61c-5fa6-4ade-ac6b-da2818eca709}" positionOnPage="0,25.7719,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Guadeloupe" outlineWidthM="0.3,mm" mapFlags="0" position="0,25.7719,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="16">
+      <LayoutItem frame="false" uuid="{f6f4d61c-5fa6-4ade-ac6b-da2818eca709}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.2404,10.0031,mm" referencePoint="0" templateUuid="{f6f4d61c-5fa6-4ade-ac6b-da2818eca709}" positionOnPage="-1.30917e-18,28.046,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Guadeloupe" outlineWidthM="0.3,mm" mapFlags="0" position="-1.30917e-18,28.046,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="16">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2628,7 +2628,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="-6886533.73464117851108313" ymin="1780254.15358056291006505" xmax="-6802643.11486438382416964" ymax="1865037.64939287328161299"/>
+        <Extent xmin="-6886533.73464117851108313" ymin="1781672.4560368990059942" xmax="-6802643.11486438382416964" ymax="1863619.34693653718568385"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -2637,7 +2637,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem frame="false" uuid="{924f80a4-7ea0-477f-a381-5d6613db1e1c}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.6022,11.7245,mm" referencePoint="0" templateUuid="{924f80a4-7ea0-477f-a381-5d6613db1e1c}" positionOnPage="0,36.4869,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Martinique" outlineWidthM="0.3,mm" mapFlags="0" position="0,36.4869,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="11">
+      <LayoutItem frame="false" uuid="{924f80a4-7ea0-477f-a381-5d6613db1e1c}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.2404,10.9456,mm" referencePoint="0" templateUuid="{924f80a4-7ea0-477f-a381-5d6613db1e1c}" positionOnPage="-1.30917e-18,38.0491,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Martinique" outlineWidthM="0.3,mm" mapFlags="0" position="-1.30917e-18,38.0491,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="11">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2652,7 +2652,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="-6821205.06796321552246809" ymin="1614843.12257185624912381" xmax="-6764021.60570581164211035" ymax="1678079.84737323760055006"/>
+        <Extent xmin="-6823653.77382673975080252" ymin="1614678.49846769031137228" xmax="-6761912.65201953519135714" ymax="1680671.00122941192239523"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -2661,7 +2661,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem frame="false" uuid="{e9f54e9b-cab0-4ca3-bff7-00d7697b28e6}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.6022,11.7886,mm" referencePoint="0" templateUuid="{e9f54e9b-cab0-4ca3-bff7-00d7697b28e6}" positionOnPage="0,48.2114,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="French Guiana" outlineWidthM="0.3,mm" mapFlags="0" position="0,48.2114,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="7">
+      <LayoutItem frame="false" uuid="{d3d80487-86e9-4a6d-b3de-f268c4094a53}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="5.33048,8.35807,mm" referencePoint="0" templateUuid="{d3d80487-86e9-4a6d-b3de-f268c4094a53}" positionOnPage="54.6695,51.6419,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Corsica" outlineWidthM="0.3,mm" mapFlags="0" position="54.6695,51.6419,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="10">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2676,7 +2676,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="-6103358.40345120336860418" ymin="240012.8937429889338091" xmax="-5727506.02403188031166792" ymax="657923.45897195127326995"/>
+        <Extent xmin="912367.30415159882977605" ymin="5046085.31023198086768389" xmax="1091320.91588539537042379" ymax="5326680.42531902622431517"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -2685,7 +2685,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem frame="false" uuid="{ddcccde5-ed7e-4f30-833b-a138002f3626}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="6.5114,7.73787,mm" referencePoint="0" templateUuid="{ddcccde5-ed7e-4f30-833b-a138002f3626}" positionOnPage="35.9403,52.2621,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Mayotte" outlineWidthM="0.3,mm" mapFlags="0" position="35.9403,52.2621,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="4">
+      <LayoutItem frame="false" uuid="{e9f54e9b-cab0-4ca3-bff7-00d7697b28e6}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.2404,11.0054,mm" referencePoint="0" templateUuid="{e9f54e9b-cab0-4ca3-bff7-00d7697b28e6}" positionOnPage="-1.30917e-18,48.9946,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="French Guiana" outlineWidthM="0.3,mm" mapFlags="0" position="-1.30917e-18,48.9946,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="7">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2700,7 +2700,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="5006279.27362324390560389" ymin="-1462218.28903798386454582" xmax="5044009.63233540114015341" ymax="-1417381.14807188091799617"/>
+        <Extent xmin="-6142461.51464491244405508" ymin="208344.59517204354051501" xmax="-5711066.53852622304111719" ymax="671964.73246843332890421"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -2709,7 +2709,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem frame="false" uuid="{8d856d0c-e0d9-4a71-825b-8dde98094f9e}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="8.54828,7.73786,mm" referencePoint="0" templateUuid="{8d856d0c-e0d9-4a71-825b-8dde98094f9e}" positionOnPage="42.4517,52.2621,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Réunion" outlineWidthM="0.3,mm" mapFlags="0" position="42.4517,52.2621,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="2">
+      <LayoutItem frame="false" uuid="{ddcccde5-ed7e-4f30-833b-a138002f3626}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="5.78783,5.87724,mm" referencePoint="0" templateUuid="{ddcccde5-ed7e-4f30-833b-a138002f3626}" positionOnPage="48.8817,54.1227,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Mayotte" outlineWidthM="0.3,mm" mapFlags="0" position="48.8817,54.1227,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="4">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2724,7 +2724,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="6137689.7236353624612093" ymin="-2444065.99978524353355169" xmax="6223544.37515817955136299" ymax="-2366350.75445059360936284"/>
+        <Extent xmin="5003121.33996941428631544" ymin="-1461872.25575334602035582" xmax="5045961.16548127215355635" ymax="-1418370.60209872736595571"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
@@ -2733,7 +2733,7 @@
         </atlasClippingSettings>
         <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem frame="false" uuid="{c0092d6f-c42b-4134-ad84-95b9256a2845}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="60,60,mm" referencePoint="0" templateUuid="{c0092d6f-c42b-4134-ad84-95b9256a2845}" positionOnPage="0,0,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Metropolitan France" outlineWidthM="0.3,mm" mapFlags="0" position="0,0,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="1">
+      <LayoutItem frame="false" uuid="{8d856d0c-e0d9-4a71-825b-8dde98094f9e}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="7.25619,5.87725,mm" referencePoint="0" templateUuid="{8d856d0c-e0d9-4a71-825b-8dde98094f9e}" positionOnPage="41.6255,54.1227,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Réunion" outlineWidthM="0.3,mm" mapFlags="0" position="41.6255,54.1227,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="2">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2748,7 +2748,31 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="-700304.43776329793035984" ymin="4934024.57101042103022337" xmax="1152765.81710424250923097" ymax="6787094.82587796170264482"/>
+        <Extent xmin="6132732.3419130127876997" ymin="-2444198.27636699285358191" xmax="6228170.58281074650585651" ymax="-2366896.71208695182576776"/>
+        <LayerSet/>
+        <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" restrictLayers="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings forceLabelsInside="0" enabled="0" clippingType="1" clipSource=""/>
+      </LayoutItem>
+      <LayoutItem frame="false" uuid="{c0092d6f-c42b-4134-ad84-95b9256a2845}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="60,60,mm" referencePoint="0" templateUuid="{c0092d6f-c42b-4134-ad84-95b9256a2845}" positionOnPage="0,0,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="Mainland France" outlineWidthM="0.3,mm" mapFlags="0" position="0,0,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="1">
+        <FrameColor blue="0" green="0" red="0" alpha="255"/>
+        <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" name="name" value=""/>
+              <Option name="properties"/>
+              <Option type="QString" name="type" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <Extent xmin="-548780.68936013616621494" ymin="5138252.42921778559684753" xmax="994438.17452001757919788" ymax="6681471.29309793747961521"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
