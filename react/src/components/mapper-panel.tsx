@@ -20,7 +20,7 @@ import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-import { MapGeneric, MapGenericProps, Polygons } from './map'
+import { MapGeneric, MapGenericProps, MapHeight, Polygons } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -33,7 +33,7 @@ interface DisplayedMapProps extends MapGenericProps {
     rampCallback: (newRamp: EmpiricalRamp) => void
     lineStyle: LineStyle
     basemap: Basemap
-    height: number | string | undefined
+    height: MapHeight | undefined
     colors: Colors
 }
 
@@ -194,7 +194,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
-    height: number | string | undefined
+    height: MapHeight | undefined
 }
 
 interface EmpiricalRamp {
@@ -213,7 +213,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            height: props.height,
         }}
         >
             <div style={{ height: '90%', width: '100%' }}>
@@ -359,7 +358,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
-                        height={height}
+                        height={height === undefined ? undefined : { type: 'fixed-height', value: height }}
                     />
                 )
     }

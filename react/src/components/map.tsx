@@ -23,8 +23,12 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 export const defaultMapPadding = 20
 
+export type MapHeight =
+    | { type: 'fixed-height', value: number | string }
+    | { type: 'aspect-ratio', value: number }
+
 export interface MapGenericProps {
-    height?: number | string
+    height?: MapHeight
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
 }
@@ -184,12 +188,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <div style={{ position: 'relative', width: '100%', height: this.mapHeight() }}>
+                <div style={{ position: 'relative', ...this.mapStyle() }}>
                     {[0].map((_, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
                             id={this.handler.ids[i]}
-                            height={this.mapHeight()}
+                            height="100%"
                             buttons={this.buttons()}
                         />
                     ))}
@@ -205,7 +209,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     mapHeight(): number | string {
-        return this.props.height ?? 400
+        const height = this.props.height ?? { type: 'fixed-height', value: 400 }
+        if (height.type === 'aspect-ratio') {
+            return '100%'
+        }
+        return height.value
+    }
+
+    mapStyle(): React.CSSProperties {
+        const height = this.props.height ?? { type: 'fixed-height', value: 400 }
+        if (height.type === 'aspect-ratio') {
+            return {
+                aspectRatio: height.value.toString(),
+                width: '100%',
+                minHeight: '300px',
+            }
+        }
+        return {
+            height: height.value,
+            width: '100%',
+        }
     }
 
     buttons(): ReactNode {
