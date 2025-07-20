@@ -353,9 +353,7 @@ def automatically_compute_insets(name_to_type, swo_subnats, u):
         .set_index("longname")
         .copy()
     )
-    filt_table[
-        "priority"
-    ] = (
+    filt_table["priority"] = (
         filt_table.best_population_estimate
     )  # * filt_table.geometry.map(lambda x: x.area) ** 0.5
     sorted_fracs = (filt_table.priority / filt_table.priority.sum()).sort_values()
@@ -389,6 +387,8 @@ single_map = {
     "Solomon Islands",
     "Tonga",
 }
+
+manual_bounds = {"world": (-168.36, -68, -168.36 + 360, 72)}
 
 
 def webMercatorAspectRatio(bbox):
@@ -452,8 +452,27 @@ def area(coords):
     return (coords[2] - coords[0]) * (coords[3] - coords[1])
 
 
+clamp = lambda x: max(0, min(1, x))
+
+
+def compute_normalized_coords(map_info):
+    normalized_coords = [
+        clamp(map_info["relative_position"][0]),
+        clamp(
+            1.0 - (map_info["relative_position"][1] + map_info["relative_size"][1]),
+        ),
+        clamp(
+            map_info["relative_position"][0] + map_info["relative_size"][0],
+        ),
+        clamp(1.0 - map_info["relative_position"][1]),
+    ]
+
+    return normalized_coords
+
+
 def compute_insets(name_to_type, swo_subnats, u):
-    clamp = lambda x: max(0, min(1, x))
+    if u in manual_bounds:
+        return create_single_inset(manual_bounds[u], name=u)
     if u in qgis_layouts:
         layout_info = qgis_layouts[u]
         insets = []
@@ -462,20 +481,7 @@ def compute_insets(name_to_type, swo_subnats, u):
             if map_info["extent"]:
                 bbox = map_info["extent"]
                 # Fix coordinate mirroring - flip Y coordinates
-                normalized_coords = [
-                    clamp(map_info["relative_position"][0]),
-                    clamp(
-                        1.0
-                        - (
-                            map_info["relative_position"][1]
-                            + map_info["relative_size"][1]
-                        ),
-                    ),
-                    clamp(
-                        map_info["relative_position"][0] + map_info["relative_size"][0],
-                    ),
-                    clamp(1.0 - map_info["relative_position"][1]),
-                ]
+                normalized_coords = compute_normalized_coords(map_info)
 
                 inset = bbox_to_inset(
                     bbox=bbox,
