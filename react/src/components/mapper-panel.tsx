@@ -42,7 +42,7 @@ export const usaInsets: Insets = [
 interface DisplayedMapProps extends MapGenericProps {
     colorStat: ColorStat
     filter: ColorStat | undefined
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
     underlyingShapes: Promise<ConsolidatedShapes>
     underlyingStats: Promise<ConsolidatedStatistics>
     ramp: Ramp
@@ -188,7 +188,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
 interface MapComponentProps {
     underlyingShapes: Promise<ConsolidatedShapes>
     underlyingStats: Promise<ConsolidatedStatistics>
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
     ramp: Ramp
     colorStat: ColorStatDescriptor | undefined
     filter: FilterSettings
@@ -314,7 +314,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const [underlyingStats, setUnderlyingStats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
 
     useEffect(() => {
-        if (valid_geographies.includes(mapSettings.geography_kind)) {
+        if (valid_geographies.includes(mapSettings.geography_kind as typeof valid_geographies[number])) {
             setUnderlyingShapes(loadProtobuf(
                 consolidatedShapeLink(mapSettings.geography_kind),
                 'ConsolidatedShapes',
@@ -377,7 +377,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={statNames}
-                    validGeographies={valid_geographies}
+                    validGeographies={[...valid_geographies]}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
                 />
