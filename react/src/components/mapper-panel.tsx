@@ -86,7 +86,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
-        const index = nameToIndex.get(name)!
+        const index = nameToIndex.get(name)
+        assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
         const data = shapes[index]
         return data as NormalizeProto<Feature>
     }
