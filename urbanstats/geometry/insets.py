@@ -30,26 +30,24 @@ def clean_shape(geo):
     """
     Compute the tight bounding box of a geometry.
     """
-    if geo.geom_type == "MultiPolygon":
-        polys = [g for g in geo.geoms]
-        area_each = [p.area for p in polys]
-        indices_ordered = sorted(
-            range(len(area_each)), key=lambda i: area_each[i], reverse=True
-        )
-        result = []
-        area_so_far = 0
-        total_area = sum(area_each)
-        for i in indices_ordered:
-            result.append(polys[i])
-            area_so_far += area_each[i]
-            if area_so_far > total_area * 0.95:
-                break
-        return shapely.MultiPolygon(result)
-
-    elif geo.geom_type == "Polygon":
+    if geo.geom_type == "Polygon":
         return geo
-    else:
+    if geo.geom_type != "MultiPolygon":
         raise ValueError(f"Unsupported geometry type: {geo.geom_type}")
+    polys = list(geo.geoms)
+    area_each = [p.area for p in polys]
+    indices_ordered = sorted(
+        range(len(area_each)), key=lambda i: area_each[i], reverse=True
+    )
+    result = []
+    area_so_far = 0
+    total_area = sum(area_each)
+    for i in indices_ordered:
+        result.append(polys[i])
+        area_so_far += area_each[i]
+        if area_so_far > total_area * 0.95:
+            break
+    return shapely.MultiPolygon(result)
 
 
 shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
@@ -108,7 +106,10 @@ def best_merge(bounding_boxes):
     overlap_mask = do_overlap(bounding_boxes_a, bounding_boxes_b)
     overlap_mask[np.diag_indices_from(overlap_mask)] = False
     if overlap_mask.any():
-        return np.unravel_index(np.argmax(overlap_mask), overlap_mask.shape) + (0,)
+        # unravel here will return 2 values
+        # pylint: disable=unbalanced-tuple-unpacking
+        i, j = np.unravel_index(np.argmax(overlap_mask), overlap_mask.shape)
+        return i, j, 0
     merged_bounding_boxes = merge_bounding_boxes(bounding_boxes_a, bounding_boxes_b)
     area_merged = bounding_box_area(merged_bounding_boxes)
     area_each = bounding_box_area(bounding_boxes)
@@ -161,7 +162,7 @@ def place_in_zone(geo, target_zone):
         zone, geo = classify_coordinate_zone(geo)
         assert subset(zone, target_zone)
         return geo
-    assert not "reachable"
+    raise RuntimeError("not reachable")
 
 
 def make_consistent(geometries, overall_geometry):

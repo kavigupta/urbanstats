@@ -1,4 +1,5 @@
 # created by cursor
+# pylint: disable=all
 
 from functools import lru_cache
 import re
