@@ -1,6 +1,7 @@
 import maplibregl, { LngLatLike } from 'maplibre-gl'
 
 import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
+import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
@@ -120,8 +121,10 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
-        const map = this.map
-        if (!map) return
+        const maps = this.handler.maps
+        if (!maps) return
+        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
+        const map = maps[0]
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
 
@@ -213,9 +216,13 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         }
     }
 
-    override async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
-        await super.populateMap(map, timeBasis)
-        await this.stylesheetPresent()
+    override async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
+        await super.populateMap(maps, timeBasis)
+        await this.handler.stylesheetPresent()
+
+        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
+
+        const map = maps[0]
 
         this.fitBounds(map)
         const source = this.updateCentroidsSource(map)

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Division No. 11, Saskatchewan, Canada",
+      "longname_b": "Waterloo Regional municipality, Ontario, Canada",
+      "stat_a": 0.04705059528540327,
+      "stat_b": 0.06157966354362604
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Asheville [Urban Area], NC, USA",
+      "longname_b": "Ann Arbor [Urban Area], MI, USA",
+      "stat_a": 0.1957488570221573,
+      "stat_b": 0.03783383734827078
+    },
+    "a_ease": 0.2628992628992629,
+    "b_ease": 0.6658476658476659
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health technologists and technicians %",
+      "stat_path": "occupation_health_technologists_and_technicians",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "Kings County, New York, USA",
+      "longname_b": "Butler County, Ohio, USA",
+      "stat_a": 0.014884834988208698,
+      "stat_b": 0.028827043098599195
+    },
+    "b": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "OR-05 (2023), USA",
+      "longname_b": "LA-04 (2025), USA",
+      "stat_a": 0.020258566793068755,
+      "stat_b": 0.004430438731338561
+    },
+    "a_ease": 0.2819650067294751,
+    "b_ease": 0.7231777231777232
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Weber County, Utah, USA",
+      "longname_b": "Horry County, South Carolina, USA",
+      "stat_a": 0.3411525108951433,
+      "stat_b": 0.08068093683154932
+    },
+    "b": {
+      "stat_column": "Mean high temperature in spring",
+      "stat_path": "mean_high_temp_spring_4",
+      "question": "higher mean daily high temperature in spring (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Portland-Vancouver-Hillsboro MSA, OR-WA, USA",
+      "longname_b": "Greeley MSA, CO, USA",
+      "stat_a": 65.25304202400969,
+      "stat_b": 70.09255586876465
+    },
+    "a_ease": 0.22279792746113988,
+    "b_ease": 0.6313628899835796
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Car %",
+      "stat_path": "transportation_means_car",
+      "question": "higher % of people who commute by car",
+      "longname_a": "Montgomery [Urban Area], AL, USA",
+      "longname_b": "Bridgeport-Stamford [Urban Area], CT-NY, USA",
+      "stat_a": 0.9184195280228586,
+      "stat_b": 0.7515141190540345
+    },
+    "b": {
+      "stat_column": "Current asthma %",
+      "stat_path": "CASTHMA_cdc_2",
+      "question": "higher % of adults with asthma",
+      "longname_a": "Spokane County, Washington, USA",
+      "longname_b": "Sacramento County, California, USA",
+      "stat_a": 0.11855504134424828,
+      "stat_b": 0.10310118448284829
+    },
+    "a_ease": 0.7972085385878489,
+    "b_ease": 0.37694300518134716
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Milwaukee Urban Center, USA",
+      "longname_b": "Raleigh Urban Center, USA",
+      "stat_a": 0.06245404158600796,
+      "stat_b": 0.04819035208443959
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Fairfax County, Virginia, USA",
+      "longname_b": "Cuyahoga County, Ohio, USA",
+      "stat_a": 0.03106210770493525,
+      "stat_b": 0.13499159640226532
+    },
+    "a_ease": 0.4104979811574697,
+    "b_ease": 0.8351278600269179
+  }
+]
