@@ -23,6 +23,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -98,7 +99,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
-        const index = nameToIndex.get(name)!
+        const index = nameToIndex.get(name)
+        assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
         const data = shapes[index]
         return data as NormalizeProto<Feature>
     }
