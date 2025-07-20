@@ -1,9 +1,10 @@
 # created by cursor
 
+import re
 import xml.etree.ElementTree as ET
+
 import geopandas as gpd
 from shapely.geometry import Point
-import re
 
 
 def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
@@ -64,11 +65,15 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
             if item.get("type") == "65639":  # Map item type
                 map_id = item.get("id")
                 if map_id is None:
-                    raise ValueError(f"Map item in layout '{layout_name}' is missing required 'id' attribute")
-                
+                    raise ValueError(
+                        f"Map item in layout '{layout_name}' is missing required 'id' attribute"
+                    )
+
                 # Error if map_id matches pattern "Map .*"
                 if re.match(r"Map .*", map_id):
-                    raise ValueError(f"Invalid map ID '{map_id}' in layout '{layout_name}': IDs matching 'Map .*' pattern are not allowed")
+                    raise ValueError(
+                        f"Invalid map ID '{map_id}' in layout '{layout_name}': IDs matching 'Map .*' pattern are not allowed"
+                    )
 
                 # Extract position and size for calculating relative values
                 position_attr = item.get("position", "0,0,mm")
@@ -102,33 +107,32 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
                         ymin = float(extent_elem.get("ymin", 0))
                         xmax = float(extent_elem.get("xmax", 0))
                         ymax = float(extent_elem.get("ymax", 0))
-                        
+
                         # Calculate aspect ratio from original Web Mercator coordinates
                         mercator_width = xmax - xmin
                         mercator_height = ymax - ymin
                         if mercator_height > 0:  # Avoid division by zero
                             aspect_ratio = mercator_width / mercator_height
-                        
+
                         # Transform from Web Mercator (EPSG:3857) to WGS84 (EPSG:4326)
                         # Create corner points
                         bottom_left = Point(xmin, ymin)
                         top_right = Point(xmax, ymax)
-                        
+
                         # Create GeoDataFrame with Web Mercator CRS
                         gdf = gpd.GeoDataFrame(
-                            geometry=[bottom_left, top_right], 
-                            crs="EPSG:3857"
+                            geometry=[bottom_left, top_right], crs="EPSG:3857"
                         )
-                        
+
                         # Transform to WGS84
                         gdf_wgs84 = gdf.to_crs("EPSG:4326")
-                        
+
                         # Extract transformed coordinates
                         lon_min = gdf_wgs84.geometry.iloc[0].x
                         lat_min = gdf_wgs84.geometry.iloc[0].y
                         lon_max = gdf_wgs84.geometry.iloc[1].x
                         lat_max = gdf_wgs84.geometry.iloc[1].y
-                        
+
                         # Coordinates are now in WGS84 (lon_min, lat_min, lon_max, lat_max)
                         extent = (lon_min, lat_min, lon_max, lat_max)
                     except (ValueError, TypeError):

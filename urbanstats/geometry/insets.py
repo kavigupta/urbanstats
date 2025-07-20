@@ -3,14 +3,16 @@ import shlex
 import subprocess
 from functools import lru_cache
 
+import geopandas as gpd
 import numpy as np
 import shapely
 import tqdm
 from permacache import permacache, stable_hash
+from shapely.geometry import box
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.geometry.read_qgis_layouts import load_qgis_layouts_and_maps
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 # Load QGIS layouts at module level
 qgis_layouts = load_qgis_layouts_and_maps()
@@ -387,7 +389,28 @@ single_map = {
 }
 
 
-def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
+def webMercatorAspectRatio(bbox):
+    """
+    Calculate the aspect ratio of a bounding box in Web Mercator projection.
+
+    Coordinates start in WGS 84 (EPSG:4326) and are converted to Web Mercator (EPSG:3857).
+    """
+
+    # Create a GeoDataFrame with the bounding box
+    gdf = gpd.GeoDataFrame(
+        geometry=[box(bbox[0], bbox[1], bbox[2], bbox[3])], crs="EPSG:4326"  # WGS 84
+    )
+    gdf = gdf.to_crs("EPSG:3857")  # Convert to Web Mercator
+    # Get the bounds in Web Mercator
+    web_bbox = gdf.total_bounds  # (minx, miny, maxx, maxy)
+    width = web_bbox[2] - web_bbox[0]
+    height = web_bbox[3] - web_bbox[1]
+    return width / height
+
+
+def bbox_to_inset(
+    bbox, main_map=True, normalized_coords=None, *, name, aspectRatio=None
+):
     """
     Convert a bounding box tuple (west, south, east, north) to an Inset dictionary.
     """
@@ -395,12 +418,16 @@ def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
         # Default to full space for single insets
         normalized_coords = [0, 0, 1, 1]
 
+    if aspectRatio is None:
+        aspectRatio = webMercatorAspectRatio(bbox)
+
     inset = {
         "bottomLeft": [normalized_coords[0], normalized_coords[1]],
         "topRight": [normalized_coords[2], normalized_coords[3]],
         "coordBox": list(bbox),
         "mainMap": main_map,
         "name": name,
+        "aspectRatio": aspectRatio,
     }
 
     return inset
@@ -435,7 +462,8 @@ def compute_insets(name_to_type, swo_subnats, u):
                 # Fix coordinate mirroring - flip Y coordinates
                 normalized_coords = [
                     clamp(map_info["relative_position"][0]),
-                    clamp(1.0
+                    clamp(
+                        1.0
                         - (
                             map_info["relative_position"][1]
                             + map_info["relative_size"][1]
@@ -452,6 +480,7 @@ def compute_insets(name_to_type, swo_subnats, u):
                     main_map=area(normalized_coords) > 0.99,
                     normalized_coords=normalized_coords,
                     name=map_info["map_id"],
+                    aspectRatio=map_info["aspect_ratio"],
                 )
                 insets.append(inset)
 
