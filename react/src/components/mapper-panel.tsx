@@ -33,38 +33,6 @@ import type { Inset, Insets } from './map'
 import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
 
-export const usaInsets: Insets = [
-    {
-        bottomLeft: [0, 0],
-        topRight: [1, 1],
-        coordBox: new maplibregl.LngLatBounds(
-            [
-                [-124.7844079, 49.3457868],
-                [-66.9513812, 24.7433195],
-            ],
-        ),
-        mainMap: true,
-    },
-    {
-        bottomLeft: [0, 0],
-        topRight: [0.18, 0.28],
-        coordBox: new maplibregl.LngLatBounds(
-            [-179.231086, 51.175092],
-            [-129.9795, 71.441059],
-        ),
-        mainMap: false,
-    },
-    {
-        bottomLeft: [0.18, 0],
-        topRight: [0.30, 0.14],
-        coordBox: new maplibregl.LngLatBounds(
-            [-160.5, 18.9],
-            [-154.8, 21.7],
-        ),
-        mainMap: false,
-    },
-]
-
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: string
@@ -305,7 +273,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    insets={insetsU ?? usaInsets}
+                    insets={insetsU ?? undefined}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
