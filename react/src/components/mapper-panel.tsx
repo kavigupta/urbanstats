@@ -27,7 +27,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import { MapGeneric, MapGenericProps, Polygons } from './map'
+import { MapGeneric, MapGenericProps, MapHeight, Polygons } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -35,7 +35,7 @@ interface DisplayedMapProps extends MapGenericProps {
     universe: string
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
-    height: number | string | undefined
+    height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
     colors: Colors
@@ -146,7 +146,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return Promise.resolve()
         }
         this.hasZoomed = true
-        this.map!.fitBounds([
+        this.handler.maps![0].fitBounds([
             [-124.7844079, 49.3457868],
             [-66.9513812, 24.7433195],
         ], { animate: false })
@@ -229,7 +229,7 @@ interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
     universe: string
     mapRef: React.RefObject<DisplayedMap>
-    height: number | string | undefined
+    height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
 }
@@ -250,7 +250,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            height: props.height,
         }}
         >
             <div style={{ height: '90%', width: '100%' }}>
@@ -369,7 +368,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const [errors, setErrors] = useState<EditorError[]>([])
 
-    const mapperPanel = (height: string | undefined): ReactNode => {
+    const mapperPanel = (): ReactNode => {
         const geographyKind = mapSettings.geographyKind as typeof valid_geographies[number]
         return (!valid_geographies.includes(geographyKind))
             ? <div>Invalid geography kind</div>
@@ -378,7 +377,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         geographyKind={geographyKind}
                         universe={mapSettings.universe}
                         uss={uss}
-                        height={height}
+                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                         mapRef={mapRef}
                         setErrors={setErrors}
                     />
@@ -390,7 +389,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const getScript = useCallback(() => mapSettings.script, [mapSettings.script])
 
     if (props.view) {
-        return mapperPanel('100%')
+        return mapperPanel()
     }
 
     return (
@@ -409,7 +408,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                     mapRef={mapRef}
                 />
                 {
-                    mapperPanel(undefined) // use default height
+                    mapperPanel()
                 }
             </div>
         </PageTemplate>
