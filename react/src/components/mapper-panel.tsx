@@ -231,11 +231,35 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
+// Web Mercator projection functions
+function lngToWebMercatorX(lng: number): number {
+    return lng * Math.PI / 180 * 6378137
+}
+
+function latToWebMercatorY(lat: number): number {
+    return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
+}
+
+function computeAspectRatio(coordBox: readonly [number, number, number, number]): number {
+    const [minLng, minLat, maxLng, maxLat] = coordBox
+
+    const x1 = lngToWebMercatorX(minLng)
+    const x2 = lngToWebMercatorX(maxLng)
+    const y1 = latToWebMercatorY(minLat)
+    const y2 = latToWebMercatorY(maxLat)
+
+    const width = Math.abs(x2 - x1)
+    const height = Math.abs(y2 - y1)
+
+    return width / height
+}
+
 function loadInset(universe: Universe): [Insets | undefined, number] {
     const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    const aspectRatio = insetsU[0].aspectRatio
+    const aspectRatio = computeAspectRatio(insetsU[0].coordBox)
+    console.log('aspect ratio', aspectRatio)
     const insetsProc = insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
