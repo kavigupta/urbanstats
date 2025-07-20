@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Business %",
+      "stat_path": "education_field_business",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "VA-05 (2023), USA",
+      "longname_b": "KS-03 (2023), USA",
+      "stat_a": 0.04840221953889824,
+      "stat_b": 0.12530285910152045
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Sacramento Urban Center, USA",
+      "longname_b": "Grand Rapids Urban Center, USA",
+      "stat_a": 0.3591337542260462,
+      "stat_b": 0.11228908629820555
+    },
+    "a_ease": 0.24518272425249169,
+    "b_ease": 0.6587926509186351
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "OK-05 (2023), USA",
+      "longname_b": "FL-10 (2023), USA",
+      "stat_a": 0.9230217248624945,
+      "stat_b": 0.8904574936906434
+    },
+    "b": {
+      "stat_column": "PW Mean PM2.5 Pollution",
+      "stat_path": "pm_25_2018_2022",
+      "question": "higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Ireland",
+      "longname_b": "Turkmenistan",
+      "stat_a": 7.861941337585449,
+      "stat_b": 25.186010360717773
+    },
+    "a_ease": 0.279290690310323,
+    "b_ease": 0.7125984251968503
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Destruction Bay Settlement, Yukon Territory, Yukon, Canada",
+      "longname_b": "Red Devil CDP, Alaska, USA",
+      "stat_a": 788.7228755696962,
+      "stat_b": 76.7929200553718
+    },
+    "b": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Nova Scotia, Canada",
+      "longname_b": "British Columbia, Canada",
+      "stat_a": 0.31742724435731096,
+      "stat_b": 0.24584412767588745
+    },
+    "a_ease": 0.39814814814814814,
+    "b_ease": 0.7992125984251969
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Kern County, California, USA",
+      "longname_b": "Delaware County, Pennsylvania, USA",
+      "stat_a": 0.07839766557473178,
+      "stat_b": 0.1765160413187153
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "AL-07 (2025), USA",
+      "longname_b": "CO-05 (2023), USA",
+      "stat_a": 0.289627222123146,
+      "stat_b": -0.10107141664173765
+    },
+    "a_ease": 0.6747769667477697,
+    "b_ease": 0.19383617193836172
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Jefferson County, Alabama, USA",
+      "longname_b": "Milwaukee County, Wisconsin, USA",
+      "stat_a": 0.21800959073526366,
+      "stat_b": 0.2595789345899225
+    },
+    "b": {
+      "stat_column": "Mean high heat index",
+      "stat_path": "mean_high_heat_index_4",
+      "question": "higher mean daily high heat index (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Deville CDP, Louisiana, USA",
+      "longname_b": "Death Valley Unified School District, California, USA",
+      "stat_a": 81.46692189901086,
+      "stat_b": 76.21889499137649
+    },
+    "a_ease": 0.5508744038155803,
+    "b_ease": 0.14506172839506173
+  }
+]

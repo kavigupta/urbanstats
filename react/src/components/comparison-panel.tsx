@@ -627,7 +627,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
     }
 
     override mapDidRender(): Promise<void> {
-        this.zoomToAll()
+        this.zoomToAll({ animate: false })
         return Promise.resolve()
     }
 }
