@@ -424,6 +424,7 @@ def area(coords):
 
 
 def compute_insets(name_to_type, swo_subnats, u):
+    clamp = lambda x: max(0, min(1, x))
     if u in qgis_layouts:
         layout_info = qgis_layouts[u]
         insets = []
@@ -433,11 +434,17 @@ def compute_insets(name_to_type, swo_subnats, u):
                 bbox = map_info["extent"]
                 # Fix coordinate mirroring - flip Y coordinates
                 normalized_coords = [
-                    map_info["relative_position"][0],
-                    1.0
-                    - (map_info["relative_position"][1] + map_info["relative_size"][1]),
-                    map_info["relative_position"][0] + map_info["relative_size"][0],
-                    1.0 - map_info["relative_position"][1],
+                    clamp(map_info["relative_position"][0]),
+                    clamp(1.0
+                        - (
+                            map_info["relative_position"][1]
+                            + map_info["relative_size"][1]
+                        ),
+                    ),
+                    clamp(
+                        map_info["relative_position"][0] + map_info["relative_size"][0],
+                    ),
+                    clamp(1.0 - map_info["relative_position"][1]),
                 ]
 
                 inset = bbox_to_inset(
