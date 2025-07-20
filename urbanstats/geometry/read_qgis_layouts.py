@@ -24,7 +24,6 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
                 - extent: Geographic extent (lon_min, lat_min, lon_max, lat_max) in WGS84
                 - relative_position: Relative position on page (0-1 for x, y)
                 - relative_size: Relative size on page (0-1 for width, height)
-                - aspect_ratio: Width/height ratio of the map
     """
     # Parse the QGIS project file
     tree = ET.parse(qgs_file_path)
@@ -99,7 +98,6 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
 
                 # Extract geographic extent (transform from Web Mercator to WGS84)
                 extent = None
-                aspect_ratio = 1.0  # Default aspect ratio
                 extent_elem = item.find("Extent")
                 if extent_elem is not None:
                     try:
@@ -107,12 +105,6 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
                         ymin = float(extent_elem.get("ymin", 0))
                         xmax = float(extent_elem.get("xmax", 0))
                         ymax = float(extent_elem.get("ymax", 0))
-
-                        # Calculate aspect ratio from original Web Mercator coordinates
-                        mercator_width = xmax - xmin
-                        mercator_height = ymax - ymin
-                        if mercator_height > 0:  # Avoid division by zero
-                            aspect_ratio = mercator_width / mercator_height
 
                         # Transform from Web Mercator (EPSG:3857) to WGS84 (EPSG:4326)
                         # Create corner points
@@ -154,7 +146,6 @@ def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
                         "extent": extent,
                         "relative_position": relative_position,
                         "relative_size": relative_size,
-                        "aspect_ratio": aspect_ratio,
                     }
                 )
 
@@ -191,7 +182,6 @@ def main():
             print(f"  Map {i+1}: {map_info['map_id']}")
             print(f"    Relative position: {map_info['relative_position']}")
             print(f"    Relative size: {map_info['relative_size']}")
-            print(f"    Aspect ratio: {map_info['aspect_ratio']:.3f}")
 
             if map_info["extent"]:
                 lon_min, lat_min, lon_max, lat_max = map_info["extent"]
