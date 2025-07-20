@@ -18,6 +18,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { interpolateColor } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -96,7 +97,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
-        const index = nameToIndex.get(name)!
+        const index = nameToIndex.get(name)
+        assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
         const data = shapes[index]
         return data as NormalizeProto<Feature>
     }
@@ -110,6 +112,12 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
         let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
         // TODO correct this!
+        const shapes = await this.getShapes().data
+        const hasShapeMask = stats.longnames.map(name => shapes.nameToIndex.has(name))
+        stats = {
+            stats: stats.stats.filter((_, i) => hasShapeMask[i]),
+            longnames: stats.longnames.filter((_, i) => hasShapeMask[i]),
+        }
         if (this.props.filter !== undefined) {
             const filterVals = this.props.filter.compute(stats.stats)
             stats = {
