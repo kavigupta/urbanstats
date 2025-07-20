@@ -343,7 +343,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const mapperPanel = (): ReactNode => {
         const ramp = parseRamp(mapSettings.ramp)
-        const geographyKind = mapSettings.geography_kind
+        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
         const colorStat = mapSettings.color_stat
         const filter = mapSettings.filter
 
