@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUserFull="root" version="3.44.0-Solothurn" saveUser="root" projectname="" saveDateTime="2025-07-20T18:09:42">
+<qgis saveUserFull="root" version="3.44.0-Solothurn" saveUser="root" projectname="" saveDateTime="2025-07-20T18:10:18">
   <homePath path=""/>
   <title></title>
   <transaction mode="Disabled"/>
@@ -2029,7 +2029,7 @@
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem frame="false" uuid="{a4373a4f-1bf4-4f24-8fef-eac97dd3ff27}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="5.30587,7.29143,mm" referencePoint="0" templateUuid="{a4373a4f-1bf4-4f24-8fef-eac97dd3ff27}" positionOnPage="16.5729,0,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="East Malaysia" outlineWidthM="0.3,mm" mapFlags="0" position="16.5729,0,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="7">
+      <LayoutItem frame="false" uuid="{a4373a4f-1bf4-4f24-8fef-eac97dd3ff27}" itemRotation="0" blendMode="0" labelMargin="0,mm" mapRotation="0" size="10.598,18.4902,mm" referencePoint="0" templateUuid="{a4373a4f-1bf4-4f24-8fef-eac97dd3ff27}" positionOnPage="0,7.29144,mm" background="true" keepLayerSet="false" enableZRange="0" opacity="1" positionLock="false" frameJoinStyle="miter" drawCanvasItems="true" id="East Malaysia" outlineWidthM="0.3,mm" mapFlags="0" position="0,7.29144,mm" followPresetName="" isTemporal="0" type="65639" excludeFromExports="0" visibility="1" followPreset="false" groupUuid="" zValue="7">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -2044,7 +2044,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="-7052594.81026430800557137" ymin="1967130.6057521712500602" xmax="-6993619.85816588997840881" ymax="2048175.10923900571651757"/>
+        <Extent xmin="-7052594.81026430800557137" ymin="1956206.30150134535506368" xmax="-6993619.85816588997840881" ymax="2059099.41348983137868345"/>
         <LayerSet/>
         <AtlasMap atlasDriven="0" margin="0.10000000000000001" scalingMode="2"/>
         <labelBlockingItems/>
