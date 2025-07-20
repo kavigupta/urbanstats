@@ -1,24 +1,29 @@
-import json
-import shlex
-import subprocess
-from functools import lru_cache
-
-import geopandas as gpd
 import numpy as np
 import shapely
 import tqdm
-from permacache import permacache, stable_hash
-from shapely.geometry import box
+from permacache import permacache
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.read_qgis_layouts import load_qgis_layouts_and_maps
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.utils import output_typescript
-from urbanstats.website_data.table import shapefile_without_ordinals
 
-# Load QGIS layouts at module level
-qgis_layouts = load_qgis_layouts_and_maps()
+single_map = {
+    "Cape Verde",
+    "Comoros",
+    "East Timor",
+    "Kiribati",
+    "State of Palestine",
+    "Trinidad and Tobago",
+    "Tuvalu",
+    "Vanuatu",
+    "Micronesia",
+    "Solomon Islands",
+    "Tonga",
+}
+
+manual_bounds = {"world": (-168.36, -57, -168.36 + 360, 72)}
 
 
 def clean_shape(geo):
@@ -47,19 +52,6 @@ def clean_shape(geo):
         raise ValueError(f"Unsupported geometry type: {geo.geom_type}")
 
 
-# @permacache(
-#     "urbanstats/geometry/insets/compute_map_partition_2",
-#     key_function=dict(bounding_boxes=stable_hash),
-#     multiprocess_safe=True,
-# )
-def compute_map_partition(bounding_boxes):
-    cmd = ["npm", "run", "map-partition", json.dumps(bounding_boxes)]
-    print(" ".join(shlex.quote(arg) for arg in cmd))
-    results = subprocess.check_output(cmd, cwd="react").decode("utf-8").split("\n")
-    assert not results[-1]
-    return json.loads(results[-2])
-
-
 shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
 
 
@@ -72,79 +64,6 @@ def load_geo(name, shapefile):
     Load a shapefile by name.
     """
     return shapefile.load_file().set_index("longname").loc[name].geometry
-
-
-def bounding_boxes_of_components(geo):
-    """
-    Compute the bounding boxes of the components of a map partition.
-    """
-    if geo.geom_type == "MultiPolygon":
-        return [g.bounds for g in geo.geoms]
-    elif geo.geom_type == "Polygon":
-        return [geo.bounds]
-    else:
-        raise ValueError(f"Unsupported geometry type: {geo.geom_type}")
-
-
-def remove_subsets(boundses):
-    """
-    Remove bounding boxes that are subsets of others.
-    """
-    boundses = sorted(boundses, key=lambda b: (b[0], b[1], b[2], b[3]))
-    filtered = []
-    for bounds in boundses:
-        if not any(
-            (
-                coord_less(b[0], bounds[0])
-                and coord_less(b[1], bounds[1])
-                and coord_less(bounds[2], b[2])
-                and coord_less(bounds[3], b[3])
-            )
-            for b in filtered
-        ):
-            filtered.append(bounds)
-    return filtered
-
-
-def coord_less(a, b):
-    """
-    Check if coordinate a is less than coordinate b.
-    """
-    delta = b - a
-    delta %= 360
-    return (
-        delta < 180
-    )  # if delta is less than 180, a is less than b in the coordinate system
-
-
-def compute_unified_bounding_boxes(boundses):
-    indices = compute_map_partition([[(w, s), (e, n)] for (w, s, e, n) in boundses])
-    unified_bounds = []
-    for index_set in indices:
-        if not index_set:
-            continue
-        bounds = [boundses[i] for i in index_set]
-        unified_bounds.append(
-            (
-                min(b[0] for b in bounds),
-                min(b[1] for b in bounds),
-                max(b[2] for b in bounds),
-                max(b[3] for b in bounds),
-            )
-        )
-    return unified_bounds
-
-
-def output_bounding_boxes_as_shapefile(bounding_boxes, path):
-    """
-    Output the bounding boxes as a GeoJSON file.
-    """
-    import geopandas as gpd
-    from shapely.geometry import box
-
-    geometries = [box(*bbox) for bbox in bounding_boxes]
-    gdf = gpd.GeoDataFrame(dict(name=range(len(geometries))), geometry=geometries)
-    gdf.to_file(path, driver="GeoJSON")
 
 
 def bounding_box_area(bbox):
@@ -166,14 +85,6 @@ def merge_bounding_boxes(a, b):
             np.maximum(a[3], b[3]),
         ]
     )
-
-
-def merge_cost(box_a, box_b):
-    return (
-        bounding_box_area(merge_bounding_boxes(box_a, box_b))
-        - bounding_box_area(box_a)
-        - bounding_box_area(box_b)
-    ) / bounding_box_area(merge_bounding_boxes(box_a, box_b))
 
 
 def do_overlap(box_a, box_b):
@@ -258,31 +169,11 @@ def make_consistent(geometries, overall_geometry):
     return [place_in_zone(geo, zone_overall) for geo in geometries]
 
 
-def size_increase_all(bounding_boxes):
-    """
-    Compute the size increase of all bounding boxes.
-    """
-    overall = merge_all_boxes(bounding_boxes)
-    original_area = sum(bounding_box_area(bbox) for bbox in bounding_boxes)
-    overall_area = bounding_box_area(overall)
-    return (overall_area - original_area) / original_area
-
-
 def merge_all_boxes(bounding_boxes):
     overall = bounding_boxes[0]
     for bbox in bounding_boxes[1:]:
         overall = merge_bounding_boxes(overall, bbox)
     return overall
-
-
-# def should_merge_into_just_one_box(bounding_boxes):
-#     areas_each = [bounding_box_area(bbox) for bbox in bounding_boxes]
-#     # print(areas_each)
-#     if max(areas_each) / min(areas_each) < 2:
-#         return True
-#     # if size_increase_all(bounding_boxes) < 0.5:
-#     #     return True
-#     return False
 
 
 def merge_largest_if_too_similar_in_size(bounding_boxes, indices_each, tolerance=2 / 3):
@@ -379,26 +270,7 @@ def automatically_compute_insets(name_to_type, swo_subnats, u):
     )
 
 
-single_map = {
-    "Cape Verde",
-    "Comoros",
-    "East Timor",
-    "Kiribati",
-    "State of Palestine",
-    "Trinidad and Tobago",
-    "Tuvalu",
-    "Vanuatu",
-    "Micronesia",
-    "Solomon Islands",
-    "Tonga",
-}
-
-manual_bounds = {"world": (-168.36, -57, -168.36 + 360, 72)}
-
-
-def bbox_to_inset(
-    bbox, main_map=True, normalized_coords=None, *, name
-):
+def bbox_to_inset(bbox, main_map=True, normalized_coords=None, *, name):
     """
     Convert a bounding box tuple (west, south, east, north) to an Inset dictionary.
     """
@@ -455,6 +327,7 @@ def compute_normalized_coords(map_info):
 def compute_insets(name_to_type, swo_subnats, u):
     if u in manual_bounds:
         return create_single_inset(manual_bounds[u], name=u)
+    qgis_layouts = load_qgis_layouts_and_maps()
     if u in qgis_layouts:
         layout_info = qgis_layouts[u]
         insets = []

@@ -1,5 +1,6 @@
 # created by cursor
 
+from functools import lru_cache
 import re
 import xml.etree.ElementTree as ET
 
@@ -7,6 +8,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 
 
+@lru_cache(maxsize=1)
 def load_qgis_layouts_and_maps(qgs_file_path="icons/maps/insets.qgs"):
     """
     Load a QGIS project file and extract layout information including map bounding boxes
