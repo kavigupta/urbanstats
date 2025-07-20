@@ -21,8 +21,8 @@ import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-import { MapGeneric, MapGenericProps, Polygons } from './map'
 import type { Insets } from './map'
+import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
 
 export const usaInsets: Insets = [
@@ -49,7 +49,7 @@ interface DisplayedMapProps extends MapGenericProps {
     rampCallback: (newRamp: EmpiricalRamp) => void
     lineStyle: LineStyle
     basemap: Basemap
-    height: number | string | undefined
+    height: MapHeight | undefined
     colors: Colors
 }
 
@@ -195,7 +195,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
-    height: number | string | undefined
+    height: MapHeight | undefined
 }
 
 interface EmpiricalRamp {
@@ -214,7 +214,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            height: props.height,
         }}
         >
             <div style={{ height: '90%', width: '100%' }}>
@@ -342,7 +341,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
-    const mapperPanel = (height: string | undefined): ReactNode => {
+    const mapperPanel = (): ReactNode => {
         const ramp = parseRamp(mapSettings.ramp)
         const geographyKind = mapSettings.geography_kind
         const colorStat = mapSettings.color_stat
@@ -361,7 +360,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
-                        height={height}
+                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                     />
                 )
     }
@@ -369,7 +368,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const headerTextClass = useHeaderTextClass()
 
     if (props.view) {
-        return mapperPanel('100%')
+        return mapperPanel()
     }
 
     return (
@@ -386,7 +385,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                     mapRef={mapRef}
                 />
                 {
-                    mapperPanel(undefined) // use default height
+                    mapperPanel()
                 }
             </div>
         </PageTemplate>
