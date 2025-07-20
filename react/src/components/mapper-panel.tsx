@@ -8,6 +8,7 @@ import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react
 
 import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
+import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
@@ -17,7 +18,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { interpolateColor } from '../utils/color'
-import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats } from '../utils/protos'
+import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
@@ -42,7 +43,8 @@ export const usaInsets: Insets = [
 interface DisplayedMapProps extends MapGenericProps {
     colorStat: ColorStat
     filter: ColorStat | undefined
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
+    universe: string
     underlyingShapes: Promise<ConsolidatedShapes>
     underlyingStats: Promise<ConsolidatedStatistics>
     ramp: Ramp
@@ -53,27 +55,56 @@ interface DisplayedMapProps extends MapGenericProps {
     colors: Colors
 }
 
-class DisplayedMap extends MapGeneric<DisplayedMapProps> {
-    name_to_index: undefined | Map<string, number>
+interface ShapesForUniverse {
+    shapes: NormalizeProto<IFeature>[]
+    nameToIndex: Map<string, number>
+}
 
-    async guaranteeNameToIndex(): Promise<void> {
-        if (this.name_to_index === undefined) {
-            const result = (await this.props.underlyingShapes).longnames
-            this.name_to_index = new Map(result.map((r, i) => [r, i]))
+async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
+    const universeIdx = universes_ordered.indexOf(universe as (typeof universes_ordered)[number])
+    const shapes = (await loadProtobuf(
+        consolidatedShapeLink(geographyKind),
+        'ConsolidatedShapes',
+    )) as NormalizeProto<ConsolidatedShapes>
+    const longnames: string[] = []
+    const features: NormalizeProto<IFeature>[] = []
+    for (let i = 0; i < shapes.longnames.length; i++) {
+        if (shapes.universes[i].universeIdxs.includes(universeIdx)) {
+            longnames.push(shapes.longnames[i])
+            features.push(shapes.shapes[i])
         }
+    }
+    return { shapes: features, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+}
+
+interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
+
+class DisplayedMap extends MapGeneric<DisplayedMapProps> {
+    private shapes: undefined | Shapes
+
+    private getShapes(): Shapes {
+        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
+            return this.shapes
+        }
+
+        this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
+            return loadShapes(this.props.geographyKind, this.props.universe)
+        })() }
+
+        return this.shapes
     }
 
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        await this.guaranteeNameToIndex()
-        const index = this.name_to_index!.get(name)!
-        const data = (await this.props.underlyingShapes).shapes[index]
+        const { nameToIndex, shapes } = await this.getShapes().data
+        const index = nameToIndex.get(name)!
+        const data = shapes[index]
         return data as NormalizeProto<Feature>
     }
 
     override async computePolygons(): Promise<Polygons> {
         // reset index
-        this.name_to_index = undefined
-        await this.guaranteeNameToIndex()
+        // this.name_to_index = undefined
+        // await this.guaranteeNameToIndex()
 
         const lineStyle = this.props.lineStyle
 
@@ -188,7 +219,8 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
 interface MapComponentProps {
     underlyingShapes: Promise<ConsolidatedShapes>
     underlyingStats: Promise<ConsolidatedStatistics>
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
+    universe: string
     ramp: Ramp
     colorStat: ColorStatDescriptor | undefined
     filter: FilterSettings
@@ -377,7 +409,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     names={statNames}
-                    validGeographies={valid_geographies}
+                    validGeographies={[...valid_geographies]}
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
                 />
