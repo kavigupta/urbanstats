@@ -13,6 +13,9 @@ from shapely.geometry import box
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.read_qgis_layouts import load_qgis_layouts_and_maps
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+from urbanstats.universe.universe_list import all_universes
+from urbanstats.utils import output_typescript
+from urbanstats.website_data.table import shapefile_without_ordinals
 
 # Load QGIS layouts at module level
 qgis_layouts = load_qgis_layouts_and_maps()
@@ -353,7 +356,9 @@ def automatically_compute_insets(name_to_type, swo_subnats, u):
         .set_index("longname")
         .copy()
     )
-    filt_table["priority"] = (
+    filt_table[
+        "priority"
+    ] = (
         filt_table.best_population_estimate
     )  # * filt_table.geometry.map(lambda x: x.area) ** 0.5
     sorted_fracs = (filt_table.priority / filt_table.priority.sum()).sort_values()
@@ -505,7 +510,20 @@ def compute_insets(name_to_type, swo_subnats, u):
         merged_bbox = merge_all_boxes(result["bounding_boxes"])
         return create_single_inset(merged_bbox, name=u)
 
-    print(u)
+    raise RuntimeError(f"Multiple bounding boxes case not implemented for {u}")
 
-    print(f"Multiple bounding boxes case not implemented for {u}")
-    return None
+
+def compute_all_insets(swo):
+    name_to_type = dict(zip(swo.longname, swo.type))
+    subnats = (
+        shapefiles["subnational_regions"].load_file().set_index("longname").geometry
+    )
+    swo_subnats = swo[swo.type == "Subnational Region"].copy()
+    swo_subnats["geometry"] = list(subnats.loc[swo_subnats.longname])
+    swo_subnats["geometry"] = swo_subnats.geometry.map(clean_shape)
+    result = {}
+    for u in tqdm.tqdm(all_universes()):
+        result[u] = compute_insets(name_to_type, swo_subnats, u)
+
+    with open("react/src/data/insets.ts", "w") as f:
+        output_typescript(result, f)
