@@ -339,7 +339,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
-    const mapperPanel = (height: string | undefined): ReactNode => {
+    const mapperPanel = (): ReactNode => {
         const ramp = parseRamp(mapSettings.ramp)
         const geographyKind = mapSettings.geography_kind
         const colorStat = mapSettings.color_stat
@@ -366,7 +366,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const headerTextClass = useHeaderTextClass()
 
     if (props.view) {
-        return mapperPanel('100%')
+        return mapperPanel()
     }
 
     return (
@@ -383,7 +383,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                     mapRef={mapRef}
                 />
                 {
-                    mapperPanel(undefined) // use default height
+                    mapperPanel()
                 }
             </div>
         </PageTemplate>
