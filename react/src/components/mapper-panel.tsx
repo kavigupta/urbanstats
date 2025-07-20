@@ -24,6 +24,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -235,6 +236,9 @@ function loadInset(universe: string): Insets | undefined {
     if (insetsU === null) {
         return undefined
     }
+    assert(insetsU.length > 0, `No insets for universe ${universe}`)
+    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
+    // insetsU[0].aspectRatio
     return insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
