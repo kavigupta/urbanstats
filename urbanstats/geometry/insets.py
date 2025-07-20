@@ -448,6 +448,8 @@ def compute_insets(name_to_type, swo_subnats, u):
                 )
                 insets.append(inset)
 
+        insets.sort(key=lambda x: x["mainMap"], reverse=True)
+
         return insets
 
     result = automatically_compute_insets(name_to_type, swo_subnats, u)
