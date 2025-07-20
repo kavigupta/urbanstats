@@ -358,7 +358,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
-                        height={height === undefined ? undefined : { type: 'fixed-height', value: height }}
+                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                     />
                 )
     }
