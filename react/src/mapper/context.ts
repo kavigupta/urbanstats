@@ -2,15 +2,15 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
-import { InterpretationError } from '../urban-stats-script/interpreter'
+import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
 import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
-export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<Context> {
+export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[]): Promise<Context> {
     const ctx = new Context(
-        () => undefined,
+        (eff) => { effects.push(eff) },
         (msg, loc) => { return new InterpretationError(msg, loc) },
         defaultConstants,
         new Map(),
