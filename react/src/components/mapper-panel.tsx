@@ -410,7 +410,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             : (
                     <MapComponent
                         geographyKind={geographyKind}
-                        universe={mapSettings.universe as Universe}
+                        universe={mapSettings.universe}
                         uss={uss}
                         mapRef={mapRef}
                         setErrors={setErrors}

@@ -1,3 +1,4 @@
+import { Universe } from '../../universe'
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { defaultTypeEnvironment } from '../context'
@@ -48,7 +49,7 @@ export interface MapperScriptSettings {
 
 export interface MapSettings {
     geographyKind: string
-    universe: string
+    universe: Universe
     script: MapperScriptSettings
 }
 
