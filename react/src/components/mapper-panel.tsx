@@ -111,6 +111,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return { polygons: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
+        console.log('abc', result.error)
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
             return { polygons: [], zoomIndex: -1 }
@@ -368,6 +369,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [jsonedSettings, navContext])
 
     const [errors, setErrors] = useState<EditorError[]>([])
+
+    console.log('MapperPanel errors', errors)
 
     const mapperPanel = (): ReactNode => {
         const geographyKind = mapSettings.geographyKind as typeof valid_geographies[number]

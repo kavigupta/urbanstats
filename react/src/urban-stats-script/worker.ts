@@ -60,7 +60,7 @@ async function contextForRequest(request: USSExecutionRequest): Promise<[Context
         return effects.filter(eff => eff.type === 'warning').map(eff => ({
             type: 'error',
             value: eff.message,
-            location: locationOf(request.stmts),
+            location: eff.location,
             level: 'warning',
         }))
     }

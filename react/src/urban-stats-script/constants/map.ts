@@ -116,7 +116,11 @@ export const cMap: USSValue = {
         const label = labelPassedIn ?? originalArgs.namedArgs.data.documentation?.humanReadableName
 
         if (label === undefined) {
-            ctx.effect({ type: 'warning', message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)' })
+            ctx.effect({
+                type: 'warning',
+                message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+                location: noLocation,
+            })
         }
 
         return {
