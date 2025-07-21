@@ -6,6 +6,7 @@ import { gzipSync } from 'zlib'
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
+import insets from '../data/insets'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -17,6 +18,7 @@ import { consolidatedShapeLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { Universe } from '../universe'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
@@ -29,23 +31,9 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import type { Insets } from './map'
+import type { Inset, Insets } from './map'
 import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
-
-export const usaInsets: Insets = [
-    {
-        bottomLeft: [0, 0],
-        topRight: [1, 1],
-        coordBox: new maplibregl.LngLatBounds(
-            [
-                [-124.7844079, 49.3457868],
-                [-66.9513812, 24.7433195],
-            ],
-        ),
-        mainMap: true,
-    },
-]
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
@@ -228,9 +216,8 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
 interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     mapRef: React.RefObject<DisplayedMap>
-    height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
 }
@@ -243,9 +230,53 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
+// Web Mercator projection functions
+function lngToWebMercatorX(lng: number): number {
+    return lng * Math.PI / 180 * 6378137
+}
+
+function latToWebMercatorY(lat: number): number {
+    return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
+}
+
+function computeAspectRatio(coordBox: readonly [number, number, number, number]): number {
+    const [minLng, minLat, maxLng, maxLat] = coordBox
+
+    const x1 = lngToWebMercatorX(minLng)
+    const x2 = lngToWebMercatorX(maxLng)
+    const y1 = latToWebMercatorY(minLat)
+    const y2 = latToWebMercatorY(maxLat)
+
+    const width = Math.abs(x2 - x1)
+    const height = Math.abs(y2 - y1)
+
+    return width / height
+}
+
+function loadInset(universe: Universe): [Insets | undefined, number] {
+    const insetsU = insets[universe]
+    assert(insetsU.length > 0, `No insets for universe ${universe}`)
+    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
+    const aspectRatio = computeAspectRatio(insetsU[0].coordBox)
+    const insetsProc = insetsU.map((inset) => {
+        return {
+            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
+            topRight: [inset.topRight[0], inset.topRight[1]],
+            coordBox: new maplibregl.LngLatBounds(
+                [inset.coordBox[0], inset.coordBox[1]],
+                [inset.coordBox[2], inset.coordBox[3]],
+            ),
+            mainMap: inset.mainMap,
+        } satisfies Inset
+    })
+    return [insetsProc, aspectRatio]
+}
+
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
+
+    const [insetsU, aspectRatio] = loadInset(props.universe)
 
     return (
         <div style={{
@@ -261,12 +292,12 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
                     ref={props.mapRef}
                     uss={props.uss}
-                    height={props.height}
+                    height={{ type: 'aspect-ratio', value: aspectRatio }}
                     attribution="startVisible"
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    insets={usaInsets}
+                    insets={insetsU ?? undefined}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
@@ -379,9 +410,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             : (
                     <MapComponent
                         geographyKind={geographyKind}
-                        universe={mapSettings.universe}
+                        universe={mapSettings.universe as Universe}
                         uss={uss}
-                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                         mapRef={mapRef}
                         setErrors={setErrors}
                     />

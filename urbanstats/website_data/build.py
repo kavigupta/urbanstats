@@ -10,6 +10,7 @@ from urbanstats.consolidated_data.produce_consolidated_data import (
 from urbanstats.games.infinite.data import output_quiz_sampling_info
 from urbanstats.games.quiz import generate_quizzes
 from urbanstats.games.retrostat import generate_retrostats
+from urbanstats.geometry.insets import compute_all_insets
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
@@ -254,6 +255,8 @@ def build_urbanstats(
                 f,
                 data_type="string[]",
             )
+
+        compute_all_insets(shapefile_without_ordinals())
 
     if not no_juxta:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")

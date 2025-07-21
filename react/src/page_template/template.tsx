@@ -141,7 +141,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '26.1.4'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '26.1.5'}
         </span>
     )
 }
