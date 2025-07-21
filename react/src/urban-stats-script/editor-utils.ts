@@ -7,7 +7,7 @@ import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError } from './parser'
 import { USSDocumentedType } from './types-values'
 
-export type EditorError = ParseError
+export type EditorError = ParseError & { level: 'error' | 'warning' }
 
 export function longMessage(error: EditorError): string {
     return `${error.value} at ${renderLocInfo(error.location)}`

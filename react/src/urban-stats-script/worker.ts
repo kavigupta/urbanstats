@@ -22,7 +22,7 @@ let mapperCache: {
 } | undefined
 
 async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
-    const [context] = await contextForRequest(request)
+    const [context, getWarnings] = await contextForRequest(request)
     try {
         const result = execute(request.stmts, context)
 
@@ -38,7 +38,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
         }
-        return { success: true, value: { type: result.type, value: removeFunctions(result.value) } }
+        return { resultingValue: { type: result.type, value: removeFunctions(result.value) }, error: getWarnings() }
     }
     catch (error) {
         let interpretationError: InterpretationError
@@ -49,7 +49,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             console.error('Unknown interpretation error', error)
             interpretationError = new InterpretationError('Unknown interpretation error', locationOf(request.stmts))
         }
-        return { success: false, error: { type: 'error', value: interpretationError.value, location: interpretationError.location } }
+        return { error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, level: 'error' }, ...getWarnings()] }
     }
 }
 

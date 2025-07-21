@@ -20,20 +20,14 @@ export function EditorPanel(): ReactNode {
         const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
 
         if (stmts.type === 'error') {
-            setErrors(stmts.errors)
+            setErrors(stmts.errors.map(e => ({ ...e, level: 'error' })))
             setResult(undefined)
             return
         }
 
         const exec = await executeAsync({ descriptor: { kind: 'generic' }, stmts })
-        if (!exec.success) {
-            setResult(undefined)
-            setErrors([exec.error])
-        }
-        else {
-            setResult(exec.value)
-            setErrors([])
-        }
+        setResult(exec.resultingValue)
+        setErrors(exec.error)
     }, [])
 
     const uss = useMemo(() => {

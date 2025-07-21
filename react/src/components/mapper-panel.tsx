@@ -111,14 +111,11 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return { polygons: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
-        if (!result.success) {
-            this.props.setErrors([result.error])
+        this.props.setErrors(result.error)
+        if (result.resultingValue === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-
-        this.props.setErrors([])
-
-        const cMap = result.value.value.value
+        const cMap = result.resultingValue.value.value
         // Use the outline from cMap instead of hardcoded lineStyle
         const lineStyle = cMap.outline
 
@@ -345,7 +342,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         const result = computeUSS(newSettings.script)
         const errors = getAllParseErrors(result)
         if (errors.length > 0) {
-            setErrors(errors)
+            setErrors(errors.map(e => ({ ...e, level: 'error' })))
         }
         setUSS(errors.length > 0 ? undefined : result)
     }
