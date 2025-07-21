@@ -17,6 +17,7 @@ import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/link
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { Universe } from '../universe'
 import { interpolateColor } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats, IFeature } from '../utils/protos'
@@ -228,7 +229,7 @@ interface MapComponentProps {
     underlyingShapes: Promise<ConsolidatedShapes>
     underlyingStats: Promise<ConsolidatedStatistics>
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     ramp: Ramp
     colorStat: ColorStatDescriptor | undefined
     filter: FilterSettings
