@@ -223,7 +223,6 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
-    height: MapHeight | undefined
 }
 
 interface EmpiricalRamp {
@@ -259,7 +258,6 @@ function loadInset(universe: Universe): [Insets | undefined, number] {
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
     const aspectRatio = computeAspectRatio(insetsU[0].coordBox)
-    console.log('aspect ratio', aspectRatio)
     const insetsProc = insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
@@ -436,7 +434,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
-                        height={{ type: 'aspect-ratio', value: 4 / 3 }}
                     />
                 )
     }
