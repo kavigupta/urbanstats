@@ -1,7 +1,10 @@
 import { useContext } from 'react'
 
 import universes_default from './data/universes_default'
+import universes_ordered from './data/universes_ordered'
 import { Navigator } from './navigation/Navigator'
+
+export type Universe = (typeof universes_ordered)[number]
 
 export function useUniverse(): string {
     return useContext(Navigator.Context).useUniverse() ?? (() => { throw new Error(`No universe for current page`) })()
