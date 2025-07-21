@@ -9,6 +9,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { buttonStyle, GenericShareButton } from '../quiz/quiz-result'
+import { Universe } from '../universe'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { pluralize } from '../utils/text'
 
@@ -17,7 +18,6 @@ import { SYAULocalStorage } from './SYAULocalStorage'
 import { confirmMatch, SYAUData } from './load'
 import { SYAUMap } from './syau-map'
 
-export type Universe = string
 export type Type = string
 
 export type SYAUHistoryKey = `${Type}-${Universe}`
@@ -28,7 +28,7 @@ export interface SYAUHistoryForGame {
 
 export type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 
-export function SYAUPanel(props: { typ?: string, universe?: string, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
+export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()
     return (
@@ -81,7 +81,7 @@ function GuessInputField(props: { guessCallback: (query: string) => boolean }): 
     )
 }
 
-export function SYAUGame(props: { typ: string, universe: string, syauData: SYAUData }): ReactNode {
+export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }): ReactNode {
     const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)

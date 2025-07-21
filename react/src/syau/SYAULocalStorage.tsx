@@ -1,6 +1,7 @@
 import { StoredProperty } from '../quiz/quiz'
+import { Universe } from '../universe'
 
-import { SYAUHistory, Type, Universe, SYAUHistoryForGame, SYAUHistoryKey } from './syau-panel'
+import { SYAUHistory, Type, SYAUHistoryForGame, SYAUHistoryKey } from './syau-panel'
 
 export class SYAULocalStorage {
     private constructor() {
