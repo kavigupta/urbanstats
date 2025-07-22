@@ -260,9 +260,17 @@ export function mergeValuesViaMasks(
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
         indices[whichValue]++
     }
-    const defaultV = defaultValueForType(firstType)
+    let defaultV: USSRawValue | undefined = undefined
     const finalRes = result.map(
-        x => x ? x.value : defaultV,
+        (x) => {
+            if (x !== undefined) {
+                return x.value
+            }
+            if (defaultV === undefined) {
+                defaultV = defaultValueForType(firstType)
+            }
+            return defaultV satisfies USSRawValue
+        },
     )
     return {
         type: 'success',
