@@ -70,11 +70,10 @@ export function QuizResult(props: QuizResultProps): ReactNode {
     const authError = QuizModel.shared.authenticationError.use()
 
     const dismiss = QuizModel.shared.dismissAuthNag.use() !== null
-    const authEnable = QuizModel.shared.enableAuthFeatures.use()
 
     const authState = AuthenticationStateMachine.shared.useState()
 
-    const nagSignIn = authEnable && !dismiss && authState.state === 'signedOut' && Object.keys(props.wholeHistory).length >= authNagEntries
+    const nagSignIn = !dismiss && authState.state === 'signedOut' && Object.keys(props.wholeHistory).length >= authNagEntries
 
     const colors = useColors()
 
