@@ -1,6 +1,5 @@
+import hueColors from '../data/hueColors'
 import RAMPS from '../data/mapper/ramps'
-// eslint-disable-next-line no-restricted-syntax -- Reexporting
-export { default as RAMPS } from '../data/mapper/ramps'
 
 // eslint-disable-next-line no-restricted-syntax -- Represents encoded data
 export type EncodedColorMap = { type: 'none' } | { type: 'custom', custom_colormap: string } | { type: 'preset', name: string }
@@ -25,6 +24,19 @@ export interface ConstantRampDescriptor extends CommonRampDescriptor {
 }
 /* eslint-enable no-restricted-syntax */
 export type RampDescriptor = ConstantRampDescriptor | CommonRampDescriptor & { type: 'linear' } | CommonRampDescriptor & { type: 'geometric' }
+
+export function getRamps(): Record<string, Keypoints> {
+    return {
+        Uridis: [
+            [0, hueColors.purple],
+            [0.25, hueColors.blue],
+            [0.5, hueColors.cyan],
+            [0.75, hueColors.green],
+            [1, hueColors.yellow],
+        ],
+        ...RAMPS,
+    }
+}
 
 export function parseCustomColormap(customColormap: string): ColorMap | undefined {
     try {
