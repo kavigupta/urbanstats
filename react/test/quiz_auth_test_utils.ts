@@ -1,5 +1,4 @@
 import { ClientFunction, Selector } from 'testcafe'
-import { TOTP } from 'totp-generator'
 import { z } from 'zod'
 
 import { TestWindow } from '../src/utils/TestUtils'
@@ -27,33 +26,7 @@ async function googleSignIn(t: TestController): Promise<void> {
     await t.click(Selector('button').withExactText('Next'))
     await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
     await t.click(Selector('button').withExactText('Next'))
-
-    let attempts = 3
-
-    while (true) {
-        attempts--
-        // TOTP codes conflict on concurrent logins
-        const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
-        await t.typeText('input[type=tel]', otp, { replace: true })
-        await t.click(Selector('button').withExactText('Next'))
-        try {
-            await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
-            console.warn('TOTP Success!')
-            break
-        }
-        catch {
-            console.warn('TOTP Failed')
-            if (attempts === 0) {
-                throw new Error('Out of TOTP attempts')
-            }
-            // Wait until the code expires so we don't spam the same code
-            const wait = expires - Date.now()
-            if (wait > 0) {
-                console.warn(`Waiting ${wait} ms...`)
-                await t.wait(wait)
-            }
-        }
-    }
+    await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
