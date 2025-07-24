@@ -303,18 +303,20 @@ export function AutoUXEditor(props: {
             return undefined
         }
         return (
-            <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
-                {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
-                <div style={{ flex: 1 }}>
-                    {subcomponent()}
+            <div style={{ width: '100%', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
+                    {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
+                    <div style={{ flex: 1 }}>
+                        {subcomponent()}
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }} id={`auto-ux-editor-${props.blockIdent}`}>
-            {component()}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', width: '100%', flex: 1 }} id={`auto-ux-editor-${props.blockIdent}`}>
+            <div style={{ width: '100%', flex: 1 }}>{component()}</div>
             {wrappedSubcomponent()}
         </div>
     )
