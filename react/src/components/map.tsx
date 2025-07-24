@@ -23,7 +23,7 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: maplibregl.LngLatBounds, mainMap: boolean }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean }
 export type Insets = Inset[]
 export type MapHeight =
     | { type: 'fixed-height', value: number | string }
@@ -336,13 +336,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
         for (const i of insets.keys()) {
             const map = maps[i]
-            let { coordBox } = insets[i]
+            const { coordBox } = insets[i]
             if (coordBox) {
-                coordBox = new maplibregl.LngLatBounds(
-                    new maplibregl.LngLat(coordBox._sw.lng, coordBox._sw.lat),
-                    new maplibregl.LngLat(coordBox._ne.lng, coordBox._ne.lat),
+                const bounds = new maplibregl.LngLatBounds(
+                    new maplibregl.LngLat(coordBox[0], coordBox[1]),
+                    new maplibregl.LngLat(coordBox[2], coordBox[3]),
                 )
-                map.fitBounds(coordBox, { animate: false })
+                map.fitBounds(bounds, { animate: false })
             }
         }
         this.hasZoomed = true
@@ -598,8 +598,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             polys = polys.filter((poly) => {
                 const bounds = boundingBox(poly.geometry)
                 // Check if the polygon overlaps the inset bounds
-                return bounds.getWest() < bbox.getEast() && bounds.getEast() > bbox.getWest()
-                    && bounds.getNorth() > bbox.getSouth() && bounds.getSouth() < bbox.getNorth()
+                return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
+                    && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
             })
         }
         const data = {
