@@ -16,6 +16,8 @@ import { CustomEditor } from './CustomEditor'
 
 type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' }
 
+const labelPadding = '4px'
+
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
@@ -128,9 +130,9 @@ export function AutoUXEditor(props: {
     labelWidth?: string
 }): ReactNode {
     const labelWidth = props.labelWidth ?? '5%'
-    const subcomponent = (): ReactNode => {
+    const subcomponent = (): ReactNode | undefined => {
         if (props.uss.type === 'constant') {
-            return <></>
+            return undefined
         }
         const uss = props.uss
         if (uss.type === 'customNode') {
@@ -145,7 +147,7 @@ export function AutoUXEditor(props: {
             )
         }
         if (uss.type === 'identifier') {
-            return <></>
+            return undefined
         }
         if (uss.type === 'function') {
             assert(uss.fn.type === 'identifier', 'Function must be an identifier')
@@ -200,10 +202,9 @@ export function AutoUXEditor(props: {
                 elementType = props.type.elementType as USSType
             }
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
                     {uss.elements.map((el, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
-                            <span style={{ minWidth: 24, textAlign: 'right', color: '#888' }}>{i}</span>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em', width: '100%' }}>
                             <AutoUXEditor
                                 uss={el}
                                 setUss={(newEl) => {
@@ -215,9 +216,10 @@ export function AutoUXEditor(props: {
                                 errors={props.errors}
                                 blockIdent={`${props.blockIdent}_el_${i}`}
                                 type={elementType}
+                                label={`${i + 1}`}
                             />
                             <button
-                                style={{ marginLeft: 8 }}
+                                style={{ marginLeft: 8, flexShrink: 0 }}
                                 onClick={() => {
                                     const newElements = uss.elements.filter((_, j) => j !== i)
                                     props.setUss({ ...uss, elements: newElements })
@@ -246,7 +248,7 @@ export function AutoUXEditor(props: {
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
     const leftSegment = (
-        <div>
+        <div style={{ padding: `${labelPadding} 0px` }}>
             {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
         </div>
     )
@@ -294,15 +296,26 @@ export function AutoUXEditor(props: {
             )
         }
     }
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
-            {component()}
+
+    const wrappedSubcomponent = (): ReactNode => {
+        const subc = subcomponent()
+        if (subc === undefined) {
+            return undefined
+        }
+        return (
             <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
                 {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
                 <div style={{ flex: 1 }}>
                     {subcomponent()}
                 </div>
             </div>
+        )
+    }
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }} id={`auto-ux-editor-${props.blockIdent}`}>
+            {component()}
+            {wrappedSubcomponent()}
         </div>
     )
 }
@@ -473,7 +486,7 @@ export function Selector(props: {
                     placeholder="Search options..."
                     style={{
                         width: '100%',
-                        padding: '4px 8px',
+                        padding: `${labelPadding} 8px`,
                         border: '1px solid #ccc',
                         borderRadius: '4px',
                         fontSize: '14px',
