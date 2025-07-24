@@ -238,7 +238,7 @@ function latToWebMercatorY(lat: number): number {
     return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
 }
 
-function computeAspectRatio(coordBox: [number, number, number, number]): number {
+function computeAspectRatio(coordBox: readonly [number, number, number, number]): number {
     // coordBox is [west, south, east, north]
     const x1 = lngToWebMercatorX(coordBox[0])
     const x2 = lngToWebMercatorX(coordBox[2])
