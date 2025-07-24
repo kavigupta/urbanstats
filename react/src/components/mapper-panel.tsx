@@ -304,6 +304,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     attribution="startVisible"
                     colors={colors}
                     insets={insetsU ?? undefined}
+                    key={JSON.stringify(insetsU ?? undefined)}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>

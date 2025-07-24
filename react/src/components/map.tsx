@@ -331,11 +331,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     override async componentDidMount(): Promise<void> {
         this.handler.initialize((name) => { this.onClick(name) })
+        const maps = await this.handler.getMaps()
         const insets = this.insets()
+        assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
         for (const i of insets.keys()) {
-            const map = this.handler.maps![i]
-            const { coordBox, mainMap } = insets[i]
-            if (coordBox && (!this.hasZoomed || mainMap)) {
+            const map = maps[i]
+            let { coordBox } = insets[i]
+            if (coordBox) {
+                coordBox = new maplibregl.LngLatBounds(
+                    new maplibregl.LngLat(coordBox._sw.lng, coordBox._sw.lat),
+                    new maplibregl.LngLat(coordBox._ne.lng, coordBox._ne.lat),
+                )
                 map.fitBounds(coordBox, { animate: false })
             }
         }
