@@ -21,6 +21,13 @@ function shouldShowConstant(type: USSType): boolean {
 }
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
+    if (type.type === 'vector') {
+        return {
+            type: 'vectorLiteral',
+            entireLoc: emptyLocation(blockIdent),
+            elements: [],
+        }
+    }
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
