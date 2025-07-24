@@ -69,7 +69,7 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{user}</span>
-            {' '}
+            {'. '}
             <QuizAuthStatus />
         </div>
     )
