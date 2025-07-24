@@ -120,8 +120,8 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob2', '000000b')
         // Bob2 not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        // check that the text 'Friend ID 000000b already exists as Bob' is displayed
-        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
+        // check that the text 'Friend ID or Email 000000b already exists as Bob' is displayed
+        await t.expect(Selector('div').withExactText('Friend ID or Email 000000b already exists as Bob').exists).ok()
         // should error because we are attempting to add a duplicate name
         await addFriend(t, 'Bob', 'abc')
         // Bob not added
@@ -138,8 +138,8 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob2', '')
         // empty ID not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        // check that the text 'Friend ID cannot be empty' is displayed
-        await t.expect(Selector('div').withExactText('Friend ID cannot be empty').exists).ok()
+        // check that the text 'Friend ID or Email cannot be empty' is displayed
+        await t.expect(Selector('div').withExactText('Friend ID or Email cannot be empty').exists).ok()
         // add an additional friend
         await addFriend(t, 'Charlie', '000000c')
         // Charlie added
@@ -160,7 +160,7 @@ export function quizFriendsTest(
         const state = await aliceBobFriends(t, false)
         await restoreUser(t, 'Alice', state)
         await addFriend(t, 'Bob2', 'this id does not work')
-        await t.expect(Selector('div').withExactText('Invalid Friend ID').exists).ok()
+        await t.expect(Selector('div').withExactText('Invalid Friend ID or Email').exists).ok()
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // after a reload, user is not there
         await safeReload(t)
@@ -169,7 +169,7 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob3', '000000b   ')
         // duplicate error
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
+        await t.expect(Selector('div').withExactText('Friend ID or Email 000000b already exists as Bob').exists).ok()
         // remove Bob
         await removeFriend(t, 0)
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
