@@ -8,7 +8,7 @@ import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/lexer'
 import { parse, toSExp, unparse } from '../src/urban-stats-script/parser'
-import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, rawDefaultValue, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
 export const boolType = { type: 'boolean' } satisfies USSType
@@ -99,6 +99,50 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
         },
         defaultConstants,
         new Map<string, USSValue>(),
+    )
+}
+
+export function emptyContextWithInsets(effects: Effect[] | undefined = undefined): Context {
+    const insetContinentalUSA = defaultConstants.get('insetContinentalUSA')
+    const insetHawaii = defaultConstants.get('insetHawaii')
+    const insetAlaska = defaultConstants.get('insetAlaska')
+    const insetGuam = defaultConstants.get('insetGuam')
+    const insetPuertoRicoUSVI = defaultConstants.get('insetPuertoRico+USVI')
+    const constructInsets = defaultConstants.get('constructInsets')
+
+    assert(insetContinentalUSA !== undefined, 'Expected insetContinentalUSA to be defined in defaultConstants')
+    assert(insetHawaii !== undefined, 'Expected insetHawaii to be defined in defaultConstants')
+    assert(insetAlaska !== undefined, 'Expected insetAlaska to be defined in defaultConstants')
+    assert(insetGuam !== undefined, 'Expected insetGuam to be defined in defaultConstants')
+    assert(insetPuertoRicoUSVI !== undefined, 'Expected insetPuertoRico+USVI to be defined in defaultConstants')
+    assert(constructInsets !== undefined, 'Expected constructInsets to be defined in defaultConstants')
+
+    // Create a USA insets collection from the individual insets
+    const insetArray = [insetContinentalUSA.value, insetHawaii.value, insetAlaska.value, insetGuam.value, insetPuertoRicoUSVI.value]
+
+    // Cast to function type and call
+    const constructInsetsFunc = constructInsets.value as (
+        ctx: Context,
+        posArgs: USSRawValue[],
+        namedArgs: Record<string, USSRawValue>,
+        originalArgs?: OriginalFunctionArgs
+    ) => USSRawValue
+
+    const usaInsets = constructInsetsFunc({} as Context, [insetArray], {})
+
+    return new Context(
+        (eff) => {
+            if (effects !== undefined) {
+                effects.push(eff)
+            }
+        },
+        (msg: string, location: LocInfo) => {
+            return new InterpretationError(msg, location)
+        },
+        defaultConstants,
+        new Map<string, USSValue>([
+            ['defaultInsets', { type: { type: 'opaque', name: 'insets' }, value: usaInsets, documentation: { humanReadableName: 'USA Insets' } }],
+        ]),
     )
 }
 

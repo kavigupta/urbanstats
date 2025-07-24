@@ -1,3 +1,4 @@
+import { Insets } from '../../components/map'
 import { Basemap } from '../../mapper/settings'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
@@ -6,6 +7,7 @@ import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue
 
 import { basemapType, outlineType } from './basemap'
 import { Color } from './color'
+import { insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
 
@@ -22,6 +24,7 @@ export interface CMap {
     label: string
     outline: Outline
     basemap: Basemap
+    insets: Insets
     unit?: UnitType
 }
 
@@ -89,6 +92,13 @@ export const cMap: USSValue = {
                 type: { type: 'concrete', value: basemapType },
                 defaultValue: expressionDefaultValue({ type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation }),
             },
+            insets: {
+                type: { type: 'concrete', value: insetsType },
+                defaultValue: expressionDefaultValue({
+                    type: 'identifier',
+                    name: { node: 'defaultInsets', location: noLocation },
+                }),
+            },
             unit: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
                 defaultValue: rawDefaultValue(null),
@@ -104,6 +114,7 @@ export const cMap: USSValue = {
         const labelPassedIn = namedArgs.label as string | null
         const outline = (namedArgs.outline as { type: 'opaque', value: Outline }).value
         const basemap = (namedArgs.basemap as { type: 'opaque', value: Basemap }).value
+        const insets = (namedArgs.insets as { type: 'opaque', value: Insets }).value
         const unitArg = namedArgs.unit as { type: 'opaque', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
@@ -121,7 +132,7 @@ export const cMap: USSValue = {
 
         return {
             type: 'opaque',
-            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, unit } satisfies CMap,
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, insets, unit } satisfies CMap,
         }
     },
     documentation: {
@@ -135,6 +146,7 @@ export const cMap: USSValue = {
             geo: 'Geography',
             outline: 'Outline',
             basemap: 'Basemap',
+            insets: 'Insets',
             unit: 'Unit',
         },
     },

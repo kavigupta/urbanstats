@@ -96,7 +96,8 @@ export function doRender(color: Color): string {
 
 function colorConstant(name: string, value: string): [string, USSValue] {
     const humanReadableName = camelToHuman(name)
-    return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
+    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
+    return [`color${capitalizedName}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
 }
 
 export const colorConstants = [
