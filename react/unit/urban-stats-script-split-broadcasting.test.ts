@@ -43,7 +43,7 @@ void test('index mask', (): void => {
             undocValue([2, 2, 3], numVectorType),
             2,
         ),
-        { type: 'success', value: undocValue([100, 100], numVectorType) },
+        { type: 'success', value: undocValue(100, numType) },
     )
     // empty mask
     assert.deepStrictEqual(

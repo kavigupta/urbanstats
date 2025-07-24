@@ -1,10 +1,11 @@
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
-import { USSRawValue, USSValue } from '../types-values'
+import { renderType, USSRawValue, USSValue } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
+import { constructInsetValue, constructInsetsValue, insetConsts } from './insets'
 import { cMap, constructOutline } from './map'
 import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
@@ -141,6 +142,9 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['reverseRamp', reverseRampValue],
     ['divergingRamp', divergingRampValue],
     ...rampConsts,
+    ['constructInset', constructInsetValue],
+    ['constructInsets', constructInsetsValue],
+    ...insetConsts,
     ['linearScale', linearScaleValue],
     ['logScale', logScaleValue],
     ['cMap', cMap],
@@ -148,3 +152,16 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['osmBasemap', osmBasemap],
     ['noBasemap', noBasemap],
 ] satisfies [string, USSValue][])
+
+// for debugging
+export function constantsByType(): Record<string, string[]> {
+    const grouped = new Map<string, string[]>()
+    for (const [name, value] of defaultConstants) {
+        const key = renderType(value.type)
+        if (!grouped.has(key)) {
+            grouped.set(key, [])
+        }
+        grouped.get(key)!.push(name)
+    }
+    return Object.fromEntries(grouped)
+}

@@ -73,7 +73,7 @@ function repeatMany(value: USSValue, count: number): { type: 'success', value: U
     }
 }
 
-export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
+function indexMaskComposite(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
     /**
      * Indexes the value using the mask. The mask is expected to be a vector of numbers, strings, or booleans.
      * If the mask is not a valid mask, an error is returned.
@@ -94,7 +94,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                 if (repeated.type === 'error') {
                     return repeated
                 }
-                return indexMask(repeated.value, mask, reference)
+                return indexMaskComposite(repeated.value, mask, reference)
             }
             const valueVector = value.value as USSRawValue[]
             if (maskVector.length !== valueVector.length) {
@@ -105,7 +105,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
             for (let i = 0; i < maskVector.length; i++) {
                 assert(valueType.elementType.type !== 'elementOfEmptyVector', `Value element type cannot be elementOfEmptyVector, got ${renderType(valueType)}`)
                 assert(maskType.elementType.type !== 'elementOfEmptyVector', `Mask element type cannot be elementOfEmptyVector, got ${renderType(maskType)}`)
-                const resultsOrErr = indexMask(
+                const resultsOrErr = indexMaskComposite(
                     { type: valueType.elementType, value: valueVector[i], documentation: value.documentation },
                     { type: maskType.elementType, value: maskVector[i], documentation: mask.documentation },
                     reference,
@@ -126,6 +126,21 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         case 'opaque':
             throw new Error('this case was already handled earlier, should not be reachable')
         /* c8 ignore stop */
+    }
+}
+
+export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue } | { type: 'error', message: string } {
+    switch (value.type.type) {
+        case 'vector':
+        case 'object':
+            return indexMaskComposite(value, mask, reference)
+        case 'number':
+        case 'string':
+        case 'boolean':
+        case 'null':
+        case 'opaque':
+        case 'function':
+            return { type: 'success', value }
     }
 }
 
@@ -260,9 +275,17 @@ export function mergeValuesViaMasks(
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
         indices[whichValue]++
     }
-    const defaultV = defaultValueForType(firstType)
+    let defaultV: USSRawValue | undefined = undefined
     const finalRes = result.map(
-        x => x ? x.value : defaultV,
+        (x) => {
+            if (x !== undefined) {
+                return x.value
+            }
+            if (defaultV === undefined) {
+                defaultV = defaultValueForType(firstType)
+            }
+            return defaultV satisfies USSRawValue
+        },
     )
     return {
         type: 'success',
