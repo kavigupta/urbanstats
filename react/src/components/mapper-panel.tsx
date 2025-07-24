@@ -3,7 +3,6 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import insets from '../data/insets'
@@ -239,13 +238,12 @@ function latToWebMercatorY(lat: number): number {
     return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
 }
 
-function computeAspectRatio(coordBox: readonly [number, number, number, number]): number {
-    const [minLng, minLat, maxLng, maxLat] = coordBox
-
-    const x1 = lngToWebMercatorX(minLng)
-    const x2 = lngToWebMercatorX(maxLng)
-    const y1 = latToWebMercatorY(minLat)
-    const y2 = latToWebMercatorY(maxLat)
+function computeAspectRatio(coordBox: [number, number, number, number]): number {
+    // coordBox is [west, south, east, north]
+    const x1 = lngToWebMercatorX(coordBox[0])
+    const x2 = lngToWebMercatorX(coordBox[2])
+    const y1 = latToWebMercatorY(coordBox[1])
+    const y2 = latToWebMercatorY(coordBox[3])
 
     const width = Math.abs(x2 - x1)
     const height = Math.abs(y2 - y1)
@@ -262,10 +260,8 @@ function loadInset(universe: Universe): [Insets | undefined, number] {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
             topRight: [inset.topRight[0], inset.topRight[1]],
-            coordBox: new maplibregl.LngLatBounds(
-                [inset.coordBox[0], inset.coordBox[1]],
-                [inset.coordBox[2], inset.coordBox[3]],
-            ),
+            // copy to get rid of readonly
+            coordBox: [...inset.coordBox],
             mainMap: inset.mainMap,
         } satisfies Inset
     })
