@@ -14,7 +14,7 @@ import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
 
-type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' }
+type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' }
 
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
@@ -186,6 +186,56 @@ export function AutoUXEditor(props: {
                 </div>
             )
         }
+        if (uss.type === 'vectorLiteral') {
+            // Determine the element type
+            let elementType: USSType = { type: 'number' } // fallback
+            if (props.type.type === 'vector') {
+                elementType = props.type.elementType as USSType
+            }
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
+                    {uss.elements.map((el, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+                            <span style={{ minWidth: 24, textAlign: 'right', color: '#888' }}>{i}</span>
+                            <AutoUXEditor
+                                uss={el}
+                                setUss={(newEl) => {
+                                    const newElements = [...uss.elements]
+                                    newElements[i] = newEl
+                                    props.setUss({ ...uss, elements: newElements })
+                                }}
+                                typeEnvironment={props.typeEnvironment}
+                                errors={props.errors}
+                                blockIdent={`${props.blockIdent}_el_${i}`}
+                                type={elementType}
+                            />
+                            <button
+                                style={{ marginLeft: 8 }}
+                                onClick={() => {
+                                    const newElements = uss.elements.filter((_, j) => j !== i)
+                                    props.setUss({ ...uss, elements: newElements })
+                                }}
+                                title="Remove element"
+                            >
+                                –
+                            </button>
+                        </div>
+                    ))}
+                    <button
+                        style={{ alignSelf: 'flex-start', marginTop: 4 }}
+                        onClick={() => {
+                            const newElements = [
+                                ...uss.elements,
+                                createDefaultExpression(elementType, `${props.blockIdent}_el_${uss.elements.length}`, props.typeEnvironment),
+                            ]
+                            props.setUss({ ...uss, elements: newElements })
+                        }}
+                    >
+                        + Add element
+                    </button>
+                </div>
+            )
+        }
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
     const leftSegment = (
@@ -251,8 +301,15 @@ export function AutoUXEditor(props: {
 }
 
 function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Selection[] {
-    const results: Selection[] = target.type === 'opaque' && target.allowCustomExpression === false ? [] : [{ type: 'custom' }]
-
+    const results: Selection[] = []
+    // Add vector option if the type is a vector
+    if (target.type === 'vector') {
+        results.push({ type: 'vector' })
+    }
+    // Add custom option for non-opaque or custom-allowed types
+    if (target.type !== 'opaque' || target.allowCustomExpression !== false) {
+        results.push({ type: 'custom' })
+    }
     // Add constant option for numbers and strings
     if (shouldShowConstant(target)) {
         results.push({ type: 'constant' })
@@ -261,7 +318,6 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
         // Only add variables and functions if constants are not shown
         const variables: Selection[] = []
         const functions: Selection[] = []
-
         for (const [name, type] of env) {
             const t: USSType = type.type
             if (renderType(t) === renderType(target)) {
@@ -271,26 +327,22 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
                 functions.push({ type: 'function', name })
             }
         }
-
         // Sort variables by priority (lower numbers first)
         variables.sort((a, b) => {
             const aPriority = a.type === 'variable' ? (env.get(a.name)?.documentation?.priority ?? 1) : 1
             const bPriority = b.type === 'variable' ? (env.get(b.name)?.documentation?.priority ?? 1) : 1
             return aPriority - bPriority
         })
-
         // Sort functions by priority (functions get priority 0 by default)
         functions.sort((a, b) => {
             const aPriority = a.type === 'function' ? (env.get(a.name)?.documentation?.priority ?? 0) : 0
             const bPriority = b.type === 'function' ? (env.get(b.name)?.documentation?.priority ?? 0) : 0
             return aPriority - bPriority
         })
-
         // Functions first, then variables
         results.push(...functions)
         results.push(...variables)
     }
-
     return results
 }
 
@@ -501,6 +553,9 @@ function classifyExpr(uss: UrbanStatsASTExpression): Selection {
         assert(classifiedFn.type === 'variable', 'Function must be a variable or another function')
         return { type: 'function', name: classifiedFn.name }
     }
+    if (uss.type === 'vectorLiteral') {
+        return { type: 'vector' }
+    }
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
@@ -510,6 +565,9 @@ function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, select
     }
     if (selection.type === 'constant') {
         return 'Constant'
+    }
+    if (selection.type === 'vector') {
+        return 'Manual List'
     }
     const doc = typeEnvironment.get(selection.name)?.documentation?.humanReadableName
     return doc ?? selection.name
@@ -568,6 +626,14 @@ function defaultForSelection(
             return getDefaultVariable(selection as Selection & { type: 'variable' }, typeEnvironment, blockIdent)
         case 'function':
             return getDefaultFunction(selection as Selection & { type: 'function' }, typeEnvironment, blockIdent)
+        case 'vector': {
+            // Create an empty vectorLiteral of the right type
+            return {
+                type: 'vectorLiteral',
+                entireLoc: emptyLocation(blockIdent),
+                elements: [],
+            }
+        }
     }
 }
 
