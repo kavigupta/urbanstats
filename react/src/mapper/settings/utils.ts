@@ -7,8 +7,6 @@ import { defaultTopLevelEditor } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
-export const rootBlockIdent = 'r'
-
 /* eslint-disable no-restricted-syntax -- This represents persitent links */
 export interface RegressionDescriptor {
     var_coefficients: string[]

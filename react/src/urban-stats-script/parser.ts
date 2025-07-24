@@ -851,6 +851,7 @@ export function parseNoError(uss: string, blockId: string): UrbanStatsASTStateme
 }
 
 export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
+    assert(!blockId.startsWith('undefined'), 'blockId must not start with "undefined"')
     const result = parseNoError(uss, blockId)
     return {
         type: 'customNode',
