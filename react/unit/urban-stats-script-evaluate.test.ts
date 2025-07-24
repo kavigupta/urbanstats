@@ -1332,6 +1332,10 @@ void test('test basic map', () => {
     assert.deepStrictEqual(effects, [{
         type: 'warning',
         message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        location: {
+            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+        },
     }])
 })
 
@@ -1347,6 +1351,10 @@ void test('test basic map, default geo', () => {
     assert.deepStrictEqual(effects, [{
         type: 'warning',
         message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        location: {
+            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+        },
     }])
 })
 
@@ -1865,6 +1873,10 @@ void test('test basic map with custom insets', () => {
     assert.deepStrictEqual(effects, [{
         type: 'warning',
         message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        location: {
+            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+        },
     }])
 })
 
@@ -1919,5 +1931,9 @@ void test('test basic map with constructed insets', () => {
     assert.deepStrictEqual(effects, [{
         type: 'warning',
         message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        location: {
+            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+        },
     }])
 })

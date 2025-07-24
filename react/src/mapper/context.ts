@@ -23,7 +23,7 @@ export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: 
 async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<void> {
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'defaultInsets']
 
     // Load all variables in parallel
     const variablePromises = variables
@@ -81,6 +81,11 @@ export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
     te.set('geo', {
         type: { type: 'vector', elementType: { type: 'string' } },
         documentation: { humanReadableName: 'Geography Name' },
+    })
+
+    te.set('defaultInsets', {
+        type: { type: 'opaque', name: 'insets' },
+        documentation: { humanReadableName: 'Default Insets' },
     })
 
     for (const variableInfo of statistic_variables_info.variableNames) {

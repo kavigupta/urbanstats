@@ -39,6 +39,8 @@ interface DisplayedMapProps extends MapGenericProps {
     universe: string
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
+    insetsCallback: (insetsToUse: Insets) => void
+    defaultInsets: Insets
     height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
@@ -97,7 +99,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe, defaultInsets: this.props.defaultInsets }, stmts })
         console.log('abc', result.error)
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
@@ -113,6 +115,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
         this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
         this.props.basemapCallback(cMap.basemap)
+        this.props.insetsCallback(cMap.insets)
         const colors = cMap.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
@@ -238,7 +241,7 @@ function latToWebMercatorY(lat: number): number {
     return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
 }
 
-function computeAspectRatio(coordBox: readonly [number, number, number, number]): number {
+function computeAspectRatio(coordBox: [number, number, number, number]): number {
     // coordBox is [west, south, east, north]
     const x1 = lngToWebMercatorX(coordBox[0])
     const x2 = lngToWebMercatorX(coordBox[2])
@@ -251,11 +254,31 @@ function computeAspectRatio(coordBox: readonly [number, number, number, number])
     return width / height
 }
 
-function loadInset(universe: Universe): [Insets | undefined, number] {
+function area(coordBox: [number, number, number, number]): number {
+    // coordBox is [west, south, east, north]
+    const x1 = lngToWebMercatorX(coordBox[0])
+    const x2 = lngToWebMercatorX(coordBox[2])
+    const y1 = latToWebMercatorY(coordBox[1])
+    const y2 = latToWebMercatorY(coordBox[3])
+
+    return Math.abs((x2 - x1) * (y2 - y1))
+}
+
+function computeAspectRatioForInsets(ins: Insets): number {
+    const mapsWithCoordBox = ins.filter(inset => inset.coordBox !== undefined) as (Inset & { coordBox: [number, number, number, number] })[]
+    assert(mapsWithCoordBox.length > 0, 'No insets with coordBox')
+
+    const biggestMap = mapsWithCoordBox.reduce((prev, curr) => {
+        return area(curr.coordBox) > area(prev.coordBox) ? curr : prev
+    })
+    const coordBox = biggestMap.coordBox
+    return computeAspectRatio(coordBox)
+}
+
+function loadInset(universe: Universe): Insets {
     const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    const aspectRatio = computeAspectRatio(insetsU[0].coordBox)
     const insetsProc = insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
@@ -265,14 +288,17 @@ function loadInset(universe: Universe): [Insets | undefined, number] {
             mainMap: inset.mainMap,
         } satisfies Inset
     })
-    return [insetsProc, aspectRatio]
+    return insetsProc
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
-    const [insetsU, aspectRatio] = loadInset(props.universe)
+    const insetsU = loadInset(props.universe)
+    const [currentInsets, setCurrentInsets] = useState<Insets>(insetsU)
+
+    const aspectRatio = computeAspectRatioForInsets(currentInsets)
 
     return (
         <div style={{
@@ -286,6 +312,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     universe={props.universe}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
                     basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
+                    insetsCallback={(newInsets) => { setCurrentInsets(newInsets) }}
                     ref={props.mapRef}
                     uss={props.uss}
                     height={{ type: 'aspect-ratio', value: aspectRatio }}
@@ -293,8 +320,9 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    insets={insetsU ?? undefined}
-                    key={JSON.stringify(insetsU ?? undefined)}
+                    defaultInsets={insetsU}
+                    insets={currentInsets}
+                    key={JSON.stringify(currentInsets)}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }}>
