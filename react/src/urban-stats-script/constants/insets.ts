@@ -42,6 +42,9 @@ export function constructInset(
 }
 
 export function constructInsets(insetList: Inset[]): USSRawValue {
+    if (!insetList.some(inset => inset.mainMap)) {
+        throw new Error('At least one inset must have mainMap=true')
+    }
     return {
         type: 'opaque',
         value: insetList,
