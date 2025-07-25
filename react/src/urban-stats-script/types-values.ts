@@ -84,7 +84,7 @@ export type USSRawValue = (
             originalArgs: OriginalFunctionArgs
         ) => USSRawValue
     ) |
-    { type: 'opaque', value: object }
+    { type: 'opaque', value: object, posArgVals?: USSRawValue[] }
 )
 
 export interface Documentation {
@@ -98,6 +98,10 @@ export interface Documentation {
      * Human-readable names for named arguments. Maps argument name to display name.
      */
     namedArgs?: Record<string, string>
+    /**
+     * Should be included when a constant should be deconstructed into an expression for user editing
+     */
+    equivalentExpression?: UrbanStatsASTExpression
 }
 
 export interface USSDocumentedType {

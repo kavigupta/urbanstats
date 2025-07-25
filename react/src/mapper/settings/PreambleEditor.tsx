@@ -3,7 +3,7 @@ import React, { ReactNode, useState } from 'react'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
@@ -30,7 +30,7 @@ export function PreambleEditor({
                 checked={showPreamble}
                 onChange={(checked) => {
                     // Enable/disable preamble
-                    const preambleExpr = parseNoErrorAsExpression('', blockIdent)
+                    const preambleExpr = parseNoErrorAsCustomNode('', blockIdent)
                     setPreamble(preambleExpr)
                     setShowPreamble(checked)
                 }}
