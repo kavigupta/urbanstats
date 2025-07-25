@@ -1,3 +1,4 @@
+import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useState } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
@@ -733,43 +734,6 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
                 return deconstruct(expr.expr.value, typeEnvironment, blockIdent)
             }
             return
-        //     switch (value.type.type) {
-        //         case 'opaque':
-        //             switch (value.type.name) {
-        //                 case 'ramp':
-        //                     const { value: ramp } = value.value as { type: 'opaque', value: RampT }
-        //                     return [
-        //                         { type: 'unnamed',
-        //                             value: {
-        //                                 type: 'vectorLiteral',
-        //                                 entireLoc: emptyLocation(blockIdent),
-        //                                 elements: ramp.map(([rampValue, rampHex], i) => {
-        //                                     const color = hexToColor(rampHex)
-        //                                     return parseNoErrorAsExpression(unparse({
-        //                                         type: 'objectLiteral',
-        //                                         entireLoc: emptyLocation(blockIdent),
-        //                                         properties: [
-        //                                             ['value', { type: 'constant', value: { location: emptyLocation(blockIdent), node: { type: 'number', value: rampValue } } }],
-        //                                             ['color', { type: 'function', fn: { type: 'identifier', name: { location: emptyLocation(blockIdent), node: 'rgb' } }, args: [color.r, color.g, color.b].map(colorComponent => ({
-        //                                                 type: 'unnamed',
-        //                                                 value: {
-        //                                                     type: 'constant',
-        //                                                     value: { location: emptyLocation(blockIdent), node: { type: 'number', value: colorComponent / 255 } },
-        //                                                 },
-        //                                             })), entireLoc: emptyLocation(blockIdent) }],
-        //                                         ],
-        //                                     }), `${blockIdent}_pos_${i}`)
-        //                                 }),
-        //                             },
-        //                         },
-        //                     ]
-        //                 default:
-        //                     return
-        //             }
-        //         default:
-        //             return
-        //     }
-        // }
         default:
             return
     }
@@ -783,8 +747,9 @@ function defaultForSelection(
     type: USSType,
 ): UrbanStatsASTExpression {
     console.log({ selection })
-    let deconstructed
-    if (selection.type !== 'custom' && (deconstructed = deconstruct(current, typeEnvironment, blockIdent)) !== undefined) {
+    const deconstructed = deconstruct(current, typeEnvironment, blockIdent)
+    // We only want to use the deconstructed value if it's appropriate for this selection
+    if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
         return deconstructed
     }
 
