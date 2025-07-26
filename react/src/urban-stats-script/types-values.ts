@@ -84,7 +84,7 @@ export type USSRawValue = (
             originalArgs: OriginalFunctionArgs
         ) => USSRawValue
     ) |
-    { type: 'opaque', value: object, posArgVals?: USSRawValue[] }
+    { type: 'opaque', value: object }
 )
 
 export interface Documentation {

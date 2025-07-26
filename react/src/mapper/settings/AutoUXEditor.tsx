@@ -763,8 +763,6 @@ export function parseExpr(
     return parsed ?? fallback(unparse(expr), blockIdent, type)
 }
 
-// We want a different version of this that doesn't wrap things as custom nodes, but rather just fails
-// Then we can try to parse things back when switching selections
 function attemptParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,

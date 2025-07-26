@@ -1,6 +1,6 @@
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
-import { parse, parseNoErrorAsExpression } from '../parser'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../types-values'
 
 import { Color, doRender, hexToColor } from './color'
