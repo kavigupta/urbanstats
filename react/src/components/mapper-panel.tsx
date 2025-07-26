@@ -223,6 +223,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
+    colorbarRef: React.RefObject<HTMLDivElement>
 }
 
 interface EmpiricalRamp {
@@ -283,7 +284,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     key={JSON.stringify(insetsU)}
                 />
             </div>
-            <div style={{ height: '8%', width: '100%' }}>
+            <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
                     name={colorStat.name()}
                     ramp={empiricalRamp}
@@ -304,12 +305,13 @@ function saveAsFile(filename: string, data: string, type: string): void {
     document.body.removeChild(link)
 }
 
-function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
+function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: React.RefObject<HTMLDivElement> }): ReactNode {
     const exportAsPng = async (): Promise<void> => {
         if (props.mapRef.current === null) {
             return
         }
-        const pngDataUrl = await props.mapRef.current.exportAsPng()
+        const colorbarElement = props.colorbarRef.current ?? undefined
+        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement)
         // Convert data URL to blob for download
         const response = await fetch(pngDataUrl)
         const blob = await response.blob()
@@ -386,6 +388,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [mapSettings.geography_kind])
 
     const mapRef = useRef<DisplayedMap>(null)
+    const colorbarRef = useRef<HTMLDivElement>(null)
 
     const jsonedSettings = JSON.stringify(mapSettings)
 
@@ -421,6 +424,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
+                        colorbarRef={colorbarRef}
                     />
                 )
     }
@@ -443,6 +447,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                 />
                 <Export
                     mapRef={mapRef}
+                    colorbarRef={colorbarRef}
                 />
                 {
                     mapperPanel()

@@ -19,7 +19,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -360,9 +360,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     /**
      * Export the map as a high-resolution PNG
      *
+     * @param colorbarElement - The colorbar element to render below the maps
      * @returns string PNG data URL
      */
-    async exportAsPng(): Promise<string> {
+    async exportAsPng(colorbarElement?: HTMLElement): Promise<string> {
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
@@ -383,6 +384,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const pixelRatio = 4
         const width = 4096
         const height = Math.round(width / aspectRatio)
+
+        // Add space below the maps for the colorbar
+        const colorbarHeight = 300
+        const totalHeight = height + colorbarHeight
 
         // Store original container sizes, bounds, and pixel ratios
         const originalSizes: { width: string, height: string }[] = []
@@ -441,7 +446,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             const canvas = document.createElement('canvas')
             const ctx = canvas.getContext('2d')!
             canvas.width = width
-            canvas.height = height
+            canvas.height = totalHeight
 
             // Composite all maps onto the main canvas
             for (let i = 0; i < maps.length; i++) {
@@ -482,6 +487,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 }
             }
 
+            // Render the existing colorbar element below the maps if provided
+            if (colorbarElement) {
+                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement)
+            }
+
             // Return the high-resolution PNG data URL
             return canvas.toDataURL('image/png', 1.0)
         }
@@ -500,6 +510,29 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 map.resize()
                 map.fitBounds(originalBound, { animate: false })
             }
+        }
+    }
+
+    /**
+     * Render the existing colorbar element to the canvas
+     */
+    private async renderColorbarToCanvas(ctx: CanvasRenderingContext2D, width: number, mapHeight: number, colorbarElement: HTMLElement): Promise<void> {
+        try {
+            // Calculate the width needed to fit the colorbar in the available vertical space
+            const availableHeight = 200 - 40 // Available space minus padding
+            const aspectRatio = colorbarElement.offsetWidth / colorbarElement.offsetHeight
+            const colorbarWidth = availableHeight * aspectRatio
+
+            // Use the existing screencapElement function from screenshot.tsx
+            const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
+
+            // Draw the colorbar canvas onto the main canvas
+            const colorbarX = (width - colorbarWidth) / 2 // Center the colorbar
+            const colorbarY = mapHeight + 20 // 20px below maps
+            ctx.drawImage(colorbarCanvas, colorbarX, colorbarY)
+        }
+        catch (error) {
+            throw new Error(`Failed to render colorbar: ${error}`)
         }
     }
 
