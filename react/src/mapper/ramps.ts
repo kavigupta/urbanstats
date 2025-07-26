@@ -35,7 +35,9 @@ export function getRamps(): Record<string, RampT> {
             [0.75, hueColors.green],
             [1, hueColors.yellow],
         ],
-        ...RAMPS,
+        ...Object.fromEntries(Object.entries(RAMPS).map(([name, ramp]) => {
+            return [name, ramp.ramp]
+        })),
     }
 }
 
@@ -61,16 +63,16 @@ export function parseCustomColormap(customColormap: string): ColorMap | undefine
 function parseColormap(cmap: EncodedColorMap): ColorMap {
     if (cmap.type === 'none') {
     // default
-        return RAMPS.Gray
+        return RAMPS.Gray.ramp
     }
     else if (cmap.type === 'custom') {
-        return parseCustomColormap(cmap.custom_colormap) ?? RAMPS.Gray
+        return parseCustomColormap(cmap.custom_colormap) ?? RAMPS.Gray.ramp
     }
     else {
         if (cmap.name === '') {
-            return RAMPS.Gray
+            return RAMPS.Gray.ramp
         }
-        return RAMPS[cmap.name]
+        return RAMPS[cmap.name].ramp
     }
 }
 
