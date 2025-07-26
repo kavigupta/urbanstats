@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useState, useEffect } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
@@ -417,6 +417,11 @@ export function Selector(props: {
     const [searchValue, setSearchValue] = useState(selectedRendered)
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
+
+    // Needed if this component is reused in a different context
+    useEffect(() => {
+        setSearchValue(selectedRendered)
+    }, [selectedRendered])
 
     if (selectionPossibilities.length < 2) {
         return undefined
