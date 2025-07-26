@@ -167,7 +167,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
         conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
         conditionRest = conditionStmt !== undefined ? [conditionStmt] : []
     }
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, cMap, typeEnvironment)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, cMap, typeEnvironment, parseNoErrorAsCustomNode)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),

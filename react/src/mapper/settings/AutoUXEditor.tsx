@@ -5,12 +5,10 @@ import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { hexToColor } from '../../urban-stats-script/constants/color'
-import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse, parseNoErrorAsCustomNode, parseNoError, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue, USSFunctionType } from '../../urban-stats-script/types-values'
+import { unparse, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
@@ -203,7 +201,6 @@ export function AutoUXEditor(props: {
             let elementType: USSType = { type: 'number' } // fallback
             if (props.type.type === 'vector') {
                 elementType = props.type.elementType as USSType
-                console.log({ elementType })
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -415,7 +412,6 @@ export function Selector(props: {
     const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
     const selected = classifyExpr(props.uss)
     const selectedRendered = renderSelection(props.typeEnvironment, selected)
-    console.log({ renderedSelectionPossibilities, selectedRendered })
     assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
 
     const [searchValue, setSearchValue] = useState(selectedRendered)
@@ -641,42 +637,6 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
     return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
 }
 
-// function getDefaultArgs(fn: { type: USSFunctionType }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTArg[] {
-//     const args: UrbanStatsASTArg[] = []
-//     // Only include positional arguments by default, not named arguments with defaults
-//     for (let i = 0; i < fn.type.posArgs.length; i++) {
-//         const arg = fn.type.posArgs[i]
-//         assert(arg.type === 'concrete', `Positional argument must be concrete`)
-//         args.push({
-//             type: 'unnamed',
-//             value: createDefaultExpression(arg.value, `${blockIdent}_pos_${i}`, typeEnvironment),
-//         })
-//     }
-//     const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
-//     for (const [name, argWDefault] of needed) {
-//         const arg = argWDefault.type
-//         assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-//         args.push({
-//             type: 'named',
-//             name: { node: name, location: emptyLocation(blockIdent) },
-//             value: createDefaultExpression(arg.value, `${blockIdent}_${name}`, typeEnvironment),
-//         })
-//     }
-//     return args
-// }
-
-// function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, current?: UrbanStatsASTExpression): UrbanStatsASTExpression {
-//     const fn = typeEnvironment.get(selection.name)
-//     assert(fn && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
-//     const args: UrbanStatsASTArg[] = (current !== undefined ? deconstruct(current, typeEnvironment, blockIdent) : undefined) ?? getDefaultArgs({ type: fn.type }, typeEnvironment, blockIdent)
-//     return {
-//         type: 'function',
-//         fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
-//         args,
-//         entireLoc: emptyLocation(blockIdent),
-//     }
-// }
-
 function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
     const fn = typeEnvironment.get(selection.name)
     assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
@@ -709,7 +669,6 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
 }
 
 function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression | undefined {
-    console.log({ expr })
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -721,8 +680,6 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
             const value = reference as USSValue
 
             const equivalentExpression = value.documentation?.equivalentExpression
-
-            console.log({ value, equivalentExpression })
 
             if (equivalentExpression !== undefined) {
                 return parseNoErrorAsExpression(unparse(equivalentExpression), blockIdent)
@@ -746,12 +703,23 @@ function defaultForSelection(
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
-    console.log({ selection })
     const deconstructed = deconstruct(current, typeEnvironment, blockIdent)
     // We only want to use the deconstructed value if it's appropriate for this selection
     if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
+        console.log('Setting deconstructed')
         return deconstructed
     }
+
+    try {
+        const parsed = parseExpr(current, blockIdent, type, typeEnvironment, () => {
+            throw new Error('parsing failed')
+        })
+        if (stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
+            console.log('Setting parsed')
+            return parsed
+        }
+    }
+    catch {}
 
     switch (selection.type) {
         case 'custom':
@@ -779,14 +747,17 @@ function defaultForSelection(
     }
 }
 
+type Fallback = (uss: string, i: string, t: USSType) => UrbanStatsASTExpression
+
 export function parseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
     type: USSType,
     typeEnvironment: Map<string, USSDocumentedType>,
+    fallback: Fallback,
 ): UrbanStatsASTExpression {
-    const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment)
-    return parsed ?? parseNoErrorAsCustomNode(unparse(expr), blockIdent, type)
+    const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment, fallback)
+    return parsed ?? fallback(unparse(expr), blockIdent, type)
 }
 
 // We want a different version of this that doesn't wrap things as custom nodes, but rather just fails
@@ -796,30 +767,54 @@ function attemptParseExpr(
     blockIdent: string,
     type: USSType,
     typeEnvironment: Map<string, USSDocumentedType>,
+    fallback: Fallback,
 ): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'condition':
         case 'unaryOperator':
         case 'binaryOperator':
-        case 'objectLiteral':
-        case 'vectorLiteral':
         case 'if':
         case 'assignment':
         case 'parseError':
         case 'attribute':
             return undefined
+        case 'vectorLiteral':
+            if (type.type === 'vector') {
+                const elementType = type.elementType
+                if (elementType.type !== 'elementOfEmptyVector') {
+                    return {
+                        type: 'vectorLiteral',
+                        entireLoc: emptyLocation(blockIdent),
+                        elements: expr.elements.map(elem => parseExpr(elem, blockIdent, elementType, typeEnvironment, fallback)),
+                    }
+                }
+            }
+            return undefined
+        case 'objectLiteral':
+            if (type.type === 'object') {
+                const exprProps = new Set(expr.properties.map(([key]) => key))
+                // No duplicate keys
+                if (exprProps.size === expr.properties.length && exprProps.size === type.properties.size && Array.from(type.properties.keys()).every(key => exprProps.has(key))) {
+                    return {
+                        type: 'objectLiteral',
+                        entireLoc: emptyLocation(blockIdent),
+                        properties: expr.properties.map(([key, value]) => [key, parseExpr(value, blockIdent, type.properties.get(key)!, typeEnvironment, fallback)]),
+                    }
+                }
+            }
+            return undefined
         case 'do':
             const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment) ?? parseNoErrorAsCustomNode(unparse(stmts), blockIdent, type)
+            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, type)
         case 'customNode':
-            return parseExpr(expr.expr, blockIdent, type, typeEnvironment)
+            return parseExpr(expr.expr, blockIdent, type, typeEnvironment, fallback)
         case 'statements':
             if (expr.result.length === 1) {
-                return parseExpr(expr.result[0], blockIdent, type, typeEnvironment)
+                return parseExpr(expr.result[0], blockIdent, type, typeEnvironment, fallback)
             }
             return undefined
         case 'expression':
-            return parseExpr(expr.value, blockIdent, type, typeEnvironment)
+            return parseExpr(expr.value, blockIdent, type, typeEnvironment, fallback)
         case 'identifier':
             const validVariableSelections = possibilities(type, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
             if (validVariableSelections.some(s => s.name === expr.name.node)) {
@@ -860,7 +855,7 @@ function attemptParseExpr(
             }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, (fnType.posArgs[i] as { type: 'concrete', value: USSType }).value, typeEnvironment),
+                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, (fnType.posArgs[i] as { type: 'concrete', value: USSType }).value, typeEnvironment, fallback),
             }))
             if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
                 return undefined
@@ -868,7 +863,7 @@ function attemptParseExpr(
             nameds = nameds.map(a => ({
                 type: 'named',
                 name: a.name,
-                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, (fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value, typeEnvironment),
+                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, (fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value, typeEnvironment, fallback),
             }))
             return {
                 type: 'function',
