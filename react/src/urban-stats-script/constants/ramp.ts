@@ -1,8 +1,9 @@
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../types-values'
 
-import { Color, doRender } from './color'
+import { Color, doRender, hexToColor } from './color'
 
 export type RampT = [number, string][]
 
@@ -123,6 +124,16 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
     {
         type: rampType,
         value: { type: 'opaque', value: ramp satisfies RampT } satisfies USSRawValue,
-        documentation: { humanReadableName: name, isDefault: name === 'Uridis' },
+        documentation: {
+            humanReadableName: name,
+            isDefault: name === 'Uridis',
+            equivalentExpression: parseNoErrorAsExpression(
+                `constructRamp([${ramp.map(([value, rampHex]) => {
+                    const color = hexToColor(rampHex)
+                    return `{value:${value}, color:rgb(${color.r / 255}, ${color.g / 255}, ${color.b / 255})}`
+                }).join(',')}])`,
+                '',
+            ),
+        },
     },
 ])

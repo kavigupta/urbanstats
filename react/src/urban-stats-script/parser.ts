@@ -850,7 +850,7 @@ export function parseNoError(uss: string, blockId: string): UrbanStatsASTStateme
     return result
 }
 
-export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
+export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
     assert(!blockId.startsWith('undefined'), 'blockId must not start with "undefined"')
     const result = parseNoError(uss, blockId)
     return {
@@ -859,4 +859,10 @@ export function parseNoErrorAsExpression(uss: string, blockId: string, expectedT
         originalCode: uss,
         expectedType,
     }
+}
+
+export function parseNoErrorAsExpression(uss: string, blockId: string): UrbanStatsASTExpression {
+    const result = parseNoError(uss, blockId)
+    assert(result.type === 'expression', 'Must be expression')
+    return result.value
 }

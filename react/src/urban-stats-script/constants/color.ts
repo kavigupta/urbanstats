@@ -9,7 +9,7 @@ import { camelToHuman } from './utils'
 export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
-function hexToColor(hex: string): Color {
+export function hexToColor(hex: string): Color {
     const r = parseInt(hex.slice(1, 3), 16)
     const g = parseInt(hex.slice(3, 5), 16)
     const b = parseInt(hex.slice(5, 7), 16)

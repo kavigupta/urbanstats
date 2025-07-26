@@ -100,7 +100,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return { polygons: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe, defaultInsets: this.props.defaultInsets }, stmts })
-        console.log('abc', result.error)
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
             return { polygons: [], zoomIndex: -1 }

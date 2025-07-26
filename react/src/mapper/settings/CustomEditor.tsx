@@ -3,7 +3,7 @@ import React, { ReactNode, useMemo } from 'react'
 import { Editor } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { ParseError, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { ParseError, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 export function CustomEditor({
@@ -27,7 +27,7 @@ export function CustomEditor({
         <Editor
             uss={uss.originalCode}
             setUss={(u: string) => {
-                const parsed = parseNoErrorAsExpression(u, blockIdent, uss.expectedType)
+                const parsed = parseNoErrorAsCustomNode(u, blockIdent, uss.expectedType)
                 setUss(parsed)
             }}
             typeEnvironment={typeEnvironment}
