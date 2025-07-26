@@ -119,7 +119,7 @@ export const divergingRampValue: USSValue = {
 }
 
 export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map(([name, ramp]) => [
-    `ramp${name}`,
+    `ramp${name.replace(/\s+([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase())}`,
     {
         type: rampType,
         value: { type: 'opaque', value: ramp satisfies RampT } satisfies USSRawValue,
