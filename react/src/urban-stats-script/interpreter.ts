@@ -8,7 +8,7 @@ import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
 
-export interface Effect { type: 'warning', message: string }
+export interface Effect { type: 'warning', message: string, location: LocInfo }
 
 export function renderLocInfo(loc: LocInfo): string {
     if (loc.start.lineIdx === loc.end.lineIdx) {

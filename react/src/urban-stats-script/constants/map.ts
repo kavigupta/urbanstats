@@ -1,5 +1,5 @@
 import { Insets } from '../../components/map'
-import { Basemap } from '../../mapper/settings'
+import { Basemap } from '../../mapper/settings/utils'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
@@ -127,7 +127,11 @@ export const cMap: USSValue = {
         const label = labelPassedIn ?? originalArgs.namedArgs.data.documentation?.humanReadableName
 
         if (label === undefined) {
-            ctx.effect({ type: 'warning', message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)' })
+            ctx.effect({
+                type: 'warning',
+                message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+                location: noLocation,
+            })
         }
 
         return {

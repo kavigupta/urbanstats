@@ -109,7 +109,7 @@ export const constructInsetsValue: USSValue = {
         const insetsList = posArgs[0] as { type: 'opaque', value: Inset }[]
         return constructInsets(insetsList.map(item => item.value))
     },
-    documentation: { humanReadableName: 'Custom Insets' },
+    documentation: { humanReadableName: 'Custom Insets', isDefault: true },
 }
 
 export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(([, regionInsets]) =>
