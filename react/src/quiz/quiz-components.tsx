@@ -69,7 +69,7 @@ export function UserId(): ReactNode {
         <div>
             {'Your user id is '}
             <span className="juxtastat-user-id">{user}</span>
-            {' '}
+            {'. '}
             <QuizAuthStatus />
         </div>
     )
@@ -79,12 +79,6 @@ export function QuizAuthStatus(): ReactNode {
     const state = AuthenticationStateMachine.shared.useState()
 
     const startSignIn = AuthenticationStateMachine.shared.useStartSignIn()
-
-    const authEnable = QuizModel.shared.enableAuthFeatures.use()
-
-    if (!authEnable) {
-        return null
-    }
 
     if (state.state === 'signedOut') {
         const signIn = (e: React.MouseEvent): void => {

@@ -7,7 +7,6 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import { DefaultMap } from '../src/utils/DefaultMap'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
@@ -200,7 +199,51 @@ export async function safeClearLocalStorage(): Promise<void> {
     )
 }
 
-const consoleEnabled = new DefaultMap<unknown, boolean>(() => false)
+const consoleEnabled = new WeakSet()
+
+async function printConsoleMessages(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (consoleEnabled.has(cdp)) {
+        return
+    }
+    consoleEnabled.add(cdp)
+    cdp.Console.on('messageAdded', (event) => {
+        const timestamp = new Date().toISOString()
+        let text: string
+        switch (event.message.level) {
+            case 'error':
+                text = chalkTemplate`{red ${event.message.text}}`
+                break
+            case 'warning':
+                text = chalkTemplate`{yellow ${event.message.text}}`
+                break
+            default:
+                text = event.message.text
+        }
+        console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
+    })
+    await cdp.Console.enable()
+}
+
+const networkEnabled = new WeakSet()
+const requests = new Map<string, unknown>()
+
+async function printFailedNetworkRequests(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (networkEnabled.has(cdp)) {
+        return
+    }
+    networkEnabled.add(cdp)
+    cdp.Network.on('requestWillBeSent', (event) => {
+        requests.set(event.requestId, event.request)
+    })
+    cdp.Network.on('loadingFailed', (event) => {
+        if (!event.canceled) {
+            console.error(chalkTemplate`{red Request failed}`, event, requests.get(event.requestId))
+        }
+    })
+    await cdp.Network.enable({ })
+}
 
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
@@ -215,27 +258,8 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
-            const cdp = await t.getCurrentCDPSession()
-            if (!consoleEnabled.get(cdp)) {
-                consoleEnabled.set(cdp, true)
-                cdp.Console.on('messageAdded', (event) => {
-                    const timestamp = new Date().toISOString()
-                    let text: string
-                    switch (event.message.level) {
-                        case 'error':
-                            text = chalkTemplate`{red ${event.message.text}}`
-                            break
-                        case 'warning':
-                            text = chalkTemplate`{yellow ${event.message.text}}`
-                            break
-                        default:
-                            text = event.message.text
-                    }
-                    console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
-                })
-                await cdp.Console.enable()
-            }
-
+            await printConsoleMessages(t)
+            await printFailedNetworkRequests(t)
             screenshotNumber = 0
             await safeClearLocalStorage()
             await t.resizeWindow(1400, 800)
