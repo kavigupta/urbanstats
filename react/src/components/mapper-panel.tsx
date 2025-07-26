@@ -306,12 +306,14 @@ function saveAsFile(filename: string, data: string, type: string): void {
 }
 
 function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: React.RefObject<HTMLDivElement> }): ReactNode {
+    const colors = useColors()
+
     const exportAsPng = async (): Promise<void> => {
         if (props.mapRef.current === null) {
             return
         }
         const colorbarElement = props.colorbarRef.current ?? undefined
-        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement)
+        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background)
         // Convert data URL to blob for download
         const response = await fetch(pngDataUrl)
         const blob = await response.blob()

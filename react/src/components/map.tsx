@@ -361,9 +361,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * Export the map as a high-resolution PNG
      *
      * @param colorbarElement - The colorbar element to render below the maps
+     * @param backgroundColor - The background color to use for the colorbar area
      * @returns string PNG data URL
      */
-    async exportAsPng(colorbarElement?: HTMLElement): Promise<string> {
+    async exportAsPng(colorbarElement?: HTMLElement, backgroundColor?: string): Promise<string> {
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
@@ -489,7 +490,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
             // Render the existing colorbar element below the maps if provided
             if (colorbarElement) {
-                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement)
+                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement, backgroundColor)
             }
 
             // Return the high-resolution PNG data URL
@@ -516,19 +517,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     /**
      * Render the existing colorbar element to the canvas
      */
-    private async renderColorbarToCanvas(ctx: CanvasRenderingContext2D, width: number, mapHeight: number, colorbarElement: HTMLElement): Promise<void> {
+    private async renderColorbarToCanvas(ctx: CanvasRenderingContext2D, width: number, mapHeight: number, colorbarElement: HTMLElement, backgroundColor?: string): Promise<void> {
         try {
             // Calculate the width needed to fit the colorbar in the available vertical space
-            const availableHeight = 200 - 40 // Available space minus padding
+            const availableHeight = 300 - 40 // Available space minus padding
             const aspectRatio = colorbarElement.offsetWidth / colorbarElement.offsetHeight
             const colorbarWidth = availableHeight * aspectRatio
+
+            // Fill the colorbar area with the page background color
+            const colorbarX = (width - colorbarWidth) / 2 // Center the colorbar
+            const colorbarY = mapHeight + 20 // 20px below maps
+
+            // Use provided background color or fall back to computed style
+            const bgColor = backgroundColor ?? window.getComputedStyle(document.body).backgroundColor
+            ctx.fillStyle = bgColor
+            ctx.fillRect(colorbarX, colorbarY, colorbarWidth, availableHeight)
 
             // Use the existing screencapElement function from screenshot.tsx
             const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
 
             // Draw the colorbar canvas onto the main canvas
-            const colorbarX = (width - colorbarWidth) / 2 // Center the colorbar
-            const colorbarY = mapHeight + 20 // 20px below maps
             ctx.drawImage(colorbarCanvas, colorbarX, colorbarY)
         }
         catch (error) {
