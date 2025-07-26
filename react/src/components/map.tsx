@@ -463,6 +463,25 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 ctx.drawImage(mapCanvas, insetX, insetY, insetWidth, insetHeight)
             }
 
+            // Draw frames around non-main maps
+            for (const inset of insets) {
+                if (!inset.mainMap) {
+                    // Calculate position and size for this inset
+                    const [x0, y0] = inset.bottomLeft
+                    const [x1, y1] = inset.topRight
+                    const insetWidth = (x1 - x0) * width
+                    const insetHeight = (y1 - y0) * height
+                    const insetX = x0 * width
+                    const insetY = (1 - y1) * height // Flip Y coordinate for canvas
+
+                    // Draw a black border around the inset
+                    const borderColor = 'rgb(0, 0, 0)'
+                    ctx.strokeStyle = borderColor
+                    ctx.lineWidth = 4
+                    ctx.strokeRect(insetX, insetY, insetWidth, insetHeight)
+                }
+            }
+
             // Return the high-resolution PNG data URL
             return canvas.toDataURL('image/png', 1.0)
         }
