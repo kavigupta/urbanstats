@@ -8,7 +8,6 @@ from ..utils import output_typescript
 def get_pyplot_ramps():
     pyplot_ramps = {}
     for ramp_name in plt.colormaps():
-
         cat = categorize_ramp(ramp_name)
         if cat is None:
             continue
