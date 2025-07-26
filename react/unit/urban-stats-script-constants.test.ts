@@ -177,7 +177,7 @@ void test('constant listing', (): void => {
                 'rampCoolwarm',
                 'rampSeismic',
             ],
-            '({mainMap: boolean, mapBounds: {east: number, north: number, south: number, west: number}, name: string, screenBounds: {east: number, north: number, south: number, west: number}}; ) -> inset': [
+            '(; screenBounds: {east: number, north: number, south: number, west: number}, mapBounds: {east: number, north: number, south: number, west: number}, mainMap: boolean, name: string) -> inset': [
                 'constructInset',
             ],
             '([inset]; ) -> insets': [
