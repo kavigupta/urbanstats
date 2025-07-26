@@ -711,7 +711,6 @@ function defaultForSelection(
     const deconstructed = deconstruct(current, typeEnvironment, blockIdent)
     // We only want to use the deconstructed value if it's appropriate for this selection
     if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
-        console.log('Setting deconstructed')
         return deconstructed
     }
 
@@ -720,7 +719,6 @@ function defaultForSelection(
             throw new Error('parsing failed')
         })
         if (stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
-            console.log('Setting parsed')
             return parsed
         }
     }
