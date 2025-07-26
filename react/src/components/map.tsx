@@ -49,6 +49,7 @@ export interface Polygons {
 
 export interface MapState {
     loading: boolean
+    mapIsVisible: boolean[]
     polygonByName: Map<string, GeoJSON.Feature>
 }
 
@@ -193,7 +194,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     constructor(props: P) {
         super(props)
-        this.state = { loading: true, polygonByName: new Map() }
+        this.state = { loading: true, polygonByName: new Map(), mapIsVisible: this.insets().map(() => true) }
         activeMaps.push(this)
         this.handler = new MapHandler(this.insets().map(inset => inset.mainMap))
     }
@@ -208,14 +209,18 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <div style={{ position: 'relative', ...this.mapStyle() }}>
                     {this.insets().map((bbox, i) => (
-                        <MapBody
-                            key={this.handler.ids[i]}
-                            id={this.handler.ids[i]}
-                            height="100%"
-                            buttons={this.buttons()}
-                            bbox={bbox}
-                            insetBoundary={i > 0}
-                        />
+                        this.state.mapIsVisible[i]
+                            ? (
+                                    <MapBody
+                                        key={this.handler.ids[i]}
+                                        id={this.handler.ids[i]}
+                                        height="100%"
+                                        buttons={this.buttons()}
+                                        bbox={bbox}
+                                        insetBoundary={i > 0}
+                                    />
+                                )
+                            : undefined
                     ))}
                 </div>
                 <div style={{ display: 'none' }}>
@@ -587,12 +592,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         this.sources_last_updated = Date.now()
         await this.handler.ensureStyleLoadedFn()
         const polys = Array.from(this.state.polygonByName.values())
-        maps.forEach((map, i) => {
-            this.setUpMap(map, polys, this.insets()[i])
-        })
+        const mapIsVisible = maps.map((map, i) => this.setUpMap(map, polys, this.insets()[i]))
+        this.setState({ mapIsVisible })
     }
 
-    setUpMap(map: maplibregl.Map, polys: GeoJSON.Feature[], inset: Inset): void {
+    setUpMap(map: maplibregl.Map, polys: GeoJSON.Feature[], inset: Inset): boolean {
         const bbox = inset.coordBox
         if (!inset.mainMap && bbox !== undefined) {
             polys = polys.filter((poly) => {
@@ -640,6 +644,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             map.addLayer(layer, labelId)
         }
         source.setData(data)
+        return polys.length > 0
     }
 
     /*
