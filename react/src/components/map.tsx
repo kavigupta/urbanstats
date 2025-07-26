@@ -364,7 +364,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * @param backgroundColor - The background color to use for the colorbar area
      * @returns string PNG data URL
      */
-    async exportAsPng(colorbarElement?: HTMLElement, backgroundColor?: string): Promise<string> {
+    async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string): Promise<string> {
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
@@ -388,6 +388,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         // Add space below the maps for the colorbar
         const colorbarHeight = 300
+        const cBarPad = 40
         const totalHeight = height + colorbarHeight
 
         // Store original container sizes, bounds, and pixel ratios
@@ -488,15 +489,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 }
             }
 
-            // Fill the entire area below the maps with the background color
-            if (backgroundColor) {
-                ctx.fillStyle = backgroundColor
-                ctx.fillRect(0, height, width, 300) // Fill the entire colorbar area
-            }
+            ctx.fillStyle = backgroundColor
+            ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
 
-            // Render the existing colorbar element below the maps if provided
             if (colorbarElement) {
-                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement, backgroundColor)
+                const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
+
+                const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
+
+                ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
+                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement)
             }
 
             // Return the high-resolution PNG data URL
@@ -517,29 +519,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 map.resize()
                 map.fitBounds(originalBound, { animate: false })
             }
-        }
-    }
-
-    /**
-     * Render the existing colorbar element to the canvas
-     */
-    private async renderColorbarToCanvas(ctx: CanvasRenderingContext2D, width: number, mapHeight: number, colorbarElement: HTMLElement, backgroundColor?: string): Promise<void> {
-        try {
-            // Calculate the width needed to fit the colorbar in the available vertical space
-            const availableHeight = 300 - 40 // Available space minus padding
-            const aspectRatio = colorbarElement.offsetWidth / colorbarElement.offsetHeight
-            const colorbarWidth = availableHeight * aspectRatio
-
-            // Use the existing screencapElement function from screenshot.tsx
-            const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
-
-            // Draw the colorbar canvas onto the main canvas
-            const colorbarX = (width - colorbarWidth) / 2 // Center the colorbar
-            const colorbarY = mapHeight + 20 // 20px below maps
-            ctx.drawImage(colorbarCanvas, colorbarX, colorbarY)
-        }
-        catch (error) {
-            throw new Error(`Failed to render colorbar: ${error}`)
         }
     }
 
