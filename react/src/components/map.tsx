@@ -12,6 +12,7 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
+import { computeAspectRatio } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -369,10 +370,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const mainMap = maps[0]
         const mapBounds = mainMap.getBounds()
 
-        // Calculate proper dimensions based on the map's aspect ratio
-        const mapWidth = mapBounds.getEast() - mapBounds.getWest()
-        const mapHeight = mapBounds.getNorth() - mapBounds.getSouth()
-        const aspectRatio = mapWidth / mapHeight
+        // Calculate proper dimensions based on the map's aspect ratio using the coordinate utility
+        const coordBox: [number, number, number, number] = [
+            mapBounds.getWest(),
+            mapBounds.getSouth(),
+            mapBounds.getEast(),
+            mapBounds.getNorth(),
+        ]
+        const aspectRatio = computeAspectRatio(coordBox)
 
         // Use a more reasonable resolution that keeps labels readable
         const pixelRatio = 4
