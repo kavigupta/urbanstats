@@ -347,12 +347,22 @@ function saveAsFile(filename: string, data: string, type: string): void {
 }
 
 function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
-    const exportAsSvg = async (): Promise<void> => {
+    const exportAsPng = async (): Promise<void> => {
         if (props.mapRef.current === null) {
             return
         }
-        const svg = await props.mapRef.current.exportAsSvg()
-        saveAsFile('map.svg', svg, 'image/svg+xml')
+        const pngDataUrl = await props.mapRef.current.exportAsPng()
+        // Convert data URL to blob for download
+        const response = await fetch(pngDataUrl)
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = 'map.png'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
     }
 
     const exportAsGeoJSON = async (): Promise<void> => {
@@ -366,10 +376,10 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     return (
         <div>
             <button onClick={() => {
-                void exportAsSvg()
+                void exportAsPng()
             }}
             >
-                Export as SVG
+                Export as PNG
             </button>
             <button onClick={() => {
                 void exportAsGeoJSON()

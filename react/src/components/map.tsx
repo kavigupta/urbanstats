@@ -1,4 +1,3 @@
-import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
@@ -358,66 +357,126 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     /**
-     * Export the map as an svg, without the background
+     * Export the map as a high-resolution PNG
      *
-     * @returns string svg
+     * @returns string PNG data URL
      */
-    async exportAsSvg(): Promise<string> {
-        const { polygons } = await this.computePolygons()
-        const mapBounds = (await this.handler.getMaps())[0].getBounds()
-        const bounds = {
-            left: mapBounds.getWest(),
-            right: mapBounds.getEast(),
-            top: mapBounds.getNorth(),
-            bottom: mapBounds.getSouth(),
-        }
-        const width = 1000
-        const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left)
-        const converter = new GeoJSON2SVG({
-            mapExtent: bounds, attributes: [{
-                property: 'style',
-                type: 'dynamic',
-                key: 'style',
-            }],
-            viewportSize: {
-                width,
-                height,
-            },
-        })
+    async exportAsPng(): Promise<string> {
+        const maps = await this.handler.getMaps()
+        const insets = this.insets()
 
-        function toSvgStyle(style: PolygonStyle): string {
-            let svgStyle = ''
-            svgStyle += `fill:${style.fillColor};`
-            svgStyle += `fill-opacity:${style.fillOpacity};`
-            svgStyle += `stroke:${style.color};`
-            if (style.weight !== undefined) {
-                svgStyle += `stroke-width:${style.weight / 10};`
+        // Get the main map bounds for overall dimensions
+        const mainMap = maps[0]
+        const mapBounds = mainMap.getBounds()
+
+        // Calculate proper dimensions based on the map's aspect ratio
+        const mapWidth = mapBounds.getEast() - mapBounds.getWest()
+        const mapHeight = mapBounds.getNorth() - mapBounds.getSouth()
+        const aspectRatio = mapWidth / mapHeight
+
+        // Use a more reasonable resolution that keeps labels readable
+        const pixelRatio = 4
+        const width = 4096
+        const height = Math.round(width / aspectRatio)
+
+        // Store original container sizes, bounds, and pixel ratios
+        const originalSizes: { width: string, height: string }[] = []
+        const originalBounds: maplibregl.LngLatBounds[] = []
+        const originalPixelRatios: number[] = []
+
+        try {
+            // Temporarily resize all map containers to high resolution
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const container = map.getContainer()
+                const inset = insets[i]
+
+                // Store original size, bounds, and pixel ratio
+                originalSizes.push({
+                    width: container.style.width || '',
+                    height: container.style.height || '',
+                })
+                originalBounds.push(map.getBounds())
+                originalPixelRatios.push(map.getPixelRatio())
+
+                // Calculate inset dimensions
+                const [x0, y0] = inset.bottomLeft
+                const [x1, y1] = inset.topRight
+                const insetWidth = (x1 - x0) * width / pixelRatio
+                const insetHeight = (y1 - y0) * height / pixelRatio
+
+                // Resize container
+                container.style.width = `${insetWidth}px`
+                container.style.height = `${insetHeight}px`
+
+                // Set a reasonable pixel ratio to keep labels readable
+                // Use 2x pixel ratio for good quality without making labels too small
+                map.setPixelRatio(pixelRatio)
+
+                // Trigger map resize
+                map.resize()
+
+                // Update the map bounds to fill the new container size
+                // Use the inset's coordBox for the geographic bounds
+                if (inset.coordBox) {
+                    const [west, south, east, north] = inset.coordBox
+                    const insetBounds = new maplibregl.LngLatBounds(
+                        new maplibregl.LngLat(west, south),
+                        new maplibregl.LngLat(east, north),
+                    )
+                    // Fit the map to the new bounds
+                    map.fitBounds(insetBounds, { animate: false, padding: 0 })
+                }
             }
-            return svgStyle
+
+            // Wait for maps to re-render at high resolution
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            // Create a high-resolution canvas
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')!
+            canvas.width = width
+            canvas.height = height
+
+            // Composite all maps onto the main canvas
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const inset = insets[i]
+
+                // Calculate position and size for this inset
+                const [x0, y0] = inset.bottomLeft
+                const [x1, y1] = inset.topRight
+                const insetWidth = (x1 - x0) * width
+                const insetHeight = (y1 - y0) * height
+                const insetX = x0 * width
+                const insetY = (1 - y1) * height // Flip Y coordinate for canvas
+
+                // Get the high-resolution map canvas
+                const mapCanvas = map.getCanvas()
+
+                // Draw the map content onto the main canvas
+                ctx.drawImage(mapCanvas, insetX, insetY, insetWidth, insetHeight)
+            }
+
+            // Return the high-resolution PNG data URL
+            return canvas.toDataURL('image/png', 1.0)
         }
+        finally {
+            // Restore original container sizes, bounds, and pixel ratios
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const container = map.getContainer()
+                const originalSize = originalSizes[i]
+                const originalBound = originalBounds[i]
+                const originalPixelRatio = originalPixelRatios[i]
 
-        const overallSvg = []
-
-        for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
-            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
-            for (const elem of svg) {
-                overallSvg.push(elem)
+                container.style.width = originalSize.width
+                container.style.height = originalSize.height
+                map.setPixelRatio(originalPixelRatio)
+                map.resize()
+                map.fitBounds(originalBound, { animate: false })
             }
         }
-        const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-         <!-- Created with urban stats mapper (http://www.urbanstats.org/) -->
-            <svg
-            width="${width}mm"
-            height="${height}mm"
-            viewBox="0 0 ${width} ${height}"
-            version="1.1"
-            id="svg1"
-            xml:space="preserve"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:svg="http://www.w3.org/2000/svg">`
-        const footer = '</svg>'
-        return header + overallSvg.join('') + footer
     }
 
     async exportAsGeoJSON(): Promise<string> {
