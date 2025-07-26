@@ -101,7 +101,7 @@ export interface Documentation {
     /**
      * Should be included when a constant should be deconstructed into an expression for user editing
      */
-    equivalentExpression?: UrbanStatsASTExpression
+    equivalentExpressions?: UrbanStatsASTExpression[]
 }
 
 export interface USSDocumentedType {

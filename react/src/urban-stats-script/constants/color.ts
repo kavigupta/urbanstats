@@ -2,6 +2,7 @@ import ColorLib from 'color'
 
 import hueColors from '../../data/hueColors'
 import { Context } from '../context'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { camelToHuman } from './utils'
@@ -94,10 +95,27 @@ export function doRender(color: Color): string {
     return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
 }
 
+export function rgbColorExpression(color: Color): string {
+    return `rgb(${color.r / 255}, ${color.g / 255}, ${color.b / 255})`
+}
+
+export function hsvColorExpression(color: Color): string {
+    const c = ColorLib.rgb(color.r, color.g, color.b)
+    return `hsv(${c.hue()}, ${c.saturationv() / 100}, ${c.value() / 100})`
+}
+
 function colorConstant(name: string, value: string): [string, USSValue] {
     const humanReadableName = camelToHuman(name)
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
-    return [`color${capitalizedName}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
+    const color = hexToColor(value)
+    return [`color${capitalizedName}`, {
+        type: colorType,
+        value: { type: 'opaque', value: color },
+        documentation: {
+            humanReadableName,
+            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
+        },
+    }] satisfies [string, USSValue]
 }
 
 export const colorConstants = [

@@ -3,7 +3,7 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../types-values'
 
-import { Color, doRender, hexToColor } from './color'
+import { Color, rgbColorExpression, doRender, hexToColor } from './color'
 
 export type RampT = [number, string][]
 
@@ -127,13 +127,13 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
         documentation: {
             humanReadableName: name,
             isDefault: name === 'Uridis',
-            equivalentExpression: parseNoErrorAsExpression(
+            equivalentExpressions: [parseNoErrorAsExpression(
                 `constructRamp([${ramp.map(([value, rampHex]) => {
                     const color = hexToColor(rampHex)
-                    return `{value:${value}, color:rgb(${color.r / 255}, ${color.g / 255}, ${color.b / 255})}`
+                    return `{value:${value}, color:${rgbColorExpression(color)}}`
                 }).join(',')}])`,
                 '',
-            ),
+            )],
         },
     },
 ])

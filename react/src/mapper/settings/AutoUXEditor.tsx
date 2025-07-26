@@ -673,31 +673,26 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression[] {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
 
             if (reference === undefined || !('value' in reference)) {
-                return
+                return []
             }
 
             const value = reference as USSValue
 
-            const equivalentExpression = value.documentation?.equivalentExpression
-
-            if (equivalentExpression !== undefined) {
-                return parseNoErrorAsExpression(unparse(equivalentExpression), blockIdent)
-            }
-            return
+            return (value.documentation?.equivalentExpressions ?? []).map(equiv => parseNoErrorAsExpression(unparse(equiv), blockIdent))
         }
         case 'customNode':
             if (expr.expr.type === 'expression') {
                 return deconstruct(expr.expr.value, typeEnvironment, blockIdent)
             }
-            return
+            return []
         default:
-            return
+            return []
     }
 }
 
@@ -708,10 +703,11 @@ function defaultForSelection(
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
-    const deconstructed = deconstruct(current, typeEnvironment, blockIdent)
-    // We only want to use the deconstructed value if it's appropriate for this selection
-    if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
-        return deconstructed
+    for (const deconstructed of deconstruct(current, typeEnvironment, blockIdent)) {
+        // We only want to use the deconstructed value if it's appropriate for this selection
+        if (stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
+            return deconstructed
+        }
     }
 
     try {
