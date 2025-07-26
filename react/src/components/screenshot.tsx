@@ -110,70 +110,70 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 export const mapBorderWidth = 1
 export const mapBorderRadius = 5
 
+export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number): Promise<HTMLCanvasElement> {
+    const unfixElement = fixElementForScreenshot(ref)
+
+    /*
+     * Safari is flaky at rendering canvases the way `domtoimage` renders them.
+     * We work around this by rendering the canvases first, then excluding them from the element render.
+     */
+    const scaleFactor = overallWidth / ref.offsetWidth
+
+    const resultCanvas = document.createElement('canvas')
+
+    resultCanvas.width = ref.offsetWidth * scaleFactor
+    resultCanvas.height = ref.offsetHeight * scaleFactor * heightMultiplier
+
+    const resultContext = resultCanvas.getContext('2d')!
+
+    const canvases = Array.from(ref.querySelectorAll('canvas'))
+
+    const totalRefOffset = totalOffset(ref)
+
+    for (const [index, canvas] of canvases.entries()) {
+        const canvasOffset = totalOffset(canvas)
+        // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
+        const x = (canvasOffset.left - totalRefOffset.left + mapBorderWidth) * scaleFactor
+        const y = (canvasOffset.top - totalRefOffset.top + mapBorderWidth) * scaleFactor
+        const w = canvas.offsetWidth * scaleFactor
+        const h = canvas.offsetHeight * scaleFactor
+
+        resultContext.save()
+        resultContext.beginPath()
+        resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+        resultContext.clip()
+
+        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
+
+        resultContext.restore()
+    }
+
+    const refCanvas = await domtoimage.toCanvas(ref, {
+        bgcolor: 'transparent',
+        height: resultCanvas.height,
+        width: resultCanvas.width,
+        style: {
+            transform: `scale(${scaleFactor})`,
+            transformOrigin: 'top left',
+        },
+        filter: node => !(node instanceof HTMLCanvasElement),
+    })
+
+    resultContext.drawImage(refCanvas, 0, 0)
+
+    unfixElement()
+
+    return resultCanvas
+}
+
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
-    async function screencapElement(ref: HTMLElement): Promise<HTMLCanvasElement> {
-        const unfixElement = fixElementForScreenshot(ref)
-
-        /*
-         * Safari is flaky at rendering canvases the way `domtoimage` renders them.
-         * We work around this by rendering the canvases first, then excluding them from the element render.
-         */
-        const scaleFactor = overallWidth / ref.offsetWidth
-
-        const resultCanvas = document.createElement('canvas')
-
-        resultCanvas.width = ref.offsetWidth * scaleFactor
-        resultCanvas.height = ref.offsetHeight * scaleFactor * heightMultiplier
-
-        const resultContext = resultCanvas.getContext('2d')!
-
-        const canvases = Array.from(ref.querySelectorAll('canvas'))
-
-        const totalRefOffset = totalOffset(ref)
-
-        for (const [index, canvas] of canvases.entries()) {
-            const canvasOffset = totalOffset(canvas)
-            // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
-            const x = (canvasOffset.left - totalRefOffset.left + mapBorderWidth) * scaleFactor
-            const y = (canvasOffset.top - totalRefOffset.top + mapBorderWidth) * scaleFactor
-            const w = canvas.offsetWidth * scaleFactor
-            const h = canvas.offsetHeight * scaleFactor
-
-            resultContext.save()
-            resultContext.beginPath()
-            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
-            resultContext.clip()
-
-            drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
-
-            resultContext.restore()
-        }
-
-        const refCanvas = await domtoimage.toCanvas(ref, {
-            bgcolor: 'transparent',
-            height: resultCanvas.height,
-            width: resultCanvas.width,
-            style: {
-                transform: `scale(${scaleFactor})`,
-                transformOrigin: 'top left',
-            },
-            filter: node => !(node instanceof HTMLCanvasElement),
-        })
-
-        resultContext.drawImage(refCanvas, 0, 0)
-
-        unfixElement()
-
-        return resultCanvas
-    }
-
     const canvases = []
     for (const ref of config.elementsToRender) {
         try {
-            canvases.push(await screencapElement(ref))
+            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier))
         }
         catch (e) {
             console.error(e)

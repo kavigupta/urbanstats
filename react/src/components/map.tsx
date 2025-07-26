@@ -1,4 +1,3 @@
-import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
@@ -13,13 +12,14 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
+import { computeAspectRatio } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -358,66 +358,168 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     /**
-     * Export the map as an svg, without the background
+     * Export the map as a high-resolution PNG
      *
-     * @returns string svg
+     * @param colorbarElement - The colorbar element to render below the maps
+     * @param backgroundColor - The background color to use for the colorbar area
+     * @returns string PNG data URL
      */
-    async exportAsSvg(): Promise<string> {
-        const { polygons } = await this.computePolygons()
-        const mapBounds = (await this.handler.getMaps())[0].getBounds()
-        const bounds = {
-            left: mapBounds.getWest(),
-            right: mapBounds.getEast(),
-            top: mapBounds.getNorth(),
-            bottom: mapBounds.getSouth(),
-        }
-        const width = 1000
-        const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left)
-        const converter = new GeoJSON2SVG({
-            mapExtent: bounds, attributes: [{
-                property: 'style',
-                type: 'dynamic',
-                key: 'style',
-            }],
-            viewportSize: {
-                width,
-                height,
-            },
-        })
+    async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string): Promise<string> {
+        const maps = await this.handler.getMaps()
+        const insets = this.insets()
 
-        function toSvgStyle(style: PolygonStyle): string {
-            let svgStyle = ''
-            svgStyle += `fill:${style.fillColor};`
-            svgStyle += `fill-opacity:${style.fillOpacity};`
-            svgStyle += `stroke:${style.color};`
-            if (style.weight !== undefined) {
-                svgStyle += `stroke-width:${style.weight / 10};`
+        // Get the main map bounds for overall dimensions
+        const mainMap = maps[0]
+        const mapBounds = mainMap.getBounds()
+
+        // Calculate proper dimensions based on the map's aspect ratio using the coordinate utility
+        const coordBox: [number, number, number, number] = [
+            mapBounds.getWest(),
+            mapBounds.getSouth(),
+            mapBounds.getEast(),
+            mapBounds.getNorth(),
+        ]
+        const aspectRatio = computeAspectRatio(coordBox)
+
+        // Use a more reasonable resolution that keeps labels readable
+        const pixelRatio = 4
+        const width = 4096
+        const height = Math.round(width / aspectRatio)
+
+        // Add space below the maps for the colorbar
+        const colorbarHeight = 300
+        const cBarPad = 40
+        const totalHeight = height + colorbarHeight
+
+        // Store original container sizes, bounds, and pixel ratios
+        const originalSizes: { width: string, height: string }[] = []
+        const originalBounds: maplibregl.LngLatBounds[] = []
+        const originalPixelRatios: number[] = []
+
+        try {
+            // Temporarily resize all map containers to high resolution
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const container = map.getContainer()
+                const inset = insets[i]
+
+                // Store original size, bounds, and pixel ratio
+                originalSizes.push({
+                    width: container.style.width || '',
+                    height: container.style.height || '',
+                })
+                originalBounds.push(map.getBounds())
+                originalPixelRatios.push(map.getPixelRatio())
+
+                // Calculate inset dimensions
+                const [x0, y0] = inset.bottomLeft
+                const [x1, y1] = inset.topRight
+                const insetWidth = (x1 - x0) * width / pixelRatio
+                const insetHeight = (y1 - y0) * height / pixelRatio
+
+                // Resize container
+                container.style.width = `${insetWidth}px`
+                container.style.height = `${insetHeight}px`
+
+                // Set a reasonable pixel ratio to keep labels readable
+                // Use 2x pixel ratio for good quality without making labels too small
+                map.setPixelRatio(pixelRatio)
+
+                // Trigger map resize
+                map.resize()
+
+                // Update the map bounds to fill the new container size
+                // Use the inset's coordBox for the geographic bounds
+                if (inset.coordBox) {
+                    const [west, south, east, north] = inset.coordBox
+                    const insetBounds = new maplibregl.LngLatBounds(
+                        new maplibregl.LngLat(west, south),
+                        new maplibregl.LngLat(east, north),
+                    )
+                    // Fit the map to the new bounds
+                    map.fitBounds(insetBounds, { animate: false, padding: 0 })
+                }
             }
-            return svgStyle
+
+            // Wait for maps to re-render at high resolution
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            // Create a high-resolution canvas
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')!
+            canvas.width = width
+            canvas.height = totalHeight
+
+            // Composite all maps onto the main canvas
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const inset = insets[i]
+
+                // Calculate position and size for this inset
+                const [x0, y0] = inset.bottomLeft
+                const [x1, y1] = inset.topRight
+                const insetWidth = (x1 - x0) * width
+                const insetHeight = (y1 - y0) * height
+                const insetX = x0 * width
+                const insetY = (1 - y1) * height // Flip Y coordinate for canvas
+
+                // Get the high-resolution map canvas
+                const mapCanvas = map.getCanvas()
+
+                // Draw the map content onto the main canvas
+                ctx.drawImage(mapCanvas, insetX, insetY, insetWidth, insetHeight)
+            }
+
+            // Draw frames around non-main maps
+            for (const inset of insets) {
+                if (!inset.mainMap) {
+                    // Calculate position and size for this inset
+                    const [x0, y0] = inset.bottomLeft
+                    const [x1, y1] = inset.topRight
+                    const insetWidth = (x1 - x0) * width
+                    const insetHeight = (y1 - y0) * height
+                    const insetX = x0 * width
+                    const insetY = (1 - y1) * height // Flip Y coordinate for canvas
+
+                    // Draw a black border around the inset
+                    const borderColor = 'rgb(0, 0, 0)'
+                    ctx.strokeStyle = borderColor
+                    ctx.lineWidth = 4
+                    ctx.strokeRect(insetX, insetY, insetWidth, insetHeight)
+                }
+            }
+
+            ctx.fillStyle = backgroundColor
+            ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
+
+            if (colorbarElement) {
+                const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
+
+                const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
+
+                ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
+                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement)
+            }
+
+            // Return the high-resolution PNG data URL
+            return canvas.toDataURL('image/png', 1.0)
         }
+        finally {
+            // Restore original container sizes, bounds, and pixel ratios
+            for (let i = 0; i < maps.length; i++) {
+                const map = maps[i]
+                const container = map.getContainer()
+                const originalSize = originalSizes[i]
+                const originalBound = originalBounds[i]
+                const originalPixelRatio = originalPixelRatios[i]
 
-        const overallSvg = []
-
-        for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
-            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
-            for (const elem of svg) {
-                overallSvg.push(elem)
+                container.style.width = originalSize.width
+                container.style.height = originalSize.height
+                map.setPixelRatio(originalPixelRatio)
+                map.resize()
+                map.fitBounds(originalBound, { animate: false })
             }
         }
-        const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-         <!-- Created with urban stats mapper (http://www.urbanstats.org/) -->
-            <svg
-            width="${width}mm"
-            height="${height}mm"
-            viewBox="0 0 ${width} ${height}"
-            version="1.1"
-            id="svg1"
-            xml:space="preserve"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:svg="http://www.w3.org/2000/svg">`
-        const footer = '</svg>'
-        return header + overallSvg.join('') + footer
     }
 
     async exportAsGeoJSON(): Promise<string> {
