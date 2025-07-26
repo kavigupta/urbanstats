@@ -1874,18 +1874,18 @@ void test('test basic map with constructed insets', () => {
 
     // Create custom insets using constructInset
     const program = `
-    mainInset = constructInset({
-        screenBounds: {west: 0, south: 0, east: 1, north: 1},
-        mapBounds: {west: -180, south: -90, east: 180, north: 90},
-        mainMap: true,
-        name: "World"
-    });
-    smallInset = constructInset({
-        screenBounds: {west: 0.7, south: 0.7, east: 1, north: 1},
-        mapBounds: {west: -170, south: 50, east: -130, north: 70},
-        mainMap: false,
-        name: "Alaska"
-    });
+    mainInset = constructInset(
+        screenBounds={west: 0, south: 0, east: 1, north: 1},
+        mapBounds={west: -180, south: -90, east: 180, north: 90},
+        mainMap=true,
+        name="World"
+    );
+    smallInset = constructInset(
+        screenBounds={west: 0.7, south: 0.7, east: 1, north: 1},
+        mapBounds={west: -170, south: 50, east: -130, north: 70},
+        mainMap=false,
+        name="Alaska"
+    );
     customInsets = constructInsets([mainInset, smallInset]);
     cMap(geo=["A", "B"], data=[1, 2], scale=linearScale(), ramp=rampBone, insets=customInsets)
     `

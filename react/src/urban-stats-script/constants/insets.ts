@@ -54,28 +54,21 @@ export function constructInsets(insetList: Inset[]): USSRawValue {
 export const constructInsetValue: USSValue = {
     type: {
         type: 'function',
-        posArgs: [
-            {
-                type: 'concrete',
-                value: {
-                    type: 'object',
-                    properties: new Map<string, USSType>([
-                        ['screenBounds', boundsType],
-                        ['mapBounds', boundsType],
-                        ['mainMap', { type: 'boolean' }],
-                        ['name', { type: 'string' }],
-                    ]),
-                },
-            },
-        ],
-        namedArgs: {},
+        posArgs: [],
+        namedArgs: {
+            screenBounds: { type: { type: 'concrete', value: boundsType } },
+            mapBounds: { type: { type: 'concrete', value: boundsType } },
+            mainMap: { type: { type: 'concrete', value: { type: 'boolean' } } },
+            name: { type: { type: 'concrete', value: { type: 'string' } } },
+        },
         returnType: { type: 'concrete', value: insetType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const insetObj = posArgs[0] as Map<string, USSRawValue>
-        const screenBoundsObj = insetObj.get('screenBounds') as Map<string, USSRawValue>
-        const mapBoundsObj = insetObj.get('mapBounds') as Map<string, USSRawValue>
+        const screenBoundsObj = namedArgs.screenBounds as Map<string, USSRawValue>
+        const mapBoundsObj = namedArgs.mapBounds as Map<string, USSRawValue>
+        const mainMap = namedArgs.mainMap as boolean
+        const name = namedArgs.name as string
         return constructInset(
             {
                 west: screenBoundsObj.get('west') as number,
@@ -89,8 +82,8 @@ export const constructInsetValue: USSValue = {
                 north: mapBoundsObj.get('north') as number,
                 south: mapBoundsObj.get('south') as number,
             },
-            insetObj.get('mainMap') as boolean,
-            insetObj.get('name') as string,
+            mainMap,
+            name,
         )
     },
     documentation: { humanReadableName: 'Custom Inset' },
