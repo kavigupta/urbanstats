@@ -254,20 +254,23 @@ export function AutoUXEditor(props: {
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
-                    {uss.properties.map(([key, value]) => (
-                        <AutoUXEditor
-                            key={key}
-                            uss={value}
-                            setUss={(newVal) => {
-                                props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) })
-                            }}
-                            typeEnvironment={props.typeEnvironment}
-                            errors={props.errors}
-                            blockIdent={`${props.blockIdent}_prop_${key}`}
-                            type={propertiesTypes.get(key)!}
-                            label={key}
-                        />
-                    ))}
+                    {Array.from(propertiesTypes.keys()).sort().map((key) => {
+                        const propertyType = propertiesTypes.get(key)!
+                        return (
+                            <AutoUXEditor
+                                key={key}
+                                uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, `${props.blockIdent}_prop_${key}`, props.typeEnvironment)}
+                                setUss={(newVal) => {
+                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) })
+                                }}
+                                typeEnvironment={props.typeEnvironment}
+                                errors={props.errors}
+                                blockIdent={`${props.blockIdent}_prop_${key}`}
+                                type={propertyType}
+                                label={key}
+                            />
+                        )
+                    })}
                 </div>
             )
         }
