@@ -17,8 +17,13 @@ export function hexToColor(hex: string): Color {
     return { r, g, b }
 }
 
-export function rgbToColor(red: number, green: number, blue: number): Color {
+export function rgbToColor(red: number, green: number, blue: number, tolerateError: true): Color | undefined
+export function rgbToColor(red: number, green: number, blue: number): Color
+export function rgbToColor(red: number, green: number, blue: number, tolerateError: boolean = false): Color | undefined {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
+        if (tolerateError) {
+            return undefined
+        }
         throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue})`)
     }
     const r = Math.round(red * 255)
@@ -27,8 +32,13 @@ export function rgbToColor(red: number, green: number, blue: number): Color {
     return { r, g, b }
 }
 
-export function hsvToColor(hue: number, saturation: number, value: number): Color {
+export function hsvToColor(red: number, green: number, blue: number, tolerateError: true): Color | undefined
+export function hsvToColor(red: number, green: number, blue: number): Color
+export function hsvToColor(hue: number, saturation: number, value: number, tolerateError: boolean = false): Color | undefined {
     if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
+        if (tolerateError) {
+            return undefined
+        }
         throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
     }
     const color = ColorLib.hsv(hue, saturation * 100, value * 100)

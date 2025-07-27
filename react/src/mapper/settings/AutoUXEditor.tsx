@@ -697,9 +697,17 @@ function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, US
             if (expr.fn.type === 'identifier' && args.length === 3) {
                 switch (expr.fn.name.node) {
                     case 'rgb':
-                        return { color: rgbToColor(args[0], args[1], args[2]), kind: 'rgb' }
+                        const rgbColor = rgbToColor(args[0], args[1], args[2], true)
+                        if (rgbColor === undefined) {
+                            return
+                        }
+                        return { color: rgbColor, kind: 'rgb' }
                     case 'hsv' :
-                        return { color: hsvToColor(args[0], args[1], args[2]), kind: 'hsv' }
+                        const hsvColor = hsvToColor(args[0], args[1], args[2], true)
+                        if (hsvColor === undefined) {
+                            return
+                        }
+                        return { color: hsvColor, kind: 'hsv' }
                     default:
                         return
                 }
