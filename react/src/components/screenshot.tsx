@@ -1,11 +1,14 @@
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
+import maplibregl from 'maplibre-gl'
 import React, { createContext, ReactNode, useContext } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
+
+import { Inset } from './map'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const colors = useColors()
@@ -235,4 +238,55 @@ export const ScreenshotContext = createContext(false)
 
 export function useScreenshotMode(): boolean {
     return useContext(ScreenshotContext)
+}
+
+interface MapScreenshotParams {
+    width: number
+    height: number
+    pixelRatio: number
+}
+
+function computeRelativeLocs(inset: Inset, params: MapScreenshotParams): { insetWidth: number, insetHeight: number } {
+    const [x0, y0] = inset.bottomLeft
+    const [x1, y1] = inset.topRight
+    const insetWidth = (x1 - x0) * params.width / params.pixelRatio
+    const insetHeight = (y1 - y0) * params.height / params.pixelRatio
+    return { insetWidth, insetHeight }
+}
+
+export function resizeMapForScreenshot(map: maplibregl.Map, inset: Inset, params: MapScreenshotParams): () => void {
+    const container = map.getContainer()
+    const originalSize = {
+        width: container.style.width || '',
+        height: container.style.height || '',
+    }
+    const originalBounds = map.getBounds()
+    const originalPixelRatio = map.getPixelRatio()
+
+    const { insetWidth, insetHeight } = computeRelativeLocs(inset, params)
+
+    container.style.width = `${insetWidth}px`
+    container.style.height = `${insetHeight}px`
+
+    map.setPixelRatio(params.pixelRatio)
+
+    // Trigger map resize
+    map.resize()
+
+    let bounds = originalBounds
+    if (inset.coordBox !== undefined) {
+        const [west, south, east, north] = inset.coordBox
+        bounds = new maplibregl.LngLatBounds(
+            new maplibregl.LngLat(west, south),
+            new maplibregl.LngLat(east, north),
+        )
+    }
+    map.fitBounds(bounds, { animate: false, padding: 0 })
+    return () => {
+        container.style.width = originalSize.width
+        container.style.height = originalSize.height
+        map.setPixelRatio(originalPixelRatio)
+        map.resize()
+        map.fitBounds(originalBounds, { animate: false })
+    }
 }

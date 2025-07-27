@@ -19,7 +19,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement, resizeMapForScreenshot } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -401,53 +401,16 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // const originalBounds: maplibregl.LngLatBounds[] = []
         // const originalPixelRatios: number[] = []
 
+        const params = { width, height, pixelRatio }
+
         const undos = []
 
         try {
             // Temporarily resize all map containers to high resolution
             for (let i = 0; i < maps.length; i++) {
                 const map = maps[i]
-                const container = map.getContainer()
                 const inset = insets[i]
-
-                const originalSize = {
-                    width: container.style.width || '',
-                    height: container.style.height || '',
-                }
-                const originalBounds = map.getBounds()
-                const originalPixelRatio = map.getPixelRatio()
-                undos.push(() => {
-                    container.style.width = originalSize.width
-                    container.style.height = originalSize.height
-                    map.setPixelRatio(originalPixelRatio)
-                    map.resize()
-                    map.fitBounds(originalBounds, { animate: false })
-                })
-
-                // Calculate inset dimensions
-                const [x0, y0] = inset.bottomLeft
-                const [x1, y1] = inset.topRight
-                const insetWidth = (x1 - x0) * width / pixelRatio
-                const insetHeight = (y1 - y0) * height / pixelRatio
-
-                // Resize container
-                container.style.width = `${insetWidth}px`
-                container.style.height = `${insetHeight}px`
-
-                map.setPixelRatio(pixelRatio)
-
-                // Trigger map resize
-                map.resize()
-
-                let bounds = originalBounds
-                if (inset.coordBox !== undefined) {
-                    const [west, south, east, north] = inset.coordBox
-                    bounds = new maplibregl.LngLatBounds(
-                        new maplibregl.LngLat(west, south),
-                        new maplibregl.LngLat(east, north),
-                    )
-                }
-                map.fitBounds(bounds, { animate: false, padding: 0 })
+                undos.push(resizeMapForScreenshot(map, inset, params))
             }
 
             // Wait for maps to re-render at high resolution
@@ -480,19 +443,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
                 // Draw the map content onto the main canvas
                 ctx.drawImage(mapCanvas, insetX, insetY, insetWidth, insetHeight)
-            }
 
-            // Draw frames around non-main maps
-            for (const inset of insets) {
                 if (!inset.mainMap) {
-                    // Calculate position and size for this inset
-                    const [x0, y0] = inset.bottomLeft
-                    const [x1, y1] = inset.topRight
-                    const insetWidth = (x1 - x0) * width
-                    const insetHeight = (y1 - y0) * height
-                    const insetX = x0 * width
-                    const insetY = (1 - y1) * height // Flip Y coordinate for canvas
-
                     // Draw a black border around the inset
                     const borderColor = 'rgb(0, 0, 0)'
                     ctx.strokeStyle = borderColor
