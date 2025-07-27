@@ -5,9 +5,10 @@ import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
+import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
+import { unparse, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
@@ -673,7 +674,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType, selection: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -690,7 +691,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
 
             for (const equiv of value.documentation.equivalentExpressions) {
                 const valid = maybeParseExpr(equiv, blockIdent, type, typeEnvironment)
-                if (valid !== undefined) {
+                if (valid !== undefined && stableStringify(classifyExpr(valid)) === stableStringify(selection)) {
                     return valid
                 }
             }
@@ -699,9 +700,29 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
         }
         case 'customNode':
             if (expr.expr.type === 'expression') {
-                return deconstruct(expr.expr.value, typeEnvironment, blockIdent, type)
+                return deconstruct(expr.expr.value, typeEnvironment, blockIdent, type, selection)
             }
             return
+        case 'function': {
+            const args = expr.args.flatMap((arg) => {
+                let parsed
+                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
+                    return [parsed]
+                }
+                return []
+            })
+            if (type.type === 'opaque' && type.name === 'color' && expr.fn.type === 'identifier' && selection.type === 'function' && args.length === 3) {
+                switch (true) {
+                    case expr.fn.name.node === 'rgb' && selection.name === 'hsv':
+                        // rgb to hsv
+                        return parseNoErrorAsExpression(hsvColorExpression(rgbToColor(args[0], args[1], args[2])), blockIdent)
+                    case expr.fn.name.node === 'hsv' && selection.name === 'rgb':
+                        // hsv to rgb
+                        return parseNoErrorAsExpression(rgbColorExpression(hsvToColor(args[0], args[1], args[2])), blockIdent)
+                }
+            }
+            return
+        }
         default:
             return
     }
@@ -714,8 +735,8 @@ function defaultForSelection(
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
-    const deconstructed = deconstruct(current, typeEnvironment, blockIdent, type)
-    if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
+    const deconstructed = deconstruct(current, typeEnvironment, blockIdent, type, selection)
+    if (deconstructed !== undefined) {
         return deconstructed
     }
 

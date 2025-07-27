@@ -17,7 +17,7 @@ export function hexToColor(hex: string): Color {
     return { r, g, b }
 }
 
-function rgbToColor(red: number, green: number, blue: number): Color {
+export function rgbToColor(red: number, green: number, blue: number): Color {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
         throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue})`)
     }
@@ -25,6 +25,18 @@ function rgbToColor(red: number, green: number, blue: number): Color {
     const g = Math.round(green * 255)
     const b = Math.round(blue * 255)
     return { r, g, b }
+}
+
+export function hsvToColor(hue: number, saturation: number, value: number): Color {
+    if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
+        throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
+    }
+    const color = ColorLib.hsv(hue, saturation * 100, value * 100)
+    return {
+        r: Math.round(color.red()),
+        g: Math.round(color.green()),
+        b: Math.round(color.blue()),
+    }
 }
 
 export const rgb = {
@@ -58,16 +70,7 @@ export const hsv = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const hue = posArgs[0] as number
-        const saturation = posArgs[1] as number
-        const value = posArgs[2] as number
-        if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
-            throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
-        }
-        // Convert HSL to RGB using color library
-        const color = ColorLib.hsv(hue, saturation * 100, value * 100)
-        const rgbValues = color.rgb().object()
-        return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
+        return { type: 'opaque', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
     },
     documentation: { humanReadableName: 'Color (HSV)' },
 } satisfies USSValue
