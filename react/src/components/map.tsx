@@ -503,7 +503,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
 
                 ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
-                await this.renderColorbarToCanvas(ctx, width, height, colorbarElement)
             }
 
             // Return the high-resolution PNG data URL
