@@ -19,7 +19,8 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement, renderMap } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
+import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
