@@ -137,7 +137,7 @@ export async function grabDownload(t: TestController, button: Selector, wait: nu
     await t
         .click(button)
     await t.wait(wait)
-    copyMostRecentFile(t)
+    await copyMostRecentFile(t)
 }
 
 export async function downloadImage(t: TestController): Promise<void> {
@@ -157,12 +157,18 @@ export function mostRecentDownloadPath(): string {
     return sorted[0]
 }
 
-function copyMostRecentFile(t: TestController): void {
+async function copyMostRecentFile(t: TestController): Promise<void> {
     // copy the file to the screenshots folder
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
+    let mrdp: string
+    while (!(mrdp = mostRecentDownloadPath()).endsWith('.png')) {
+        console.warn(chalkTemplate`{yellow No PNG file found in downloads folder, waiting for download to complete}`)
+        // wait for the download to finish
+        await t.wait(1000)
+    }
+    fs.copyFileSync(mrdp, path.join(screenshotsFolder, screenshotPath(t)))
 }
 
 export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
