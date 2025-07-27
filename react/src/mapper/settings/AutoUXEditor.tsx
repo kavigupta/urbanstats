@@ -7,7 +7,7 @@ import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
@@ -676,26 +676,37 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression[] {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
 
             if (reference === undefined || !('value' in reference)) {
-                return []
+                return
             }
 
             const value = reference as USSValue
 
-            return (value.documentation?.equivalentExpressions ?? []).map(equiv => parseNoErrorAsExpression(unparse(equiv), blockIdent))
+            if (value.documentation?.equivalentExpressions === undefined) {
+                return
+            }
+
+            for (const equiv of value.documentation.equivalentExpressions) {
+                const valid = maybeParseExpr(equiv, blockIdent, type, typeEnvironment)
+                if (valid !== undefined) {
+                    return valid
+                }
+            }
+
+            return
         }
         case 'customNode':
             if (expr.expr.type === 'expression') {
-                return deconstruct(expr.expr.value, typeEnvironment, blockIdent)
+                return deconstruct(expr.expr.value, typeEnvironment, blockIdent, type)
             }
-            return []
+            return
         default:
-            return []
+            return
     }
 }
 
@@ -706,22 +717,15 @@ function defaultForSelection(
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
-    for (const deconstructed of deconstruct(current, typeEnvironment, blockIdent)) {
-        // We only want to use the deconstructed value if it's appropriate for this selection
-        if (stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
-            return deconstructed
-        }
+    const deconstructed = deconstruct(current, typeEnvironment, blockIdent, type)
+    if (deconstructed !== undefined && stableStringify(classifyExpr(deconstructed)) === stableStringify(selection)) {
+        return deconstructed
     }
 
-    try {
-        const parsed = parseExpr(current, blockIdent, type, typeEnvironment, () => {
-            throw new Error('parsing failed')
-        })
-        if (stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
-            return parsed
-        }
+    const parsed = maybeParseExpr(current, blockIdent, type, typeEnvironment)
+    if (parsed !== undefined && stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
+        return parsed
     }
-    catch {}
 
     switch (selection.type) {
         case 'custom':
@@ -749,6 +753,21 @@ function defaultForSelection(
     }
 }
 
+function maybeParseExpr(
+    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
+    blockIdent: string,
+    type: USSType,
+    typeEnvironment: Map<string, USSDocumentedType>,
+): UrbanStatsASTExpression | undefined {
+    try {
+        return parseExpr(expr, blockIdent, type, typeEnvironment, () => {
+            throw new Error('parsing failed')
+        })
+    }
+    catch {}
+    return
+}
+
 type Fallback = (uss: string, i: string, t: USSType) => UrbanStatsASTExpression
 
 export function parseExpr(
@@ -771,7 +790,6 @@ function attemptParseExpr(
 ): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'condition':
-        case 'unaryOperator':
         case 'binaryOperator':
         case 'if':
         case 'assignment':
@@ -824,6 +842,14 @@ function attemptParseExpr(
         case 'constant':
             if (type.type === expr.value.node.type) {
                 return expr
+            }
+            return undefined
+        case 'unaryOperator':
+            if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && type.type === expr.expr.value.node.type) {
+                return {
+                    type: 'constant',
+                    value: { location: expr.expr.value.location, node: { type: 'number', value: -(expr.expr.value.node.value as number) } },
+                }
             }
             return undefined
         case 'function':
