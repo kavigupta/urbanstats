@@ -560,6 +560,17 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (version <= this.version) {
             return
         }
+        // check if at least 1s has passed since last update
+        const now = Date.now()
+        const delta = now - this.last_modified
+        await this.handler.getMaps()
+        if (delta < 1000) {
+            setTimeout(() => this.updateToVersion(version), 1000 - delta)
+            return
+        }
+        this.version = version
+        this.last_modified = now
+        await this.updateFn()
     }
 
     async updateFn(): Promise<void> {
