@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState, useEffect, useRef } from 'react'
+import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
@@ -11,6 +11,8 @@ import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
+import { toNeedle } from '../../utils/bitap'
+import { bitap } from '../../utils/bitap-selector'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
@@ -402,6 +404,8 @@ function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Se
     return results
 }
 
+const maxErrors = 31
+
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
@@ -412,11 +416,9 @@ export function Selector(props: {
     errors: EditorError[]
 }): ReactNode {
     const colors = useColors()
-    const selectionPossibilities = possibilities(props.type, props.typeEnvironment)
-    const renderedSelectionPossibilities = selectionPossibilities.map(s => renderSelection(props.typeEnvironment, s))
+
     const selected = classifyExpr(props.uss)
     const selectedRendered = renderSelection(props.typeEnvironment, selected)
-    assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
 
     const [searchValue, setSearchValue] = useState(selectedRendered)
     const [isOpen, setIsOpen] = useState(false)
@@ -429,29 +431,51 @@ export function Selector(props: {
         setSearchValue(selectedRendered)
     }, [selectedRendered])
 
+    const { selectionPossibilities, renderedSelectionPossibilities, bitapBuffers, optionSelectionPairs } = useMemo(() => {
+        const selectionPossibilitiesResult = possibilities(props.type, props.typeEnvironment)
+        const renderedSelectionPossibilitiesResult = selectionPossibilitiesResult.map(s => renderSelection(props.typeEnvironment, s))
+
+        const longestSelectionPossibility = renderedSelectionPossibilitiesResult.reduce((acc, poss) => Math.max(acc, poss.toLowerCase().length), 0)
+        const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
+
+        const optionSelectionPairsResult = selectionPossibilitiesResult.map((selection, index) => ({
+            option: renderedSelectionPossibilitiesResult[index],
+            selection,
+        }))
+
+        return {
+            selectionPossibilities: selectionPossibilitiesResult,
+            renderedSelectionPossibilities: renderedSelectionPossibilitiesResult,
+            bitapBuffers: bitapBuffersResult,
+            optionSelectionPairs: optionSelectionPairsResult,
+        }
+    }, [props.type, props.typeEnvironment])
+
+    const { sortedOptions, optionToSelectionMap } = useMemo(() => {
+        const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
+
+        const sortedPairs = optionSelectionPairs.sort((a, b) => {
+            const aScore = bitap(a.option.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const bScore = bitap(b.option.toLowerCase(), needle, maxErrors, bitapBuffers)
+            return aScore - bScore
+        })
+
+        const optionToSelectionMapResult = new Map<string, Selection>()
+        sortedPairs.forEach((pair) => {
+            optionToSelectionMapResult.set(pair.option, pair.selection)
+        })
+
+        return {
+            sortedOptions: sortedPairs.map(pair => pair.option),
+            optionToSelectionMap: optionToSelectionMapResult,
+        }
+    }, [bitapBuffers, optionSelectionPairs, searchValue])
+
+    assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
+
     if (selectionPossibilities.length < 2) {
         return undefined
     }
-
-    // Create pairs of options and their selections, then sort them
-    const optionSelectionPairs = selectionPossibilities.map((selection, index) => ({
-        option: renderedSelectionPossibilities[index],
-        selection,
-    }))
-
-    const sortedPairs = optionSelectionPairs.sort((a, b) => {
-        const aMatches = a.option.toLowerCase().includes(searchValue.toLowerCase())
-        const bMatches = b.option.toLowerCase().includes(searchValue.toLowerCase())
-        if (aMatches && !bMatches) return -1
-        if (!aMatches && bMatches) return 1
-        return 0
-    })
-
-    const sortedOptions = sortedPairs.map(pair => pair.option)
-    const optionToSelectionMap = new Map<string, Selection>()
-    sortedPairs.forEach((pair) => {
-        optionToSelectionMap.set(pair.option, pair.selection)
-    })
 
     const isNumber = props.type.type === 'number'
     const isString = props.type.type === 'string'
