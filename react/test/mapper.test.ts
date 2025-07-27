@@ -19,10 +19,7 @@ export async function downloadPNG(t: TestController): Promise<void> {
 }
 
 export async function clickOSMCheckbox(t: TestController): Promise<void> {
-    // Find the checkbox that's in the same container as the OSM text
-    const osmCheckbox = Selector('div').filter((node: Element) => {
-        return node.textContent?.includes('OSM') ?? false
-    }).find('input[type="checkbox"]')
+    const osmCheckbox = Selector('div').withText(/^OSM:/).parent().find('input[type="checkbox"]')
     await t.click(osmCheckbox)
 }
 
