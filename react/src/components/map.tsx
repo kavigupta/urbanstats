@@ -209,18 +209,15 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 <input type="hidden" data-test-loading={this.state.loading} />
                 <div style={{ position: 'relative', ...this.mapStyle() }}>
                     {this.insets().map((bbox, i) => (
-                        this.state.mapIsVisible[i]
-                            ? (
-                                    <MapBody
-                                        key={this.handler.ids[i]}
-                                        id={this.handler.ids[i]}
-                                        height="100%"
-                                        buttons={this.buttons()}
-                                        bbox={bbox}
-                                        insetBoundary={i > 0}
-                                    />
-                                )
-                            : undefined
+                        <MapBody
+                            key={this.handler.ids[i]}
+                            id={this.handler.ids[i]}
+                            height="100%"
+                            buttons={this.buttons()}
+                            bbox={bbox}
+                            insetBoundary={i > 0}
+                            visible={this.state.mapIsVisible[i]}
+                        />
                     ))}
                 </div>
                 <div style={{ display: 'none' }}>
@@ -685,7 +682,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean }): ReactNode {
+function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
@@ -705,6 +702,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
                 backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
+                ...(props.visible ? {} : { display: 'none' }),
             }}
         >
             {/* place this on the right of the map */}
