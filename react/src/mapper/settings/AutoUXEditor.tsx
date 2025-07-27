@@ -5,11 +5,11 @@ import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
 import { DisplayErrors } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
+import { Color, doRender, hexToColor, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, USSValue } from '../../urban-stats-script/types-values'
+import { renderType, USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
@@ -486,6 +486,8 @@ export function Selector(props: {
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayErrors errors={errors} />
 
+    const colorValue = props.type.type === 'opaque' && props.type.name === 'color' ? getColor(props.uss, props.typeEnvironment) : undefined
+
     const handleOptionSelect = (option: string): void => {
         const selection = optionToSelectionMap.get(option)
         if (selection) {
@@ -624,6 +626,36 @@ export function Selector(props: {
                     placeholder={isNumber ? 'Enter number' : 'Enter string'}
                 />
             )}
+            {colorValue !== undefined && (
+                <input
+                    type="color"
+                    value={doRender(colorValue.color)}
+                    style={{ width: '200px' }}
+                    onChange={(e) => {
+                        const newColor = hexToColor(e.target.value)
+                        const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor) : rgbColorExpression(newColor)
+                        let newUss: UrbanStatsASTExpression | undefined
+                        switch (props.uss.type) {
+                            case 'customNode':
+                                newUss = parseNoErrorAsCustomNode(
+                                    newColorUss,
+                                    props.blockIdent,
+                                    props.type,
+                                )
+                                break
+                            case 'identifier':
+                            case 'function':
+                                newUss = parseNoErrorAsExpression(
+                                    newColorUss,
+                                    props.blockIdent,
+                                )
+                        }
+                        if (newUss !== undefined) {
+                            props.setUss(newUss)
+                        }
+                    }}
+                />
+            )}
         </div>
     )
     return (
@@ -632,6 +664,49 @@ export function Selector(props: {
             {errorComponent}
         </div>
     )
+}
+
+function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
+    switch (expr.type) {
+        case 'customNode':
+            if (expr.expr.type === 'expression') {
+                return getColor(expr.expr.value, typeEnvironment)
+            }
+            return
+        case 'identifier': {
+            const reference = typeEnvironment.get(expr.name.node)
+
+            if (reference === undefined || !('value' in reference)) {
+                return
+            }
+
+            if (reference.type.type === 'opaque' && reference.type.name === 'color') {
+                return { color: (reference.value as { value: Color }).value, kind: 'rgb' }
+            }
+
+            return
+        }
+        case 'function': {
+            const args = expr.args.flatMap((arg) => {
+                let parsed
+                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
+                    return [parsed]
+                }
+                return []
+            })
+            if (expr.fn.type === 'identifier' && args.length === 3) {
+                switch (expr.fn.name.node) {
+                    case 'rgb':
+                        return { color: rgbToColor(args[0], args[1], args[2]), kind: 'rgb' }
+                    case 'hsv' :
+                        return { color: hsvToColor(args[0], args[1], args[2]), kind: 'hsv' }
+                    default:
+                        return
+                }
+            }
+        }
+    }
+    return
 }
 
 function classifyExpr(uss: UrbanStatsASTExpression): Selection {
@@ -721,13 +796,11 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
                 return
             }
 
-            const value = reference as USSValue
-
-            if (value.documentation?.equivalentExpressions === undefined) {
+            if (reference.documentation?.equivalentExpressions === undefined) {
                 return
             }
 
-            for (const equiv of value.documentation.equivalentExpressions) {
+            for (const equiv of reference.documentation.equivalentExpressions) {
                 const valid = maybeParseExpr(equiv, blockIdent, type, typeEnvironment)
                 if (valid !== undefined && stableStringify(classifyExpr(valid)) === stableStringify(selection)) {
                     return valid
@@ -742,21 +815,16 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
             }
             return
         case 'function': {
-            const args = expr.args.flatMap((arg) => {
-                let parsed
-                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
-                    return [parsed]
-                }
-                return []
-            })
-            if (type.type === 'opaque' && type.name === 'color' && expr.fn.type === 'identifier' && selection.type === 'function' && args.length === 3) {
+            if (type.type === 'opaque' && type.name === 'color' && selection.type === 'function') {
+                // Conversion between RGB and HSV functions
+                const color = getColor(expr, typeEnvironment)
                 switch (true) {
-                    case expr.fn.name.node === 'rgb' && selection.name === 'hsv':
+                    case color?.kind === 'rgb' && selection.name === 'hsv':
                         // rgb to hsv
-                        return parseNoErrorAsExpression(hsvColorExpression(rgbToColor(args[0], args[1], args[2])), blockIdent)
-                    case expr.fn.name.node === 'hsv' && selection.name === 'rgb':
+                        return parseNoErrorAsExpression(hsvColorExpression(color.color), blockIdent)
+                    case color?.kind === 'hsv' && selection.name === 'rgb':
                         // hsv to rgb
-                        return parseNoErrorAsExpression(rgbColorExpression(hsvToColor(args[0], args[1], args[2])), blockIdent)
+                        return parseNoErrorAsExpression(rgbColorExpression(color.color), blockIdent)
                 }
             }
             return
