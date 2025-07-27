@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState, useEffect } from 'react'
+import React, { ReactNode, useState, useEffect, useRef } from 'react'
 
 import { CheckboxSettingJustBox } from '../../components/sidebar'
 import { useColors } from '../../page_template/colors'
@@ -422,6 +422,8 @@ export function Selector(props: {
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
 
+    const inputRef = useRef<HTMLInputElement>(null)
+
     // Needed if this component is reused in a different context
     useEffect(() => {
         setSearchValue(selectedRendered)
@@ -502,6 +504,7 @@ export function Selector(props: {
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5em' }}>
             <div style={{ position: 'relative', flex: 1 }}>
                 <input
+                    ref={inputRef}
                     type="text"
                     value={searchValue}
                     onChange={(e) => {
@@ -552,6 +555,10 @@ export function Selector(props: {
                             <div
                                 key={index}
                                 onClick={() => { handleOptionSelect(option) }}
+                                onMouseUp={() => {
+                                    handleOptionSelect(option)
+                                    inputRef.current?.blur()
+                                }}
                                 style={{
                                     padding: '8px 12px',
                                     cursor: 'pointer',
