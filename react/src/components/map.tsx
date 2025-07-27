@@ -19,7 +19,7 @@ import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement, resizeMapForScreenshot } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement, renderMap } from './screenshot'
 
 export const defaultMapPadding = 20
 
@@ -369,7 +369,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
      * @param backgroundColor - The background color to use for the colorbar area
      * @returns string PNG data URL
      */
-    async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string): Promise<string> {
+    async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string, insetBorderColor: string): Promise<string> {
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
@@ -401,78 +401,37 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         // const originalBounds: maplibregl.LngLatBounds[] = []
         // const originalPixelRatios: number[] = []
 
-        const params = { width, height, pixelRatio }
+        const params = { width, height, pixelRatio, insetBorderColor }
 
-        const undos = []
+        // Temporarily resize all map containers to high resolution
 
-        try {
-            // Temporarily resize all map containers to high resolution
-            for (let i = 0; i < maps.length; i++) {
-                const map = maps[i]
-                const inset = insets[i]
-                undos.push(resizeMapForScreenshot(map, inset, params))
+        // Create a high-resolution canvas
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')!
+        canvas.width = width
+        canvas.height = totalHeight
+
+        await Promise.all(maps.map(async (map, i) => {
+            if (!this.state.mapIsVisible[i]) {
+                return
             }
+            const inset = insets[i]
+            await renderMap(ctx, map, inset, params)
+        }))
 
-            // Wait for maps to re-render at high resolution
-            await new Promise(resolve => setTimeout(resolve, 1000))
+        ctx.fillStyle = backgroundColor
+        ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
 
-            // Create a high-resolution canvas
-            const canvas = document.createElement('canvas')
-            const ctx = canvas.getContext('2d')!
-            canvas.width = width
-            canvas.height = totalHeight
+        if (colorbarElement) {
+            const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
 
-            // Composite all maps onto the main canvas
-            for (let i = 0; i < maps.length; i++) {
-                if (!this.state.mapIsVisible[i]) {
-                    continue
-                }
-                const map = maps[i]
-                const inset = insets[i]
+            const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
 
-                // Calculate position and size for this inset
-                const [x0, y0] = inset.bottomLeft
-                const [x1, y1] = inset.topRight
-                const insetWidth = (x1 - x0) * width
-                const insetHeight = (y1 - y0) * height
-                const insetX = x0 * width
-                const insetY = (1 - y1) * height // Flip Y coordinate for canvas
-
-                // Get the high-resolution map canvas
-                const mapCanvas = map.getCanvas()
-
-                // Draw the map content onto the main canvas
-                ctx.drawImage(mapCanvas, insetX, insetY, insetWidth, insetHeight)
-
-                if (!inset.mainMap) {
-                    // Draw a black border around the inset
-                    const borderColor = 'rgb(0, 0, 0)'
-                    ctx.strokeStyle = borderColor
-                    ctx.lineWidth = 4
-                    ctx.strokeRect(insetX, insetY, insetWidth, insetHeight)
-                }
-            }
-
-            ctx.fillStyle = backgroundColor
-            ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
-
-            if (colorbarElement) {
-                const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
-
-                const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
-
-                ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
-            }
-
-            // Return the high-resolution PNG data URL
-            return canvas.toDataURL('image/png', 1.0)
+            ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
         }
-        finally {
-            // Restore original container sizes, bounds, and pixel ratios
-            for (let i = 0; i < maps.length; i++) {
-                undos[i]()
-            }
-        }
+
+        // Return the high-resolution PNG data URL
+        return canvas.toDataURL('image/png', 1.0)
     }
 
     async exportAsGeoJSON(): Promise<string> {

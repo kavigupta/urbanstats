@@ -313,7 +313,7 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
             return
         }
         const colorbarElement = props.colorbarRef.current ?? undefined
-        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background)
+        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background, colors.borderNonShadow)
         // Convert data URL to blob for download
         const response = await fetch(pngDataUrl)
         const blob = await response.blob()
