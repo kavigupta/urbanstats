@@ -6,7 +6,7 @@ urbanstatsFixture('home page', '/')
 test('under network limit home page navigate to california', async (t) => {
     const flushNetworkUsage = await networkUsage(t)
     await t.navigateTo('/')
-    await t.expect(await flushNetworkUsage('home')).lt(700_000)
+    await t.expect(await flushNetworkUsage('home')).lt(600_000)
     await t.typeText(searchField, 'california')
     await waitForSelectedSearchResult(t)
     await t.expect(await flushNetworkUsage('search')).lt(2_700_000)
