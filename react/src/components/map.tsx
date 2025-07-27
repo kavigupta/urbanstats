@@ -396,10 +396,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const cBarPad = 40
         const totalHeight = height + colorbarHeight
 
-        // Store original container sizes, bounds, and pixel ratios
-        const originalSizes: { width: string, height: string }[] = []
-        const originalBounds: maplibregl.LngLatBounds[] = []
-        const originalPixelRatios: number[] = []
+        // // Store original container sizes, bounds, and pixel ratios
+        // const originalSizes: { width: string, height: string }[] = []
+        // const originalBounds: maplibregl.LngLatBounds[] = []
+        // const originalPixelRatios: number[] = []
+
+        const undos = []
 
         try {
             // Temporarily resize all map containers to high resolution
@@ -408,13 +410,19 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 const container = map.getContainer()
                 const inset = insets[i]
 
-                // Store original size, bounds, and pixel ratio
-                originalSizes.push({
+                const originalSize = {
                     width: container.style.width || '',
                     height: container.style.height || '',
+                }
+                const originalBounds = map.getBounds()
+                const originalPixelRatio = map.getPixelRatio()
+                undos.push(() => {
+                    container.style.width = originalSize.width
+                    container.style.height = originalSize.height
+                    map.setPixelRatio(originalPixelRatio)
+                    map.resize()
+                    map.fitBounds(originalBounds, { animate: false })
                 })
-                originalBounds.push(map.getBounds())
-                originalPixelRatios.push(map.getPixelRatio())
 
                 // Calculate inset dimensions
                 const [x0, y0] = inset.bottomLeft
@@ -426,24 +434,20 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 container.style.width = `${insetWidth}px`
                 container.style.height = `${insetHeight}px`
 
-                // Set a reasonable pixel ratio to keep labels readable
-                // Use 2x pixel ratio for good quality without making labels too small
                 map.setPixelRatio(pixelRatio)
 
                 // Trigger map resize
                 map.resize()
 
-                // Update the map bounds to fill the new container size
-                // Use the inset's coordBox for the geographic bounds
-                if (inset.coordBox) {
+                let bounds = originalBounds
+                if (inset.coordBox !== undefined) {
                     const [west, south, east, north] = inset.coordBox
-                    const insetBounds = new maplibregl.LngLatBounds(
+                    bounds = new maplibregl.LngLatBounds(
                         new maplibregl.LngLat(west, south),
                         new maplibregl.LngLat(east, north),
                     )
-                    // Fit the map to the new bounds
-                    map.fitBounds(insetBounds, { animate: false, padding: 0 })
                 }
+                map.fitBounds(bounds, { animate: false, padding: 0 })
             }
 
             // Wait for maps to re-render at high resolution
@@ -514,17 +518,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         finally {
             // Restore original container sizes, bounds, and pixel ratios
             for (let i = 0; i < maps.length; i++) {
-                const map = maps[i]
-                const container = map.getContainer()
-                const originalSize = originalSizes[i]
-                const originalBound = originalBounds[i]
-                const originalPixelRatio = originalPixelRatios[i]
-
-                container.style.width = originalSize.width
-                container.style.height = originalSize.height
-                map.setPixelRatio(originalPixelRatio)
-                map.resize()
-                map.fitBounds(originalBound, { animate: false })
+                undos[i]()
             }
         }
     }
