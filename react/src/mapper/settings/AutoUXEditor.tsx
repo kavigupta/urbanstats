@@ -426,6 +426,8 @@ export function Selector(props: {
 
     const inputRef = useRef<HTMLInputElement>(null)
 
+    const menuRef = useRef<HTMLDivElement>(null)
+
     // Needed if this component is reused in a different context
     useEffect(() => {
         setSearchValue(selectedRendered)
@@ -535,6 +537,9 @@ export function Selector(props: {
                         setSearchValue(e.target.value)
                         setIsOpen(true)
                         setHighlightedIndex(0)
+                        if (menuRef.current) {
+                            menuRef.current.scrollTop = 0
+                        }
                     }}
                     onKeyDown={handleKeyDown}
                     onClick={(e) => {
@@ -561,19 +566,21 @@ export function Selector(props: {
                     }}
                 />
                 {isOpen && sortedOptions.length > 0 && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        backgroundColor: colors.background,
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        zIndex: 1000,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    }}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            backgroundColor: colors.background,
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            zIndex: 1000,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        }}
+                        ref={menuRef}
                     >
                         {sortedOptions.map((option, index) => (
                             <div
