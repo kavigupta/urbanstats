@@ -587,15 +587,12 @@ export function Selector(props: {
             )}
         </div>
     )
-    if (showConstantInput) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
-                {select}
-                {errorComponent}
-            </div>
-        )
-    }
-    return select
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
+            {select}
+            {errorComponent}
+        </div>
+    )
 }
 
 function classifyExpr(uss: UrbanStatsASTExpression): Selection {
