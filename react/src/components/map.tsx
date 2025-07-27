@@ -700,7 +700,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid black` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `2px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
