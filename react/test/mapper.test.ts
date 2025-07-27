@@ -15,7 +15,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
 
 export async function downloadPNG(t: TestController): Promise<void> {
     const download = Selector('button').withExactText('Export as PNG')
-    await grabDownload(t, download)
+    await grabDownload(t, download, 6000) // wait for 6 seconds to ensure the download completes
 }
 
 urbanstatsFixture('mapping', `${target}/mapper.html?settings=H4sIAAAAAAAAA4WQwUrEMBCGX2UZ2VuRvXjpUcGroEeRZVpn07DTpGQSd8uSd3emiK0nc0ryf%2F83ITdwFF3CaZiPZx8%2BoYW30gXMPgbk3Ss53UADJ8%2BZErQ3oIAdk4InZCFNSuiNtizPE6nh96qBL0zeeIH2%2FcOOXIx4Xgm6TolEFgNArQ30kWM6Ssa8cYoPjglWxSNjf97tQQsJx2mDsg%2BECX5EI24zm0VZs4CjnZ9KRwOxvy6TramDZx2klaWuzN1hWVq6kHeDvupw%2F6B0h0J%2F7VFGpWT9wJeSzSn%2F6Gqt3%2Bx7oSqJAQAA`)

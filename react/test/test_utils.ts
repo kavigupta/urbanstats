@@ -132,11 +132,11 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
     })
 }
 
-export async function grabDownload(t: TestController, button: Selector): Promise<void> {
+export async function grabDownload(t: TestController, button: Selector, wait: number = 3000): Promise<void> {
     await prepForImage(t, { hover: true, wait: true })
     await t
         .click(button)
-    await t.wait(3000)
+    await t.wait(wait)
     copyMostRecentFile(t)
 }
 
