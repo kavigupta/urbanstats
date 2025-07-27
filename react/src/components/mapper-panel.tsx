@@ -294,8 +294,8 @@ function MapComponent(props: MapComponentProps): ReactNode {
     )
 }
 
-function saveAsFile(filename: string, data: string, type: string): void {
-    const blob = new Blob([data], { type })
+function saveAsFile(filename: string, data: string | Blob, type: string): void {
+    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -314,17 +314,9 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
         }
         const colorbarElement = props.colorbarRef.current ?? undefined
         const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background, colors.mapInsetBorderColor)
-        // Convert data URL to blob for download
-        const response = await fetch(pngDataUrl)
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = 'map.png'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
+        const data = await fetch(pngDataUrl)
+        const pngData = await data.blob()
+        saveAsFile('map.png', pngData, 'image/png')
     }
 
     const exportAsGeoJSON = async (): Promise<void> => {
