@@ -1,4 +1,3 @@
-import { GeoJSON2SVG } from 'geojson2svg'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
@@ -13,13 +12,15 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
+import { computeAspectRatio } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
+import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
@@ -359,67 +360,56 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }, { history: 'push', scroll: { kind: 'element', element: this.handler.container() } })
     }
 
-    /**
-     * Export the map as an svg, without the background
-     *
-     * @returns string svg
-     */
-    async exportAsSvg(): Promise<string> {
-        const { polygons } = await this.computePolygons()
-        const mapBounds = (await this.handler.getMaps())[0].getBounds()
-        const bounds = {
-            left: mapBounds.getWest(),
-            right: mapBounds.getEast(),
-            top: mapBounds.getNorth(),
-            bottom: mapBounds.getSouth(),
-        }
-        const width = 1000
-        const height = width * (bounds.top - bounds.bottom) / (bounds.right - bounds.left)
-        const converter = new GeoJSON2SVG({
-            mapExtent: bounds, attributes: [{
-                property: 'style',
-                type: 'dynamic',
-                key: 'style',
-            }],
-            viewportSize: {
-                width,
-                height,
-            },
-        })
+    async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string, insetBorderColor: string): Promise<string> {
+        const pixelRatio = 4
+        const width = 4096
+        const colorbarHeight = 300
+        const cBarPad = 40
 
-        function toSvgStyle(style: PolygonStyle): string {
-            let svgStyle = ''
-            svgStyle += `fill:${style.fillColor};`
-            svgStyle += `fill-opacity:${style.fillOpacity};`
-            svgStyle += `stroke:${style.color};`
-            if (style.weight !== undefined) {
-                svgStyle += `stroke-width:${style.weight / 10};`
+        const maps = await this.handler.getMaps()
+        const insets = this.insets()
+
+        const mainMap = maps[0]
+        const mapBounds = mainMap.getBounds()
+
+        const aspectRatio = computeAspectRatio([
+            mapBounds.getWest(),
+            mapBounds.getSouth(),
+            mapBounds.getEast(),
+            mapBounds.getNorth(),
+        ])
+
+        const height = Math.round(width / aspectRatio)
+
+        const totalHeight = height + colorbarHeight
+
+        const params = { width, height, pixelRatio, insetBorderColor }
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')!
+        canvas.width = width
+        canvas.height = totalHeight
+
+        await Promise.all(maps.map(async (map, i) => {
+            if (!this.state.mapIsVisible[i]) {
+                return
             }
-            return svgStyle
+            const inset = insets[i]
+            await renderMap(ctx, map, inset, params)
+        }))
+
+        ctx.fillStyle = backgroundColor
+        ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
+
+        if (colorbarElement) {
+            const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
+
+            const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
+
+            ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
         }
 
-        const overallSvg = []
-
-        for (const polygon of polygons) {
-            const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
-            const svg = converter.convert(geojson, { attributes: { style: toSvgStyle(polygon.style) } })
-            for (const elem of svg) {
-                overallSvg.push(elem)
-            }
-        }
-        const header = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-         <!-- Created with urban stats mapper (http://www.urbanstats.org/) -->
-            <svg
-            width="${width}mm"
-            height="${height}mm"
-            viewBox="0 0 ${width} ${height}"
-            version="1.1"
-            id="svg1"
-            xml:space="preserve"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:svg="http://www.w3.org/2000/svg">`
-        const footer = '</svg>'
-        return header + overallSvg.join('') + footer
+        return canvas.toDataURL('image/png', 1.0)
     }
 
     async exportAsGeoJSON(): Promise<string> {
@@ -697,7 +687,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid black` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `2px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
