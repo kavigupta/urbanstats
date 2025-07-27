@@ -525,7 +525,6 @@ export function Selector(props: {
                         setTimeout(() => {
                             setIsOpen(false)
                             setHighlightedIndex(0)
-                            setSearchValue(selectedRendered)
                         }, 150)
                     }}
                     placeholder="Search options..."
