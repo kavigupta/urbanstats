@@ -644,7 +644,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             map.addLayer(layer, labelId)
         }
         source.setData(data)
-        return polys.length > 0
+        return polys.length > 0 || inset.mainMap
     }
 
     /*
