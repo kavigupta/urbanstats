@@ -223,6 +223,7 @@ interface MapComponentProps {
     mapRef: React.RefObject<DisplayedMap>
     lineStyle: LineStyle
     basemap: Basemap
+    colorbarRef: React.RefObject<HTMLDivElement>
 }
 
 interface EmpiricalRamp {
@@ -283,7 +284,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     key={JSON.stringify(insetsU)}
                 />
             </div>
-            <div style={{ height: '8%', width: '100%' }}>
+            <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
                     name={colorStat.name()}
                     ramp={empiricalRamp}
@@ -293,8 +294,8 @@ function MapComponent(props: MapComponentProps): ReactNode {
     )
 }
 
-function saveAsFile(filename: string, data: string, type: string): void {
-    const blob = new Blob([data], { type })
+function saveAsFile(filename: string, data: string | Blob, type: string): void {
+    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -304,13 +305,18 @@ function saveAsFile(filename: string, data: string, type: string): void {
     document.body.removeChild(link)
 }
 
-function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
-    const exportAsSvg = async (): Promise<void> => {
+function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: React.RefObject<HTMLDivElement> }): ReactNode {
+    const colors = useColors()
+
+    const exportAsPng = async (): Promise<void> => {
         if (props.mapRef.current === null) {
             return
         }
-        const svg = await props.mapRef.current.exportAsSvg()
-        saveAsFile('map.svg', svg, 'image/svg+xml')
+        const colorbarElement = props.colorbarRef.current ?? undefined
+        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background, colors.mapInsetBorderColor)
+        const data = await fetch(pngDataUrl)
+        const pngData = await data.blob()
+        saveAsFile('map.png', pngData, 'image/png')
     }
 
     const exportAsGeoJSON = async (): Promise<void> => {
@@ -324,10 +330,10 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     return (
         <div>
             <button onClick={() => {
-                void exportAsSvg()
+                void exportAsPng()
             }}
             >
-                Export as SVG
+                Export as PNG
             </button>
             <button onClick={() => {
                 void exportAsGeoJSON()
@@ -376,6 +382,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [mapSettings.geography_kind])
 
     const mapRef = useRef<DisplayedMap>(null)
+    const colorbarRef = useRef<HTMLDivElement>(null)
 
     const jsonedSettings = JSON.stringify(mapSettings)
 
@@ -411,6 +418,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         mapRef={mapRef}
                         lineStyle={mapSettings.line_style}
                         basemap={mapSettings.basemap}
+                        colorbarRef={colorbarRef}
                     />
                 )
     }
@@ -433,6 +441,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                 />
                 <Export
                     mapRef={mapRef}
+                    colorbarRef={colorbarRef}
                 />
                 {
                     mapperPanel()
