@@ -1,6 +1,7 @@
 import { Inset } from '../../components/map'
 import insets from '../../data/insets'
 import { Context } from '../context'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 export const insetType = {
@@ -118,6 +119,9 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
         const cleanName = insetName.replace(/[\s,().-]/g, '')
         const constantName = `inset${cleanName}`
 
+        const uss = `constructInset(screenBounds={ north: ${inset.topRight[1]}, east: ${inset.topRight[0]}, south: ${inset.bottomLeft[1]}, west: ${inset.bottomLeft[0]} }, mapBounds={ north: ${inset.coordBox[3]}, east: ${inset.coordBox[2]}, south: ${inset.coordBox[1]}, west: ${inset.coordBox[0]} }, mainMap=${inset.mainMap}, name="${inset.name}")`
+        const expr = parseNoErrorAsExpression(uss, '')
+
         return [
             constantName,
             {
@@ -129,7 +133,10 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                     coordBox: [...inset.coordBox] as [number, number, number, number],
                     mainMap: inset.mainMap,
                 } satisfies Inset } satisfies USSRawValue,
-                documentation: { humanReadableName: insetName },
+                documentation: {
+                    humanReadableName: insetName,
+                    equivalentExpressions: [expr],
+                },
             },
         ] as [string, USSValue]
     }),
