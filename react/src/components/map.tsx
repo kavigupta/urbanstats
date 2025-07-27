@@ -362,50 +362,31 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }, { history: 'push', scroll: { kind: 'element', element: this.handler.container() } })
     }
 
-    /**
-     * Export the map as a high-resolution PNG
-     *
-     * @param colorbarElement - The colorbar element to render below the maps
-     * @param backgroundColor - The background color to use for the colorbar area
-     * @returns string PNG data URL
-     */
     async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string, insetBorderColor: string): Promise<string> {
+        const pixelRatio = 4
+        const width = 4096
+        const colorbarHeight = 300
+        const cBarPad = 40
+
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
-        // Get the main map bounds for overall dimensions
         const mainMap = maps[0]
         const mapBounds = mainMap.getBounds()
 
-        // Calculate proper dimensions based on the map's aspect ratio using the coordinate utility
-        const coordBox: [number, number, number, number] = [
+        const aspectRatio = computeAspectRatio([
             mapBounds.getWest(),
             mapBounds.getSouth(),
             mapBounds.getEast(),
             mapBounds.getNorth(),
-        ]
-        const aspectRatio = computeAspectRatio(coordBox)
+        ])
 
-        // Use a more reasonable resolution that keeps labels readable
-        const pixelRatio = 4
-        const width = 4096
         const height = Math.round(width / aspectRatio)
 
-        // Add space below the maps for the colorbar
-        const colorbarHeight = 300
-        const cBarPad = 40
         const totalHeight = height + colorbarHeight
-
-        // // Store original container sizes, bounds, and pixel ratios
-        // const originalSizes: { width: string, height: string }[] = []
-        // const originalBounds: maplibregl.LngLatBounds[] = []
-        // const originalPixelRatios: number[] = []
 
         const params = { width, height, pixelRatio, insetBorderColor }
 
-        // Temporarily resize all map containers to high resolution
-
-        // Create a high-resolution canvas
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')!
         canvas.width = width
@@ -430,7 +411,6 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
         }
 
-        // Return the high-resolution PNG data URL
         return canvas.toDataURL('image/png', 1.0)
     }
 
