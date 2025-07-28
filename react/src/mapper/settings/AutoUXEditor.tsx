@@ -385,7 +385,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
 
-            if (reference === undefined || !('value' in reference)) {
+            if (reference === undefined) {
                 return
             }
 
