@@ -56,7 +56,7 @@ export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStat
 }
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
-    const tle = defaultTopLevelEditor(defaultTypeEnvironment)
+    const tle = defaultTopLevelEditor(defaultTypeEnvironment(addTo.universe ?? 'USA'))
     const defaults: MapSettings = {
         geographyKind: 'Subnational Region',
         universe: 'USA',

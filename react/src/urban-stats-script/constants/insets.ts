@@ -113,11 +113,16 @@ export const constructInsetsValue: USSValue = {
     documentation: { humanReadableName: 'Custom Insets', isDefault: true },
 }
 
+function computeInsetConstantName(name: string): string {
+    name = name.replace(/[\s,().-]/g, '')
+    name = `inset${name}`
+    return name
+}
+
 export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(([, regionInsets]) =>
     regionInsets.map((inset) => {
         const insetName = inset.name
-        const cleanName = insetName.replace(/[\s,().-]/g, '')
-        const constantName = `inset${cleanName}`
+        const constantName = computeInsetConstantName(insetName)
 
         const uss = `constructInset(screenBounds={ north: ${inset.topRight[1]}, east: ${inset.topRight[0]}, south: ${inset.bottomLeft[1]}, west: ${inset.bottomLeft[0]} }, mapBounds={ north: ${inset.coordBox[3]}, east: ${inset.coordBox[2]}, south: ${inset.coordBox[1]}, west: ${inset.coordBox[0]} }, mainMap=${inset.mainMap}, name="${inset.name}")`
         const expr = parseNoErrorAsExpression(uss, '')
@@ -140,4 +145,13 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
             },
         ] as [string, USSValue]
     }),
+)
+
+export const insetNameToConstantName = new Map<string, string>(
+    Object.entries(insets).flatMap(([, regionInsets]) =>
+        regionInsets.map((inset) => {
+            const insetName = inset.name
+            return [insetName, computeInsetConstantName(insetName)]
+        }),
+    ),
 )

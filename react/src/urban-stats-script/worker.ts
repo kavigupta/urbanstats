@@ -10,10 +10,12 @@ import { indexLink } from '../navigation/links'
 import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 
-import { locationOf, locationOfLastExpression } from './ast'
+import { locationOf, locationOfLastExpression, UrbanStatsASTExpression } from './ast'
+import { insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
+import { noLocation } from './lexer'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
@@ -78,6 +80,7 @@ async function contextForRequest(request: USSExecutionRequest): Promise<[Context
 async function mapperContextForRequest(request: USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects: Effect[]): Promise<Context> {
     const geographyKind = request.descriptor.geographyKind
     const universe = request.descriptor.universe
+    const dte = defaultTypeEnvironment(universe)
     if (!validGeographies.includes(geographyKind)) {
         throw new Error('invalid geography')
     }
@@ -101,7 +104,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
     }
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
-        const typeInfo = defaultTypeEnvironment.get(name)
+        const typeInfo = dte.get(name)
         assert(typeInfo !== undefined, `Type info for ${name} not found`)
         return {
             type: typeInfo.type,
@@ -138,7 +141,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
         return annotateType(name, variableData)
     }
 
-    const context = await mapperContext(request.stmts, getVariable, effects)
+    const context = await mapperContext(request.stmts, getVariable, effects, universe)
     return context
 }
 
@@ -180,4 +183,29 @@ export function loadInset(universe: Universe): Insets {
         } satisfies Inset
     })
     return insetsProc
+}
+
+export function loadInsetExpression(universe: Universe): UrbanStatsASTExpression {
+    const insetsU = insets[universe]
+    const names = insetsU.map(x => x.name)
+
+    const exprs = names.map((name) => {
+        const expr = insetNameToConstantName.get(name)
+        assert(expr !== undefined, `No inset constant for ${name}`)
+        return { type: 'identifier', name: { node: expr, location: noLocation } } satisfies UrbanStatsASTExpression
+    })
+
+    return {
+        type: 'function',
+        fn: { type: 'identifier', name: { node: 'constructInsets', location: noLocation } },
+        args: [{
+            type: 'unnamed',
+            value: {
+                type: 'vectorLiteral',
+                elements: exprs,
+                entireLoc: noLocation,
+            } satisfies UrbanStatsASTExpression,
+        }],
+        entireLoc: noLocation,
+    } satisfies UrbanStatsASTExpression
 }

@@ -53,7 +53,7 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
             <TopLevelEditor
                 uss={getScript().uss}
                 setUss={setUss}
-                typeEnvironment={defaultTypeEnvironment}
+                typeEnvironment={defaultTypeEnvironment(mapSettings.universe)}
                 errors={errors}
             />
         </div>
