@@ -135,7 +135,7 @@ export function AutoUXEditor(props: {
                     setUss={props.setUss}
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
-                    blockIdent={props.blockIdent}
+                    blockIdent={`${props.blockIdent}_custom`}
                 />
             )
         }
