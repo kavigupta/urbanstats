@@ -5,7 +5,6 @@ import { gzipSync } from 'zlib'
 
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-import insets from '../data/insets'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -22,6 +21,7 @@ import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
+import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -31,17 +31,16 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import type { Inset, Insets } from './map'
+import type { Insets } from './map'
 import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
     insetsCallback: (insetsToUse: Insets) => void
-    defaultInsets: Insets
     height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
@@ -100,7 +99,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe, defaultInsets: this.props.defaultInsets }, stmts })
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
             return { polygons: [], zoomIndex: -1 }
@@ -233,28 +232,11 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
-function loadInset(universe: Universe): Insets {
-    const insetsU = insets[universe]
-    assert(insetsU.length > 0, `No insets for universe ${universe}`)
-    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    const insetsProc = insetsU.map((inset) => {
-        return {
-            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
-            topRight: [inset.topRight[0], inset.topRight[1]],
-            // copy to get rid of readonly
-            coordBox: [...inset.coordBox],
-            mainMap: inset.mainMap,
-        } satisfies Inset
-    })
-    return insetsProc
-}
-
 function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
-    const insetsU = loadInset(props.universe)
-    const [currentInsets, setCurrentInsets] = useState<Insets>(insetsU)
+    const [currentInsets, setCurrentInsets] = useState<Insets>(loadInset(props.universe))
 
     const aspectRatio = computeAspectRatioForInsets(currentInsets)
 
@@ -278,7 +260,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    defaultInsets={insetsU}
                     insets={currentInsets}
                     key={JSON.stringify(currentInsets)}
                 />

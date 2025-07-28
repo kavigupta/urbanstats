@@ -1,10 +1,13 @@
 import { emptyContext } from '../../unit/urban-stats-script-utils'
+import { Inset, Insets } from '../components/map'
+import insets from '../data/insets'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { loadDataInIndexOrder, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
 import { indexLink } from '../navigation/links'
+import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 
 import { locationOf, locationOfLastExpression } from './ast'
@@ -15,7 +18,7 @@ import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 
 let mapperCache: {
-    universe: string
+    universe: Universe
     geographyKind: typeof validGeographies[number]
     longnames: string[]
     dataCache: Map<string, number[]>
@@ -113,7 +116,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geo', longnames)
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', value: request.descriptor.defaultInsets })
+            return annotateType('defaultInsets', { type: 'opaque', value: loadInset(request.descriptor.universe) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {
@@ -161,4 +164,20 @@ function removeFunctions(value: USSRawValue): USSRawValue {
 onmessage = async (message: MessageEvent<{ request: USSExecutionRequest, id: number }>) => {
     const result = await executeRequest(message.data.request)
     postMessage({ result, id: message.data.id })
+}
+
+export function loadInset(universe: Universe): Insets {
+    const insetsU = insets[universe]
+    assert(insetsU.length > 0, `No insets for universe ${universe}`)
+    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
+    const insetsProc = insetsU.map((inset) => {
+        return {
+            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
+            topRight: [inset.topRight[0], inset.topRight[1]],
+            // copy to get rid of readonly
+            coordBox: [...inset.coordBox],
+            mainMap: inset.mainMap,
+        } satisfies Inset
+    })
+    return insetsProc
 }
