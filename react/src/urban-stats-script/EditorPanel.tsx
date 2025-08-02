@@ -29,7 +29,7 @@ export function EditorPanel(): ReactNode {
         return () => { window.removeEventListener('keydown', listener) }
     }, [])
 
-    const updateUss = useCallback(async (newScript: string) => {
+    const updateUss = async (newScript: string): Promise<void> => {
         setUss(newScript)
         localStorage.setItem('editor-code', newScript)
 
@@ -44,16 +44,15 @@ export function EditorPanel(): ReactNode {
         const exec = await executeAsync({ descriptor: { kind: 'generic' }, stmts })
         setResult(exec.resultingValue)
         setErrors(exec.error)
-    }, [])
+    }
 
-    const typeEnvironment = useMemo(() => {
-        return defaultConstants as Map<string, USSDocumentedType>
-    }, [])
+    const typeEnvironment = defaultConstants as Map<string, USSDocumentedType>
 
     const colors = useColors()
 
     return (
         <PageTemplate>
+            {/* Most props to the editors are purposely not memoized for testing purposes. */}
             <Editor
                 uss={uss}
                 setUss={updateUss}
