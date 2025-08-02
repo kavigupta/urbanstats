@@ -137,6 +137,7 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                     // copy to get rid of readonly
                     coordBox: [...inset.coordBox] as [number, number, number, number],
                     mainMap: inset.mainMap,
+                    name: inset.name,
                 } satisfies Inset } satisfies USSRawValue,
                 documentation: {
                     humanReadableName: insetName,
