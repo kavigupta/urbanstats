@@ -5,19 +5,26 @@
  * It uses a signature that's based on the count of letters in the needle and haystack to quickly skip combinations that can't match.
  */
 
+import { assert } from './defensive'
+
 export interface Needle {
     alphabet: Uint32Array
     length: number
     signature: number
 }
 
-export function toNeedle(token: string): Needle {
+export function bitapAlphabet(token: string): Uint32Array {
+    assert(token.length <= 31, `Max bitap token length is 31`)
     const alphabet = new Uint32Array(65535).fill(0)
     for (let i = 0; i < token.length; i++) {
         const char = token.charCodeAt(i)
         alphabet[char] = alphabet[char] | (1 << i)
     }
-    return { alphabet, length: token.length, signature: toSignature(token) }
+    return alphabet
+}
+
+export function toNeedle(token: string): Needle {
+    return { alphabet: bitapAlphabet(token), length: token.length, signature: toSignature(token) }
 }
 
 export interface Haystack {
