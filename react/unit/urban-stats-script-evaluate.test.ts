@@ -8,7 +8,7 @@ import { regressionType, regressionResultType } from '../src/urban-stats-script/
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { parseNoErrorAsExpression } from '../src/urban-stats-script/parser'
+import { parseNoErrorAsCustomNode } from '../src/urban-stats-script/parser'
 import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs, canUnifyTo } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, emptyContextWithInsets, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
@@ -1692,13 +1692,13 @@ void test('test log scale functions with parameters', () => {
 
 void test('custom node type checking', (): void => {
     // Test that custom node with correct type passes
-    const correctTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test', numType)
+    const correctTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', numType)
     const result = evaluate(correctTypeCustomNode, emptyContext())
     assert.strictEqual(result.value, 5)
     assert.deepStrictEqual(result.type, numType)
 
     // Test that custom node with incorrect type throws error
-    const incorrectTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test', stringType)
+    const incorrectTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', stringType)
     assert.throws(
         () => evaluate(incorrectTypeCustomNode, emptyContext()),
         (err: Error): boolean => {
@@ -1707,13 +1707,13 @@ void test('custom node type checking', (): void => {
     )
 
     // Test that custom node with boolean type works correctly
-    const booleanCustomNode = parseNoErrorAsExpression('true', 'test', boolType)
+    const booleanCustomNode = parseNoErrorAsCustomNode('true', 'test', boolType)
     const boolResult = evaluate(booleanCustomNode, emptyContext())
     assert.strictEqual(boolResult.value, true)
     assert.deepStrictEqual(boolResult.type, boolType)
 
     // Test that custom node with boolean type but wrong expression throws error
-    const wrongBooleanCustomNode = parseNoErrorAsExpression('2 + 3', 'test', boolType)
+    const wrongBooleanCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', boolType)
     assert.throws(
         () => evaluate(wrongBooleanCustomNode, emptyContext()),
         (err: Error): boolean => {
@@ -1722,7 +1722,7 @@ void test('custom node type checking', (): void => {
     )
 
     // Test that custom node without expectedType works (no type checking)
-    const noTypeCustomNode = parseNoErrorAsExpression('2 + 3', 'test')
+    const noTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test')
     const noTypeResult = evaluate(noTypeCustomNode, emptyContext())
     assert.strictEqual(noTypeResult.value, 5)
     assert.deepStrictEqual(noTypeResult.type, numType)

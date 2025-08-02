@@ -850,7 +850,7 @@ export function parseNoError(uss: string, blockId: string): UrbanStatsASTStateme
     return result
 }
 
-export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
+export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
     const result = parseNoError(uss, blockId)
     return {
         type: 'customNode',
