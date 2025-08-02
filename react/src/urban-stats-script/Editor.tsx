@@ -19,6 +19,9 @@ export function Editor(
         setSelection: (newRange: Range | undefined) => void
     },
 ): ReactNode {
+    const setSelectionRef = useRef(setSelection)
+    setSelectionRef.current = setSelection
+
     const [script, setScript] = useState<Script>(() => makeScript(uss))
 
     useEffect(() => {
@@ -75,14 +78,14 @@ export function Editor(
             else {
                 const range = getRange(editorRef.current!)
                 setAutocompleteState(undefined)
-                setSelection(range)
+                setSelectionRef.current(range)
             }
         }
         document.addEventListener('selectionchange', listener)
         return () => {
             document.removeEventListener('selectionchange', listener)
         }
-    }, [setSelection])
+    }, []) // Rebinding can cause problems with multiple editors as they stop listening when one editor changes selection
 
     useEffect(() => {
         const editor = editorRef.current!
