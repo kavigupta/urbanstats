@@ -24,15 +24,16 @@ export function CustomEditor({
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
     return (
-        <Editor
-            uss={uss.originalCode}
-            setUss={(u: string) => {
-                const parsed = parseNoErrorAsCustomNode(u, blockIdent, uss.expectedType)
-                setUss(parsed)
-            }}
-            typeEnvironment={typeEnvironment}
-            errors={ourErrors}
-            placeholder={placeholder}
-        />
+        null
+        // <Editor
+        //     uss={uss.originalCode}
+        //     setUss={(u: string) => {
+        //         const parsed = parseNoErrorAsCustomNode(u, blockIdent, uss.expectedType)
+        //         setUss(parsed)
+        //     }}
+        //     typeEnvironment={typeEnvironment}
+        //     errors={ourErrors}
+        //     placeholder={placeholder}
+        // />
     )
 }

@@ -5,7 +5,7 @@ import { PageTemplate } from '../page_template/template'
 
 import { codeStyle, Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
-import { EditorError } from './editor-utils'
+import { EditorError, Range } from './editor-utils'
 import { parse } from './parser'
 import { renderValue, USSValue, USSDocumentedType } from './types-values'
 import { executeAsync } from './workerManager'
@@ -14,7 +14,12 @@ export function EditorPanel(): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
     const [result, setResult] = useState<USSValue | undefined>(undefined)
 
+    const [uss, setUss] = useState(() => localStorage.getItem('editor-code') ?? '')
+
+    const [selection, setSelection] = useState<Range | undefined>(undefined)
+
     const updateUss = useCallback(async (newScript: string) => {
+        setUss(newScript)
         localStorage.setItem('editor-code', newScript)
 
         const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
@@ -28,10 +33,6 @@ export function EditorPanel(): ReactNode {
         const exec = await executeAsync({ descriptor: { kind: 'generic' }, stmts })
         setResult(exec.resultingValue)
         setErrors(exec.error)
-    }, [])
-
-    const uss = useMemo(() => {
-        return localStorage.getItem('editor-code') ?? ''
     }, [])
 
     const typeEnvironment = useMemo(() => {
@@ -48,6 +49,8 @@ export function EditorPanel(): ReactNode {
                 typeEnvironment={typeEnvironment}
                 errors={errors}
                 placeholder="Enter Urban Stats Script"
+                selection={selection}
+                setSelection={setSelection}
             />
             { result === undefined
                 ? null
