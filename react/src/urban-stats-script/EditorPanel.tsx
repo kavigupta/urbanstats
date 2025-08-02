@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -16,7 +16,21 @@ export function EditorPanel(): ReactNode {
 
     const [uss, setUss] = useState(() => localStorage.getItem('editor-code') ?? '')
 
-    const [selection, setSelection] = useState<Range | undefined>(undefined)
+    const [selection1, setSelection1] = useState<Range | undefined>(undefined)
+    const [selection2, setSelection2] = useState<Range | undefined>(undefined)
+
+    useEffect(() => {
+        const listener = (e: KeyboardEvent): void => {
+            if (e.key === 's' && e.metaKey && e.shiftKey) {
+                e.preventDefault()
+                // Swap selections
+                setSelection1(selection2)
+                setSelection2(selection1)
+            }
+        }
+        window.addEventListener('keydown', listener)
+        return () => { window.removeEventListener('keydown', listener) }
+    }, [selection1, selection2])
 
     const updateUss = useCallback(async (newScript: string) => {
         setUss(newScript)
@@ -49,8 +63,17 @@ export function EditorPanel(): ReactNode {
                 typeEnvironment={typeEnvironment}
                 errors={errors}
                 placeholder="Enter Urban Stats Script"
-                selection={selection}
-                setSelection={setSelection}
+                selection={selection1}
+                setSelection={setSelection1}
+            />
+            <Editor
+                uss={uss}
+                setUss={updateUss}
+                typeEnvironment={typeEnvironment}
+                errors={errors}
+                placeholder="Enter Urban Stats Script"
+                selection={selection2}
+                setSelection={setSelection2}
             />
             { result === undefined
                 ? null

@@ -21,6 +21,10 @@ export function Editor(
 ): ReactNode {
     const [script, setScript] = useState<Script>(() => makeScript(uss))
 
+    useEffect(() => {
+        setScript(makeScript(uss))
+    }, [uss])
+
     const colors = useColors()
 
     const editorRef = useRef<HTMLPreElement>(null)
