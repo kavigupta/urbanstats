@@ -22,6 +22,7 @@ interface USSNullType {
 export interface USSOpaqueType {
     type: 'opaque'
     name: string
+    allowCustomExpression?: boolean
 }
 
 export interface USSVectorType {
@@ -97,6 +98,10 @@ export interface Documentation {
      * Human-readable names for named arguments. Maps argument name to display name.
      */
     namedArgs?: Record<string, string>
+    /**
+     * Should be included when a constant should be deconstructed into an expression for user editing
+     */
+    equivalentExpressions?: UrbanStatsASTExpression[]
 }
 
 export interface USSDocumentedType {

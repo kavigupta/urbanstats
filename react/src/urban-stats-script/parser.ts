@@ -859,3 +859,9 @@ export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedT
         expectedType,
     }
 }
+
+export function parseNoErrorAsExpression(uss: string, blockId: string): UrbanStatsASTExpression {
+    const result = parseNoError(uss, blockId)
+    assert(result.type === 'expression', 'Must be expression')
+    return result.value
+}

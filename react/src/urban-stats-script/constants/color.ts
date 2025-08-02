@@ -2,6 +2,7 @@ import ColorLib from 'color'
 
 import hueColors from '../../data/hueColors'
 import { Context } from '../context'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { camelToHuman } from './utils'
@@ -9,21 +10,43 @@ import { camelToHuman } from './utils'
 export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
-function hexToColor(hex: string): Color {
+export function hexToColor(hex: string): Color {
     const r = parseInt(hex.slice(1, 3), 16)
     const g = parseInt(hex.slice(3, 5), 16)
     const b = parseInt(hex.slice(5, 7), 16)
     return { r, g, b }
 }
 
-function rgbToColor(red: number, green: number, blue: number): Color {
+export function rgbToColor(red: number, green: number, blue: number, tolerateError: true): Color | undefined
+export function rgbToColor(red: number, green: number, blue: number): Color
+export function rgbToColor(red: number, green: number, blue: number, tolerateError: boolean = false): Color | undefined {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
+        if (tolerateError) {
+            return undefined
+        }
         throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue})`)
     }
     const r = Math.round(red * 255)
     const g = Math.round(green * 255)
     const b = Math.round(blue * 255)
     return { r, g, b }
+}
+
+export function hsvToColor(red: number, green: number, blue: number, tolerateError: true): Color | undefined
+export function hsvToColor(red: number, green: number, blue: number): Color
+export function hsvToColor(hue: number, saturation: number, value: number, tolerateError: boolean = false): Color | undefined {
+    if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
+        if (tolerateError) {
+            return undefined
+        }
+        throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
+    }
+    const color = ColorLib.hsv(hue, saturation * 100, value * 100)
+    return {
+        r: Math.round(color.red()),
+        g: Math.round(color.green()),
+        b: Math.round(color.blue()),
+    }
 }
 
 export const rgb = {
@@ -57,16 +80,7 @@ export const hsv = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const hue = posArgs[0] as number
-        const saturation = posArgs[1] as number
-        const value = posArgs[2] as number
-        if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
-            throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
-        }
-        // Convert HSL to RGB using color library
-        const color = ColorLib.hsv(hue, saturation * 100, value * 100)
-        const rgbValues = color.rgb().object()
-        return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
+        return { type: 'opaque', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
     },
     documentation: { humanReadableName: 'Color (HSV)' },
 } satisfies USSValue
@@ -94,10 +108,27 @@ export function doRender(color: Color): string {
     return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
 }
 
+export function rgbColorExpression(color: Color): string {
+    return `rgb(${color.r / 255}, ${color.g / 255}, ${color.b / 255})`
+}
+
+export function hsvColorExpression(color: Color): string {
+    const c = ColorLib.rgb(color.r, color.g, color.b)
+    return `hsv(${c.hue()}, ${c.saturationv() / 100}, ${c.value() / 100})`
+}
+
 function colorConstant(name: string, value: string): [string, USSValue] {
     const humanReadableName = camelToHuman(name)
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
-    return [`color${capitalizedName}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
+    const color = hexToColor(value)
+    return [`color${capitalizedName}`, {
+        type: colorType,
+        value: { type: 'opaque', value: color },
+        documentation: {
+            humanReadableName,
+            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
+        },
+    }] satisfies [string, USSValue]
 }
 
 export const colorConstants = [
