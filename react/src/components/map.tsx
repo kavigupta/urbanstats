@@ -24,7 +24,7 @@ import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
 export type Insets = Inset[]
 export type MapHeight =
     | { type: 'fixed-height', value: number | string }
