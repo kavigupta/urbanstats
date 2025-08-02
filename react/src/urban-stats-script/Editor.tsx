@@ -32,7 +32,8 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement>(null)
 
-    const inhibitRangeUpdateEvents = useRef<number>(0)
+    const inhibitOutboundRangeUpdateEvents = useRef<number>(0)
+    const inhibitInboundRangeUpdateEvents = useRef<number>(0)
 
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
@@ -48,18 +49,31 @@ export function Editor(
         })
 
         const editor = editorRef.current!
-        const rangeBefore = newRange ?? selection
+        const rangeBefore = newRange ?? getRange(editor)
         editor.replaceChildren(...fragment)
         if (rangeBefore !== undefined) {
             // Otherwise, we get into a re-render loop
-            inhibitRangeUpdateEvents.current++
+            inhibitOutboundRangeUpdateEvents.current++
             setRange(editor, rangeBefore)
         }
-    }, [colors, errors, autocompleteState, placeholder, selection])
+    }, [colors, errors, autocompleteState, placeholder])
 
     useEffect(() => {
         renderScript(script, undefined)
     }, [renderScript, script])
+
+    useEffect(() => {
+        const editor = editorRef.current!
+        if (selection !== undefined) {
+            if (inhibitInboundRangeUpdateEvents.current > 0) {
+                inhibitInboundRangeUpdateEvents.current--
+            }
+            else {
+                inhibitOutboundRangeUpdateEvents.current++
+                setRange(editor, selection)
+            }
+        }
+    }, [selection])
 
     const editScript = useCallback((newUss: string, newRange: Range | undefined) => {
         const newScript = makeScript(newUss)
@@ -72,12 +86,15 @@ export function Editor(
 
     useEffect(() => {
         const listener = (): void => {
-            if (inhibitRangeUpdateEvents.current > 0) {
-                inhibitRangeUpdateEvents.current--
+            if (inhibitOutboundRangeUpdateEvents.current > 0) {
+                inhibitOutboundRangeUpdateEvents.current--
             }
             else {
                 const range = getRange(editorRef.current!)
                 setAutocompleteState(undefined)
+                if (range !== undefined) {
+                    inhibitInboundRangeUpdateEvents.current++
+                }
                 setSelectionRef.current(range)
             }
         }
