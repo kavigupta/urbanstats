@@ -1,7 +1,10 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { constantsByType } from '../src/urban-stats-script/constants/constants'
+import { constantsByType, defaultConstants } from '../src/urban-stats-script/constants/constants'
+import { Context } from '../src/urban-stats-script/context'
+import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { LocInfo } from '../src/urban-stats-script/lexer'
 
 void test('constant listing', (): void => {
     assert.deepStrictEqual(
@@ -518,4 +521,45 @@ void test('constant listing', (): void => {
             ],
         },
     )
+})
+
+void test('equivalent expressions produce equivalent results', (): void => {
+    // Create a context with all constants available
+    const context = new Context(
+        () => {
+            // Ignore warnings for this test
+        },
+        (msg: string, location: LocInfo) => {
+            return new InterpretationError(msg, location)
+        },
+        defaultConstants,
+        new Map(),
+    )
+
+    // Check all constants that have equivalentExpressions
+    for (const [constantName, constantValue] of defaultConstants) {
+        const equivalentExpressions = constantValue.documentation?.equivalentExpressions
+        if (!equivalentExpressions || equivalentExpressions.length === 0) {
+            continue
+        }
+
+        // Evaluate the original constant
+        const originalValue = context.getVariable(constantName)
+        if (!originalValue) {
+            throw new Error(`Could not find constant: ${constantName}`)
+        }
+
+        // Evaluate each equivalent expression and compare with the original
+        for (let i = 0; i < equivalentExpressions.length; i++) {
+            const equivalentExpr = equivalentExpressions[i]
+            const evaluatedEquivalent = evaluate(equivalentExpr, context)
+
+            // Compare only value and type (evaluated expressions don't have documentation)
+            assert.deepStrictEqual(
+                { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
+                { type: originalValue.type, value: originalValue.value },
+                `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
+            )
+        }
+    }
 })
