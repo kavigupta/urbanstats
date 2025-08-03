@@ -54,11 +54,14 @@ export function Editor(
         }
     }, [colors, errors, autocompleteState, placeholder])
 
+    const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
     const lastSelection = useRef<Range | undefined>(undefined)
 
     useEffect(() => {
         const editor = editorRef.current!
+
+        // We need to just render setRange sometimes otherwise rendering the script again interrupts the selection interaction
 
         let renderSelection
         if (selection !== undefined && selection !== lastSelection.current) {
@@ -71,13 +74,14 @@ export function Editor(
             }
         }
 
-        if (script !== lastScript.current) {
+        if (script !== lastScript.current || renderScript !== lastRenderScript.current) {
             renderScript(script, renderSelection)
         }
         else if (renderSelection !== undefined) {
             setRange(editor, renderSelection)
         }
 
+        lastRenderScript.current = renderScript
         lastScript.current = script
         lastSelection.current = selection
     }, [renderScript, script, selection])
