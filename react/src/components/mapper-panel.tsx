@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -374,7 +374,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     console.log('MapperPanel errors', errors)
 
     const mapperPanel = (): ReactNode => {
-        const geographyKind = mapSettings.geographyKind as typeof valid_geographies[number]
+        const geographyKind = mapSettings.geographyKind
         return (!valid_geographies.includes(geographyKind))
             ? <div>Invalid geography kind</div>
             : (
@@ -391,8 +391,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const headerTextClass = useHeaderTextClass()
 
-    const getScript = useCallback(() => mapSettings.script, [mapSettings.script])
-
     if (props.view) {
         return mapperPanel()
     }
@@ -402,7 +400,6 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    getScript={getScript}
                     mapSettings={mapSettings}
                     setMapSettings={(setter) => {
                         setMapSettingsWrapper(setter(mapSettings))

@@ -1,29 +1,25 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 
 import valid_geographies from '../../data/mapper/used_geographies'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError } from '../../urban-stats-script/editor-utils'
+import { Property } from '../../utils/Property'
 import { DataListSelector } from '../DataListSelector'
 import { defaultTypeEnvironment } from '../context'
 
+import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
-import { MapSettings, MapperScriptSettings } from './utils'
+import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, getScript, errors }: {
+export function MapperSettings({ mapSettings, setMapSettings, errors }: {
     mapSettings: MapSettings
     setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
-    getScript: () => MapperScriptSettings
     errors: EditorError[]
 }): ReactNode {
-    const setUss = useCallback((uss: MapperScriptSettings['uss']) => {
-        setMapSettings(s => ({
-            ...s,
-            script: { uss },
-        }))
-    }, [setMapSettings])
+    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
     return (
-        <div>
+        <SelectionContext.Provider value={selectionContext}>
             <DataListSelector
                 overallName="Universe:"
                 names={universes_ordered}
@@ -51,11 +47,16 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
                 }
             />
             <TopLevelEditor
-                uss={getScript().uss}
-                setUss={setUss}
+                uss={mapSettings.script.uss}
+                setUss={(uss) => {
+                    setMapSettings(s => ({
+                        ...s,
+                        script: { uss },
+                    }))
+                }}
                 typeEnvironment={defaultTypeEnvironment(mapSettings.universe)}
                 errors={errors}
             />
-        </div>
+        </SelectionContext.Provider>
     )
 }
