@@ -54,22 +54,33 @@ export function Editor(
         }
     }, [colors, errors, autocompleteState, placeholder])
 
-    useEffect(() => {
-        renderScript(script, undefined)
-    }, [renderScript, script])
+    const lastScript = useRef<Script | undefined>(undefined)
+    const lastSelection = useRef<Range | undefined>(undefined)
 
     useEffect(() => {
         const editor = editorRef.current!
-        if (selection !== undefined) {
+
+        let renderSelection
+        if (selection !== undefined && selection !== lastSelection.current) {
             if (inhibitInboundRangeUpdateEvents.current > 0) {
                 inhibitInboundRangeUpdateEvents.current--
             }
             else {
                 inhibitOutboundRangeUpdateEvents.current++
-                setRange(editor, selection)
+                renderSelection = selection
             }
         }
-    }, [selection])
+
+        if (script !== lastScript.current) {
+            renderScript(script, renderSelection)
+        }
+        else if (renderSelection !== undefined) {
+            setRange(editor, renderSelection)
+        }
+
+        lastScript.current = script
+        lastSelection.current = selection
+    }, [renderScript, script, selection])
 
     const editScript = useCallback((newUss: string, newRange: Range | undefined) => {
         const newScript = makeScript(newUss)
