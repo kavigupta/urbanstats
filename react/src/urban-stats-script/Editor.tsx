@@ -1,6 +1,6 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
@@ -22,11 +22,7 @@ export function Editor(
     const setSelectionRef = useRef(setSelection)
     setSelectionRef.current = setSelection
 
-    const [script, setScript] = useState<Script>(() => makeScript(uss))
-
-    useEffect(() => {
-        setScript(makeScript(uss))
-    }, [uss])
+    const script = useMemo(() => makeScript(uss), [uss])
 
     const colors = useColors()
 
@@ -78,7 +74,6 @@ export function Editor(
     const editScript = useCallback((newUss: string, newRange: Range | undefined) => {
         const newScript = makeScript(newUss)
         renderScript(newScript, newRange) // Need this to ensure cursor placement
-        setScript(newScript)
         setUss(newScript.uss)
         setSelection(newRange)
         setAutocompleteState(undefined)
@@ -137,13 +132,12 @@ export function Editor(
             else {
                 setAutocompleteState(undefined)
             }
-            setScript(newScript)
             setUss(newScript.uss)
             setSelection(range)
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript, typeEnvironment, colors, editScript, setUss, setSelection])
+    }, [typeEnvironment, colors, editScript, setUss, setSelection])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -195,7 +189,7 @@ export function Editor(
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
+    }, [script, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
