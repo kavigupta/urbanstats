@@ -62,7 +62,7 @@ export const rgb = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        return { type: 'opaque', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
+        return { type: 'opaque', opaqueType: 'color', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
     },
     documentation: { humanReadableName: 'Color (RGB)' },
 } satisfies USSValue
@@ -80,7 +80,7 @@ export const hsv = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        return { type: 'opaque', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
+        return { type: 'opaque', opaqueType: 'color', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
     },
     documentation: { humanReadableName: 'Color (HSV)' },
 } satisfies USSValue
@@ -123,7 +123,7 @@ function colorConstant(name: string, value: string): [string, USSValue] {
     const color = hexToColor(value)
     return [`color${capitalizedName}`, {
         type: colorType,
-        value: { type: 'opaque', value: color },
+        value: { type: 'opaque', opaqueType: 'color', value: color },
         documentation: {
             humanReadableName,
             equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],

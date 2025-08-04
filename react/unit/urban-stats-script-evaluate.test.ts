@@ -1184,7 +1184,7 @@ void test('evaluate conditions', (): void => {
 void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
-        undocValue({ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, colorType),
+        undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } }, colorType),
     )
     assert.deepStrictEqual(
         renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
@@ -1193,9 +1193,9 @@ void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
         undocValue([
-            { type: 'opaque', value: { r: 255, g: 0, b: 0 } },
-            { type: 'opaque', value: { r: 128, g: 0, b: 0 } },
-            { type: 'opaque', value: { r: 191, g: 0, b: 0 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 191, g: 0, b: 0 } },
         ], { type: 'vector', elementType: colorType }),
     )
     assert.deepStrictEqual(
@@ -1211,9 +1211,9 @@ void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
         undocValue([
-            { type: 'opaque', value: { r: 128, g: 0, b: 0 } }, // Red
-            { type: 'opaque', value: { r: 128, g: 128, b: 0 } }, // Yellow
-            { type: 'opaque', value: { r: 0, g: 128, b: 0 } }, // Green
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0 } }, // Red
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 128, b: 0 } }, // Yellow
+            { type: 'opaque', opaqueType: 'color', value: { r: 0, g: 128, b: 0 } }, // Green
         ], { type: 'vector', elementType: colorType }),
     )
     assert.throws(
@@ -1234,25 +1234,25 @@ void test('ramps', (): void => {
     // Basic ramp construction
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
-        undocValue({ type: 'opaque', value: [[0, '#000000'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#000000'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with multiple stops
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.5, color: rgb(0.5, 0.5, 0.5)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
-        undocValue({ type: 'opaque', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#000000'], [0.5, '#808080'], [1, '#ffffff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with HSV colors
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: hsv(0, 1, 0.5)}, {value: 1, color: hsv(120, 1, 0.5)}])'), emptyContext()),
-        undocValue({ type: 'opaque', value: [[0, '#800000'], [1, '#008000']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#800000'], [1, '#008000']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Ramp with mixed color types
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.5, color: hsv(120, 1, 0.5)}, {value: 1, color: rgb(0, 0, 1)}])'), emptyContext()),
-        undocValue({ type: 'opaque', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#ff0000'], [0.5, '#008000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Error: ramp doesn't start at 0
@@ -1296,12 +1296,12 @@ void test('ramps', (): void => {
 
     // Test ramp with variables
     const ctx: Context = emptyContext()
-    ctx.assignVariable('red', undocValue({ type: 'opaque', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', name: 'color' }))
-    ctx.assignVariable('blue', undocValue({ type: 'opaque', value: { r: 0, g: 0, b: 255 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('red', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('blue', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 255 } }, { type: 'opaque', name: 'color' }))
 
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
-        undocValue({ type: 'opaque', value: [[0, '#ff0000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#ff0000'], [1, '#0000ff']] }, { type: 'opaque', name: 'ramp' }),
     )
 
     // Test reverseRamp function
@@ -1309,7 +1309,7 @@ void test('ramps', (): void => {
     ctx.assignVariable('testRamp', ramp)
     assert.deepStrictEqual(
         evaluate(parseExpr('reverseRamp(testRamp)'), ctx),
-        undocValue({ type: 'opaque', value: [[0, '#0000ff'], [0.7, '#808080'], [1, '#ff0000']] }, { type: 'opaque', name: 'ramp' }),
+        undocValue({ type: 'opaque', opaqueType: 'ramp', value: [[0, '#0000ff'], [0.7, '#808080'], [1, '#ff0000']] }, { type: 'opaque', name: 'ramp' }),
     )
 })
 /* eslint-enable no-restricted-syntax */
