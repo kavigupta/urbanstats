@@ -1,8 +1,8 @@
 import { saveAs } from 'file-saver'
-import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { StatPath, StatName } from '../page_template/statistic-tree'
+import { Property } from '../utils/Property'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
@@ -94,40 +94,6 @@ export const syncProfileSchema = z.object({
     quiz_history: quizHistorySchema,
     friends: quizFriends,
 })
-
-class Property<T> {
-    private _value: T
-    readonly observers = new Set<() => void>()
-
-    constructor(value: T) {
-        this._value = value
-    }
-
-    get value(): T {
-        return this._value
-    }
-
-    set value(newValue: T) {
-        this._value = newValue
-        this.observers.forEach((observer) => { observer() })
-    }
-
-    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
-    use(): T {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            const observer = (): void => {
-                setCounter(counter => counter + 1)
-            }
-            this.observers.add(observer)
-            return () => {
-                this.observers.delete(observer)
-            }
-        }, [])
-        return this.value
-    }
-    /* eslint-enable react-hooks/rules-of-hooks */
-}
 
 export class StoredProperty<T> extends Property<T> {
     constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
