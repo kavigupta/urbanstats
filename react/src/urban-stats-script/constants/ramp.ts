@@ -23,6 +23,7 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
     return {
         type: 'opaque',
+        opaqueType: 'ramp',
         value: ramp.map(([value, color]) => [value, doRender(color)] as [number, string]) satisfies RampT,
     }
 }
@@ -86,9 +87,10 @@ export const reverseRampValue: USSValue = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const ramp = posArgs[0] as { type: 'opaque', value: RampT }
+        const ramp = posArgs[0] as { type: 'opaque', opaqueType: 'ramp', value: RampT }
         return {
             type: 'opaque',
+            opaqueType: 'ramp',
             value: reverseRamp(ramp.value),
         }
     },
@@ -103,7 +105,7 @@ export const divergingRampValue: USSValue = {
             first: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
             middle: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { r: 255, g: 255, b: 255 } }),
+                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 255, b: 255 } }),
             },
             last: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
         },
@@ -123,7 +125,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
     `ramp${name.replace(/\s+([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase())}`,
     {
         type: rampType,
-        value: { type: 'opaque', value: ramp satisfies RampT } satisfies USSRawValue,
+        value: { type: 'opaque', opaqueType: 'ramp', value: ramp satisfies RampT } satisfies USSRawValue,
         documentation: {
             humanReadableName: name,
             isDefault: name === 'Uridis',

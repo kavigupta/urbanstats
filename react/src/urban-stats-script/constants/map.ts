@@ -40,7 +40,7 @@ export const constructOutline = {
         namedArgs: {
             color: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { r: 0, g: 0, b: 0 } }),
+                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 0 } }),
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
@@ -51,9 +51,9 @@ export const constructOutline = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
-        const color = (namedArgs.color as { type: 'opaque', value: Color }).value
+        const color = (namedArgs.color as { type: 'opaque', opaqueType: 'color', value: Color }).value
         const weight = namedArgs.weight as number
-        return { type: 'opaque', value: { color, weight } }
+        return { type: 'opaque', opaqueType: 'outline', value: { color, weight } }
     },
     documentation: {
         humanReadableName: 'Outline',
@@ -86,7 +86,7 @@ export const cMap: USSValue = {
             },
             outline: {
                 type: { type: 'concrete', value: outlineType },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
+                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'outline', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
             },
             basemap: {
                 type: { type: 'concrete', value: basemapType },
@@ -109,13 +109,13 @@ export const cMap: USSValue = {
     value: (ctx, posArgs, namedArgs, originalArgs) => {
         const geo = namedArgs.geo as string[]
         const data = namedArgs.data as number[]
-        const scale = (namedArgs.scale as { type: 'opaque', value: Scale }).value
-        const ramp = (namedArgs.ramp as { type: 'opaque', value: RampT }).value
+        const scale = (namedArgs.scale as { type: 'opaque', opaqueType: 'scale', value: Scale }).value
+        const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
         const labelPassedIn = namedArgs.label as string | null
-        const outline = (namedArgs.outline as { type: 'opaque', value: Outline }).value
-        const basemap = (namedArgs.basemap as { type: 'opaque', value: Basemap }).value
-        const insets = (namedArgs.insets as { type: 'opaque', value: Insets }).value
-        const unitArg = namedArgs.unit as { type: 'opaque', value: { unit: string } } | null
+        const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
+        const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
+        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
+        const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
         if (geo.length !== data.length) {
@@ -136,6 +136,7 @@ export const cMap: USSValue = {
 
         return {
             type: 'opaque',
+            opaqueType: 'cMap',
             value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, insets, unit } satisfies CMap,
         }
     },
