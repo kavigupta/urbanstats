@@ -95,7 +95,7 @@ export function nodeContent(node: Node): string {
 
 export interface Range { start: number, end: number }
 
-export function getRange(editor: HTMLElement): Range | undefined {
+export function getRange(editor: HTMLElement): Range | null {
     const selection = window.getSelection()
     if (selection?.rangeCount === 1) {
         const range = selection.getRangeAt(0)
@@ -107,7 +107,7 @@ export function getRange(editor: HTMLElement): Range | undefined {
         }
     }
 
-    return undefined
+    return null
 }
 
 // Traverse up the tree, counting text content of previous siblings along the way
@@ -123,16 +123,29 @@ function positionInEditor(editor: Node, node: Node, offset: number): number {
     return offset
 }
 
-export function setRange(editor: HTMLElement, { start, end }: Range): void {
+export function setRange(editor: HTMLElement, newRange: Range | null): void {
+    const currentRange = getRange(editor)
+
+    if (currentRange?.start === newRange?.start && currentRange?.end === newRange?.end) {
+        return
+    }
+
     const selection = window.getSelection()!
 
-    const range = document.createRange()
+    if (newRange === null) {
+        selection.removeAllRanges()
+        editor.blur()
+        return
+    }
 
-    range.setStart(...getContainerOffset(editor, start))
-    range.setEnd(...getContainerOffset(editor, end))
+    if (currentRange === null) {
+        editor.focus()
+    }
 
-    selection.removeAllRanges()
-    selection.addRange(range)
+    const [anchorNode, anchorOffset] = getContainerOffset(editor, newRange.start)
+    const [focusNode, focusOffset] = getContainerOffset(editor, newRange.end)
+
+    selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
 }
 
 // Inverse of `positionInEditor`

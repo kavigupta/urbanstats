@@ -10,7 +10,7 @@ import { parse } from './parser'
 import { renderValue, USSValue, USSDocumentedType } from './types-values'
 import { executeAsync } from './workerManager'
 
-type Selections = [Range | undefined, Range | undefined]
+type Selections = [Range | null, Range | null]
 
 export function EditorPanel(): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
@@ -18,7 +18,7 @@ export function EditorPanel(): ReactNode {
 
     const [uss, setUss] = useState(() => localStorage.getItem('editor-code') ?? '')
 
-    const [selections, setSelections] = useState<Selections>([undefined, undefined])
+    const [selections, setSelections] = useState<Selections>([null, null])
 
     const updateUss = async (newScript: string): Promise<void> => {
         setUss(newScript)
@@ -50,6 +50,12 @@ export function EditorPanel(): ReactNode {
             if (e.key === 's' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
                 e.preventDefault()
                 const newSelections: Selections = [selections[1], selections[0]]
+                setSelections(newSelections)
+                updateCurrentSelection(newSelections)
+            }
+            if (e.key === 'd' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
+                e.preventDefault()
+                const newSelections: Selections = [null, null]
                 setSelections(newSelections)
                 updateCurrentSelection(newSelections)
             }

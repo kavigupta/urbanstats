@@ -15,8 +15,8 @@ export function Editor(
         typeEnvironment: Map<string, USSDocumentedType>
         errors: EditorError[]
         placeholder?: string
-        selection: Range | undefined
-        setSelection: (newRange: Range | undefined) => void
+        selection: Range | null
+        setSelection: (newRange: Range | null) => void
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -28,16 +28,10 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement>(null)
 
-    // Prevents feedback when programatically updating the selection
-    const inhibitOutboundRangeUpdateEvents = useRef<number>(0)
-
-    // Prevents feedback from communicating selection changes externally
-    const inhibitInboundRangeUpdateEvents = useRef<number>(0)
-
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
-    const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
+    const renderScript = useCallback((newScript: Script, newRange: Range | null | undefined) => {
         const fragment = renderCode(newScript, colors, errors, (token, content) => {
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.element)
@@ -48,40 +42,24 @@ export function Editor(
         })
 
         const editor = editorRef.current!
-        const rangeBefore = newRange ?? getRange(editor)
+        const rangeBefore = newRange !== undefined ? newRange : getRange(editor)
         editor.replaceChildren(...fragment)
-        if (rangeBefore !== undefined) {
-            // Otherwise, we get into a re-render loop
-            inhibitOutboundRangeUpdateEvents.current++
-            setRange(editor, rangeBefore)
-        }
+        setRange(editor, rangeBefore)
     }, [colors, errors, autocompleteState, placeholder])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
-    const lastSelection = useRef<Range | undefined>(undefined)
+    const lastSelection = useRef<Range | undefined | null>(undefined)
 
     useEffect(() => {
         const editor = editorRef.current!
 
-        // We need to just render setRange sometimes otherwise rendering the script again interrupts the selection interaction
-
-        let renderSelection
-        if (selection !== undefined && selection !== lastSelection.current) {
-            if (inhibitInboundRangeUpdateEvents.current > 0) {
-                inhibitInboundRangeUpdateEvents.current--
-            }
-            else {
-                inhibitOutboundRangeUpdateEvents.current++
-                renderSelection = selection
-            }
-        }
-
+        // Rerendering when just a selection change happens causes the selection interaction to be interrupted
         if (script !== lastScript.current || renderScript !== lastRenderScript.current) {
-            renderScript(script, renderSelection)
+            renderScript(script, selection)
         }
-        else if (renderSelection !== undefined) {
-            setRange(editor, renderSelection)
+        else if (selection !== lastSelection.current) {
+            setRange(editor, selection)
         }
 
         lastRenderScript.current = renderScript
@@ -89,7 +67,7 @@ export function Editor(
         lastSelection.current = selection
     }, [renderScript, script, selection])
 
-    const editScript = useCallback((newUss: string, newRange: Range | undefined) => {
+    const editScript = useCallback((newUss: string, newRange: Range) => {
         const newScript = makeScript(newUss)
         renderScript(newScript, newRange) // Need this to ensure cursor placement
         setUss(newScript.uss)
@@ -99,17 +77,12 @@ export function Editor(
 
     useEffect(() => {
         const listener = (): void => {
-            if (inhibitOutboundRangeUpdateEvents.current > 0) {
-                inhibitOutboundRangeUpdateEvents.current--
-            }
-            else {
-                const range = getRange(editorRef.current!)
-                setAutocompleteState(undefined)
-                if (range !== undefined) {
-                    inhibitInboundRangeUpdateEvents.current++
-                }
-                setSelectionRef.current(range)
-            }
+            // These events are often spurious
+
+            const range = getRange(editorRef.current!)
+            setSelectionRef.current(range)
+            // Cancel autocomplete if the selection is no longer at the end
+            setAutocompleteState(s => s?.location.end.charIdx !== range?.start || s?.location.end.charIdx !== range?.end ? undefined : s)
         }
         document.addEventListener('selectionchange', listener)
         return () => {
@@ -122,7 +95,7 @@ export function Editor(
         const listener = (): void => {
             const range = getRange(editor)
             const newScript = makeScript(nodeContent(editor))
-            const token = range !== undefined && range.start === range.end
+            const token = range !== null && range.start === range.end
                 ? newScript.tokens.find(t => t.token.type === 'identifier' && t.location.end.charIdx === range.start)
                 : undefined
             if (token !== undefined) {
@@ -187,7 +160,7 @@ export function Editor(
             if (e.key === 'Tab') {
                 e.preventDefault()
                 const range = getRange(editor)
-                if (range !== undefined) {
+                if (range !== null) {
                     editScript(
                         `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                         { start: range.start + 4, end: range.start + 4 },
@@ -196,7 +169,7 @@ export function Editor(
             }
             else if (e.key === 'Backspace') {
                 const range = getRange(editor)
-                if (range !== undefined && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
+                if (range !== null && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,

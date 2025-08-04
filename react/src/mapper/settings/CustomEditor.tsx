@@ -38,9 +38,9 @@ export function CustomEditor({
             typeEnvironment={typeEnvironment}
             errors={ourErrors}
             placeholder={placeholder}
-            selection={selection?.blockIdent === blockIdent ? selection.range : undefined}
+            selection={selection?.blockIdent === blockIdent ? selection.range : null}
             setSelection={(range) => {
-                if (range !== undefined) {
+                if (range !== null) {
                     selectionContext.value = { blockIdent, range }
                 }
                 else if (selectionContext.value?.blockIdent === blockIdent) {
