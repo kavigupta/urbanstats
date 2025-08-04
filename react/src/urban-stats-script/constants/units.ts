@@ -8,7 +8,7 @@ function createUnit(name: string, humanReadableName: string): [string, USSValue]
         `unit${name.slice(0, 1).toUpperCase()}${name.slice(1)}`,
         {
             type: unitType,
-            value: { type: 'opaque', value: { unit: name } },
+            value: { type: 'opaque', opaqueType: 'unit', value: { unit: name } },
             documentation: { humanReadableName },
         },
     ]

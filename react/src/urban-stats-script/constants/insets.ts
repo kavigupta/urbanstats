@@ -32,6 +32,7 @@ export function constructInset(
 ): USSRawValue {
     return {
         type: 'opaque',
+        opaqueType: 'inset',
         value: {
             bottomLeft: [screenBounds.west, screenBounds.south],
             topRight: [screenBounds.east, screenBounds.north],
@@ -48,6 +49,7 @@ export function constructInsets(insetList: Inset[]): USSRawValue {
     }
     return {
         type: 'opaque',
+        opaqueType: 'insets',
         value: insetList,
     }
 }
@@ -107,7 +109,7 @@ export const constructInsetsValue: USSValue = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const insetsList = posArgs[0] as { type: 'opaque', value: Inset }[]
+        const insetsList = posArgs[0] as { type: 'opaque', opaqueType: 'inset', value: Inset }[]
         return constructInsets(insetsList.map(item => item.value))
     },
     documentation: { humanReadableName: 'Custom Insets', isDefault: true },
@@ -131,19 +133,23 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
             constantName,
             {
                 type: insetType,
-                value: { type: 'opaque', value: {
-                    bottomLeft: [...inset.bottomLeft] as [number, number],
-                    topRight: [...inset.topRight] as [number, number],
-                    // copy to get rid of readonly
-                    coordBox: [...inset.coordBox] as [number, number, number, number],
-                    mainMap: inset.mainMap,
-                    name: inset.name,
-                } satisfies Inset } satisfies USSRawValue,
+                value: {
+                    type: 'opaque',
+                    opaqueType: 'inset',
+                    value: {
+                        bottomLeft: [...inset.bottomLeft] as [number, number],
+                        topRight: [...inset.topRight] as [number, number],
+                        // copy to get rid of readonly
+                        coordBox: [...inset.coordBox] as [number, number, number, number],
+                        mainMap: inset.mainMap,
+                        name: inset.name,
+                    } satisfies Inset,
+                },
                 documentation: {
                     humanReadableName: insetName,
                     equivalentExpressions: [expr],
                 },
-            },
+            } satisfies USSValue,
         ] as [string, USSValue]
     }),
 )

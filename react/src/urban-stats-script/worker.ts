@@ -12,6 +12,7 @@ import { assert } from '../utils/defensive'
 
 import { locationOf, locationOfLastExpression, UrbanStatsASTExpression } from './ast'
 import { insetNameToConstantName } from './constants/insets'
+import { Scale } from './constants/scale'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
@@ -119,7 +120,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geo', longnames)
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', value: loadInset(request.descriptor.universe) })
+            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {
@@ -156,10 +157,8 @@ function removeFunctions(value: USSRawValue): USSRawValue {
         return new Map(Array.from(value.entries()).map(([k, v]) => [k, removeFunctions(v)]))
     }
     else if (value instanceof Object && value.value instanceof Function) {
-        return {
-            type: value.type,
-            value: {},
-        }
+        assert(value.opaqueType === 'scale', 'only scales can have functions in their value')
+        return null
     }
     return value
 }

@@ -1,8 +1,29 @@
+import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
+import { Color } from './constants/color'
+import { CMap, Outline } from './constants/map'
+import { RampT } from './constants/ramp'
+import { Scale } from './constants/scale'
 import { Context } from './context'
 import { unparse } from './parser'
+
+// Define Inset and Insets types locally to avoid import issues
+interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
+type Insets = Inset[]
+
+// Define the tagged union for opaque values
+export type USSOpaqueValue =
+    | { type: 'opaque', opaqueType: 'color', value: Color }
+    | { type: 'opaque', opaqueType: 'scale', value: Scale }
+    | { type: 'opaque', opaqueType: 'inset', value: Inset }
+    | { type: 'opaque', opaqueType: 'insets', value: Insets }
+    | { type: 'opaque', opaqueType: 'cMap', value: CMap }
+    | { type: 'opaque', opaqueType: 'outline', value: Outline }
+    | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
+    | { type: 'opaque', opaqueType: 'ramp', value: RampT }
+    | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
 
 interface USSNumberType {
     type: 'number'
@@ -84,7 +105,7 @@ export type USSRawValue = (
             originalArgs: OriginalFunctionArgs
         ) => USSRawValue
     ) |
-    { type: 'opaque', value: object }
+    USSOpaqueValue
 )
 
 export interface Documentation {
@@ -268,7 +289,7 @@ export function renderValue(input: USSValue): string {
             case 'string':
                 return `"${value.value}"`
             case 'opaque':
-                return JSON.stringify((value.value as { type: 'opaque', value: object }).value)
+                return JSON.stringify((value.value as USSOpaqueValue).value)
             case 'vector':
                 const vector = value.value as USSRawValue[]
                 if (vector.length === 0) {

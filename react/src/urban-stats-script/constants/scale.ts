@@ -114,6 +114,7 @@ export const linearScaleValue: USSValue = {
         // Return a scale function that closes over these params
         return {
             type: 'opaque',
+            opaqueType: 'scale',
             value: (values: number[]) => linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
         }
     },
@@ -147,6 +148,7 @@ export const logScaleValue: USSValue = {
         // Return a scale function that closes over these params
         return {
             type: 'opaque',
+            opaqueType: 'scale',
             value: (values: number[]) => logScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
         }
     },
