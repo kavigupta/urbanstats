@@ -165,6 +165,10 @@ function removeFunctions(value: USSRawValue): USSRawValue {
 }
 
 onmessage = async (message: MessageEvent<{ request: USSExecutionRequest, id: number }>) => {
+    if (!('request' in message.data)) {
+        // Some other message (e.g. from React devtools)
+        return
+    }
     const result = await executeRequest(message.data.request)
     postMessage({ result, id: message.data.id })
 }

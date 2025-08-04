@@ -1,3 +1,4 @@
+import type valid_geographies from '../../data/mapper/used_geographies'
 import { Universe } from '../../universe'
 import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -46,7 +47,7 @@ export interface MapperScriptSettings {
 }
 
 export interface MapSettings {
-    geographyKind: string
+    geographyKind: typeof valid_geographies[number]
     universe: Universe
     script: MapperScriptSettings
 }

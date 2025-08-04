@@ -1,29 +1,52 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
 import valid_geographies from '../../data/mapper/used_geographies'
 import universes_ordered from '../../data/universes_ordered'
-import { EditorError } from '../../urban-stats-script/editor-utils'
+import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
+import { Property } from '../../utils/Property'
 import { DataListSelector } from '../DataListSelector'
 import { defaultTypeEnvironment } from '../context'
 
+import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
-import { MapSettings, MapperScriptSettings } from './utils'
+import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, getScript, errors }: {
+export function MapperSettings({ mapSettings, setMapSettings, errors }: {
     mapSettings: MapSettings
     setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
-    getScript: () => MapperScriptSettings
     errors: EditorError[]
 }): ReactNode {
-    const setUss = useCallback((uss: MapperScriptSettings['uss']) => {
+    const uss = mapSettings.script.uss
+    const setUss = useCallback((newUss: MapSettings['script']['uss']): void => {
         setMapSettings(s => ({
             ...s,
-            script: { uss },
+            script: { uss: newUss },
         }))
     }, [setMapSettings])
 
+    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
+
+    const { addState, updateCurrentSelection } = useUndoRedo(
+        uss,
+        selectionContext.value,
+        setUss,
+        (selection) => {
+            selectionContext.value = selection
+        },
+    )
+
+    // Update current selection when it changes
+    useEffect(() => {
+        const observer = (): void => {
+            updateCurrentSelection(selectionContext.value)
+        }
+
+        selectionContext.observers.add(observer)
+        return () => { selectionContext.observers.delete(observer) }
+    }, [selectionContext, updateCurrentSelection])
+
     return (
-        <div>
+        <SelectionContext.Provider value={selectionContext}>
             <DataListSelector
                 overallName="Universe:"
                 names={universes_ordered}
@@ -51,11 +74,14 @@ export function MapperSettings({ mapSettings, setMapSettings, getScript, errors 
                 }
             />
             <TopLevelEditor
-                uss={getScript().uss}
-                setUss={setUss}
+                uss={uss}
+                setUss={(newUss) => {
+                    setUss(newUss)
+                    addState(newUss, selectionContext.value)
+                }}
                 typeEnvironment={defaultTypeEnvironment(mapSettings.universe)}
                 errors={errors}
             />
-        </div>
+        </SelectionContext.Provider>
     )
 }
