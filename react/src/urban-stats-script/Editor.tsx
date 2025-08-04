@@ -28,7 +28,10 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement>(null)
 
+    // Prevents feedback when programatically updating the selection
     const inhibitOutboundRangeUpdateEvents = useRef<number>(0)
+
+    // Prevents feedback from communicating selection changes externally
     const inhibitInboundRangeUpdateEvents = useRef<number>(0)
 
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
