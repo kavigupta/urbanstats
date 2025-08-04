@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'react'
+
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 import { isAMatch } from '../utils/isAMatch'
@@ -301,4 +303,94 @@ export function createPlaceholder(colors: Colors, placeholderText: string): HTML
     result.textContent = placeholderText
 
     return result
+}
+
+// Custom hook interfaces
+
+interface UndoRedoItem<T, S> {
+    time: number
+    state: T
+    selection: S
+}
+
+export function useUndoRedo<T, S>(
+    initialState: T,
+    initialSelection: S,
+    onStateChange: (state: T) => void,
+    onSelectionChange: (selection: S) => void,
+    { undoChunking = 1000, undoHistory = 100 }: {
+        undoChunking?: number
+        undoHistory?: number
+    } = {},
+): {
+        addState: (state: T, selection: S) => void
+        updateCurrentSelection: (selection: S) => void
+    } {
+    const undoStack = useRef<UndoRedoItem<T, S>[]>([
+        { time: Date.now(), state: initialState, selection: initialSelection },
+    ])
+    const redoStack = useRef<UndoRedoItem<T, S>[]>([])
+
+    const addState = useCallback((state: T, selection: S): void => {
+        const currentUndoState = undoStack.current[undoStack.current.length - 1]
+
+        if (currentUndoState.time + undoChunking > Date.now()) {
+            // Amend current item rather than making a new one
+            currentUndoState.state = state
+            currentUndoState.selection = selection
+        }
+        else {
+            undoStack.current.push({ time: Date.now(), state, selection })
+            while (undoStack.current.length > undoHistory) {
+                undoStack.current.shift()
+            }
+        }
+        redoStack.current = []
+    }, [undoChunking, undoHistory])
+
+    const updateCurrentSelection = useCallback((selection: S): void => {
+        undoStack.current[undoStack.current.length - 1].selection = selection
+    }, [])
+
+    const undo = useCallback((): void => {
+        if (undoStack.current.length >= 2) {
+            const prevState = undoStack.current[undoStack.current.length - 2]
+            // Prev state becomes current state, current state becomes redo state
+            redoStack.current.push(undoStack.current.pop()!)
+            onStateChange(prevState.state)
+            onSelectionChange(prevState.selection)
+        }
+    }, [onStateChange, onSelectionChange])
+
+    const redo = useCallback((): void => {
+        const futureState = redoStack.current.pop()
+        if (futureState !== undefined) {
+            undoStack.current.push(futureState)
+            onStateChange(futureState.state)
+            onSelectionChange(futureState.selection)
+        }
+    }, [onStateChange, onSelectionChange])
+
+    // Set up keyboard shortcuts
+    useEffect(() => {
+        const listener = (e: KeyboardEvent): void => {
+            const isMac = navigator.userAgent.includes('Mac')
+            if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
+                e.preventDefault()
+                undo()
+            }
+            else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
+                e.preventDefault()
+                redo()
+            }
+        }
+
+        window.addEventListener('keydown', listener)
+        return () => { window.removeEventListener('keydown', listener) }
+    }, [undo, redo])
+
+    return {
+        addState,
+        updateCurrentSelection,
+    }
 }
