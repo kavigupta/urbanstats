@@ -119,7 +119,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geo', longnames)
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', value: loadInset(request.descriptor.universe) })
+            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {

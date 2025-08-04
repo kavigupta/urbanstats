@@ -12,7 +12,7 @@ export type AsyncInterpretationError = EditorError[]
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> { resultingValue?: Value, error: AsyncInterpretationError }
 
-export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: { type: 'opaque', value: CMap } }>>
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: { type: 'opaque', opaqueType: 'cMap', value: CMap } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
     if (sharedUSSWorker === undefined) {
