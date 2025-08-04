@@ -31,7 +31,7 @@ export function Editor(
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
-    const renderScript = useCallback((newScript: Script, newRange: Range | null | undefined) => {
+    const renderScript = useCallback((newScript: Script) => {
         const fragment = renderCode(newScript, colors, errors, (token, content) => {
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.element)
@@ -42,34 +42,30 @@ export function Editor(
         })
 
         const editor = editorRef.current!
-        const rangeBefore = newRange !== undefined ? newRange : getRange(editor)
         editor.replaceChildren(...fragment)
-        setRange(editor, rangeBefore)
+        // Usually you want to set the selection after this, since it has been reset
     }, [colors, errors, autocompleteState, placeholder])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
-    const lastSelection = useRef<Range | undefined | null>(undefined)
 
     useEffect(() => {
         const editor = editorRef.current!
 
         // Rerendering when just a selection change happens causes the selection interaction to be interrupted
         if (script !== lastScript.current || renderScript !== lastRenderScript.current) {
-            renderScript(script, selection)
+            renderScript(script)
         }
-        else if (selection !== lastSelection.current) {
-            setRange(editor, selection)
-        }
+        setRange(editor, selection)
 
         lastRenderScript.current = renderScript
         lastScript.current = script
-        lastSelection.current = selection
     }, [renderScript, script, selection])
 
     const editScript = useCallback((newUss: string, newRange: Range) => {
         const newScript = makeScript(newUss)
-        renderScript(newScript, newRange) // Need this to ensure cursor placement
+        renderScript(newScript)
+        setRange(editorRef.current!, newRange)
         setUss(newScript.uss)
         setSelection(newRange)
         setAutocompleteState(undefined)
