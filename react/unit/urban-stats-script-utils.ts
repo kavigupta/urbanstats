@@ -130,6 +130,13 @@ export function emptyContextWithInsets(effects: Effect[] | undefined = undefined
 
     const usaInsets = constructInsetsFunc({} as Context, [insetArray], {})
 
+    // Create a default geo variable with geoFeatureHandle type
+    const defaultGeo = [
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'C' },
+    ]
+
     return new Context(
         (eff) => {
             if (effects !== undefined) {
@@ -142,6 +149,7 @@ export function emptyContextWithInsets(effects: Effect[] | undefined = undefined
         defaultConstants,
         new Map<string, USSValue>([
             ['defaultInsets', { type: { type: 'opaque', name: 'insets' }, value: usaInsets, documentation: { humanReadableName: 'USA Insets' } }],
+            ['geo', { type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } }, value: defaultGeo, documentation: { humanReadableName: 'Geography' } }],
         ]),
     )
 }

@@ -507,7 +507,7 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [string] = geo, outline: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":0}}, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":0}}, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
                 'cMap',
             ],
             '(; color: color = {"type":"opaque","opaqueType":"color","value":{"r":0,"g":0,"b":0}}, weight: number = 0.5) -> outline': [

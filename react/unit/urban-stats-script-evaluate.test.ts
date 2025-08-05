@@ -1323,7 +1323,7 @@ function assertScale(descriptor: ScaleDescriptor, values: number[], proportions:
 void test('test basic map', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1342,7 +1342,7 @@ void test('test basic map', () => {
 void test('test basic map, default geo', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = execute(parseProgram('geo = ["A", "B", "C"]; cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
+    const resultMap = execute(parseProgram('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1361,7 +1361,7 @@ void test('test basic map, default geo', () => {
 void test('test basic map with label passed', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, label="Test Map")'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, label="Test Map")'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1372,7 +1372,7 @@ void test('test basic map with label passed', () => {
 })
 
 void test('test basic map with geometric', () => {
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 4], scale=logScale(), ramp=rampBone)'), emptyContextWithInsets())
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 4], scale=logScale(), ramp=rampBone)'), emptyContextWithInsets())
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1381,7 +1381,14 @@ void test('test basic map with geometric', () => {
 })
 
 void test('map with only one value', () => {
-    const resultMap = evaluate(parseExpr('cMap(geo=["A"], data=[11.2], scale=linearScale(), ramp=rampBone)'), emptyContextWithInsets())
+    const ctx = emptyContextWithInsets()
+    // Create a custom geo variable with only one value for this test
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [{ type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' }],
+        documentation: { humanReadableName: 'Geography' },
+    })
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[11.2], scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A'])
@@ -1397,7 +1404,7 @@ void test('custom map', () => {
         {value: 0.5, color: rgb(0.5, 0.5, 0.5)},
         {value: 1, color: rgb(1, 1, 1)}
     ]);
-    cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=ramp)
+    cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=ramp)
     `
     const resultMap = execute(parseProgram(program), emptyContextWithInsets())
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
@@ -1410,15 +1417,26 @@ void test('custom map', () => {
 })
 
 void test('conditional map', () => {
+    const ctx = emptyContextWithInsets()
+    // Create a custom geo variable with 4 values for this test
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'C' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'D' },
+        ],
+        documentation: { humanReadableName: 'Geography' },
+    })
     const program = `
-    geo = ["A", "B", "C", "D"];
     data = [1, 2, 3, 4];
     mask = [true, true, false, false]
     if (mask) {
         cMap(geo=geo, data=data, scale=linearScale(), ramp=rampBone)
     }
     `
-    const resultMap = execute(parseProgram(program), emptyContextWithInsets())
+    const resultMap = execute(parseProgram(program), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B'])
@@ -1426,10 +1444,20 @@ void test('conditional map', () => {
 })
 
 void test('error map with different geo and data lengths', () => {
+    const ctx = emptyContextWithInsets()
+    // Create a custom geo variable with 2 values for this test
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+        ],
+        documentation: { humanReadableName: 'Geography' },
+    })
     assert.throws(
-        () => evaluate(parseExpr('cMap(geo=["A", "B"], data=[1], scale=linearScale(), ramp=rampBone)'), emptyContextWithInsets()),
+        () => evaluate(parseExpr('cMap(geo=geo, data=[1], scale=linearScale(), ramp=rampBone)'), ctx),
         (err: Error): boolean => {
-            return err.message === 'Error while executing function: Error: geo and data must have the same length: 2 and 1 at 1:1-66'
+            return err.message === 'Error while executing function: Error: geo and data must have the same length: 2 and 1 at 1:1-59'
         },
     )
 })
@@ -1443,7 +1471,7 @@ void test('map with documentation', () => {
             humanReadableName: 'X value!',
         },
     })
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=x, scale=linearScale(), ramp=rampBone)'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.label, 'X value!')
@@ -1458,7 +1486,7 @@ void test('conditioned map with documentation', () => {
             humanReadableName: 'X value!',
         },
     })
-    const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=["A", "B"], data=x, scale=linearScale(), ramp=rampBone) }'), ctx)
+    const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone) }'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.label, 'X value!')
@@ -1739,7 +1767,7 @@ void test('custom node type checking', (): void => {
 void test('test basic map with outline', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1750,7 +1778,7 @@ void test('test basic map with outline', () => {
 void test('test basic map with default outline', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1770,7 +1798,7 @@ void test('test constructOutline function', () => {
 void test('test basic map with outline', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, outline=constructOutline(color=rgb(1, 0, 0), weight=2))'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1859,7 +1887,7 @@ void test('evaluate do nodes', (): void => {
 void test('test basic map with custom insets', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
-    const resultMap = evaluate(parseExpr('cMap(geo=["A", "B", "C"], data=[1, 2, 3], scale=linearScale(), ramp=rampBone, insets=constructInsets([insetworld]))'), ctx)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, insets=constructInsets([insetworld]))'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
@@ -1884,6 +1912,16 @@ void test('test basic map with constructed insets', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
 
+    // Create a custom geo variable with 2 values for this test
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+        ],
+        documentation: { humanReadableName: 'Geography' },
+    })
+
     // Create custom insets using constructInset
     const program = `
     mainInset = constructInset(
@@ -1899,7 +1937,7 @@ void test('test basic map with constructed insets', () => {
         name="Alaska"
     );
     customInsets = constructInsets([mainInset, smallInset]);
-    cMap(geo=["A", "B"], data=[1, 2], scale=linearScale(), ramp=rampBone, insets=customInsets)
+    cMap(geo=geo, data=[1, 2], scale=linearScale(), ramp=rampBone, insets=customInsets)
     `
 
     const resultMap = execute(parseProgram(program), ctx)
