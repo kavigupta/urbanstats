@@ -1,5 +1,6 @@
 import { Insets } from '../../components/map'
 import { Basemap } from '../../mapper/settings'
+import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
@@ -78,7 +79,7 @@ export const cMap: USSValue = {
                 defaultValue: rawDefaultValue(null),
             },
             geo: {
-                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'string' } } },
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } } },
                 defaultValue: expressionDefaultValue({
                     type: 'identifier',
                     name: { node: 'geo', location: noLocation },
@@ -107,7 +108,12 @@ export const cMap: USSValue = {
         returnType: { type: 'concrete', value: cMapType },
     },
     value: (ctx, posArgs, namedArgs, originalArgs) => {
-        const geo = namedArgs.geo as string[]
+        const geoRaw = namedArgs.geo as USSRawValue[]
+        const geo: string[] = geoRaw.map((g) => {
+            const geoHandle = g as { type: 'opaque', opaqueType: string, value: string }
+            assert(geoHandle.opaqueType === 'geoFeatureHandle', 'Expected geoFeatureHandle opaque value')
+            return geoHandle.value
+        })
         const data = namedArgs.data as number[]
         const scale = (namedArgs.scale as { type: 'opaque', opaqueType: 'scale', value: Scale }).value
         const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value

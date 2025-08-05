@@ -24,6 +24,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
     | { type: 'opaque', opaqueType: 'ramp', value: RampT }
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
+    | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
 
 interface USSNumberType {
     type: 'number'
