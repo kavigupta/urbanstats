@@ -8,7 +8,8 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
-import { bitap, toNeedle, toHaystack } from '../../utils/bitap'
+import { toNeedle } from '../../utils/bitap'
+import { bitap } from '../../utils/bitap-selector'
 import { assert } from '../../utils/defensive'
 
 export const labelPadding = '4px'
@@ -122,8 +123,8 @@ export function Selector(props: {
         const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
 
         const sortedPairs = optionSelectionPairs.sort((a, b) => {
-            const aScore = bitap(toHaystack(a.option.toLowerCase()), needle, maxErrors, bitapBuffers)
-            const bScore = bitap(toHaystack(b.option.toLowerCase()), needle, maxErrors, bitapBuffers)
+            const aScore = bitap(a.option.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const bScore = bitap(b.option.toLowerCase(), needle, maxErrors, bitapBuffers)
             return aScore - bScore
         })
 
