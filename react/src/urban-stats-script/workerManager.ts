@@ -4,7 +4,7 @@ import { Universe } from '../universe'
 import { UrbanStatsASTStatement } from './ast'
 import { CMap } from './constants/map'
 import { EditorError } from './editor-utils'
-import { USSOpaqueType, USSValue } from './types-values'
+import { USSOpaqueType, USSOpaqueValue, USSValue } from './types-values'
 
 export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
@@ -12,7 +12,7 @@ export type AsyncInterpretationError = EditorError[]
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> { resultingValue?: Value, error: AsyncInterpretationError }
 
-export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: { type: 'opaque', opaqueType: 'cMap', value: CMap } }>>
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'pMap' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
     if (sharedUSSWorker === undefined) {

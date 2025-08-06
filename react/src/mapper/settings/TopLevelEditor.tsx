@@ -115,7 +115,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={{ type: 'opaque', name: 'cMap' }} // This will be updated to support both cMap and pMap
+                    type={[{ type: 'opaque', name: 'cMap' }, { type: 'opaque', name: 'pMap' }]}
                     labelWidth="0px"
                 />
             </div>

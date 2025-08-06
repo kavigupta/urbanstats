@@ -40,7 +40,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
             return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
         }
     }
-    return parseNoErrorAsCustomNode('', blockIdent, type)
+    return parseNoErrorAsCustomNode('', blockIdent, [type])
 }
 
 function ArgumentEditor(props: {
@@ -100,7 +100,7 @@ function ArgumentEditor(props: {
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
                                 blockIdent={subident}
-                                type={arg.value}
+                                type={[arg.value]}
                                 label={humanReadableName}
                             />
                         )
@@ -118,11 +118,17 @@ export function AutoUXEditor(props: {
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
-    type: USSType
+    type: USSType[]
     label?: string
     labelWidth?: string
 }): ReactNode {
     const labelWidth = props.labelWidth ?? '5%'
+
+    // Helper function to get the first type from the array
+    const getType = (): USSType => {
+        return props.type[0]
+    }
+
     const subcomponent = (): ReactNode | undefined => {
         if (props.uss.type === 'constant') {
             return undefined
@@ -163,7 +169,7 @@ export function AutoUXEditor(props: {
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
                         blockIdent={`${props.blockIdent}_pos_${i}`}
-                        type={arg.value}
+                        type={[arg.value]}
                     />,
                 )
             })
@@ -191,8 +197,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'vectorLiteral') {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
-            if (props.type.type === 'vector') {
-                elementType = props.type.elementType as USSType
+            const firstType = getType()
+            if (firstType.type === 'vector') {
+                elementType = firstType.elementType as USSType
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -208,7 +215,7 @@ export function AutoUXEditor(props: {
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
                                 blockIdent={`${props.blockIdent}_el_${i}`}
-                                type={elementType}
+                                type={[elementType]}
                                 label={`${i + 1}`}
                             />
                             <button
@@ -241,8 +248,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'objectLiteral') {
             // Determine the element type
             let propertiesTypes: Map<string, USSType> = new DefaultMap(() => ({ type: 'number' })) // fallback
-            if (props.type.type === 'object') {
-                propertiesTypes = props.type.properties
+            const firstType = getType()
+            if (firstType.type === 'object') {
+                propertiesTypes = firstType.properties
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -258,7 +266,7 @@ export function AutoUXEditor(props: {
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
                                 blockIdent={`${props.blockIdent}_prop_${key}`}
-                                type={propertyType}
+                                type={[propertyType]}
                                 label={key}
                             />
                         )
@@ -278,7 +286,7 @@ export function AutoUXEditor(props: {
             <Selector
                 uss={props.uss}
                 setSelection={(selection: Selection) => {
-                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type))
+                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, getType()))
                 }}
                 setUss={props.setUss}
                 typeEnvironment={props.typeEnvironment}
@@ -446,7 +454,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current), blockIdent, type)
+            return parseNoErrorAsCustomNode(unparse(current), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':

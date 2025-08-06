@@ -77,7 +77,7 @@ export function Selector(props: {
     setSelection: (selection: Selection) => void
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
-    type: USSType
+    type: USSType[]
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
@@ -100,7 +100,14 @@ export function Selector(props: {
     }, [selectedRendered])
 
     const { selectionPossibilities, renderedSelectionPossibilities, bitapBuffers, optionSelectionPairs } = useMemo(() => {
-        const selectionPossibilitiesResult = possibilities(props.type, props.typeEnvironment)
+        // Combine possibilities from all types
+        const allPossibilities = new Set<Selection>()
+        props.type.forEach((type) => {
+            const typePossibilities = possibilities(type, props.typeEnvironment)
+            typePossibilities.forEach(possibility => allPossibilities.add(possibility))
+        })
+
+        const selectionPossibilitiesResult = Array.from(allPossibilities)
         const renderedSelectionPossibilitiesResult = selectionPossibilitiesResult.map(s => renderSelection(props.typeEnvironment, s))
 
         const longestSelectionPossibility = renderedSelectionPossibilitiesResult.reduce((acc, poss) => Math.max(acc, poss.toLowerCase().length), 0)
@@ -145,14 +152,14 @@ export function Selector(props: {
         return undefined
     }
 
-    const isNumber = props.type.type === 'number'
-    const isString = props.type.type === 'string'
+    const isNumber = props.type.some(type => type.type === 'number')
+    const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayErrors errors={errors} />
 
-    const colorValue = props.type.type === 'opaque' && props.type.name === 'color' ? getColor(props.uss, props.typeEnvironment) : undefined
+    const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
 
     const handleOptionSelect = (option: string): void => {
         const selection = optionToSelectionMap.get(option)
