@@ -45,6 +45,8 @@ export function MapperSettings({ mapSettings, setMapSettings, errors }: {
         return () => { selectionContext.observers.delete(observer) }
     }, [selectionContext, updateCurrentSelection])
 
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
+
     return (
         <SelectionContext.Provider value={selectionContext}>
             <DataListSelector
@@ -79,7 +81,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors }: {
                     setUss(newUss)
                     addState(newUss, selectionContext.value)
                 }}
-                typeEnvironment={defaultTypeEnvironment(mapSettings.universe)}
+                typeEnvironment={typeEnvironment}
                 errors={errors}
             />
         </SelectionContext.Provider>
