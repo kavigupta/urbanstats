@@ -8,7 +8,7 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
@@ -16,7 +16,6 @@ import { CustomEditor } from './CustomEditor'
 import { PreambleEditor } from './PreambleEditor'
 import { makeStatements } from './utils'
 
-const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
@@ -116,7 +115,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={cMap}
+                    type={{ type: 'opaque', name: 'cMap' }} // This will be updated to support both cMap and pMap
                     labelWidth="0px"
                 />
             </div>
@@ -167,7 +166,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
         conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
         conditionRest = conditionStmt !== undefined ? [conditionStmt] : []
     }
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, cMap, typeEnvironment, parseNoErrorAsCustomNode)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, { type: 'opaque', name: 'cMap' }, typeEnvironment, parseNoErrorAsCustomNode)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
@@ -185,7 +184,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
 }
 
 export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
-    const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, { type: 'opaque', name: 'cMap' })
+    const expr = parseNoErrorAsCustomNode('pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, { type: 'opaque', name: 'pMap' })
     assert(expr.type === 'customNode', 'expr should be a custom node')
     return attemptParseAsTopLevel(expr.expr, typeEnvironment)
 }

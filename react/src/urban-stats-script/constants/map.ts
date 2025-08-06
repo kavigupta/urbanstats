@@ -29,9 +29,26 @@ export interface CMap {
     unit?: UnitType
 }
 
+export interface PMap {
+    geo: string[]
+    data: number[]
+    scale: ScaleDescriptor
+    ramp: RampT
+    label: string
+    outline: Outline
+    basemap: Basemap
+    insets: Insets
+    unit?: UnitType
+}
+
 export const cMapType = {
     type: 'opaque',
     name: 'cMap',
+} satisfies USSType
+
+export const pMapType = {
+    type: 'opaque',
+    name: 'pMap',
 } satisfies USSType
 
 export const constructOutline = {
@@ -148,6 +165,103 @@ export const cMap: USSValue = {
     },
     documentation: {
         humanReadableName: 'Choropleth Map',
+        isDefault: true,
+        namedArgs: {
+            data: 'Data',
+            scale: 'Scale',
+            ramp: 'Ramp',
+            label: 'Label',
+            geo: 'Geography',
+            outline: 'Outline',
+            basemap: 'Basemap',
+            insets: 'Insets',
+            unit: 'Unit',
+        },
+    },
+}
+
+export const pMap: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            data: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
+            scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
+            ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+            label: {
+                type: { type: 'concrete', value: { type: 'string' } },
+                defaultValue: rawDefaultValue(null),
+            },
+            geo: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'geoCentroidHandle' } } },
+                defaultValue: expressionDefaultValue({
+                    type: 'identifier',
+                    name: { node: 'geoCentroid', location: noLocation },
+                }),
+            },
+            outline: {
+                type: { type: 'concrete', value: outlineType },
+                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'outline', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
+            },
+            basemap: {
+                type: { type: 'concrete', value: basemapType },
+                defaultValue: expressionDefaultValue({ type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation }),
+            },
+            insets: {
+                type: { type: 'concrete', value: insetsType },
+                defaultValue: expressionDefaultValue({
+                    type: 'identifier',
+                    name: { node: 'defaultInsets', location: noLocation },
+                }),
+            },
+            unit: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
+                defaultValue: rawDefaultValue(null),
+            },
+        },
+        returnType: { type: 'concrete', value: pMapType },
+    },
+    value: (ctx, posArgs, namedArgs, originalArgs) => {
+        const geoRaw = namedArgs.geo as USSRawValue[]
+        const geo: string[] = geoRaw.map((g) => {
+            const geoHandle = g as { type: 'opaque', opaqueType: string, value: string }
+            assert(geoHandle.opaqueType === 'geoCentroidHandle', 'Expected geoCentroidHandle opaque value')
+            return geoHandle.value
+        })
+        const data = namedArgs.data as number[]
+        const scale = (namedArgs.scale as { type: 'opaque', opaqueType: 'scale', value: Scale }).value
+        const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
+        const labelPassedIn = namedArgs.label as string | null
+        const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
+        const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
+        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
+        const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
+        const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+
+        if (geo.length !== data.length) {
+            throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
+        }
+
+        const scaleInstance = scale(data)
+
+        const label = labelPassedIn ?? originalArgs.namedArgs.data.documentation?.humanReadableName
+
+        if (label === undefined) {
+            ctx.effect({
+                type: 'warning',
+                message: 'Label could not be derived for point map, please pass label="<your label here>" to pMap(...)',
+                location: noLocation,
+            })
+        }
+
+        return {
+            type: 'opaque',
+            opaqueType: 'pMap',
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, insets, unit } satisfies PMap,
+        }
+    },
+    documentation: {
+        humanReadableName: 'Point Map',
         isDefault: true,
         namedArgs: {
             data: 'Data',

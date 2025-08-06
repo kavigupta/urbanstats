@@ -104,22 +104,22 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (result.resultingValue === undefined) {
             return { polygons: [], zoomIndex: -1 }
         }
-        const cMap = result.resultingValue.value.value
-        // Use the outline from cMap instead of hardcoded lineStyle
-        const lineStyle = cMap.outline
+        const mapResult = result.resultingValue.value.value
+        // Use the outline from mapResult instead of hardcoded lineStyle
+        const lineStyle = mapResult.outline
 
-        const names = cMap.geo
-        const ramp = cMap.ramp
-        const scale = instantiate(cMap.scale)
+        const names = mapResult.geo
+        const ramp = mapResult.ramp
+        const scale = instantiate(mapResult.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
-        this.props.basemapCallback(cMap.basemap)
-        this.props.insetsCallback(cMap.insets)
-        const colors = cMap.data.map(
+        this.props.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
+        this.props.basemapCallback(mapResult.basemap)
+        this.props.insetsCallback(mapResult.insets)
+        const colors = mapResult.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
         const styles = colors.map(
-            // use outline color from cMap, convert Color object to hex string
+            // use outline color from mapResult, convert Color object to hex string
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
@@ -128,7 +128,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                 weight: lineStyle.weight,
             }),
         )
-        const metas = cMap.data.map((x) => { return { statistic: x } })
+        const metas = mapResult.data.map((x) => { return { statistic: x } })
         return {
             polygons: names.map((name, i) => ({
                 name,

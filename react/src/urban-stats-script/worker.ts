@@ -38,8 +38,8 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             }
             case 'mapper': {
                 // no idea why we need this, but it's obviously correct from the switch
-                if (renderType(result.type) !== 'cMap') {
-                    throw new InterpretationError(`USS expression did not return a cMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
+                if (renderType(result.type) !== 'cMap' && renderType(result.type) !== 'pMap') {
+                    throw new InterpretationError(`USS expression did not return a cMap or pMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
                 }
                 break
             }
@@ -118,6 +118,9 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
         if (name === 'geo') {
             return annotateType('geo', longnames.map(name => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: name })))
+        }
+        if (name === 'geoCentroid') {
+            return annotateType('geoCentroid', longnames.map(name => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: name })))
         }
         if (name === 'defaultInsets') {
             return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })

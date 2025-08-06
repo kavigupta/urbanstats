@@ -26,7 +26,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universe)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'geoCentroid', 'defaultInsets']
 
     // Load all variables in parallel
     const variablePromises = variables
@@ -84,6 +84,11 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
     te.set('geo', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
         documentation: { humanReadableName: 'Geography Name' },
+    })
+
+    te.set('geoCentroid', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoCentroidHandle' } },
+        documentation: { humanReadableName: 'Geography Centroid' },
     })
 
     te.set('defaultInsets', {
