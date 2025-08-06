@@ -493,7 +493,7 @@ function maybeParseExpr(
     return
 }
 
-type Fallback = (uss: string, i: string, t: USSType) => UrbanStatsASTExpression
+type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpression
 
 export function parseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
@@ -503,7 +503,7 @@ export function parseExpr(
     fallback: Fallback,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment, fallback)
-    return parsed ?? fallback(unparse(expr), blockIdent, type)
+    return parsed ?? fallback(unparse(expr), blockIdent, [type])
 }
 
 function attemptParseExpr(
@@ -548,7 +548,7 @@ function attemptParseExpr(
             return undefined
         case 'do':
             const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, type)
+            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, [type])
         case 'customNode':
             return parseExpr(expr.expr, blockIdent, type, typeEnvironment, fallback)
         case 'statements':
