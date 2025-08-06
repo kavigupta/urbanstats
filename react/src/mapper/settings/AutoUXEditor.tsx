@@ -268,27 +268,31 @@ export function AutoUXEditor(props: {
         }
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
-    const leftSegment = (
-        <div style={{ padding: `${labelPadding} 0px` }}>
-            {props.label && <span style={{ minWidth: 'fit-content' }}>{props.label}</span>}
-        </div>
-    )
-    const rightSegment = (
-        <div style={{ width: `calc(100% - ${labelWidth})` }}>
-            <Selector
-                uss={props.uss}
-                setSelection={(selection: Selection) => {
-                    props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type))
-                }}
-                setUss={props.setUss}
-                typeEnvironment={props.typeEnvironment}
-                type={props.type}
-                blockIdent={props.blockIdent}
-                errors={props.errors}
-            />
-        </div>
+    const leftSegment = props.label === undefined
+        ? undefined
+        : (
+                <div style={{ padding: `${labelPadding} 0px` }}>
+                    <span style={{ minWidth: 'fit-content' }}>{props.label}</span>
+                </div>
+            )
+    const rightSegment = possibilities(props.type, props.typeEnvironment).length < 2
+        ? undefined
+        : (
+                <div style={{ width: `calc(100% - ${labelWidth})` }}>
+                    <Selector
+                        uss={props.uss}
+                        setSelection={(selection: Selection) => {
+                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type))
+                        }}
+                        setUss={props.setUss}
+                        typeEnvironment={props.typeEnvironment}
+                        type={props.type}
+                        blockIdent={props.blockIdent}
+                        errors={props.errors}
+                    />
+                </div>
 
-    )
+            )
 
     const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
 
@@ -337,7 +341,7 @@ export function AutoUXEditor(props: {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', width: '100%', flex: 1 }} id={`auto-ux-editor-${props.blockIdent}`}>
-            <div style={{ width: '100%', flex: 1 }}>{component()}</div>
+            {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
             {wrappedSubcomponent()}
         </div>
     )
