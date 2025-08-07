@@ -19,26 +19,17 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
 
-async function googleSignIn(t: TestController): Promise<void> {
-    await flaky(async () => {
-        await t.navigateTo('https://accounts.google.com')
-    })
-    await t.typeText('input[type=email]', email)
-    await t.click(Selector('button').withExactText('Next'))
-    await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
-    await t.click(Selector('button').withExactText('Next'))
-
+async function fillTOTP(t: TestController, success: () => Promise<boolean>): Promise<void> {
     while (true) {
         // TOTP codes conflict on concurrent logins
         const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
         await t.typeText('input[type=tel]', otp, { replace: true })
         await t.click(Selector('button').withExactText('Next'))
-        try {
-            await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+        if (await success()) {
             console.warn('TOTP Success!')
             break
         }
-        catch {
+        else {
             console.warn('TOTP Failed')
             // Wait until the code expires so we don't spam the same code
             const wait = expires - Date.now()
@@ -48,6 +39,18 @@ async function googleSignIn(t: TestController): Promise<void> {
             }
         }
     }
+}
+
+async function googleSignIn(t: TestController): Promise<void> {
+    await flaky(async () => {
+        await t.navigateTo('https://accounts.google.com')
+    })
+    await t.typeText('input[type=email]', email)
+    await t.click(Selector('button').withExactText('Next'))
+    await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
+    await t.click(Selector('button').withExactText('Next'))
+
+    await fillTOTP(t, () => Selector('h1').withExactText('Welcome, Urban Stats').exists)
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
@@ -89,6 +92,9 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     }
     await t.wait(1000) // wait for loading
     await t.click(chooseEmail)
+    if (!(await continueButton.exists)) {
+        await fillTOTP(t, () => continueButton.exists)
+    }
     await t.click(continueButton)
     const checkBox = Selector('input[type=checkbox]:not([disabled])')
     if (enableDrive && await checkBox.exists) {
