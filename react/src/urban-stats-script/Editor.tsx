@@ -190,7 +190,7 @@ export function Editor(
     const error = errors.length > 0
 
     return (
-        <div style={{ margin: '1em' }}>
+        <div style={{ margin: '1em', marginTop: '0.5em' }}>
             <pre
                 style={{
                     ...codeStyle,

@@ -340,7 +340,7 @@ export function AutoUXEditor(props: {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', width: '100%', flex: 1 }} id={`auto-ux-editor-${props.blockIdent}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.5em' }} id={`auto-ux-editor-${props.blockIdent}`}>
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
             {wrappedSubcomponent()}
         </div>

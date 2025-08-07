@@ -307,7 +307,12 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     }
 
     return (
-        <div>
+        <div style={{
+            display: 'flex',
+            gap: '0.5em',
+            margin: '0.5em 0',
+        }}
+        >
             <button onClick={() => {
                 void exportAsPng()
             }}
