@@ -1,18 +1,17 @@
-from collections import Counter
 import sqlite3
 import subprocess
 import tempfile
 import time
-
-from permacache import permacache
+from collections import Counter
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from permacache import permacache
 
 from urbanstats.games.quiz import quiz_is_guaranteed_past
 
-CURRENT_TIME = time.time() // 1000 * 1000 # Round to the nearest 1000 seconds
+CURRENT_TIME = time.time() // 1000 * 1000  # Round to the nearest 1000 seconds
 
 questions = [f"q{i}" for i in range(1, 1 + 5)]
 
