@@ -65,7 +65,7 @@ export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'exp
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue }>
+    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue, excludeFromAutoUx?: boolean }>
     returnType: USSFunctionReturnType
 }
 

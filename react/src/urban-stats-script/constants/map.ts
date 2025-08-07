@@ -84,6 +84,7 @@ export const cMap: USSValue = {
                     type: 'identifier',
                     name: { node: 'geo', location: noLocation },
                 }),
+                excludeFromAutoUx: true,
             },
             outline: {
                 type: { type: 'concrete', value: outlineType },

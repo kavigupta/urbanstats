@@ -167,19 +167,21 @@ export function AutoUXEditor(props: {
                 )
             })
             Object.entries(type.namedArgs).forEach(([name, argWDefault]) => {
-                subselectors.push(
-                    <ArgumentEditor
-                        key={`named-${name}`}
-                        name={name}
-                        argWDefault={argWDefault}
-                        // cast is valid because we checked type above
-                        uss={uss as UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }}
-                        setUss={props.setUss}
-                        typeEnvironment={props.typeEnvironment}
-                        errors={props.errors}
-                        blockIdent={props.blockIdent}
-                    />,
-                )
+                if (argWDefault.excludeFromAutoUx !== true) {
+                    subselectors.push(
+                        <ArgumentEditor
+                            key={`named-${name}`}
+                            name={name}
+                            argWDefault={argWDefault}
+                            // cast is valid because we checked type above
+                            uss={uss as UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }}
+                            setUss={props.setUss}
+                            typeEnvironment={props.typeEnvironment}
+                            errors={props.errors}
+                            blockIdent={props.blockIdent}
+                        />,
+                    )
+                }
             })
             return (
                 <div>
