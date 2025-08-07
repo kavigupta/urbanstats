@@ -510,7 +510,7 @@ void test('constant listing', (): void => {
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":0}}, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
                 'cMap',
             ],
-            '(; color: color = {"type":"opaque","opaqueType":"color","value":{"r":0,"g":0,"b":0}}, weight: number = 0.5) -> outline': [
+            '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
                 'constructOutline',
             ],
             '(; noLabels: boolean = false, subnationalOutlines: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":1}}) -> basemap': [
