@@ -66,47 +66,46 @@ function ArgumentEditor(props: {
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
 
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
-            {hasDefault && (
-                <CheckboxSettingJustBox
-                    checked={isEnabled}
-                    onChange={(checked) => {
-                        if (checked) {
-                            // Add the argument with default value
-                            const newArgs = [...functionUss.args, {
-                                type: 'named' as const,
-                                name: { node: props.name, location: emptyLocation(subident) },
-                                value: createDefaultExpression(arg.value, subident, props.typeEnvironment),
-                            }]
-                            props.setUss({ ...functionUss, args: newArgs })
-                        }
-                        else {
-                            // Remove the argument
-                            const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
-                            props.setUss({ ...functionUss, args: newArgs })
-                        }
-                    }}
-                />
-            )}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
             <div style={{ flex: 1 }}>
-                {isEnabled
-                    ? (
-                            <AutoUXEditor
-                                uss={argValue.value}
-                                setUss={(newUss) => {
-                                    const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                <div>
+                    {hasDefault && (
+                        <CheckboxSettingJustBox
+                            checked={isEnabled}
+                            onChange={(checked) => {
+                                if (checked) {
+                                    // Add the argument with default value
+                                    const newArgs = [...functionUss.args, {
+                                        type: 'named' as const,
+                                        name: { node: props.name, location: emptyLocation(subident) },
+                                        value: createDefaultExpression(arg.value, subident, props.typeEnvironment),
+                                    }]
                                     props.setUss({ ...functionUss, args: newArgs })
-                                }}
-                                typeEnvironment={props.typeEnvironment}
-                                errors={props.errors}
-                                blockIdent={subident}
-                                type={arg.value}
-                                label={humanReadableName}
-                            />
-                        )
-                    : (
-                            <span>{humanReadableName}</span>
-                        )}
+                                }
+                                else {
+                                    // Remove the argument
+                                    const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
+                                    props.setUss({ ...functionUss, args: newArgs })
+                                }
+                            }}
+                        />
+                    )}
+                    <span style={{ verticalAlign: 'middle' }}>{humanReadableName}</span>
+                </div>
+                {isEnabled
+                && (
+                    <AutoUXEditor
+                        uss={argValue.value}
+                        setUss={(newUss) => {
+                            const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                            props.setUss({ ...functionUss, args: newArgs })
+                        }}
+                        typeEnvironment={props.typeEnvironment}
+                        errors={props.errors}
+                        blockIdent={subident}
+                        type={arg.value}
+                    />
+                )}
             </div>
         </div>
     )
@@ -340,7 +339,7 @@ export function AutoUXEditor(props: {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.5em' }} id={`auto-ux-editor-${props.blockIdent}`}>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.25em' }} id={`auto-ux-editor-${props.blockIdent}`}>
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
             {wrappedSubcomponent()}
         </div>
