@@ -117,6 +117,7 @@ export const constructInsetsValue: USSValue = {
 
 function computeInsetConstantName(name: string): string {
     name = name.replace(/[\s,().-]/g, '')
+    name = name.replaceAll('+', 'Plus')
     name = `inset${name}`
     return name
 }

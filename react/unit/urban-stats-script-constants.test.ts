@@ -417,7 +417,7 @@ void test('constant listing', (): void => {
                 'insetUganda',
                 'insetContinentalUSA',
                 'insetGuam',
-                'insetPuertoRico+USVI',
+                'insetPuertoRicoPlusUSVI',
                 'insetHawaii',
                 'insetAlaska',
                 'insetUruguay',
