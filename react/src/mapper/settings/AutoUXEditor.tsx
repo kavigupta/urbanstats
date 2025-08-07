@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
-import { CheckboxSettingJustBox } from '../../components/sidebar'
+import { CheckboxSettingCustom, CheckboxSettingJustBox } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -69,28 +69,32 @@ function ArgumentEditor(props: {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
             <div style={{ flex: 1 }}>
                 <div>
-                    {hasDefault && (
-                        <CheckboxSettingJustBox
-                            checked={isEnabled}
-                            onChange={(checked) => {
-                                if (checked) {
-                                    // Add the argument with default value
-                                    const newArgs = [...functionUss.args, {
-                                        type: 'named' as const,
-                                        name: { node: props.name, location: emptyLocation(subident) },
-                                        value: createDefaultExpression(arg.value, subident, props.typeEnvironment),
-                                    }]
-                                    props.setUss({ ...functionUss, args: newArgs })
-                                }
-                                else {
-                                    // Remove the argument
-                                    const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
-                                    props.setUss({ ...functionUss, args: newArgs })
-                                }
-                            }}
-                        />
-                    )}
-                    <span style={{ verticalAlign: 'middle' }}>{humanReadableName}</span>
+                    {hasDefault
+                        ? (
+                                <CheckboxSettingCustom
+                                    name={humanReadableName}
+                                    checked={isEnabled}
+                                    onChange={(checked) => {
+                                        if (checked) {
+                                            const defaultExpr = props.argWDefault.defaultValue?.type === 'expression' ? props.argWDefault.defaultValue.expr : undefined
+                                            // Add the argument with default value
+                                            const newArgs = [...functionUss.args, {
+                                                type: 'named' as const,
+                                                name: { node: props.name, location: emptyLocation(subident) },
+                                                value: defaultExpr ?? createDefaultExpression(arg.value, subident, props.typeEnvironment),
+                                            }]
+                                            props.setUss({ ...functionUss, args: newArgs })
+                                        }
+                                        else {
+                                            // Remove the argument
+                                            const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
+                                            props.setUss({ ...functionUss, args: newArgs })
+                                        }
+                                    }}
+                                />
+                            )
+                        : <span>{humanReadableName}</span>}
+
                 </div>
                 {isEnabled
                 && (
