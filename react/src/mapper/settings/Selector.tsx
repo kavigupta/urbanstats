@@ -228,7 +228,7 @@ export function Selector(props: {
                     style={{
                         width: '100%',
                         padding: `${labelPadding} 8px`,
-                        border: '1px solid #ccc',
+                        border: `1px solid ${colors.ordinalTextColor}`,
                         borderRadius: '4px',
                         fontSize: '14px',
                     }}
@@ -288,7 +288,7 @@ export function Selector(props: {
                         } satisfies UrbanStatsASTExpression
                         props.setUss(newUss)
                     }}
-                    style={{ width: '200px' }}
+                    style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
                     placeholder={isNumber ? 'Enter number' : 'Enter string'}
                 />
             )}
@@ -296,7 +296,7 @@ export function Selector(props: {
                 <input
                     type="color"
                     value={doRender(colorValue.color)}
-                    style={{ width: '200px' }}
+                    style={{ width: '200px', height: '30.5px' }}
                     onChange={(e) => {
                         const newColor = hexToColor(e.target.value)
                         const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor) : rgbColorExpression(newColor)
