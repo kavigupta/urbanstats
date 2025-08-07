@@ -83,7 +83,7 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
 
     te.set('geo', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
-        documentation: { humanReadableName: 'Geography Name' },
+        documentation: { humanReadableName: 'Default Universe Geography' },
     })
 
     te.set('defaultInsets', {
