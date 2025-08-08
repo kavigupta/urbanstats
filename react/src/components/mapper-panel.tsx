@@ -12,7 +12,7 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink } from '../navigation/links'
+import { consolidatedShapeLink, centroidsPath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -26,7 +26,7 @@ import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
-import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
+import { ConsolidatedShapes, Feature, IFeature, PointSeries, IPolygon, IRing } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
@@ -73,6 +73,8 @@ interface Shapes { geographyKind: string, universe: string, data: Promise<Shapes
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
+    private mapType: 'point' | 'choropleth' = 'point' // Default to point maps
+    private centroids: undefined | Promise<NormalizeProto<PointSeries>>
 
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
@@ -86,12 +88,72 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return this.shapes
     }
 
+    private getCentroids(): Promise<NormalizeProto<PointSeries>> {
+        if (!this.centroids) {
+            this.centroids = loadProtobuf(centroidsPath(this.props.universe, this.props.geographyKind), 'PointSeries') as Promise<NormalizeProto<PointSeries>>
+        }
+        return this.centroids
+    }
+
+    private createCircleFeature(centroid: { lon: number, lat: number }, zones: number[]): NormalizeProto<Feature> {
+        // Create a simple circle polygon around the centroid
+        // This is a basic approximation - in practice you might want a more sophisticated circle generation
+        const radius = 1 // Approximate radius in degrees
+        const segments = 16 // Number of segments to approximate the circle
+
+        const coords: { lon: number, lat: number }[] = []
+        for (let i = 0; i < segments; i++) {
+            const angle = (2 * Math.PI * i) / segments
+            const lat = centroid.lat + radius * Math.cos(angle)
+            const lon = centroid.lon + radius * Math.sin(angle)
+            coords.push({ lon, lat })
+        }
+        // Close the circle
+        coords.push(coords[0])
+
+        // Create a ring with the circle coordinates
+        const ring: IRing = {
+            coords,
+        }
+
+        // Create a polygon with the ring
+        const polygon: IPolygon = {
+            rings: [ring],
+        }
+
+        // Create the Feature
+        const feature = Feature.create({
+            polygon,
+            multipolygon: undefined,
+            zones,
+            centerLon: centroid.lon,
+        })
+
+        return feature as NormalizeProto<Feature>
+    }
+
     override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
         const index = nameToIndex.get(name)
         assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
         const data = shapes[index]
-        return data as NormalizeProto<Feature>
+
+        if (this.mapType === 'point') {
+            // For point maps, load centroids from PointSeries file
+            const centroids = await this.getCentroids()
+            const centroid = centroids.coords[index]
+
+            // Create a circle Feature around the centroid
+            return this.createCircleFeature(centroid, data.zones)
+        }
+        else {
+            // For choropleth maps, return full geometry as before
+            return data as NormalizeProto<Feature>
+        }
+    }
+
+    setMapType(type: 'point' | 'choropleth'): void {
+        this.mapType = type
     }
 
     override async computePolygons(): Promise<Polygons> {
