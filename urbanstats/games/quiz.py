@@ -103,6 +103,8 @@ def generate_quizzes(folder):
 
 
 def display_question(question):
+    if "!TOOLTIP" in question:
+        return question[: question.index("!TOOLTIP")].strip()
     if question.startswith("!FULL"):
         return question[6:]
     return f"Which has a {question}?"
