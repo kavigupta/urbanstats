@@ -52,7 +52,7 @@ void test('constant listing', (): void => {
                 'unitTime',
                 'unitDistancePerYear',
                 'unitContaminantLevel',
-                'unitDefault',
+                'unitNumber',
             ],
             '(number; ) -> number': [
                 'abs',
