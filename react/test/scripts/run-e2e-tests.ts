@@ -82,8 +82,9 @@ for (const test of tests) {
     let killTimer: NodeJS.Timeout | undefined
     if (options.timeLimitSeconds !== undefined) {
         const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
-        killTimer = setTimeout(() => {
+        killTimer = setTimeout(async () => {
             console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
+            await doComparisons()
             process.exit(1)
         }, timeLimit * 1000)
     }
@@ -114,20 +115,24 @@ for (const test of tests) {
     }
 }
 
-if (options.compare) {
-    const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
-        cwd: '..',
-        stdio: 'inherit',
-        reject: false,
-    })))
-
-    if (comparisonResults.some(result => result.failed)) {
-        process.exit(1)
-    }
-}
+await doComparisons()
 
 if (testsFailed > 0) {
     process.exit(1)
 }
 
 process.exit(0) // Needed to clean up subprocesses
+
+async function doComparisons(): Promise<void> {
+    if (options.compare) {
+        const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
+            cwd: '..',
+            stdio: 'inherit',
+            reject: false,
+        })))
+
+        if (comparisonResults.some(result => result.failed)) {
+            process.exit(1)
+        }
+    }
+}
