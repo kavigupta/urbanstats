@@ -1,16 +1,21 @@
 import sqlite3
 import subprocess
 import tempfile
+import time
+from collections import Counter
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from permacache import permacache
 
 from urbanstats.games.quiz import quiz_is_guaranteed_past
 
+CURRENT_TIME = time.time() // 1000 * 1000  # Round to the nearest 1000 seconds
+
 questions = [f"q{i}" for i in range(1, 1 + 5)]
 
-named_users = dict(
+named_users_basal = dict(
     vo=1000233398257748901,
     avery=1027246234047181785,
     kavi=225074120239201340,
@@ -30,14 +35,47 @@ named_users = dict(
 )
 
 
-def get_full_statistics_table():
+def get_named_users():
+    email_mapping, _ = get_full_statistics_table()
+    named_users = {k: email_mapping.get(v, v) for k, v in named_users_basal.items()}
+    return named_users
+
+
+def unique_names_each_user():
+    names = {k: "" for k in get_named_users()}
+    while True:
+        duplicates = {v for v, count in Counter(names.values()).items() if count > 1}
+        if not duplicates:
+            return names
+        for k, v in names.items():
+            if v in duplicates:
+                names[k] = v + k[len(v)]
+
+
+@permacache("juxtastat_analysis/get_full_statistics_table")
+def get_full_statistics_table(date=CURRENT_TIME):
+    del date
     c = open_connection()
     c = c.execute(
         """SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
             FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
             WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user"""
     )
-    return c.fetchall()
+    result = c.fetchall()
+    result = pd.DataFrame(
+        result, columns=["user_id", "host", "problem", "pattern", "time"]
+    )
+    email_mapping = get_email_mapping(c)
+    result["raw_user_id"] = result.user_id
+    result["user_id"] = result.user_id.apply(lambda x: email_mapping.get(x, x))
+    return email_mapping, result
+
+
+def get_email_mapping(c):
+    # CREATE TABLE IF NOT EXISTS EmailUsers (email text, user integer PRIMARY KEY, UNIQUE(email, user))
+    c.execute("SELECT email, user FROM EmailUsers")
+    email_mapping = {user: email for email, user in c.fetchall()}
+    return email_mapping
 
 
 def open_connection():
@@ -62,10 +100,8 @@ def get_secure_id_for_user(user):
 
 
 def get_full_statistics(*, after_problem, debug=False):
-    result = get_full_statistics_table()
-    result = pd.DataFrame(
-        result, columns=["user_id", "host", "problem", "pattern", "time"]
-    )
+    _, result = get_full_statistics_table()
+    result = result.copy()
     time_problem = result[["time", "problem"]]
     time_problem = time_problem[time_problem.time == time_problem.time]
     result["last_in_batch"] = 0
