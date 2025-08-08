@@ -20,24 +20,33 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 const continueButton = Selector('button').withExactText('Continue')
 
 async function fillTOTP(t: TestController, success: () => Promise<boolean>): Promise<void> {
-    while (true) {
+    try {
+        while (true) {
         // TOTP codes conflict on concurrent logins
-        const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
-        await t.typeText('input[type=tel]', otp, { replace: true })
-        await t.click(Selector('button').withExactText('Next'))
-        if (await success()) {
-            console.warn('TOTP Success!')
-            break
-        }
-        else {
-            console.warn('TOTP Failed')
-            // Wait until the code expires so we don't spam the same code
-            const wait = expires - Date.now()
-            if (wait > 0) {
-                console.warn(`Waiting ${wait} ms...`)
-                await t.wait(wait)
+            const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+            await t.typeText('input[type=tel]', otp, { replace: true })
+            await t.click(Selector('button').withExactText('Next'))
+            if (await success()) {
+                console.warn('TOTP Success!')
+                break
+            }
+            else {
+                console.warn('TOTP Failed')
+                // Wait until the code expires so we don't spam the same code
+                const wait = expires - Date.now()
+                if (wait > 0) {
+                    console.warn(`Waiting ${wait} ms...`)
+                    await t.wait(wait)
+                }
             }
         }
+    }
+    catch (error) {
+        if (await success()) {
+            // There was an unexpected error, but that's just because we got logged in
+            return
+        }
+        throw error
     }
 }
 
@@ -92,7 +101,6 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     }
     await t.wait(1000) // wait for loading
     await t.click(chooseEmail)
-    await t.wait(1000) // wait for loading
     if (!(await continueButton.exists)) {
         await fillTOTP(t, () => continueButton.exists)
     }
