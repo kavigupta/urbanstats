@@ -37,14 +37,14 @@ export interface MapGenericProps {
     insets?: Insets
 }
 
-export interface Polygon {
+export interface Shape {
     name: string
     style: ShapeStyle
     meta: Record<string, unknown>
     notClickable?: boolean
 }
 export interface ShapeRenderingSpec {
-    shapes: Polygon[]
+    shapes: Shape[]
     zoomIndex: number
 }
 
@@ -533,7 +533,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return true
     }
 
-    async addPolygons(polygons: Polygon[], zoom_to: number): Promise<void> {
+    async addPolygons(polygons: Shape[], zoom_to: number): Promise<void> {
         const time = Date.now()
         debugPerformance('Adding polygons...')
         await Promise.all(polygons.map(async (polygon, i) => {
@@ -637,7 +637,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     /*
      * Returns whether or not we actually need to update the sources
      */
-    async addPolygon(polygon: Polygon, fit_bounds: boolean): Promise<void> {
+    async addPolygon(polygon: Shape, fit_bounds: boolean): Promise<void> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
             this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
@@ -811,8 +811,8 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         return element
     }
 
-    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): Polygon[] {
-        const result: Polygon[] = []
+    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): Shape[] {
+        const result: Shape[] = []
         for (let i = related.length - 1; i >= 0; i--) {
             if (!this.props.showHistoricalCDs && isHistoricalCD(related[i].rowType)) {
                 continue
