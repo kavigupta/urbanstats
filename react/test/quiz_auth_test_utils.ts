@@ -92,6 +92,7 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     }
     await t.wait(1000) // wait for loading
     await t.click(chooseEmail)
+    await t.wait(1000) // wait for loading
     if (!(await continueButton.exists)) {
         await fillTOTP(t, () => continueButton.exists)
     }
