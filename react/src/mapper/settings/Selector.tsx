@@ -253,7 +253,9 @@ export function Selector(props: {
                         {sortedOptions.map((option, index) => (
                             <div
                                 key={index}
-                                onClick={() => { handleOptionSelect(option) }}
+                                onMouseDown={() => {
+                                    handleOptionSelect(option)
+                                }}
                                 onMouseUp={() => {
                                     handleOptionSelect(option)
                                     inputRef.current?.blur()
