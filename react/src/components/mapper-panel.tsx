@@ -5,42 +5,45 @@ import { gzipSync } from 'zlib'
 
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
-import insets from '../data/insets'
 import valid_geographies from '../data/mapper/used_geographies'
-import statNames from '../data/statistic_name_list'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
-import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
-import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
+import { Keypoints } from '../mapper/ramps'
+import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { consolidatedShapeLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Universe } from '../universe'
+import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { doRender } from '../urban-stats-script/constants/color'
+import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
+import { EditorError } from '../urban-stats-script/editor-utils'
+import { loadInset } from '../urban-stats-script/worker'
+import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
-import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats, IFeature } from '../utils/protos'
+import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
+import { UnitType } from '../utils/unit'
 
-import type { Inset, Insets } from './map'
+import type { Insets } from './map'
 import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
-    colorStat: ColorStat
-    filter: ColorStat | undefined
     geographyKind: typeof valid_geographies[number]
-    universe: string
-    underlyingShapes: Promise<ConsolidatedShapes>
-    underlyingStats: Promise<ConsolidatedStatistics>
-    ramp: Ramp
+    universe: Universe
     rampCallback: (newRamp: EmpiricalRamp) => void
-    lineStyle: LineStyle
-    basemap: Basemap
+    basemapCallback: (basemap: Basemap) => void
+    insetsCallback: (insetsToUse: Insets) => void
     height: MapHeight | undefined
+    uss: UrbanStatsASTStatement | undefined
+    setErrors: (errors: EditorError[]) => void
     colors: Colors
 }
 
@@ -92,46 +95,40 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override async computePolygons(): Promise<Polygons> {
-        // reset index
-        // this.name_to_index = undefined
-        // await this.guaranteeNameToIndex()
-
-        const lineStyle = this.props.lineStyle
-
-        let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
-        // TODO correct this!
-        const shapes = await this.getShapes().data
-        const hasShapeMask = stats.longnames.map(name => shapes.nameToIndex.has(name))
-        stats = {
-            stats: stats.stats.filter((_, i) => hasShapeMask[i]),
-            longnames: stats.longnames.filter((_, i) => hasShapeMask[i]),
+        const stmts = this.props.uss
+        if (stmts === undefined) {
+            return { polygons: [], zoomIndex: -1 }
         }
-        if (this.props.filter !== undefined) {
-            const filterVals = this.props.filter.compute(stats.stats)
-            stats = {
-                stats: stats.stats.filter((x, i) => filterVals[i]),
-                longnames: stats.longnames.filter((x, i) => filterVals[i]),
-            }
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
+        this.props.setErrors(result.error)
+        if (result.resultingValue === undefined) {
+            return { polygons: [], zoomIndex: -1 }
         }
-        const statVals = this.props.colorStat.compute(stats.stats)
-        const names = stats.longnames
-        const [ramp, interpolations] = this.props.ramp.createRamp(statVals)
-        this.props.rampCallback({ ramp, interpolations })
-        const colors = statVals.map(
-            val => interpolateColor(ramp, val, this.props.colors.mapInvalidFillColor),
+        const cMap = result.resultingValue.value.value
+        // Use the outline from cMap instead of hardcoded lineStyle
+        const lineStyle = cMap.outline
+
+        const names = cMap.geo
+        const ramp = cMap.ramp
+        const scale = instantiate(cMap.scale)
+        const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
+        this.props.basemapCallback(cMap.basemap)
+        this.props.insetsCallback(cMap.insets)
+        const colors = cMap.data.map(
+            val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
         const styles = colors.map(
-            // no outline, set color fill, alpha=1
+            // use outline color from cMap, convert Color object to hex string
             color => ({
                 fillColor: color,
                 fillOpacity: 1,
-                color: lineStyle.color,
+                color: doRender(lineStyle.color),
                 opacity: 1,
                 weight: lineStyle.weight,
             }),
         )
-        const metas = statVals.map((x) => { return { statistic: x } })
-        // TODO: this is messy, but I don't want to rewrite the above
+        const metas = cMap.data.map((x) => { return { statistic: x } })
         return {
             polygons: names.map((name, i) => ({
                 name,
@@ -147,7 +144,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 }
 
-function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): ReactNode {
+function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -155,24 +152,30 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
     if (props.ramp === undefined) {
         return <div></div>
     }
+    const label = props.ramp.label
     const values = props.ramp.interpolations
+    const unit = props.ramp.unit
 
     const createValue = (stat: number): ReactNode => {
         return (
             <div className="centered_text">
                 <Statistic
-                    statname={props.name}
+                    statname={label}
                     value={stat}
                     isUnit={false}
+                    unit={unit}
                 />
                 <Statistic
-                    statname={props.name}
+                    statname={label}
                     value={stat}
                     isUnit={true}
+                    unit={unit}
                 />
             </div>
         )
     }
+
+    const width = `${100 / values.length}%`
 
     return (
         <div>
@@ -185,8 +188,8 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                                     key={i}
                                     style={
                                         {
-                                            width: '10%', height: '1em',
-                                            backgroundColor: interpolateColor(props.ramp!.ramp, x, colors.mapInvalidFillColor),
+                                            width, height: '1em',
+                                            backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
                                         }
                                     }
                                 >
@@ -197,7 +200,7 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                     <tr>
                         {
                             values.map((x, i) => (
-                                <td key={i} style={{ width: '10%', height: '1em' }}>
+                                <td key={i} style={{ width, height: '1em' }}>
                                     {createValue(x)}
                                 </td>
                             ))
@@ -206,57 +209,36 @@ function Colorbar(props: { name: string, ramp: EmpiricalRamp | undefined }): Rea
                 </tbody>
             </table>
             <div className="centered_text">
-                {props.name}
+                {label}
             </div>
         </div>
     )
 }
 
 interface MapComponentProps {
-    underlyingShapes: Promise<ConsolidatedShapes>
-    underlyingStats: Promise<ConsolidatedStatistics>
     geographyKind: typeof valid_geographies[number]
     universe: Universe
-    ramp: Ramp
-    colorStat: ColorStatDescriptor | undefined
-    filter: FilterSettings
     mapRef: React.RefObject<DisplayedMap>
-    lineStyle: LineStyle
-    basemap: Basemap
+    uss: UrbanStatsASTStatement | undefined
+    setErrors: (errors: EditorError[]) => void
     colorbarRef: React.RefObject<HTMLDivElement>
 }
 
 interface EmpiricalRamp {
     ramp: Keypoints
+    scale: ScaleInstance
     interpolations: number[]
-}
-
-function loadInset(universe: Universe): Insets {
-    const insetsU = insets[universe]
-    assert(insetsU.length > 0, `No insets for universe ${universe}`)
-    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    const insetsProc = insetsU.map((inset) => {
-        return {
-            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
-            topRight: [inset.topRight[0], inset.topRight[1]],
-            // copy to get rid of readonly
-            coordBox: [...inset.coordBox],
-            mainMap: inset.mainMap,
-        } satisfies Inset
-    })
-    return insetsProc
+    label: string
+    unit?: UnitType
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
-    const colors = useColors()
-    const colorStat = parseColorStat(nameToIndex, props.colorStat)
-    const filter = props.filter.enabled ? parseColorStat(nameToIndex, props.filter.function) : undefined
-
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
+    const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
-    const insetsU = loadInset(props.universe)
+    const [currentInsets, setCurrentInsets] = useState<Insets>(loadInset(props.universe))
 
-    const aspectRatio = computeAspectRatioForInsets(insetsU)
+    const aspectRatio = computeAspectRatioForInsets(currentInsets)
 
     return (
         <div style={{
@@ -266,27 +248,24 @@ function MapComponent(props: MapComponentProps): ReactNode {
         >
             <div style={{ height: '90%', width: '100%' }}>
                 <DisplayedMap
-                    colorStat={colorStat}
-                    filter={filter}
                     geographyKind={props.geographyKind}
                     universe={props.universe}
-                    underlyingShapes={props.underlyingShapes}
-                    underlyingStats={props.underlyingStats}
-                    ramp={props.ramp}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
+                    basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
+                    insetsCallback={(newInsets) => { setCurrentInsets(newInsets) }}
                     ref={props.mapRef}
-                    lineStyle={props.lineStyle}
-                    basemap={props.basemap}
+                    uss={props.uss}
                     height={{ type: 'aspect-ratio', value: aspectRatio }}
                     attribution="startVisible"
-                    colors={colors}
-                    insets={insetsU}
-                    key={JSON.stringify(insetsU)}
+                    basemap={basemap}
+                    setErrors={props.setErrors}
+                    colors={useColors()}
+                    insets={currentInsets}
+                    key={JSON.stringify(currentInsets)}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
-                    name={colorStat.name()}
                     ramp={empiricalRamp}
                 />
             </div>
@@ -328,7 +307,12 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     }
 
     return (
-        <div>
+        <div style={{
+            display: 'flex',
+            gap: '0.5em',
+            margin: '0.5em 0',
+        }}
+        >
             <button onClick={() => {
                 void exportAsPng()
             }}
@@ -355,31 +339,24 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     )
 }
 
-const nameToIndex = new Map(statNames.map((name, i) => [name, i]))
-
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
+    const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
+
+    const setMapSettingsWrapper = (newSettings: MapSettings): void => {
+        setMapSettings(newSettings)
+        const result = computeUSS(newSettings.script)
+        const errors = getAllParseErrors(result)
+        if (errors.length > 0) {
+            setErrors(errors.map(e => ({ ...e, level: 'error' })))
+        }
+        setUSS(errors.length > 0 ? undefined : result)
+    }
 
     useEffect(() => {
         // So that map settings are updated when the prop changes
-        setMapSettings(props.mapSettings)
+        setMapSettingsWrapper(props.mapSettings)
     }, [props.mapSettings])
-
-    const [underlyingShapes, setUnderlyingShapes] = useState<Promise<ConsolidatedShapes> | undefined>(undefined)
-    const [underlyingStats, setUnderlyingStats] = useState<Promise<ConsolidatedStatistics> | undefined>(undefined)
-
-    useEffect(() => {
-        if (valid_geographies.includes(mapSettings.geography_kind as typeof valid_geographies[number])) {
-            setUnderlyingShapes(loadProtobuf(
-                consolidatedShapeLink(mapSettings.geography_kind),
-                'ConsolidatedShapes',
-            ))
-            setUnderlyingStats(loadProtobuf(
-                consolidatedStatsLink(mapSettings.geography_kind),
-                'ConsolidatedStatistics',
-            ))
-        }
-    }, [mapSettings.geography_kind])
 
     const mapRef = useRef<DisplayedMap>(null)
     const colorbarRef = useRef<HTMLDivElement>(null)
@@ -397,27 +374,21 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
-    const mapperPanel = (): ReactNode => {
-        const ramp = parseRamp(mapSettings.ramp)
-        const geographyKind = mapSettings.geography_kind as typeof valid_geographies[number]
-        const universe = 'USA'
-        const colorStat = mapSettings.color_stat
-        const filter = mapSettings.filter
+    const [errors, setErrors] = useState<EditorError[]>([])
 
-        return (underlyingShapes === undefined || underlyingStats === undefined)
+    console.log('MapperPanel errors', errors)
+
+    const mapperPanel = (): ReactNode => {
+        const geographyKind = mapSettings.geographyKind
+        return (!valid_geographies.includes(geographyKind))
             ? <div>Invalid geography kind</div>
             : (
                     <MapComponent
-                        underlyingShapes={underlyingShapes}
-                        underlyingStats={underlyingStats}
                         geographyKind={geographyKind}
-                        universe={universe}
-                        ramp={ramp}
-                        colorStat={colorStat}
-                        filter={filter}
+                        universe={mapSettings.universe}
+                        uss={uss}
                         mapRef={mapRef}
-                        lineStyle={mapSettings.line_style}
-                        basemap={mapSettings.basemap}
+                        setErrors={setErrors}
                         colorbarRef={colorbarRef}
                     />
                 )
@@ -434,10 +405,11 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    names={statNames}
-                    validGeographies={[...valid_geographies]}
                     mapSettings={mapSettings}
-                    setMapSettings={setMapSettings}
+                    setMapSettings={(setter) => {
+                        setMapSettingsWrapper(setter(mapSettings))
+                    }}
+                    errors={errors}
                 />
                 <Export
                     mapRef={mapRef}

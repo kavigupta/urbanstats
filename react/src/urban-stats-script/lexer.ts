@@ -58,7 +58,11 @@ export function emptyLocation(ident: string): LocInfo {
     }
 }
 
-export function parseNumber(input: string): number | undefined {
+export function parseNumber(input: string | number): number | undefined {
+    if (typeof input === 'number') {
+        return input
+    }
+
     if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
         const value = parseFloat(input)

@@ -117,7 +117,7 @@ export function hsvColorExpression(color: Color): string {
     return `hsv(${c.hue()}, ${c.saturationv() / 100}, ${c.value() / 100})`
 }
 
-function colorConstant(name: string, value: string): [string, USSValue] {
+function colorConstant(name: string, value: string, isDefault?: boolean): [string, USSValue] {
     const humanReadableName = camelToHuman(name)
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
     const color = hexToColor(value)
@@ -127,6 +127,7 @@ function colorConstant(name: string, value: string): [string, USSValue] {
         documentation: {
             humanReadableName,
             equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
+            isDefault,
         },
     }] satisfies [string, USSValue]
 }
@@ -136,5 +137,5 @@ export const colorConstants = [
     // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
     colorConstant('white', '#ffffff'),
     // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
-    colorConstant('black', '#000000'),
+    colorConstant('black', '#000000', true),
 ]

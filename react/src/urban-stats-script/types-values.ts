@@ -1,4 +1,4 @@
-import { Basemap } from '../mapper/settings'
+import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
@@ -65,8 +65,12 @@ export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'exp
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue }>
+    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue, documentation?: NamedFunctionArgumentDocumentation }>
     returnType: USSFunctionReturnType
+}
+
+interface NamedFunctionArgumentDocumentation {
+    hide?: boolean
 }
 
 export type USSType = (
