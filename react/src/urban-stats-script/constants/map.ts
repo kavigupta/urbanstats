@@ -104,10 +104,7 @@ export const cMap: USSValue = {
             },
             unit: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
-                defaultValue: expressionDefaultValue({
-                    type: 'identifier',
-                    name: { node: 'unitNumber', location: noLocation },
-                }),
+                defaultValue: rawDefaultValue(null),
             },
         },
         returnType: { type: 'concrete', value: cMapType },
