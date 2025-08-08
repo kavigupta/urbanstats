@@ -377,3 +377,12 @@ export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, session
         },
     })
 }
+
+export async function clickUniverseFlag(t: TestController, alt: string): Promise<void> {
+    await flaky(async () => { // Universe flag sometimes isn't loaded
+        await t.click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', alt))
+    })
+}
