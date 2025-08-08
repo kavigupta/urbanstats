@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, screencap, urbanstatsFixture } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -86,11 +86,7 @@ const universeSelector = 'img.universe-selector'
 test('statistic-universe-selector-test', async (t) => {
     await t.click(universeSelector)
     await screencap(t)
-    await t
-        .click(
-            Selector('img')
-                .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'Puerto Rico, USA'))
+    await clickUniverseFlag(t, 'Puerto Rico, USA')
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=City&start=261&amount=20&universe=Puerto+Rico%2C+USA`)
     await screencap(t)
