@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
-import { CheckboxSettingCustom, CheckboxSettingJustBox } from '../../components/sidebar'
+import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -171,7 +171,7 @@ export function AutoUXEditor(props: {
                 )
             })
             Object.entries(type.namedArgs).forEach(([name, argWDefault]) => {
-                if (argWDefault.excludeFromAutoUx !== true) {
+                if (argWDefault.documentation?.hide !== true) {
                     subselectors.push(
                         <ArgumentEditor
                             key={`named-${name}`}
