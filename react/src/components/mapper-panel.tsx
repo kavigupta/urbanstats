@@ -25,8 +25,7 @@ import { ConsolidatedShapes, ConsolidatedStatistics, Feature, IAllStats, IFeatur
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-import type { Inset, Insets } from './map'
-import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
+import { Inset, Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -91,7 +90,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return data as NormalizeProto<Feature>
     }
 
-    override async computePolygons(): Promise<Polygons> {
+    override async computeShapesToRender(): Promise<ShapeRenderingSpec> {
         // reset index
         // this.name_to_index = undefined
         // await this.guaranteeNameToIndex()

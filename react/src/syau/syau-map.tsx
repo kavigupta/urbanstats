@@ -1,6 +1,6 @@
 import maplibregl, { LngLatLike } from 'maplibre-gl'
 
-import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
+import { MapGeneric, MapGenericProps, MapState, ShapeRenderingSpec } from '../components/map'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
@@ -25,7 +25,7 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     polysOnScreen: { name: string, isGuessed: boolean }[] = []
     updateAttached: boolean = false
 
-    override computePolygons(): Promise<Polygons> {
+    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
             polygons: this.polysOnScreen.map(({ name, isGuessed }) => ({
                 name,

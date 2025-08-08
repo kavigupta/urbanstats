@@ -20,7 +20,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { Icon } from './Icon'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
-import { MapGeneric, MapGenericProps, Polygons } from './map'
+import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
 import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
@@ -615,7 +615,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         )
     }
 
-    override computePolygons(): Promise<Polygons> {
+    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
             polygons: this.props.longnames.map((longname, i) => ({
                 name: longname,

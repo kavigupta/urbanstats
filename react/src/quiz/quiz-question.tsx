@@ -4,7 +4,7 @@ import '../components/quiz.css'
 import React, { ReactNode } from 'react'
 import { isFirefox } from 'react-device-detect'
 
-import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
+import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from '../components/map'
 import { useColors } from '../page_template/colors'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -18,7 +18,7 @@ interface MapProps extends MapGenericProps {
 }
 
 class Map extends MapGeneric<MapProps> {
-    override computePolygons(): Promise<Polygons> {
+    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
             polygons: [
                 {

@@ -43,7 +43,7 @@ export interface Polygon {
     meta: Record<string, unknown>
     notClickable?: boolean
 }
-export interface Polygons {
+export interface ShapeRenderingSpec {
     polygons: Polygon[]
     zoomIndex: number
 }
@@ -258,7 +258,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return <></>
     }
 
-    computePolygons(): Promise<Polygons> {
+    computeShapesToRender(): Promise<ShapeRenderingSpec> {
         /**
          * Should return [names, styles, metas, zoom_index]
          * names: list of names of polygons to draw
@@ -413,7 +413,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const { polygons } = await this.computePolygons()
+        const { polygons } = await this.computeShapesToRender()
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
@@ -489,7 +489,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
-        const { polygons, zoomIndex } = await this.computePolygons()
+        const { polygons, zoomIndex } = await this.computeShapesToRender()
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
@@ -774,7 +774,7 @@ function MapComponent(props: MapProps): ReactNode {
 class ArticleMap extends MapGeneric<ArticleMapProps> {
     private already_fit_bounds: string | undefined = undefined
 
-    override computePolygons(): Promise<Polygons> {
+    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         const relateds = [
             ...this.getRelated('contained_by'),
             ...this.getRelated('intersects'),
