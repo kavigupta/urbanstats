@@ -132,7 +132,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const metas = statVals.map((x) => { return { statistic: x } })
         // TODO: this is messy, but I don't want to rewrite the above
         return {
-            polygons: names.map((name, i) => ({
+            shapes: names.map((name, i) => ({
                 name,
                 style: styles[i],
                 meta: metas[i],

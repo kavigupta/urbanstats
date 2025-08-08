@@ -39,12 +39,12 @@ export interface MapGenericProps {
 
 export interface Polygon {
     name: string
-    style: PolygonStyle
+    style: ShapeStyle
     meta: Record<string, unknown>
     notClickable?: boolean
 }
 export interface ShapeRenderingSpec {
-    polygons: Polygon[]
+    shapes: Polygon[]
     zoomIndex: number
 }
 
@@ -54,7 +54,7 @@ export interface MapState {
     polygonByName: Map<string, GeoJSON.Feature>
 }
 
-interface PolygonStyle {
+interface ShapeStyle {
     fillColor: string
     fillOpacity: number
     color: string
@@ -413,7 +413,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const { polygons } = await this.computeShapesToRender()
+        const { shapes: polygons } = await this.computeShapesToRender()
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
@@ -489,7 +489,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
-        const { polygons, zoomIndex } = await this.computeShapesToRender()
+        const { shapes: polygons, zoomIndex } = await this.computeShapesToRender()
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
@@ -547,7 +547,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
-    async polygonGeojson(name: string, notClickable: boolean | undefined, style: PolygonStyle): Promise<GeoJSON.Feature> {
+    async polygonGeojson(name: string, notClickable: boolean | undefined, style: ShapeStyle): Promise<GeoJSON.Feature> {
         const poly = await this.loadShape(name)
         const geojson = {
             type: 'Feature' as const,
