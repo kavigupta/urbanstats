@@ -233,7 +233,10 @@ export function AutoUXEditor(props: {
                         onClick={() => {
                             const newElements = [
                                 ...uss.elements,
-                                createDefaultExpression(elementType, `${props.blockIdent}_el_${uss.elements.length}`, props.typeEnvironment),
+                                // Copy the last element if there is one
+                                uss.elements.length > 0
+                                    ? uss.elements[uss.elements.length - 1]
+                                    : createDefaultExpression(elementType, `${props.blockIdent}_el_${uss.elements.length}`, props.typeEnvironment),
                             ]
                             props.setUss({ ...uss, elements: newElements })
                         }}
