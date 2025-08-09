@@ -32,6 +32,10 @@ async function fillTOTP(t: TestController, success: () => Promise<boolean>): Pro
             }
             else {
                 console.warn('TOTP Failed')
+                await t.takeScreenshot({
+                    path: `${t.browser.name}/${t.test.name}.totp.error.png`,
+                    fullPage: true,
+                })
                 // Wait until the code expires so we don't spam the same code
                 const wait = expires - Date.now()
                 if (wait > 0) {
