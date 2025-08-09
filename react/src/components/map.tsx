@@ -51,7 +51,7 @@ export interface ShapeRenderingSpec {
 export interface MapState {
     loading: boolean
     mapIsVisible: boolean[]
-    polygonByName: Map<string, GeoJSON.Feature>
+    shapeByName: Map<string, [ShapeType, GeoJSON.Feature]>
 }
 
 type ShapeSpec = {
@@ -206,7 +206,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     constructor(props: P) {
         super(props)
-        this.state = { loading: true, polygonByName: new Map(), mapIsVisible: this.insets().map(() => true) }
+        this.state = { loading: true, shapeByName: new Map(), mapIsVisible: this.insets().map(() => true) }
         activeMaps.push(this)
         this.handler = new MapHandler(this.insets().map(inset => inset.mainMap))
     }
@@ -233,7 +233,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     ))}
                 </div>
                 <div style={{ display: 'none' }}>
-                    {Array.from(this.state.polygonByName.keys()).map(name =>
+                    {Array.from(this.state.shapeByName.keys()).map(name =>
                         // eslint-disable-next-line react/no-unknown-property -- this is a custom property
                         <div key={name} clickable-polygon={name} onClick={() => { this.onClick(name) }} />,
                     )}
@@ -515,9 +515,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         // Remove polygons that no longer exist
         // Must do this before map render or zooms are incorrect (they try to zoom to previous regions)
-        for (const [name] of this.state.polygonByName.entries()) {
+        for (const [name] of this.state.shapeByName.entries()) {
             if (!this.exist_this_time.includes(name)) {
-                this.state.polygonByName.delete(name)
+                this.state.shapeByName.delete(name)
             }
         }
 
@@ -544,7 +544,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         maps.forEach((map) => { setBasemap(map, this.props.basemap) })
     }
 
-    progressivelyLoadPolygons(): boolean {
+    progressivelyLoadShapes(): boolean {
         // Whether to attempt to refresh the map as polygons are added
         return true
     }
@@ -553,8 +553,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         const time = Date.now()
         debugPerformance('Adding polygons...')
         await Promise.all(shapes.map(async (polygon, i) => {
-            await this.addPolygon(polygon, i === zoom_to)
-            if (this.progressivelyLoadPolygons()) {
+            await this.addShape(polygon, i === zoom_to)
+            if (this.progressivelyLoadShapes()) {
                 await this.updateSources()
             }
         }))
@@ -606,31 +606,36 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.sources_last_updated = Date.now()
         await this.handler.ensureStyleLoadedFn()
-        const polys = Array.from(this.state.polygonByName.values())
-        const mapIsVisible = maps.map((map, i) => this.setUpMap(map, polys, this.insets()[i]))
+        const shapes = Array.from(this.state.shapeByName.values())
+        const mapIsVisible = maps.map((map, i) => this.setUpMap(map, shapes, this.insets()[i]))
         this.setState({ mapIsVisible })
     }
 
-    setUpMap(map: maplibregl.Map, polys: GeoJSON.Feature[], inset: Inset): boolean {
-        const bbox = inset.coordBox
-        if (!inset.mainMap && bbox !== undefined) {
-            polys = polys.filter((poly) => {
-                const bounds = boundingBox(poly.geometry)
-                // Check if the polygon overlaps the inset bounds
-                return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
-                    && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
-            })
+    setUpMap(map: maplibregl.Map, shapes: [ShapeType, GeoJSON.Feature][], inset: Inset): boolean {
+        function filterOverlaps(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
+            if (!inset.mainMap && bbox !== undefined) {
+                features = features.filter((poly) => {
+                    const bounds = boundingBox(poly.geometry)
+                    // Check if the polygon overlaps the inset bounds
+                    return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
+                        && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
+                })
+            }
+            return features
         }
-        const data = {
+
+        const polys = shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature)
+        const bbox = inset.coordBox
+        const polygonData = {
             type: 'FeatureCollection',
-            features: polys,
+            features: filterOverlaps(polys),
         } satisfies GeoJSON.FeatureCollection
-        let source: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+        let polygonSource: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         const labelId = this.firstLabelId(map)
-        if (source === undefined) {
+        if (polygonSource === undefined) {
             map.addSource('polygon', {
                 type: 'geojson',
-                data,
+                data: polygonData,
             })
             map.addLayer({
                 id: 'polygon',
@@ -650,7 +655,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     'line-width': ['get', 'weight'],
                 },
             }, labelId)
-            source = map.getSource('polygon')!
+            polygonSource = map.getSource('polygon')!
         }
         for (const layer of this.subnationalOutlines()) {
             if (map.getLayer(layer.id) !== undefined) {
@@ -658,24 +663,25 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
             map.addLayer(layer, labelId)
         }
-        source.setData(data)
+        polygonSource.setData(polygonData)
         return polys.length > 0 || inset.mainMap
     }
 
     /*
      * Returns whether or not we actually need to update the sources
      */
-    async addPolygon(polygon: Shape, fit_bounds: boolean): Promise<void> {
-        this.exist_this_time.push(polygon.name)
-        if (this.state.polygonByName.has(polygon.name)) {
-            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.spec.style, name: polygon.name, notClickable: polygon.notClickable }
+    async addShape(shape: Shape, fit_bounds: boolean): Promise<void> {
+        this.exist_this_time.push(shape.name)
+        const current = this.state.shapeByName.get(shape.name)
+        if (current && current[0] === shape.spec.type) {
+            current[1].properties = { ...shape.spec.style, name: shape.name, notClickable: shape.notClickable }
         }
-        const geojson = await this.shapeGeojson(polygon.name, polygon.notClickable, polygon.spec)
+        const geojson = await this.shapeGeojson(shape.name, shape.notClickable, shape.spec)
         if (fit_bounds) {
             this.zoomToItems([geojson], { animate: false })
         }
 
-        this.state.polygonByName.set(polygon.name, geojson)
+        this.state.shapeByName.set(shape.name, [shape.spec.type, geojson])
     }
 
     zoomToItems(items: Iterable<GeoJSON.Feature>, options: maplibregl.FitBoundsOptions): void {
@@ -688,11 +694,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomToAll(options: maplibregl.FitBoundsOptions = {}): void {
-        this.zoomToItems(this.state.polygonByName.values(), options)
+        this.zoomToItems(Array.from(this.state.shapeByName.values()).map(([_, feature]) => feature), options)
     }
 
     zoomTo(name: string): void {
-        this.zoomToItems([this.state.polygonByName.get(name)!], {})
+        this.zoomToItems([this.state.shapeByName.get(name)![1]], {})
     }
 
     static override contextType = Navigator.Context
@@ -758,7 +764,7 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
 
 function clickMapElement(longname: string): void {
     for (const map of activeMaps) {
-        if (map.state.polygonByName.has(longname)) {
+        if (map.state.shapeByName.has(longname)) {
             map.onClick(longname)
             return
         }

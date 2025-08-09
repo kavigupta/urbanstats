@@ -141,7 +141,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
     }
 
-    override progressivelyLoadPolygons(): boolean {
+    override progressivelyLoadShapes(): boolean {
         return false
     }
 }
