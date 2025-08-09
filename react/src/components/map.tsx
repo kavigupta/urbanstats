@@ -290,6 +290,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- unimplemented
     loadPoint(name: string): Promise<{ lon: number, lat: number }> {
         throw new Error('loadPoint not implemented by default')
     }
