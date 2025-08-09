@@ -93,8 +93,6 @@ def produce_results_for_type(folder, typ):
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(shapes)
-    stats = compute_statistics(data_table)
-    write_gzip(stats, f"{folder}/stats__{typ}.gz")
 
 
 def compute_geography(typ, data_table):
@@ -119,25 +117,6 @@ def compute_geography(typ, data_table):
     )
 
     return data_table, shapes, simplification
-
-
-def compute_statistics_for_row(row):
-    results = data_files_pb2.AllStats()
-    for stat in internal_statistic_names():
-        results.stats.append(row[stat])
-    return results
-
-
-def compute_statistics(data_table):
-    data_table = data_table.set_index("longname")
-    stats = data_files_pb2.ConsolidatedStatistics()
-    for longname in tqdm.tqdm(data_table.index):
-        row = data_table.loc[longname]
-        s = compute_statistics_for_row(row)
-        stats.longnames.append(longname)
-        stats.shortnames.append(row.shortname)
-        stats.stats.append(s)
-    return stats
 
 
 def full_consolidated_data(folder):

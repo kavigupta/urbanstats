@@ -128,10 +128,6 @@ message DataLists {
 
 // unified result
 
-message AllStats {
-    repeated float stats = 1;
-}
-
 message Universes {
     // indexes into universes_ordered.ts
     repeated int32 universe_idxs = 1;
@@ -141,12 +137,6 @@ message ConsolidatedShapes {
     repeated string longnames = 1;
     repeated Universes universes = 3;
     repeated Feature shapes = 2;
-}
-
-message ConsolidatedStatistics {
-    repeated string longnames = 1;
-    repeated string shortnames = 2;
-    repeated AllStats stats = 3;
 }
 
 // quiz sampling data
