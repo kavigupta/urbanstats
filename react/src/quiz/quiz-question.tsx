@@ -23,7 +23,7 @@ class Map extends MapGeneric<MapProps> {
             shapes: [
                 {
                     name: this.props.longname,
-                    style: { type: 'polygon', fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    spec: { type: 'polygon', style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color } },
                     meta: {},
                     notClickable: true,
                 },

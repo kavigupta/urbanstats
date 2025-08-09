@@ -619,7 +619,7 @@ class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], 
         return Promise.resolve({
             shapes: this.props.longnames.map((longname, i) => ({
                 name: longname,
-                style: { type: 'polygon', color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 },
+                spec: { type: 'polygon', style: { color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 } },
                 meta: {},
             })),
             zoomIndex: -1,

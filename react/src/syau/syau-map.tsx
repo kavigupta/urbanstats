@@ -29,12 +29,14 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         return Promise.resolve({
             shapes: this.polysOnScreen.map(({ name, isGuessed }) => ({
                 name,
-                style: {
+                spec: {
                     type: 'polygon',
-                    fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                    fillOpacity: 0.5,
-                    color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                    weight: 2,
+                    style: {
+                        fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                        fillOpacity: 0.5,
+                        color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                        weight: 2,
+                    },
                 },
                 notClickable: true,
                 meta: {},

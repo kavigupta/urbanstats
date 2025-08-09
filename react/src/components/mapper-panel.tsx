@@ -82,7 +82,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return this.shapes
     }
 
-    override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
+    override async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
         const { nameToIndex, shapes } = await this.getShapes().data
         const index = nameToIndex.get(name)
         assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
@@ -134,7 +134,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return {
             shapes: names.map((name, i) => ({
                 name,
-                style: { type: 'polygon', ...styles[i] },
+                spec: { type: 'polygon', style: styles[i] },
                 meta: metas[i],
             })),
             zoomIndex: -1,

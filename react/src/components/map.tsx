@@ -39,7 +39,7 @@ export interface MapGenericProps {
 
 export interface Shape {
     name: string
-    style: ShapeStyle
+    spec: ShapeSpec
     meta: Record<string, unknown>
     notClickable?: boolean
 }
@@ -54,19 +54,23 @@ export interface MapState {
     polygonByName: Map<string, GeoJSON.Feature>
 }
 
-type ShapeStyle = {
+type ShapeSpec = {
     type: 'polygon'
-    fillColor: string
-    fillOpacity: number
-    color: string
-    weight?: number
+    style: {
+        fillColor: string
+        fillOpacity: number
+        color: string
+        weight?: number
+    }
 } | {
     type: 'point'
-    color: string
-    radius: number
+    style: {
+        color: string
+        radius: number
+    }
 }
 
-export type ShapeType = ShapeStyle['type']
+export type ShapeType = ShapeSpec['type']
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
 
@@ -282,8 +286,12 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
              */
     }
 
-    async loadShape(name: string): Promise<NormalizeProto<Feature>> {
+    async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
         return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
+    }
+
+    loadPoint(name: string): Promise<{ lon: number, lat: number }> {
+        throw new Error('loadPoint not implemented by default')
     }
 
     subnationalOutlines(): maplibregl.LayerSpecification[] {
@@ -420,15 +428,15 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const { shapes: polygons } = await this.computeShapesToRender()
+        const { shapes } = await this.computeShapesToRender()
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
         }
-        for (const polygon of polygons) {
-            let feature = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
+        for (const shape of shapes) {
+            let feature = await this.polygonGeojson(shape.name, shape.notClickable, shape.spec)
             feature = JSON.parse(JSON.stringify(feature)) as typeof feature
-            for (const [key, value] of Object.entries(polygon.meta)) {
+            for (const [key, value] of Object.entries(shape.meta)) {
                 feature.properties![key] = value
             }
             geojson.features.push(feature)
@@ -496,11 +504,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
-        const { shapes: polygons, zoomIndex } = await this.computeShapesToRender()
+        const { shapes, zoomIndex } = await this.computeShapesToRender()
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
-        await this.addPolygons(polygons, zoomIndex)
+        await this.addShapes(shapes, zoomIndex)
 
         debugPerformance(`Added polygons; at ${Date.now() - timeBasis}ms`)
 
@@ -540,7 +548,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return true
     }
 
-    async addPolygons(polygons: Shape[], zoom_to: number): Promise<void> {
+    async addShapes(polygons: Shape[], zoom_to: number): Promise<void> {
         const time = Date.now()
         debugPerformance('Adding polygons...')
         await Promise.all(polygons.map(async (polygon, i) => {
@@ -554,14 +562,26 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         debugPerformance(`Updated sources [addPolygons]; at ${Date.now() - time}ms`)
     }
 
-    async polygonGeojson(name: string, notClickable: boolean | undefined, style: ShapeStyle): Promise<GeoJSON.Feature> {
-        const poly = await this.loadShape(name)
-        const geojson = {
-            type: 'Feature' as const,
-            properties: { name, notClickable, ...style },
-            geometry: geometry(poly),
+    async polygonGeojson(name: string, notClickable: boolean | undefined, style: ShapeSpec): Promise<GeoJSON.Feature> {
+        switch (style.type) {
+            case 'polygon':
+                const poly = await this.loadPolygon(name)
+                return {
+                    type: 'Feature' as const,
+                    properties: { name, notClickable, ...style.style },
+                    geometry: geometry(poly),
+                }
+            case 'point':
+                const { lon, lat } = await this.loadPoint(name)
+                return {
+                    type: 'Feature' as const,
+                    properties: { name, notClickable, ...style.style },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [lon, lat],
+                    },
+                }
         }
-        return geojson
     }
 
     sources_last_updated = 0
@@ -647,9 +667,9 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     async addPolygon(polygon: Shape, fit_bounds: boolean): Promise<void> {
         this.exist_this_time.push(polygon.name)
         if (this.state.polygonByName.has(polygon.name)) {
-            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.style, name: polygon.name, notClickable: polygon.notClickable }
+            this.state.polygonByName.get(polygon.name)!.properties = { ...polygon.spec.style, name: polygon.name, notClickable: polygon.notClickable }
         }
-        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.style)
+        const geojson = await this.polygonGeojson(polygon.name, polygon.notClickable, polygon.spec)
         if (fit_bounds) {
             this.zoomToItems([geojson], { animate: false })
         }
@@ -796,7 +816,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
             shapes: [
                 {
                     name: this.props.longname,
-                    style: { type: 'polygon', fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    spec: { type: 'polygon', style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color } },
                     meta: {},
                     notClickable: true,
                 },
@@ -833,7 +853,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
             const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
             result.push({
                 name: related[i].longname,
-                style: { type: 'polygon', ...style },
+                spec: { type: 'polygon', style },
                 meta: {},
             })
         }
