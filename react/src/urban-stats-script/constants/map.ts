@@ -4,10 +4,11 @@ import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
+import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
 import { basemapType, outlineType } from './basemap'
-import { Color } from './color'
+import { Color, rgbColorExpression } from './color'
 import { insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
@@ -58,11 +59,11 @@ export const constructOutline = {
         namedArgs: {
             color: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 0 } }),
+                defaultValue: expressionDefaultValue(parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0 }), '')),
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(0.5),
+                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('0.5', '')),
             },
         },
         returnType: { type: 'concrete', value: outlineType },
@@ -101,6 +102,9 @@ export const cMap: USSValue = {
                     type: 'identifier',
                     name: { node: 'geo', location: noLocation },
                 }),
+                documentation: {
+                    hide: true,
+                },
             },
             outline: {
                 type: { type: 'concrete', value: outlineType },

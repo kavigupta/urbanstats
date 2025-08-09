@@ -136,6 +136,7 @@ export function TopLevelEditor({
                         setUss(attemptParseAsTopLevel(ussToUse.expr, typeEnvironment))
                     }
                 }}
+                style={{ margin: '0.5em 0' }}
             />
             { subcomponent() }
             <DisplayErrors

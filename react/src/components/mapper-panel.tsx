@@ -12,10 +12,11 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, centroidsPath } from '../navigation/links'
+import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
@@ -31,13 +32,13 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import type { Insets } from './map'
-import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
+    shapeType: ShapeType
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
     insetsCallback: (insetsToUse: Insets) => void
@@ -48,11 +49,13 @@ interface DisplayedMapProps extends MapGenericProps {
 }
 
 interface ShapesForUniverse {
-    shapes: NormalizeProto<IFeature>[]
+    shapes: { type: 'polygon', value: NormalizeProto<IFeature>[] } | { type: 'point', value: { lon: number, lat: number }[] }
     nameToIndex: Map<string, number>
 }
 
-async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
+type ActualShapeType = { type: 'polygon', value: NormalizeProto<Feature> } | { type: 'point', value: { lon: number, lat: number } }
+
+async function loadPolygons(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
     const universeIdx = universes_ordered.indexOf(universe as (typeof universes_ordered)[number])
     const shapes = (await loadProtobuf(
         consolidatedShapeLink(geographyKind),
@@ -66,15 +69,31 @@ async function loadShapes(geographyKind: typeof valid_geographies[number], unive
             features.push(shapes.shapes[i])
         }
     }
-    return { shapes: features, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+    return { shapes: { type: 'polygon', value: features }, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+}
+
+async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string, shapeType: ShapeType): Promise<ShapesForUniverse> {
+    switch (shapeType) {
+        case 'polygon':
+            return loadPolygons(geographyKind, universe)
+        case 'point':
+            const idxLink = indexLink(universe, geographyKind)
+            const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+            const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+
+            return {
+                shapes: { type: 'point', value: centroids.map(c => ({ lon: c.lon!, lat: c.lat! })) },
+                nameToIndex: new Map(articles.longnames.map((r, i) => [r, i])),
+            }
+        default:
+            throw new Error(`Unknown shape type ${shapeType}`)
+    }
 }
 
 interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
-    private mapType: 'point' | 'choropleth' = 'point' // Default to point maps
-    private centroids: undefined | Promise<NormalizeProto<PointSeries>>
 
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
@@ -82,89 +101,45 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
 
         this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
-            return loadShapes(this.props.geographyKind, this.props.universe)
+            return loadShapes(this.props.geographyKind, this.props.universe, this.props.shapeType)
         })() }
 
         return this.shapes
     }
 
-    private getCentroids(): Promise<NormalizeProto<PointSeries>> {
-        if (!this.centroids) {
-            this.centroids = loadProtobuf(centroidsPath(this.props.universe, this.props.geographyKind), 'PointSeries') as Promise<NormalizeProto<PointSeries>>
-        }
-        return this.centroids
-    }
-
-    private createCircleFeature(centroid: { lon: number, lat: number }, zones: number[]): NormalizeProto<Feature> {
-        // Create a simple circle polygon around the centroid
-        // This is a basic approximation - in practice you might want a more sophisticated circle generation
-        const radius = 1 // Approximate radius in degrees
-        const segments = 16 // Number of segments to approximate the circle
-
-        const coords: { lon: number, lat: number }[] = []
-        for (let i = 0; i < segments; i++) {
-            const angle = (2 * Math.PI * i) / segments
-            const lat = centroid.lat + radius * Math.cos(angle)
-            const lon = centroid.lon + radius * Math.sin(angle)
-            coords.push({ lon, lat })
-        }
-        // Close the circle
-        coords.push(coords[0])
-
-        // Create a ring with the circle coordinates
-        const ring: IRing = {
-            coords,
-        }
-
-        // Create a polygon with the ring
-        const polygon: IPolygon = {
-            rings: [ring],
-        }
-
-        // Create the Feature
-        const feature = Feature.create({
-            polygon,
-            multipolygon: undefined,
-            zones,
-            centerLon: centroid.lon,
-        })
-
-        return feature as NormalizeProto<Feature>
-    }
-
-    override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
+    async loadShapes(name: string): Promise<ActualShapeType> {
         const { nameToIndex, shapes } = await this.getShapes().data
         const index = nameToIndex.get(name)
-        assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
-        const data = shapes[index]
-
-        if (this.mapType === 'point') {
-            // For point maps, load centroids from PointSeries file
-            const centroids = await this.getCentroids()
-            const centroid = centroids.coords[index]
-
-            // Create a circle Feature around the centroid
-            return this.createCircleFeature(centroid, data.zones)
-        }
-        else {
-            // For choropleth maps, return full geometry as before
-            return data as NormalizeProto<Feature>
+        assert(index !== undefined && index >= 0 && index < shapes.value.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
+        switch (shapes.type) {
+            case 'polygon':
+                return { type: 'polygon', value: shapes.value[index] as NormalizeProto<Feature> }
+            case 'point':
+                return { type: 'point', value: shapes.value[index] }
         }
     }
 
-    setMapType(type: 'point' | 'choropleth'): void {
-        this.mapType = type
+    override async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'polygon', `Shape ${name} is not a polygon`)
+        return res.value
     }
 
-    override async computePolygons(): Promise<Polygons> {
+    override async loadPoint(name: string): Promise<{ lon: number, lat: number }> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'point', `Shape ${name} is not a point`)
+        return res.value
+    }
+
+    override async computeShapesToRender(): Promise<ShapeRenderingSpec> {
         const stmts = this.props.uss
         if (stmts === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const mapResult = result.resultingValue.value.value
         // Use the outline from mapResult instead of hardcoded lineStyle
@@ -180,27 +155,44 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const colors = mapResult.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
-        const styles = colors.map(
-            // use outline color from mapResult, convert Color object to hex string
-            color => ({
-                fillColor: color,
-                fillOpacity: 1,
-                color: doRender(lineStyle.color),
-                weight: lineStyle.weight,
-            }),
+        const specs = colors.map(
+            // no outline, set color fill, alpha=1
+            (color): ShapeSpec => {
+                switch (this.props.shapeType) {
+                    case 'polygon':
+                        return {
+                            type: 'polygon',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                color: doRender(lineStyle.color),
+                                weight: lineStyle.weight,
+                            },
+                        }
+                    case 'point':
+                        return {
+                            type: 'point',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                radius: lineStyle.weight,
+                            },
+                        }
+                }
+            },
         )
         const metas = mapResult.data.map((x) => { return { statistic: x } })
         return {
-            polygons: names.map((name, i) => ({
+            shapes: names.map((name, i) => ({
                 name,
-                style: styles[i],
+                spec: specs[i],
                 meta: metas[i],
             })),
             zoomIndex: -1,
         }
     }
 
-    override progressivelyLoadPolygons(): boolean {
+    override progressivelyLoadShapes(): boolean {
         return false
     }
 }
@@ -323,6 +315,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     colors={useColors()}
                     insets={currentInsets}
                     key={JSON.stringify(currentInsets)}
+                    shapeType="polygon"
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -368,7 +361,12 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     }
 
     return (
-        <div>
+        <div style={{
+            display: 'flex',
+            gap: '0.5em',
+            margin: '0.5em 0',
+        }}
+        >
             <button onClick={() => {
                 void exportAsPng()
             }}

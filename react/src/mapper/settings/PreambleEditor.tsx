@@ -24,7 +24,7 @@ export function PreambleEditor({
     const [showPreamble, setShowPreamble] = useState(preamble.originalCode.trim() !== '')
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
+        <div style={{ margin: '0.5em 0' }}>
             <CheckboxSettingCustom
                 name="Preamble"
                 checked={showPreamble}

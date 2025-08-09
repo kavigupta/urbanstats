@@ -20,34 +20,36 @@ function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
 
-export function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Selection[] {
+export function possibilities(target: USSType[], env: Map<string, USSDocumentedType>): Selection[] {
     const results: Selection[] = []
     // Add vector option if the type is a vector
-    if (target.type === 'vector') {
+    if (target.some(t => t.type === 'vector')) {
         results.push({ type: 'vector' })
     }
     // Add properties option if the type is an object
-    if (target.type === 'object') {
+    if (target.some(t => t.type === 'object')) {
         results.push({ type: 'object' })
     }
     // Add custom option for non-opaque or custom-allowed types
-    if (target.type !== 'opaque' || target.allowCustomExpression !== false) {
+    if (target.some(t => t.type !== 'opaque' || t.allowCustomExpression !== false)) {
         results.push({ type: 'custom' })
     }
     // Add constant option for numbers and strings
-    if (shouldShowConstant(target)) {
+    if (target.some(shouldShowConstant)) {
         results.push({ type: 'constant' })
     }
     else {
+        const renderedTypes = target.map(renderType)
         // Only add variables and functions if constants are not shown
         const variables: Selection[] = []
         const functions: Selection[] = []
         for (const [name, type] of env) {
             const t: USSType = type.type
-            if (renderType(t) === renderType(target)) {
+            // if (renderType(t) === renderType(target)) {
+            if (renderedTypes.includes(renderType(t))) {
                 variables.push({ type: 'variable', name })
             }
-            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderType(t.returnType.value) === renderType(target)) {
+            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderedTypes.includes(renderType(t.returnType.value))) {
                 functions.push({ type: 'function', name })
             }
         }
@@ -103,7 +105,7 @@ export function Selector(props: {
         // Combine possibilities from all types
         const allPossibilities = new Set<Selection>()
         props.type.forEach((type) => {
-            const typePossibilities = possibilities(type, props.typeEnvironment)
+            const typePossibilities = possibilities([type], props.typeEnvironment)
             typePossibilities.forEach(possibility => allPossibilities.add(possibility))
         })
 
@@ -235,7 +237,7 @@ export function Selector(props: {
                     style={{
                         width: '100%',
                         padding: `${labelPadding} 8px`,
-                        border: '1px solid #ccc',
+                        border: `1px solid ${colors.ordinalTextColor}`,
                         borderRadius: '4px',
                         fontSize: '14px',
                     }}
@@ -260,7 +262,9 @@ export function Selector(props: {
                         {sortedOptions.map((option, index) => (
                             <div
                                 key={index}
-                                onClick={() => { handleOptionSelect(option) }}
+                                onMouseDown={() => {
+                                    handleOptionSelect(option)
+                                }}
                                 onMouseUp={() => {
                                     handleOptionSelect(option)
                                     inputRef.current?.blur()
@@ -295,7 +299,7 @@ export function Selector(props: {
                         } satisfies UrbanStatsASTExpression
                         props.setUss(newUss)
                     }}
-                    style={{ width: '200px' }}
+                    style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
                     placeholder={isNumber ? 'Enter number' : 'Enter string'}
                 />
             )}
@@ -303,7 +307,7 @@ export function Selector(props: {
                 <input
                     type="color"
                     value={doRender(colorValue.color)}
-                    style={{ width: '200px' }}
+                    style={{ width: '200px', height: '30.5px' }}
                     onChange={(e) => {
                         const newColor = hexToColor(e.target.value)
                         const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor) : rgbColorExpression(newColor)
