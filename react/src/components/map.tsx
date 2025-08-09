@@ -626,7 +626,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         const labelId = this.firstLabelId(map)
 
-        const setUpPolygonSource = (polys: GeoJSON.Feature[]): void => {
+        const setUpPolygonSource = (polys: GeoJSON.Feature[]): number => {
             const polygonData = {
                 type: 'FeatureCollection',
                 features: filterOverlaps(polys),
@@ -658,9 +658,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 polygonSource = map.getSource('polygon')!
             }
             polygonSource.setData(polygonData)
+            return polygonData.features.length
         }
 
-        const setUpPointSource = (points: GeoJSON.Feature[]): void => {
+        const setUpPointSource = (points: GeoJSON.Feature[]): number => {
             const pointData = {
                 type: 'FeatureCollection',
                 features: filterOverlaps(points),
@@ -683,10 +684,13 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                 pointSource = map.getSource('point')!
             }
             pointSource.setData(pointData)
+            return pointData.features.length
         }
 
-        setUpPolygonSource(shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature))
-        setUpPointSource(shapes.filter(([type]) => type === 'point').map(([, feature]) => feature))
+        let count = 0
+
+        count += setUpPolygonSource(shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature))
+        count += setUpPointSource(shapes.filter(([type]) => type === 'point').map(([, feature]) => feature))
 
         for (const layer of this.subnationalOutlines()) {
             if (map.getLayer(layer.id) !== undefined) {
@@ -694,7 +698,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
             map.addLayer(layer, labelId)
         }
-        return shapes.length > 0 || inset.mainMap
+        return count > 0 || inset.mainMap
     }
 
     /*
