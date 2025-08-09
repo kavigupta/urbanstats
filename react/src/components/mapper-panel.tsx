@@ -124,7 +124,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                 fillColor: color,
                 fillOpacity: 1,
                 color: doRender(lineStyle.color),
-                opacity: 1,
                 weight: lineStyle.weight,
             }),
         )
