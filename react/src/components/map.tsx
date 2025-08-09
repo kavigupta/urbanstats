@@ -54,7 +54,7 @@ export interface MapState {
     shapeByName: Map<string, [ShapeType, GeoJSON.Feature]>
 }
 
-type ShapeSpec = {
+export type ShapeSpec = {
     type: 'polygon'
     style: {
         fillColor: string
