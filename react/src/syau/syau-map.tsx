@@ -27,7 +27,8 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
 
     override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
-            polygons: this.polysOnScreen.map(({ name, isGuessed }) => ({
+            shapes: this.polysOnScreen.map(({ name, isGuessed }) => ({
+                type: 'polygon',
                 name,
                 style: {
                     fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,

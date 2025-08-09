@@ -37,7 +37,10 @@ export interface MapGenericProps {
     insets?: Insets
 }
 
+export type ShapeType = 'polygon' | 'point'
+
 export interface Shape {
+    type: ShapeType
     name: string
     style: ShapeStyle
     meta: Record<string, unknown>
@@ -786,8 +789,9 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         const relatedPolygons = this.relatedPolygons(relateds)
 
         return Promise.resolve({
-            polygons: [
+            shapes: [
                 {
+                    type: 'polygon',
                     name: this.props.longname,
                     style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
@@ -825,6 +829,7 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
             const color = randomColor(related[i].longname)
             const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
             result.push({
+                type: 'polygon',
                 name: related[i].longname,
                 style,
                 meta: {},

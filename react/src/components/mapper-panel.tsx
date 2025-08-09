@@ -133,6 +133,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         // TODO: this is messy, but I don't want to rewrite the above
         return {
             shapes: names.map((name, i) => ({
+                type: 'polygon',
                 name,
                 style: styles[i],
                 meta: metas[i],

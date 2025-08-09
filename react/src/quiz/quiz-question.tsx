@@ -20,8 +20,9 @@ interface MapProps extends MapGenericProps {
 class Map extends MapGeneric<MapProps> {
     override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
-            polygons: [
+            shapes: [
                 {
+                    type: 'polygon',
                     name: this.props.longname,
                     style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
