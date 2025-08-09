@@ -724,7 +724,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     zoomToAll(options: maplibregl.FitBoundsOptions = {}): void {
-        this.zoomToItems(Array.from(this.state.shapeByName.values()).map(([_, feature]) => feature), options)
+        this.zoomToItems(Array.from(this.state.shapeByName.values()).map(([, feature]) => feature), options)
     }
 
     zoomTo(name: string): void {
