@@ -27,7 +27,7 @@ import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
-import { ConsolidatedShapes, Feature, IFeature, PointSeries, IPolygon, IRing } from '../utils/protos'
+import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
@@ -38,7 +38,6 @@ import { Statistic } from './table'
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
-    shapeType: ShapeType
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
     insetsCallback: (insetsToUse: Insets) => void
@@ -90,19 +89,24 @@ async function loadShapes(geographyKind: typeof valid_geographies[number], unive
     }
 }
 
-interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
+interface Shapes { geographyKind: string, universe: string, shapeType: string, data: Promise<ShapesForUniverse> }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
+    private shapeType: undefined | ShapeType
 
     private getShapes(): Shapes {
-        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
+        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType == this.shapeType) {
             return this.shapes
         }
 
-        this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
-            return loadShapes(this.props.geographyKind, this.props.universe, this.props.shapeType)
-        })() }
+        const st = this.shapeType
+        assert(st !== undefined, 'Shape type must be set before loading shapes')
+
+        this.shapes = {
+            geographyKind: this.props.geographyKind, universe: this.props.universe, shapeType: st, data: (async () => {
+                return loadShapes(this.props.geographyKind, this.props.universe, st)
+            })() }
 
         return this.shapes
     }
@@ -141,7 +145,10 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (result.resultingValue === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
-        const mapResult = result.resultingValue.value.value
+        const mapResultMain = result.resultingValue.value
+        const mapResult = mapResultMain.value
+        const st: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
+        this.shapeType = st
         // Use the outline from mapResult instead of hardcoded lineStyle
         const lineStyle = mapResult.outline
 
@@ -158,7 +165,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const specs = colors.map(
             // no outline, set color fill, alpha=1
             (color): ShapeSpec => {
-                switch (this.props.shapeType) {
+                switch (st) {
                     case 'polygon':
                         return {
                             type: 'polygon',
@@ -315,7 +322,6 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     colors={useColors()}
                     insets={currentInsets}
                     key={JSON.stringify(currentInsets)}
-                    shapeType="polygon"
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
