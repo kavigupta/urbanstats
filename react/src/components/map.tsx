@@ -613,6 +613,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
     setUpMap(map: maplibregl.Map, shapes: [ShapeType, GeoJSON.Feature][], inset: Inset): boolean {
         function filterOverlaps(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
+            const bbox = inset.coordBox
             if (!inset.mainMap && bbox !== undefined) {
                 features = features.filter((poly) => {
                     const bounds = boundingBox(poly.geometry)
@@ -623,48 +624,77 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
             }
             return features
         }
-
-        const polys = shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature)
-        const bbox = inset.coordBox
-        const polygonData = {
-            type: 'FeatureCollection',
-            features: filterOverlaps(polys),
-        } satisfies GeoJSON.FeatureCollection
-        let polygonSource: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
         const labelId = this.firstLabelId(map)
-        if (polygonSource === undefined) {
-            map.addSource('polygon', {
-                type: 'geojson',
-                data: polygonData,
-            })
-            map.addLayer({
-                id: 'polygon',
-                type: 'fill',
-                source: 'polygon',
-                paint: {
-                    'fill-color': ['get', 'fillColor'],
-                    'fill-opacity': ['get', 'fillOpacity'],
-                },
-            }, labelId)
-            map.addLayer({
-                id: 'polygon-outline',
-                type: 'line',
-                source: 'polygon',
-                paint: {
-                    'line-color': ['get', 'color'],
-                    'line-width': ['get', 'weight'],
-                },
-            }, labelId)
-            polygonSource = map.getSource('polygon')!
+
+        const setUpPolygonSource = (polys: GeoJSON.Feature[]): void => {
+            const polygonData = {
+                type: 'FeatureCollection',
+                features: filterOverlaps(polys),
+            } satisfies GeoJSON.FeatureCollection
+            let polygonSource: maplibregl.GeoJSONSource | undefined = map.getSource('polygon')
+            if (polygonSource === undefined) {
+                map.addSource('polygon', {
+                    type: 'geojson',
+                    data: polygonData,
+                })
+                map.addLayer({
+                    id: 'polygon',
+                    type: 'fill',
+                    source: 'polygon',
+                    paint: {
+                        'fill-color': ['get', 'fillColor'],
+                        'fill-opacity': ['get', 'fillOpacity'],
+                    },
+                }, labelId)
+                map.addLayer({
+                    id: 'polygon-outline',
+                    type: 'line',
+                    source: 'polygon',
+                    paint: {
+                        'line-color': ['get', 'color'],
+                        'line-width': ['get', 'weight'],
+                    },
+                }, labelId)
+                polygonSource = map.getSource('polygon')!
+            }
+            polygonSource.setData(polygonData)
         }
+
+        const setUpPointSource = (points: GeoJSON.Feature[]): void => {
+            const pointData = {
+                type: 'FeatureCollection',
+                features: filterOverlaps(points),
+            } satisfies GeoJSON.FeatureCollection
+            let pointSource: maplibregl.GeoJSONSource | undefined = map.getSource('point')
+            if (pointSource === undefined) {
+                map.addSource('point', {
+                    type: 'geojson',
+                    data: pointData,
+                })
+                map.addLayer({
+                    id: 'point',
+                    type: 'circle',
+                    source: 'point',
+                    paint: {
+                        'circle-color': ['get', 'color'],
+                        'circle-radius': ['get', 'radius'],
+                    },
+                }, labelId)
+                pointSource = map.getSource('point')!
+            }
+            pointSource.setData(pointData)
+        }
+
+        setUpPolygonSource(shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature))
+        setUpPointSource(shapes.filter(([type]) => type === 'point').map(([, feature]) => feature))
+
         for (const layer of this.subnationalOutlines()) {
             if (map.getLayer(layer.id) !== undefined) {
                 map.removeLayer(layer.id)
             }
             map.addLayer(layer, labelId)
         }
-        polygonSource.setData(polygonData)
-        return polys.length > 0 || inset.mainMap
+        return shapes.length > 0 || inset.mainMap
     }
 
     /*
