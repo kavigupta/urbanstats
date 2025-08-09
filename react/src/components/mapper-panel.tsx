@@ -10,6 +10,7 @@ import valid_geographies from '../data/mapper/used_geographies'
 import statNames from '../data/statistic_name_list'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
+import { boundingBox, geometry } from '../map-partition'
 import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
@@ -88,6 +89,13 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
         const data = shapes[index]
         return data as NormalizeProto<Feature>
+    }
+
+    override async loadPoint(name: string): Promise<{ lon: number, lat: number }> {
+        // This is just for debugging, we should use actual centroids
+        const poly = await this.loadPolygon(name)
+        const box = boundingBox(geometry(poly))
+        return { lon: (box.getWest() + box.getEast()) / 2, lat: (box.getNorth() + box.getSouth()) / 2 }
     }
 
     override async computeShapesToRender(): Promise<ShapeRenderingSpec> {
