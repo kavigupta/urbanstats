@@ -12,10 +12,11 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink } from '../navigation/links'
+import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
@@ -31,13 +32,13 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import type { Insets } from './map'
-import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
+    shapeType: ShapeType
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
     insetsCallback: (insetsToUse: Insets) => void
@@ -48,11 +49,13 @@ interface DisplayedMapProps extends MapGenericProps {
 }
 
 interface ShapesForUniverse {
-    shapes: NormalizeProto<IFeature>[]
+    shapes: { type: 'polygon', value: NormalizeProto<IFeature>[] } | { type: 'point', value: { lon: number, lat: number }[] }
     nameToIndex: Map<string, number>
 }
 
-async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
+type ActualShapeType = { type: 'polygon', value: NormalizeProto<Feature> } | { type: 'point', value: { lon: number, lat: number } }
+
+async function loadPolygons(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
     const universeIdx = universes_ordered.indexOf(universe as (typeof universes_ordered)[number])
     const shapes = (await loadProtobuf(
         consolidatedShapeLink(geographyKind),
@@ -66,7 +69,25 @@ async function loadShapes(geographyKind: typeof valid_geographies[number], unive
             features.push(shapes.shapes[i])
         }
     }
-    return { shapes: features, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+    return { shapes: { type: 'polygon', value: features }, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+}
+
+async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string, shapeType: ShapeType): Promise<ShapesForUniverse> {
+    switch (shapeType) {
+        case 'polygon':
+            return loadPolygons(geographyKind, universe)
+        case 'point':
+            const idxLink = indexLink(universe, geographyKind)
+            const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+            const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+
+            return {
+                shapes: { type: 'point', value: centroids.map(c => ({ lon: c.lon!, lat: c.lat! })) },
+                nameToIndex: new Map(articles.longnames.map((r, i) => [r, i])),
+            }
+        default:
+            throw new Error(`Unknown shape type ${shapeType}`)
+    }
 }
 
 interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
@@ -80,29 +101,45 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
 
         this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
-            return loadShapes(this.props.geographyKind, this.props.universe)
+            return loadShapes(this.props.geographyKind, this.props.universe, this.props.shapeType)
         })() }
 
         return this.shapes
     }
 
-    override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
+    async loadShapes(name: string): Promise<ActualShapeType> {
         const { nameToIndex, shapes } = await this.getShapes().data
         const index = nameToIndex.get(name)
-        assert(index !== undefined && index >= 0 && index < shapes.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
-        const data = shapes[index]
-        return data as NormalizeProto<Feature>
+        assert(index !== undefined && index >= 0 && index < shapes.value.length, `Shape ${name} not found in ${this.getShapes().geographyKind} for ${this.getShapes().universe}`)
+        switch (shapes.type) {
+            case 'polygon':
+                return { type: 'polygon', value: shapes.value[index] as NormalizeProto<Feature> }
+            case 'point':
+                return { type: 'point', value: shapes.value[index] }
+        }
     }
 
-    override async computePolygons(): Promise<Polygons> {
+    override async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'polygon', `Shape ${name} is not a polygon`)
+        return res.value
+    }
+
+    override async loadPoint(name: string): Promise<{ lon: number, lat: number }> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'point', `Shape ${name} is not a point`)
+        return res.value
+    }
+
+    override async computeShapesToRender(): Promise<ShapeRenderingSpec> {
         const stmts = this.props.uss
         if (stmts === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const cMap = result.resultingValue.value.value
         // Use the outline from cMap instead of hardcoded lineStyle
@@ -118,27 +155,44 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const colors = cMap.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
-        const styles = colors.map(
-            // use outline color from cMap, convert Color object to hex string
-            color => ({
-                fillColor: color,
-                fillOpacity: 1,
-                color: doRender(lineStyle.color),
-                weight: lineStyle.weight,
-            }),
+        const specs = colors.map(
+            // no outline, set color fill, alpha=1
+            (color): ShapeSpec => {
+                switch (this.props.shapeType) {
+                    case 'polygon':
+                        return {
+                            type: 'polygon',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                color: doRender(lineStyle.color),
+                                weight: lineStyle.weight,
+                            },
+                        }
+                    case 'point':
+                        return {
+                            type: 'point',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                radius: lineStyle.weight,
+                            },
+                        }
+                }
+            },
         )
         const metas = cMap.data.map((x) => { return { statistic: x } })
         return {
-            polygons: names.map((name, i) => ({
+            shapes: names.map((name, i) => ({
                 name,
-                style: styles[i],
+                spec: specs[i],
                 meta: metas[i],
             })),
             zoomIndex: -1,
         }
     }
 
-    override progressivelyLoadPolygons(): boolean {
+    override progressivelyLoadShapes(): boolean {
         return false
     }
 }
@@ -261,6 +315,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     colors={useColors()}
                     insets={currentInsets}
                     key={JSON.stringify(currentInsets)}
+                    shapeType="polygon"
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
