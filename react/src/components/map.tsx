@@ -549,10 +549,10 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return true
     }
 
-    async addShapes(polygons: Shape[], zoom_to: number): Promise<void> {
+    async addShapes(shapes: Shape[], zoom_to: number): Promise<void> {
         const time = Date.now()
         debugPerformance('Adding polygons...')
-        await Promise.all(polygons.map(async (polygon, i) => {
+        await Promise.all(shapes.map(async (polygon, i) => {
             await this.addPolygon(polygon, i === zoom_to)
             if (this.progressivelyLoadPolygons()) {
                 await this.updateSources()
