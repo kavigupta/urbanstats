@@ -6,6 +6,7 @@ import {
     urbanstatsFixture,
     doSearch,
     createComparison,
+    clickUniverseFlag,
 } from './test_utils'
 
 urbanstatsFixture('article universe selector test', `/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -14,11 +15,7 @@ test('article-universe-selector-test-california', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
     await screencap(t)
-    await t
-        .click(
-            Selector('img')
-                .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'California, USA'))
+    await clickUniverseFlag(t, 'California, USA')
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 })
@@ -29,11 +26,7 @@ test('article-universe-selector-test-india', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
     await screencap(t)
-    await t
-        .click(
-            Selector('img')
-                .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'India'))
+    await clickUniverseFlag(t, 'India')
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India&universe=India`)
     await screencap(t)
@@ -110,11 +103,7 @@ test('article-universe-state-world', async (t) => {
     // go to the world
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-    await t
-        .click(
-            Selector('img')
-                .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'world'))
+    await clickUniverseFlag(t, 'world')
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=California%2C+USA&universe=world`)
     // screenshot
@@ -154,10 +143,7 @@ test('values-same-by-universe', async (t) => {
     // set universe to world
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-        .click(
-            Selector('img')
-                .withAttribute('class', 'universe-selector-option')
-                .withAttribute('alt', 'world'))
+    await clickUniverseFlag(t, 'world')
     const withWorld = await pullRows()
     for (const row of original) {
         row[row.length - 1] = row[row.length - 1].replace(/State/g, 'Subnational Region')
