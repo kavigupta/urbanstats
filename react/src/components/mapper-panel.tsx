@@ -14,10 +14,11 @@ import { boundingBox, geometry } from '../map-partition'
 import { Keypoints, Ramp, parseRamp } from '../mapper/ramps'
 import { Basemap, ColorStat, ColorStatDescriptor, FilterSettings, LineStyle, MapSettings, MapperSettings, parseColorStat } from '../mapper/settings'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, consolidatedStatsLink } from '../navigation/links'
+import { consolidatedShapeLink, consolidatedStatsLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -74,14 +75,14 @@ async function loadShapes(geographyKind: typeof valid_geographies[number], unive
         case 'polygon':
             return loadPolygons(geographyKind, universe)
         case 'point':
-            return loadPolygons(geographyKind, universe).then((shapes) => {
-                // For points, we just return the centroids of the polygons
-                const points = shapes.shapes.value.map((feature) => {
-                    const box = boundingBox(geometry(feature as NormalizeProto<Feature>))
-                    return { lon: (box.getWest() + box.getEast()) / 2, lat: (box.getNorth() + box.getSouth()) / 2 }
-                })
-                return { shapes: { type: 'point', value: points }, nameToIndex: shapes.nameToIndex }
-            })
+            const idxLink = indexLink(universe, geographyKind)
+            const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+            const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+
+            return {
+                shapes: { type: 'point', value: centroids.map(c => ({ lon: c.lon!, lat: c.lat! })) },
+                nameToIndex: new Map(articles.longnames.map((r, i) => [r, i])),
+            }
         default:
             throw new Error(`Unknown shape type ${shapeType}`)
     }
