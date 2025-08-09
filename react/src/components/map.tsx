@@ -65,7 +65,8 @@ type ShapeSpec = {
 } | {
     type: 'point'
     style: {
-        color: string
+        fillColor: string
+        fillOpacity: number
         radius: number
     }
 }
@@ -677,7 +678,8 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                     type: 'circle',
                     source: 'point',
                     paint: {
-                        'circle-color': ['get', 'color'],
+                        'circle-color': ['get', 'fillColor'],
+                        'circle-opacity': ['get', 'fillOpacity'],
                         'circle-radius': ['get', 'radius'],
                     },
                 }, labelId)
