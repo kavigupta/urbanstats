@@ -22,9 +22,8 @@ class Map extends MapGeneric<MapProps> {
         return Promise.resolve({
             shapes: [
                 {
-                    type: 'polygon',
                     name: this.props.longname,
-                    style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    style: { type: 'polygon', fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
                     notClickable: true,
                 },

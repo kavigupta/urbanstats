@@ -37,10 +37,7 @@ export interface MapGenericProps {
     insets?: Insets
 }
 
-export type ShapeType = 'polygon' | 'point'
-
 export interface Shape {
-    type: ShapeType
     name: string
     style: ShapeStyle
     meta: Record<string, unknown>
@@ -57,12 +54,19 @@ export interface MapState {
     polygonByName: Map<string, GeoJSON.Feature>
 }
 
-interface ShapeStyle {
+type ShapeStyle = {
+    type: 'polygon'
     fillColor: string
     fillOpacity: number
     color: string
     weight?: number
+} | {
+    type: 'point'
+    color: string
+    radius: number
 }
+
+export type ShapeType = ShapeStyle['type']
 
 const activeMaps: MapGeneric<MapGenericProps>[] = []
 
@@ -791,9 +795,8 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         return Promise.resolve({
             shapes: [
                 {
-                    type: 'polygon',
                     name: this.props.longname,
-                    style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
+                    style: { type: 'polygon', fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
                     meta: {},
                     notClickable: true,
                 },
@@ -829,9 +832,8 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
             const color = randomColor(related[i].longname)
             const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
             result.push({
-                type: 'polygon',
                 name: related[i].longname,
-                style,
+                style: { type: 'polygon', ...style },
                 meta: {},
             })
         }
