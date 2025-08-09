@@ -141,7 +141,7 @@ export async function loadSYAUData(
     }
 }
 
-async function loadCentroids(universe: string, typ: string, namesInOrder: string[]): Promise<ICoordinate[]> {
+export async function loadCentroids(universe: string, typ: string, namesInOrder: string[]): Promise<ICoordinate[]> {
     // put the results in the order of namesInOrder (currently they're in order of the sorted version)
     const result = (await loadProtobuf(centroidsPath(universe, typ), 'PointSeries')).coords
     const sortedNames = namesInOrder.slice().sort()
