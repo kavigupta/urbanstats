@@ -5,7 +5,7 @@ server {
 
     location / {
         set $branch "";
-        if ($host ~* "^([^.]+)\.staging\.urbanstats\.org$") {
+        if ($host ~* "^([^.]+)\.staging\.urbanstats\.lukebrody\.com$") {
             set $branch $1;
         }
         if ($branch = "") {
