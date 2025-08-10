@@ -16,7 +16,7 @@ test('sign in to google, clear local storage, sign in again, syncs', async (t) =
     await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
 
     await t.click(signOutLink)
-    await safeClearLocalStorage()
+    await safeClearLocalStorage(t)
     await safeReload(t)
     await t.expect(signInLink.exists).ok()
     await urbanStatsGoogleSignIn(t)
@@ -55,7 +55,7 @@ test('sign in to google, reload page, remains signed in', async (t) => {
 
 test('sign in to google, clear local storage, reload, should require sign in', async (t) => {
     await urbanStatsGoogleSignIn(t)
-    await safeClearLocalStorage()
+    await safeClearLocalStorage(t)
     await safeReload(t)
     await t.expect(signInLink.exists).ok()
     await t.expect(signOutLink.exists).notOk()
