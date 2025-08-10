@@ -6,7 +6,7 @@ import requests
 
 
 def ci_proxy_origin(branch):
-    return f"http://{branch}.staging.urbanstats.org"
+    return f"http://{branch}.staging.urbanstats.lukebrody.com"
 
 
 # Resolves an urbanstats branch name into what branch CI should run against in densitydb
