@@ -110,6 +110,7 @@ export function GenericSearchBox<T>(
                 value={query}
                 onFocus={props.onFocus}
                 onBlur={props.onBlur}
+                spellCheck={false}
             />
 
             <div
