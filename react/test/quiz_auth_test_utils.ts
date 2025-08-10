@@ -55,7 +55,7 @@ async function fillTOTP(t: TestController, success: () => Promise<boolean>): Pro
 }
 
 async function googleSignIn(t: TestController): Promise<void> {
-    await flaky(async () => {
+    await flaky(t, async () => {
         await t.navigateTo('https://accounts.google.com')
     })
     await t.typeText('input[type=email]', email)
@@ -67,7 +67,7 @@ async function googleSignIn(t: TestController): Promise<void> {
 }
 
 async function googleSignOut(t: TestController): Promise<void> {
-    await flaky(async () => {
+    await flaky(t, async () => {
         await t.navigateTo('https://accounts.google.com/Logout')
     })
     await t.expect(Selector('h1').withExactText('Choose an account').exists).ok()
