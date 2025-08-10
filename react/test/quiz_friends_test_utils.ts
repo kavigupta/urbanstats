@@ -17,7 +17,7 @@ async function switchAwayFromUser(t: TestController, state: JuxtastatUserState):
         // await t.expect(localStorage.hasOwnProperty('persistent_id')).eql(true)
         state.allUserState.set(state.currentUser, localStorage as Storage)
     }
-    await safeClearLocalStorage()
+    await safeClearLocalStorage(t)
     state.currentUser = undefined
 }
 

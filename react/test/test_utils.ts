@@ -197,8 +197,8 @@ export async function downloadOrCheckString(t: TestController, string: string, n
     }
 }
 
-export async function safeClearLocalStorage(): Promise<void> {
-    await flaky(() =>
+export async function safeClearLocalStorage(t: TestController): Promise<void> {
+    await flaky(t, () =>
         ClientFunction(() => {
             (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
         })(),
@@ -267,7 +267,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             await printConsoleMessages(t)
             await printFailedNetworkRequests(t)
             screenshotNumber = 0
-            await safeClearLocalStorage()
+            await safeClearLocalStorage(t)
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {
                 await beforeEach(t)
@@ -275,13 +275,17 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
         }).skipJsErrors({ pageUrl: /google\.com/ })
 }
 
-export async function flaky<T>(doThing: () => Promise<T>): Promise<T> {
+export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
     while (true) {
         try {
             return await doThing()
         }
         catch (error) {
             console.error(chalkTemplate`{red flaky failed with error}`, error)
+            await t.takeScreenshot({
+                path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
+                fullPage: true,
+            })
         }
     }
 }
@@ -379,7 +383,7 @@ export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, session
 }
 
 export async function clickUniverseFlag(t: TestController, alt: string): Promise<void> {
-    await flaky(async () => { // Universe flag sometimes isn't loaded
+    await flaky(t, async () => { // Universe flag sometimes isn't loaded
         await t.click(
             Selector('img')
                 .withAttribute('class', 'universe-selector-option')
