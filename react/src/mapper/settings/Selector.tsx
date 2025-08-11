@@ -125,6 +125,9 @@ export function Selector(props: {
         const sortedPairs = optionSelectionPairs.sort((a, b) => {
             const aScore = bitap(a.option.toLowerCase(), needle, maxErrors, bitapBuffers)
             const bScore = bitap(b.option.toLowerCase(), needle, maxErrors, bitapBuffers)
+            if (aScore === bScore) {
+                return a.option.length - b.option.length
+            }
             return aScore - bScore
         })
 
