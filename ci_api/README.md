@@ -1,21 +1,40 @@
-# TOTP Server
+# TOTP Timestamp Server
 
-This directory contains a simple HTTP server that provides TOTP (Time-based One-Time Password) codes with iteration tracking to prevent reuse.
+This directory contains a FastAPI HTTP server that provides optimal timing for TOTP (Time-based One-Time Password) usage to prevent rate limiting.
 
-This is used in Urbanstats tests when signing in to a Google account.
+This is used in Urbanstats tests when signing in to Google accounts that require 2FA.
 
-If we don't track TOTP usage, Google will rate limit us when entering already used TOTP codes.
+The server tracks TOTP iterations to ensure that each request returns a timestamp for a fresh TOTP window, preventing Google from rate limiting due to reused codes.
 
-## API Response
+## How it works
 
-The server returns JSON with the following structure:
+- TOTP codes are generated in 30-second intervals
+- The server maintains an internal counter to track the current iteration
+- Each request advances to the next available TOTP interval
+- Returns a timestamp indicating when the next fresh TOTP code should be used
+
+## API
+
+### GET /totp
+
+Returns JSON with the following structure:
 
 ```json
 {
-  "code": "123456",
   "useAfter": 1640995230000
 }
 ```
 
-- `code` - 6-digit TOTP code
-- `useAfter` - Unix timestamp in milliseconds indicating when the code should be used
+- `useAfter` - Unix timestamp in milliseconds indicating when a fresh TOTP code should be generated and used
+
+## Running the Server
+
+```bash
+./run.sh
+```
+
+This will:
+
+1. Create a virtual environment
+2. Install dependencies from requirements.txt
+3. Start the server on port 8080 using uvicorn
