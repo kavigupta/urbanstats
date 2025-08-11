@@ -41,6 +41,14 @@ async function fillTOTP(t: TestController): Promise<void> {
     await t.expect(totpInput.exists).ok()
     await t.typeText(totpInput, await popTOTP(t), { replace: true })
     await t.click(nextButton)
+    try {
+        await t.expect(totpInput.exists).notOk()
+        console.warn('TOTP Success')
+    }
+    catch (error) {
+        console.warn(`TOTP Failure!`)
+        throw error
+    }
 }
 
 let googleCookies: CookieOptions[] | undefined
