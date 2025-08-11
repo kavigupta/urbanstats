@@ -1,5 +1,4 @@
 class TOTPCounter:
-
     current_iteration: int
 
     def __init__(self, totp_interval: int = 30):
@@ -7,7 +6,6 @@ class TOTPCounter:
         self.totp_interval = totp_interval
 
     def next_timestamp(self, after_timestamp: float) -> float:
-
         # Calculate the current iteration based on TOTP interval
         iteration_now = round(after_timestamp // self.totp_interval)
 

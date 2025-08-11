@@ -2,6 +2,7 @@ import datetime
 
 from fastapi import FastAPI
 from pydantic import BaseModel
+
 from .totp_counter import TOTPCounter
 
 app = FastAPI()
