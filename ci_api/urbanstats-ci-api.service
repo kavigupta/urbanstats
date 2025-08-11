@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=root
-ExecStart=python3 -u /root/urbanstats/ci_api/run.sh
+ExecStart=/root/urbanstats/ci_api/run.sh
 
 [Install]
 WantedBy=multi-user.target
