@@ -25,18 +25,14 @@ const nextButton = Selector('button').withExactText('Next')
 const emailInput = Selector('input[type=email]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
 
-let expires: number | undefined
-
 async function popTOTP(t: TestController): Promise<string> {
-    if (expires !== undefined) {
-        const wait = expires - Date.now()
-        if (wait > 0) {
-            console.warn(`TOTP wait ${wait}ms`)
-            await t.wait(wait)
-        }
+    const { useAfter } = z.object({ useAfter: z.number() }).parse(await (await fetch('http://totp.staging.urbanstats.org:8080/totp')).json())
+    const wait = useAfter - Date.now()
+    if (wait > 0) {
+        console.warn(`TOTP waiting ${wait} ms...`)
+        await t.wait(wait)
     }
-    let otp
-    ({ otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP)))
+    const { otp } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
     return otp
 }
 
