@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
-import { booleanArgument } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -79,14 +79,19 @@ for (const test of tests) {
         })
         : false
 
-    let killTimer: NodeJS.Timeout | undefined
+    await setTOTPWait(test, 0)
+
+    let killInterval: NodeJS.Timeout | undefined
     if (options.timeLimitSeconds !== undefined) {
-        const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
-        killTimer = setTimeout(async () => {
-            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
-            await doComparisons()
-            process.exit(1)
-        }, timeLimit * 1000)
+        const timeLimit = Date.now() + (options.timeLimitSeconds * (testFileDidChange ? 1 : 2) * 1000)
+        killInterval = setInterval(async () => {
+            if (Date.now() > timeLimit + await getTOTPWait(test)) {
+                console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
+                clearInterval(killInterval)
+                await doComparisons()
+                process.exit(1)
+            }
+        }, 1000)
     }
 
     console.warn(chalkTemplate`{cyan ${testFile} running...}`)
@@ -104,7 +109,7 @@ for (const test of tests) {
 
     console.warn(chalkTemplate`{cyan ${testFile} done}`)
 
-    clearTimeout(killTimer)
+    clearInterval(killInterval)
 
     await fs.mkdir('durations', { recursive: true })
     await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
