@@ -75,8 +75,8 @@ jobs:
         # this is needed because isort and black disagree on the formatting of some files, so we run both and check
         # if there's a difference
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
-      - name: typecheck persistent
-        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
+      - name: typecheck
+        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data ci_api/src
 
   test-python:
     runs-on: ubuntu-22.04
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
       - name: Test python code
-        run: python -m pytest tests
+        run: python -m pytest tests ci_api/test
 
   test-urbanstats-persistent:
     runs-on: ubuntu-22.04
@@ -178,7 +178,7 @@ jobs:
             --test=test/${{ matrix.test-file }}.test.ts \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=500 \
+            --time-limit-seconds=300 \
             --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
