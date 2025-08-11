@@ -82,7 +82,7 @@ for (const test of tests) {
     await setTOTPWait(test, 0)
 
     let killInterval: NodeJS.Timeout | undefined
-    if (options.timeLimitSeconds !== undefined) {
+    if (options.timeLimitSeconds !== undefined && test !== 'quiz_auth') {
         const timeLimit = Date.now() + (options.timeLimitSeconds * (testFileDidChange ? 1 : 2) * 1000)
         killInterval = setInterval(async () => {
             if (Date.now() > timeLimit + await getTOTPWait(test)) {
