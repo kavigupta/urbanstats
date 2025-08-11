@@ -11,17 +11,6 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_COLOR: 1
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - uses: ./.github/actions/node_modules
-      - run: npm run lint:ci
-        working-directory: react
-
   build-and-push-common-image:
     runs-on: ubuntu-22.04
     outputs:
@@ -54,56 +43,36 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         id: image
 
-  lint-python:
+  lint:
     runs-on: ubuntu-22.04
-
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
       - name: allow all directories
         # This is needed because git complains about git repositories outside the user directory
         run: git config --global --add safe.directory '*'
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
+        if: "!cancelled()" # Runs even if other steps fail
       - name: format
         run: ./scripts/format-python.sh
+        if: "!cancelled()"
       - name: check if there are any changes
         # if there are, print the diff and exit with an error
         # this is needed because isort and black disagree on the formatting of some files, so we run both and check
         # if there's a difference
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+        if: "!cancelled()"
       - name: typecheck
         run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data ci_api/src
-
-  test-python:
-    runs-on: ubuntu-22.04
-
-    needs: build-and-push-common-image
-    container:
-      image: ${{ needs.build-and-push-common-image.outputs.image }}
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/python_environment
-      - name: Test python code
-        run: python -m pytest tests ci_api/test
-
-  test-urbanstats-persistent:
-    runs-on: ubuntu-22.04
-
-    needs: build-and-push-common-image
-    container:
-      image: ${{ needs.build-and-push-common-image.outputs.image }}
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/python_environment
-      - name: Test python code
-        working-directory: urbanstats-persistent-data
-        run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
+        if: "!cancelled()"
+      - run: npm run lint:ci
+        working-directory: react
+        if: "!cancelled()"
 
   build-frontend:
     runs-on: ubuntu-22.04
@@ -247,8 +216,9 @@ jobs:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
-      - name: Run tests
+      - name: Run js tests
         run: |
           npm run test:unit:ci -- \
             --proxy=true \
@@ -256,3 +226,11 @@ jobs:
         working-directory: react
         env:
           CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
+        if: "!cancelled()" # Runs even if other steps fail
+      - name: Test python
+        run: python -m pytest tests ci_api/test
+        if: "!cancelled()"
+      - name: Test urbanstats persistent
+        working-directory: urbanstats-persistent-data
+        run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
+        if: "!cancelled()"
