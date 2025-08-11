@@ -141,6 +141,7 @@ export function TopLevelEditor({
             />
             { subcomponent() }
             <DisplayErrors
+                editor={false}
                 errors={errors.filter(e => e.location.start.block.type === 'multi')}
             />
         </div>

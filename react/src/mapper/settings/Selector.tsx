@@ -153,7 +153,7 @@ export function Selector(props: {
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
-    const errorComponent = <DisplayErrors errors={errors} />
+    const errorComponent = <DisplayErrors errors={errors} editor={false} />
 
     const colorValue = props.type.type === 'opaque' && props.type.name === 'color' ? getColor(props.uss, props.typeEnvironment) : undefined
 
