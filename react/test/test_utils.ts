@@ -390,11 +390,3 @@ export async function clickUniverseFlag(t: TestController, alt: string): Promise
                 .withAttribute('alt', alt))
     })
 }
-
-// Gets the non-extension part of the test file, e.g. if running search.test.ts -> search
-export function getCurrentTest(t: TestController): string {
-    // @ts-expect-error -- TestCafe private API
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe private API
-    const testFileName: string = t.testRun.test.testFile.filename
-    return /([^/]+)\.test\.ts$/.exec(testFileName)![1]
-}

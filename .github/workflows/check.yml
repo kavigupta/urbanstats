@@ -178,7 +178,7 @@ jobs:
             --test=test/${{ matrix.test-file }}.test.ts \
             --headless=true \
             --compare=true \
-            --time-limit-seconds=300 \
+            --time-limit-seconds=500 \
             --base-ref=${{ github.base_ref }}
         working-directory: react
         env:

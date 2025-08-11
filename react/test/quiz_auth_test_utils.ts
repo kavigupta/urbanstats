@@ -5,8 +5,7 @@ import { z } from 'zod'
 import { TestWindow } from '../src/utils/TestUtils'
 
 import { quizFixture } from './quiz_test_utils'
-import { getTOTPWait, setTOTPWait } from './scripts/util'
-import { flaky, getCurrentTest, safeReload, target, waitForPageLoaded } from './test_utils'
+import { flaky, safeReload, target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
@@ -31,7 +30,6 @@ async function popTOTP(t: TestController): Promise<string> {
     const wait = useAfter - Date.now()
     if (wait > 0) {
         console.warn(`TOTP waiting ${wait} ms...`)
-        await setTOTPWait(getCurrentTest(t), await getTOTPWait(getCurrentTest(t)) + wait)
         await t.wait(wait)
     }
     console.warn(`Using TOTP for ${useAfter}`)
