@@ -139,9 +139,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const result = execute(expr.expr, env)
 
             // Check type if expectedType is provided
-            if (expr.expectedType && !canUnifyTo(result.type, expr.expectedType)) {
+            if (expr.expectedType && !expr.expectedType.some(t => canUnifyTo(result.type, t))) {
                 throw env.error(
-                    `Custom expression expected to return type ${renderType(expr.expectedType)}, but got ${renderType(result.type)}`,
+                    `Custom expression expected to return type ${expr.expectedType.map(t => renderType(t)).join(' or ')}, but got ${renderType(result.type)}`,
                     locationOf(expr),
                 )
             }
