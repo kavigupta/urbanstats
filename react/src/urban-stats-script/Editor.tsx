@@ -190,7 +190,7 @@ export function Editor(
     const error = errors.length > 0
 
     return (
-        <div style={{ margin: '1em', marginTop: '0.5em' }}>
+        <div style={{ marginTop: '0.25em' }}>
             <pre
                 style={{
                     ...codeStyle,
@@ -243,6 +243,7 @@ export function DisplayErrors(props: { errors: EditorError[], editor: boolean })
             borderRight: border,
             borderBottom: border,
             borderLeft: border,
+            marginTop: props.editor ? undefined : '0.25em',
         }
     }
     return (
