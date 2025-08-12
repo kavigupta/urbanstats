@@ -74,7 +74,7 @@ for (let t = 0; t < knownTests.length; t++) {
 }
 
 // The longest we want a job to be
-const durationLimit = 5 * 60 * 1000
+const durationLimit = 10 * 60 * 1000
 
 // If a test is in a job, that job must be used
 // Also, the tests in a job should not exceed how long we want jobs to be

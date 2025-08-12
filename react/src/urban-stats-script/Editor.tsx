@@ -190,7 +190,7 @@ export function Editor(
     const error = errors.length > 0
 
     return (
-        <div style={{ margin: '1em', marginTop: '0.5em' }}>
+        <div style={{ marginTop: '0.25em' }}>
             <pre
                 style={{
                     ...codeStyle,
@@ -202,7 +202,7 @@ export function Editor(
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayErrors errors={errors} />
+            <DisplayErrors errors={errors} editor={true} />
             {autocompleteState === undefined
                 ? null
                 : createPortal(
@@ -227,7 +227,7 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-export function DisplayErrors(props: { errors: EditorError[] }): ReactNode | undefined {
+export function DisplayErrors(props: { errors: EditorError[], editor: boolean }): ReactNode | undefined {
     const colors = useColors()
     if (props.errors.length === 0) {
         return undefined
@@ -236,17 +236,18 @@ export function DisplayErrors(props: { errors: EditorError[] }): ReactNode | und
         const border = `2px solid ${color}`
         return {
             ...codeStyle,
-            borderRadius: '0 0 5px 5px',
+            borderRadius: props.editor ? '0 0 5px 5px' : '5px',
             backgroundColor: colors.slightlyDifferentBackground,
             color: colors.textMain,
-            borderTop: 'none',
+            borderTop: props.editor ? 'none' : border,
             borderRight: border,
             borderBottom: border,
             borderLeft: border,
+            marginTop: props.editor ? undefined : '0.25em',
         }
     }
     return (
-        <pre style={style(colors.hueColors.red)}>
+        <pre style={style(props.errors.some(e => e.level === 'error') ? colors.hueColors.red : colors.hueColors.orange)}>
             {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
         </pre>
     )

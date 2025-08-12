@@ -69,7 +69,7 @@ export function quizFixture(
         writeFileSync(tempfile, sqlStatements)
         await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         await runForTest()
-        await safeClearLocalStorage()
+        await safeClearLocalStorage(t)
         await t.eval(() => {
             for (const k of Object.keys(newLocalstorage)) {
                 localStorage.setItem(k, newLocalstorage[k])
