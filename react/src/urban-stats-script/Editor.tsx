@@ -236,7 +236,7 @@ export function DisplayErrors(props: { errors: EditorError[], editor: boolean })
         const border = `2px solid ${color}`
         return {
             ...codeStyle,
-            borderRadius: '0 0 5px 5px',
+            borderRadius: props.editor ? '0 0 5px 5px' : '5px',
             backgroundColor: colors.slightlyDifferentBackground,
             color: colors.textMain,
             borderTop: props.editor ? 'none' : border,
