@@ -1,4 +1,4 @@
-import { Basemap, LineStyle } from '../../mapper/settings'
+import { LineStyle } from '../../mapper/settings'
 import { Context } from '../context'
 import { USSType, USSValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
