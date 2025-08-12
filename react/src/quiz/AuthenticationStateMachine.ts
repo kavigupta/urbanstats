@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { TestUtils } from '../utils/TestUtils'
+import { retry } from '../utils/retry'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { QuizModel } from './quiz'
@@ -210,10 +211,10 @@ export class AuthenticationStateMachine {
         }
         localStorage.removeItem(codeVerifierKey)
 
-        const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
+        const rawToken = await retry(2, () => googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
             codeVerifier,
-        })
+        }))
 
         const token = tokenSchema.parse(rawToken)
 

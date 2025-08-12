@@ -222,7 +222,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // assert no element with id quiz-audience-statistics
         await t.expect(Selector('#quiz-audience-statistics').exists).notOk()
         // now become user 8
-        await safeClearLocalStorage()
+        await safeClearLocalStorage(t)
         await t.eval(() => {
             localStorage.setItem('persistent_id', '000000000000008')
             localStorage.setItem('testHostname', 'testproxy.nonexistent')

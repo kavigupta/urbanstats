@@ -134,6 +134,9 @@ export function Selector(props: {
         const sortedPairs = optionSelectionPairs.sort((a, b) => {
             const aScore = bitap(a.option.toLowerCase(), needle, maxErrors, bitapBuffers)
             const bScore = bitap(b.option.toLowerCase(), needle, maxErrors, bitapBuffers)
+            if (aScore === bScore) {
+                return a.option.length - b.option.length
+            }
             return aScore - bScore
         })
 
@@ -159,7 +162,7 @@ export function Selector(props: {
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
-    const errorComponent = <DisplayErrors errors={errors} />
+    const errorComponent = <DisplayErrors errors={errors} editor={false} />
 
     const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
 
