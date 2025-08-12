@@ -40,7 +40,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
             return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
         }
     }
-    return parseNoErrorAsCustomNode('', blockIdent, type)
+    return parseNoErrorAsCustomNode('', blockIdent, [type])
 }
 
 function ArgumentEditor(props: {
@@ -107,7 +107,7 @@ function ArgumentEditor(props: {
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
                         blockIdent={subident}
-                        type={arg.value}
+                        type={[arg.value]}
                     />
                 )}
             </div>
@@ -121,7 +121,7 @@ export function AutoUXEditor(props: {
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
-    type: USSType
+    type: USSType[]
     label?: string
     labelWidth?: string
 }): ReactNode {
@@ -166,7 +166,7 @@ export function AutoUXEditor(props: {
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
                         blockIdent={`${props.blockIdent}_pos_${i}`}
-                        type={arg.value}
+                        type={[arg.value]}
                     />,
                 )
             })
@@ -196,8 +196,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'vectorLiteral') {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
-            if (props.type.type === 'vector') {
-                elementType = props.type.elementType as USSType
+            if (props.type[0].type === 'vector') {
+                // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
+                elementType = props.type[0].elementType as USSType
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -213,7 +214,7 @@ export function AutoUXEditor(props: {
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
                                 blockIdent={`${props.blockIdent}_el_${i}`}
-                                type={elementType}
+                                type={[elementType]}
                                 label={`${i + 1}`}
                             />
                             <button
@@ -249,8 +250,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'objectLiteral') {
             // Determine the element type
             let propertiesTypes: Map<string, USSType> = new DefaultMap(() => ({ type: 'number' })) // fallback
-            if (props.type.type === 'object') {
-                propertiesTypes = props.type.properties
+            if (props.type[0].type === 'object') {
+                // something of a hack, but this really shouldn't be an issue because we don't support multiple types for objects
+                propertiesTypes = props.type[0].properties
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -266,7 +268,7 @@ export function AutoUXEditor(props: {
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
                                 blockIdent={`${props.blockIdent}_prop_${key}`}
-                                type={propertyType}
+                                type={[propertyType]}
                                 label={key}
                             />
                         )
@@ -290,7 +292,7 @@ export function AutoUXEditor(props: {
                     <Selector
                         uss={props.uss}
                         setSelection={(selection: Selection) => {
-                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type))
+                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]))
                         }}
                         setUss={props.setUss}
                         typeEnvironment={props.typeEnvironment}
@@ -458,7 +460,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current), blockIdent, type)
+            return parseNoErrorAsCustomNode(unparse(current), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
@@ -497,7 +499,7 @@ function maybeParseExpr(
     return
 }
 
-type Fallback = (uss: string, i: string, t: USSType) => UrbanStatsASTExpression
+type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpression
 
 export function parseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
@@ -507,7 +509,7 @@ export function parseExpr(
     fallback: Fallback,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment, fallback)
-    return parsed ?? fallback(unparse(expr), blockIdent, type)
+    return parsed ?? fallback(unparse(expr), blockIdent, [type])
 }
 
 function attemptParseExpr(
@@ -552,7 +554,7 @@ function attemptParseExpr(
             return undefined
         case 'do':
             const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, type)
+            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, [type])
         case 'customNode':
             return parseExpr(expr.expr, blockIdent, type, typeEnvironment, fallback)
         case 'statements':
@@ -563,7 +565,7 @@ function attemptParseExpr(
         case 'expression':
             return parseExpr(expr.value, blockIdent, type, typeEnvironment, fallback)
         case 'identifier':
-            const validVariableSelections = possibilities(type, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
+            const validVariableSelections = possibilities([type], typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
             if (validVariableSelections.some(s => s.name === expr.name.node)) {
                 return expr
             }
@@ -586,7 +588,7 @@ function attemptParseExpr(
             if (fn.type !== 'identifier') {
                 return undefined
             }
-            const validFunctionSelections = possibilities(type, typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
+            const validFunctionSelections = possibilities([type], typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
             if (!validFunctionSelections.some(s => s.name === fn.name.node)) {
                 return undefined
             }

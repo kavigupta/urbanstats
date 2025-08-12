@@ -23,7 +23,7 @@ export type UrbanStatsASTExpression = (
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
-    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType }
+    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
 )
 
 export type UrbanStatsASTStatement = (

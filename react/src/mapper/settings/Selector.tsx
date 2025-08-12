@@ -20,34 +20,36 @@ function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
 
-export function possibilities(target: USSType, env: Map<string, USSDocumentedType>): Selection[] {
+export function possibilities(target: USSType[], env: Map<string, USSDocumentedType>): Selection[] {
     const results: Selection[] = []
     // Add vector option if the type is a vector
-    if (target.type === 'vector') {
+    if (target.some(t => t.type === 'vector')) {
         results.push({ type: 'vector' })
     }
     // Add properties option if the type is an object
-    if (target.type === 'object') {
+    if (target.some(t => t.type === 'object')) {
         results.push({ type: 'object' })
     }
     // Add custom option for non-opaque or custom-allowed types
-    if (target.type !== 'opaque' || target.allowCustomExpression !== false) {
+    if (target.some(t => t.type !== 'opaque' || t.allowCustomExpression !== false)) {
         results.push({ type: 'custom' })
     }
     // Add constant option for numbers and strings
-    if (shouldShowConstant(target)) {
+    if (target.some(shouldShowConstant)) {
         results.push({ type: 'constant' })
     }
     else {
+        const renderedTypes = target.map(renderType)
         // Only add variables and functions if constants are not shown
         const variables: Selection[] = []
         const functions: Selection[] = []
         for (const [name, type] of env) {
             const t: USSType = type.type
-            if (renderType(t) === renderType(target)) {
+            // if (renderType(t) === renderType(target)) {
+            if (renderedTypes.includes(renderType(t))) {
                 variables.push({ type: 'variable', name })
             }
-            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderType(t.returnType.value) === renderType(target)) {
+            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderedTypes.includes(renderType(t.returnType.value))) {
                 functions.push({ type: 'function', name })
             }
         }
@@ -77,7 +79,7 @@ export function Selector(props: {
     setSelection: (selection: Selection) => void
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
-    type: USSType
+    type: USSType[]
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
@@ -100,7 +102,14 @@ export function Selector(props: {
     }, [selectedRendered])
 
     const { selectionPossibilities, renderedSelectionPossibilities, bitapBuffers, optionSelectionPairs } = useMemo(() => {
-        const selectionPossibilitiesResult = possibilities(props.type, props.typeEnvironment)
+        // Combine possibilities from all types
+        const allPossibilities = new Set<Selection>()
+        props.type.forEach((type) => {
+            const typePossibilities = possibilities([type], props.typeEnvironment)
+            typePossibilities.forEach(possibility => allPossibilities.add(possibility))
+        })
+
+        const selectionPossibilitiesResult = Array.from(allPossibilities)
         const renderedSelectionPossibilitiesResult = selectionPossibilitiesResult.map(s => renderSelection(props.typeEnvironment, s))
 
         const longestSelectionPossibility = renderedSelectionPossibilitiesResult.reduce((acc, poss) => Math.max(acc, poss.toLowerCase().length), 0)
@@ -148,14 +157,14 @@ export function Selector(props: {
         return undefined
     }
 
-    const isNumber = props.type.type === 'number'
-    const isString = props.type.type === 'string'
+    const isNumber = props.type.some(type => type.type === 'number')
+    const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayErrors errors={errors} editor={false} />
 
-    const colorValue = props.type.type === 'opaque' && props.type.name === 'color' ? getColor(props.uss, props.typeEnvironment) : undefined
+    const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
 
     const handleOptionSelect = (option: string): void => {
         const selection = optionToSelectionMap.get(option)

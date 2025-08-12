@@ -116,7 +116,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={cMap}
+                    type={[{ type: 'opaque', name: 'cMap' }, { type: 'opaque', name: 'pMap' }]}
                     labelWidth="0px"
                 />
             </div>
@@ -162,7 +162,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
     let conditionExpr: UrbanStatsASTExpression
     let conditionRest: UrbanStatsASTStatement[]
     if (conditionStmt?.type === 'condition') {
-        conditionExpr = parseNoErrorAsCustomNode(unparse(conditionStmt.condition), idCondition, { type: 'vector', elementType: { type: 'boolean' } })
+        conditionExpr = parseNoErrorAsCustomNode(unparse(conditionStmt.condition), idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }])
         conditionRest = conditionStmt.rest
     }
     else {
@@ -187,7 +187,7 @@ function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: M
 }
 
 export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
-    const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, { type: 'opaque', name: 'cMap' })
+    const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, [{ type: 'opaque', name: 'cMap' }])
     assert(expr.type === 'customNode', 'expr should be a custom node')
     return attemptParseAsTopLevel(expr.expr, typeEnvironment)
 }
