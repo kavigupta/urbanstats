@@ -1728,13 +1728,13 @@ void test('test log scale functions with parameters', () => {
 
 void test('custom node type checking', (): void => {
     // Test that custom node with correct type passes
-    const correctTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', numType)
+    const correctTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', [numType])
     const result = evaluate(correctTypeCustomNode, emptyContext())
     assert.strictEqual(result.value, 5)
     assert.deepStrictEqual(result.type, numType)
 
     // Test that custom node with incorrect type throws error
-    const incorrectTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', stringType)
+    const incorrectTypeCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', [stringType])
     assert.throws(
         () => evaluate(incorrectTypeCustomNode, emptyContext()),
         (err: Error): boolean => {
@@ -1743,13 +1743,13 @@ void test('custom node type checking', (): void => {
     )
 
     // Test that custom node with boolean type works correctly
-    const booleanCustomNode = parseNoErrorAsCustomNode('true', 'test', boolType)
+    const booleanCustomNode = parseNoErrorAsCustomNode('true', 'test', [boolType])
     const boolResult = evaluate(booleanCustomNode, emptyContext())
     assert.strictEqual(boolResult.value, true)
     assert.deepStrictEqual(boolResult.type, boolType)
 
     // Test that custom node with boolean type but wrong expression throws error
-    const wrongBooleanCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', boolType)
+    const wrongBooleanCustomNode = parseNoErrorAsCustomNode('2 + 3', 'test', [boolType])
     assert.throws(
         () => evaluate(wrongBooleanCustomNode, emptyContext()),
         (err: Error): boolean => {
