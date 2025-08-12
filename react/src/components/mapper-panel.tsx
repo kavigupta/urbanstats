@@ -31,6 +31,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
+import { HorizontalSplitPane } from './HorizontalSplitPane'
 import type { Insets } from './map'
 import { MapGeneric, MapGenericProps, Polygons, MapHeight } from './map'
 import { Statistic } from './table'
@@ -178,7 +179,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
     return (
         <div>
-            <table style={{ width: '100%', height: '100%' }}>
+            <table style={{ width: '100%' }}>
                 <tbody>
                     <tr>
                         {
@@ -243,9 +244,14 @@ function MapComponent(props: MapComponentProps): ReactNode {
         <div style={{
             display: 'flex',
             flexDirection: 'column',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
         }}
         >
-            <div style={{ height: '90%', width: '100%' }}>
+            <div style={{ height: 'calc(100% - 70px)', width: '100%' }}>
                 <DisplayedMap
                     geographyKind={props.geographyKind}
                     universe={props.universe}
@@ -263,7 +269,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     key={JSON.stringify(currentInsets)}
                 />
             </div>
-            <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
+            <div style={{ height: '70px', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
                     ramp={empiricalRamp}
                 />
@@ -401,23 +407,32 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     return (
         <PageTemplate>
-            <div>
-                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                <MapperSettings
-                    mapSettings={mapSettings}
-                    setMapSettings={(setter) => {
-                        setMapSettingsWrapper(setter(mapSettings))
-                    }}
-                    errors={errors}
-                />
-                <Export
-                    mapRef={mapRef}
-                    colorbarRef={colorbarRef}
-                />
-                {
-                    mapperPanel()
-                }
-            </div>
+            <HorizontalSplitPane
+                top={(
+                    <>
+                        <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
+                        <MapperSettings
+                            mapSettings={mapSettings}
+                            setMapSettings={(setter) => {
+                                setMapSettingsWrapper(setter(mapSettings))
+                            }}
+                            errors={errors}
+                        />
+                        <Export
+                            mapRef={mapRef}
+                            colorbarRef={colorbarRef}
+                        />
+                    </>
+                )}
+                bottom={mapperPanel()}
+                persistentId="mapper"
+                minPropTop={0.25}
+                maxPropTop={0.75}
+                defaultPropTop={0.5}
+                height="calc(100vh - 80px)"
+                minBottom="375px"
+                minTop="0px"
+            />
         </PageTemplate>
     )
 }

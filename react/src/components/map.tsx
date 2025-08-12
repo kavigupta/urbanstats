@@ -244,8 +244,11 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         if (height.type === 'aspect-ratio') {
             return {
                 aspectRatio: height.value.toString(),
-                width: '100%',
                 minHeight: '300px',
+                left: '50%',
+                transform: 'translateX(-50%) translateY(-50%)',
+                top: '50%',
+                maxHeight: '100%',
             }
         }
         return {
