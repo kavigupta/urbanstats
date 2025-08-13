@@ -145,20 +145,21 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (result.resultingValue === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
-        const cMap = result.resultingValue.value.value
+        const mapResultMain = result.resultingValue.value
+        const mapResult = mapResultMain.value
         const st: ShapeType = 'polygon' as ShapeType
         this.shapeType = st
         // Use the outline from cMap instead of hardcoded lineStyle
-        const lineStyle = cMap.outline
+        const lineStyle = mapResult.outline
 
-        const names = cMap.geo
-        const ramp = cMap.ramp
-        const scale = instantiate(cMap.scale)
+        const names = mapResult.geo
+        const ramp = mapResult.ramp
+        const scale = instantiate(mapResult.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
-        this.props.basemapCallback(cMap.basemap)
-        this.props.insetsCallback(cMap.insets)
-        const colors = cMap.data.map(
+        this.props.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
+        this.props.basemapCallback(mapResult.basemap)
+        this.props.insetsCallback(mapResult.insets)
+        const colors = mapResult.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
         const specs = colors.map(
@@ -187,7 +188,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                 }
             },
         )
-        const metas = cMap.data.map((x) => { return { statistic: x } })
+        const metas = mapResult.data.map((x) => { return { statistic: x } })
         return {
             shapes: names.map((name, i) => ({
                 name,
