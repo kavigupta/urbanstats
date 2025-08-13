@@ -147,6 +147,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
         const cMap = result.resultingValue.value.value
         const st: ShapeType = 'polygon' as ShapeType
+        this.shapeType = st
         // Use the outline from cMap instead of hardcoded lineStyle
         const lineStyle = cMap.outline
 
