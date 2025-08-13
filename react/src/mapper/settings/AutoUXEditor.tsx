@@ -126,7 +126,6 @@ export function AutoUXEditor(props: {
     labelWidth?: string
 }): ReactNode {
     const labelWidth = props.labelWidth ?? '5%'
-
     const subcomponent = (): ReactNode | undefined => {
         if (props.uss.type === 'constant') {
             return undefined
