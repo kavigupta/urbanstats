@@ -12,7 +12,7 @@ import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink, consolidatedStatsLink, indexLink } from '../navigation/links'
+import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -32,7 +32,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import { Inset, Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -140,28 +140,14 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         if (stmts === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
-        // reset index
-        // this.name_to_index = undefined
-        // await this.guaranteeNameToIndex()
-
-        const lineStyle = this.props.lineStyle
-
-        let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
-        const st: ShapeType = 'polygon' as ShapeType
-        this.shapeType = st
-        // TODO correct this!
-        const shapes = await this.getShapes().data
-        const hasShapeMask = stats.longnames.map(name => shapes.nameToIndex.has(name))
-        stats = {
-            stats: stats.stats.filter((_, i) => hasShapeMask[i]),
-            longnames: stats.longnames.filter((_, i) => hasShapeMask[i]),
-        }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
         this.props.setErrors(result.error)
         if (result.resultingValue === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const cMap = result.resultingValue.value.value
+        const st: ShapeType = 'polygon' as ShapeType
+        this.shapeType = st
         // Use the outline from cMap instead of hardcoded lineStyle
         const lineStyle = cMap.outline
 
