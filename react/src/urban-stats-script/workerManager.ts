@@ -2,7 +2,6 @@ import validGeographies from '../data/mapper/used_geographies'
 import { Universe } from '../universe'
 
 import { UrbanStatsASTStatement } from './ast'
-import { CMap } from './constants/map'
 import { EditorError } from './editor-utils'
 import { USSOpaqueType, USSOpaqueValue, USSValue } from './types-values'
 

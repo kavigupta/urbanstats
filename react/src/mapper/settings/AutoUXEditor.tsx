@@ -127,11 +127,6 @@ export function AutoUXEditor(props: {
 }): ReactNode {
     const labelWidth = props.labelWidth ?? '5%'
 
-    // Helper function to get the first type from the array
-    const getType = (): USSType => {
-        return props.type[0]
-    }
-
     const subcomponent = (): ReactNode | undefined => {
         if (props.uss.type === 'constant') {
             return undefined
@@ -202,9 +197,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'vectorLiteral') {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
-            const firstType = getType()
-            if (firstType.type === 'vector') {
-                elementType = firstType.elementType as USSType
+            if (props.type[0].type === 'vector') {
+                // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
+                elementType = props.type[0].elementType as USSType
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -256,9 +251,9 @@ export function AutoUXEditor(props: {
         if (uss.type === 'objectLiteral') {
             // Determine the element type
             let propertiesTypes: Map<string, USSType> = new DefaultMap(() => ({ type: 'number' })) // fallback
-            const firstType = getType()
-            if (firstType.type === 'object') {
-                propertiesTypes = firstType.properties
+            if (props.type[0].type === 'object') {
+                // something of a hack, but this really shouldn't be an issue because we don't support multiple types for objects
+                propertiesTypes = props.type[0].properties
             }
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
