@@ -140,6 +140,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const lineStyle = this.props.lineStyle
 
         let stats: { stats: NormalizeProto<IAllStats>[], longnames: string[] } = (await this.props.underlyingStats) as NormalizeProto<ConsolidatedStatistics>
+        const st: ShapeType = 'polygon' as ShapeType
+        this.shapeType = st
         // TODO correct this!
         const shapes = await this.getShapes().data
         const hasShapeMask = stats.longnames.map(name => shapes.nameToIndex.has(name))
@@ -157,8 +159,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const statVals = this.props.colorStat.compute(stats.stats)
         const names = stats.longnames
         const [ramp, interpolations] = this.props.ramp.createRamp(statVals)
-        const st: ShapeType = 'polygon' as ShapeType
-        this.shapeType = st
         this.props.rampCallback({ ramp, interpolations })
         const colors = statVals.map(
             val => interpolateColor(ramp, val, this.props.colors.mapInvalidFillColor),
