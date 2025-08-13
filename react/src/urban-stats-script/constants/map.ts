@@ -36,7 +36,8 @@ export interface PMap {
     scale: ScaleDescriptor
     ramp: RampT
     label: string
-    outline: Outline
+    maxRadius: number
+    relativeArea: number[]
     basemap: Basemap
     insets: Insets
     unit?: UnitType
@@ -203,9 +204,13 @@ export const pMap: USSValue = {
                     name: { node: 'geoCentroid', location: noLocation },
                 }),
             },
-            outline: {
-                type: { type: 'concrete', value: outlineType },
-                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'outline', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
+            maxRadius: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('10', '')),
+            },
+            relativeArea: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                defaultValue: rawDefaultValue(null),
             },
             basemap: {
                 type: { type: 'concrete', value: basemapType },
@@ -236,7 +241,8 @@ export const pMap: USSValue = {
         const scale = (namedArgs.scale as { type: 'opaque', opaqueType: 'scale', value: Scale }).value
         const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
         const labelPassedIn = namedArgs.label as string | null
-        const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
+        const maxRadius = namedArgs.maxRadius as number
+        const relativeArea = namedArgs.relativeArea as number[] | null
         const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
         const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
@@ -244,6 +250,28 @@ export const pMap: USSValue = {
 
         if (geo.length !== data.length) {
             throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
+        }
+
+        // Handle relativeArea: fill with 1s if not present, normalize to max 1
+        let normalizedRelativeArea: number[]
+        if (relativeArea === null) {
+            // If relativeArea is null, fill with 1s
+            normalizedRelativeArea = Array.from({ length: geo.length }, () => 1)
+        }
+        else if (relativeArea.length !== geo.length) {
+            throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${geo.length}`)
+        }
+        else {
+            // Replace negative values with 0
+            const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
+            // Normalize relativeArea so max value is 1
+            const maxRelativeArea = Math.max(...sanitizedRelativeArea)
+            if (maxRelativeArea > 0) {
+                normalizedRelativeArea = sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
+            }
+            else {
+                normalizedRelativeArea = Array.from({ length: geo.length }, () => 1)
+            }
         }
 
         const scaleInstance = scale(data)
@@ -261,7 +289,7 @@ export const pMap: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'pMap',
-            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', outline, basemap, insets, unit } satisfies PMap,
+            value: { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', maxRadius, relativeArea: normalizedRelativeArea, basemap, insets, unit } satisfies PMap,
         }
     },
     documentation: {
@@ -273,7 +301,8 @@ export const pMap: USSValue = {
             ramp: 'Ramp',
             label: 'Label',
             geo: 'Geography',
-            outline: 'Outline',
+            maxRadius: 'Max Radius',
+            relativeArea: 'Relative Area',
             basemap: 'Basemap',
             insets: 'Insets',
             unit: 'Unit',
