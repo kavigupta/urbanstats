@@ -1331,7 +1331,7 @@ void test('test basic map', () => {
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
     assert.deepStrictEqual(effects, [{
         type: 'warning',
-        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
         location: {
             start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
@@ -1350,7 +1350,7 @@ void test('test basic map, default geo', () => {
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
     assert.deepStrictEqual(effects, [{
         type: 'warning',
-        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
         location: {
             start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
@@ -1900,7 +1900,7 @@ void test('test basic map with custom insets', () => {
     assert.strictEqual(hasMainMap, true)
     assert.deepStrictEqual(effects, [{
         type: 'warning',
-        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
         location: {
             start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
@@ -1968,7 +1968,7 @@ void test('test basic map with constructed insets', () => {
 
     assert.deepStrictEqual(effects, [{
         type: 'warning',
-        message: 'Label could not be derived for choropleth map, please pass label="<your label here>" to cMap(...)',
+        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
         location: {
             start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },

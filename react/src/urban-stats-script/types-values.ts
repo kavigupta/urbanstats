@@ -64,10 +64,16 @@ export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { typ
 
 export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'expression', expr: UrbanStatsASTExpression }
 
+export interface NamedFunctionArgumentWithDocumentation {
+    type: USSFunctionArgType
+    defaultValue?: USSDefaultValue
+    documentation?: NamedFunctionArgumentDocumentation
+}
+
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue, documentation?: NamedFunctionArgumentDocumentation }>
+    namedArgs: Record<string, NamedFunctionArgumentWithDocumentation>
     returnType: USSFunctionReturnType
 }
 
