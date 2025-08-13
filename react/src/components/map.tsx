@@ -7,6 +7,7 @@ import './map.css'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
+import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
@@ -232,6 +233,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
                             visible={this.state.mapIsVisible[i]}
                         />
                     ))}
+                    {this.state.loading && (<LongLoad position="absolute" />)}
                 </div>
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.shapeByName.keys()).map(name =>
