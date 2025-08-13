@@ -96,7 +96,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapeType: undefined | ShapeType
 
     private getShapes(): Shapes {
-        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType == this.shapeType) {
+        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType === this.shapeType) {
             return this.shapes
         }
 
