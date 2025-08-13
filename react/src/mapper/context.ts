@@ -88,7 +88,7 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
 
     te.set('geoCentroid', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoCentroidHandle' } },
-        documentation: { humanReadableName: 'Geography Centroid' },
+        documentation: { humanReadableName: 'Default Universe Geography (Centroids)' },
     })
 
     te.set('defaultInsets', {
