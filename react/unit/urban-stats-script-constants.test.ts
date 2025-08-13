@@ -510,6 +510,9 @@ void test('constant listing', (): void => {
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":0}}, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
                 'cMap',
             ],
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> pMap': [
+                'pMap',
+            ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
                 'constructOutline',
             ],

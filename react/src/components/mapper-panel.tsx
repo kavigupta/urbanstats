@@ -147,10 +147,22 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
         const mapResultMain = result.resultingValue.value
         const mapResult = mapResultMain.value
-        const st: ShapeType = 'polygon' as ShapeType
+        const st: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
         this.shapeType = st
-        // Use the outline from cMap instead of hardcoded lineStyle
-        const lineStyle = mapResult.outline
+
+        // Handle different map types
+        let lineStyle: { color: { r: number, g: number, b: number }, weight: number } | undefined
+        let pointSizes: number[] | undefined
+
+        if (mapResultMain.opaqueType === 'cMap') {
+            // For choropleth maps, use the outline
+            lineStyle = mapResultMain.value.outline
+        }
+        else {
+            const maxRadius = mapResultMain.value.maxRadius
+            const relativeArea = mapResultMain.value.relativeArea
+            pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
+        }
 
         const names = mapResult.geo
         const ramp = mapResult.ramp
@@ -164,7 +176,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         )
         const specs = colors.map(
             // no outline, set color fill, alpha=1
-            (color): ShapeSpec => {
+            (color, i): ShapeSpec => {
                 switch (st) {
                     case 'polygon':
                         return {
@@ -172,8 +184,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                             style: {
                                 fillColor: color,
                                 fillOpacity: 1,
-                                color: doRender(lineStyle.color),
-                                weight: lineStyle.weight,
+                                color: doRender(lineStyle!.color),
+                                weight: lineStyle!.weight,
                             },
                         }
                     case 'point':
@@ -182,7 +194,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                             style: {
                                 fillColor: color,
                                 fillOpacity: 1,
-                                radius: lineStyle.weight,
+                                radius: pointSizes![i],
                             },
                         }
                 }

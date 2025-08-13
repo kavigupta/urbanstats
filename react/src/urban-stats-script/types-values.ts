@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color } from './constants/color'
-import { CMap, Outline } from './constants/map'
+import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
@@ -20,11 +20,13 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'inset', value: Inset }
     | { type: 'opaque', opaqueType: 'insets', value: Insets }
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
+    | { type: 'opaque', opaqueType: 'pMap', value: PMap }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
     | { type: 'opaque', opaqueType: 'ramp', value: RampT }
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
     | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
+    | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
 
 interface USSNumberType {
     type: 'number'
@@ -62,10 +64,16 @@ export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { typ
 
 export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'expression', expr: UrbanStatsASTExpression }
 
+export interface NamedFunctionArgumentWithDocumentation {
+    type: USSFunctionArgType
+    defaultValue?: USSDefaultValue
+    documentation?: NamedFunctionArgumentDocumentation
+}
+
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue, documentation?: NamedFunctionArgumentDocumentation }>
+    namedArgs: Record<string, NamedFunctionArgumentWithDocumentation>
     returnType: USSFunctionReturnType
 }
 
