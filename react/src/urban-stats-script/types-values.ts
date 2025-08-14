@@ -1,4 +1,4 @@
-import { Basemap } from '../mapper/settings'
+import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
