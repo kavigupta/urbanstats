@@ -107,14 +107,14 @@ export function emptyContextWithInsets(effects: Effect[] | undefined = undefined
     const insetHawaii = defaultConstants.get('insetHawaii')
     const insetAlaska = defaultConstants.get('insetAlaska')
     const insetGuam = defaultConstants.get('insetGuam')
-    const insetPuertoRicoUSVI = defaultConstants.get('insetPuertoRico+USVI')
+    const insetPuertoRicoUSVI = defaultConstants.get('insetPuertoRicoPlusUSVI')
     const constructInsets = defaultConstants.get('constructInsets')
 
     assert(insetContinentalUSA !== undefined, 'Expected insetContinentalUSA to be defined in defaultConstants')
     assert(insetHawaii !== undefined, 'Expected insetHawaii to be defined in defaultConstants')
     assert(insetAlaska !== undefined, 'Expected insetAlaska to be defined in defaultConstants')
     assert(insetGuam !== undefined, 'Expected insetGuam to be defined in defaultConstants')
-    assert(insetPuertoRicoUSVI !== undefined, 'Expected insetPuertoRico+USVI to be defined in defaultConstants')
+    assert(insetPuertoRicoUSVI !== undefined, 'Expected insetPuertoRicoPlusUSVI to be defined in defaultConstants')
     assert(constructInsets !== undefined, 'Expected constructInsets to be defined in defaultConstants')
 
     // Create a USA insets collection from the individual insets
