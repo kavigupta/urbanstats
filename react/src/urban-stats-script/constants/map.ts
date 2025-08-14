@@ -1,5 +1,5 @@
 import { Insets } from '../../components/map'
-import { Basemap } from '../../mapper/settings/utils'
+import { Basemap } from '../../mapper/settings'
 import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
