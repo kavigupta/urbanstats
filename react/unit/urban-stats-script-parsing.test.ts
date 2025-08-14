@@ -559,15 +559,15 @@ void test('collect identifiers', (): void => {
     )
     assert.deepStrictEqual(
         ids('regression(x1=x1+0, y=y)'),
-        new Set(['x1', 'y', 'regression']),
+        new Set(['x1', 'y', 'regression', 'null', 'false']),
     )
     assert.deepStrictEqual(
         ids('regression(x1=z+0, y=t)'),
-        new Set(['z', 't', 'regression']),
+        new Set(['z', 't', 'regression', 'null', 'false']),
     )
     assert.deepStrictEqual(
         ids('cMap(data=population, scale=linearScale())'),
-        new Set(['cMap', 'population', 'linearScale', 'osmBasemap', 'geo', 'defaultInsets']),
+        new Set(['cMap', 'population', 'linearScale', 'osmBasemap', 'geo', 'defaultInsets', 'colorBlack', 'constructOutline', 'false', 'null', 'rgb']),
     )
     assert.deepStrictEqual(
         allIdentifiers(parseNoErrorAsCustomNode('++', 'test'), emptyContext()),

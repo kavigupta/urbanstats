@@ -696,10 +696,10 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
             }
             Object.entries(t.namedArgs).forEach(([, arg]) => {
                 const dv = arg.defaultValue
-                if (dv === undefined || dv.type !== 'expression') {
+                if (dv === undefined) {
                     return
                 }
-                identifiersInExpr(dv.expr).forEach((newId) => {
+                identifiersInExpr(dv).forEach((newId) => {
                     if (!identifiers.has(newId)) {
                         newIdentifiers.add(newId)
                     }

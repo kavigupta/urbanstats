@@ -106,7 +106,7 @@ void test('constant listing', (): void => {
             '(ramp; ) -> ramp': [
                 'reverseRamp',
             ],
-            '(; first: color, middle: color = {"type":"opaque","opaqueType":"color","value":{"r":255,"g":255,"b":255}}, last: color) -> ramp': [
+            '(; first: color, middle: color = colorWhite, last: color) -> ramp': [
                 'divergingRamp',
             ],
             'ramp': [
@@ -507,7 +507,7 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":0}}, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
                 'cMap',
             ],
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> pMap': [
@@ -516,7 +516,7 @@ void test('constant listing', (): void => {
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
                 'constructOutline',
             ],
-            '(; noLabels: boolean = false, subnationalOutlines: outline = {"type":"opaque","opaqueType":"outline","value":{"color":{"r":0,"g":0,"b":0},"weight":1}}) -> basemap': [
+            '(; noLabels: boolean = false, subnationalOutlines: outline = constructOutline(color=colorBlack, weight=1)) -> basemap': [
                 'osmBasemap',
             ],
             '(; ) -> basemap': [

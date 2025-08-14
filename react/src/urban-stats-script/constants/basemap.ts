@@ -1,6 +1,7 @@
 import { LineStyle } from '../../mapper/settings/utils'
 import { Context } from '../context'
-import { USSType, USSValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
+import { parseNoErrorAsExpression } from '../parser'
+import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
 import { doRender } from './color'
 import { Outline } from './map'
@@ -22,11 +23,11 @@ export const osmBasemap: USSValue = {
         namedArgs: {
             noLabels: {
                 type: { type: 'concrete', value: { type: 'boolean' } },
-                defaultValue: rawDefaultValue(false),
+                defaultValue: createConstantExpression(false),
             },
             subnationalOutlines: {
                 type: { type: 'concrete', value: outlineType },
-                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'outline', value: { color: { r: 0, g: 0, b: 0 }, weight: 1 } satisfies Outline }),
+                defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=1)', ''),
             },
         },
         returnType: { type: 'concrete', value: basemapType },
