@@ -7,7 +7,7 @@ import { StatName } from '../page_template/statistic-tree'
 
 import { DataListSelector } from './DataListSelector'
 import { Regression } from './regression'
-import { ColorStat, ColorStatDescriptor, FilterSettings, RegressionDescriptor, StatisticsForGeography } from './settings'
+import { ColorStat, ColorStatDescriptor, FilterSettings, RegressionDescriptor, StatisticsForGeography } from './settings/utils'
 
 interface VariableDescriptor {
     name: string
