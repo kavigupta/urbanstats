@@ -2,7 +2,7 @@ import assert from 'assert'
 
 import { MathNumericType, dotMultiply, lusolve, multiply, transpose } from 'mathjs'
 
-import { ColorStat, StatisticsForGeography } from './settings'
+import { ColorStat, StatisticsForGeography } from './settings/utils'
 
 export class Regression {
     constructor(

@@ -16,7 +16,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
-import type { MapSettings } from '../mapper/settings'
+import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
@@ -673,7 +673,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 }
 
 async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
-    const { defaultSettings } = await import('../mapper/settings')
+    const { defaultSettings } = await import('../mapper/settings/utils')
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()

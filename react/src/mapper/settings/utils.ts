@@ -1,14 +1,13 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
-import { StatName } from '../page_template/statistic-tree'
-
-import { DataListSelector } from './DataListSelector'
-import { FilterSelector, FunctionColorStat, StatisticSelector } from './function'
-import { RampColormapSelector } from './ramp-selector'
-import { ConstantRampDescriptor, RampDescriptor } from './ramps'
-import { Regression } from './regression'
-import { settingNameStyle, useSettingSubNameStyle } from './style'
+import { useColors } from '../../page_template/colors'
+import { StatName } from '../../page_template/statistic-tree'
+import { DataListSelector } from '../DataListSelector'
+import { FilterSelector, FunctionColorStat, StatisticSelector } from '../function'
+import { RampColormapSelector } from '../ramp-selector'
+import { ConstantRampDescriptor, RampDescriptor } from '../ramps'
+import { Regression } from '../regression'
+import { settingNameStyle, useSettingSubNameStyle } from '../style'
 
 export type StatisticsForGeography = { stats: number[] }[]
 

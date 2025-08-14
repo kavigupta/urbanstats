@@ -5,7 +5,7 @@ import React, { ReactNode } from 'react'
 import './map.css'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
-import { Basemap } from '../mapper/settings'
+import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
