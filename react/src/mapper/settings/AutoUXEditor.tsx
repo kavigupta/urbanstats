@@ -7,7 +7,7 @@ import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType, USSFunctionArgType, USSDefaultValue, renderType } from '../../urban-stats-script/types-values'
+import { USSDocumentedType, USSType, USSFunctionArgType, renderType } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
@@ -45,7 +45,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
 
 function ArgumentEditor(props: {
     name: string
-    argWDefault: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
+    argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
     uss: UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
@@ -76,7 +76,7 @@ function ArgumentEditor(props: {
                                     checked={isEnabled}
                                     onChange={(checked) => {
                                         if (checked) {
-                                            const defaultExpr = props.argWDefault.defaultValue?.type === 'expression' ? props.argWDefault.defaultValue.expr : undefined
+                                            const defaultExpr = props.argWDefault.defaultValue
                                             // Add the argument with default value
                                             const newArgs = [...functionUss.args, {
                                                 type: 'named' as const,
