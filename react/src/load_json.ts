@@ -5,7 +5,6 @@ import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import { debugPerformance } from './search'
-import { assert } from './utils/defensive'
 import {
     Article, ConsolidatedShapes, ConsolidatedStatistics, CountsByArticleUniverseAndType, DataLists,
     Feature, IDataList, IOrderList, OrderList,
@@ -163,25 +162,6 @@ export async function loadOrdering(universe: string, statpath: string, type: str
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
     return { longnames: namesInOrder, typeIndices: typesInOrder }
-}
-
-export async function loadDataInIndexOrder(
-    universe: string, statpath: string, type: string,
-): Promise<number[]> {
-    const dataPromise = loadOrderingProtobuf(universe, statpath, type, true)
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
-    const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
-    const dataList = data.value
-    const orderIdxs = ordering.orderIdxs
-    assert(Array.isArray(dataList), 'Data list must be an array')
-    assert(Array.isArray(orderIdxs), 'Order indices must be an array')
-    // unsort data list, according to order indices
-    const unsortedData = new Array<number>(orderIdxs.length)
-    for (let i = 0; i < orderIdxs.length; i++) {
-        const idx = orderIdxs[i]
-        unsortedData[idx] = dataList[i]
-    }
-    return unsortedData
 }
 
 export async function loadStatisticsPage(
