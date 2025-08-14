@@ -1,9 +1,10 @@
 import { assert } from '../utils/defensive'
 
+import { UrbanStatsASTExpression } from './ast'
 import { Context } from './context'
 import { InterpretationError, evaluate } from './interpreter'
 import { LocInfo } from './lexer'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs, USSDefaultValue, USSFunctionArgType } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs, USSFunctionArgType } from './types-values'
 
 interface PredicateDescriptor {
     role: string
@@ -217,13 +218,13 @@ interface BroadcastError {
     message: string
 }
 
-function evaluateDefault(na: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }, ctx: Context): USSValue | undefined {
+function evaluateDefault(na: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }, ctx: Context): USSValue | undefined {
     if (!na.defaultValue) {
         return undefined
     }
     assert(na.type.type === 'concrete', `Expected named argument to have a concrete type`)
     // Since we removed raw default values, all default values are now expressions
-    return evaluate(na.defaultValue.expr, ctx)
+    return evaluate(na.defaultValue, ctx)
 }
 
 function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {

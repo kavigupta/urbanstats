@@ -5,7 +5,7 @@ import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
 import { parseNoErrorAsExpression } from '../parser'
-import { USSType, USSValue, expressionDefaultValue, constantDefaultValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
+import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
 
 import { basemapType, outlineType } from './basemap'
 import { Color, rgbColorExpression } from './color'
@@ -55,11 +55,11 @@ export const constructOutline = {
         namedArgs: {
             color: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: expressionDefaultValue(parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0 }), '')),
+                defaultValue: parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0 }), ''),
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('0.5', '')),
+                defaultValue: parseNoErrorAsExpression('0.5', ''),
             },
         },
         returnType: { type: 'concrete', value: outlineType },
@@ -90,14 +90,14 @@ function mapConstructorArguments(
         ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
         label: {
             type: { type: 'concrete', value: { type: 'string' } },
-            defaultValue: constantDefaultValue(null),
+            defaultValue: createConstantExpression(null),
         },
         geo: {
             type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: isPmap ? 'geoCentroidHandle' : 'geoFeatureHandle' } } },
-            defaultValue: expressionDefaultValue({
+            defaultValue: {
                 type: 'identifier',
                 name: { node: isPmap ? 'geoCentroid' : 'geo', location: noLocation },
-            }),
+            },
             documentation: {
                 hide: true,
             },
@@ -105,18 +105,18 @@ function mapConstructorArguments(
         ...intermediateArgs,
         basemap: {
             type: { type: 'concrete', value: basemapType },
-            defaultValue: expressionDefaultValue({ type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation }),
+            defaultValue: { type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
         },
         insets: {
             type: { type: 'concrete', value: insetsType },
-            defaultValue: expressionDefaultValue({
+            defaultValue: {
                 type: 'identifier',
                 name: { node: 'defaultInsets', location: noLocation },
-            }),
+            },
         },
         unit: {
             type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
-            defaultValue: constantDefaultValue(null),
+            defaultValue: createConstantExpression(null),
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }
@@ -179,7 +179,7 @@ export const cMap: USSValue = {
         namedArgs: mapConstructorArguments(false, {
             outline: {
                 type: { type: 'concrete', value: outlineType },
-                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', '')),
+                defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
             },
         }),
         returnType: { type: 'concrete', value: cMapType },
@@ -210,11 +210,11 @@ export const pMap: USSValue = {
         namedArgs: mapConstructorArguments(true, {
             maxRadius: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('10', '')),
+                defaultValue: parseNoErrorAsExpression('10', ''),
             },
             relativeArea: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
         }),
         returnType: { type: 'concrete', value: pMapType },

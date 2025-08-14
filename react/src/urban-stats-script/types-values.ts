@@ -63,11 +63,9 @@ export interface USSObjectType {
 export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
 export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' }
 
-export interface USSDefaultValue { type: 'expression', expr: UrbanStatsASTExpression }
-
 export interface NamedFunctionArgumentWithDocumentation {
     type: USSFunctionArgType
-    defaultValue?: USSDefaultValue
+    defaultValue?: UrbanStatsASTExpression
     documentation?: NamedFunctionArgumentDocumentation
 }
 
@@ -155,50 +153,34 @@ export function undocValue(value: USSRawValue, type: USSType): USSValue {
     }
 }
 
-export function constantDefaultValue(value: number | string | boolean | null): USSDefaultValue {
+export function createConstantExpression(value: number | string | boolean | null): UrbanStatsASTExpression {
     // Create a simple constant expression for primitive values
     if (typeof value === 'number') {
         return {
-            type: 'expression',
-            expr: {
-                type: 'constant',
-                value: { node: { type: 'number', value }, location: noLocation },
-            },
+            type: 'constant',
+            value: { node: { type: 'number', value }, location: noLocation },
         }
     }
     else if (typeof value === 'string') {
         return {
-            type: 'expression',
-            expr: {
-                type: 'constant',
-                value: { node: { type: 'string', value }, location: noLocation },
-            },
+            type: 'constant',
+            value: { node: { type: 'string', value }, location: noLocation },
         }
     }
     else if (typeof value === 'boolean') {
         // For booleans, use identifier expressions that reference the predefined constants
         return {
-            type: 'expression',
-            expr: {
-                type: 'identifier',
-                name: { node: value.toString(), location: noLocation },
-            },
+            type: 'identifier',
+            name: { node: value.toString(), location: noLocation },
         }
     }
     else {
         // For null, use identifier expression that references the predefined null constant
         return {
-            type: 'expression',
-            expr: {
-                type: 'identifier',
-                name: { node: 'null', location: noLocation },
-            },
+            type: 'identifier',
+            name: { node: 'null', location: noLocation },
         }
     }
-}
-
-export function expressionDefaultValue(expr: UrbanStatsASTExpression): USSDefaultValue {
-    return { type: 'expression', expr }
 }
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
@@ -241,14 +223,10 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
     return 'any'
 }
 
-export function renderDefaultValue(defaultValue: USSDefaultValue): string {
-    return unparse(defaultValue.expr)
-}
-
-export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }): string {
+export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
     const type = renderArgumentType(arg.type)
     if (arg.defaultValue !== undefined) {
-        return `${type} = ${renderDefaultValue(arg.defaultValue)}`
+        return `${type} = ${unparse(arg.defaultValue)}`
     }
     return type
 }

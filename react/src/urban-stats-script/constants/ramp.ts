@@ -1,7 +1,7 @@
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
-import { USSRawValue, USSType, USSValue, expressionDefaultValue } from '../types-values'
+import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { Color, rgbColorExpression, doRender, hexToColor } from './color'
 
@@ -105,7 +105,7 @@ export const divergingRampValue: USSValue = {
             first: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
             middle: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('colorWhite', '')),
+                defaultValue: parseNoErrorAsExpression('colorWhite', ''),
             },
             last: { type: { type: 'concrete', value: { type: 'opaque', name: 'color' } } },
         },

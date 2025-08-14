@@ -1,4 +1,4 @@
-import { USSType, USSValue, constantDefaultValue } from '../types-values'
+import { USSType, USSValue, createConstantExpression } from '../types-values'
 
 // Functions can't be send over the worker boundary, so instead we must send descriptors
 export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number }
@@ -94,15 +94,15 @@ export const linearScaleValue: USSValue = {
         namedArgs: {
             min: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             center: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             max: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
         },
         returnType: { type: 'concrete', value: scaleType },
@@ -128,15 +128,15 @@ export const logScaleValue: USSValue = {
         namedArgs: {
             min: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             center: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             max: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: constantDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
         },
         returnType: { type: 'concrete', value: scaleType },
