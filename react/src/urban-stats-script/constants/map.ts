@@ -5,7 +5,7 @@ import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../lexer'
 import { parseNoErrorAsExpression } from '../parser'
-import { USSType, USSValue, expressionDefaultValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
+import { USSType, USSValue, expressionDefaultValue, constantDefaultValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
 
 import { basemapType, outlineType } from './basemap'
 import { Color, rgbColorExpression } from './color'
@@ -90,7 +90,7 @@ function mapConstructorArguments(
         ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
         label: {
             type: { type: 'concrete', value: { type: 'string' } },
-            defaultValue: rawDefaultValue(null),
+            defaultValue: constantDefaultValue(null),
         },
         geo: {
             type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: isPmap ? 'geoCentroidHandle' : 'geoFeatureHandle' } } },
@@ -116,7 +116,7 @@ function mapConstructorArguments(
         },
         unit: {
             type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
-            defaultValue: rawDefaultValue(null),
+            defaultValue: constantDefaultValue(null),
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }
@@ -179,7 +179,7 @@ export const cMap: USSValue = {
         namedArgs: mapConstructorArguments(false, {
             outline: {
                 type: { type: 'concrete', value: outlineType },
-                defaultValue: rawDefaultValue({ type: 'opaque', opaqueType: 'outline', value: { color: { r: 0, g: 0, b: 0 }, weight: 0 } }),
+                defaultValue: expressionDefaultValue(parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', '')),
             },
         }),
         returnType: { type: 'concrete', value: cMapType },
@@ -214,7 +214,7 @@ export const pMap: USSValue = {
             },
             relativeArea: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: constantDefaultValue(null),
             },
         }),
         returnType: { type: 'concrete', value: pMapType },

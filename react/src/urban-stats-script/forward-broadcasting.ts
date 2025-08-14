@@ -159,12 +159,14 @@ function locateFunctionAndArguments(
             message: `Function expects ${fnType.posArgs.length} positional arguments, but received ${posArgs.length}`,
         }
     }
+    const usingDefaults = []
     for (const k of Object.keys(fnType.namedArgs)) {
         if (!kwArgs.some(x => x[0] === k)) {
             const na = fnType.namedArgs[k]
             const defaultValue = evaluateDefault(na, ctx)
             if (defaultValue !== undefined) {
                 kwArgs.push([k, defaultValue])
+                usingDefaults.push(k)
             }
             else {
                 return {
@@ -197,7 +199,8 @@ function locateFunctionAndArguments(
 
     const kwArgsLocated: TypeLocationSuccess[] = []
     for (const [name, value] of kwArgs) {
-        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name].type, t), { role: `named argument ${name}`, typeDesc: renderArgumentType(fnType.namedArgs[name].type) })
+        const isNullable = usingDefaults.includes(name)
+        const kwArgLocated = locateType(value, t => unifyFunctionArgType(fnType.namedArgs[name].type, t) || (isNullable && t.type === 'null'), { role: `named argument ${name}`, typeDesc: renderArgumentType(fnType.namedArgs[name].type) })
         if (kwArgLocated.type === 'error') {
             return kwArgLocated
         }
@@ -219,12 +222,8 @@ function evaluateDefault(na: { type: USSFunctionArgType, defaultValue?: USSDefau
         return undefined
     }
     assert(na.type.type === 'concrete', `Expected named argument to have a concrete type`)
-    switch (na.defaultValue.type) {
-        case 'raw':
-            return undocValue(na.defaultValue.value, na.type.value)
-        case 'expression':
-            return evaluate(na.defaultValue.expr, ctx)
-    }
+    // Since we removed raw default values, all default values are now expressions
+    return evaluate(na.defaultValue.expr, ctx)
 }
 
 function expandDims(values: TypeLocationSuccess[], descriptors: string[]): { type: 'success', result: TypeLocationSuccess[] } | BroadcastError {

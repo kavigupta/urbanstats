@@ -7,6 +7,7 @@ import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
+import { noLocation } from './lexer'
 import { unparse } from './parser'
 
 // Define Inset and Insets types locally to avoid import issues
@@ -62,7 +63,7 @@ export interface USSObjectType {
 export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
 export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' }
 
-export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'expression', expr: UrbanStatsASTExpression }
+export interface USSDefaultValue { type: 'expression', expr: UrbanStatsASTExpression }
 
 export interface NamedFunctionArgumentWithDocumentation {
     type: USSFunctionArgType
@@ -154,8 +155,46 @@ export function undocValue(value: USSRawValue, type: USSType): USSValue {
     }
 }
 
-export function rawDefaultValue(value: USSRawValue): USSDefaultValue {
-    return { type: 'raw', value }
+export function constantDefaultValue(value: number | string | boolean | null): USSDefaultValue {
+    // Create a simple constant expression for primitive values
+    if (typeof value === 'number') {
+        return {
+            type: 'expression',
+            expr: {
+                type: 'constant',
+                value: { node: { type: 'number', value }, location: noLocation },
+            },
+        }
+    }
+    else if (typeof value === 'string') {
+        return {
+            type: 'expression',
+            expr: {
+                type: 'constant',
+                value: { node: { type: 'string', value }, location: noLocation },
+            },
+        }
+    }
+    else if (typeof value === 'boolean') {
+        // For booleans, use identifier expressions that reference the predefined constants
+        return {
+            type: 'expression',
+            expr: {
+                type: 'identifier',
+                name: { node: value.toString(), location: noLocation },
+            },
+        }
+    }
+    else {
+        // For null, use identifier expression that references the predefined null constant
+        return {
+            type: 'expression',
+            expr: {
+                type: 'identifier',
+                name: { node: 'null', location: noLocation },
+            },
+        }
+    }
 }
 
 export function expressionDefaultValue(expr: UrbanStatsASTExpression): USSDefaultValue {
@@ -203,12 +242,7 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
 }
 
 export function renderDefaultValue(defaultValue: USSDefaultValue): string {
-    switch (defaultValue.type) {
-        case 'raw':
-            return JSON.stringify(defaultValue.value)
-        case 'expression':
-            return unparse(defaultValue.expr)
-    }
+    return unparse(defaultValue.expr)
 }
 
 export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }): string {

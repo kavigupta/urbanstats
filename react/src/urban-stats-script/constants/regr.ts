@@ -1,7 +1,7 @@
 import { calculateRegression, computePearsonR2 } from '../../mapper/regression'
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
-import { USSFunctionArgType, USSRawValue, USSType, USSValue, USSDefaultValue, rawDefaultValue } from '../types-values'
+import { USSFunctionArgType, USSRawValue, USSType, USSValue, USSDefaultValue, constantDefaultValue } from '../types-values'
 
 export function regressionResultType(numRegressionDependentsMax: number): USSType {
     return {
@@ -17,7 +17,7 @@ export function regressionResultType(numRegressionDependentsMax: number): USSTyp
 
 export function regressionType(numRegressionDependentsMax: number): USSType {
     const requiredVariableType = { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } } satisfies { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
-    const optionalVariableType = { ...requiredVariableType, defaultValue: rawDefaultValue(null) } satisfies { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
+    const optionalVariableType = { ...requiredVariableType, defaultValue: constantDefaultValue(null) } satisfies { type: USSFunctionArgType, defaultValue?: USSDefaultValue }
     return {
         type: 'function',
         posArgs: [],
@@ -28,7 +28,7 @@ export function regressionType(numRegressionDependentsMax: number): USSType {
                 (_, i) => [`x${i + 2}`, optionalVariableType] satisfies [string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue } ],
             ).reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
             weight: optionalVariableType,
-            noIntercept: { type: { type: 'concrete', value: { type: 'boolean' } }, defaultValue: rawDefaultValue(false) } satisfies { type: USSFunctionArgType, defaultValue?: USSDefaultValue },
+            noIntercept: { type: { type: 'concrete', value: { type: 'boolean' } }, defaultValue: constantDefaultValue(false) } satisfies { type: USSFunctionArgType, defaultValue?: USSDefaultValue },
         },
         returnType: { type: 'concrete', value: regressionResultType(numRegressionDependentsMax) },
     }
