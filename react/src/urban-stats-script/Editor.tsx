@@ -247,9 +247,11 @@ export function DisplayErrors(props: { errors: EditorError[], editor: boolean })
         }
     }
     return (
-        <pre style={style(props.errors.some(e => e.level === 'error') ? colors.hueColors.red : colors.hueColors.orange)}>
-            {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
-        </pre>
+        <div id="test-editor-errors">
+            <pre style={style(props.errors.some(e => e.level === 'error') ? colors.hueColors.red : colors.hueColors.orange)}>
+                {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
+            </pre>
+        </div>
     )
 }
 
