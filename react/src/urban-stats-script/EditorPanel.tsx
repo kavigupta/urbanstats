@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
@@ -17,11 +17,13 @@ export function EditorPanel(): ReactNode {
     const [result, setResult] = useState<USSValue | undefined>(undefined)
 
     const [uss, setUss] = useState(() => localStorage.getItem('editor-code') ?? '')
+    const ussVersion = useRef(0)
 
     const [selections, setSelections] = useState<Selections>([null, null])
 
     const updateUss = async (newScript: string): Promise<void> => {
         setUss(newScript)
+        const version = ++ussVersion.current
         localStorage.setItem('editor-code', newScript)
 
         const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
@@ -33,8 +35,12 @@ export function EditorPanel(): ReactNode {
         }
 
         const exec = await executeAsync({ descriptor: { kind: 'generic' }, stmts })
-        setResult(exec.resultingValue)
-        setErrors(exec.error)
+
+        if (version === ussVersion.current) {
+            // avoid race conditions
+            setResult(exec.resultingValue)
+            setErrors(exec.error)
+        }
     }
 
     const { addState, updateCurrentSelection } = useUndoRedo(
