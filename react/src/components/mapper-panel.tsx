@@ -135,13 +135,15 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return res.value
     }
 
-    override async computeShapesToRender(): Promise<ShapeRenderingSpec> {
+    override async computeShapesToRender(version: number): Promise<ShapeRenderingSpec> {
         const stmts = this.props.uss
         if (stmts === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
-        this.props.setErrors(result.error)
+        if (version === this.version) {
+            this.props.setErrors(result.error)
+        }
         if (result.resultingValue === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
