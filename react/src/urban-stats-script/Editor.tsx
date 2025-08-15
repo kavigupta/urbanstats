@@ -243,7 +243,7 @@ export function DisplayErrors(props: { errors: EditorError[], editor: boolean })
             borderRight: border,
             borderBottom: border,
             borderLeft: border,
-            marginTop: props.editor ? undefined : '0.25em',
+            marginTop: props.editor ? '0' : '0.25em',
         }
     }
     return (
