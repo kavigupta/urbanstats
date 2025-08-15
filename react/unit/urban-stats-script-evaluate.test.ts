@@ -1178,6 +1178,12 @@ void test('evaluate conditions', (): void => {
         execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
         undocValue([NaN, 3, 3], numVectorType),
     )
+    assert.throws(
+        () => execute(parseProgram('x = [2,  3, 4, 5]; y = [1, 2, 3, 4]; condition(x > 3)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'condition(..) must be followed by at least one statement at 1:38-53'
+        },
+    )
 })
 
 /* eslint-disable no-restricted-syntax -- Just for testing */

@@ -153,6 +153,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
 export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
     switch (expr.type) {
         case 'condition':
+            if (expr.rest.length === 0) {
+                throw env.error('condition(..) must be followed by at least one statement', locationOf(expr))
+            }
             return evaluate(
                 { type: 'if',
                     condition: expr.condition,
