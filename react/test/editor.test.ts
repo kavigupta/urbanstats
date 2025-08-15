@@ -89,6 +89,20 @@ y`
     await checkCode(t, code, output)
 })
 
+test.only('conditionals more complex', async (t) => {
+    const code = `x = [2, 3, 4, 5]
+y = [1, 2, 3, 4]
+condition(x > 3)
+y `
+    const output = `[
+    NaN,
+    NaN,
+    3,
+    4
+]`
+    await checkCode(t, code, output)
+})
+
 test('syntax errors', async (t) => {
     await checkCode(t, '2 + (3 * 4', '', 'Expected closing bracket ) to match this one at 1:5')
 })
