@@ -196,7 +196,7 @@ function createMaps(
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
-export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
+export abstract class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     protected version = 0
     private lastUpdate: Promise<void> | undefined
     private basemap_props: null | Basemap = null
@@ -271,16 +271,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return <></>
     }
 
-    computeShapesToRender(version: number): Promise<ShapeRenderingSpec> {
-        /**
-         * Should return [names, styles, metas, zoom_index]
-         * names: list of names of polygons to draw
-         * styles: list of styles for each polygon
-         * metas: list of metadata dictionaries for each polygon
-         * zoom_index: index of polygon to zoom to, or -1 if none
-         */
-        throw new Error('compute_polygons not implemented')
-    }
+    /**
+     * Should return [names, styles, metas, zoom_index]
+     * names: list of names of polygons to draw
+     * styles: list of styles for each polygon
+     * metas: list of metadata dictionaries for each polygon
+     * zoom_index: index of polygon to zoom to, or -1 if none
+     */
+    abstract computeShapesToRender(version: number): Promise<ShapeRenderingSpec>
 
     async mapDidRender(): Promise<void> {
         /**
