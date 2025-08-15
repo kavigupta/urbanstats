@@ -450,7 +450,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const [errors, setErrors] = useState<EditorError[]>([])
 
-    console.log('MapperPanel errors', errors)
+    console.warn('MapperPanel errors', errors)
 
     const mapperPanel = (): ReactNode => {
         const geographyKind = mapSettings.geographyKind

@@ -10,9 +10,8 @@ import { indexLink } from '../navigation/links'
 import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 
-import { locationOf, locationOfLastExpression, UrbanStatsASTExpression } from './ast'
+import { locationOfLastExpression, UrbanStatsASTExpression } from './ast'
 import { insetNameToConstantName } from './constants/insets'
-import { Scale } from './constants/scale'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
@@ -119,10 +118,10 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
         if (name === 'geo') {
-            return annotateType('geo', longnames.map(name => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: name })))
+            return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
         }
         if (name === 'geoCentroid') {
-            return annotateType('geoCentroid', longnames.map(name => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: name })))
+            return annotateType('geoCentroid', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: longname })))
         }
         if (name === 'defaultInsets') {
             return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })
