@@ -51,10 +51,10 @@ function QuickLoad(): ReactNode {
     return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
 }
 
-export function LongLoad(): ReactNode {
+export function LongLoad({ position = 'fixed' }: { position?: CSSProperties['position'] }): ReactNode {
     const colors = useColors()
     const containerStyle: CSSProperties = {
-        position: 'fixed',
+        position,
         left: 0,
         right: 0,
         top: 0,
