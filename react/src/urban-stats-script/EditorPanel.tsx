@@ -71,53 +71,39 @@ export function EditorPanel(): ReactNode {
     return (
         <PageTemplate>
             {/* Most props to the editors are purposely not memoized for testing purposes. */}
-            <Editor
-                uss={uss}
-                setUss={(newUss) => {
-                    void updateUss(newUss)
-                    addState(newUss, selections)
-                }}
-                typeEnvironment={typeEnvironment}
-                errors={errors}
-                placeholder="Enter Urban Stats Script"
-                selection={selections[0]}
-                setSelection={(newSelection) => {
-                    const newSelections: Selections = [newSelection, selections[1]]
-                    setSelections(newSelections)
-                    updateCurrentSelection(newSelections)
-                }}
-            />
-            <Editor
-                uss={uss}
-                setUss={(newUss) => {
-                    void updateUss(newUss)
-                    addState(newUss, selections)
-                }}
-                typeEnvironment={typeEnvironment}
-                errors={errors}
-                placeholder="Enter Urban Stats Script"
-                selection={selections[1]}
-                setSelection={(newSelection) => {
-                    const newSelections: Selections = [selections[0], newSelection]
-                    setSelections(newSelections)
-                    updateCurrentSelection(newSelections)
-                }}
-            />
-            { result === undefined
-                ? null
-                : (
-                        <div style={{ margin: '2em' }}>
-                            <pre style={{
-                                ...codeStyle,
-                                borderRadius: '5px',
-                                backgroundColor: colors.slightlyDifferentBackground,
-                                border: `2px solid ${colors.hueColors.green}`,
-                            }}
-                            >
-                                {renderValue(result)}
-                            </pre>
-                        </div>
-                    )}
+            <div id="test-editor-panel">
+                <Editor
+                    uss={uss}
+                    setUss={(newUss) => {
+                        void updateUss(newUss)
+                        addState(newUss, selections)
+                    }}
+                    typeEnvironment={typeEnvironment}
+                    errors={errors}
+                    placeholder="Enter Urban Stats Script"
+                    selection={selections[0]}
+                    setSelection={(newSelection) => {
+                        const newSelections: Selections = [newSelection, selections[1]]
+                        setSelections(newSelections)
+                        updateCurrentSelection(newSelections)
+                    }}
+                />
+                {result === undefined
+                    ? null
+                    : (
+                            <div style={{ margin: '2em' }} id="test-editor-result">
+                                <pre style={{
+                                    ...codeStyle,
+                                    borderRadius: '5px',
+                                    backgroundColor: colors.slightlyDifferentBackground,
+                                    border: `2px solid ${colors.hueColors.green}`,
+                                }}
+                                >
+                                    {renderValue(result)}
+                                </pre>
+                            </div>
+                        )}
+            </div>
         </PageTemplate>
     )
 }
