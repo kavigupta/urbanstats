@@ -7,16 +7,19 @@ import {
 
 // Helper function to type text using individual key presses
 async function typeTextWithKeys(t: TestController, text: string): Promise<void> {
-    for (const char of text) {
-        if (char === ' ') {
-            await t.pressKey('space')
+    const cdp = await t.getCurrentCDPSession()
+    for (let char of text) {
+        // if (char === ' ') {
+        //     char = 'space'
+        // }
+        if (char === '\n') {
+            char = '\r'
         }
-        else if (char === '\n') {
-            await t.pressKey('enter')
-        }
-        else {
-            await t.pressKey(char)
-        }
+        // Faster than t.pressKey
+        await cdp.Input.dispatchKeyEvent({
+            text: char,
+            type: 'char',
+        })
     }
 }
 
@@ -29,33 +32,36 @@ async function fillInField(t: TestController, text: string): Promise<void> {
     // await t.typeText(firstEditor, text)
 }
 
-async function getOutput(): Promise<string> {
-    const result = Selector('#test-editor-result')
-    if (await result.exists) {
-        return await result.textContent
-    }
-    return ''
-}
-
 async function getErrors(): Promise<string> {
-    const errors = Selector('#test-editor-errors')
     if (await errors.exists) {
         return await errors.textContent
     }
     return ''
 }
 
-async function checkCode(t: TestController, code: string, expected: string, error?: string): Promise<void> {
+const result = Selector('#test-editor-result')
+const errors = Selector('#test-editor-errors')
+
+async function checkCode(t: TestController, code: string, expected?: string, error?: string): Promise<void> {
     await fillInField(t, code)
-    const output = await getOutput()
-    await t.expect(output).eql(expected)
+
     await screencap(t, { selector: Selector('#test-editor-panel') })
-    const errors = await getErrors()
-    if (error) {
-        await t.expect(errors).eql(error)
+
+    // Check output
+    if (expected !== undefined) {
+        await t.expect(result.exists).ok()
+        await t.expect(result.textContent).eql(expected)
     }
     else {
-        await t.expect(errors).eql('')
+        await t.expect(result.exists).notOk()
+    }
+
+    if (error !== undefined) {
+        await t.expect(errors.exists).ok()
+        await t.expect(errors.textContent).eql(error)
+    }
+    else {
+        await t.expect(errors.exists).notOk()
     }
 }
 
