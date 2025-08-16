@@ -1178,24 +1178,30 @@ void test('evaluate conditions', (): void => {
         execute(parseProgram('x = [1, 2, 3]; condition(x > 1); y = 3; y'), emptyContext()),
         undocValue([NaN, 3, 3], numVectorType),
     )
+    assert.throws(
+        () => execute(parseProgram('x = [2,  3, 4, 5]; y = [1, 2, 3, 4]; condition(x > 3)'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof Error && err.message === 'condition(..) must be followed by at least one statement at 1:38-53'
+        },
+    )
 })
 
 /* eslint-disable no-restricted-syntax -- Just for testing */
 void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
-        undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } }, colorType),
+        undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } }, colorType),
     )
     assert.deepStrictEqual(
         renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
-        '{"r":255,"g":0,"b":0}',
+        '{"r":255,"g":0,"b":0,"a":255}',
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
         undocValue([
-            { type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } },
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0 } },
-            { type: 'opaque', opaqueType: 'color', value: { r: 191, g: 0, b: 0 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0, a: 255 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 191, g: 0, b: 0, a: 255 } },
         ], { type: 'vector', elementType: colorType }),
     )
     assert.deepStrictEqual(
@@ -1205,21 +1211,21 @@ void test('colors', (): void => {
     assert.throws(
         () => evaluate(parseExpr('rgb(2, 0, 0)'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: RGB values must be between 0 and 1, got (2, 0, 0) at 1:1-12'
+            return err instanceof Error && err.message === 'Error while executing function: Error: RGB values must be between 0 and 1, got (2, 0, 0, 1) at 1:1-12'
         },
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
         undocValue([
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0 } }, // Red
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 128, b: 0 } }, // Yellow
-            { type: 'opaque', opaqueType: 'color', value: { r: 0, g: 128, b: 0 } }, // Green
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0, a: 255 } }, // Red
+            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 128, b: 0, a: 255 } }, // Yellow
+            { type: 'opaque', opaqueType: 'color', value: { r: 0, g: 128, b: 0, a: 255 } }, // Green
         ], { type: 'vector', elementType: colorType }),
     )
     assert.throws(
         () => evaluate(parseExpr('hsv(400, 1, 0.5)'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (400, 1, 0.5) at 1:1-16'
+            return err instanceof Error && err.message === 'Error while executing function: Error: HSV values must be (hue: 0-360, saturation: 0-1, value: 0-1, alpha: 0-1), got (400, 1, 0.5, 1) at 1:1-16'
         },
     )
     assert.throws(
@@ -1296,8 +1302,8 @@ void test('ramps', (): void => {
 
     // Test ramp with variables
     const ctx: Context = emptyContext()
-    ctx.assignVariable('red', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0 } }, { type: 'opaque', name: 'color' }))
-    ctx.assignVariable('blue', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 255 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('red', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('blue', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 255, a: 255 } }, { type: 'opaque', name: 'color' }))
 
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
@@ -1772,7 +1778,7 @@ void test('test basic map with outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0 }, weight: 2 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0, a: 255 }, weight: 2 })
 })
 
 void test('test basic map with default outline', () => {
@@ -1783,7 +1789,7 @@ void test('test basic map with default outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 0, g: 0, b: 0 }, weight: 0 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 0, g: 0, b: 0, a: 255 }, weight: 0 })
 })
 
 void test('test constructOutline function', () => {
@@ -1792,7 +1798,7 @@ void test('test constructOutline function', () => {
     const result = evaluate(parseExpr('constructOutline(color=rgb(0, 1, 0), weight=3)'), ctx)
     assert.deepStrictEqual(result.type, { type: 'opaque', name: 'outline' })
     const outline = (result.value as { type: 'opaque', value: Outline }).value
-    assert.deepStrictEqual(outline, { color: { r: 0, g: 255, b: 0 }, weight: 3 })
+    assert.deepStrictEqual(outline, { color: { r: 0, g: 255, b: 0, a: 255 }, weight: 3 })
 })
 
 void test('test basic map with outline', () => {
@@ -1803,7 +1809,7 @@ void test('test basic map with outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0 }, weight: 2 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0, a: 255 }, weight: 2 })
 })
 
 void test('test canUnifyTo', () => {
