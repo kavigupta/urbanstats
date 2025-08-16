@@ -34,9 +34,8 @@ async function fillInField(t: TestController, text: string): Promise<void> {
 }
 
 const result = Selector('#test-editor-result')
-const errors = Selector('#test-editor-errors')
 
-async function checkCode(t: TestController, code: string, expected?: string, error?: string): Promise<void> {
+async function checkCode(t: TestController, code: string, expected: string | undefined): Promise<void> {
     await fillInField(t, code)
 
     await screencap(t, { selector: Selector('#test-editor-panel') })
@@ -48,15 +47,6 @@ async function checkCode(t: TestController, code: string, expected?: string, err
     }
     else {
         await t.expect(result.exists).notOk()
-    }
-
-    // Check errors
-    if (error !== undefined) {
-        await t.expect(errors.exists).ok()
-        await t.expect(errors.textContent).eql(error)
-    }
-    else {
-        await t.expect(errors.exists).notOk()
     }
 }
 
@@ -105,7 +95,7 @@ y `
 })
 
 test('syntax errors', async (t) => {
-    await checkCode(t, '2 + (3 * 4', undefined, 'Expected closing bracket ) to match this one at 1:5')
+    await checkCode(t, '2 + (3 * 4', 'Expected closing bracket ) to match this one at 1:5')
 })
 
 test('syntax error halfway down', async (t) => {
@@ -114,7 +104,7 @@ x = [1, 2, 3, 4, 5]
 y = [2, 3 4, 5]
 z = [3, 4, 5, 6, 7]
 `
-    await checkCode(t, code, undefined, 'Expected comma , or closing bracket ] after vector element at 3:11')
+    await checkCode(t, code, 'Expected comma , or closing bracket ] after vector element at 3:11')
 })
 
 test('post-reload', async (t) => {

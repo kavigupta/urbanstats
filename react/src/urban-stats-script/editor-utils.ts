@@ -7,12 +7,19 @@ import { isAMatch } from '../utils/isAMatch'
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex, LocInfo } from './lexer'
 import { ParseError } from './parser'
-import { USSDocumentedType } from './types-values'
+import { renderValue, USSDocumentedType, USSValue } from './types-values'
 
-export type EditorError = ParseError & { level: 'error' | 'warning' }
+export type EditorError = ParseError & { kind: 'error' | 'warning' }
+export type EditorResult = EditorError | { kind: 'success', result: USSValue }
 
-export function longMessage(error: EditorError): string {
-    return `${error.value} at ${renderLocInfo(error.location)}`
+export function longMessage(result: EditorResult): string {
+    switch (result.kind) {
+        case 'error':
+        case 'warning':
+            return `${result.value} at ${renderLocInfo(result.location)}`
+        case 'success':
+            return renderValue(result.result)
+    }
 }
 
 export interface Script { uss: string, tokens: AnnotatedToken[] }
@@ -326,15 +333,18 @@ interface UndoRedoItem<T, S> {
     selection: S
 }
 
+export interface UndoRedoOptions {
+    undoChunking?: number
+    undoHistory?: number
+    onlyElement?: { current: HTMLElement | null }
+}
+
 export function useUndoRedo<T, S>(
     initialState: T,
     initialSelection: S,
     onStateChange: (state: T) => void,
     onSelectionChange: (selection: S) => void,
-    { undoChunking = 1000, undoHistory = 100 }: {
-        undoChunking?: number
-        undoHistory?: number
-    } = {},
+    { undoChunking = 1000, undoHistory = 100, onlyElement }: UndoRedoOptions = {},
 ): {
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
@@ -387,6 +397,10 @@ export function useUndoRedo<T, S>(
     // Set up keyboard shortcuts
     useEffect(() => {
         const listener = (e: KeyboardEvent): void => {
+            if (onlyElement !== undefined && document.activeElement !== null && document.activeElement !== onlyElement.current) {
+                return
+            }
+
             const isMac = navigator.userAgent.includes('Mac')
             if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
                 e.preventDefault()
@@ -400,7 +414,7 @@ export function useUndoRedo<T, S>(
 
         window.addEventListener('keydown', listener)
         return () => { window.removeEventListener('keydown', listener) }
-    }, [undo, redo])
+    }, [undo, redo, onlyElement])
 
     return {
         addState,

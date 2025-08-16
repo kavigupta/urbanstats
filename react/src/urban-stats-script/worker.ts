@@ -7,7 +7,7 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTExpression } from './ast'
 import { insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
-import { EditorError } from './editor-utils'
+import { EditorResult } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
 import { noLocation } from './lexer'
 import { USSRawValue } from './types-values'
@@ -30,19 +30,19 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             console.error('Unknown interpretation error', error)
             interpretationError = new InterpretationError('Unknown interpretation error', noLocation)
         }
-        return { error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, level: 'error' }, ...(getWarnings?.() ?? [])] }
+        return { error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])] }
     }
 }
 
-function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorError[]]> {
+function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorResult[]]> {
     const effects: Effect[] = []
-    const getWarnings = (): EditorError[] => {
+    const getWarnings = (): EditorResult[] => {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- just so if there's additonal types, we're safe
         return effects.filter(eff => eff.type === 'warning').map(eff => ({
             type: 'error',
             value: eff.message,
             location: eff.location,
-            level: 'warning',
+            kind: 'warning',
         }))
     }
     switch (request.descriptor.kind) {
