@@ -38,17 +38,25 @@ export function USSDocumentationPanel(): ReactNode {
                                     <a href="#all-operators">here</a>
                                     .
                                 </p>
-                                <p>
-                                    The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
-                                </p>
-                                <EditorWithResult ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
-                                <p>
-                                    For details on broadcasting, see the
-                                    {' '}
-                                    <a href="#broadcasting">broadcasting</a>
-                                    {' '}
-                                    section.
-                                </p>
+                                <Header title="Lists" header="h3" ident="lists">
+                                    <p>
+                                        The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
+                                    </p>
+                                    <EditorWithResult ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
+                                    <p>
+                                        For details on broadcasting, see the
+                                        {' '}
+                                        <a href="#broadcasting">broadcasting</a>
+                                        {' '}
+                                        section.
+                                    </p>
+                                </Header>
+                                <Header title="Objects" header="h3" ident="objects">
+                                    <p>
+                                        The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
+                                    </p>
+                                    <EditorWithResult ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                                </Header>
                             </Header>
                             <Header title="Semantics" header="h2" ident="semantics">
                                 <Header title="Broadcasting" header="h3" ident="broadcasting">
