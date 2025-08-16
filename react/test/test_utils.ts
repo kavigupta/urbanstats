@@ -123,13 +123,17 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector }: { fullPage?: boolean, wait?: boolean, selector?: Selector } = {}): Promise<void> {
     await prepForImage(t, { hover: fullPage, wait })
-    return t.takeScreenshot({
-        // include the browser name in the screenshot path
-        path: screenshotPath(t),
-        fullPage,
-    })
+    if (selector !== undefined) {
+        await t.takeElementScreenshot(selector, screenshotPath(t))
+    }
+    else {
+        await t.takeScreenshot({
+            path: screenshotPath(t),
+            fullPage,
+        })
+    }
 }
 
 export async function grabDownload(t: TestController, button: Selector, wait: number = 3000): Promise<void> {
