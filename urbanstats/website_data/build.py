@@ -272,6 +272,7 @@ def build_urbanstats(
         "random",
         "about",
         "data-credit",
+        "uss-documentation",
         "mapper",
         "editor",
         "oauth-callback",
