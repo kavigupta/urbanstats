@@ -13,10 +13,23 @@ import { executeAsync } from './workerManager'
 type Selections = [Range | null, Range | null]
 
 export function EditorPanel(): ReactNode {
+    return (
+        <PageTemplate>
+            {/* Most props to the editors are purposely not memoized for testing purposes. */}
+            <EditorWithResult
+                ident="editor-panel"
+                getCode={() => localStorage.getItem('editor-code') ?? ''}
+                onSelect={(code) => { localStorage.setItem('editor-code', code) }}
+            />
+        </PageTemplate>
+    )
+}
+
+export function EditorWithResult(props: { ident: string, getCode: () => string, onSelect?: (code: string) => void }): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
     const [result, setResult] = useState<USSValue | undefined>(undefined)
 
-    const [uss, setUss] = useState(() => localStorage.getItem('editor-code') ?? '')
+    const [uss, setUss] = useState(props.getCode)
     const ussVersion = useRef(0)
 
     const [selections, setSelections] = useState<Selections>([null, null])
@@ -24,9 +37,9 @@ export function EditorPanel(): ReactNode {
     const updateUss = async (newScript: string): Promise<void> => {
         setUss(newScript)
         const version = ++ussVersion.current
-        localStorage.setItem('editor-code', newScript)
+        props.onSelect?.(newScript)
 
-        const stmts = parse(newScript, { type: 'single', ident: 'editor-panel' })
+        const stmts = parse(newScript, { type: 'single', ident: props.ident })
 
         if (stmts.type === 'error') {
             setErrors(stmts.errors.map(e => ({ ...e, level: 'error' })))
@@ -70,46 +83,51 @@ export function EditorPanel(): ReactNode {
         return () => { window.removeEventListener('keydown', listener) }
     })
 
+    useEffect(
+        () => {
+            void updateUss(props.getCode())
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- run once at beginning
+        [],
+    )
+
     const typeEnvironment = defaultConstants as Map<string, USSDocumentedType>
 
     const colors = useColors()
 
     return (
-        <PageTemplate>
-            {/* Most props to the editors are purposely not memoized for testing purposes. */}
-            <div id="test-editor-panel">
-                <Editor
-                    uss={uss}
-                    setUss={(newUss) => {
-                        void updateUss(newUss)
-                        addState(newUss, selections)
-                    }}
-                    typeEnvironment={typeEnvironment}
-                    errors={errors}
-                    placeholder="Enter Urban Stats Script"
-                    selection={selections[0]}
-                    setSelection={(newSelection) => {
-                        const newSelections: Selections = [newSelection, selections[1]]
-                        setSelections(newSelections)
-                        updateCurrentSelection(newSelections)
-                    }}
-                />
-                {result === undefined
-                    ? null
-                    : (
-                            <div style={{ margin: '2em' }} id="test-editor-result">
-                                <pre style={{
-                                    ...codeStyle,
-                                    borderRadius: '5px',
-                                    backgroundColor: colors.slightlyDifferentBackground,
-                                    border: `2px solid ${colors.hueColors.green}`,
-                                }}
-                                >
-                                    {renderValue(result)}
-                                </pre>
-                            </div>
-                        )}
-            </div>
-        </PageTemplate>
+        <div id="test-editor-panel">
+            <Editor
+                uss={uss}
+                setUss={(newUss) => {
+                    void updateUss(newUss)
+                    addState(newUss, selections)
+                }}
+                typeEnvironment={typeEnvironment}
+                errors={errors}
+                placeholder="Enter Urban Stats Script"
+                selection={selections[0]}
+                setSelection={(newSelection) => {
+                    const newSelections: Selections = [newSelection, selections[1]]
+                    setSelections(newSelections)
+                    updateCurrentSelection(newSelections)
+                }}
+            />
+            {result === undefined
+                ? null
+                : (
+                        <div style={{ margin: '2em' }} id="test-editor-result">
+                            <pre style={{
+                                ...codeStyle,
+                                borderRadius: '5px',
+                                backgroundColor: colors.slightlyDifferentBackground,
+                                border: `2px solid ${colors.hueColors.green}`,
+                            }}
+                            >
+                                {renderValue(result)}
+                            </pre>
+                        </div>
+                    )}
+        </div>
     )
 }
