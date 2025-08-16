@@ -39,18 +39,18 @@ export function DebugEditorPanel(): ReactNode {
     return (
         <PageTemplate>
             {/* Most props to the editors are purposely not memoized for testing purposes. */}
-            <Editor
-                uss={uss}
-                setUss={setUss}
-                typeEnvironment={typeEnvironment}
-                results={results}
-                placeholder="Enter Urban Stats Script"
-                selection={selection[0]}
-                setSelection={(newSelection) => {
-                    setSelection([newSelection, selection[1]])
-                }}
-            />
             <div id="test-editor-panel">
+                <Editor
+                    uss={uss}
+                    setUss={setUss}
+                    typeEnvironment={typeEnvironment}
+                    results={results}
+                    placeholder="Enter Urban Stats Script"
+                    selection={selection[0]}
+                    setSelection={(newSelection) => {
+                        setSelection([newSelection, selection[1]])
+                    }}
+                />
                 <Editor
                     uss={uss}
                     setUss={setUss}
