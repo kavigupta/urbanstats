@@ -38,13 +38,13 @@ export function DebugEditorPanel(): ReactNode {
 
     return (
         <PageTemplate>
+            {/* Most props to the editors are purposely not memoized for testing purposes. */}
             <div id="test-editor-panel">
-                {/* Most props to the editors are purposely not memoized for testing purposes. */}
                 <Editor
                     uss={uss}
                     setUss={setUss}
                     typeEnvironment={typeEnvironment}
-                    results={[]}
+                    results={results}
                     placeholder="Enter Urban Stats Script"
                     selection={selection[0]}
                     setSelection={(newSelection) => {
