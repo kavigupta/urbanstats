@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
 import {
+    safeReload,
     screencap,
     target, urbanstatsFixture,
 } from './test_utils'
@@ -114,4 +115,11 @@ y = [2, 3 4, 5]
 z = [3, 4, 5, 6, 7]
 `
     await checkCode(t, code, '', 'Expected comma , or closing bracket ] after vector element at 3:11')
+})
+
+test('post-reload', async (t) => {
+    await checkCode(t, '2 + 3 ** 4 + 5 ** 2 * 3', '158')
+    await safeReload(t)
+    await t.wait(500)
+    await t.expect(await getOutput()).eql('158')
 })
