@@ -121,5 +121,5 @@ test('post-reload', async (t) => {
     await checkCode(t, '2 + 3 ** 4 + 5 ** 2 * 3', '158')
     await safeReload(t)
     await t.wait(500)
-    await t.expect(await getOutput()).eql('158')
+    await t.expect(result.textContent).eql('158')
 })
