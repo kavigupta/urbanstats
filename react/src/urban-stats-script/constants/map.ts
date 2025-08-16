@@ -55,7 +55,7 @@ export const constructOutline = {
         namedArgs: {
             color: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0 }), ''),
+                defaultValue: parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0, a: 255 }), ''),
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
