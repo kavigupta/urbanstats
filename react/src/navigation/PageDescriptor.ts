@@ -29,7 +29,7 @@ import type {
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import type { EditorPanel } from '../urban-stats-script/EditorPanel'
+import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -186,7 +186,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
-    | { kind: 'editor', editorPanel: typeof EditorPanel }
+    | { kind: 'editor', editorPanel: typeof DebugEditorPanel }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
@@ -551,7 +551,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     ...newDescriptor,
-                    editorPanel: (await import('../urban-stats-script/EditorPanel')).EditorPanel,
+                    editorPanel: (await import('../urban-stats-script/DebugEditorPanel')).DebugEditorPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
