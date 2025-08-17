@@ -149,6 +149,32 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('median([[1], []])'), emptyContext()),
         undocValue([1, NaN], { type: 'vector', elementType: numType }),
     )
+
+    // Test weighted median and quantiles
+    assert.deepStrictEqual(
+        evaluate(parseExpr('median([1, 2, 3, 4, 5], weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(2.5, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('median([1, 2, 3, 4, 5], weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(3.5, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('quantile([1, 2, 3, 4, 5], 0.25, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(1, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('quantile([1, 2, 3, 4, 5], 0.75, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(5, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('percentile([1, 2, 3, 4, 5], 25, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(1, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('percentile([1, 2, 3, 4, 5], 75, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(5, numType),
+    )
 })
 
 void test('evaluate basic variable expressions', (): void => {

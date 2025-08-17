@@ -90,7 +90,7 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
         cumulativeWeight += sortedPairs[i][1]
         if (cumulativeWeight >= targetWeight) {
             if (i === sortedPairs.length - 1 || cumulativeWeight > targetWeight) {
-                return sortedPairs[0][0]
+                return sortedPairs[i][0]
             }
             // hit it exactly, which means you'd hit it exactly from the other direction
             return (sortedPairs[i][0] + sortedPairs[i + 1][0]) / 2
