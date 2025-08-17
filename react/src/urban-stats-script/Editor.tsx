@@ -10,7 +10,7 @@ import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longM
 import { USSDocumentedType } from './types-values'
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, ref }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: Map<string, USSDocumentedType>
@@ -18,7 +18,7 @@ export function Editor(
         placeholder?: string
         selection: Range | null
         setSelection: (newRange: Range | null) => void
-        ref?: React.MutableRefObject<HTMLPreElement | null>
+        eRef?: React.MutableRefObject<HTMLPreElement | null>
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -202,8 +202,8 @@ export function Editor(
                 }}
                 ref={(e) => {
                     editorRef.current = e
-                    if (ref !== undefined) {
-                        ref.current = e
+                    if (eRef !== undefined) {
+                        eRef.current = e
                     }
                 }}
                 contentEditable="plaintext-only"

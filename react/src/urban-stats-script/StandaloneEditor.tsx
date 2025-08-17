@@ -31,7 +31,7 @@ export function StandaloneEditor(props: { ident: string, getCode: () => string, 
                 placeholder="Enter Urban Stats Script"
                 selection={selection}
                 setSelection={setSelection}
-                ref={editorRef}
+                eRef={editorRef}
             />
         </div>
     )
