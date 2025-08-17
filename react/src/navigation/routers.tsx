@@ -170,7 +170,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'mapper':
             return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
         case 'editor':
-            return <pageData.editorPanel />
+            return <pageData.editorPanel {...pageData} />
         case 'oauthCallback':
             return <pageData.oauthCallbackPanel {...pageData} />
         case 'error':

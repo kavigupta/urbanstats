@@ -7,7 +7,7 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTExpression } from './ast'
 import { insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
-import { EditorResult } from './editor-utils'
+import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
 import { noLocation } from './lexer'
 import { USSRawValue } from './types-values'
@@ -34,9 +34,9 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
     }
 }
 
-function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorResult[]]> {
+function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorError[]]> {
     const effects: Effect[] = []
-    const getWarnings = (): EditorResult[] => {
+    const getWarnings = (): EditorError[] => {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- just so if there's additonal types, we're safe
         return effects.filter(eff => eff.type === 'warning').map(eff => ({
             type: 'error',
