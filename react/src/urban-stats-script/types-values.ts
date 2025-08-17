@@ -120,7 +120,7 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-export const constantCategories = ['basic', 'color', 'math', 'logic', 'unit', 'map', 'scale', 'ramp', 'inset', 'regression'] as const
+export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset'] as const
 
 export type ConstantCategory = typeof constantCategories[number]
 

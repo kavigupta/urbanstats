@@ -4,12 +4,14 @@ import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
+import { defaultTypeEnvironment } from './mapper/context'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
+import { Universe } from './universe'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
 import { defaultConstants } from './urban-stats-script/constants/constants'
 import { expressionOperatorMap } from './urban-stats-script/operators'
-import { constantCategories, ConstantCategory, renderType, USSValue } from './urban-stats-script/types-values'
+import { constantCategories, ConstantCategory, renderType, USSDocumentedType } from './urban-stats-script/types-values'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
@@ -236,9 +238,12 @@ function ConstantsDocumentation(): ReactNode {
     const colors = useColors()
     const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
 
-    // Group constants by category
-    const constantsByCategory = new Map<ConstantCategory, [string, USSValue][]>()
+    const mapperContext = defaultTypeEnvironment('world')
 
+    // Group constants by category
+    const constantsByCategory = new Map<ConstantCategory, [string, USSDocumentedType][]>()
+
+    // Add default constants
     for (const [name, value] of defaultConstants) {
         const category = value.documentation?.category
         assert(category !== undefined, `Constant ${name} does not have a category defined.`)
@@ -246,6 +251,21 @@ function ConstantsDocumentation(): ReactNode {
             constantsByCategory.set(category, [])
         }
         constantsByCategory.get(category)!.push([name, value])
+    }
+
+    // Add mapper context elements
+    for (const [name, value] of mapperContext) {
+        // Skip if already added from default constants
+        if (defaultConstants.has(name)) continue
+
+        const category = value.documentation?.category
+        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
+        if (constantCategories.includes(category)) {
+            if (!constantsByCategory.has(category)) {
+                constantsByCategory.set(category, [])
+            }
+            constantsByCategory.get(category)!.push([name, value])
+        }
     }
 
     // Sort categories for consistent display
@@ -318,7 +338,7 @@ function ConstantsDocumentation(): ReactNode {
                                                 </code>
                                             </div>
                                             <div style={{ marginBottom: '10px' }}>
-                                                {value.documentation?.longDescription}
+                                                {value.documentation?.longDescription ?? 'No description available.'}
                                             </div>
                                             {value.documentation?.namedArgs && Object.keys(value.documentation.namedArgs).length > 0 && (
                                                 <div style={{ marginBottom: '10px' }}>
@@ -389,6 +409,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Statistical Analysis'
         case 'basic':
             return 'Basic Functions'
+        case 'mapper':
+            return 'Mapper Data Variables'
     }
 }
 
@@ -414,6 +436,8 @@ function getCategoryDescription(category: ConstantCategory): string {
             return 'Statistical analysis functions for linear regression.'
         case 'basic':
             return 'Basic utility functions for type conversion and common operations.'
+        case 'mapper':
+            return 'The mapper provides several variables relevant to the current universe and set of geographic features.'
     }
 }
 
