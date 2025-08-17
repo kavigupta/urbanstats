@@ -120,6 +120,10 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
+export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset'] as const
+
+export type ConstantCategory = typeof constantCategories[number]
+
 export interface Documentation {
     humanReadableName: string
     priority?: number
@@ -135,6 +139,14 @@ export interface Documentation {
      * Should be included when a constant should be deconstructed into an expression for user editing
      */
     equivalentExpressions?: UrbanStatsASTExpression[]
+    /**
+     * Included for all bulit-in constants.
+     */
+    category?: ConstantCategory
+    /**
+     * Included for all bulit-in constants. Will be displayed in the documentation.
+     */
+    longDescription?: string
 }
 
 export interface USSDocumentedType {

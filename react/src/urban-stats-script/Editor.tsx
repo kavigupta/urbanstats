@@ -4,12 +4,13 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRe
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
+import { TestUtils } from '../utils/TestUtils'
 
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
 import { USSDocumentedType } from './types-values'
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, ref }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: Map<string, USSDocumentedType>
@@ -17,7 +18,7 @@ export function Editor(
         placeholder?: string
         selection: Range | null
         setSelection: (newRange: Range | null) => void
-        ref?: React.MutableRefObject<HTMLPreElement | null>
+        eRef?: React.MutableRefObject<HTMLPreElement | null>
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -197,12 +198,12 @@ export function Editor(
                     ...codeStyle,
                     caretColor: colors.textMain,
                     border: `1px solid ${borderColor}`,
-                    borderRadius: results.length > 0 ? '5px 5px 0 0' : '5px',
+                    borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
                 }}
                 ref={(e) => {
                     editorRef.current = e
-                    if (ref !== undefined) {
-                        ref.current = e
+                    if (eRef !== undefined) {
+                        eRef.current = e
                     }
                 }}
                 contentEditable="plaintext-only"
@@ -256,7 +257,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
     const border = `2px solid ${color}`
     const style = {
         ...codeStyle,
-        borderRadius: props.editor ? '0 0 5px 5px' : '5px',
+        borderRadius: TestUtils.shared.isTesting ? 0 : (props.editor ? '0 0 5px 5px' : '5px'),
         backgroundColor: colors.slightlyDifferentBackground,
         color: colors.textMain,
         borderTop: props.editor ? 'none' : border,

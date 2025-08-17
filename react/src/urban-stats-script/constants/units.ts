@@ -9,7 +9,12 @@ function createUnit(name: UnitType, humanReadableName: string): [string, USSValu
         {
             type: unitType,
             value: { type: 'opaque', opaqueType: 'unit', value: { unit: name } },
-            documentation: { humanReadableName, isDefault: name === 'number' },
+            documentation: {
+                humanReadableName,
+                category: 'unit',
+                isDefault: name === 'number',
+                longDescription: `Unit type representing ${humanReadableName.toLowerCase()} measurements.`,
+            },
         },
     ]
 }
