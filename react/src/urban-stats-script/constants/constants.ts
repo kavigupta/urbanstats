@@ -1,6 +1,6 @@
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
-import { renderType, USSRawValue, USSValue, ConstantCategory, DocumentationTable } from '../types-values'
+import { renderType, USSRawValue, USSValue, DocumentationTable } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
@@ -40,6 +40,30 @@ function createNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
+// Factory function to create two-argument number-to-number functions
+function createTwoNumberToNumberFunction(
+    name: string,
+    mathFunction: (x: number, y: number) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            assert(posArgs.length === 2, `Expected 2 arguments for ${name}, got ${posArgs.length}`)
+            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ${name}, got ${Object.keys(namedArgs).length}`)
+            const [arg1, arg2] = posArgs
+            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for ${name}, got ${typeof arg1} and ${typeof arg2}`)
+            return mathFunction(arg1, arg2)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
 export const defaultConstants: Constants = new Map<string, USSValue>([
     ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', category: 'logic', isDefault: true, longDescription: 'Boolean true value representing logical truth.' } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false', category: 'logic', longDescription: 'Boolean false value representing logical falsehood.' } }] satisfies [string, USSValue],
@@ -67,36 +91,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('exp', Math.exp, 'Exponential', 'Returns e raised to the power of the given number.'),
     createNumberToNumberFunction('sign', Math.sign, 'Sign', 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
     createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', 'Converts NaN values to 0, leaving other numbers unchanged.'),
-    ['maximum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 2, `Expected 2 arguments for maximum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for maximum, got ${Object.keys(namedArgs).length}`)
-            const [arg1, arg2] = posArgs
-            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for maximum, got ${typeof arg1} and ${typeof arg2}`)
-            return Math.max(arg1, arg2)
-        },
-        documentation: {
-            humanReadableName: 'Maximum',
-            category: 'math',
-            longDescription: 'Returns the larger of two numbers.',
-        },
-    }] satisfies [string, USSValue],
-    ['minimum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 2, `Expected 2 arguments for minimum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for minimum, got ${Object.keys(namedArgs).length}`)
-            const [arg1, arg2] = posArgs
-            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for minimum, got ${typeof arg1} and ${typeof arg2}`)
-            return Math.min(arg1, arg2)
-        },
-        documentation: {
-            humanReadableName: 'Minimum',
-            category: 'math',
-            longDescription: 'Returns the smaller of two numbers.',
-        },
-    }] satisfies [string, USSValue],
+    createTwoNumberToNumberFunction('maximum', Math.max, 'Maximum', 'Returns the larger of two numbers.'),
+    createTwoNumberToNumberFunction('minimum', Math.min, 'Minimum', 'Returns the smaller of two numbers.'),
     ['sum', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
