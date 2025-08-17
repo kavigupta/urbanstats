@@ -4,8 +4,7 @@ import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { rgbColorExpression, doRender } from './color'
-import { Color } from './color-utils'
-import { hexToColor } from './color-utils'
+import { Color, hexToColor } from './color-utils'
 
 export type RampT = [number, string][]
 
