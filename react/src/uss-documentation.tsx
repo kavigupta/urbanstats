@@ -26,45 +26,41 @@ export function USSDocumentationPanel(): ReactNode {
                                 data. It is designed to allow users to describe programs as if they refer to a
                                 single row of data, while simultaneously allowing global operations like regression.
                             </p>
-                            <Header title="Syntax" header="h2" ident="syntax">
+                            <p>
+                                The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
+                                written as you would expect. Feel free to edit the code below to see how the result changes:
+                            </p>
+                            <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
+                            <p>
+                                A full list of operators is available
+                                {' '}
+                                <a href="#all-operators">here</a>
+                                .
+                            </p>
+                            <Header title="Lists" header="h2" ident="lists">
                                 <p>
-                                    The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
-                                    written as you would expect. Feel free to edit the code below to see how the result changes:
+                                    The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
                                 </p>
-                                <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
+                                <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
                                 <p>
-                                    A full list of operators is available
+                                    For details on broadcasting, see the
                                     {' '}
-                                    <a href="#all-operators">here</a>
-                                    .
+                                    <a href="#broadcasting">broadcasting</a>
+                                    {' '}
+                                    section.
                                 </p>
-                                <Header title="Lists" header="h3" ident="lists">
-                                    <p>
-                                        The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
-                                    </p>
-                                    <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
-                                    <p>
-                                        For details on broadcasting, see the
-                                        {' '}
-                                        <a href="#broadcasting">broadcasting</a>
-                                        {' '}
-                                        section.
-                                    </p>
-                                </Header>
-                                <Header title="Objects" header="h3" ident="objects">
-                                    <p>
-                                        The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
-                                    </p>
-                                    <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
-                                </Header>
                             </Header>
-                            <Header title="Semantics" header="h2" ident="semantics">
-                                <Header title="Broadcasting" header="h3" ident="broadcasting">
-                                    <p>
-                                        Broadcasting is a feature of USS that allows you to operate on lists of values.
-                                    </p>
-                                </Header>
-                                <Header title="Forward Broadcasting" header="h4" ident="forward-broadcasting">
+                            <Header title="Objects" header="h2" ident="objects">
+                                <p>
+                                    The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
+                                </p>
+                                <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                            </Header>
+                            <Header title="Broadcasting" header="h2" ident="broadcasting">
+                                <p>
+                                    Broadcasting is a feature of USS that allows you to operate on lists of values.
+                                </p>
+                                <Header title="Forward Broadcasting" header="h3" ident="forward-broadcasting">
                                     <p>
                                         The main kind of broadcasting is
                                         forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
@@ -91,7 +87,7 @@ export function USSDocumentationPanel(): ReactNode {
                                         <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
                                     </p>
                                 </Header>
-                                <Header title="Split Broadcasting" header="h4" ident="backward-broadcasting">
+                                <Header title="Split Broadcasting" header="h3" ident="backward-broadcasting">
                                     There is also split broadcasting, which is what happens when you use an if statement.
                                     For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
                                     <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
@@ -105,7 +101,7 @@ export function USSDocumentationPanel(): ReactNode {
                                 </Header>
                             </Header>
                             <Header title="Detailed Tables" header="h2" ident="detailed-tables">
-                                <Header title="All Operators" header="h2" ident="all-operators">
+                                <Header title="All Operators" header="h3" ident="all-operators">
                                     <p>
                                         The following is a list of all operators that are available in USS.
                                     </p>
