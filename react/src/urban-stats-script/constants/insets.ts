@@ -160,6 +160,7 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                     category: 'inset',
                     equivalentExpressions: [expr],
                     longDescription: `Predefined map inset for the region "${insetName}".`,
+                    documentationTable: 'predefined-insets',
                 },
             } satisfies USSValue,
         ] as [string, USSValue]
