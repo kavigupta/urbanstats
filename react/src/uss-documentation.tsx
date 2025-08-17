@@ -60,6 +60,71 @@ export function USSDocumentationPanel(): ReactNode {
                                 </p>
                                 <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
                             </Header>
+                            <Header title="Opaque Types" header="h2" ident="opaque-types">
+                                <p>
+                                    USS has several opaque types, which are types that you can only interact with via functions.
+                                    For example, colors are opaque types, and you can only create them using functions like
+                                    {' '}
+                                    <code>rgb()</code>
+                                    {', '}
+                                    <code>hsv()</code>
+                                    , or one of the predefined colors.
+                                </p>
+                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
+                                <p>
+                                    And you can only interact with them using functions like
+                                    {' '}
+                                    <code>renderColor()</code>
+                                    {' '}
+                                    or in other contexts that use color objects.
+                                </p>
+                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
+                            </Header>
+                            <Header title="Regressions" header="h2" ident="regressions">
+                                <p>
+                                    USS supports linear regression via the
+                                    {' '}
+                                    <code>regress(y, x1, x2, ..., weight)</code>
+                                    {' '}
+                                    function, which returns an object with several properties:
+                                </p>
+                                <ul>
+                                    <li>
+                                        <code>b</code>
+                                        : The intercept of the regression line.
+                                    </li>
+                                    <li>
+                                        <code>m1, m2, m3...</code>
+                                        : The coefficients for each independent variable.
+                                    </li>
+                                    <li>
+                                        <code>r2</code>
+                                        : The R-squared value of the regression.
+                                    </li>
+                                    <li>
+                                        <code>residuals</code>
+                                        : The residuals of the regression.
+                                    </li>
+                                </ul>
+                                <p>
+                                    For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
+                                </p>
+                                <StandaloneEditor
+                                    ident="regression"
+                                    getCode={
+                                        () =>
+                                            'x1 = [1, 2, 3, 4, 5]' + '\n'
+                                            + 'x2 = [2, 3, 2, 3, 2]' + '\n'
+                                            + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
+                                            + 'w = [1, 1, 1, 1, 10]' + '\n'
+                                            + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
+                                            + 'model'
+                                    }
+                                />
+                                <p>
+                                    Note that the inputs are all named arguments and the weight is optional.
+                                </p>
+                            </Header>
                             <Header title="Broadcasting" header="h2" ident="broadcasting">
                                 <p>
                                     Broadcasting is a feature of USS that allows you to operate on lists of values.
