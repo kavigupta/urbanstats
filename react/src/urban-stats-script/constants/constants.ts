@@ -56,6 +56,40 @@ function createTwoNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
+function weightedQuantile(values: number[], weights: number[], quantile: number): number {
+    if (values.length !== weights.length) {
+        throw new Error('Values and weights must have the same length')
+    }
+    if (quantile < 0 || quantile > 1) {
+        throw new Error('Quantile must be between 0 and 1')
+    }
+    if (values.length === 0) {
+        return NaN
+    }
+    if (weights.some(weight => isNaN(weight))) {
+        throw new Error('Weights must not contain NaN')
+    }
+    if (weights.some(weight => weight < 0)) {
+        throw new Error('Weights must not contain negative values')
+    }
+    const sortedPairs = values.map((value, index) => [value, weights[index]])
+    sortedPairs.sort((a, b) => a[0] - b[0])
+    const cumWeights = weights.reduce((acc, weight) => acc + weight, 0)
+    const targetWeight = quantile * cumWeights
+    let cumulativeWeight = 0
+    for (let i = 0; i < sortedPairs.length; i++) {
+        cumulativeWeight += sortedPairs[i][1]
+        if (cumulativeWeight >= targetWeight) {
+            if (i === sortedPairs.length - 1 || cumulativeWeight > targetWeight) {
+                return sortedPairs[0][0]
+            }
+            // hit it exactly, which means you'd hit it exactly from the other direction
+            return (sortedPairs[i][0] + sortedPairs[i + 1][0]) / 2
+        }
+    }
+    return sortedPairs[sortedPairs.length - 1][0] // fallback
+}
+
 export const defaultConstants: Constants = new Map<string, USSValue>([
     ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', category: 'logic', isDefault: true, longDescription: 'Boolean true value representing logical truth.' } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false', category: 'logic', longDescription: 'Boolean false value representing logical falsehood.' } }] satisfies [string, USSValue],
@@ -137,12 +171,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const values = posArgs[0] as number[]
-            if (values.length === 0) {
-                return NaN
-            }
-            const sorted = [...values].sort((a, b) => a - b)
-            const mid = Math.floor(sorted.length / 2)
-            return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+            return weightedQuantile(values, Array.from({ length: values.length }, () => 1), 0.5)
         },
         documentation: {
             humanReadableName: 'Median',
