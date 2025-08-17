@@ -350,7 +350,7 @@ export function useUndoRedo<T, S>(
         updateCurrentSelection: (selection: S) => void
     } {
     const undoStack = useRef<UndoRedoItem<T, S>[]>([
-        { time: Date.now(), state: initialState, selection: initialSelection },
+        { time: 0, state: initialState, selection: initialSelection },
     ])
     const redoStack = useRef<UndoRedoItem<T, S>[]>([])
 
