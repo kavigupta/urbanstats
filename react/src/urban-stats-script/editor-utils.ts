@@ -296,7 +296,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'z-index': '1',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': '0.5em',
+        'border-radius': TestUtils.shared.isTesting ? '0' : '0.5em',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
     }
@@ -405,11 +405,11 @@ export function useUndoRedo<T, S>(
             }
 
             const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
-            if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
+            if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 e.preventDefault()
                 undo()
             }
-            else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
+            else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
                 e.preventDefault()
                 redo()
             }
