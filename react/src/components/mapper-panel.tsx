@@ -151,7 +151,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.shapeType = st
 
         // Handle different map types
-        let lineStyle: { color: { r: number, g: number, b: number }, weight: number } | undefined
+        let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
         let pointSizes: number[] | undefined
 
         if (mapResultMain.opaqueType === 'cMap') {

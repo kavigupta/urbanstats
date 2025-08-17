@@ -63,16 +63,19 @@ export const rgb = {
             { type: 'concrete', value: { type: 'number' } }, // blue
         ],
         namedArgs: {
-            alpha: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
+            a: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
         },
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const alpha = namedArgs.alpha as number
+        const alpha = namedArgs.a as number
         return { type: 'opaque', opaqueType: 'color', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
     },
-    documentation: { humanReadableName: 'Color (RGB)' },
+    documentation: {
+        humanReadableName: 'Color (RGB)',
+        namedArgs: { a: 'Alpha' },
+    },
 } satisfies USSValue
 
 export const hsv = {
@@ -84,16 +87,16 @@ export const hsv = {
             { type: 'concrete', value: { type: 'number' } }, // value
         ],
         namedArgs: {
-            alpha: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
+            a: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
         },
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const alpha = namedArgs.alpha as number
+        const alpha = namedArgs.a as number
         return { type: 'opaque', opaqueType: 'color', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
     },
-    documentation: { humanReadableName: 'Color (HSV with optional alpha)' },
+    documentation: { humanReadableName: 'Color (HSV)' },
 } satisfies USSValue
 
 export const renderColor = {
@@ -111,25 +114,30 @@ export const renderColor = {
     documentation: { humanReadableName: 'Color to String' },
 } satisfies USSValue
 
-export function doRender(color: Color): string {
+export function doRender(color: Color, ignoreAlpha?: boolean): string {
     const hex = (x: number): string => {
         const hexValue = x.toString(16)
         return hexValue.length === 1 ? `0${hexValue}` : hexValue
     }
     let h = `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
-    if (color.a !== 255) {
+    if (color.a !== 255 && !ignoreAlpha) {
         h += hex(color.a)
     }
     return h
 }
 
-export function rgbColorExpression(color: Color): string {
-    return `rgb(${color.r / 255}, ${color.g / 255}, ${color.b / 255})`
+function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number): string {
+    const alphaPart = alpha !== 255 ? `, a=${alpha / 255}` : ''
+    return `${functionName}(${param1}, ${param2}, ${param3}${alphaPart})`
 }
 
-export function hsvColorExpression(color: Color): string {
+export function rgbColorExpression(color: Color, forceAlpha?: number): string {
+    return drawFunction('rgb', color.r / 255, color.g / 255, color.b / 255, forceAlpha ?? color.a)
+}
+
+export function hsvColorExpression(color: Color, forceAlpha?: number): string {
     const c = ColorLib.rgb(color.r, color.g, color.b)
-    return `hsv(${c.hue()}, ${c.saturationv() / 100}, ${c.value() / 100})`
+    return drawFunction('hsv', c.hue(), c.saturationv() / 100, c.value() / 100, forceAlpha ?? color.a)
 }
 
 function colorConstant(name: string, value: string, isDefault?: boolean): [string, USSValue] {

@@ -309,11 +309,11 @@ export function Selector(props: {
             {colorValue !== undefined && (
                 <input
                     type="color"
-                    value={doRender(colorValue.color)}
+                    value={doRender(colorValue.color, true)}
                     style={{ width: '200px', height: '30.5px' }}
                     onChange={(e) => {
                         const newColor = hexToColor(e.target.value)
-                        const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor) : rgbColorExpression(newColor)
+                        const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor, colorValue.color.a) : rgbColorExpression(newColor, colorValue.color.a)
                         let newUss: UrbanStatsASTExpression | undefined
                         switch (props.uss.type) {
                             case 'customNode':
@@ -408,23 +408,32 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<str
             return
         }
         case 'function': {
-            const args = expr.args.flatMap((arg) => {
+            const posArgs = expr.args.flatMap((arg) => {
                 let parsed
                 if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
                     return [parsed]
                 }
                 return []
             })
-            if (expr.fn.type === 'identifier' && args.length === 3) {
+            const kwArg = expr.args.flatMap((arg) => {
+                let parsed
+                if (arg.type === 'named' && arg.name.node === 'a' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
+                    return [parsed]
+                }
+                return []
+            })
+            assert(kwArg.length <= 1, 'There should be at most one "a" named argument')
+            const alpha = kwArg.length === 1 ? kwArg[0] : 1
+            if (expr.fn.type === 'identifier' && (posArgs.length === 3 || posArgs.length === 4)) {
                 switch (expr.fn.name.node) {
                     case 'rgb':
-                        const rgbColor = rgbToColor(args[0], args[1], args[2], true)
+                        const rgbColor = rgbToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
                         if (rgbColor === undefined) {
                             return
                         }
                         return { color: rgbColor, kind: 'rgb' }
                     case 'hsv':
-                        const hsvColor = hsvToColor(args[0], args[1], args[2], true)
+                        const hsvColor = hsvToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
                         if (hsvColor === undefined) {
                             return
                         }
