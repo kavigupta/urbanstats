@@ -422,7 +422,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         const result = computeUSS(newSettings.script)
         const errors = getAllParseErrors(result)
         if (errors.length > 0) {
-            setErrors(errors.map(e => ({ ...e, level: 'error' })))
+            setErrors(errors.map(e => ({ ...e, kind: 'error' })))
         }
         setUSS(errors.length > 0 ? undefined : result)
     }

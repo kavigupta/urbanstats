@@ -36,7 +36,7 @@ export function CustomEditor({
                 setUss(parsed)
             }}
             typeEnvironment={typeEnvironment}
-            errors={ourErrors}
+            results={ourErrors}
             placeholder={placeholder}
             selection={selection?.blockIdent === blockIdent ? selection.range : null}
             setSelection={(range) => {

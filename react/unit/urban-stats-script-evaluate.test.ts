@@ -1194,7 +1194,7 @@ void test('colors', (): void => {
     )
     assert.deepStrictEqual(
         renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
-        '{"r":255,"g":0,"b":0,"a":255}',
+        'rgb(1, 0, 0)',
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
@@ -1289,7 +1289,7 @@ void test('ramps', (): void => {
     const rampResult = evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext())
     assert.deepStrictEqual(
         renderValue(rampResult),
-        '[[0,"#000000"],[1,"#ffffff"]]',
+        '[ramp [\n    {\n        value: 0,\n        color: rgb(0, 0, 0)\n    },\n    {\n        value: 1,\n        color: rgb(1, 1, 1)\n    }\n]]',
     )
 
     // Test ramp with conditional assignment

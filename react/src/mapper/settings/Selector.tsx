@@ -1,9 +1,10 @@
 import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
 
 import { useColors } from '../../page_template/colors'
-import { DisplayErrors } from '../../urban-stats-script/Editor'
+import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { Color, doRender, hexToColor, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
+import { doRender, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
+import { Color, hexToColor } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
@@ -162,7 +163,7 @@ export function Selector(props: {
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
-    const errorComponent = <DisplayErrors errors={errors} editor={false} />
+    const errorComponent = <DisplayResults results={errors} editor={false} />
 
     const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
 

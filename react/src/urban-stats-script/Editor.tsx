@@ -5,18 +5,19 @@ import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
 import { USSDocumentedType } from './types-values'
 
 export function Editor(
-    { uss, setUss, typeEnvironment, errors, placeholder, selection, setSelection }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, ref }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: Map<string, USSDocumentedType>
-        errors: EditorError[]
+        results: EditorResult[]
         placeholder?: string
         selection: Range | null
         setSelection: (newRange: Range | null) => void
+        ref?: React.MutableRefObject<HTMLPreElement | null>
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -26,13 +27,13 @@ export function Editor(
 
     const colors = useColors()
 
-    const editorRef = useRef<HTMLPreElement>(null)
+    const editorRef = useRef<HTMLPreElement | null>(null)
 
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
     const renderScript = useCallback((newScript: Script) => {
-        const fragment = renderCode(newScript, colors, errors, (token, content) => {
+        const fragment = renderCode(newScript, colors, results.filter(r => r.kind !== 'success'), (token, content) => {
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.element)
             }
@@ -44,7 +45,7 @@ export function Editor(
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
-    }, [colors, errors, autocompleteState, placeholder])
+    }, [colors, results, autocompleteState, placeholder])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
@@ -187,22 +188,27 @@ export function Editor(
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
-    const error = errors.length > 0
+    const borderColor = useResultsColor(results)
 
     return (
-        <div style={{ marginTop: '0.25em' }}>
+        <div style={{ marginTop: '0.25em' }} id="test-editor-body">
             <pre
                 style={{
                     ...codeStyle,
                     caretColor: colors.textMain,
-                    border: `1px solid ${error ? colors.hueColors.red : colors.borderShadow}`,
-                    borderRadius: error ? '5px 5px 0 0' : '5px',
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: results.length > 0 ? '5px 5px 0 0' : '5px',
                 }}
-                ref={editorRef}
+                ref={(e) => {
+                    editorRef.current = e
+                    if (ref !== undefined) {
+                        ref.current = e
+                    }
+                }}
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayErrors errors={errors} editor={true} />
+            <DisplayResults results={results} editor={true} />
             {autocompleteState === undefined
                 ? null
                 : createPortal(
@@ -227,29 +233,44 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-export function DisplayErrors(props: { errors: EditorError[], editor: boolean }): ReactNode | undefined {
+function useResultsColor(results: EditorResult[]): string {
     const colors = useColors()
-    if (props.errors.length === 0) {
+    switch (true) {
+        case results.some(r => r.kind === 'error'):
+            return colors.hueColors.red
+        case results.some(r => r.kind === 'warning'):
+            return colors.hueColors.orange
+        case results.some(r => r.kind === 'success'):
+            return colors.hueColors.green
+        default:
+            return colors.borderShadow
+    }
+}
+
+export function DisplayResults(props: { results: EditorResult[], editor: boolean }): ReactNode | undefined {
+    const colors = useColors()
+    const color = useResultsColor(props.results)
+    if (props.results.length === 0) {
         return undefined
     }
-    function style(color: string): CSSProperties {
-        const border = `2px solid ${color}`
-        return {
-            ...codeStyle,
-            borderRadius: props.editor ? '0 0 5px 5px' : '5px',
-            backgroundColor: colors.slightlyDifferentBackground,
-            color: colors.textMain,
-            borderTop: props.editor ? 'none' : border,
-            borderRight: border,
-            borderBottom: border,
-            borderLeft: border,
-            marginTop: props.editor ? undefined : '0.25em',
-        }
+    const border = `2px solid ${color}`
+    const style = {
+        ...codeStyle,
+        borderRadius: props.editor ? '0 0 5px 5px' : '5px',
+        backgroundColor: colors.slightlyDifferentBackground,
+        color: colors.textMain,
+        borderTop: props.editor ? 'none' : border,
+        borderRight: border,
+        borderBottom: border,
+        borderLeft: border,
+        marginTop: props.editor ? '0' : '0.25em',
     }
     return (
-        <pre style={style(props.errors.some(e => e.level === 'error') ? colors.hueColors.red : colors.hueColors.orange)}>
-            {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
-        </pre>
+        <div id="test-editor-result">
+            <pre style={style}>
+                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
+            </pre>
+        </div>
     )
 }
 
