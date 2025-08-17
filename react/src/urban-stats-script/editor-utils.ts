@@ -296,7 +296,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'z-index': '1',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': '0.5em',
+        'border-radius': TestUtils.shared.isTesting ? '0' : '0.5em',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
     }
