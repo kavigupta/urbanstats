@@ -99,6 +99,32 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
     return sortedPairs[sortedPairs.length - 1][0] // fallback
 }
 
+// Factory function to create vector-to-number functions
+function createVectorToNumberFunction(
+    name: string,
+    calculationFunction: (values: number[]) => number,
+    emptyArrayValue: number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            if (values.length === 0) {
+                return emptyArrayValue
+            }
+            return calculationFunction(values)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
 // Factory function to create weighted vector functions
 function createWeightedVectorFunction(
     name: string,
@@ -154,45 +180,9 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', 'Converts NaN values to 0, leaving other numbers unchanged.'),
     createTwoNumberToNumberFunction('maximum', Math.max, 'Maximum', 'Returns the larger of two numbers.'),
     createTwoNumberToNumberFunction('minimum', Math.min, 'Minimum', 'Returns the smaller of two numbers.'),
-    ['sum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            const arg = posArgs[0] as number[]
-            return arg.reduce((a, b) => a + b, 0)
-        },
-        documentation: {
-            humanReadableName: 'Sum',
-            category: 'math',
-            longDescription: 'Returns the sum of all numbers in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['min', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            const arg = posArgs[0] as number[]
-            return Math.min(...(arg))
-        },
-        documentation: {
-            humanReadableName: 'Vector Minimum',
-            category: 'math',
-            longDescription: 'Returns the smallest number in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['max', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            const arg = posArgs[0] as number[]
-            return Math.max(...(arg))
-        },
-        documentation: {
-            humanReadableName: 'Vector Maximum',
-            category: 'math',
-            longDescription: 'Returns the largest number in a vector.',
-        },
-    }] satisfies [string, USSValue],
+    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'Sum', 'Returns the sum of all numbers in a vector.'),
+    createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'Vector Minimum', 'Returns the smallest number in a vector.'),
+    createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'Vector Maximum', 'Returns the largest number in a vector.'),
     createWeightedVectorFunction('mean', (values, weights) => {
         const totalWeight = validateWeights(weights, values)
         return values.reduce((sum, value, index) => sum + value * weights[index], 0) / totalWeight
