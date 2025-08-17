@@ -64,7 +64,9 @@ export const rgb = {
     },
     documentation: {
         humanReadableName: 'Color (RGB)',
+        category: 'color',
         namedArgs: { a: 'Alpha' },
+        longDescription: 'Creates a color using RGB (Red, Green, Blue) values. Each component ranges from 0 to 1, where 0 is no color and 1 is full intensity.',
     },
 } satisfies USSValue
 
@@ -86,7 +88,11 @@ export const hsv = {
         const alpha = namedArgs.a as number
         return { type: 'opaque', opaqueType: 'color', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
     },
-    documentation: { humanReadableName: 'Color (HSV)' },
+    documentation: {
+        humanReadableName: 'Color (HSV)',
+        category: 'color',
+        longDescription: 'Creates a color using HSV (Hue, Saturation, Value) values. Hue ranges from 0 to 360 degrees, saturation and value range from 0 to 1.',
+    },
 } satisfies USSValue
 
 export const renderColor = {
@@ -101,7 +107,11 @@ export const renderColor = {
         const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number, a: number } }).value
         return doRender(color)
     },
-    documentation: { humanReadableName: 'Color to String' },
+    documentation: {
+        humanReadableName: 'Color to String',
+        category: 'color',
+        longDescription: 'Converts a color object to its hexadecimal string representation (e.g., "#ff0000" for red). If the alpha channel is not 255, it will be included in the string, e.g., "#ff000088" for red with 50% opacity.',
+    },
 } satisfies USSValue
 
 export function doRender(color: Color, ignoreAlpha?: boolean): string {
@@ -139,8 +149,10 @@ function colorConstant(name: string, value: string, isDefault?: boolean): [strin
         value: { type: 'opaque', opaqueType: 'color', value: color },
         documentation: {
             humanReadableName,
+            category: 'color',
             equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
             isDefault,
+            longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
         },
     }] satisfies [string, USSValue]
 }

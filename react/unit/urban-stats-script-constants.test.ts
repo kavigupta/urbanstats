@@ -566,3 +566,62 @@ void test('equivalent expressions produce equivalent results', (): void => {
         }
     }
 })
+
+void test('all constants have proper documentation', (): void => {
+    // Check that all constants have proper documentation
+    for (const [constantName, constantValue] of defaultConstants) {
+        // Verify that the constant has documentation
+        assert(
+            constantValue.documentation,
+            `Constant "${constantName}" is missing documentation`,
+        )
+
+        const doc = constantValue.documentation
+
+        // Verify that all constants have a humanReadableName
+        assert(
+            doc.humanReadableName,
+            `Constant "${constantName}" is missing humanReadableName in documentation`,
+        )
+
+        // Verify that all constants have a category
+        assert(
+            doc.category,
+            `Constant "${constantName}" is missing category in documentation`,
+        )
+
+        // Verify that all constants have a longDescription
+        assert(
+            doc.longDescription,
+            `Constant "${constantName}" is missing longDescription in documentation`,
+        )
+
+        // Verify that the longDescription is not empty
+        assert(
+            doc.longDescription.length > 0,
+            `Constant "${constantName}" has empty longDescription`,
+        )
+
+        // Verify that the humanReadableName is not empty
+        assert(
+            doc.humanReadableName.length > 0,
+            `Constant "${constantName}" has empty humanReadableName`,
+        )
+    }
+
+    // Log some statistics about the constants
+    const categoryCounts = new Map<string, number>()
+    for (const [, constantValue] of defaultConstants) {
+        const category = constantValue.documentation?.category
+        if (category) {
+            categoryCounts.set(category, (categoryCounts.get(category) ?? 0) + 1)
+        }
+    }
+
+    // Log some statistics about the constants (commented out to avoid console statements in tests)
+    // console.log('Constant documentation statistics:')
+    // for (const [category, count] of categoryCounts) {
+    //     console.log(`  ${category}: ${count} constants`)
+    // }
+    // console.log(`Total constants: ${defaultConstants.size}`)
+})

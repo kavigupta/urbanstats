@@ -47,11 +47,13 @@ export const osmBasemap: USSValue = {
     },
     documentation: {
         humanReadableName: 'OSM Basemap',
+        category: 'map',
         isDefault: true,
         namedArgs: {
             noLabels: 'Disable Basemap Labels',
             subnationalOutlines: 'Subnational Outlines',
         },
+        longDescription: 'Creates an OpenStreetMap basemap with customizable label visibility and subnational boundary outlines. Provides geographic context for data visualization.',
     },
 } satisfies USSValue
 
@@ -66,5 +68,10 @@ export const noBasemap: USSValue = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
         return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none' } }
     },
-    documentation: { humanReadableName: 'No Basemap', isDefault: true },
+    documentation: {
+        humanReadableName: 'No Basemap',
+        category: 'map',
+        isDefault: true,
+        longDescription: 'Creates a basemap with no background map, showing only the data visualization on a transparent background.',
+    },
 } satisfies USSValue

@@ -71,8 +71,12 @@ export const constructRampValue: USSValue = {
             (item.get('color') as { type: 'opaque', value: Color }).value,
         ]))
     },
-    documentation: { humanReadableName: 'Custom Ramp' },
-}
+    documentation: {
+        humanReadableName: 'Custom Ramp',
+        category: 'ramp',
+        longDescription: 'Creates a custom color ramp from a vector of value-color pairs. Values should range from 0 to 1 and be strictly increasing.',
+    },
+} satisfies USSValue
 
 export const reverseRampValue: USSValue = {
     type: {
@@ -95,8 +99,12 @@ export const reverseRampValue: USSValue = {
             value: reverseRamp(ramp.value),
         }
     },
-    documentation: { humanReadableName: 'Reverse Ramp' },
-}
+    documentation: {
+        humanReadableName: 'Reverse Ramp',
+        category: 'ramp',
+        longDescription: 'Represents a ramp that is ordered from highest to lowest value, in reverse order from the original ramp.',
+    },
+} satisfies USSValue
 
 export const divergingRampValue: USSValue = {
     type: {
@@ -119,8 +127,12 @@ export const divergingRampValue: USSValue = {
         const middle = (namedArgs.middle as { type: 'opaque', value: Color }).value
         return divergingRamp(first, last, middle)
     },
-    documentation: { humanReadableName: 'Diverging Ramp' },
-}
+    documentation: {
+        humanReadableName: 'Diverging Ramp',
+        category: 'ramp',
+        longDescription: 'Creates a diverging color ramp with three colors: first color at 0, middle color at 0.5, and last color at 1.',
+    },
+} satisfies USSValue
 
 export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map(([name, ramp]) => [
     `ramp${name.replace(/\s+([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase())}`,
@@ -129,6 +141,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
         value: { type: 'opaque', opaqueType: 'ramp', value: ramp satisfies RampT } satisfies USSRawValue,
         documentation: {
             humanReadableName: name,
+            category: 'ramp',
             isDefault: name === 'Uridis',
             equivalentExpressions: [parseNoErrorAsExpression(
                 `constructRamp([${ramp.map(([value, rampHex]) => {
@@ -137,6 +150,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
                 }).join(',')}])`,
                 '',
             )],
+            longDescription: `Predefined color ramp "${name}" for mapping numeric values to colors.`,
         },
     },
 ])

@@ -845,7 +845,7 @@ void test('mutate objects', (): void => {
 void test('constants', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('pi'), emptyContext()),
-        { value: Math.PI, type: numType, documentation: { humanReadableName: 'π' } },
+        { value: Math.PI, type: numType, documentation: { humanReadableName: 'π', category: 'math', longDescription: 'The mathematical constant π (pi), approximately 3.14159, representing the ratio of a circle\'s circumference to its diameter.' } },
     )
     assert.throws(
         () => execute(parseProgram('pi = 3.14'), emptyContext()),
