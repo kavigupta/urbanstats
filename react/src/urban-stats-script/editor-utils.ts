@@ -370,8 +370,6 @@ export function useUndoRedo<T, S>(
             }
         }
         redoStack.current = []
-
-        console.log(JSON.stringify(undoStack.current, null, 2))
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
