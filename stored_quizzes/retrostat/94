@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "Augusta-Richmond County [Urban Area], GA-SC, USA",
+      "longname_b": "Pittsburgh [Urban Area], PA, USA",
+      "stat_a": 0.48583248354500785,
+      "stat_b": 0.7865772627431249
+    },
+    "b": {
+      "stat_column": "Spanish at Home %",
+      "stat_path": "language_spanish",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Little Rock-North Little Rock-Conway MSA, AR, USA",
+      "longname_b": "Salem MSA, OR, USA",
+      "stat_a": 0.04012279125359586,
+      "stat_b": 0.18186232370552158
+    },
+    "a_ease": 0.6748712077847739,
+    "b_ease": 0.2701774470520893
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Irving city, Texas, USA",
+      "longname_b": "Memphis city, Tennessee, USA",
+      "stat_a": 0.3395819742713253,
+      "stat_b": -0.08819036563461949
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Oman",
+      "longname_b": "Malaysia",
+      "stat_a": 133.12982177734375,
+      "stat_b": 43.0744514465332
+    },
+    "a_ease": 0.7383177570093458,
+    "b_ease": 0.33177022274325907
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Baton Rouge [Urban Area], LA, USA",
+      "longname_b": "Fayetteville [Urban Area], NC, USA",
+      "stat_a": 0.11249510370295517,
+      "stat_b": 0.05451097445687045
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "AZ-09 (2023), USA",
+      "longname_b": "GA-11 (2025), USA",
+      "stat_a": 0.33208738775621405,
+      "stat_b": 0.5837349880908128
+    },
+    "a_ease": 0.2982866043613707,
+    "b_ease": 0.7439812096300646
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Denver Urban Center, USA",
+      "longname_b": "Hartford Urban Center, USA",
+      "stat_a": 0.1809862457605753,
+      "stat_b": 0.22525417872324202
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Austin TX Media Market, USA",
+      "longname_b": "Utica NY Media Market, USA",
+      "stat_a": 0.19988671926590784,
+      "stat_b": 0.17879988786845033
+    },
+    "a_ease": 0.15664961636828645,
+    "b_ease": 0.5705218617771509
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "Youngstown [Urban Area], OH, USA",
+      "longname_b": "Winston-Salem [Urban Area], NC, USA",
+      "stat_a": 0.14807345064741928,
+      "stat_b": 0.11748473699910526
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Huntsville MSA, AL, USA",
+      "longname_b": "Oxnard-Thousand Oaks-Ventura MSA, CA, USA",
+      "stat_a": 0.14257182270096466,
+      "stat_b": 0.16672977010309495
+    },
+    "a_ease": 0.5819142689371697,
+    "b_ease": 0.1477139507620164
+  }
+]
