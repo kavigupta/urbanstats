@@ -120,6 +120,8 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
+type ConstantCategory = 'basic' | 'color' | 'math' | 'logic' | 'unit' | 'map' | 'scale' | 'ramp' | 'inset' | 'regression'
+
 export interface Documentation {
     humanReadableName: string
     priority?: number
@@ -135,6 +137,14 @@ export interface Documentation {
      * Should be included when a constant should be deconstructed into an expression for user editing
      */
     equivalentExpressions?: UrbanStatsASTExpression[]
+    /**
+     * Included for all bulit-in constants.
+     */
+    category?: ConstantCategory
+    /**
+     * Included for all bulit-in constants. Will be displayed in the documentation.
+     */
+    longDescription?: string
 }
 
 export interface USSDocumentedType {

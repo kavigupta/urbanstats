@@ -89,8 +89,12 @@ export const constructInsetValue: USSValue = {
             name,
         )
     },
-    documentation: { humanReadableName: 'Custom Inset' },
-}
+    documentation: {
+        humanReadableName: 'Custom Inset',
+        category: 'inset',
+        longDescription: 'Creates a custom map inset with specified screen bounds (bounding box of the inset on the screen, where bottom left corner has (0, 0) and top right corner has (1, 1)), map bounds (bounding box of the inset on the map, in longitude and latitude), and whether it is the main map (the interactive map).',
+    },
+} satisfies USSValue
 
 export const constructInsetsValue: USSValue = {
     type: {
@@ -112,8 +116,13 @@ export const constructInsetsValue: USSValue = {
         const insetsList = posArgs[0] as { type: 'opaque', opaqueType: 'inset', value: Inset }[]
         return constructInsets(insetsList.map(item => item.value))
     },
-    documentation: { humanReadableName: 'Custom Insets', isDefault: true },
-}
+    documentation: {
+        humanReadableName: 'Custom Insets',
+        category: 'inset',
+        isDefault: true,
+        longDescription: 'Creates a collection of map insets. At least one inset must have mainMap=true.',
+    },
+} satisfies USSValue
 
 function computeInsetConstantName(name: string): string {
     name = name.replace(/[\s,().-]/g, '')
@@ -148,7 +157,9 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                 },
                 documentation: {
                     humanReadableName: insetName,
+                    category: 'inset',
                     equivalentExpressions: [expr],
+                    longDescription: `Predefined map inset for the region "${insetName}".`,
                 },
             } satisfies USSValue,
         ] as [string, USSValue]
