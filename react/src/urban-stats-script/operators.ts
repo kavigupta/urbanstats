@@ -166,21 +166,21 @@ export const expressionOperatorMap = new Map<string, Operator>([
         },
     ],
     // Comparators
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
     [
         '==',
         {
             precedence: 700,
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
             binary: binaryOperator(comparisonOperation((a, b) => a === b, (a, b) => a === b, (a, b) => a === b, (a, b) => a === b)),
             description: 'Equality (works with numbers, strings, booleans, null)',
             examples: ['5 == 5 → true', '"hello" == "hello" → true', 'true == true → true'],
         },
     ],
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
     [
         '!=',
         {
             precedence: 700,
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
             binary: binaryOperator(comparisonOperation((a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b)),
             description: 'Inequality (works with numbers, strings, booleans, null)',
             examples: ['5 != 3 → true', '"hello" != "world" → true'],

@@ -1,4 +1,3 @@
-import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { renderType, USSRawValue, USSValue, DocumentationTable } from '../types-values'
 
@@ -24,6 +23,7 @@ function createNumberToNumberFunction(
 ): [string, USSValue] {
     return [name, {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             return mathFunction(posArgs[0] as number)
         },
@@ -45,6 +45,7 @@ function createTwoNumberToNumberFunction(
 ): [string, USSValue] {
     return [name, {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             return mathFunction(posArgs[0] as number, posArgs[1] as number)
         },
@@ -125,6 +126,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createTwoNumberToNumberFunction('minimum', Math.min, 'Minimum', 'Returns the smaller of two numbers.'),
     ['sum', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const arg = posArgs[0] as number[]
             return arg.reduce((a, b) => a + b, 0)
@@ -137,6 +139,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }] satisfies [string, USSValue],
     ['mean', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const numbers = posArgs[0] as number[]
             return numbers.reduce((a, b) => a + b, 0) / numbers.length
@@ -149,6 +152,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }] satisfies [string, USSValue],
     ['min', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const arg = posArgs[0] as number[]
             return Math.min(...(arg))
@@ -161,6 +165,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }] satisfies [string, USSValue],
     ['max', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const arg = posArgs[0] as number[]
             return Math.max(...(arg))
@@ -173,6 +178,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }] satisfies [string, USSValue],
     ['median', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
             const values = posArgs[0] as number[]
             return weightedQuantile(values, Array.from({ length: values.length }, () => 1), 0.5)
