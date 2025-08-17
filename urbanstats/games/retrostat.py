@@ -8,7 +8,7 @@ from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
-generate_until = 90
+generate_until = 94
 
 
 def week_for_day(day):
