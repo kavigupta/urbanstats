@@ -1,5 +1,5 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
@@ -7,7 +7,10 @@ import './common.css'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
+import { defaultConstants } from './urban-stats-script/constants/constants'
 import { expressionOperatorMap } from './urban-stats-script/operators'
+import { constantCategories, ConstantCategory, renderType, USSValue } from './urban-stats-script/types-values'
+import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
 export function USSDocumentationPanel(): ReactNode {
@@ -107,6 +110,13 @@ export function USSDocumentationPanel(): ReactNode {
                                     </p>
                                     <OperatorTable />
                                 </Header>
+                            </Header>
+                            <Header title="Constants and Functions" header="h2" ident="constants">
+                                <p>
+                                    USS provides several built-in constants and functions for mathematical operations,
+                                    data visualization, and data analysis. These are organized by category below.
+                                </p>
+                                <ConstantsDocumentation />
                             </Header>
                         </Header>
                     </div>
@@ -220,6 +230,191 @@ function OperatorTable(): ReactNode {
             </tbody>
         </table>
     )
+}
+
+function ConstantsDocumentation(): ReactNode {
+    const colors = useColors()
+    const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
+
+    // Group constants by category
+    const constantsByCategory = new Map<ConstantCategory, [string, USSValue][]>()
+
+    for (const [name, value] of defaultConstants) {
+        const category = value.documentation?.category
+        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
+        if (!constantsByCategory.has(category)) {
+            constantsByCategory.set(category, [])
+        }
+        constantsByCategory.get(category)!.push([name, value])
+    }
+
+    // Sort categories for consistent display
+    const categoryOrder = constantCategories
+    const sortedCategories = Array.from(constantsByCategory.entries()).sort((a, b) => {
+        const aIndex = categoryOrder.indexOf(a[0])
+        const bIndex = categoryOrder.indexOf(b[0])
+        return aIndex - bIndex
+    })
+
+    const toggleCategory = (category: ConstantCategory): void => {
+        setCollapsedCategories((prev) => {
+            const newSet = new Set(prev)
+            if (newSet.has(category)) {
+                newSet.delete(category)
+            }
+            else {
+                newSet.add(category)
+            }
+            return newSet
+        })
+    }
+
+    return (
+        <div>
+            {sortedCategories.map(([category, constants]) => {
+                const isCollapsed = collapsedCategories.has(category)
+                return (
+                    <div key={category}>
+                        <div
+                            style={{
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                marginBottom: '10px',
+                            }}
+                            onClick={() => { toggleCategory(category) }}
+                        >
+                            <span style={{
+                                fontSize: '16px',
+                                transition: 'transform 0.2s',
+                                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                            }}
+                            >
+                                {isCollapsed ? '▶' : '▼'}
+                            </span>
+                            <h3 id={`constants-${category}`} style={{ margin: 0 }}>
+                                {getCategoryTitle(category)}
+                            </h3>
+                        </div>
+                        {!isCollapsed && (
+                            <>
+                                <p style={{ marginLeft: '20px' }}>{getCategoryDescription(category)}</p>
+                                {constants.map(([name, value]) => (
+                                    <Header key={name} title={name} header="h4" ident={`constant-${name}`}>
+                                        <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                Type:
+                                                <code style={{
+                                                    backgroundColor: colors.slightlyDifferentBackground,
+                                                    padding: '4px 8px',
+                                                    borderRadius: '3px',
+                                                    fontFamily: '\'Courier New\', monospace',
+                                                    fontSize: '13px',
+                                                    marginLeft: '10px',
+                                                }}
+                                                >
+                                                    {renderType(value.type)}
+                                                </code>
+                                            </div>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                {value.documentation?.longDescription}
+                                            </div>
+                                            {value.documentation?.namedArgs && Object.keys(value.documentation.namedArgs).length > 0 && (
+                                                <div style={{ marginBottom: '10px' }}>
+                                                    <strong>Named Arguments:</strong>
+                                                    <ul style={{ margin: '5px 0 0 20px' }}>
+                                                        {Object.entries(value.documentation.namedArgs).map(([argName, argDesc]) => (
+                                                            <li key={argName}>
+                                                                <code style={{
+                                                                    backgroundColor: colors.slightlyDifferentBackground,
+                                                                    padding: '2px 4px',
+                                                                    borderRadius: '3px',
+                                                                    fontFamily: '\'Courier New\', monospace',
+                                                                    fontSize: '12px',
+                                                                }}
+                                                                >
+                                                                    {argName}
+                                                                </code>
+                                                                :
+                                                                {' '}
+                                                                {argDesc}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {value.documentation?.isDefault && (
+                                                <div
+                                                    style={{
+                                                        marginBottom: '10px',
+                                                        color: colors.textMain,
+                                                        fontStyle: 'italic',
+                                                    }}
+                                                >
+                                                    Default value for this type
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Header>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
+function getCategoryTitle(category: ConstantCategory): string {
+    switch (category) {
+        case 'logic':
+            return 'Logic and Control'
+        case 'math':
+            return 'Mathematical Functions'
+        case 'color':
+            return 'Color Functions'
+        case 'unit':
+            return 'Unit Types'
+        case 'map':
+            return 'Map and Visualization'
+        case 'scale':
+            return 'Scaling Functions'
+        case 'ramp':
+            return 'Color Ramps'
+        case 'inset':
+            return 'Map Insets'
+        case 'regression':
+            return 'Statistical Analysis'
+        case 'basic':
+            return 'Basic Functions'
+    }
+}
+
+function getCategoryDescription(category: ConstantCategory): string {
+    switch (category) {
+        case 'logic':
+            return 'Boolean values and control flow constants.'
+        case 'math':
+            return 'Mathematical functions for arithmetic, trigonometry, and statistical operations.'
+        case 'color':
+            return 'Functions for creating and manipulating colors using RGB, HSV, and predefined color palettes.'
+        case 'unit':
+            return 'Unit type constants for specifying measurement units in data visualization.'
+        case 'map':
+            return 'Functions for creating choropleth maps, point maps, and map styling.'
+        case 'scale':
+            return 'Functions for scaling numeric data to visualization ranges.'
+        case 'ramp':
+            return 'Functions for creating and manipulating color ramps for data visualization.'
+        case 'inset':
+            return 'Functions for creating map insets and managing multiple map views.'
+        case 'regression':
+            return 'Statistical analysis functions for linear regression.'
+        case 'basic':
+            return 'Basic utility functions for type conversion and common operations.'
+    }
 }
 
 function Header(props: { title: string, header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', ident: string, children: ReactNode }): ReactNode {
