@@ -64,6 +64,17 @@ const getSelectionAnchor = ClientFunction(() => window.getSelection()?.anchorOff
 
 const getSelectionFocus = ClientFunction(() => window.getSelection()?.focusOffset)
 
+function selectionIsNthEditor(n: number | null): Promise<boolean> {
+    return ClientFunction(() => {
+        if (n === null) {
+            return document.activeElement === document.body
+        }
+        else {
+            return document.activeElement === document.querySelectorAll('pre[contenteditable="plaintext-only"]').item(n)
+        }
+    }, { dependencies: { n } })()
+}
+
 urbanstatsFixture('editor test', `${target}/editor.html`)
 
 test('basic arithmetic', async (t) => {
@@ -214,4 +225,32 @@ test('undo redo chunking middle', async (t) => {
     await t.pressKey('ctrl+y')
     await t.expect(firstEditor.textContent).eql('"the quick brown fox was cool"\n')
     await t.expect(result.textContent).eql('"the quick brown fox was cool"')
+})
+
+test('deselect', async (t) => {
+    await t.click(firstEditor)
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.pressKey('ctrl+shift+d')
+    await t.expect(selectionIsNthEditor(null)).ok()
+})
+
+test('switch selection undo', async (t) => {
+    await t.click(firstEditor)
+    await typeTextWithKeys(t, '1')
+    await t.wait(1000)
+    await typeTextWithKeys(t, ' + 2')
+    await t.wait(1000)
+    await t.pressKey('ctrl+shift+s')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await typeTextWithKeys(t, ' + 3')
+    await t.expect(result.textContent).eql('6')
+    await t.pressKey('ctrl+z')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await t.pressKey('ctrl+z')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.pressKey('ctrl+y')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await t.pressKey('ctrl+y')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await t.expect(result.textContent).eql('6')
 })

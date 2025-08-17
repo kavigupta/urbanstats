@@ -405,11 +405,11 @@ export function useUndoRedo<T, S>(
             }
 
             const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
-            if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
+            if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 e.preventDefault()
                 undo()
             }
-            else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
+            else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
                 e.preventDefault()
                 redo()
             }
