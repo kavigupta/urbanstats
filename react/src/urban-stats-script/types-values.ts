@@ -2,7 +2,7 @@ import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
-import { Color } from './constants/color'
+import { Color, hexToColor } from './constants/color'
 import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
@@ -314,7 +314,58 @@ export function renderValue(input: USSValue): string {
             case 'string':
                 return `"${value.value}"`
             case 'opaque':
-                return JSON.stringify((value.value as USSOpaqueValue).value)
+                const opaqueValue = value.value as USSOpaqueValue
+                switch (opaqueValue.opaqueType) {
+                    case 'scale':
+                    case 'pMap':
+                    case 'cMap':
+                    case 'basemap':
+                    case 'inset':
+                    case 'insets':
+                    case 'geoFeatureHandle':
+                    case 'geoCentroidHandle':
+                    case 'unit':
+                        return `[${opaqueValue.opaqueType} object]`
+                    case 'color':
+                        const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }
+                        if (colorValue.a === 255) {
+                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255})`
+                        } else {
+                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255}, a=${colorValue.a / 255})`
+                        }
+                    case 'outline':
+                        const outline = opaqueValue.value as { color: { r: number, g: number, b: number, a: number }, weight: number }
+                        const outlineColor = outline.color
+                        if (outlineColor.a === 255) {
+                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}), weight=${outline.weight})`
+                        } else {
+                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}, a=${outlineColor.a / 255}), weight=${outline.weight})`
+                        }
+                    case 'ramp':
+                        const ramp = opaqueValue.value
+                        const rampValue = ramp.map(
+                            ([position, color]) => {
+                                const contents: [string, USSRawValue][] = [
+                                        ['value', position] satisfies [string, USSRawValue],
+                                        ['color', { type: 'opaque', opaqueType: 'color', value: hexToColor(color) }] satisfies [string, USSRawValue],
+                                ] satisfies [string, USSRawValue][]
+                                return new Map(contents) satisfies Map<string, USSRawValue>
+                            },
+                        )
+                        const interior = undocValue(rampValue,
+                            {
+                                type: 'vector',
+                                elementType: {
+                                    type: 'object',
+                                    properties: new Map([
+                                        ['value', { type: 'number' }],
+                                        ['color', { type: 'opaque', name: 'color' }],
+                                    ]),
+                                },
+                            },
+                        )
+                        return `[ramp ${renderValue(interior)}]`
+                }
             case 'vector':
                 const vector = value.value as USSRawValue[]
                 if (vector.length === 0) {
