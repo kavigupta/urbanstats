@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
@@ -401,7 +402,7 @@ export function useUndoRedo<T, S>(
                 return
             }
 
-            const isMac = navigator.userAgent.includes('Mac')
+            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
                 e.preventDefault()
                 undo()
