@@ -1,5 +1,5 @@
 import { Context } from '../context'
-import { renderType, USSRawValue, USSValue, DocumentationTable } from '../types-values'
+import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
@@ -57,7 +57,7 @@ function createTwoNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
-function validateWeights(weights: number[], values: number[]): void {
+function validateWeights(weights: number[], values: number[]): number {
     if (values.length !== weights.length) {
         throw new Error('Values and weights must have the same length')
     }
@@ -67,10 +67,15 @@ function validateWeights(weights: number[], values: number[]): void {
     if (weights.some(weight => weight < 0)) {
         throw new Error('Weights must not contain negative values')
     }
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+    if (totalWeight === 0) {
+        throw new Error('Total weight cannot be zero')
+    }
+    return totalWeight
 }
 
 function weightedQuantile(values: number[], weights: number[], quantile: number): number {
-    validateWeights(weights, values)
+    const totalWeight = validateWeights(weights, values)
     if (quantile < 0 || quantile > 1) {
         throw new Error('Quantile must be between 0 and 1')
     }
@@ -79,8 +84,7 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
     }
     const sortedPairs = values.map((value, index) => [value, weights[index]])
     sortedPairs.sort((a, b) => a[0] - b[0])
-    const cumWeights = weights.reduce((acc, weight) => acc + weight, 0)
-    const targetWeight = quantile * cumWeights
+    const targetWeight = quantile * totalWeight
     let cumulativeWeight = 0
     for (let i = 0; i < sortedPairs.length; i++) {
         cumulativeWeight += sortedPairs[i][1]
@@ -93,6 +97,32 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
         }
     }
     return sortedPairs[sortedPairs.length - 1][0] // fallback
+}
+
+// Factory function to create weighted vector functions
+function createWeightedVectorFunction(
+    name: string,
+    calculationFunction: (values: number[], weights: number[]) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: { weights: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, defaultValue: createConstantExpression(null) } }, returnType: { type: 'concrete', value: { type: 'number' } } },
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            // Handle empty arrays gracefully
+            if (values.length === 0) {
+                return NaN
+            }
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            return calculationFunction(values, weights)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
 }
 
 export const defaultConstants: Constants = new Map<string, USSValue>([
@@ -137,19 +167,6 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             longDescription: 'Returns the sum of all numbers in a vector.',
         },
     }] satisfies [string, USSValue],
-    ['mean', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            const numbers = posArgs[0] as number[]
-            return numbers.reduce((a, b) => a + b, 0) / numbers.length
-        },
-        documentation: {
-            humanReadableName: 'Mean',
-            category: 'math',
-            longDescription: 'Returns the arithmetic mean (average) of all numbers in a vector.',
-        },
-    }] satisfies [string, USSValue],
     ['min', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
@@ -176,19 +193,13 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             longDescription: 'Returns the largest number in a vector.',
         },
     }] satisfies [string, USSValue],
-    ['median', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            const values = posArgs[0] as number[]
-            return weightedQuantile(values, Array.from({ length: values.length }, () => 1), 0.5)
-        },
-        documentation: {
-            humanReadableName: 'Median',
-            category: 'math',
-            longDescription: 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values.',
-        },
-    }] satisfies [string, USSValue],
+    createWeightedVectorFunction('mean', (values, weights) => {
+        const totalWeight = validateWeights(weights, values)
+        return values.reduce((sum, value, index) => sum + value * weights[index], 0) / totalWeight
+    }, 'Mean', 'Returns the arithmetic mean (average) of all numbers in a vector. If weights are provided as a named argument, returns the weighted mean.'),
+    createWeightedVectorFunction('median', (values, weights) => {
+        return weightedQuantile(values, weights, 0.5)
+    }, 'Median', 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values. If weights are provided as a named argument, returns the weighted median.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],

@@ -120,9 +120,14 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('[[1, 1, 2, 2, 3, 3]] == 1'), emptyContext()),
         undocValue([[true, true, false, false, false, false]], { type: 'vector', elementType: { type: 'vector', elementType: { type: 'boolean' } } }),
     )
+    // Test functions separately since mean and median now have different signatures (with optional weights)
     assert.deepStrictEqual(
-        evaluate(parseExpr('[min, max, sum, mean, median]([1, 2, 3, 5, 6, 70])'), emptyContext()),
-        undocValue([1, 70, 87, 14.5, 4], { type: 'vector', elementType: numType }),
+        evaluate(parseExpr('[min, max, sum]([1, 2, 3, 5, 6, 70])'), emptyContext()),
+        undocValue([1, 70, 87], { type: 'vector', elementType: numType }),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('[mean, median]([1, 2, 3, 5, 6, 70])'), emptyContext()),
+        undocValue([14.5, 4], { type: 'vector', elementType: numType }),
     )
     assert.deepStrictEqual(
         evaluate(parseExpr('min([[1], []])'), emptyContext()),
