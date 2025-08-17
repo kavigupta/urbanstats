@@ -151,6 +151,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
                 '',
             )],
             longDescription: `Predefined color ramp "${name}" for mapping numeric values to colors.`,
+            documentationTable: 'predefined-ramps',
         },
     },
 ])

@@ -103,6 +103,9 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
             documentation: {
                 humanReadableName: variableInfo.humanReadableName,
                 priority: variableInfo.comesFromMultiSourceSet ? 1000 + order : order,
+                category: 'mapper',
+                longDescription: `Data from ${variableInfo.humanReadableName}`,
+                documentationTable: 'mapper-data-variables',
             },
         })
     }
@@ -120,6 +123,9 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
             documentation: {
                 humanReadableName: info.humanReadableName,
                 priority: minPriority,
+                category: 'mapper',
+                longDescription: `Data from ${info.humanReadableName} (from whatever source is most reliable)`,
+                documentationTable: 'mapper-data-variables',
             },
         })
     }

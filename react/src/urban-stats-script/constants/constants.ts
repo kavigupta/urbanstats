@@ -67,6 +67,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Natural Logarithm',
             category: 'math',
             longDescription: 'Returns the natural logarithm (base e) of a number.',
+            documentationTable: 'logarithm-functions',
         },
     }] satisfies [string, USSValue],
     ['log10', {
@@ -82,6 +83,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Base-10 Logarithm',
             category: 'math',
             longDescription: 'Returns the base-10 logarithm of a number.',
+            documentationTable: 'logarithm-functions',
         },
     }] satisfies [string, USSValue],
     ['log2', {
@@ -97,6 +99,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Base-2 Logarithm',
             category: 'math',
             longDescription: 'Returns the base-2 logarithm of a number.',
+            documentationTable: 'logarithm-functions',
         },
     }] satisfies [string, USSValue],
     ['sin', {
@@ -112,6 +115,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Sine',
             category: 'math',
             longDescription: 'Returns the sine of an angle in radians.',
+            documentationTable: 'trigonometric-functions',
         },
     }] satisfies [string, USSValue],
     ['cos', {
@@ -127,6 +131,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Cosine',
             category: 'math',
             longDescription: 'Returns the cosine of an angle in radians.',
+            documentationTable: 'trigonometric-functions',
         },
     }] satisfies [string, USSValue],
     ['tan', {
@@ -172,6 +177,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
             humanReadableName: 'Arccosine',
             category: 'math',
             longDescription: 'Returns the arccosine (inverse cosine) of a number in radians.',
+            documentationTable: 'trigonometric-functions',
         },
     }] satisfies [string, USSValue],
     ['atan', {

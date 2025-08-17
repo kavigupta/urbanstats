@@ -7,11 +7,10 @@ import './common.css'
 import { defaultTypeEnvironment } from './mapper/context'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
-import { Universe } from './universe'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
 import { defaultConstants } from './urban-stats-script/constants/constants'
 import { expressionOperatorMap } from './urban-stats-script/operators'
-import { constantCategories, ConstantCategory, renderType, USSDocumentedType } from './urban-stats-script/types-values'
+import { constantCategories, ConstantCategory, DocumentationTable, renderType, USSDocumentedType, USSValue } from './urban-stats-script/types-values'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
@@ -60,6 +59,71 @@ export function USSDocumentationPanel(): ReactNode {
                                     The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
                                 </p>
                                 <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                            </Header>
+                            <Header title="Opaque Types" header="h2" ident="opaque-types">
+                                <p>
+                                    USS has several opaque types, which are types that you can only interact with via functions.
+                                    For example, colors are opaque types, and you can only create them using functions like
+                                    {' '}
+                                    <code>rgb()</code>
+                                    {', '}
+                                    <code>hsv()</code>
+                                    , or one of the predefined colors.
+                                </p>
+                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
+                                <p>
+                                    And you can only interact with them using functions like
+                                    {' '}
+                                    <code>renderColor()</code>
+                                    {' '}
+                                    or in other contexts that use color objects.
+                                </p>
+                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
+                            </Header>
+                            <Header title="Regressions" header="h2" ident="regressions">
+                                <p>
+                                    USS supports linear regression via the
+                                    {' '}
+                                    <code>regress(y, x1, x2, ..., weight)</code>
+                                    {' '}
+                                    function, which returns an object with several properties:
+                                </p>
+                                <ul>
+                                    <li>
+                                        <code>b</code>
+                                        : The intercept of the regression line.
+                                    </li>
+                                    <li>
+                                        <code>m1, m2, m3...</code>
+                                        : The coefficients for each independent variable.
+                                    </li>
+                                    <li>
+                                        <code>r2</code>
+                                        : The R-squared value of the regression.
+                                    </li>
+                                    <li>
+                                        <code>residuals</code>
+                                        : The residuals of the regression.
+                                    </li>
+                                </ul>
+                                <p>
+                                    For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
+                                </p>
+                                <StandaloneEditor
+                                    ident="regression"
+                                    getCode={
+                                        () =>
+                                            'x1 = [1, 2, 3, 4, 5]' + '\n'
+                                            + 'x2 = [2, 3, 2, 3, 2]' + '\n'
+                                            + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
+                                            + 'w = [1, 1, 1, 1, 10]' + '\n'
+                                            + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
+                                            + 'model'
+                                    }
+                                />
+                                <p>
+                                    Note that the inputs are all named arguments and the weight is optional.
+                                </p>
                             </Header>
                             <Header title="Broadcasting" header="h2" ident="broadcasting">
                                 <p>
@@ -129,10 +193,7 @@ export function USSDocumentationPanel(): ReactNode {
     )
 }
 
-function OperatorTable(): ReactNode {
-    const colors = useColors()
-
-    // Global style variables for the operator table
+function createTable(colors: ReturnType<typeof useColors>, headers: string[], cells: ReactNode[][]): ReactNode {
     const tableStyles = {
         table: {
             width: '100%',
@@ -172,61 +233,26 @@ function OperatorTable(): ReactNode {
         <table style={tableStyles.table}>
             <thead>
                 <tr>
-                    <th style={tableStyles.header}>
-                        Operator
-                    </th>
-                    <th style={tableStyles.header}>
-                        Type
-                    </th>
-                    <th style={tableStyles.header}>
-                        Precedence
-                    </th>
-                    <th style={tableStyles.header}>
-                        Description
-                    </th>
-                    <th style={tableStyles.header}>
-                        Example
-                    </th>
+                    {headers.map((header, index) => (
+                        <th key={index} style={tableStyles.header}>
+                            {header}
+                        </th>
+                    ))}
                 </tr>
             </thead>
             <tbody>
-                {Array.from(expressionOperatorMap.entries()).map(([operator, info], index) => (
+                {cells.map((row, rowIndex) => (
                     <tr
-                        key={operator}
+                        key={rowIndex}
                         style={{
-                            backgroundColor: index % 2 === 0 ? tableStyles.rowColors.even : tableStyles.rowColors.odd,
+                            backgroundColor: rowIndex % 2 === 0 ? tableStyles.rowColors.even : tableStyles.rowColors.odd,
                         }}
                     >
-                        <td style={tableStyles.cell}>
-                            <code style={tableStyles.code}>
-                                {operator}
-                            </code>
-                        </td>
-                        <td style={tableStyles.cell}>
-                            {info.unary && info.binary
-                                ? 'Unary/Binary'
-                                : info.unary
-                                    ? 'Unary'
-                                    : info.binary
-                                        ? 'Binary'
-                                        : 'Unknown'}
-                        </td>
-                        <td style={tableStyles.cell}>
-                            {info.precedence}
-                        </td>
-                        <td style={tableStyles.cell}>
-                            {info.description}
-                        </td>
-                        <td style={tableStyles.cell}>
-                            {info.examples.map((example, exampleIndex) => (
-                                <span key={exampleIndex}>
-                                    <code style={tableStyles.code}>
-                                        {example}
-                                    </code>
-                                    {exampleIndex < info.examples.length - 1 && ', '}
-                                </span>
-                            ))}
-                        </td>
+                        {row.map((cell, cellIndex) => (
+                            <td key={cellIndex} style={tableStyles.cell}>
+                                {cell}
+                            </td>
+                        ))}
                     </tr>
                 ))}
             </tbody>
@@ -234,8 +260,37 @@ function OperatorTable(): ReactNode {
     )
 }
 
-function ConstantsDocumentation(): ReactNode {
+function OperatorTable(): ReactNode {
     const colors = useColors()
+
+    const headers = ['Operator', 'Type', 'Precedence', 'Description', 'Example']
+    const cells = Array.from(expressionOperatorMap.entries()).map(([operator, info]) => [
+        <code key="operator" style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+            {operator}
+        </code>,
+        info.unary && info.binary
+            ? 'Unary/Binary'
+            : info.unary
+                ? 'Unary'
+                : info.binary
+                    ? 'Binary'
+                    : 'Unknown',
+        info.precedence,
+        info.description,
+        info.examples.map((example, exampleIndex) => (
+            <span key={exampleIndex}>
+                <code style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+                    {example}
+                </code>
+                {exampleIndex < info.examples.length - 1 && ', '}
+            </span>
+        )),
+    ])
+
+    return createTable(colors, headers, cells)
+}
+
+function ConstantsDocumentation(): ReactNode {
     const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
 
     const mapperContext = defaultTypeEnvironment('world')
@@ -247,10 +302,12 @@ function ConstantsDocumentation(): ReactNode {
     for (const [name, value] of defaultConstants) {
         const category = value.documentation?.category
         assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        if (!constantsByCategory.has(category)) {
-            constantsByCategory.set(category, [])
+        let cat = constantsByCategory.get(category)
+        if (cat === undefined) {
+            cat = []
+            constantsByCategory.set(category, cat)
         }
-        constantsByCategory.get(category)!.push([name, value])
+        cat.push([name, value])
     }
 
     // Add mapper context elements
@@ -261,10 +318,26 @@ function ConstantsDocumentation(): ReactNode {
         const category = value.documentation?.category
         assert(category !== undefined, `Constant ${name} does not have a category defined.`)
         if (constantCategories.includes(category)) {
-            if (!constantsByCategory.has(category)) {
-                constantsByCategory.set(category, [])
+            let cat = constantsByCategory.get(category)
+            if (cat === undefined) {
+                cat = []
+                constantsByCategory.set(category, cat)
             }
-            constantsByCategory.get(category)!.push([name, value])
+            cat.push([name, value])
+        }
+    }
+
+    // Group constants by documentationTable for table display
+    const constantsByTable = new Map<DocumentationTable, [string, USSValue][]>()
+    for (const [name, value] of defaultConstants) {
+        const tableName = value.documentation?.documentationTable
+        if (tableName !== undefined) {
+            let cat = constantsByTable.get(tableName)
+            if (cat === undefined) {
+                cat = []
+                constantsByTable.set(tableName, cat)
+            }
+            cat.push([name, value])
         }
     }
 
@@ -311,78 +384,151 @@ function ConstantsDocumentation(): ReactNode {
                                 transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
                             }}
                             >
-                                {isCollapsed ? '▶' : '▼'}
+                                ▶
                             </span>
                             <h3 id={`constants-${category}`} style={{ margin: 0 }}>
                                 {getCategoryTitle(category)}
                             </h3>
                         </div>
-                        {!isCollapsed && (
-                            <>
-                                <p style={{ marginLeft: '20px' }}>{getCategoryDescription(category)}</p>
-                                {constants.map(([name, value]) => (
-                                    <Header key={name} title={name} header="h4" ident={`constant-${name}`}>
-                                        <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
-                                            <div style={{ marginBottom: '10px' }}>
-                                                Type:
-                                                <code style={{
-                                                    backgroundColor: colors.slightlyDifferentBackground,
-                                                    padding: '4px 8px',
-                                                    borderRadius: '3px',
-                                                    fontFamily: '\'Courier New\', monospace',
-                                                    fontSize: '13px',
-                                                    marginLeft: '10px',
-                                                }}
-                                                >
-                                                    {renderType(value.type)}
-                                                </code>
-                                            </div>
-                                            <div style={{ marginBottom: '10px' }}>
-                                                {value.documentation?.longDescription ?? 'No description available.'}
-                                            </div>
-                                            {value.documentation?.namedArgs && Object.keys(value.documentation.namedArgs).length > 0 && (
-                                                <div style={{ marginBottom: '10px' }}>
-                                                    <strong>Named Arguments:</strong>
-                                                    <ul style={{ margin: '5px 0 0 20px' }}>
-                                                        {Object.entries(value.documentation.namedArgs).map(([argName, argDesc]) => (
-                                                            <li key={argName}>
-                                                                <code style={{
-                                                                    backgroundColor: colors.slightlyDifferentBackground,
-                                                                    padding: '2px 4px',
-                                                                    borderRadius: '3px',
-                                                                    fontFamily: '\'Courier New\', monospace',
-                                                                    fontSize: '12px',
-                                                                }}
-                                                                >
-                                                                    {argName}
-                                                                </code>
-                                                                :
-                                                                {' '}
-                                                                {argDesc}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                            {value.documentation?.isDefault && (
-                                                <div
-                                                    style={{
-                                                        marginBottom: '10px',
-                                                        color: colors.textMain,
-                                                        fontStyle: 'italic',
-                                                    }}
-                                                >
-                                                    Default value for this type
-                                                </div>
-                                            )}
-                                        </div>
-                                    </Header>
-                                ))}
-                            </>
-                        )}
+                        {!isCollapsed && (<DocumentationForCategory category={category} constants={constants} />)}
                     </div>
                 )
             })}
+
+        </div>
+    )
+}
+
+function DocumentationForCategory(props: { category: ConstantCategory, constants: [string, USSDocumentedType][] }): ReactNode {
+    const withoutTable: [string, USSDocumentedType][] = []
+    const categoryTables = new Map<DocumentationTable, [string, USSDocumentedType][]>()
+    for (const [name, value] of props.constants) {
+        const tableName = value.documentation?.documentationTable
+        if (tableName !== undefined) {
+            let cat = categoryTables.get(tableName)
+            if (cat === undefined) {
+                cat = []
+                categoryTables.set(tableName, cat)
+            }
+            cat.push([name, value])
+        }
+        else {
+            withoutTable.push([name, value])
+        }
+    }
+
+    return (
+        <>
+            <p style={{ marginLeft: '20px' }}>{getCategoryDescription(props.category)}</p>
+            {withoutTable.map(([name, value]) => (
+                <LongFormDocumentation key={name} name={name} value={value} />
+            ))}
+
+            {/* Add tables for constants with documentationTable */}
+            {(() => {
+                return Array.from(categoryTables.entries()).map(([tableName, tableConstants]) =>
+                    <ShortFormTableDocumentation key={tableName} tableName={tableName} tableConstants={tableConstants} />,
+                )
+            })()}
+        </>
+    )
+}
+
+function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
+    const colors = useColors()
+    return (
+        <Header key={props.name} title={props.name} header="h4" ident={`constant-${props.name}`}>
+            <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                    Type:
+                    <code style={{
+                        backgroundColor: colors.slightlyDifferentBackground,
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        fontFamily: '\'Courier New\', monospace',
+                        fontSize: '13px',
+                        marginLeft: '10px',
+                    }}
+                    >
+                        {renderType(props.value.type)}
+                    </code>
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                    {props.value.documentation?.longDescription ?? 'No description available.'}
+                </div>
+                {props.value.documentation?.namedArgs && Object.keys(props.value.documentation.namedArgs).length > 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                        <strong>Named Arguments:</strong>
+                        <ul style={{ margin: '5px 0 0 20px' }}>
+                            {Object.entries(props.value.documentation.namedArgs).map(([argName, argDesc]) => (
+                                <li key={argName}>
+                                    <code style={{
+                                        backgroundColor: colors.slightlyDifferentBackground,
+                                        padding: '2px 4px',
+                                        borderRadius: '3px',
+                                        fontFamily: '\'Courier New\', monospace',
+                                        fontSize: '12px',
+                                    }}
+                                    >
+                                        {argName}
+                                    </code>
+                                    :
+                                    {' '}
+                                    {argDesc}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                {props.value.documentation?.isDefault && (
+                    <div
+                        style={{
+                            marginBottom: '10px',
+                            color: colors.textMain,
+                            fontStyle: 'italic',
+                        }}
+                    >
+                        Default value for this type
+                    </div>
+                )}
+            </div>
+        </Header>
+    )
+}
+
+function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tableConstants: [string, USSDocumentedType][] }): ReactNode {
+    const colors = useColors()
+    const headers = ['Name', 'Type', 'Description']
+    const cells = props.tableConstants.map(([name, value]) => [
+        <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
+        <code
+            key="type"
+            style={{
+                backgroundColor: colors.slightlyDifferentBackground,
+                padding: '2px 4px',
+                borderRadius: '3px',
+                fontFamily: '\'Courier New\', monospace',
+                fontSize: '12px',
+            }}
+        >
+            {renderType(value.type)}
+        </code>,
+        <span key="description">
+            {value.documentation?.longDescription ?? 'No description available.'}
+            {value.documentation?.isDefault && (
+                <span key="default-indicator" style={{ fontStyle: 'italic', color: colors.textMain }}>
+                    {' '}
+                    (default)
+                </span>
+            )}
+        </span>,
+    ])
+
+    return (
+        <div key={props.tableName} style={{ marginTop: '20px', marginLeft: '20px' }}>
+            <h4 style={{ marginBottom: '15px' }}>{getTableTitle(props.tableName)}</h4>
+            <p style={{ marginBottom: '15px' }}>{getTableDescription(props.tableName)}</p>
+            {createTable(colors, headers, cells)}
         </div>
     )
 }
@@ -438,6 +584,44 @@ function getCategoryDescription(category: ConstantCategory): string {
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':
             return 'The mapper provides several variables relevant to the current universe and set of geographic features.'
+    }
+}
+
+function getTableTitle(tableName: DocumentationTable): string {
+    switch (tableName) {
+        case 'predefined-colors':
+            return 'Predefined Color Constants'
+        case 'unit-types':
+            return 'Unit Type Constants'
+        case 'predefined-ramps':
+            return 'Predefined Color Ramps'
+        case 'predefined-insets':
+            return 'Predefined Map Insets'
+        case 'logarithm-functions':
+            return 'Logarithm Functions'
+        case 'trigonometric-functions':
+            return 'Trigonometric Functions'
+        case 'mapper-data-variables':
+            return 'Mapper Data Variables'
+    }
+}
+
+function getTableDescription(tableName: DocumentationTable): string {
+    switch (tableName) {
+        case 'predefined-colors':
+            return 'Built-in color constants for common colors like red, blue, green, etc. Each color can be used directly in USS expressions.'
+        case 'unit-types':
+            return 'Unit type constants for specifying measurement units in data visualization and analysis.'
+        case 'predefined-ramps':
+            return 'Predefined color ramps for mapping numeric values to colors in data visualizations.'
+        case 'predefined-insets':
+            return 'Predefined map inset configurations for common geographic regions and territories.'
+        case 'logarithm-functions':
+            return 'Mathematical functions for computing logarithms with different bases (natural, base-10, base-2).'
+        case 'trigonometric-functions':
+            return 'Mathematical functions for trigonometric calculations (sine, cosine, arccosine, etc.).'
+        case 'mapper-data-variables':
+            return 'Variables used in the mapper.'
     }
 }
 

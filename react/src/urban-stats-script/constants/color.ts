@@ -153,6 +153,7 @@ function colorConstant(name: string, value: string, isDefault?: boolean): [strin
             equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
             isDefault,
             longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
+            documentationTable: 'predefined-colors',
         },
     }] satisfies [string, USSValue]
 }

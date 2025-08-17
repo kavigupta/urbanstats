@@ -4,7 +4,6 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRe
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
-import { TestUtils } from '../utils/TestUtils'
 
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
 import { USSDocumentedType } from './types-values'
@@ -198,7 +197,7 @@ export function Editor(
                     ...codeStyle,
                     caretColor: colors.textMain,
                     border: `1px solid ${borderColor}`,
-                    borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
+                    borderRadius: results.length > 0 ? '5px 5px 0 0' : '5px',
                 }}
                 ref={(e) => {
                     editorRef.current = e
@@ -257,7 +256,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
     const border = `2px solid ${color}`
     const style = {
         ...codeStyle,
-        borderRadius: TestUtils.shared.isTesting ? 0 : (props.editor ? '0 0 5px 5px' : '5px'),
+        borderRadius: props.editor ? '0 0 5px 5px' : '5px',
         backgroundColor: colors.slightlyDifferentBackground,
         color: colors.textMain,
         borderTop: props.editor ? 'none' : border,

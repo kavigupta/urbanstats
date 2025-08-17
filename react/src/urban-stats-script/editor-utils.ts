@@ -296,7 +296,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'z-index': '1',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': TestUtils.shared.isTesting ? '0' : '0.5em',
+        'border-radius': '5px',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
     }
@@ -370,8 +370,6 @@ export function useUndoRedo<T, S>(
             }
         }
         redoStack.current = []
-
-        console.log(JSON.stringify(undoStack.current, null, 2))
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
