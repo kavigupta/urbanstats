@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
@@ -350,7 +351,7 @@ export function useUndoRedo<T, S>(
         updateCurrentSelection: (selection: S) => void
     } {
     const undoStack = useRef<UndoRedoItem<T, S>[]>([
-        { time: Date.now(), state: initialState, selection: initialSelection },
+        { time: 0, state: initialState, selection: initialSelection },
     ])
     const redoStack = useRef<UndoRedoItem<T, S>[]>([])
 
@@ -369,6 +370,8 @@ export function useUndoRedo<T, S>(
             }
         }
         redoStack.current = []
+
+        console.log(JSON.stringify(undoStack.current, null, 2))
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
@@ -401,7 +404,7 @@ export function useUndoRedo<T, S>(
                 return
             }
 
-            const isMac = navigator.userAgent.includes('Mac')
+            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
                 e.preventDefault()
                 undo()

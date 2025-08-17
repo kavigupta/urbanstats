@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect } from 'react'
 
 import { PageTemplate } from '../page_template/template'
+import { TestUtils } from '../utils/TestUtils'
 
 import { Editor } from './Editor'
 import { useStandaloneEditorState } from './StandaloneEditor'
@@ -11,18 +12,20 @@ type Selections = [Range | null, Range | null]
 /**
  * This panel used for developing + debugging editor functionality.
  */
-export function DebugEditorPanel(): ReactNode {
+export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
     const { uss, setUss, typeEnvironment, results, selection, setSelection } = useStandaloneEditorState<Selections>({
         ident: 'editor-panel',
         getCode: () => localStorage.getItem('editor-code') ?? '',
         onChange: (newScript) => { localStorage.setItem('editor-code', newScript) },
         getSelection: () => [null, null],
-        undoRedoOptions: {},
+        undoRedoOptions: {
+            undoChunking: props.undoChunking,
+        },
     })
 
     useEffect(() => {
         const listener = (e: KeyboardEvent): void => {
-            const isMac = navigator.userAgent.includes('Mac')
+            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             if (e.key === 's' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
                 e.preventDefault()
                 setSelection([selection[1], selection[0]])
