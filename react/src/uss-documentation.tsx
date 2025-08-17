@@ -125,6 +125,28 @@ export function USSDocumentationPanel(): ReactNode {
                                     Note that the inputs are all named arguments and the weight is optional.
                                 </p>
                             </Header>
+                            <Header title="Aggregation" header="h2" ident="aggregation">
+                                <p>
+                                    USS provides several functions for aggregating data, including mean, median, quantile, percentile,
+                                    min, max, sum, and more.
+                                </p>
+                                <p>
+                                    For example, to calculate the mean of a vector, you can do:
+                                </p>
+                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50])'} />
+                                <p>
+                                    We can also weight the mean, for example:
+                                </p>
+                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50], weights=[1, 1, 1, 1, 10])'} />
+                                <p>
+                                    The same works for median, quantile, and percentile.
+                                </p>
+                                <StandaloneEditor ident="aggregation" getCode={() => 'percentile([1, 2, 3, 4, 50], 10, weights=[1, 1, 1, 1, 10])'} />
+                                <p>
+                                    On the other hand, min, max, and sum do not support weights.
+                                </p>
+                                <StandaloneEditor ident="aggregation" getCode={() => 'min([1, 2, 3, 4, 50])'} />
+                            </Header>
                             <Header title="Broadcasting" header="h2" ident="broadcasting">
                                 <p>
                                     Broadcasting is a feature of USS that allows you to operate on lists of values.
