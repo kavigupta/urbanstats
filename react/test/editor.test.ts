@@ -1,79 +1,7 @@
-import { ClientFunction, Selector } from 'testcafe'
+import { Selector } from 'testcafe'
 
-import {
-    safeReload,
-    screencap,
-    target, urbanstatsFixture,
-} from './test_utils'
-
-const keyMapping = new Map<string, string>(Object.entries({
-    '\n': 'enter',
-    '\t': 'tab',
-    '\b': 'backspace',
-    '⬆': 'up',
-    '➡': 'right',
-    '⬇': 'down',
-    '⬅': 'left',
-}))
-
-// Helper function to type text using individual key presses
-async function typeTextWithKeys(t: TestController, inputText: string): Promise<void> {
-    const cdp = await t.getCurrentCDPSession()
-    for (const char of inputText) {
-        let key
-        if ((key = keyMapping.get(char)) !== undefined) {
-            await t.pressKey(key)
-        }
-        else {
-            // Faster than t.pressKey, can't figure out how to get to work reliably for special characters
-            await cdp.Input.dispatchKeyEvent({
-                text: char,
-                type: 'char',
-            })
-        }
-    }
-}
-
-const firstEditor = Selector('pre[contenteditable="plaintext-only"]').nth(0)
-
-async function fillInField(t: TestController, text: string): Promise<void> {
-    await t.expect(firstEditor.exists).ok()
-    await t.expect(firstEditor.visible).ok()
-    await t.click(firstEditor)
-    await typeTextWithKeys(t, text)
-}
-
-const result = Selector('#test-editor-result')
-
-async function checkCode(t: TestController, code: string, expected: string | undefined): Promise<void> {
-    await fillInField(t, code)
-
-    await screencap(t, { selector: Selector('#test-editor-panel') })
-
-    // Check output
-    if (expected !== undefined) {
-        await t.expect(result.exists).ok()
-        await t.expect(result.textContent).eql(expected)
-    }
-    else {
-        await t.expect(result.exists).notOk()
-    }
-}
-
-const getSelectionAnchor = ClientFunction(() => window.getSelection()?.anchorOffset)
-
-const getSelectionFocus = ClientFunction(() => window.getSelection()?.focusOffset)
-
-function selectionIsNthEditor(n: number | null): Promise<boolean> {
-    return ClientFunction(() => {
-        if (n === null) {
-            return document.activeElement === document.body
-        }
-        else {
-            return document.activeElement === document.querySelectorAll('pre[contenteditable="plaintext-only"]').item(n)
-        }
-    }, { dependencies: { n } })()
-}
+import { checkCode, getSelectionAnchor, getSelectionFocus, nthEditor, result, selectionIsNthEditor, typeTextWithKeys } from './editor_test_utils'
+import { safeReload, target, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('editor test', `${target}/editor.html`)
 
@@ -140,52 +68,52 @@ test('post-reload', async (t) => {
 })
 
 test('tab inserts spaces', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'if (true) {\n\t"hello"\n}')
-    await t.expect(firstEditor.textContent).eql('if (true) {\n    "hello"\n}\n')
+    await t.expect(nthEditor(0).textContent).eql('if (true) {\n    "hello"\n}\n')
 })
 
 test('deletes whole indent', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'if (true) {\n\t"hello"\n}⬆➡➡➡\b')
-    await t.expect(firstEditor.textContent).eql('if (true) {\n"hello"\n}\n')
+    await t.expect(nthEditor(0).textContent).eql('if (true) {\n"hello"\n}\n')
 })
 
 test('autocomplete pi with enter', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'p\n')
-    await t.expect(firstEditor.textContent).eql('pi\n')
+    await t.expect(nthEditor(0).textContent).eql('pi\n')
     await t.expect(result.textContent).eql('3.141592653589793')
 })
 
 test('autocomplete exp with tab', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'e⬇\t(1)')
-    await t.expect(firstEditor.textContent).eql('exp(1)\n')
+    await t.expect(nthEditor(0).textContent).eql('exp(1)\n')
     await t.expect(result.textContent).eql('2.718281828459045')
 })
 
 test('autocomplete sum with click', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 's')
     await t.click(Selector('div').withExactText('sum'))
     await typeTextWithKeys(t, '([1, 2])')
-    await t.expect(firstEditor.textContent).eql('sum([1, 2])\n')
+    await t.expect(nthEditor(0).textContent).eql('sum([1, 2])\n')
     await t.expect(result.textContent).eql('3')
 })
 
 urbanstatsFixture('editor (undoChunking = 10000)', `${target}/editor.html?undoChunking=10000`)
 // Long undo chunking above catches problems with initial undo chunk
 test('undo autocomplete', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'p\n')
-    await t.expect(firstEditor.textContent).eql('pi\n')
+    await t.expect(nthEditor(0).textContent).eql('pi\n')
     await t.expect(result.textContent).eql('3.141592653589793')
     await t.pressKey('ctrl+z')
-    await t.expect(firstEditor.textContent).eql('Enter Urban Stats Script\n')
+    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
     await t.expect(result.textContent).eql('null')
     await t.pressKey('ctrl+y')
-    await t.expect(firstEditor.textContent).eql('pi\n')
+    await t.expect(nthEditor(0).textContent).eql('pi\n')
     await t.expect(result.textContent).eql('3.141592653589793')
     await t.expect(getSelectionAnchor()).eql(2)
 })
@@ -193,21 +121,21 @@ test('undo autocomplete', async (t) => {
 urbanstatsFixture('editor (undoChunking = 0)', `${target}/editor.html?undoChunking=0`)
 
 test('undo redo selection select all', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'null')
     await t.pressKey('ctrl+a')
     await t.expect(getSelectionAnchor()).eql(0)
     await t.expect(getSelectionFocus()).eql(4)
     await t.pressKey('backspace')
-    await t.expect(firstEditor.textContent).eql('Enter Urban Stats Script\n')
+    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
     await t.pressKey('ctrl+z')
-    await t.expect(firstEditor.textContent).eql('null\n')
+    await t.expect(nthEditor(0).textContent).eql('null\n')
     await t.expect(getSelectionAnchor()).eql(0)
     await t.expect(getSelectionFocus()).eql(4)
     await t.pressKey('ctrl+y')
-    await t.expect(firstEditor.textContent).eql('Enter Urban Stats Script\n')
+    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
     await t.pressKey('ctrl+z')
-    await t.expect(firstEditor.textContent).eql('null\n')
+    await t.expect(nthEditor(0).textContent).eql('null\n')
     await t.expect(getSelectionAnchor()).eql(0)
     await t.expect(getSelectionFocus()).eql(4)
 })
@@ -215,30 +143,30 @@ test('undo redo selection select all', async (t) => {
 urbanstatsFixture('editor (undoChunking = 500)', `${target}/editor.html?undoChunking=500`)
 
 test('undo redo chunking middle', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, '"the quick brown fox"')
     await t.wait(1000)
     await t.pressKey('left')
     await typeTextWithKeys(t, ' jumped over the lazy dog')
     await t.pressKey('ctrl+z')
-    await t.expect(firstEditor.textContent).eql('"the quick brown fox"\n')
+    await t.expect(nthEditor(0).textContent).eql('"the quick brown fox"\n')
     await t.expect(getSelectionAnchor()).eql('"the quick brown fox'.length)
     await t.expect(getSelectionFocus()).eql('"the quick brown fox'.length)
     await typeTextWithKeys(t, ' was cool')
     await t.pressKey('ctrl+y')
-    await t.expect(firstEditor.textContent).eql('"the quick brown fox was cool"\n')
+    await t.expect(nthEditor(0).textContent).eql('"the quick brown fox was cool"\n')
     await t.expect(result.textContent).eql('"the quick brown fox was cool"')
 })
 
 test('deselect', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await t.expect(selectionIsNthEditor(0)).ok()
     await t.pressKey('ctrl+shift+d')
     await t.expect(selectionIsNthEditor(null)).ok()
 })
 
 test('switch selection undo', async (t) => {
-    await t.click(firstEditor)
+    await t.click(nthEditor(0))
     await typeTextWithKeys(t, '1')
     await t.wait(1000)
     await typeTextWithKeys(t, ' + 2')
