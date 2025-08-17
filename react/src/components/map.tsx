@@ -196,9 +196,8 @@ function createMaps(
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
-    private delta = 0.25
     private version = 0
-    private last_modified = 0
+    private lastUpdate: Promise<void> | undefined
     private basemap_props: null | Basemap = null
     private exist_this_time: string[] = []
     private attributionControl: CustomAttributionControl | undefined
@@ -463,22 +462,24 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async updateToVersion(version: number): Promise<void> {
-        if (version <= this.version) {
-            return
-        }
-        // check if at least 1s has passed since last update
-        const now = Date.now()
-        const delta = now - this.last_modified
-        await this.handler.getMaps()
-        if (delta < 1000) {
-            setTimeout(() => this.updateToVersion(version), 1000 - delta)
-            return
-        }
         this.version = version
-        this.last_modified = now
-        await this.updateFn()
+        await this.handler.getMaps()
+        await this.lastUpdate
+        if (this.version !== version) {
+            // There's a newer update behind us
+            return
+        }
+        this.lastUpdate = (async () => {
+            const updateStart = Date.now()
+            await this.updateFn()
+            const updateDuration = Date.now() - updateStart
+            // Can only update once per second
+            await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - updateDuration)))
+        })()
+        return this.lastUpdate
     }
 
+    // In order to prevent race conditions, only one updateFn should be run at a time for a given map
     async updateFn(): Promise<void> {
         const time = Date.now()
         debugPerformance('Loading map...')

@@ -3,7 +3,9 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
-import { Color, rgbColorExpression, doRender, hexToColor } from './color'
+import { rgbColorExpression, doRender } from './color'
+import { Color } from './color-utils'
+import { hexToColor } from './color-utils'
 
 export type RampT = [number, string][]
 
