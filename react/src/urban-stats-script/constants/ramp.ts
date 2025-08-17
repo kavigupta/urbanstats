@@ -28,7 +28,7 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
 }
 
-export function divergingRamp(first: Color, last: Color, middle: Color = { r: 255, g: 255, b: 255 }): USSRawValue {
+export function divergingRamp(first: Color, last: Color, middle: Color = { r: 255, g: 255, b: 255, a: 255 }): USSRawValue {
     const ramp: [number, Color][] = [
         [0, first],
         [0.5, middle],
