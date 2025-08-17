@@ -14,6 +14,7 @@ function createUnit(name: UnitType, humanReadableName: string): [string, USSValu
                 category: 'unit',
                 isDefault: name === 'number',
                 longDescription: `Unit type representing ${humanReadableName.toLowerCase()} measurements.`,
+                documentationTable: 'unit-types',
             },
         },
     ]
