@@ -64,6 +64,8 @@ export const getSelectionAnchor = ClientFunction(() => window.getSelection()?.an
 
 export const getSelectionFocus = ClientFunction(() => window.getSelection()?.focusOffset)
 
+export const selectionNotPoint = ClientFunction(() => window.getSelection()?.anchorOffset !== window.getSelection()?.focusOffset)
+
 export function selectionIsNthEditor(n: number | null): Promise<boolean> {
     return ClientFunction(() => {
         if (n === null) {
