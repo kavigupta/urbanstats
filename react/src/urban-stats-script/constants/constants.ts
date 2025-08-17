@@ -151,6 +151,33 @@ function createWeightedVectorFunction(
     }] satisfies [string, USSValue]
 }
 
+// Factory function to create quantile/percentile functions with extra positional argument
+function createQuantileFunction(
+    name: string,
+    calculationFunction: (values: number[], quantileValue: number, weights: number[]) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: { weights: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, defaultValue: createConstantExpression(null) } }, returnType: { type: 'concrete', value: { type: 'number' } } },
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            const quantileValue = posArgs[1] as number
+            // Handle empty arrays gracefully
+            if (values.length === 0) {
+                return NaN
+            }
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            return calculationFunction(values, quantileValue, weights)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
 export const defaultConstants: Constants = new Map<string, USSValue>([
     ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', category: 'logic', isDefault: true, longDescription: 'Boolean true value representing logical truth.' } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false', category: 'logic', longDescription: 'Boolean false value representing logical falsehood.' } }] satisfies [string, USSValue],
@@ -190,6 +217,14 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createWeightedVectorFunction('median', (values, weights) => {
         return weightedQuantile(values, weights, 0.5)
     }, 'Median', 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values. If weights are provided as a named argument, returns the weighted median.'),
+    createQuantileFunction('quantile', (values, q, weights) => {
+        return weightedQuantile(values, weights, q)
+    }, 'Quantile', 'Returns the quantile value from a vector. Takes a quantile value (between 0 and 1) as the second argument and optional weights as a named argument.'),
+    createQuantileFunction('percentile', (values, p, weights) => {
+        // Convert percentile (0-100) to quantile (0-1)
+        const q = p / 100
+        return weightedQuantile(values, weights, q)
+    }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],
