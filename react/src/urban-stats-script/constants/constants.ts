@@ -56,21 +56,25 @@ function createTwoNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
-function weightedQuantile(values: number[], weights: number[], quantile: number): number {
+function validateWeights(weights: number[], values: number[]): void {
     if (values.length !== weights.length) {
         throw new Error('Values and weights must have the same length')
-    }
-    if (quantile < 0 || quantile > 1) {
-        throw new Error('Quantile must be between 0 and 1')
-    }
-    if (values.length === 0) {
-        return NaN
     }
     if (weights.some(weight => isNaN(weight))) {
         throw new Error('Weights must not contain NaN')
     }
     if (weights.some(weight => weight < 0)) {
         throw new Error('Weights must not contain negative values')
+    }
+}
+
+function weightedQuantile(values: number[], weights: number[], quantile: number): number {
+    validateWeights(weights, values)
+    if (quantile < 0 || quantile > 1) {
+        throw new Error('Quantile must be between 0 and 1')
+    }
+    if (values.length === 0) {
+        return NaN
     }
     const sortedPairs = values.map((value, index) => [value, weights[index]])
     sortedPairs.sort((a, b) => a[0] - b[0])
