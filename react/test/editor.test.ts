@@ -192,7 +192,7 @@ test('undo autocomplete', async (t) => {
 
 urbanstatsFixture('editor (undoChunking = 0)', `${target}/editor.html?undoChunking=0`)
 
-test.only('undo redo selection select all', async (t) => {
+test('undo redo selection select all', async (t) => {
     await t.click(firstEditor)
     await typeTextWithKeys(t, 'null')
     await t.pressKey('ctrl+a')
