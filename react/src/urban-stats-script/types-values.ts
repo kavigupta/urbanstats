@@ -124,6 +124,8 @@ export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapp
 
 export type ConstantCategory = typeof constantCategories[number]
 
+export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
+
 export interface Documentation {
     humanReadableName: string
     priority?: number
@@ -143,6 +145,11 @@ export interface Documentation {
      * Included for all bulit-in constants.
      */
     category?: ConstantCategory
+    /**
+     * Whether the constant should be grouped with other constants in a table in the documentation.
+     * If present, this field groups the constant with other similar ones.
+     */
+    documentationTable?: DocumentationTable
     /**
      * Included for all bulit-in constants. Will be displayed in the documentation.
      */
