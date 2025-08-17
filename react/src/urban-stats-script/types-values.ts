@@ -2,7 +2,7 @@ import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
-import { Color, hexToColor } from './constants/color'
+import { Color, hexToColor } from './constants/color-utils'
 import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
@@ -330,7 +330,8 @@ export function renderValue(input: USSValue): string {
                         const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }
                         if (colorValue.a === 255) {
                             return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255})`
-                        } else {
+                        }
+                        else {
                             return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255}, a=${colorValue.a / 255})`
                         }
                     case 'outline':
@@ -338,7 +339,8 @@ export function renderValue(input: USSValue): string {
                         const outlineColor = outline.color
                         if (outlineColor.a === 255) {
                             return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}), weight=${outline.weight})`
-                        } else {
+                        }
+                        else {
                             return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}, a=${outlineColor.a / 255}), weight=${outline.weight})`
                         }
                     case 'ramp':
