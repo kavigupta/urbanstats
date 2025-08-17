@@ -79,11 +79,18 @@ void test('constant listing', (): void => {
             ],
             '([number]; ) -> number': [
                 'sum',
-                'mean',
                 'min',
                 'max',
+            ],
+            '([number]; weights: [number] = null) -> number': [
+                'mean',
                 'median',
             ],
+            '([number], number; weights: [number] = null) -> number': [
+                'quantile',
+                'percentile',
+            ],
+
             '(any; ) -> number': [
                 'toNumber',
             ],

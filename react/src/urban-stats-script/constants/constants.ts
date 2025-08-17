@@ -1,6 +1,5 @@
-import { assert } from '../../utils/defensive'
 import { Context } from '../context'
-import { renderType, USSRawValue, USSValue } from '../types-values'
+import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
@@ -14,6 +13,171 @@ import { unitConstants } from './units'
 
 type Constants = Map<string, USSValue>
 
+// Factory function to create number-to-number functions
+function createNumberToNumberFunction(
+    name: string,
+    mathFunction: (x: number) => number,
+    humanReadableName: string,
+    longDescription: string,
+    documentationTable?: DocumentationTable,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            return mathFunction(posArgs[0] as number)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+            ...(documentationTable && { documentationTable }),
+        },
+    }] satisfies [string, USSValue]
+}
+
+// Factory function to create two-argument number-to-number functions
+function createTwoNumberToNumberFunction(
+    name: string,
+    mathFunction: (x: number, y: number) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            return mathFunction(posArgs[0] as number, posArgs[1] as number)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
+function validateWeights(weights: number[], values: number[]): number {
+    if (values.length !== weights.length) {
+        throw new Error('Values and weights must have the same length')
+    }
+    if (weights.some(weight => isNaN(weight))) {
+        throw new Error('Weights must not contain NaN')
+    }
+    if (weights.some(weight => weight < 0)) {
+        throw new Error('Weights must not contain negative values')
+    }
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+    if (totalWeight === 0) {
+        throw new Error('Total weight cannot be zero')
+    }
+    return totalWeight
+}
+
+function weightedQuantile(values: number[], weights: number[], quantile: number): number {
+    const totalWeight = validateWeights(weights, values)
+    if (quantile < 0 || quantile > 1) {
+        throw new Error('Quantile must be between 0 and 1')
+    }
+    if (values.length === 0) {
+        return NaN
+    }
+    const sortedPairs = values.map((value, index) => [value, weights[index]])
+    sortedPairs.sort((a, b) => a[0] - b[0])
+    const targetWeight = quantile * totalWeight
+    let cumulativeWeight = 0
+    for (let i = 0; i < sortedPairs.length; i++) {
+        cumulativeWeight += sortedPairs[i][1]
+        if (cumulativeWeight >= targetWeight) {
+            if (i === sortedPairs.length - 1 || cumulativeWeight > targetWeight) {
+                return sortedPairs[i][0]
+            }
+            // hit it exactly, which means you'd hit it exactly from the other direction
+            return (sortedPairs[i][0] + sortedPairs[i + 1][0]) / 2
+        }
+    }
+    return sortedPairs[sortedPairs.length - 1][0] // fallback
+}
+
+// Factory function to create vector-to-number functions
+function createVectorToNumberFunction(
+    name: string,
+    calculationFunction: (values: number[]) => number,
+    emptyArrayValue: number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- namedArgs is unused but needed for the function signature
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            if (values.length === 0) {
+                return emptyArrayValue
+            }
+            return calculationFunction(values)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
+// Factory function to create weighted vector functions
+function createWeightedVectorFunction(
+    name: string,
+    calculationFunction: (values: number[], weights: number[]) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: { weights: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, defaultValue: createConstantExpression(null) } }, returnType: { type: 'concrete', value: { type: 'number' } } },
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            // Handle empty arrays gracefully
+            if (values.length === 0) {
+                return NaN
+            }
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            return calculationFunction(values, weights)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
+// Factory function to create quantile/percentile functions with extra positional argument
+function createQuantileFunction(
+    name: string,
+    calculationFunction: (values: number[], quantileValue: number, weights: number[]) => number,
+    humanReadableName: string,
+    longDescription: string,
+): [string, USSValue] {
+    return [name, {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: { weights: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }, defaultValue: createConstantExpression(null) } }, returnType: { type: 'concrete', value: { type: 'number' } } },
+        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
+            const values = posArgs[0] as number[]
+            const quantileValue = posArgs[1] as number
+            // Handle empty arrays gracefully
+            if (values.length === 0) {
+                return NaN
+            }
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            return calculationFunction(values, quantileValue, weights)
+        },
+        documentation: {
+            humanReadableName,
+            category: 'math',
+            longDescription,
+        },
+    }] satisfies [string, USSValue]
+}
+
 export const defaultConstants: Constants = new Map<string, USSValue>([
     ['true', { type: { type: 'boolean' }, value: true, documentation: { humanReadableName: 'true', category: 'logic', isDefault: true, longDescription: 'Boolean true value representing logical truth.' } }] satisfies [string, USSValue],
     ['false', { type: { type: 'boolean' }, value: false, documentation: { humanReadableName: 'false', category: 'logic', longDescription: 'Boolean false value representing logical falsehood.' } }] satisfies [string, USSValue],
@@ -24,379 +188,43 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN', category: 'math', longDescription: 'Not a Number, a special numeric value representing an undefined or unrepresentable numeric result.' } }] satisfies [string, USSValue],
     ...colorConstants,
     ...unitConstants,
-    ['abs', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for abs, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for abs, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for abs, got ${typeof arg}`)
-            return Math.abs(arg)
-        },
-        documentation: {
-            humanReadableName: 'Absolute Value',
-            category: 'math',
-            longDescription: 'Returns the absolute value of a number (removes the negative sign).',
-        },
-    }] satisfies [string, USSValue],
-    ['sqrt', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for sqrt, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for sqrt, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for sqrt, got ${typeof arg}`)
-            return Math.sqrt(arg)
-        },
-        documentation: {
-            humanReadableName: 'Square Root',
-            category: 'math',
-            longDescription: 'Returns the square root of a number.',
-        },
-    }] satisfies [string, USSValue],
-    ['ln', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for ln, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ln, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for ln, got ${typeof arg}`)
-            return Math.log(arg)
-        },
-        documentation: {
-            humanReadableName: 'Natural Logarithm',
-            category: 'math',
-            longDescription: 'Returns the natural logarithm (base e) of a number.',
-            documentationTable: 'logarithm-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['log10', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for log10, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for log10, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for log10, got ${typeof arg}`)
-            return Math.log10(arg)
-        },
-        documentation: {
-            humanReadableName: 'Base-10 Logarithm',
-            category: 'math',
-            longDescription: 'Returns the base-10 logarithm of a number.',
-            documentationTable: 'logarithm-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['log2', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for log2, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for log2, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for log2, got ${typeof arg}`)
-            return Math.log2(arg)
-        },
-        documentation: {
-            humanReadableName: 'Base-2 Logarithm',
-            category: 'math',
-            longDescription: 'Returns the base-2 logarithm of a number.',
-            documentationTable: 'logarithm-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['sin', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for sin, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for sin, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for sin, got ${typeof arg}`)
-            return Math.sin(arg)
-        },
-        documentation: {
-            humanReadableName: 'Sine',
-            category: 'math',
-            longDescription: 'Returns the sine of an angle in radians.',
-            documentationTable: 'trigonometric-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['cos', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for cos, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for cos, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for cos, got ${typeof arg}`)
-            return Math.cos(arg)
-        },
-        documentation: {
-            humanReadableName: 'Cosine',
-            category: 'math',
-            longDescription: 'Returns the cosine of an angle in radians.',
-            documentationTable: 'trigonometric-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['tan', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for tan, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for tan, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for tan, got ${typeof arg}`)
-            return Math.tan(arg)
-        },
-        documentation: {
-            humanReadableName: 'Tangent',
-            category: 'math',
-            longDescription: 'Returns the tangent of an angle in radians.',
-        },
-    }] satisfies [string, USSValue],
-    ['asin', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for asin, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for asin, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for asin, got ${typeof arg}`)
-            return Math.asin(arg)
-        },
-        documentation: {
-            humanReadableName: 'Arcsine',
-            category: 'math',
-            longDescription: 'Returns the arcsine (inverse sine) of a number in radians.',
-        },
-    }] satisfies [string, USSValue],
-    ['acos', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for acos, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for acos, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for acos, got ${typeof arg}`)
-            return Math.acos(arg)
-        },
-        documentation: {
-            humanReadableName: 'Arccosine',
-            category: 'math',
-            longDescription: 'Returns the arccosine (inverse cosine) of a number in radians.',
-            documentationTable: 'trigonometric-functions',
-        },
-    }] satisfies [string, USSValue],
-    ['atan', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for atan, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for atan, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for atan, got ${typeof arg}`)
-            return Math.atan(arg)
-        },
-        documentation: {
-            humanReadableName: 'Arctangent',
-            category: 'math',
-            longDescription: 'Returns the arctangent (inverse tangent) of a number in radians.',
-        },
-    }] satisfies [string, USSValue],
-    ['ceil', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for ceil, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ceil, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for ceil, got ${typeof arg}`)
-            return Math.ceil(arg)
-        },
-        documentation: {
-            humanReadableName: 'Ceiling',
-            category: 'math',
-            longDescription: 'Rounds a number up to the nearest integer.',
-        },
-    }] satisfies [string, USSValue],
-    ['floor', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for floor, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for floor, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for floor, got ${typeof arg}`)
-            return Math.floor(arg)
-        },
-        documentation: {
-            humanReadableName: 'Floor',
-            category: 'math',
-            longDescription: 'Rounds a number down to the nearest integer.',
-        },
-    }] satisfies [string, USSValue],
-    ['round', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for round, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for round, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for round, got ${typeof arg}`)
-            return Math.round(arg)
-        },
-        documentation: {
-            humanReadableName: 'Round',
-            category: 'math',
-            longDescription: 'Rounds a number to the nearest integer.',
-        },
-    }] satisfies [string, USSValue],
-    ['exp', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for exp, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for exp, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for exp, got ${typeof arg}`)
-            return Math.exp(arg)
-        },
-        documentation: {
-            humanReadableName: 'Exponential',
-            category: 'math',
-            longDescription: 'Returns e raised to the power of the given number.',
-        },
-    }] satisfies [string, USSValue],
-    ['sign', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for sign, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for sign, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for sign, got ${typeof arg}`)
-            return Math.sign(arg)
-        },
-        documentation: {
-            humanReadableName: 'Sign',
-            category: 'math',
-            longDescription: 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.',
-        },
-    }] satisfies [string, USSValue],
-    ['nanTo0', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for nanTo0, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for nanTo0, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for nanTo0, got ${typeof arg}`)
-            return isNaN(arg) ? 0 : arg
-        },
-        documentation: {
-            humanReadableName: 'NaN to Zero',
-            category: 'math',
-            longDescription: 'Converts NaN values to 0, leaving other numbers unchanged.',
-        },
-    }] satisfies [string, USSValue],
-    ['maximum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 2, `Expected 2 arguments for maximum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for maximum, got ${Object.keys(namedArgs).length}`)
-            const [arg1, arg2] = posArgs
-            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for maximum, got ${typeof arg1} and ${typeof arg2}`)
-            return Math.max(arg1, arg2)
-        },
-        documentation: {
-            humanReadableName: 'Maximum',
-            category: 'math',
-            longDescription: 'Returns the larger of two numbers.',
-        },
-    }] satisfies [string, USSValue],
-    ['minimum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 2, `Expected 2 arguments for minimum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for minimum, got ${Object.keys(namedArgs).length}`)
-            const [arg1, arg2] = posArgs
-            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for minimum, got ${typeof arg1} and ${typeof arg2}`)
-            return Math.min(arg1, arg2)
-        },
-        documentation: {
-            humanReadableName: 'Minimum',
-            category: 'math',
-            longDescription: 'Returns the smaller of two numbers.',
-        },
-    }] satisfies [string, USSValue],
-    ['sum', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for sum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for sum, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for sum, got ${JSON.stringify(arg)}`)
-            return (arg).reduce((a, b) => a + b, 0)
-        },
-        documentation: {
-            humanReadableName: 'Sum',
-            category: 'math',
-            longDescription: 'Returns the sum of all numbers in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['mean', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for mean, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for mean, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for mean, got ${JSON.stringify(arg)}`)
-            const numbers = arg
-            return numbers.reduce((a, b) => a + b, 0) / numbers.length
-        },
-        documentation: {
-            humanReadableName: 'Mean',
-            category: 'math',
-            longDescription: 'Returns the arithmetic mean (average) of all numbers in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['min', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for min, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for min, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for min, got ${JSON.stringify(arg)}`)
-            return Math.min(...(arg))
-        },
-        documentation: {
-            humanReadableName: 'Vector Minimum',
-            category: 'math',
-            longDescription: 'Returns the smallest number in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['max', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for max, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for max, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for max, got ${JSON.stringify(arg)}`)
-            return Math.max(...(arg))
-        },
-        documentation: {
-            humanReadableName: 'Vector Maximum',
-            category: 'math',
-            longDescription: 'Returns the largest number in a vector.',
-        },
-    }] satisfies [string, USSValue],
-    ['median', {
-        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
-        value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for median, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for median, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for median, got ${JSON.stringify(arg)}`)
-            const values = arg
-            if (values.length === 0) {
-                return NaN
-            }
-            const sorted = [...values].sort((a, b) => a - b)
-            const mid = Math.floor(sorted.length / 2)
-            return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
-        },
-        documentation: {
-            humanReadableName: 'Median',
-            category: 'math',
-            longDescription: 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values.',
-        },
-    }] satisfies [string, USSValue],
+    createNumberToNumberFunction('abs', Math.abs, 'Absolute Value', 'Returns the absolute value of a number (removes the negative sign).'),
+    createNumberToNumberFunction('sqrt', Math.sqrt, 'Square Root', 'Returns the square root of a number.'),
+    createNumberToNumberFunction('ln', Math.log, 'Natural Logarithm', 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log10', Math.log10, 'Base-10 Logarithm', 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log2', Math.log2, 'Base-2 Logarithm', 'Returns the base-2 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('sin', Math.sin, 'Sine', 'Returns the sine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('cos', Math.cos, 'Cosine', 'Returns the cosine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('tan', Math.tan, 'Tangent', 'Returns the tangent of an angle in radians.'),
+    createNumberToNumberFunction('asin', Math.asin, 'Arcsine', 'Returns the arcsine (inverse sine) of a number in radians.'),
+    createNumberToNumberFunction('acos', Math.acos, 'Arccosine', 'Returns the arccosine (inverse cosine) of a number in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('atan', Math.atan, 'Arctangent', 'Returns the arctangent (inverse tangent) of a number in radians.'),
+    createNumberToNumberFunction('ceil', Math.ceil, 'Ceiling', 'Rounds a number up to the nearest integer.'),
+    createNumberToNumberFunction('floor', Math.floor, 'Floor', 'Rounds a number down to the nearest integer.'),
+    createNumberToNumberFunction('round', Math.round, 'Round', 'Rounds a number to the nearest integer.'),
+    createNumberToNumberFunction('exp', Math.exp, 'Exponential', 'Returns e raised to the power of the given number.'),
+    createNumberToNumberFunction('sign', Math.sign, 'Sign', 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
+    createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', 'Converts NaN values to 0, leaving other numbers unchanged.'),
+    createTwoNumberToNumberFunction('maximum', Math.max, 'Maximum', 'Returns the larger of two numbers.'),
+    createTwoNumberToNumberFunction('minimum', Math.min, 'Minimum', 'Returns the smaller of two numbers.'),
+    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'Sum', 'Returns the sum of all numbers in a vector.'),
+    createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'Vector Minimum', 'Returns the smallest number in a vector.'),
+    createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'Vector Maximum', 'Returns the largest number in a vector.'),
+    createWeightedVectorFunction('mean', (values, weights) => {
+        const totalWeight = validateWeights(weights, values)
+        return values.reduce((sum, value, index) => sum + value * weights[index], 0) / totalWeight
+    }, 'Mean', 'Returns the arithmetic mean (average) of all numbers in a vector. If weights are provided as a named argument, returns the weighted mean.'),
+    createWeightedVectorFunction('median', (values, weights) => {
+        return weightedQuantile(values, weights, 0.5)
+    }, 'Median', 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values. If weights are provided as a named argument, returns the weighted median.'),
+    createQuantileFunction('quantile', (values, q, weights) => {
+        return weightedQuantile(values, weights, q)
+    }, 'Quantile', 'Returns the quantile value from a vector. Takes a quantile value (between 0 and 1) as the second argument and optional weights as a named argument.'),
+    createQuantileFunction('percentile', (values, p, weights) => {
+        // Convert percentile (0-100) to quantile (0-1)
+        const q = p / 100
+        return weightedQuantile(values, weights, q)
+    }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],
