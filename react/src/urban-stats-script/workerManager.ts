@@ -1,10 +1,10 @@
 import { UrbanStatsASTStatement } from './ast'
-import { EditorResult } from './editor-utils'
+import { EditorError } from './editor-utils'
 import { USSValue } from './types-values'
 
 export interface USSExecutionDescriptor { kind: 'generic' }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
-export type AsyncInterpretationError = EditorResult[]
+export type AsyncInterpretationError = EditorError[]
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> { resultingValue?: Value, error: AsyncInterpretationError }
 
