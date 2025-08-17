@@ -6,7 +6,7 @@ import './style.css'
 import './common.css'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
-import { EditorWithResult } from './urban-stats-script/EditorPanel'
+import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
 import { expressionOperatorMap } from './urban-stats-script/operators'
 import { useHeaderTextClass } from './utils/responsive'
 
@@ -31,7 +31,7 @@ export function USSDocumentationPanel(): ReactNode {
                                     The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
                                     written as you would expect. Feel free to edit the code below to see how the result changes:
                                 </p>
-                                <EditorWithResult ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
+                                <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
                                 <p>
                                     A full list of operators is available
                                     {' '}
@@ -42,7 +42,7 @@ export function USSDocumentationPanel(): ReactNode {
                                     <p>
                                         The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
                                     </p>
-                                    <EditorWithResult ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
+                                    <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
                                     <p>
                                         For details on broadcasting, see the
                                         {' '}
@@ -55,7 +55,7 @@ export function USSDocumentationPanel(): ReactNode {
                                     <p>
                                         The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
                                     </p>
-                                    <EditorWithResult ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                                    <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
                                 </Header>
                             </Header>
                             <Header title="Semantics" header="h2" ident="semantics">
@@ -70,38 +70,38 @@ export function USSDocumentationPanel(): ReactNode {
                                         forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
                                         and you want to add 1 to each of them, you can do:
                                     </p>
-                                    <EditorWithResult ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
+                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
                                     <p>
                                         This will result in a list of numbers, where each element is 1 greater than the corresponding element in the original list.
                                     </p>
                                     <p>
                                         This also works with function calls, for example:
-                                        <EditorWithResult ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
+                                        <StandaloneEditor ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
                                     </p>
                                     <p>
                                         Even when the list is of functions:
-                                        <EditorWithResult ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
+                                        <StandaloneEditor ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
                                     </p>
                                     <p>
                                         You can also apply broadcasting to objects, for example:
-                                        <EditorWithResult ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
+                                        <StandaloneEditor ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
                                     </p>
                                     <p>
                                         And even assigning to a property:
-                                        <EditorWithResult ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
+                                        <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
                                     </p>
                                 </Header>
                                 <Header title="Split Broadcasting" header="h4" ident="backward-broadcasting">
                                     There is also split broadcasting, which is what happens when you use an if statement.
                                     For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
-                                    <EditorWithResult ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
+                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
                                     <p>
                                         The if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
                                     </p>
                                     <p>
                                         Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
                                     </p>
-                                    <EditorWithResult ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
+                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
                                 </Header>
                             </Header>
                             <Header title="Detailed Tables" header="h2" ident="detailed-tables">
