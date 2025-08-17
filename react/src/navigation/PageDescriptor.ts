@@ -144,6 +144,10 @@ const mapperSchemaForParams = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
+const editorSchema = z.object({
+    undoChunking: z.optional(z.coerce.number().int()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -155,7 +159,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
-    z.object({ kind: z.literal('editor') }),
+    z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
 ])
 
@@ -183,7 +187,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
-    | { kind: 'editor', editorPanel: typeof DebugEditorPanel }
+    | { kind: 'editor', editorPanel: typeof DebugEditorPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
@@ -223,7 +227,7 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
         case '/editor.html':
-            return { kind: 'editor' }
+            return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
             return { kind: 'oauthCallback', params }
         default:
