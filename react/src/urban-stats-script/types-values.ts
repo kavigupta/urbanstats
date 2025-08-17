@@ -120,7 +120,9 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-type ConstantCategory = 'basic' | 'color' | 'math' | 'logic' | 'unit' | 'map' | 'scale' | 'ramp' | 'inset' | 'regression'
+export const constantCategories = ['basic', 'color', 'math', 'logic', 'unit', 'map', 'scale', 'ramp', 'inset', 'regression'] as const
+
+export type ConstantCategory = typeof constantCategories[number]
 
 export interface Documentation {
     humanReadableName: string
