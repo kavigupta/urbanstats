@@ -25,11 +25,7 @@ function createNumberToNumberFunction(
     return [name, {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for ${name}, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ${name}, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(typeof arg === 'number', `Expected number argument for ${name}, got ${typeof arg}`)
-            return mathFunction(arg)
+            return mathFunction(posArgs[0] as number)
         },
         documentation: {
             humanReadableName,
@@ -50,11 +46,7 @@ function createTwoNumberToNumberFunction(
     return [name, {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }, { type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 2, `Expected 2 arguments for ${name}, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for ${name}, got ${Object.keys(namedArgs).length}`)
-            const [arg1, arg2] = posArgs
-            assert(typeof arg1 === 'number' && typeof arg2 === 'number', `Expected two number arguments for ${name}, got ${typeof arg1} and ${typeof arg2}`)
-            return mathFunction(arg1, arg2)
+            return mathFunction(posArgs[0] as number, posArgs[1] as number)
         },
         documentation: {
             humanReadableName,
@@ -96,11 +88,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['sum', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for sum, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for sum, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for sum, got ${JSON.stringify(arg)}`)
-            return (arg).reduce((a, b) => a + b, 0)
+            const arg = posArgs[0] as number[]
+            return arg.reduce((a, b) => a + b, 0)
         },
         documentation: {
             humanReadableName: 'Sum',
@@ -111,11 +100,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['mean', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for mean, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for mean, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for mean, got ${JSON.stringify(arg)}`)
-            const numbers = arg
+            const numbers = posArgs[0] as number[]
             return numbers.reduce((a, b) => a + b, 0) / numbers.length
         },
         documentation: {
@@ -127,10 +112,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['min', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for min, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for min, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for min, got ${JSON.stringify(arg)}`)
+            const arg = posArgs[0] as number[]
             return Math.min(...(arg))
         },
         documentation: {
@@ -142,10 +124,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['max', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for max, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for max, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for max, got ${JSON.stringify(arg)}`)
+            const arg = posArgs[0] as number[]
             return Math.max(...(arg))
         },
         documentation: {
@@ -157,11 +136,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['median', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'number' } } },
         value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>) => {
-            assert(posArgs.length === 1, `Expected 1 argument for median, got ${posArgs.length}`)
-            assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for median, got ${Object.keys(namedArgs).length}`)
-            const arg = posArgs[0]
-            assert(Array.isArray(arg) && arg.every(item => typeof item === 'number'), `Expected vector of numbers argument for median, got ${JSON.stringify(arg)}`)
-            const values = arg
+            const values = posArgs[0] as number[]
             if (values.length === 0) {
                 return NaN
             }
