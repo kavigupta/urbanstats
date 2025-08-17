@@ -6,31 +6,39 @@ import {
     target, urbanstatsFixture,
 } from './test_utils'
 
+const keyMapping = new Map<string, string>(Object.entries({
+    '\n': 'enter',
+    '\t': 'tab',
+    '\b': 'backspace',
+    '⬆': 'up',
+    '➡': 'right',
+}))
+
 // Helper function to type text using individual key presses
-async function typeTextWithKeys(t: TestController, text: string): Promise<void> {
+async function typeTextWithKeys(t: TestController, inputText: string): Promise<void> {
     const cdp = await t.getCurrentCDPSession()
-    for (let char of text) {
-        // if (char === ' ') {
-        //     char = 'space'
-        // }
-        if (char === '\n') {
-            char = '\r'
+    for (const char of inputText) {
+        let key
+        if ((key = keyMapping.get(char)) !== undefined) {
+            await t.pressKey(key)
         }
-        // Faster than t.pressKey
-        await cdp.Input.dispatchKeyEvent({
-            text: char,
-            type: 'char',
-        })
+        else {
+            // Faster than t.pressKey, can't figure out how to get to work reliably for special characters
+            await cdp.Input.dispatchKeyEvent({
+                text: char,
+                type: 'char',
+            })
+        }
     }
 }
 
+const firstEditor = Selector('pre[contenteditable="plaintext-only"]').nth(0)
+
 async function fillInField(t: TestController, text: string): Promise<void> {
-    const firstEditor = Selector('pre[contenteditable="plaintext-only"]').nth(0)
     await t.expect(firstEditor.exists).ok()
     await t.expect(firstEditor.visible).ok()
     await t.click(firstEditor)
     await typeTextWithKeys(t, text)
-    // await t.typeText(firstEditor, text)
 }
 
 const result = Selector('#test-editor-result')
@@ -112,4 +120,16 @@ test('post-reload', async (t) => {
     await safeReload(t)
     await t.wait(500)
     await t.expect(result.textContent).eql('158')
+})
+
+test('tab inserts spaces', async (t) => {
+    await t.click(firstEditor)
+    await typeTextWithKeys(t, 'if (true) {\n\t"hello"\n}')
+    await t.expect(firstEditor.textContent).eql('if (true) {\n    "hello"\n}\n')
+})
+
+test('deletes whole indent', async (t) => {
+    await t.click(firstEditor)
+    await typeTextWithKeys(t, 'if (true) {\n\t"hello"\n}⬆➡➡➡\b')
+    await t.expect(firstEditor.textContent).eql('if (true) {\n"hello"\n}\n')
 })
