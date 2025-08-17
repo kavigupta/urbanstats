@@ -319,7 +319,7 @@ function ConstantsDocumentation(): ReactNode {
                                 transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
                             }}
                             >
-                                {isCollapsed ? '▶' : '▼'}
+                                ▶
                             </span>
                             <h3 id={`constants-${category}`} style={{ margin: 0 }}>
                                 {getCategoryTitle(category)}
