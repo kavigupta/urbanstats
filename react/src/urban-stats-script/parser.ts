@@ -295,6 +295,10 @@ class ParseState {
             return this.parseDoExpression()
         }
 
+        if (this.consumeIdentifier('customNode')) {
+            return this.parseCustomNodeExpression()
+        }
+
         const operatorExpSequence: USSInfixSequenceElement[] = []
         // State Machine with states expressionOrUnaryOperator; binaryOperator
         let state: 'expressionOrUnaryOperator' | 'binaryOperator' = 'expressionOrUnaryOperator'
@@ -536,6 +540,40 @@ class ParseState {
                 : undefined,
         )
     }
+
+    parseCustomNodeExpression(): UrbanStatsASTExpression | ParseError {
+        const args = this.parseParenthesizedArgs()
+
+        if (args === undefined) {
+            return { type: 'error', value: 'Expected arguments for customNode', location: this.maybeLastNonEOLToken(-1).location }
+        }
+
+        if (args.type === 'error') {
+            return args
+        }
+
+        const code = args.args[0][0]
+
+        if (args.args[0].length !== 1 || code.type !== 'unnamed') {
+            return { type: 'error', value: 'Incorrect arguments for customNode, expected 1 unnamed argument', location: args.args[1] }
+        }
+
+        if (code.value.type !== 'constant' || code.value.value.node.type !== 'string') {
+            return { type: 'error', value: 'Expected string constant as argument to customNode', location: locationOf(code) }
+        }
+
+        const parseResult = parse(code.value.value.node.value, code.value.value.location.start.block)
+
+        if (parseResult.type === 'error') {
+            return parseResult.errors[0]
+        }
+
+        return {
+            type: 'customNode',
+            expr: parseResult,
+            originalCode: code.value.value.node.value,
+        }
+    }
 }
 
 export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
@@ -723,19 +761,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     switch (node.type) {
         case 'customNode':
-            // If the custom node contains multiple statements, convert it to a do expression
-            if (node.expr.type === 'statements') {
-                if (node.expr.result.length === 0) {
-                    return 'do {  }'
-                }
-                if (node.expr.result.length > 1) {
-                    const doStatements = { type: 'statements' as const, result: node.expr.result, entireLoc: node.expr.entireLoc }
-                    const doStr = unparse(doStatements, indent + 1, true) // <-- inline = true
-                    return `do { ${doStr} }`
-                }
-            }
-            // For single statements or other types, return the original code
-            return node.originalCode
+            return `customNode(${JSON.stringify(node.originalCode)})`
         case 'parseError':
             return node.originalCode
         case 'constant':
