@@ -28,3 +28,41 @@ void test('customNode with broadcasting', (): void => {
         undocValue([1, 4, 9], numVectorType),
     )
 })
+
+void test('customNode eats errors', (): void => {
+    assert.equal(parseExpr('customNode("2 +")'), {
+        expr: {
+            errors: [
+                {
+                    // TODO: fix locations
+                    location: {
+                        end: {
+                            block: {
+                                ident: 'test',
+                                type: 'single',
+                            },
+                            charIdx: 3,
+                            colIdx: 3,
+                            lineIdx: 0,
+                        },
+                        start: {
+                            block: {
+                                ident: 'test',
+                                type: 'single',
+                            },
+                            charIdx: 2,
+                            colIdx: 2,
+                            lineIdx: 0,
+                        },
+                    },
+                    type: 'error',
+                    value: 'Unexpected end of input',
+                },
+            ],
+            originalCode: '2 +',
+            type: 'parseError',
+        },
+        originalCode: '2 +',
+        type: 'customNode',
+    })
+})

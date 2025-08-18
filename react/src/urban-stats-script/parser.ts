@@ -565,7 +565,15 @@ class ParseState {
         const parseResult = parse(code.value.value.node.value, code.value.value.location.start.block)
 
         if (parseResult.type === 'error') {
-            return parseResult.errors[0]
+            return {
+                type: 'customNode',
+                expr: {
+                    type: 'parseError',
+                    errors: parseResult.errors,
+                    originalCode: code.value.value.node.value,
+                },
+                originalCode: code.value.value.node.value,
+            }
         }
 
         return {
