@@ -11,11 +11,15 @@ import type { MapperPanel } from '../components/mapper-panel'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
+import valid_geographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import universes_ordered from '../data/universes_ordered'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
+import { defaultTypeEnvironment } from '../mapper/context'
+import { attemptParseAsTopLevel } from '../mapper/settings/TopLevelEditor'
 import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -30,6 +34,8 @@ import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
+import { longMessage } from '../urban-stats-script/editor-utils'
+import { parse } from '../urban-stats-script/parser'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -720,7 +726,18 @@ async function mapSettingsFromURLParam(encodedSettings: string | undefined): Pro
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
+        const rawSettings = z.object({ geographyKind: z.enum(valid_geographies), universe: z.enum(universes_ordered), script: z.object({
+            uss: z.string().transform(str => parse(str)),
+        }) }).parse(JSON.parse(jsonedSettings))
+        let uss = rawSettings.script.uss
+        if (uss.type === 'error') {
+            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
+        }
+        uss = attemptParseAsTopLevel(uss, defaultTypeEnvironment(rawSettings.universe))
+        settings = {
+            ...rawSettings,
+            script: { uss },
+        }
     }
     return defaultSettings(settings)
 }
