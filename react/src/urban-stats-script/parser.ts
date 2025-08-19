@@ -761,6 +761,7 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
 }
 
 export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean } = {}): string {
+    opts.indent = opts.indent ?? 0
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
     }
@@ -839,9 +840,9 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'assignment':
             const lhsStr = unparse(node.lhs, opts)
             const valueStr = unparse(node.value, opts)
-            return opts.inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(opts.indent ?? 0)}${lhsStr} = ${valueStr}`
+            return opts.inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(opts.indent)}${lhsStr} = ${valueStr}`
         case 'expression':
-            return opts.inline ? unparse(node.value, opts) : `${indentSpaces(opts.indent ?? 0)}${unparse(node.value, opts)}`
+            return opts.inline ? unparse(node.value, opts) : `${indentSpaces(opts.indent)}${unparse(node.value, opts)}`
         case 'statements':
             const statementsStr = node.result
                 .map(stmt => unparse(stmt, opts))
@@ -849,23 +850,23 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             return statementsStr.join(opts.inline ? '; ' : ';\n')
         case 'if':
             const conditionStr = unparse(node.condition, opts)
-            const thenStr = unparse(node.then, { ...opts, indent: (opts.indent ?? 0) + 1 })
+            const thenStr = unparse(node.then, { ...opts, indent: opts.indent + 1 })
             let ifStr = opts.inline
                 ? `if (${conditionStr}) { ${thenStr} }`
-                : `if (${conditionStr}) {\n${thenStr}\n${indentSpaces(opts.indent ?? 0)}}`
+                : `if (${conditionStr}) {\n${thenStr}\n${indentSpaces(opts.indent)}}`
             if (node.else) {
-                const elseStr = unparse(node.else, { ...opts, indent: (opts.indent ?? 0) + 1 })
+                const elseStr = unparse(node.else, { ...opts, indent: opts.indent + 1 })
                 ifStr += opts.inline
                     ? ` else { ${elseStr} }`
-                    : ` else {\n${elseStr}\n${indentSpaces(opts.indent ?? 0)}}`
+                    : ` else {\n${elseStr}\n${indentSpaces(opts.indent)}}`
             }
             return ifStr
         case 'do':
             const doStatements = { type: 'statements' as const, result: node.statements, entireLoc: node.entireLoc }
-            const doStr = unparse(doStatements, { ...opts, indent: (opts.indent ?? 0) + 1 })
+            const doStr = unparse(doStatements, { ...opts, indent: opts.indent + 1 })
             return opts.inline
                 ? `do { ${doStr} }`
-                : `do {\n${doStr}\n${indentSpaces(opts.indent ?? 0)}}`
+                : `do {\n${doStr}\n${indentSpaces(opts.indent)}}`
         case 'condition':
             const condStr = unparse(node.condition, opts)
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
@@ -874,7 +875,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             if (opts.simplify && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
-            return `${indentSpaces(opts.indent ?? 0)}condition (${condStr})\n${restStr}`
+            return `${indentSpaces(opts.indent)}condition (${condStr})\n${restStr}`
     }
 }
 
