@@ -769,7 +769,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     switch (node.type) {
         case 'customNode':
-            return `customNode(${JSON.stringify(node.originalCode)})`
+            return node.originalCode.trim()
         case 'parseError':
             return node.originalCode
         case 'constant':
