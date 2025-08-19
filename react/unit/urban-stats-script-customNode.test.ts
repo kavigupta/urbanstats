@@ -30,7 +30,7 @@ void test('customNode with broadcasting', (): void => {
 })
 
 void test('customNode eats errors', (): void => {
-    assert.equal(parseExpr('customNode("2 +")'), {
+    assert.deepEqual(parseExpr('customNode("2 +")'), {
         expr: {
             errors: [
                 {
