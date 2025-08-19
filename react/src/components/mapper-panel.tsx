@@ -1,16 +1,18 @@
 import '../common.css'
 import './article.css'
 
-import { gzipSync } from 'zlib'
+import { gunzipSync, gzipSync } from 'zlib'
 
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import { z } from 'zod'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
+import { MapUSS, rootBlockIdent } from '../mapper/settings/TopLevelEditor'
+import { MapSettings, computeUSS, Basemap, defaultSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
@@ -21,7 +23,8 @@ import { Universe } from '../universe'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError } from '../urban-stats-script/editor-utils'
+import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -435,7 +438,12 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const mapRef = useRef<DisplayedMap>(null)
     const colorbarRef = useRef<HTMLDivElement>(null)
 
-    const jsonedSettings = JSON.stringify(mapSettings)
+    const jsonedSettings = JSON.stringify({
+        ...mapSettings,
+        script: {
+            uss: unparse(mapSettings.script.uss),
+        },
+    })
 
     const navContext = useContext(Navigator.Context)
 
@@ -495,4 +503,54 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             </div>
         </PageTemplate>
     )
+}
+
+export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
+    let settings: Partial<MapSettings> = {}
+    if (encodedSettings !== undefined) {
+        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
+        const rawSettings = z.object({ geographyKind: z.enum(valid_geographies), universe: z.enum(universes_ordered), script: z.object({
+            uss: z.string(),
+        }) }).parse(JSON.parse(jsonedSettings))
+        const uss = parse(rawSettings.script.uss)
+        if (uss.type === 'error') {
+            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
+        }
+        settings = {
+            ...rawSettings,
+            script: { uss: convertToMapUss(uss) },
+        }
+    }
+    return defaultSettings(settings)
+}
+
+function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
+    if (uss.type === 'expression' && uss.value.type === 'customNode') {
+        return uss.value
+    }
+    if (
+        uss.type === 'statements'
+        && uss.result.length === 2
+        && uss.result[0].type === 'expression'
+        && uss.result[0].value.type === 'customNode'
+        && uss.result[1].type === 'condition'
+        && uss.result[1].rest.length === 1
+        && uss.result[1].rest[0].type === 'expression'
+    ) {
+        return {
+            ...uss,
+            result: [
+                {
+                    ...uss.result[0],
+                    value: uss.result[0].value,
+                },
+                {
+                    ...uss.result[1],
+                    rest: [uss.result[1].rest[0]],
+                },
+            ],
+        }
+    }
+    // Support arbitrary scripts
+    return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
 }

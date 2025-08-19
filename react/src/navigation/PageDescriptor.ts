@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
@@ -673,15 +671,12 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const [mapSettings, panel] = await Promise.all([
-                mapSettingsFromURLParam(newDescriptor.settings),
-                import('../components/mapper-panel'),
-            ])
+            const panel = await import('../components/mapper-panel')
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettings,
+                    settings: panel.mapSettingsFromURLParam(newDescriptor.settings),
                     mapperPanel: panel.MapperPanel,
                 },
                 newPageDescriptor: newDescriptor,
@@ -713,16 +708,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
     }
-}
-
-async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
-    const { defaultSettings } = await import('../mapper/settings/utils')
-    let settings: Partial<MapSettings> = {}
-    if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
-    }
-    return defaultSettings(settings)
 }
 
 export function pageTitle(pageData: PageData): string {

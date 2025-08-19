@@ -16,7 +16,7 @@ export function PreambleEditor({
     blockIdent,
 }: {
     preamble: UrbanStatsASTExpression & { type: 'customNode' }
-    setPreamble: (conditionExpr: UrbanStatsASTExpression) => void
+    setPreamble: (conditionExpr: UrbanStatsASTExpression & { type: 'customNode' }) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string

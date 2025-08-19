@@ -1,10 +1,10 @@
 import type valid_geographies from '../../data/mapper/used_geographies'
 import { Universe } from '../../universe'
-import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { locationOf, toStatement, unify, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { defaultTypeEnvironment } from '../context'
 
-import { defaultTopLevelEditor } from './TopLevelEditor'
+import { defaultTopLevelEditor, MapUSS } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -43,7 +43,7 @@ export interface FilterSettings {
 }
 
 export interface MapperScriptSettings {
-    uss: UrbanStatsASTExpression | UrbanStatsASTStatement
+    uss: MapUSS
 }
 
 export interface MapSettings {
@@ -81,7 +81,7 @@ function merge<T>(addTo: Partial<T>, addFrom: T): T {
     return addTo as T
 }
 
-export function makeStatements(elements: UrbanStatsASTStatement[], identFallback?: string): UrbanStatsASTStatement {
+export function makeStatements<const T extends UrbanStatsASTStatement[]>(elements: T, identFallback?: string): UrbanStatsASTStatement & { type: 'statements', result: T } {
     const locations = [...elements.map(locationOf)]
     if (identFallback !== undefined) {
         locations.push(emptyLocation(identFallback))
