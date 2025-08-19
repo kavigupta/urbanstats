@@ -2,6 +2,8 @@ import assert from 'assert/strict'
 import fs from 'node:fs'
 import { test } from 'node:test'
 
+import { simplify } from 'mathjs'
+
 import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, parseNoErrorAsCustomNode, toSExp, unparse } from '../src/urban-stats-script/parser'
 
@@ -583,12 +585,12 @@ void test('collect identifiers', (): void => {
     )
 })
 
-function parseThenUnparse(code: string): string {
+function parseThenUnparse(code: string, opts?: Parameters<typeof unparse>[1]): string {
     const res = parse(code, testBlock)
     if (res.type === 'error') {
         throw new Error(`Parsing error: ${res.errors.map(err => err.value).join(', ')}`)
     }
-    return unparse(res)
+    return unparse(res, opts)
 }
 
 void test('unparse', (): void => {
@@ -609,7 +611,19 @@ void test('unparse', (): void => {
     )
     assert.deepStrictEqual(
         parseThenUnparse('condition(true); x = 2; y = 3'),
+        'condition (true)\nx = 2;\ny = 3',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('condition(true); x = 2; y = 3', { simplify: true }),
         'x = 2;\ny = 3',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('customNode("x = 2\\ny = 3")'),
+        'customNode("x = 2\\ny = 3")',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('customNode("x = 2\\ny = 3")', { simplify: true }),
+        'x = 2\ny = 3',
     )
     assert.deepStrictEqual(
         parseThenUnparse('condition(x); x = 2; y = 3'),

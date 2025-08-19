@@ -19,11 +19,11 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
-import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
-import { parse, unparse } from '../urban-stats-script/parser'
+import { parse, ParseError, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -509,11 +509,14 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
         const rawSettings = z.object({ geographyKind: z.enum(valid_geographies), universe: z.enum(universes_ordered), script: z.object({
-            uss: z.string().transform(str => parse(str)),
+            uss: z.string(),
         }) }).parse(JSON.parse(jsonedSettings))
-        const uss = rawSettings.script.uss
+        let uss: UrbanStatsASTStatement | UrbanStatsASTExpression | { type: 'error', errors: ParseError[] } = parse(rawSettings.script.uss)
         if (uss.type === 'error') {
             throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
+        }
+        if (uss.type === 'expression') {
+            uss = uss.value
         }
         settings = {
             ...rawSettings,

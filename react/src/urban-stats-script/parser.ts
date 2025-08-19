@@ -760,7 +760,7 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, unwrapCustomNodes?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean } = {}): string {
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
     }
@@ -769,7 +769,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     switch (node.type) {
         case 'customNode':
-            return opts.unwrapCustomNodes ? node.originalCode.trim() : `customNode(${JSON.stringify(node.originalCode.trim())})`
+            return opts.simplify ? node.originalCode.trim() : `customNode(${JSON.stringify(node.originalCode.trim())})`
         case 'parseError':
             return node.originalCode
         case 'constant':
@@ -871,7 +871,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
             const restStr = unparse(restStatements, opts)
             // If condition is literal "true", elide it
-            if (node.condition.type === 'identifier' && node.condition.name.node === 'true') {
+            if (opts.simplify && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
             return `${indentSpaces(opts.indent ?? 0)}condition (${condStr})\n${restStr}`
