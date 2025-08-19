@@ -22,6 +22,7 @@ import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
+import { unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -435,7 +436,12 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     const mapRef = useRef<DisplayedMap>(null)
     const colorbarRef = useRef<HTMLDivElement>(null)
 
-    const jsonedSettings = JSON.stringify(mapSettings)
+    const jsonedSettings = JSON.stringify({
+        ...mapSettings,
+        script: {
+            uss: unparse(mapSettings.script.uss),
+        },
+    })
 
     const navContext = useContext(Navigator.Context)
 

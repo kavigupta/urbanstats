@@ -131,7 +131,7 @@ export function TopLevelEditor({
                 onChange={(checked) => {
                     if (checked) {
                         assert(ussToUse.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(ussToUse), rootBlockIdent))
+                        setUss(parseNoErrorAsCustomNode(unparse(ussToUse, { unwrapCustomNodes: true }), rootBlockIdent))
                     }
                     else {
                         assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
@@ -149,7 +149,7 @@ export function TopLevelEditor({
     )
 }
 
-function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
+export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
