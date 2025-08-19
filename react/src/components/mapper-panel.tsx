@@ -11,6 +11,7 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { MapUSS, rootBlockIdent } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap, defaultSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -19,11 +20,11 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
-import { getAllParseErrors, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
-import { parse, ParseError, unparse } from '../urban-stats-script/parser'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -511,17 +512,45 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
         const rawSettings = z.object({ geographyKind: z.enum(valid_geographies), universe: z.enum(universes_ordered), script: z.object({
             uss: z.string(),
         }) }).parse(JSON.parse(jsonedSettings))
-        let uss: UrbanStatsASTStatement | UrbanStatsASTExpression | { type: 'error', errors: ParseError[] } = parse(rawSettings.script.uss)
+        const uss = parse(rawSettings.script.uss)
         if (uss.type === 'error') {
             throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
         }
-        if (uss.type === 'expression') {
-            uss = uss.value
-        }
         settings = {
             ...rawSettings,
-            script: { uss },
+            script: { uss: convertToMapUss(uss) },
         }
     }
     return defaultSettings(settings)
+}
+
+function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
+    if (uss.type === 'expression' && uss.value.type === 'customNode') {
+        return uss.value
+    }
+    if (
+        uss.type === 'statements'
+        && uss.result.length === 2
+        && uss.result[0].type === 'expression'
+        && uss.result[0].value.type === 'customNode'
+        && uss.result[1].type === 'condition'
+        && uss.result[1].rest.length === 1
+        && uss.result[1].rest[0].type === 'expression'
+    ) {
+        return {
+            ...uss,
+            result: [
+                {
+                    ...uss.result[0],
+                    value: uss.result[0].value,
+                },
+                {
+                    ...uss.result[1],
+                    rest: [uss.result[1].rest[0]],
+                },
+            ],
+        }
+    }
+    // Support arbitrary scripts
+    return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
 }

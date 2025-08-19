@@ -17,7 +17,7 @@ export function CustomEditor({
     placeholder,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression & { type: 'customNode' }) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string

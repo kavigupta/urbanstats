@@ -2,8 +2,6 @@ import assert from 'assert/strict'
 import fs from 'node:fs'
 import { test } from 'node:test'
 
-import { simplify } from 'mathjs'
-
 import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, parseNoErrorAsCustomNode, toSExp, unparse } from '../src/urban-stats-script/parser'
 

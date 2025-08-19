@@ -23,44 +23,32 @@ const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
 const idOutput = `${rootBlockIdent}o`
 
+export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
+    (UrbanStatsASTStatement &
+    {
+        type: 'statements'
+        result: [
+                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
+                UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
+        ]
+    })
+
 export function TopLevelEditor({
     uss,
     setUss,
     typeEnvironment,
     errors,
 }: {
-    uss: UrbanStatsASTExpression | UrbanStatsASTStatement
-    setUss: (u: UrbanStatsASTExpression | UrbanStatsASTStatement) => void
+    uss: MapUSS
+    setUss: (u: MapUSS) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
 }): ReactNode {
-    assert(
-        uss.type === 'customNode'
-        || (
-            uss.type === 'statements'
-            && uss.result.length === 2
-            && uss.result[0].type === 'expression'
-            && uss.result[0].value.type === 'customNode'
-            && uss.result[1].type === 'condition'
-            && uss.result[1].rest.length === 1
-            && uss.result[1].rest[0].type === 'expression'
-        ),
-    )
-    // as checked above, uss is either a custom node or a statements node with a specific structure
-    const ussToUse = uss as UrbanStatsASTExpression & { type: 'customNode' } |
-        UrbanStatsASTStatement &
-        {
-            type: 'statements'
-            result: [
-                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
-                UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
-            ]
-        }
     const subcomponent = (): ReactNode => {
-        if (ussToUse.type === 'customNode') {
+        if (uss.type === 'customNode') {
             return (
                 <CustomEditor
-                    uss={ussToUse}
+                    uss={uss}
                     setUss={setUss}
                     typeEnvironment={typeEnvironment}
                     errors={errors}
@@ -73,13 +61,13 @@ export function TopLevelEditor({
             <div>
                 {/* Preamble */}
                 <PreambleEditor
-                    preamble={ussToUse.result[0].value}
-                    setPreamble={(u: UrbanStatsASTExpression) => {
+                    preamble={uss.result[0].value}
+                    setPreamble={(u: UrbanStatsASTExpression & { type: 'customNode' }) => {
                         const preamble = {
                             type: 'expression',
                             value: u,
                         } satisfies UrbanStatsASTStatement
-                        setUss(makeStatements([preamble, ussToUse.result[1]]))
+                        setUss(makeStatements([preamble, uss.result[1]]))
                     }}
                     typeEnvironment={typeEnvironment}
                     errors={errors}
@@ -87,15 +75,15 @@ export function TopLevelEditor({
                 />
                 {/* Condition */}
                 <ConditionEditor
-                    condition={ussToUse.result[1].condition}
+                    condition={uss.result[1].condition}
                     setCondition={(newConditionExpr) => {
                         const conditionStatement = {
                             type: 'condition',
                             entireLoc: locationOf(newConditionExpr),
                             condition: newConditionExpr,
-                            rest: ussToUse.result[1].rest,
+                            rest: uss.result[1].rest,
                         } satisfies UrbanStatsASTStatement
-                        setUss(makeStatements([ussToUse.result[0], conditionStatement]))
+                        setUss(makeStatements([uss.result[0], conditionStatement]))
                     }}
                     typeEnvironment={typeEnvironment}
                     errors={errors}
@@ -103,16 +91,15 @@ export function TopLevelEditor({
                 />
                 {/* Output */}
                 <AutoUXEditor
-                    // TODO this shouldn't be required to be a custom node
-                    uss={ussToUse.result[1].rest[0].value}
+                    uss={uss.result[1].rest[0].value}
                     setUss={(u: UrbanStatsASTExpression) => {
                         const condition = {
                             type: 'condition',
-                            entireLoc: ussToUse.result[1].entireLoc,
-                            condition: ussToUse.result[1].condition,
-                            rest: [{ type: 'expression', value: u }],
+                            entireLoc: uss.result[1].entireLoc,
+                            condition: uss.result[1].condition,
+                            rest: [{ type: 'expression', value: u }] as const,
                         } satisfies UrbanStatsASTStatement
-                        setUss(makeStatements([ussToUse.result[0], condition]))
+                        setUss(makeStatements([uss.result[0], condition]))
                     }}
                     typeEnvironment={typeEnvironment}
                     errors={errors}
@@ -127,15 +114,15 @@ export function TopLevelEditor({
         <div>
             <CheckboxSettingCustom
                 name="Enable custom script"
-                checked={ussToUse.type === 'customNode'}
+                checked={uss.type === 'customNode'}
                 onChange={(checked) => {
                     if (checked) {
-                        assert(ussToUse.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(ussToUse, { simplify: true }), rootBlockIdent))
+                        assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
+                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: true }), rootBlockIdent))
                     }
                     else {
-                        assert(ussToUse.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(ussToUse.expr, typeEnvironment))
+                        assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
+                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment))
                     }
                 }}
                 style={{ margin: '0.5em 0' }}
@@ -149,7 +136,7 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
+export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
@@ -175,20 +162,19 @@ export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnviron
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
         condition: conditionExpr,
-        rest: [{ type: 'expression', value: body }],
+        rest: [{ type: 'expression', value: body }] as const,
     } satisfies UrbanStatsASTStatement
     return {
         type: 'statements',
         result: [
             { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble), idPreamble) },
             condition,
-        ],
+        ] as const,
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
 }
 
-export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTStatement {
+export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
     const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, [cMap, pMap])
-    assert(expr.type === 'customNode', 'expr should be a custom node')
     return attemptParseAsTopLevel(expr.expr, typeEnvironment)
 }
