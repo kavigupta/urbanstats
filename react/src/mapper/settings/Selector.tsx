@@ -314,7 +314,7 @@ export function Selector(props: {
                     style={{ width: '200px', height: '30.5px' }}
                     onChange={(e) => {
                         const newColor = hexToColor(e.target.value)
-                        const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor, colorValue.color.a) : rgbColorExpression(newColor, colorValue.color.a)
+                        const newColorUss = colorValue.kind === 'hsv' ? hsvColorExpression(newColor, { forceAlpha: colorValue.color.a }) : rgbColorExpression(newColor, { forceAlpha: colorValue.color.a })
                         let newUss: UrbanStatsASTExpression | undefined
                         switch (props.uss.type) {
                             case 'customNode':
