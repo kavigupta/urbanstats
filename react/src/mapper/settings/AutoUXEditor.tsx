@@ -16,13 +16,6 @@ import { CustomEditor } from './CustomEditor'
 import { Selector, Selection, classifyExpr, possibilities, getColor, labelPadding } from './Selector'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
-    if (type.type === 'vector') {
-        return {
-            type: 'vectorLiteral',
-            entireLoc: emptyLocation(blockIdent),
-            elements: [],
-        }
-    }
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
@@ -38,6 +31,13 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
         }
         if (tdoc.type.type === 'function' && tdoc.type.returnType.type !== 'inferFromPrimitive' && renderType(tdoc.type.returnType.value) === renderType(type)) {
             return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
+        }
+    }
+    if (type.type === 'vector') {
+        return {
+            type: 'vectorLiteral',
+            entireLoc: emptyLocation(blockIdent),
+            elements: [],
         }
     }
     return parseNoErrorAsCustomNode('', blockIdent, [type])

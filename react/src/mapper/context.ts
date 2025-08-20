@@ -126,6 +126,8 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
                 category: 'mapper',
                 longDescription: `Data from ${info.humanReadableName} (from whatever source is most reliable)`,
                 documentationTable: 'mapper-data-variables',
+                isDefault: name === 'density_pw_1km',
+
             },
         })
     }
