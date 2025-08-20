@@ -81,7 +81,9 @@ function ArgumentEditor(props: {
                                             const newArgs = [...functionUss.args, {
                                                 type: 'named' as const,
                                                 name: { node: props.name, location: emptyLocation(subident) },
-                                                value: defaultExpr ?? createDefaultExpression(arg.value, subident, props.typeEnvironment),
+                                                value: defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')
+                                                    ? createDefaultExpression(arg.value, subident, props.typeEnvironment)
+                                                    : defaultExpr,
                                             }]
                                             props.setUss({ ...functionUss, args: newArgs })
                                         }
