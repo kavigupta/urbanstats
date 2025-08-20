@@ -126,18 +126,19 @@ export function doRender(color: Color, ignoreAlpha?: boolean): string {
     return h
 }
 
-function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number): string {
-    const alphaPart = alpha !== 255 ? `, a=${alpha / 255}` : ''
-    return `${functionName}(${param1}, ${param2}, ${param3}${alphaPart})`
+function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number, round?: number): string {
+    const format: (num: number) => string = round !== undefined ? num => num.toFixed(round) : num => num.toString()
+    const alphaPart = alpha !== 255 ? `, a=${format(alpha / 255)}` : ''
+    return `${functionName}(${format(param1)}, ${format(param2)}, ${format(param3)}${alphaPart})`
 }
 
-export function rgbColorExpression(color: Color, forceAlpha?: number): string {
-    return drawFunction('rgb', color.r / 255, color.g / 255, color.b / 255, forceAlpha ?? color.a)
+export function rgbColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
+    return drawFunction('rgb', color.r / 255, color.g / 255, color.b / 255, forceAlpha ?? color.a, round)
 }
 
-export function hsvColorExpression(color: Color, forceAlpha?: number): string {
+export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
     const c = ColorLib.rgb(color.r, color.g, color.b)
-    return drawFunction('hsv', c.hue(), c.saturationv() / 100, c.value() / 100, forceAlpha ?? color.a)
+    return drawFunction('hsv', c.hue(), c.saturationv() / 100, c.value() / 100, forceAlpha ?? color.a, round)
 }
 
 function colorConstant(name: string, value: string, isDefault?: boolean): [string, USSValue] {
@@ -150,7 +151,7 @@ function colorConstant(name: string, value: string, isDefault?: boolean): [strin
         documentation: {
             humanReadableName,
             category: 'color',
-            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color), ''), parseNoErrorAsExpression(hsvColorExpression(color), '')],
+            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color, { round: 3 }), ''), parseNoErrorAsExpression(hsvColorExpression(color, { round: 3 }), '')],
             isDefault,
             longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
             documentationTable: 'predefined-colors',
