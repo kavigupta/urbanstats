@@ -83,17 +83,30 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
 
     te.set('geo', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
-        documentation: { humanReadableName: 'Default Universe Geography' },
+        documentation: {
+            humanReadableName: 'Default Universe Geography',
+            category: 'map',
+            longDescription: 'A vector containing geographic feature handles for the current universe. Each element represents a geographic unit (e.g., census block, county) that can be used for mapping and spatial analysis.',
+        },
     })
 
     te.set('geoCentroid', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoCentroidHandle' } },
-        documentation: { humanReadableName: 'Default Universe Geography (Centroids)' },
+        documentation: {
+            humanReadableName: 'Default Universe Geography (Centroids)',
+            category: 'mapper',
+            longDescription: 'A vector containing geographic centroid handles for the current universe. Each element represents the center point of a geographic unit, useful for point-based visualizations and distance calculations.',
+        },
     })
 
     te.set('defaultInsets', {
         type: { type: 'opaque', name: 'insets' },
-        documentation: { humanReadableName: 'Default Insets', equivalentExpressions: [loadInsetExpression(universe)] },
+        documentation: {
+            humanReadableName: 'Default Insets',
+            category: 'mapper',
+            longDescription: 'Predefined map inset configurations for the current universe (whatever that is). E.g., for the US, it would be the continental US, Alaska, Hawaii, Puerto Rico, and Guam.',
+            equivalentExpressions: [loadInsetExpression(universe)],
+        },
     })
 
     for (const variableInfo of statistic_variables_info.variableNames) {
