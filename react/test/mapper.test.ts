@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
@@ -23,31 +24,74 @@ export async function clickOSMCheckbox(t: TestController): Promise<void> {
     await t.click(osmCheckbox)
 }
 
-urbanstatsFixture('mapping', `${target}/mapper.html?settings=H4sIAAAAAAAAA4WQwUrEMBCGX2UZ2VuRvXjpUcGroEeRZVpn07DTpGQSd8uSd3emiK0nc0ryf%2F83ITdwFF3CaZiPZx8%2BoYW30gXMPgbk3Ss53UADJ8%2BZErQ3oIAdk4InZCFNSuiNtizPE6nh96qBL0zeeIH2%2FcOOXIx4Xgm6TolEFgNArQ30kWM6Ssa8cYoPjglWxSNjf97tQQsJx2mDsg%2BECX5EI24zm0VZs4CjnZ9KRwOxvy6TramDZx2klaWuzN1hWVq6kHeDvupw%2F6B0h0J%2F7VFGpWT9wJeSzSn%2F6Gqt3%2Bx7oSqJAQAA`)
+export function urlFromCode(geographyKind: string, universe: string, code: string): string {
+    const settingsJSON = JSON.stringify({
+        geographyKind,
+        universe,
+        script: {
+            uss: code,
+        },
+    })
+    const url = `${target}/mapper.html?settings=${encodeURIComponent(gzipSync(settingsJSON).toString('base64'))}`
+    // eslint-disable-next-line no-console -- helpful for debugging the test
+    console.log('url', url)
+    return url
+}
 
-test('state-map', async (t) => {
-    await screencap(t)
-    await checkGeojson(t, 'state-map-geojson')
-    await clickOSMCheckbox(t)
-    await downloadPNG(t)
-})
+export function testCode(url: string, name: string, includeGeojson: boolean = false): void {
+    urbanstatsFixture(name, url)
 
-urbanstatsFixture('mapping-more-complex', `${target}/mapper.html?settings=H4sIAAAAAAAAA5WSwW6DMAyGXwV5l3ZqJ8ax10o797DbVCFDDUQLSeSErqjqu88BRpm0wyokhH7bn3%2FbXKEmWzO6ps8%2FlTnBDva2M6GHDVRKB2LYXYEMFpokWKH2JJHOlEFZE2OhdyRVs3S7baC02nLuA4a%2FMjZwRt1F6W0psYpNPOw%2BrmCwjfGLBOjieEHxytSaFoyDdZ3GSEn2DZqaklWWvqbbLM3SdXQz09xjtAETCcexjLwfRgZKtsnqkjwnbi2VE7xR8s1UT2njGLJQciQvE%2F7XFGR5c8nIeMDpcVhjLhbUacgZ8zlXRg5ZkhMXUExaaamqVKmmRtCClH%2BRqpuQF33u7p7Gq9%2BO4o2xdYtJtDKEDNPBW1zG4sIo3Bf0TsyohgmZzsQ%2B%2Fk%2BBOxIhcuR36WVAAQwwqXgq0vjAjy2R0pcsAgr09Lub9a1c6htvmskEzgIAAA%3D%3D`)
+    test(name, async (t) => {
+        await screencap(t)
+        if (includeGeojson) {
+            await checkGeojson(t, `mapping-geojson-${name}`)
+        }
+        await downloadPNG(t)
+    })
+}
 
-test('mapping-more-complex', async (t) => {
-    await t.resizeWindow(1400, 800)
-    await screencap(t)
-    await checkGeojson(t, 'mapping-more-complex-geojson')
-    await clickOSMCheckbox(t)
-    await downloadPNG(t)
-})
+const codeWithRegression = `
+regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
+condition (population > 200000)
+cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
+`
 
-urbanstatsFixture('mapping-with-regression', `${target}/mapper.html?settings=H4sIAAAAAAAAA52TwW7CMAyGX6XyLiCxCSa4VNqFoe067bLDhKK0dUtEmkRJOlZVvPucttCCdhjrLf7tz3byt4ECdWG52dVsL1QGMTzrSvkaZpAL6dFC3AAqnkgkMefSISmVSr3QKmi%2BNkhV59AMvrisQuhlCOG3sehcWwJtihUB6SD%2B3B6PM0i11JY5z%2F2fmWNGA4qXQd8s%2B24jjBOqkDiCvH1EG1RO%2BDqa2KflvpwCzTAwHlfzmylU02K2V8uicVTTk9%2Bx6JUIrdU20nlEqj2Hu10yNKgyVL473nwb1zNIXUzCUtNhEgiDUg2jLJG1sG7SEBOK3j1F48%2BPxVKNeS5S0Q8FJVsAEQ4oip1nSc2MNpXknSl6l5CdTov861F%2FXWN5scRxS96xvDSjBildo%2BfUs3dVycdq4KEfGGu7fgWCSH1AyxLyfvgH7heUURkzCi3aLKGQXFqTEQjZ4km6m7cfnO4D4vnDirIT7vCyu3YlDf0DcHWWOnUDAAA%3D`)
+testCode(urlFromCode('Subnational Region', 'USA', codeWithRegression), 'code-with-regression', true)
 
-test('mapping-with-regression', async (t) => {
-    await t.resizeWindow(1400, 800)
-    await screencap(t)
-    await checkGeojson(t, 'mapping-with-regression-geojson')
-    await clickOSMCheckbox(t)
-    await downloadPNG(t)
-})
+const codeSetCenterWithExpression = `
+cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis, unit=unitPercentage, basemap=noBasemap())
+`
+
+testCode(urlFromCode('County', 'USA', codeSetCenterWithExpression), 'code-set-center-with-expression', true)
+
+const codeFiltered = `
+regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
+condition (population > 10000)
+cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ramp=rampUridis, label="Commute Transit above expectation based on ln(density) [%]", basemap=noBasemap())
+`
+
+testCode(urlFromCode('County', 'USA', codeFiltered), 'code-filtered')
+
+const withOutline = `
+cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline())
+`
+
+testCode(urlFromCode('County', 'USA', withOutline), 'with-outline')
+
+const indiaEg = `
+cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis)
+`
+
+testCode(urlFromCode('Subnational Region', 'India', indiaEg), 'india-eg')
+
+const pointMap = `
+pMap(data=hilliness, scale=linearScale(), ramp=rampUridis)
+`
+
+testCode(urlFromCode('Urban Center', 'USA', pointMap), 'point-map')
+
+const translucentOutline = `
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10))
+`
+
+testCode(urlFromCode('Subnational Region', 'USA', translucentOutline), 'translucent-outline')
