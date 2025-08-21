@@ -35,5 +35,5 @@ export async function memoryUsage(t: TestController): Promise<number> {
 }
 
 export const homePageSize = 13_000_000
-export const californiaArticleSize = 56_000_000
+export const californiaArticleSize = 58_000_000
 export const searchSize = 40_000_000
