@@ -20,7 +20,7 @@ export async function downloadPNG(t: TestController): Promise<void> {
 }
 
 export async function toggleCustomScript(t: TestController): Promise<void> {
-    const checkbox = Selector('div').withText(/^Enable custom script:/).parent().find('input[type="checkbox"]')
+    const checkbox = Selector('div').withText(/^Enable custom script/).parent().find('input[type="checkbox"]')
     await t.click(checkbox)
 }
 
@@ -66,8 +66,10 @@ export function testCode(geographyKind: string, universe: string, code: string, 
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await t.expect(await getErrors()).eql([])
         await toggleCustomScript(t)
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await t.expect(await getErrors()).eql([])
+        await toggleCustomScript(t)
+        await t.expect(await getErrors()).eql([])
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await screencap(t)
         if (includeGeojson) {
             await checkGeojson(t, `mapping-geojson-${name}`)
