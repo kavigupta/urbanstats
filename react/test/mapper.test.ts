@@ -38,11 +38,19 @@ export function urlFromCode(geographyKind: string, universe: string, code: strin
     return url
 }
 
+export async function getCodeFromMainField(): Promise<string> {
+    // id = test-editor-body
+    const mainField = Selector('#test-editor-body')
+    const code = await mainField.textContent
+    return code
+}
+
 export function testCode(geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
     urbanstatsFixture(name, url)
 
     test(name, async (t) => {
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await screencap(t)
         if (includeGeojson) {
             await checkGeojson(t, `mapping-geojson-${name}`)
