@@ -19,9 +19,9 @@ export async function downloadPNG(t: TestController): Promise<void> {
     await grabDownload(t, download, 6000) // wait for 6 seconds to ensure the download completes
 }
 
-export async function clickOSMCheckbox(t: TestController): Promise<void> {
-    const osmCheckbox = Selector('div').withText(/^OSM:/).parent().find('input[type="checkbox"]')
-    await t.click(osmCheckbox)
+export async function toggleCustomScript(t: TestController): Promise<void> {
+    const checkbox = Selector('div').withText(/^Enable custom script:/).parent().find('input[type="checkbox"]')
+    await t.click(checkbox)
 }
 
 export function urlFromCode(geographyKind: string, universe: string, code: string): string {
@@ -45,12 +45,29 @@ export async function getCodeFromMainField(): Promise<string> {
     return code
 }
 
+export async function getErrors(): Promise<string[]> {
+    // all divs with id = test-editor-result
+    const errorSelector = Selector('#test-editor-result')
+    const errors: string[] = []
+    for (let i = 0; i < await errorSelector.count; i++) {
+        const errorText = await errorSelector.nth(i).textContent
+        if (errorText) {
+            errors.push(errorText)
+        }
+    }
+    return errors
+}
+
 export function testCode(geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
     urbanstatsFixture(name, url)
 
     test(name, async (t) => {
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await t.expect(await getErrors()).eql([])
+        await toggleCustomScript(t)
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await t.expect(await getErrors()).eql([])
         await screencap(t)
         if (includeGeojson) {
             await checkGeojson(t, `mapping-geojson-${name}`)
