@@ -59,20 +59,6 @@ export function testCode(geographyKind: string, universe: string, code: string, 
     })
 }
 
-const codeWithRegression = `
-regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
-condition (population > 200000)
-cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
-`
-
-testCode('Subnational Region', 'USA', codeWithRegression, 'code-with-regression', true)
-
-const codeSetCenterWithExpression = `
-cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis, unit=unitPercentage, basemap=noBasemap())
-`
-
-testCode('County', 'USA', codeSetCenterWithExpression, 'code-set-center-with-expression', true)
-
 const codeFiltered = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 10000)
@@ -104,3 +90,17 @@ cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=construc
 `
 
 testCode('Subnational Region', 'USA', translucentOutline, 'translucent-outline')
+
+const codeWithRegression = `
+regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
+condition (population > 200000)
+cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
+`
+
+testCode('Subnational Region', 'USA', codeWithRegression, 'code-with-regression', true)
+
+const codeSetCenterWithExpression = `
+cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis, unit=unitPercentage, basemap=noBasemap())
+`
+
+testCode('County', 'USA', codeSetCenterWithExpression, 'code-set-center-with-expression', true)
