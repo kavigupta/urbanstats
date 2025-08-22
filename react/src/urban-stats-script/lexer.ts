@@ -5,13 +5,17 @@ import { expressionOperatorMap } from './operators'
 const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
+const keywords = ['if', 'do', 'else', 'customNode', 'condition']
+export type Keyword = (typeof keywords)[number]
+
 interface NumericToken { type: 'number', value: number }
 interface IdentifierToken { type: 'identifier', value: string }
+interface KeywordToken { type: 'keyword', value: Keyword }
 interface StringToken { type: 'string', value: string }
 interface OperatorToken { type: 'operator', value: string }
 interface BracketToken { type: 'bracket', value: '(' | ')' | '{' | '}' | '[' | ']' }
 interface ErrorToken { type: 'error', value: string }
-type NonErrorToken = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken
+type NonErrorToken = NumericToken | IdentifierToken | KeywordToken | StringToken | OperatorToken | BracketToken
 type Token = NonErrorToken | ErrorToken
 
 export type Block = { type: 'single', ident: string } | { type: 'multi' }
@@ -91,7 +95,7 @@ export function parseNumber(input: string | number): number | undefined {
 const identifierLexer: GenericLexer = {
     firstToken: isAlpha,
     innerToken: (ch: string): boolean => isAlpha(ch) || isDigit(ch),
-    parse: (string: string): Token => { return { type: 'identifier', value: string } },
+    parse: (string: string): Token => { return { type: keywords.includes(string) ? 'keyword' : 'identifier', value: string } },
 }
 
 const operatorLexer: GenericLexer = {
