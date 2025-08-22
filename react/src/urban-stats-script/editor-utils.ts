@@ -173,7 +173,7 @@ export function getContainerOffset(node: Node, position: number): [Node, number]
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
     const brackets = new DefaultMap<string, number>(() => 0)
 
-    const keywords = ['if', 'else', 'do', 'condition', 'true', 'false', 'null']
+    const basicConstants = ['true', 'false', 'null']
 
     return (token, content) => {
         const style: Record<string, string> = { position: 'relative' }
@@ -234,7 +234,7 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                 style.color = colors.hueColors.orange
                 break
             case 'identifier':
-                if (keywords.includes(token.value)) {
+                if (basicConstants.includes(token.value)) {
                     style.color = colors.hueColors.orange
                 }
                 break
