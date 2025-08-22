@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation, Keyword } from './lexer'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 import { USSType } from './types-values'
 
@@ -105,8 +105,12 @@ class ParseState {
         return this.consumeTokenOfType('bracket', ...oneOfBrackets)
     }
 
-    consumeIdentifier(...oneOfIdentifiers: string[]): boolean {
-        return this.consumeTokenOfType('identifier', ...oneOfIdentifiers)
+    consumeIdentifier(): boolean {
+        return this.consumeTokenOfType('identifier')
+    }
+
+    consumeKeyword(...oneOfKeywords: Keyword[]): boolean {
+        return this.consumeTokenOfType('keyword', ...oneOfKeywords)
     }
 
     maybeLastNonEOLToken(offset: number): AnnotatedTokenWithValue {
@@ -135,6 +139,8 @@ class ParseState {
             case 'identifier':
                 this.index++
                 return { type: 'identifier', name: { node: token.token.value, location: token.location } }
+            case 'keyword':
+                throw new Error(`Unexpected keyword ${token.token.value}`)
             case 'bracket':
                 switch (token.token.value) {
                     case '(':
@@ -287,15 +293,15 @@ class ParseState {
     }
 
     parseExpression(): UrbanStatsASTExpression | ParseError {
-        if (this.consumeIdentifier('if')) {
+        if (this.consumeKeyword('if')) {
             return this.parseIfExpression()
         }
 
-        if (this.consumeIdentifier('do')) {
+        if (this.consumeKeyword('do')) {
             return this.parseDoExpression()
         }
 
-        if (this.consumeIdentifier('customNode')) {
+        if (this.consumeKeyword('customNode')) {
             return this.parseCustomNodeExpression()
         }
 
@@ -407,7 +413,7 @@ class ParseState {
     }
 
     parseStatement(): UrbanStatsASTStatement | ParseError {
-        if (this.consumeIdentifier('condition')) {
+        if (this.consumeKeyword('condition')) {
             return this.parseConditionStatement()
         }
 
@@ -449,7 +455,7 @@ class ParseState {
             return then
         }
         let elseBranch: UrbanStatsASTStatement | undefined = undefined
-        if (this.consumeIdentifier('else')) {
+        if (this.consumeKeyword('else')) {
             if (!this.consumeBracket('{')) {
                 return { type: 'error', value: 'Expected opening bracket { after else', location: this.maybeLastNonEOLToken(-1).location }
             }

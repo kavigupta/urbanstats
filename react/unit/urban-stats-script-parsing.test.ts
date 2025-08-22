@@ -285,11 +285,16 @@ void test('basic parsing', (): void => {
         parseAndRender('! x > 0'),
         parseAndRender(' ! (x > 0)'),
     )
+})
 
-    // assert.deepStrictEqual(
-    //     parseAndRender('(x * ----y) + z'),
-    //     parseAndRender('x * (-(-(-(- y)))) + z'),
-    // )
+void test('basic if parsing', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { y = 2 }'),
+        '(expr (if (id x) (assign (id y) (const 2))))',
+    )
+})
+
+void test('more complex if parsing', (): void => {
     assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
         '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
