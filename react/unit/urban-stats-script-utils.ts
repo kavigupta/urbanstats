@@ -158,7 +158,7 @@ function checkUnparseForInline(parsed: UrbanStatsASTExpression | UrbanStatsASTSt
     if (parsed.type === 'error') {
         return
     }
-    const unparsed = unparse(parsed, { inline })
+    const unparsed = unparse(parsed, { inline, expressionalContext: inline })
     const reparsed = parse(unparsed, { type: 'single', ident: 'test' })
     if (reparsed.type === 'error') {
         throw new Error(`Reparsed AST of\n${unparsed}\nis an error: ${JSON.stringify(reparsed)}`)
