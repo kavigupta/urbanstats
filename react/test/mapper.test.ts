@@ -3,7 +3,7 @@ import { gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, mostRecentDownloadPath, screencap, urbanstatsFixture, grabDownload } from './test_utils'
+import { target, downloadOrCheckString, mostRecentDownloadPath, screencap, urbanstatsFixture, grabDownload, waitForLoading } from './test_utils'
 
 async function checkGeojson(t: TestController, path: string): Promise<void> {
     // download the geojson by clicking the button
@@ -22,6 +22,7 @@ export async function downloadPNG(t: TestController): Promise<void> {
 export async function toggleCustomScript(t: TestController): Promise<void> {
     const checkbox = Selector('div').withText(/^Enable custom script/).parent().find('input[type="checkbox"]')
     await t.click(checkbox)
+    await waitForLoading(t)
 }
 
 export function urlFromCode(geographyKind: string, universe: string, code: string): string {
