@@ -565,6 +565,17 @@ void test('condition-expression', (): void => {
     )
 })
 
+void test('unparse condition', (): void => {
+    assert.deepStrictEqual(
+        unparse(parseProgram('condition (x); y = 2; z = 3')),
+        'condition (x)\ny = 2;\nz = 3',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram('condition (customNode("x")); y = 2; z = 3'), { simplify: true }),
+        'condition (x)\ny = 2;\nz = 3',
+    )
+})
+
 void test('parse errors in condition', (): void => {
     assert.deepStrictEqual(
         parseAndRender('condition'),

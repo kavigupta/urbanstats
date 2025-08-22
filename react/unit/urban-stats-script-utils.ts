@@ -183,7 +183,7 @@ export function parseExpr(input: string): UrbanStatsASTExpression {
 export function parseProgram(input: string): UrbanStatsASTStatement {
     const parsed = parse(input, { type: 'single', ident: 'test' })
     checkUnparse(parsed)
-    if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression') {
+    if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression' && parsed.type !== 'condition') {
         throw new Error(`Expected an assignment or statements, but got ${JSON.stringify(parsed)}`)
     }
     return parsed
