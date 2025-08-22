@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
 import { allIdentifiers, parse, parseNoErrorAsCustomNode, toSExp, unparse } from '../src/urban-stats-script/parser'
 
-import { emptyContext } from './urban-stats-script-utils'
+import { emptyContext, parseProgram } from './urban-stats-script-utils'
 
 const testBlock: Block = {
     type: 'single',
@@ -371,6 +371,42 @@ void test('parse custom nodes', (): void => {
     assert.deepStrictEqual(
         parseAndRender(multiLine),
         '(statements (assign (id x) (vector (const 1) (const 2) (const 3))) (expr (+ (const 2) (customNode (statements (assign (id y) (* (id x) (id x))) (expr (id y))) "y = x * x\\ny"))))',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("x * x")`)),
+        'x = [1, 2, 3];\ncustomNode("x * x")',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("x * x")`), { simplify: true }),
+        'x = [1, 2, 3];\nx * x',
+    )
+})
+
+void test('unparse multi-line customNode', (): void => {
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("y = x * x\\ny")`)),
+        'x = [1, 2, 3];\ncustomNode("y = x * x\\ny")',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("y = x * x\\ny")`), { simplify: true }),
+        'x = [1, 2, 3];\ny = x * x\ny',
+    )
+})
+
+void test('unparse multi-line customNode in an expressional context', (): void => {
+    const program = parseProgram(`x = [1, 2, 3]
+            2 + customNode("y = x * x\\ny")`)
+    assert.deepStrictEqual(
+        unparse(program),
+        'x = [1, 2, 3];\n2 + customNode("y = x * x\\ny")',
+    )
+    assert.deepStrictEqual(
+        unparse(program, { simplify: true }),
+        'x = [1, 2, 3];\n2 + do { y = x * x; y }',
     )
 })
 

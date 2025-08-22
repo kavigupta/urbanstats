@@ -766,17 +766,28 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean } = {}): string {
+    if (opts.inline) {
+        assert(opts.expressionalContext ?? false, 'inline must be true if expressionalContext is true')
+    }
     opts.indent = opts.indent ?? 0
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
     }
     switch (node.type) {
         case 'customNode':
-            return opts.simplify ? node.originalCode.trim() : `customNode(${JSON.stringify(node.originalCode.trim())})`
+            if (!opts.simplify) {
+                return `customNode(${JSON.stringify(node.originalCode.trim())})`
+            }
+            if (opts.expressionalContext) {
+                return unparse({ type: 'do', statements: [node.expr], entireLoc: locationOf(node.expr) }, { ...opts, inline: true })
+            }
+            else {
+                return node.originalCode.trim()
+            }
         case 'parseError':
             return node.originalCode
         case 'constant':
@@ -789,29 +800,29 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'identifier':
             return node.name.node
         case 'attribute':
-            const exprStr = unparse(node.expr, { ...opts, inline: true })
+            const exprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             return `${exprStr}.${node.name.node}`
         case 'function':
-            const fnStr = unparse(node.fn, { ...opts, inline: true })
+            const fnStr = unparse(node.fn, { ...opts, inline: true, expressionalContext: true })
             const argsStr = node.args.map((arg) => {
                 switch (arg.type) {
                     case 'unnamed':
-                        return unparse(arg.value, { ...opts, inline: true })
+                        return unparse(arg.value, { ...opts, inline: true, expressionalContext: true })
                     case 'named':
-                        return `${arg.name.node}=${unparse(arg.value, { ...opts, inline: true })}`
+                        return `${arg.name.node}=${unparse(arg.value, { ...opts, inline: true, expressionalContext: true })}`
                 }
             })
             const fnNeedsParens = !isSimpleExpression(node.fn)
             const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
             return `${fnWithParens}(${argsStr.join(', ')})`
         case 'unaryOperator':
-            const unaryExprStr = unparse(node.expr, { ...opts, inline: true })
+            const unaryExprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             const needsParens = !isSimpleExpression(node.expr)
             const exprWithParens = needsParens ? `(${unaryExprStr})` : unaryExprStr
             return `${node.operator.node}${exprWithParens}`
         case 'binaryOperator':
-            const leftStr = unparse(node.left, { ...opts, inline: true })
-            const rightStr = unparse(node.right, { ...opts, inline: true })
+            const leftStr = unparse(node.left, { ...opts, inline: true, expressionalContext: true })
+            const rightStr = unparse(node.right, { ...opts, inline: true, expressionalContext: true })
             const opPrecedence = expressionOperatorMap.get(node.operator.node)?.precedence ?? 0
             let leftWithParens = leftStr
             if (node.left.type === 'binaryOperator') {
@@ -835,19 +846,20 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             }
             return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
         case 'vectorLiteral':
-            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true }))
+            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
             return `[${elementsStr.join(', ')}]`
         case 'objectLiteral':
             const propertiesStr = node.properties.map(([key, value]) => {
-                const valueStr = unparse(value, { ...opts, inline: true })
+                const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true })
                 return `${key}: ${valueStr}`
             })
             return `{${propertiesStr.join(', ')}}`
         case 'assignment':
-            const lhsStr = unparse(node.lhs, opts)
-            const valueStr = unparse(node.value, opts)
+            const lhsStr = unparse(node.lhs, { ...opts, expressionalContext: true })
+            const valueStr = unparse(node.value, { ...opts, expressionalContext: true })
             return opts.inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(opts.indent)}${lhsStr} = ${valueStr}`
         case 'expression':
+            // despite being an expression, it is not in an expressional context if its parent is not
             return opts.inline ? unparse(node.value, opts) : `${indentSpaces(opts.indent)}${unparse(node.value, opts)}`
         case 'statements':
             const statementsStr = node.result
@@ -855,7 +867,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 .filter(s => s !== '' && s !== 'do {  }')
             return statementsStr.join(opts.inline ? '; ' : ';\n')
         case 'if':
-            const conditionStr = unparse(node.condition, opts)
+            const conditionStr = unparse(node.condition, { ...opts, expressionalContext: true })
             const thenStr = unparse(node.then, { ...opts, indent: opts.indent + 1 })
             let ifStr = opts.inline
                 ? `if (${conditionStr}) { ${thenStr} }`
@@ -874,7 +886,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 ? `do { ${doStr} }`
                 : `do {\n${doStr}\n${indentSpaces(opts.indent)}}`
         case 'condition':
-            const condStr = unparse(node.condition, opts)
+            const condStr = unparse(node.condition, { ...opts, expressionalContext: true })
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
             const restStr = unparse(restStatements, opts)
             // If condition is literal "true", elide it
