@@ -7,7 +7,7 @@ import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType, USSFunctionArgType, renderType } from '../../urban-stats-script/types-values'
+import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
@@ -493,7 +493,7 @@ function maybeParseExpr(
     typeEnvironment: Map<string, USSDocumentedType>,
 ): UrbanStatsASTExpression | undefined {
     try {
-        return parseExpr(expr, blockIdent, type, typeEnvironment, () => {
+        return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
             throw new Error('parsing failed')
         })
     }
@@ -506,18 +506,18 @@ type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpressio
 export function parseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
-    type: USSType,
+    types: USSType[],
     typeEnvironment: Map<string, USSDocumentedType>,
     fallback: Fallback,
 ): UrbanStatsASTExpression {
-    const parsed = attemptParseExpr(expr, blockIdent, type, typeEnvironment, fallback)
-    return parsed ?? fallback(unparse(expr), blockIdent, [type])
+    const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback)
+    return parsed ?? fallback(unparse(expr), blockIdent, types)
 }
 
 function attemptParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
-    type: USSType,
+    types: USSType[],
     typeEnvironment: Map<string, USSDocumentedType>,
     fallback: Fallback,
 ): UrbanStatsASTExpression | undefined {
@@ -530,55 +530,70 @@ function attemptParseExpr(
         case 'attribute':
             return undefined
         case 'vectorLiteral':
-            if (type.type === 'vector') {
-                const elementType = type.elementType
-                if (elementType.type !== 'elementOfEmptyVector') {
-                    return {
-                        type: 'vectorLiteral',
-                        entireLoc: emptyLocation(blockIdent),
-                        elements: expr.elements.map(elem => parseExpr(elem, blockIdent, elementType, typeEnvironment, fallback)),
-                    }
-                }
+            const elementTypes = types
+                .filter(t => t.type === 'vector')
+                .map(t => t.elementType)
+                .filter(t => t.type !== 'elementOfEmptyVector') satisfies USSType[]
+            if (elementTypes.length === 0) {
+                return undefined
             }
-            return undefined
+            return {
+                type: 'vectorLiteral',
+                entireLoc: emptyLocation(blockIdent),
+                elements: expr.elements.map(elem => parseExpr(elem, blockIdent, elementTypes, typeEnvironment, fallback)),
+            }
         case 'objectLiteral':
-            if (type.type === 'object') {
-                const exprProps = new Set(expr.properties.map(([key]) => key))
-                // No duplicate keys
-                if (exprProps.size === expr.properties.length && exprProps.size === type.properties.size && Array.from(type.properties.keys()).every(key => exprProps.has(key))) {
-                    return {
-                        type: 'objectLiteral',
-                        entireLoc: emptyLocation(blockIdent),
-                        properties: expr.properties.map(([key, value]) => [key, parseExpr(value, blockIdent, type.properties.get(key)!, typeEnvironment, fallback)]),
+            const exprProps = new Set(expr.properties.map(([key]) => key))
+            const compatibleTypes = types.filter(
+                (t) => {
+                    if (t.type !== 'object') {
+                        return false
                     }
-                }
+                    if (t.properties.size !== expr.properties.length) {
+                        return false
+                    }
+                    if (Array.from(t.properties.keys()).some(key => !exprProps.has(key))) {
+                        return false
+                    }
+                    return true
+                },
+            ) as USSObjectType[]
+            if (compatibleTypes.length === 0) {
+                return undefined
             }
-            return undefined
+            return {
+                type: 'objectLiteral',
+                entireLoc: emptyLocation(blockIdent),
+                properties: expr.properties.map(([key, value]) => [
+                    key,
+                    parseExpr(value, blockIdent, compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback),
+                ]),
+            }
         case 'do':
             const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, type, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, [type])
+            return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, types)
         case 'customNode':
-            return parseExpr(expr.expr, blockIdent, type, typeEnvironment, fallback)
+            return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback)
         case 'statements':
             if (expr.result.length === 1) {
-                return parseExpr(expr.result[0], blockIdent, type, typeEnvironment, fallback)
+                return parseExpr(expr.result[0], blockIdent, types, typeEnvironment, fallback)
             }
             return undefined
         case 'expression':
-            return parseExpr(expr.value, blockIdent, type, typeEnvironment, fallback)
+            return parseExpr(expr.value, blockIdent, types, typeEnvironment, fallback)
         case 'identifier':
-            const validVariableSelections = possibilities([type], typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
+            const validVariableSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
             if (validVariableSelections.some(s => s.name === expr.name.node)) {
                 return expr
             }
             return undefined
         case 'constant':
-            if (type.type === expr.value.node.type) {
+            if (types.some(type => type.type === expr.value.node.type)) {
                 return expr
             }
             return undefined
         case 'unaryOperator':
-            if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && type.type === expr.expr.value.node.type) {
+            if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && types.some(type => type.type === 'number')) {
                 return {
                     type: 'constant',
                     value: { location: expr.expr.value.location, node: { type: 'number', value: -(expr.expr.value.node.value as number) } },
@@ -590,7 +605,7 @@ function attemptParseExpr(
             if (fn.type !== 'identifier') {
                 return undefined
             }
-            const validFunctionSelections = possibilities([type], typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
+            const validFunctionSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
             if (!validFunctionSelections.some(s => s.name === fn.name.node)) {
                 return undefined
             }
@@ -614,7 +629,7 @@ function attemptParseExpr(
             }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, (fnType.posArgs[i] as { type: 'concrete', value: USSType }).value, typeEnvironment, fallback),
+                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
             }))
             if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
                 return undefined
@@ -622,7 +637,7 @@ function attemptParseExpr(
             nameds = nameds.map(a => ({
                 type: 'named',
                 name: a.name,
-                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, (fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value, typeEnvironment, fallback),
+                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
             }))
             return {
                 type: 'function',

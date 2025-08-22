@@ -18,6 +18,9 @@ import { makeStatements } from './utils'
 
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
+
+const validMapperOutputs = [cMap, pMap] satisfies USSType[]
+
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
@@ -104,7 +107,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={[{ type: 'opaque', name: 'cMap' }, { type: 'opaque', name: 'pMap' }]}
+                    type={validMapperOutputs}
                     labelWidth="0px"
                 />
             </div>
@@ -157,7 +160,7 @@ export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnviron
         conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
         conditionRest = conditionStmt !== undefined ? [conditionStmt] : []
     }
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, cMap, typeEnvironment, parseNoErrorAsCustomNode)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
@@ -175,6 +178,6 @@ export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnviron
 }
 
 export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
-    const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, [cMap, pMap])
+    const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, validMapperOutputs)
     return attemptParseAsTopLevel(expr.expr, typeEnvironment)
 }
