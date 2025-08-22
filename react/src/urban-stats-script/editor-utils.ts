@@ -238,6 +238,9 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                     style.color = colors.hueColors.orange
                 }
                 break
+            case 'keyword':
+                style.color = colors.hueColors.purple
+                break
         }
 
         const result = document.createElement('span')
