@@ -782,7 +782,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             if (!opts.simplify) {
                 return `customNode(${JSON.stringify(node.originalCode.trim())})`
             }
-            if (opts.expressionalContext) {
+            if (opts.expressionalContext && node.expr.type !== 'expression') {
                 return unparse({ type: 'do', statements: [node.expr], entireLoc: locationOf(node.expr) }, { ...opts, inline: true })
             }
             else {
