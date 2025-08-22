@@ -19,10 +19,17 @@ export async function downloadPNG(t: TestController): Promise<void> {
     await grabDownload(t, download, 6000) // wait for 6 seconds to ensure the download completes
 }
 
-export async function toggleCustomScript(t: TestController): Promise<void> {
-    const checkbox = Selector('div').withText(/^Enable custom script/).parent().find('input[type="checkbox"]')
+export async function checkBox(t: TestController, label: RegExp): Promise<void> {
+    const labelEl = Selector('label').withText(label)
+    const parent = labelEl.parent()
+    const checkbox = parent.find('input[type="checkbox"]')
+    // console.log(.innerHTML)
     await t.click(checkbox)
     await waitForLoading(t)
+}
+
+export async function toggleCustomScript(t: TestController): Promise<void> {
+    await checkBox(t, /^Enable custom script/)
 }
 
 export function urlFromCode(geographyKind: string, universe: string, code: string): string {
