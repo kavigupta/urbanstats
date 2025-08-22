@@ -253,6 +253,10 @@ class ParseState {
     }
 
     parseFunctionalExpression(): UrbanStatsASTExpression | ParseError {
+        if (this.consumeKeyword('customNode')) {
+            return this.parseCustomNodeExpression()
+        }
+
         let fn = this.parseSingleExpression()
         if (fn.type === 'error') {
             return fn
@@ -299,10 +303,6 @@ class ParseState {
 
         if (this.consumeKeyword('do')) {
             return this.parseDoExpression()
-        }
-
-        if (this.consumeKeyword('customNode')) {
-            return this.parseCustomNodeExpression()
         }
 
         const operatorExpSequence: USSInfixSequenceElement[] = []

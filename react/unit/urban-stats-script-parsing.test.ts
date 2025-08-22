@@ -355,6 +355,25 @@ void test('more complex if parsing', (): void => {
     )
 })
 
+void test('parse custom nodes', (): void => {
+    const justTheExpression = `customNode("y = x * x")`
+    assert.deepStrictEqual(
+        parseAndRender(justTheExpression),
+        '(expr (customNode (assign (id y) (* (id x) (id x))) "y = x * x"))',
+    )
+    const singleLine = `2 + customNode("y = x * x")`
+    assert.deepStrictEqual(
+        parseAndRender(singleLine),
+        '(expr (+ (const 2) (customNode (assign (id y) (* (id x) (id x))) "y = x * x")))',
+    )
+    const multiLine = `x = [1, 2, 3]
+        2 + customNode("y = x * x\\ny")`
+    assert.deepStrictEqual(
+        parseAndRender(multiLine),
+        '(statements (assign (id x) (vector (const 1) (const 2) (const 3))) (expr (+ (const 2) (customNode (statements (assign (id y) (* (id x) (id x))) (expr (id y))) "y = x * x\\ny"))))',
+    )
+})
+
 void test('parse errors in if', (): void => {
     assert.deepStrictEqual(
         parseAndRender('if'),
