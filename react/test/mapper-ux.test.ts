@@ -15,8 +15,8 @@ function mapperTest(name: string, code: string, opts: { onlyTest?: true }, testF
     }
 }
 
-async function replaceInput(t: TestController, original: string | RegExp, newv: string): Promise<void> {
-    const inputSelector = Selector('input').withAttribute('value', original)
+async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
+    const inputSelector = Selector('input').withAttribute('value', original).nth(nth)
     await t.click(inputSelector)
     await t.selectText(inputSelector)
     await t.typeText(inputSelector, newv)
@@ -28,13 +28,13 @@ mapperTest('manipulate point map', 'pMap(data=density_pw_1km, scale=linearScale(
     await t.expect(await getErrors()).eql([])
 })
 
-mapperTest('manipulate insets', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', {}, async (t) => {
+mapperTest('manipulate insets', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', { }, async (t) => {
     await toggleCustomScript(t)
     await t.expect(await getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await replaceInput(t, 'Default Insets', 'Custom Inset')
     await waitForLoading(t)
-    await replaceInput(t, 'Iceland', 'Custom Inset')
+    await replaceInput(t, 'Iceland', 'Custom Inset', 1) // second one, since the first is the universe selector
     await waitForLoading(t)
     await replaceInput(t, /^-13\.4/, '-13')
     await waitForLoading(t)
