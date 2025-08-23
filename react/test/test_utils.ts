@@ -184,7 +184,9 @@ async function copyMostRecentFile(t: TestController, laterThan: number): Promise
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
     const mrdp = await waitForDownload(t, laterThan)
-    fs.copyFileSync(mrdp, path.join(screenshotsFolder, screenshotPath(t)))
+    const dest = path.join(screenshotsFolder, screenshotPath(t))
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(mrdp, dest)
 }
 
 export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
