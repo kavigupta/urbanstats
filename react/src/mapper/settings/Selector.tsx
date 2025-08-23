@@ -1,6 +1,5 @@
-import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
+import React, { ReactNode, useMemo, useCallback } from 'react'
 
-import { useColors } from '../../page_template/colors'
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { doRender, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
@@ -9,9 +8,9 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
-import { toNeedle } from '../../utils/bitap'
-import { bitap } from '../../utils/bitap-selector'
 import { assert } from '../../utils/defensive'
+
+import { BetterSelector } from './BetterSelector'
 
 export const labelPadding = '4px'
 
@@ -73,8 +72,6 @@ export function possibilities(target: USSType[], env: Map<string, USSDocumentedT
     return results
 }
 
-const maxErrors = 31
-
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
@@ -84,25 +81,9 @@ export function Selector(props: {
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
-    const colors = useColors()
-
     const selected = classifyExpr(props.uss)
-    const selectedRendered = renderSelection(props.typeEnvironment, selected)
 
-    const [searchValue, setSearchValue] = useState(selectedRendered)
-    const [isOpen, setIsOpen] = useState(false)
-    const [highlightedIndex, setHighlightedIndex] = useState(0)
-
-    const inputRef = useRef<HTMLInputElement>(null)
-
-    const menuRef = useRef<HTMLDivElement>(null)
-
-    // Needed if this component is reused in a different context
-    useEffect(() => {
-        setSearchValue(selectedRendered)
-    }, [selectedRendered])
-
-    const { selectionPossibilities, renderedSelectionPossibilities, bitapBuffers, optionSelectionPairs } = useMemo(() => {
+    const selectionPossibilities = useMemo(() => {
         // Combine possibilities from all types
         const allPossibilities = new Set<Selection>()
         props.type.forEach((type) => {
@@ -110,49 +91,10 @@ export function Selector(props: {
             typePossibilities.forEach(possibility => allPossibilities.add(possibility))
         })
 
-        const selectionPossibilitiesResult = Array.from(allPossibilities)
-        const renderedSelectionPossibilitiesResult = selectionPossibilitiesResult.map(s => renderSelection(props.typeEnvironment, s))
-
-        const longestSelectionPossibility = renderedSelectionPossibilitiesResult.reduce((acc, poss) => Math.max(acc, poss.toLowerCase().length), 0)
-        const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
-
-        const optionSelectionPairsResult = selectionPossibilitiesResult.map((selection, index) => ({
-            option: renderedSelectionPossibilitiesResult[index],
-            selection,
-        }))
-
-        return {
-            selectionPossibilities: selectionPossibilitiesResult,
-            renderedSelectionPossibilities: renderedSelectionPossibilitiesResult,
-            bitapBuffers: bitapBuffersResult,
-            optionSelectionPairs: optionSelectionPairsResult,
-        }
+        return Array.from(allPossibilities)
     }, [props.type, props.typeEnvironment])
 
-    const { sortedOptions, optionToSelectionMap } = useMemo(() => {
-        const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
-
-        const sortedPairs = optionSelectionPairs.sort((a, b) => {
-            const aScore = bitap(a.option.toLowerCase(), needle, maxErrors, bitapBuffers)
-            const bScore = bitap(b.option.toLowerCase(), needle, maxErrors, bitapBuffers)
-            if (aScore === bScore) {
-                return a.option.length - b.option.length
-            }
-            return aScore - bScore
-        })
-
-        const optionToSelectionMapResult = new Map<string, Selection>()
-        sortedPairs.forEach((pair) => {
-            optionToSelectionMapResult.set(pair.option, pair.selection)
-        })
-
-        return {
-            sortedOptions: sortedPairs.map(pair => pair.option),
-            optionToSelectionMap: optionToSelectionMapResult,
-        }
-    }, [bitapBuffers, optionSelectionPairs, searchValue])
-
-    assert(renderedSelectionPossibilities.includes(selectedRendered), 'Selected expression must be in the possibilities')
+    const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
 
     if (selectionPossibilities.length < 2) {
         return undefined
@@ -167,127 +109,14 @@ export function Selector(props: {
 
     const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
 
-    const handleOptionSelect = (option: string): void => {
-        const selection = optionToSelectionMap.get(option)
-        if (selection) {
-            props.setSelection(selection)
-            setSearchValue(option)
-            setIsOpen(false)
-            setHighlightedIndex(0)
-        }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent): void => {
-        if (!isOpen || sortedOptions.length === 0) return
-
-        switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault()
-                setHighlightedIndex(prev =>
-                    prev < sortedOptions.length - 1 ? prev + 1 : 0,
-                )
-                break
-            case 'ArrowUp':
-                e.preventDefault()
-                setHighlightedIndex(prev =>
-                    prev > 0 ? prev - 1 : sortedOptions.length - 1,
-                )
-                break
-            case 'Enter':
-                e.preventDefault()
-                if (highlightedIndex >= 0 && highlightedIndex < sortedOptions.length) {
-                    handleOptionSelect(sortedOptions[highlightedIndex])
-                }
-                break
-            case 'Escape':
-                e.preventDefault()
-                setIsOpen(false)
-                setHighlightedIndex(0)
-                break
-        }
-    }
-
     const select = (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5em' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchValue}
-                    onChange={(e) => {
-                        setSearchValue(e.target.value)
-                        setIsOpen(true)
-                        setHighlightedIndex(0)
-                        if (menuRef.current) {
-                            menuRef.current.scrollTop = 0
-                        }
-                    }}
-                    onKeyDown={handleKeyDown}
-                    onClick={(e) => {
-                        (e.target as HTMLInputElement).select()
-                    }}
-                    onFocus={() => {
-                        setIsOpen(true)
-                        setHighlightedIndex(0)
-                    }}
-                    onBlur={() => {
-                        // Delay closing to allow clicking on options
-                        setTimeout(() => {
-                            setIsOpen(false)
-                            setHighlightedIndex(0)
-                        }, 150)
-                    }}
-                    placeholder="Search options..."
-                    style={{
-                        width: '100%',
-                        padding: `${labelPadding} 8px`,
-                        border: `1px solid ${colors.ordinalTextColor}`,
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                    }}
-                />
-                {isOpen && sortedOptions.length > 0 && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            right: 0,
-                            backgroundColor: colors.background,
-                            border: '1px solid #ccc',
-                            borderRadius: '4px',
-                            maxHeight: '200px',
-                            overflowY: 'auto',
-                            zIndex: 1000,
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        }}
-                        ref={menuRef}
-                    >
-                        {sortedOptions.map((option, index) => (
-                            <div
-                                key={index}
-                                onMouseDown={() => {
-                                    handleOptionSelect(option)
-                                }}
-                                onMouseUp={() => {
-                                    handleOptionSelect(option)
-                                    inputRef.current?.blur()
-                                }}
-                                style={{
-                                    padding: '8px 12px',
-                                    cursor: 'pointer',
-                                    borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
-                                    backgroundColor: index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
-                                    color: colors.textMain,
-                                }}
-                                onMouseEnter={() => { setHighlightedIndex(index) }}
-                            >
-                                {option}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+            <BetterSelector
+                value={selected}
+                possibleValues={selectionPossibilities}
+                renderValue={renderPossibility}
+                onChange={props.setSelection}
+            />
             {showConstantInput && (
                 <input
                     type="text"
