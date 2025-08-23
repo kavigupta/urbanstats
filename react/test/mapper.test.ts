@@ -30,25 +30,25 @@ cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ra
 testCode('County', 'USA', codeFiltered, 'code-filtered')
 
 const withOutline = `
-cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline())
+cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline(), basemap=noBasemap())
 `
 
 testCode('County', 'USA', withOutline, 'with-outline')
 
 const indiaEg = `
-cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline())
+cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, basemap=noBasemap())
 `
 
 testCode('Subnational Region', 'India', indiaEg, 'india-eg')
 
 const pointMap = `
-pMap(data=hilliness, scale=linearScale(), ramp=rampUridis)
+pMap(data=hilliness, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())
 `
 
 testCode('Urban Center', 'USA', pointMap, 'point-map')
 
 const translucentOutline = `
-cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10))
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap())
 `
 
 testCode('Subnational Region', 'USA', translucentOutline, 'translucent-outline')
