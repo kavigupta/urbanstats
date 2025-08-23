@@ -4,9 +4,10 @@ import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { Property } from '../../utils/Property'
-import { DataListSelector } from '../DataListSelector'
 import { defaultTypeEnvironment } from '../context'
+import { settingNameStyle } from '../style'
 
+import { BetterSelector } from './BetterSelector'
 import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings } from './utils'
@@ -48,40 +49,56 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
+    const renderString = useCallback((universe: string | undefined) => universe ?? '', [])
+
+    const universes = useMemo(() => [undefined, ...universes_ordered], [])
+
+    const geographyKinds = useMemo(() =>
+        mapSettings.universe === undefined ? undefined : [undefined, ...articleTypes(counts, mapSettings.universe)] as Exclude<MapSettings['geographyKind'], undefined>[],
+    [mapSettings.universe, counts])
+
     return (
         <SelectionContext.Provider value={selectionContext}>
-            <DataListSelector
-                overallName="Universe:"
-                names={universes_ordered}
-                initialValue={mapSettings.universe}
+            <div style={settingNameStyle}>
+                Universe
+            </div>
+            <BetterSelector
+                possibleValues={universes}
+                value={mapSettings.universe}
+                renderValue={renderString}
                 onChange={
-                    (name) => {
+                    (newUniverse) => {
                         setMapSettings(s => ({
                             ...s,
-                            universe: name === '' ? undefined : name,
-                            geographyKind: name === '' || s.geographyKind === undefined
+                            universe: newUniverse,
+                            geographyKind: newUniverse === undefined || s.geographyKind === undefined
                                 ? s.geographyKind
-                                : articleTypes(counts, name).includes(s.geographyKind)
+                                : articleTypes(counts, newUniverse).includes(s.geographyKind)
                                     ? s.geographyKind
                                     : undefined,
                         }))
                     }
                 }
             />
-            {mapSettings.universe && (
-                <DataListSelector
-                    overallName="Geography Kind:"
-                    names={articleTypes(counts, mapSettings.universe) as Exclude<MapSettings['geographyKind'], undefined>[]}
-                    initialValue={mapSettings.geographyKind}
-                    onChange={
-                        (name) => {
-                            setMapSettings(s => ({
-                                ...s,
-                                geographyKind: name === '' ? undefined : name,
-                            }))
+            {geographyKinds && (
+                <>
+                    <div style={settingNameStyle}>
+                        Geography Kind
+                    </div>
+                    <BetterSelector
+                        possibleValues={geographyKinds}
+                        value={mapSettings.geographyKind}
+                        renderValue={renderString}
+                        onChange={
+                            (newGeographyKind) => {
+                                setMapSettings(s => ({
+                                    ...s,
+                                    geographyKind: newGeographyKind,
+                                }))
+                            }
                         }
-                    }
-                />
+                    />
+                </>
             )}
             <TopLevelEditor
                 uss={uss}
