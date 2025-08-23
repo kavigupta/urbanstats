@@ -35,6 +35,7 @@ import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
+import { CountsByUT } from './countsByArticleType'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
@@ -416,7 +417,7 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     )
 }
 
-export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
+export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
     const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
 
@@ -490,6 +491,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
                         setMapSettingsWrapper(setter(mapSettings))
                     }}
                     errors={errors}
+                    counts={props.counts}
                 />
                 <Export
                     mapRef={mapRef}

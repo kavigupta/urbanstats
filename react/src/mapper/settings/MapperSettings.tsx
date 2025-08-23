@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 
-import valid_geographies from '../../data/mapper/used_geographies'
+import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { Property } from '../../utils/Property'
@@ -11,10 +11,11 @@ import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, errors }: {
+export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: {
     mapSettings: MapSettings
     setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
     errors: EditorError[]
+    counts: CountsByUT
 }): ReactNode {
     const uss = mapSettings.script.uss
     const setUss = useCallback((newUss: MapSettings['script']['uss']): void => {
@@ -47,6 +48,16 @@ export function MapperSettings({ mapSettings, setMapSettings, errors }: {
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
+    useEffect(() => {
+        if (!articleTypes(counts, mapSettings.universe).includes(mapSettings.geographyKind)) {
+            const newGeoKind = articleTypes(counts, mapSettings.universe)[0] as MapSettings['geographyKind']
+            setMapSettings(s => ({
+                ...s,
+                geographyKind: newGeoKind,
+            }))
+        }
+    }, [mapSettings.universe, counts, mapSettings.geographyKind, setMapSettings])
+
     return (
         <SelectionContext.Provider value={selectionContext}>
             <DataListSelector
@@ -61,19 +72,21 @@ export function MapperSettings({ mapSettings, setMapSettings, errors }: {
                         }))
                     }
                 }
+                noNeutral
             />
             <DataListSelector
                 overallName="Geography Kind:"
-                names={valid_geographies}
+                names={articleTypes(counts, mapSettings.universe)}
                 initialValue={mapSettings.geographyKind}
                 onChange={
                     (name) => {
                         setMapSettings(s => ({
                             ...s,
-                            geographyKind: name,
+                            geographyKind: name as MapSettings['geographyKind'],
                         }))
                     }
                 }
+                noNeutral
             />
             <TopLevelEditor
                 uss={uss}
