@@ -187,7 +187,7 @@ export type PageData =
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
-    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
@@ -671,13 +671,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const panel = await import('../components/mapper-panel')
+            const panel = import('../components/mapper-panel')
+            const counts = getCountsByArticleType()
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: panel.mapSettingsFromURLParam(newDescriptor.settings),
-                    mapperPanel: panel.MapperPanel,
+                    settings: (await panel).mapSettingsFromURLParam(newDescriptor.settings),
+                    mapperPanel: (await panel).MapperPanel,
+                    counts: await counts,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
