@@ -3,20 +3,21 @@ import { gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, mostRecentDownloadPath, grabDownload, waitForLoading } from './test_utils'
+import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
 
 export async function checkGeojson(t: TestController, path: string): Promise<void> {
+    const laterThan = new Date().getTime()
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))
     await t.wait(1000) // sometimes downloading takes a little time
-    const mrdp = mostRecentDownloadPath()
+    const mrdp = await waitForDownload(t, laterThan)
     const mostRecentDownload = fs.readFileSync(mrdp, 'utf8')
     await downloadOrCheckString(t, mostRecentDownload, path, 'json')
 }
 
 export async function downloadPNG(t: TestController): Promise<void> {
     const download = Selector('button').withExactText('Export as PNG')
-    await grabDownload(t, download, 6000) // wait for 6 seconds to ensure the download completes
+    await grabDownload(t, download) // wait for 6 seconds to ensure the download completes
 }
 
 export async function checkBox(t: TestController, label: RegExp): Promise<void> {
