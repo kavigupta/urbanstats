@@ -74,7 +74,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     await Promise.all(multiSourcePromises)
 }
 
-export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocumentedType> => {
+export const defaultTypeEnvironment = (universe: Universe | undefined): Map<string, USSDocumentedType> => {
     const te = new Map<string, USSDocumentedType>()
 
     for (const [key, value] of defaultConstants) {
@@ -105,7 +105,7 @@ export const defaultTypeEnvironment = (universe: Universe): Map<string, USSDocum
             humanReadableName: 'Default Insets',
             category: 'mapper',
             longDescription: 'Predefined map inset configurations for the current universe (whatever that is). E.g., for the US, it would be the continental US, Alaska, Hawaii, Puerto Rico, and Guam.',
-            equivalentExpressions: [loadInsetExpression(universe)],
+            equivalentExpressions: universe !== undefined ? [loadInsetExpression(universe)] : [],
         },
     })
 

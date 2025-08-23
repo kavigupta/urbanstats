@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 
 import { settingNameStyle } from './style'
 
-export function DataListSelector<T extends string>({ overallName, initialValue, names, onChange, noNeutral, headerStyle }: { overallName: string | undefined, initialValue: T | undefined, names: readonly T[], onChange: (newValue: T) => void, noNeutral?: boolean, headerStyle?: React.CSSProperties }): ReactNode {
+export function DataListSelector<T extends string>({ overallName, initialValue, names, onChange, noNeutral, headerStyle }: { overallName: string | undefined, initialValue: T | undefined, names: readonly T[], onChange: (newValue: T | '') => void, noNeutral?: boolean, headerStyle?: React.CSSProperties }): ReactNode {
     const colors = useColors()
     const namesFull = noNeutral ? names : ['', ...names]
     const setInitial = initialValue !== undefined && namesFull.includes(initialValue)

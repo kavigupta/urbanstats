@@ -48,16 +48,6 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
-    useEffect(() => {
-        if (!articleTypes(counts, mapSettings.universe).includes(mapSettings.geographyKind)) {
-            const newGeoKind = articleTypes(counts, mapSettings.universe)[0] as MapSettings['geographyKind']
-            setMapSettings(s => ({
-                ...s,
-                geographyKind: newGeoKind,
-            }))
-        }
-    }, [mapSettings.universe, counts, mapSettings.geographyKind, setMapSettings])
-
     return (
         <SelectionContext.Provider value={selectionContext}>
             <DataListSelector
@@ -68,26 +58,31 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                     (name) => {
                         setMapSettings(s => ({
                             ...s,
-                            universe: name,
+                            universe: name === '' ? undefined : name,
+                            geographyKind: name === '' || s.geographyKind === undefined
+                                ? s.geographyKind
+                                : articleTypes(counts, name).includes(s.geographyKind)
+                                    ? s.geographyKind
+                                    : undefined,
                         }))
                     }
                 }
-                noNeutral
             />
-            <DataListSelector
-                overallName="Geography Kind:"
-                names={articleTypes(counts, mapSettings.universe)}
-                initialValue={mapSettings.geographyKind}
-                onChange={
-                    (name) => {
-                        setMapSettings(s => ({
-                            ...s,
-                            geographyKind: name as MapSettings['geographyKind'],
-                        }))
+            {mapSettings.universe && (
+                <DataListSelector
+                    overallName="Geography Kind:"
+                    names={articleTypes(counts, mapSettings.universe) as Exclude<MapSettings['geographyKind'], undefined>[]}
+                    initialValue={mapSettings.geographyKind}
+                    onChange={
+                        (name) => {
+                            setMapSettings(s => ({
+                                ...s,
+                                geographyKind: name === '' ? undefined : name,
+                            }))
+                        }
                     }
-                }
-                noNeutral
-            />
+                />
+            )}
             <TopLevelEditor
                 uss={uss}
                 setUss={(newUss) => {

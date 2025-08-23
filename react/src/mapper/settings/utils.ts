@@ -47,8 +47,8 @@ export interface MapperScriptSettings {
 }
 
 export interface MapSettings {
-    geographyKind: typeof valid_geographies[number]
-    universe: Universe
+    geographyKind: typeof valid_geographies[number] | undefined
+    universe: Universe | undefined
     script: MapperScriptSettings
 }
 

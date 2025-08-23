@@ -20,10 +20,12 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
+import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
+import { noLocation } from '../urban-stats-script/lexer'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -460,12 +462,11 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     const [errors, setErrors] = useState<EditorError[]>([])
 
     const mapperPanel = (): ReactNode => {
-        const geographyKind = mapSettings.geographyKind
-        return (!valid_geographies.includes(geographyKind))
-            ? <div>Invalid geography kind</div>
+        return (mapSettings.geographyKind === undefined || mapSettings.universe === undefined)
+            ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
             : (
                     <MapComponent
-                        geographyKind={geographyKind}
+                        geographyKind={mapSettings.geographyKind}
                         universe={mapSettings.universe}
                         uss={uss}
                         mapRef={mapRef}
@@ -509,9 +510,13 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        const rawSettings = z.object({ geographyKind: z.enum(valid_geographies), universe: z.enum(universes_ordered), script: z.object({
-            uss: z.string(),
-        }) }).parse(JSON.parse(jsonedSettings))
+        const rawSettings = z.object({
+            // Catch statements so we can remove universes/geos in the future and maps will still partially load
+            geographyKind: z.optional(z.enum(valid_geographies)).catch(undefined),
+            universe: z.optional(z.enum(universes_ordered)).catch(undefined),
+            script: z.object({
+                uss: z.string(),
+            }) }).parse(JSON.parse(jsonedSettings))
         const uss = parse(rawSettings.script.uss)
         if (uss.type === 'error') {
             throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
