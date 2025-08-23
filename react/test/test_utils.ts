@@ -157,7 +157,10 @@ export async function downloadHistogram(t: TestController, nth: number): Promise
 function mostRecentDownloadPath(): [string | undefined, number] {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
-    const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+    const sorted = files
+        .filter(x => !x.startsWith('.'))
+        .map(x => path.join(downloadsFolder(), x))
+        .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
     if (sorted.length === 0) {
         return [undefined, 0]
     }
