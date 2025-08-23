@@ -36,7 +36,7 @@ cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOu
 testCode('County', 'USA', withOutline, 'with-outline')
 
 const indiaEg = `
-cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis)
+cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline())
 `
 
 testCode('Subnational Region', 'India', indiaEg, 'india-eg')
