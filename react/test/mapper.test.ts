@@ -39,7 +39,7 @@ const indiaEg = `
 cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, basemap=noBasemap())
 `
 
-testCode('Subnational Region', 'India', indiaEg, 'india-eg')
+testCode('Urban Center', 'India', indiaEg, 'india-eg')
 
 const pointMap = `
 pMap(data=hilliness, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())
@@ -51,7 +51,7 @@ const translucentOutline = `
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap())
 `
 
-testCode('Subnational Region', 'USA', translucentOutline, 'translucent-outline')
+testCode('Urban Center', 'USA', translucentOutline, 'translucent-outline')
 
 const codeWithRegression = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
@@ -59,7 +59,7 @@ condition (population > 200000)
 cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
 `
 
-testCode('Subnational Region', 'USA', codeWithRegression, 'code-with-regression', true)
+testCode('Urban Center', 'USA', codeWithRegression, 'code-with-regression', true)
 
 const codeSetCenterWithExpression = `
 cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis, unit=unitPercentage, basemap=noBasemap())

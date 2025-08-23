@@ -4,8 +4,8 @@ import { checkBox, getCodeFromMainField, getErrors, toggleCustomScript, urlFromC
 import { urbanstatsFixture, waitForLoading } from './test_utils'
 
 function mapperTest(name: string, code: string, opts: { onlyTest?: true }, testFn: (t: TestController) => Promise<void>): void {
-    // use Iceland and Subnational Region as a quick test (less data to load)
-    urbanstatsFixture(`quick-${code}`, urlFromCode('Subnational Region', 'Iceland', code))
+    // use Iceland and Urban Center as a quick test (less data to load)
+    urbanstatsFixture(`quick-${code}`, urlFromCode('Urban Center', 'Iceland', code))
     if (opts.onlyTest) {
         // eslint-disable-next-line no-only-tests/no-only-tests -- conditional, we dissalow onlyTest: true separately
         test.only(name, testFn)
