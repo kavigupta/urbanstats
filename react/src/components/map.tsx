@@ -232,7 +232,13 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             visible={this.state.mapIsVisible[i]}
                         />
                     ))}
-                    {this.state.loading && (<LongLoad position="absolute" />)}
+                    <LongLoad containerStyleOverride={{
+                        position: 'absolute',
+                        transition: 'opacity 0.25s',
+                        opacity: this.state.loading ? 1 : 0,
+                        pointerEvents: 'none',
+                    }}
+                    />
                 </div>
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.shapeByName.keys()).map(name =>
