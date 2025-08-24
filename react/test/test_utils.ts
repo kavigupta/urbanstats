@@ -154,26 +154,26 @@ export async function downloadHistogram(t: TestController, nth: number): Promise
     await grabDownload(t, download)
 }
 
-function mostRecentDownloadPath(): [string | undefined, number] {
+function mostRecentDownload(): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
     const sorted = files
-        .filter(x => !x.startsWith('.'))
+        .filter(x => !x.startsWith('.') && !x.endsWith('.crdownload'))
         .map(x => path.join(downloadsFolder(), x))
         .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
     if (sorted.length === 0) {
-        return [undefined, 0]
+        return undefined
     }
     const latest = sorted[0]
     const mtime = fs.statSync(latest).mtimeMs
-    return [latest, mtime]
+    return { path: latest, mtime }
 }
 
 export async function waitForDownload(t: TestController, laterThan: number): Promise<string> {
     while (true) {
-        const [mrdp, mtime] = mostRecentDownloadPath()
-        if (mrdp !== undefined && mtime > laterThan) {
-            return mrdp
+        const download = mostRecentDownload()
+        if (download !== undefined && download.mtime > laterThan) {
+            return download.path
         }
         console.warn(chalkTemplate`{yellow No file found in downloads folder, waiting for download to complete}`)
         // wait for the download to finish
