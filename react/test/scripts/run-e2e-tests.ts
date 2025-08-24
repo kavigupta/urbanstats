@@ -40,7 +40,7 @@ if (options.headless) {
 }
 
 if (options.proxy) {
-    startProxy()
+    await startProxy()
 }
 
 const testcafe = await createTestCafe('localhost', 1337, 1338)
