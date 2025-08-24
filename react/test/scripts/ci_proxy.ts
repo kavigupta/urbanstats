@@ -20,19 +20,14 @@ export async function startProxy(): Promise<void> {
      */
     const targetBranch = z.string().parse(process.env.URBANSTATS_BRANCH_NAME)
 
-    const branch = await fetch(`https://github.com/densitydb/densitydb.github.io/tree/${targetBranch}`, { method: 'HEAD' }).then((response) => {
-        switch (response.status) {
-            case 200:
-                return targetBranch
-            case 404:
-                return 'master'
-            default:
-                throw new Error(`Unknown response code for branch check: ${response.status}`)
-        }
-    })
+    const remoteBranches = await getDensityDbBranches()
+
+    const branch = remoteBranches.find(({ name }) => name === targetBranch)
+        ?? remoteBranches.find(({ name }) => name === 'master')
+        ?? (() => { throw new Error('No master branch') })()
 
     // This is useful for debugging in case the proxy isn't working
-    console.warn('Proxy is using branch...', branch)
+    console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)
 
     const app = express()
 
@@ -42,7 +37,8 @@ export async function startProxy(): Promise<void> {
         express.static('test/density-db'),
         proxy(`https://cdn.jsdelivr.net`, {
             proxyReqPathResolver(req) {
-                return `/gh/densitydb/densitydb.github.io@${branch}${req.path}`
+                // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
+                return `/gh/densitydb/densitydb.github.io@${branch.commit.sha}${req.path}`
             },
             userResHeaderDecorator(headers, userReq) {
                 const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
@@ -58,4 +54,14 @@ export async function startProxy(): Promise<void> {
     )
 
     app.listen(8000)
+}
+
+async function getDensityDbBranches(): Promise<typeof branches> {
+    const branches = z.array(z.object({
+        name: z.string(),
+        commit: z.object({
+            sha: z.string(),
+        }),
+    })).parse(await (await fetch('https://api.github.com/repos/densitydb/densitydb.github.io/branches')).json())
+    return branches
 }
