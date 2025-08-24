@@ -10,7 +10,10 @@
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
+import { Octokit } from 'octokit'
 import { z } from 'zod'
+
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
 
 export async function startProxy(): Promise<void> {
     /**
@@ -20,7 +23,10 @@ export async function startProxy(): Promise<void> {
      */
     const targetBranch = z.string().parse(process.env.URBANSTATS_BRANCH_NAME)
 
-    const remoteBranches = await getDensityDbBranches()
+    const { data: remoteBranches } = await octokit.rest.repos.listBranches({
+        owner: 'densitydb',
+        repo: 'densitydb.github.io',
+    })
 
     const branch = remoteBranches.find(({ name }) => name === targetBranch)
         ?? remoteBranches.find(({ name }) => name === 'master')
@@ -54,14 +60,4 @@ export async function startProxy(): Promise<void> {
     )
 
     app.listen(8000)
-}
-
-async function getDensityDbBranches(): Promise<typeof branches> {
-    const branches = z.array(z.object({
-        name: z.string(),
-        commit: z.object({
-            sha: z.string(),
-        }),
-    })).parse(await (await fetch('https://api.github.com/repos/densitydb/densitydb.github.io/branches')).json())
-    return branches
 }
