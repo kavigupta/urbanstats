@@ -36,10 +36,13 @@ export function nthEditor(n: number): Selector {
     return Selector('pre[contenteditable="plaintext-only"]').nth(n)
 }
 
-async function typeInEditor(t: TestController, n: number, text: string): Promise<void> {
+export async function typeInEditor(t: TestController, n: number, text: string, clear = false): Promise<void> {
     await t.expect(nthEditor(n).exists).ok()
     await t.expect(nthEditor(n).visible).ok()
     await t.click(nthEditor(n))
+    if (clear) {
+        await t.pressKey('ctrl+a backspace')
+    }
     await typeTextWithKeys(t, text)
 }
 
