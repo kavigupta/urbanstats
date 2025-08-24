@@ -83,10 +83,11 @@ for (const test of tests) {
 
     let killInterval: NodeJS.Timeout | undefined
     if (options.timeLimitSeconds !== undefined) {
-        const timeLimit = Date.now() + (options.timeLimitSeconds * (testFileDidChange ? 1 : 2) * 1000)
+        const timeLimitSeconds = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
+        const killAfter = Date.now() + (timeLimitSeconds * 1000)
         killInterval = setInterval(async () => {
-            if (Date.now() > timeLimit + await getTOTPWait(test)) {
-                console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
+            if (Date.now() > killAfter + await getTOTPWait(test)) {
+                console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimitSeconds}s)}`)
                 clearInterval(killInterval)
                 await doComparisons()
                 process.exit(1)

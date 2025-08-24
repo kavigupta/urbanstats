@@ -2,12 +2,13 @@ import fs from 'fs/promises'
 
 import { z } from 'zod'
 
-export function booleanArgument({ defaultValue }: { defaultValue: boolean }): z.ZodDefault<z.ZodUnion<[z.ZodEffects<z.ZodLiteral<'true'>, boolean, 'true'>, z.ZodEffects<z.ZodLiteral<'false'>, boolean, 'false'>, z.ZodEffects<z.ZodNull, boolean, null>]>> {
-    return z.union([
+export function booleanArgument({ defaultValue }: { defaultValue: boolean }): typeof result {
+    const result = z.optional(z.union([
         z.literal('true').transform(() => true),
         z.literal('false').transform(() => false),
-        z.null().transform(() => defaultValue),
-    ]).default(null)
+        z.null().transform(() => true),
+    ])).default(defaultValue ? 'true' : 'false')
+    return result
 }
 
 export async function getTOTPWait(testName: string): Promise<number> {
