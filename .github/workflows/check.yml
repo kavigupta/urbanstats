@@ -106,7 +106,6 @@ jobs:
       - build-and-push-e2e-image
       - build-frontend
       - list-e2e-tests
-      - resolve-proxy-branch
     container:
       image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
@@ -197,7 +196,7 @@ jobs:
 
   run-unit-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-common-image, resolve-proxy-branch]
+    needs: [build-and-push-common-image]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
