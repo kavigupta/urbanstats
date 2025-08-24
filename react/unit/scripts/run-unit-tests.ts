@@ -28,7 +28,7 @@ if (testFiles.length === 0) {
 console.warn(`Using --parallel=${options.parallel}`)
 
 if (options.proxy) {
-    startProxy()
+    await startProxy()
 }
 
 const testStream = run({

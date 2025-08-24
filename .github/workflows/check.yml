@@ -100,26 +100,12 @@ jobs:
         run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
         working-directory: react
 
-  resolve-proxy-branch:
-    runs-on: ubuntu-22.04
-    outputs:
-      ci-proxy-origin: ${{ steps.resolve-proxy-branch.outputs.ci-proxy-origin }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: resolve-proxy-branch
-        run: python3 scripts/resolve_proxy_branch.py >> $GITHUB_OUTPUT
-      - run: echo "$OUTPUTS"
-        shell: bash
-        env:
-          OUTPUTS: ${{ toJSON(steps.resolve-proxy-branch.outputs) }}
-
   e2e:
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
       - build-frontend
       - list-e2e-tests
-      - resolve-proxy-branch
     container:
       image: ${{ needs.build-and-push-e2e-image.outputs.image }}
     strategy:
@@ -151,7 +137,6 @@ jobs:
             --base-ref=${{ github.base_ref }}
         working-directory: react
         env:
-          CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
           URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
           URBAN_STATS_TEST_TOTP: ${{ secrets.URBAN_STATS_TEST_TOTP }}
       - uses: actions/upload-artifact@v4
@@ -211,7 +196,7 @@ jobs:
 
   run-unit-tests:
     runs-on: ubuntu-22.04
-    needs: [build-and-push-common-image, resolve-proxy-branch]
+    needs: [build-and-push-common-image]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
@@ -224,8 +209,6 @@ jobs:
             --proxy=true \
             --test='unit/*.test.ts'
         working-directory: react
-        env:
-          CI_PROXY_ORIGIN: ${{ needs.resolve-proxy-branch.outputs.ci-proxy-origin }}
         if: "!cancelled()" # Runs even if other steps fail
       - name: Test python
         run: python -m pytest tests ci_api/test
