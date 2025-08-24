@@ -68,7 +68,7 @@ jobs:
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
         if: "!cancelled()"
       - name: typecheck
-        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data ci_api/src
+        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
         if: "!cancelled()"
       - run: npm run lint:ci
         working-directory: react
@@ -211,7 +211,7 @@ jobs:
         working-directory: react
         if: "!cancelled()" # Runs even if other steps fail
       - name: Test python
-        run: python -m pytest tests ci_api/test
+        run: python -m pytest tests
         if: "!cancelled()"
       - name: Test urbanstats persistent
         working-directory: urbanstats-persistent-data
