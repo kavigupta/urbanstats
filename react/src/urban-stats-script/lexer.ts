@@ -67,7 +67,7 @@ export function parseNumber(input: string | number): number | undefined {
         return input
     }
 
-    if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
+    if (/^-?\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
         const value = parseFloat(input)
         if (isNaN(value)) {
