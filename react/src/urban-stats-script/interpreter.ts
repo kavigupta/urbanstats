@@ -5,6 +5,7 @@ import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
 import { LocInfo, parseNumber } from './lexer'
 import { expressionOperatorMap } from './operators'
+import { unparse } from './parser'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
 

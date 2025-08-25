@@ -239,6 +239,30 @@ function mergeValuesViaMasksSpecialCaseMap(
     }
 }
 
+/**
+ * Attempt to coerce the given value to the given type. This is used to ensure splitMask
+ * does not change the type of the value when possible.
+ */
+function attemptCoerceToType(value: USSValue, toType: USSType): USSValue | undefined {
+    if (renderType(value.type) === renderType(toType)) {
+        // success!
+        return value
+    }
+    if (value.type.type === 'vector') {
+        const contents = value.value as USSRawValue[]
+        if (contents.length > 0 && contents.every(x => x === contents[0])) {
+            assert(value.type.elementType.type !== 'elementOfEmptyVector', `Unreachable: elementType was elementOfEmptyVector but contents is non-empty`)
+            // all elements are the same, we can coerce
+            return attemptCoerceToType({
+                type: value.type.elementType,
+                value: contents[0],
+                documentation: value.documentation,
+            }, toType)
+        }
+    }
+    return undefined
+}
+
 export function mergeValuesViaMasks(
     values: USSValue[],
     mask: USSValue & { type: USSVectorType },
@@ -287,13 +311,14 @@ export function mergeValuesViaMasks(
             return defaultV satisfies USSRawValue
         },
     )
+    const finalResValue = {
+        type: { type: 'vector', elementType: types[0] },
+        value: finalRes,
+        documentation: values.find(x => x.documentation !== undefined)?.documentation,
+    } satisfies USSValue
     return {
         type: 'success',
-        value: {
-            type: { type: 'vector', elementType: types[0] },
-            value: finalRes,
-            documentation: values.find(x => x.documentation !== undefined)?.documentation,
-        },
+        value: attemptCoerceToType(finalResValue, firstType) ?? finalResValue,
     }
 }
 
