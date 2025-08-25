@@ -195,8 +195,8 @@ function createMaps(
 }
 
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
-export class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
-    private version = 0
+export abstract class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
+    protected version = 0
     private lastUpdate: Promise<void> | undefined
     private basemap_props: null | Basemap = null
     private exist_this_time: string[] = []
@@ -269,16 +269,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         return <></>
     }
 
-    computeShapesToRender(): Promise<ShapeRenderingSpec> {
-        /**
-         * Should return [names, styles, metas, zoom_index]
-         * names: list of names of polygons to draw
-         * styles: list of styles for each polygon
-         * metas: list of metadata dictionaries for each polygon
-         * zoom_index: index of polygon to zoom to, or -1 if none
-         */
-        throw new Error('compute_polygons not implemented')
-    }
+    /**
+     * Should return [names, styles, metas, zoom_index]
+     * names: list of names of polygons to draw
+     * styles: list of styles for each polygon
+     * metas: list of metadata dictionaries for each polygon
+     * zoom_index: index of polygon to zoom to, or -1 if none
+     */
+    abstract computeShapesToRender(version: number): Promise<ShapeRenderingSpec>
 
     async mapDidRender(): Promise<void> {
         /**
@@ -429,7 +427,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     async exportAsGeoJSON(): Promise<string> {
-        const { shapes } = await this.computeShapesToRender()
+        const { shapes } = await this.computeShapesToRender(this.version)
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: [],
@@ -471,7 +469,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
         }
         this.lastUpdate = (async () => {
             const updateStart = Date.now()
-            await this.updateFn()
+            await this.updateFn(version)
             const updateDuration = Date.now() - updateStart
             // Can only update once per second
             await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - updateDuration)))
@@ -480,7 +478,7 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
     }
 
     // In order to prevent race conditions, only one updateFn should be run at a time for a given map
-    async updateFn(): Promise<void> {
+    async updateFn(version: number): Promise<void> {
         const time = Date.now()
         debugPerformance('Loading map...')
         this.setState({ loading: true })
@@ -500,14 +498,14 @@ export class MapGeneric<P extends MapGenericProps> extends React.Component<P, Ma
 
         this.attachBasemap()
 
-        await this.populateMap(maps, time)
+        await this.populateMap(maps, time, version)
         this.setState({ loading: false })
         debugPerformance(`Updated sources to delete stuff; at ${Date.now() - time}ms`)
         debugPerformance(`No longer loading map; took ${Date.now() - time}ms`)
     }
 
-    async populateMap(maps: maplibregl.Map[], timeBasis: number): Promise<void> {
-        const { shapes, zoomIndex } = await this.computeShapesToRender()
+    async populateMap(maps: maplibregl.Map[], timeBasis: number, version: number): Promise<void> {
+        const { shapes, zoomIndex } = await this.computeShapesToRender(version)
 
         debugPerformance(`Computed polygons; at ${Date.now() - timeBasis}ms`)
 
