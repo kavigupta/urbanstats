@@ -39,6 +39,9 @@ if (options.headless) {
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
 }
 
+// For debugging behavior differences
+await execa('lscpu', { reject: false, stdio: 'inherit' })
+
 if (options.proxy) {
     await startProxy()
 }
