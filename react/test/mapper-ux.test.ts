@@ -68,6 +68,7 @@ function errorInSubsubfield(category: string, errorCausingCode: string, error: s
         await checkBox(t, /^max/)
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
+        await waitForLoading(t)
         await t.expect(await getErrors()).eql([error])
         await screencap(t)
     })
