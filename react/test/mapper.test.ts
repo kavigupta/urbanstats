@@ -9,14 +9,14 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))
     await t.wait(1000) // sometimes downloading takes a little time
-    const mrdp = await waitForDownload(t, laterThan)
+    const mrdp = await waitForDownload(t, laterThan, '.json')
     const mostRecentDownload = fs.readFileSync(mrdp, 'utf8')
     await downloadOrCheckString(t, mostRecentDownload, path, 'json')
 }
 
 export async function downloadPNG(t: TestController): Promise<void> {
     const download = Selector('button').withExactText('Export as PNG')
-    await grabDownload(t, download) // wait for 6 seconds to ensure the download completes
+    await grabDownload(t, download, '.png')
 }
 
 export async function clickOSMCheckbox(t: TestController): Promise<void> {
