@@ -7,6 +7,7 @@ import './map.css'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
+import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
@@ -215,6 +216,11 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
     }
 
+    /* Override if you want the loading spinner */
+    shouldHaveLoadingSpinner(): boolean {
+        return false
+    }
+
     override render(): ReactNode {
         return (
             <>
@@ -231,6 +237,13 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             visible={this.state.mapIsVisible[i]}
                         />
                     ))}
+                    <LongLoad containerStyleOverride={{
+                        position: 'absolute',
+                        transition: 'opacity 0.25s',
+                        opacity: this.state.loading && this.shouldHaveLoadingSpinner() ? 1 : 0,
+                        pointerEvents: 'none',
+                    }}
+                    />
                 </div>
                 <div style={{ display: 'none' }}>
                     {Array.from(this.state.shapeByName.keys()).map(name =>
