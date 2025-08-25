@@ -136,29 +136,29 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
     }
 }
 
-export async function grabDownload(t: TestController, button: Selector): Promise<void> {
+export async function grabDownload(t: TestController, button: Selector, suffix: string): Promise<void> {
     const laterThan = new Date().getTime()
     await prepForImage(t, { hover: true, wait: true })
     await t
         .click(button)
-    await copyMostRecentFile(t, laterThan)
+    await copyMostRecentFile(t, laterThan, suffix)
 }
 
 export async function downloadImage(t: TestController): Promise<void> {
     const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grabDownload(t, download)
+    await grabDownload(t, download, '.png')
 }
 
 export async function downloadHistogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grabDownload(t, download)
+    await grabDownload(t, download, '.png')
 }
 
-function mostRecentDownload(): { path: string, mtime: number } | undefined {
+function mostRecentDownload(suffix: string): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
     const sorted = files
-        .filter(x => !x.startsWith('.') && !x.endsWith('.crdownload'))
+        .filter(x => !x.startsWith('.') && !x.endsWith('.crdownload') && x.endsWith(suffix))
         .map(x => path.join(downloadsFolder(), x))
         .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
     if (sorted.length === 0) {
@@ -169,9 +169,9 @@ function mostRecentDownload(): { path: string, mtime: number } | undefined {
     return { path: latest, mtime }
 }
 
-export async function waitForDownload(t: TestController, laterThan: number): Promise<string> {
+export async function waitForDownload(t: TestController, laterThan: number, suffix: string): Promise<string> {
     while (true) {
-        const download = mostRecentDownload()
+        const download = mostRecentDownload(suffix)
         if (download !== undefined && download.mtime > laterThan) {
             return download.path
         }
@@ -181,12 +181,12 @@ export async function waitForDownload(t: TestController, laterThan: number): Pro
     }
 }
 
-async function copyMostRecentFile(t: TestController, laterThan: number): Promise<void> {
+async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
     // copy the file to the screenshots folder
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    const mrdp = await waitForDownload(t, laterThan)
+    const mrdp = await waitForDownload(t, laterThan, suffix)
     const dest = path.join(screenshotsFolder, screenshotPath(t))
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.copyFileSync(mrdp, dest)

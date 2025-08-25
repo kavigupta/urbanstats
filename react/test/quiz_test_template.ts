@@ -471,7 +471,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         // Give it a second to download...
         await t.wait(1000)
 
-        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(await waitForDownload(t, laterThan)).toString()) as Record<string, unknown>
+        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(await waitForDownload(t, laterThan, '.json')).toString()) as Record<string, unknown>
 
         await t.expect(typeof date_exported === 'string').ok()
 
