@@ -254,7 +254,7 @@ void test('split mask testing', (): void => {
             defaultLocInfo,
             defaultLocInfo,
         ),
-        undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
+        undocValue(1, numType),
     )
     assert.deepStrictEqual(
         splitMask(
@@ -269,7 +269,7 @@ void test('split mask testing', (): void => {
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
+            undocValue(1, numType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
