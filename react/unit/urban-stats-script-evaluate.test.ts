@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
-import { CMap, Outline } from '../src/urban-stats-script/constants/map'
+import { CMap, Outline, PMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Context } from '../src/urban-stats-script/context'
@@ -549,16 +549,31 @@ void test('more if expressions', (): void => {
             return err instanceof InterpretationError && err.message === 'Undefined variable: y at 5:9'
         },
     )
-    // does define y as a vector of null
+    // also does not define y
     const codeWithDefinedNull = `
         if ([1, 1, 2, 2, 3] == 1) {
             y = [if (1 == 0) { }, if (1 == 0) { }]
         }
         y
         `
+    assert.throws(
+        () => execute(parseProgram(codeWithDefinedNull), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Undefined variable: y at 5:9'
+        },
+    )
+    // defines y as a single number
+    const codeWithYAsNumberTwice = `
+        if ([1, 1, 2, 2, 3] == 1) {
+            y = [5, 5]
+        } else {
+            y = [5, 5, 5]
+        }
+        y
+        `
     assert.deepStrictEqual(
-        execute(parseProgram(codeWithDefinedNull), emptyContext()),
-        undocValue([null, null, null, null, null], { type: 'vector', elementType: { type: 'null' } }),
+        execute(parseProgram(codeWithYAsNumberTwice), emptyContext()),
+        undocValue(5, numType),
     )
     // define y as a vector of booleans
     const codeWithDefinedBool = `
@@ -2011,4 +2026,97 @@ void test('test basic map with constructed insets', () => {
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
         },
     }])
+})
+
+function contextForTestIfStatement(): readonly [Context, Effect[]] {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    function addGeo(name: string, typ: 'geoFeatureHandle' | 'geoCentroidHandle'): void {
+        ctx.assignVariable(name, {
+            type: { type: 'vector', elementType: { type: 'opaque', name: typ } },
+            value: ['A', 'B', 'C', 'D', 'E'].map(v => ({ type: 'opaque' as const, opaqueType: typ, value: v })),
+            documentation: { humanReadableName: 'Geography' },
+        })
+    }
+    addGeo('geo', 'geoFeatureHandle')
+    addGeo('geoCentroid', 'geoCentroidHandle')
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [5000, 20000, 15000, 8000, 12000],
+        documentation: { humanReadableName: 'Population' },
+    })
+    ctx.assignVariable('density_pw_1km', {
+        type: { type: 'vector', elementType: numType },
+        value: [500, 1500, 800, 300, 1200],
+        documentation: { humanReadableName: 'Density per km²' },
+    })
+    return [ctx, effects] as const
+}
+
+void test('test some preliminaries', () => {
+    {
+        const code = `
+        condition (population > 10000)
+        data = if (density_pw_1km > 1000) {1} else {0}
+        data
+        `
+        const [ctx, effects] = contextForTestIfStatement()
+        const result = execute(parseProgram(code), ctx)
+        assert.deepStrictEqual(effects, [])
+        assert.deepStrictEqual(result, undocValue([NaN, 1, 0, NaN, 1], { type: 'vector', elementType: numType }))
+    }
+    {
+        const code = `
+        condition (population > 10000)
+        data = if (density_pw_1km > 1000) {1} else {0}
+        population
+        `
+        const [ctx, effects] = contextForTestIfStatement()
+        const result = execute(parseProgram(code), ctx)
+        assert.deepStrictEqual(effects, [])
+        assert.deepStrictEqual(result, { value: [NaN, 20000, 15000, NaN, 12000], type: { type: 'vector', elementType: numType }, documentation: { humanReadableName: 'Population' } })
+    }
+    {
+        const code = `
+        data = if (density_pw_1km > 1000) {1} else {0}
+        defaultInsets
+        `
+        const [ctx, effects] = contextForTestIfStatement()
+        const result = execute(parseProgram(code), ctx)
+        assert.deepStrictEqual(effects, [])
+        assert.deepStrictEqual(result.type, { type: 'opaque', name: 'insets' } satisfies USSType)
+    }
+})
+
+void test('test if statement used with map', () => {
+    const code = `
+data = if (density_pw_1km > 1000) {1} else {0}
+pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxRadius=100, label="hi")
+`
+    const [ctx, effects] = contextForTestIfStatement()
+    const resultMap = execute(parseProgram(code), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'pMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C', 'D', 'E'])
+    assert.deepStrictEqual(resultMapRaw.data, [0, 1, 0, 0, 1])
+    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test condition and if statement used with map', () => {
+    const code = `
+condition (population > 10000)
+data = if (density_pw_1km > 1000) {1} else {0}
+pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxRadius=100, label="hi")
+`
+    const [ctx, effects] = contextForTestIfStatement()
+    const resultMap = execute(parseProgram(code), ctx)
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'pMap' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
+    assert.deepStrictEqual(resultMapRaw.geo, ['B', 'C', 'E'])
+    assert.deepStrictEqual(resultMapRaw.data, [1, 0, 1])
+    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(
+        effects, [],
+    )
 })
