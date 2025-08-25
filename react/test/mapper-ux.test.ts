@@ -59,7 +59,7 @@ function errorInSubfield(category: string, errorCausingCode: string, error: stri
 }
 
 errorInSubfield('syntax', 'linearScale(max=)', 'Unexpected bracket ) at 1:17')
-errorInSubfield('syntax', 'linearScale(max=2 + "hi")', 'Invalid types for operator +: number and string at 1:17-24')
+errorInSubfield('semantic', 'linearScale(max=2 + "hi")', 'Invalid types for operator +: number and string at 1:17-24')
 
 function errorInSubsubfield(category: string, errorCausingCode: string, error: string): void {
     mapperTest(`${category} error in subsubfield`, 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', { }, async (t) => {
