@@ -9,7 +9,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))
     await t.wait(1000) // sometimes downloading takes a little time
-    const mrdp = await waitForDownload(t, laterThan, '.json')
+    const mrdp = await waitForDownload(t, laterThan, '.geojson')
     const mostRecentDownload = fs.readFileSync(mrdp, 'utf8')
     await downloadOrCheckString(t, mostRecentDownload, path, 'json')
 }
