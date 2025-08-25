@@ -12,7 +12,7 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
-import { computeAspectRatio, computeAspectRatioForInsets } from '../utils/coordinates'
+import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
