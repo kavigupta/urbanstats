@@ -13,8 +13,10 @@ import { SignedOutPanel } from '../quiz/SignedOutPanel'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
 import { QuizDescriptor, QuizHistory, QuizModel, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
-import { buttonStyle, QuizResult } from '../quiz/quiz-result'
+import { QuizResult } from '../quiz/quiz-result'
 import { useHeaderTextClass } from '../utils/responsive'
+
+import { buttonStyle } from './GenericShareButton'
 
 export function QuizPanel(props: { quizDescriptor: QuizDescriptor, todayName?: string, todaysQuiz: QuizQuestionsModel }): ReactNode {
     // set a unique key for the quiz panel so that it will re-render when the quiz changes
