@@ -216,6 +216,11 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
     }
 
+    /* Override if you want the loading spinner */
+    shouldHaveLoadingSpinner(): boolean {
+        return false
+    }
+
     override render(): ReactNode {
         return (
             <>
@@ -235,7 +240,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                     <LongLoad containerStyleOverride={{
                         position: 'absolute',
                         transition: 'opacity 0.25s',
-                        opacity: this.state.loading ? 1 : 0,
+                        opacity: this.state.loading && this.shouldHaveLoadingSpinner() ? 1 : 0,
                         pointerEvents: 'none',
                     }}
                     />

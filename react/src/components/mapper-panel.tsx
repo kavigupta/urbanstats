@@ -101,6 +101,10 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
     private shapeType: undefined | ShapeType
 
+    override shouldHaveLoadingSpinner(): boolean {
+        return true
+    }
+
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType === this.shapeType) {
             return this.shapes
