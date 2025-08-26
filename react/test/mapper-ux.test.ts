@@ -4,16 +4,10 @@ import { typeInEditor } from './editor_test_utils'
 import { checkBox, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
-function mapperTest(name: string, code: string, opts: { onlyTest?: true }, testFn: (t: TestController) => Promise<void>): void {
+const mapper = (testFn: () => TestFn) => (name: string, code: string, testBlock: (t: TestController) => Promise<void>): void => {
     // use Iceland and Urban Center as a quick test (less data to load)
     urbanstatsFixture(`quick-${code}`, urlFromCode('Urban Center', 'Iceland', code))
-    if (opts.onlyTest) {
-        // eslint-disable-next-line no-only-tests/no-only-tests -- conditional, we dissalow onlyTest: true separately
-        test.only(name, testFn)
-    }
-    else {
-        test(name, testFn)
-    }
+    testFn()(name, testBlock)
 }
 
 async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
@@ -24,12 +18,12 @@ async function replaceInput(t: TestController, original: string | RegExp, newv: 
     await t.pressKey('enter')
 }
 
-mapperTest('manipulate point map', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', {}, async (t) => {
+mapper(() => test)('manipulate point map', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
     await toggleCustomScript(t)
     await t.expect(await getErrors()).eql([])
 })
 
-mapperTest('manipulate insets', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', { }, async (t) => {
+mapper(() => test)('manipulate insets', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
     await toggleCustomScript(t)
     await t.expect(await getErrors()).eql([])
     await checkBox(t, /^Insets/)
@@ -46,8 +40,8 @@ mapperTest('manipulate insets', 'cMap(data=density_pw_1km, scale=linearScale(), 
     )
 })
 
-function errorInSubfield(category: string, errorCausingCode: string, error: string): void {
-    mapperTest(`${category} error in subfield`, 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', { }, async (t) => {
+const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
+    mapper(testFn)(`${category} error in subfield`, 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
         await toggleCustomScript(t)
         await t.expect(await getErrors()).eql([])
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
@@ -58,11 +52,11 @@ function errorInSubfield(category: string, errorCausingCode: string, error: stri
     })
 }
 
-errorInSubfield('syntax', 'linearScale(max=)', 'Unexpected bracket ) at 1:17')
-errorInSubfield('semantic', 'linearScale(max=2 + "hi")', 'Invalid types for operator +: number and string at 1:17-24')
+errorInSubfield(() => test)('syntax', 'linearScale(max=)', 'Unexpected bracket ) at 1:17')
+errorInSubfield(() => test)('semantic', 'linearScale(max=2 + "hi")', 'Invalid types for operator +: number and string at 1:17-24')
 
-function errorInSubsubfield(category: string, errorCausingCode: string, error: string): void {
-    mapperTest(`${category} error in subsubfield`, 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', { }, async (t) => {
+const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
+    mapper(testFn)(`${category} error in subsubfield`, 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
         await toggleCustomScript(t)
         await t.expect(await getErrors()).eql([])
         await checkBox(t, /^max/)
@@ -74,5 +68,5 @@ function errorInSubsubfield(category: string, errorCausingCode: string, error: s
     })
 }
 
-errorInSubsubfield('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
-errorInSubsubfield('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')
+errorInSubsubfield(() => test)('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
+errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')

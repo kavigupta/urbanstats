@@ -136,8 +136,6 @@ export default tseslint.config(
                 'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
                 'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]', // Named colors
                 'CallExpression[callee.name=quizAuthFixture]', // All must be in one file
-                // dissalow {onlyTest: true} in testcafe tests
-                'ObjectExpression > Property[key.name=onlyTest]:not([value.value=false])'
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
