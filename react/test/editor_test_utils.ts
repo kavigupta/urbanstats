@@ -12,6 +12,7 @@ const keyMapping = new Map<string, string>(Object.entries({
     '➡': 'right',
     '⬇': 'down',
     '⬅': 'left',
+    '⌂': 'home',
 }))
 
 // Helper function to type text using individual key presses

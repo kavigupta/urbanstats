@@ -66,3 +66,15 @@ export async function getErrors(): Promise<string[]> {
     }
     return errors
 }
+
+export function getInput(original: string | RegExp, nth = 0): Selector {
+    return Selector('input').withAttribute('value', original).nth(nth)
+}
+
+export async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
+    const inputSelector = getInput(original, nth)
+    await t.click(inputSelector)
+    await t.selectText(inputSelector)
+    await t.typeText(inputSelector, newv)
+    await t.pressKey('enter')
+}

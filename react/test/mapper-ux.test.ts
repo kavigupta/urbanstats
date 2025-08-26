@@ -1,21 +1,11 @@
-import { Selector } from 'testcafe'
-
-import { typeInEditor } from './editor_test_utils'
-import { checkBox, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
+import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (name: string, code: string, testBlock: (t: TestController) => Promise<void>): void => {
     // use Iceland and Urban Center as a quick test (less data to load)
     urbanstatsFixture(`quick-${code}`, urlFromCode('Urban Center', 'Iceland', code))
     testFn()(name, testBlock)
-}
-
-async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
-    const inputSelector = Selector('input').withAttribute('value', original).nth(nth)
-    await t.click(inputSelector)
-    await t.selectText(inputSelector)
-    await t.typeText(inputSelector, newv)
-    await t.pressKey('enter')
 }
 
 mapper(() => test)('manipulate point map', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
@@ -70,3 +60,78 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
 
 errorInSubsubfield(() => test)('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
 errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')
+
+mapper(() => test)('undo redo', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await replaceInput(t, 'Urban Center', 'Subnational Region')
+    await t.wait(1000)
+    await replaceInput(t, 'Iceland', 'USA')
+    await t.wait(1000)
+    await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression')
+    await t.wait(1000)
+    await typeInEditor(t, 0, '⌂"Hello, World"\n')
+    await t.wait(1000)
+    await replaceInput(t, 'Uridis', 'Custom Expression')
+    await t.wait(1000)
+    await typeInEditor(t, 1, '⌂"Hello, World"\n')
+    await t.wait(1000)
+
+    await t.pressKey('ctrl+z')
+    await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
+    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await t.expect(getSelectionAnchor()).eql(0)
+    await t.expect(getSelectionFocus()).eql(0)
+
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Uridis').exists).ok()
+    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+    await t.expect(nthEditor(1).exists).notOk()
+    await t.expect(selectionIsNthEditor(null)).ok()
+
+    await t.pressKey('ctrl+z')
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(0)
+    await t.expect(getSelectionFocus()).eql(0)
+
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('PW Density (r=1km)').exists).ok()
+    await t.expect(nthEditor(0).exists).notOk()
+    await t.expect(selectionIsNthEditor(null)).ok()
+
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Iceland').exists).ok()
+
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Urban Center').exists).ok()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(getInput('Subnational Region').exists).ok()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(getInput('USA').exists).ok()
+    await t.expect(selectionIsNthEditor(null)).ok()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(0)
+    await t.expect(getSelectionFocus()).eql(0)
+
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+    await t.expect(selectionIsNthEditor(null)).ok()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    await t.expect(getSelectionAnchor()).eql(0)
+    await t.expect(getSelectionFocus()).eql(0)
+
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(1).textContent).eql('"Hello, World"\nrampUridis\n')
+    await t.expect(selectionIsNthEditor(1)).ok()
+    // On the next line
+    await t.expect(getSelectionAnchor()).eql(1)
+    await t.expect(getSelectionFocus()).eql(1)
+})
