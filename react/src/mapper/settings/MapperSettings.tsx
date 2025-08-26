@@ -14,24 +14,18 @@ import { MapSettings } from './utils'
 
 export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: {
     mapSettings: MapSettings
-    setMapSettings: (setter: (existing: MapSettings) => MapSettings) => void
+    setMapSettings: (s: MapSettings) => void
     errors: EditorError[]
     counts: CountsByUT
 }): ReactNode {
     const uss = mapSettings.script.uss
-    const setUss = useCallback((newUss: MapSettings['script']['uss']): void => {
-        setMapSettings(s => ({
-            ...s,
-            script: { uss: newUss },
-        }))
-    }, [setMapSettings])
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
     const { addState, updateCurrentSelection } = useUndoRedo(
-        uss,
+        mapSettings,
         selectionContext.value,
-        setUss,
+        setMapSettings,
         (selection) => {
             selectionContext.value = selection
         },
@@ -57,6 +51,11 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
         mapSettings.universe === undefined ? undefined : [undefined, ...articleTypes(counts, mapSettings.universe)] as Exclude<MapSettings['geographyKind'], undefined>[],
     [mapSettings.universe, counts])
 
+    const changeSettingsWithUndo = (newSettings: MapSettings): void => {
+        setMapSettings(newSettings)
+        addState(newSettings, selectionContext.value)
+    }
+
     return (
         <SelectionContext.Provider value={selectionContext}>
             <div style={settingNameStyle}>
@@ -68,15 +67,15 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                 renderValue={renderString}
                 onChange={
                     (newUniverse) => {
-                        setMapSettings(s => ({
-                            ...s,
+                        changeSettingsWithUndo({
+                            ...mapSettings,
                             universe: newUniverse,
-                            geographyKind: newUniverse === undefined || s.geographyKind === undefined
-                                ? s.geographyKind
-                                : articleTypes(counts, newUniverse).includes(s.geographyKind)
-                                    ? s.geographyKind
+                            geographyKind: newUniverse === undefined || mapSettings.geographyKind === undefined
+                                ? mapSettings.geographyKind
+                                : articleTypes(counts, newUniverse).includes(mapSettings.geographyKind)
+                                    ? mapSettings.geographyKind
                                     : undefined,
-                        }))
+                        })
                     }
                 }
             />
@@ -91,10 +90,10 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                         renderValue={renderString}
                         onChange={
                             (newGeographyKind) => {
-                                setMapSettings(s => ({
-                                    ...s,
+                                changeSettingsWithUndo({
+                                    ...mapSettings,
                                     geographyKind: newGeographyKind,
-                                }))
+                                })
                             }
                         }
                     />
@@ -103,8 +102,10 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
             <TopLevelEditor
                 uss={uss}
                 setUss={(newUss) => {
-                    setUss(newUss)
-                    addState(newUss, selectionContext.value)
+                    changeSettingsWithUndo({
+                        ...mapSettings,
+                        script: { uss: newUss },
+                    })
                 }}
                 typeEnvironment={typeEnvironment}
                 errors={errors}

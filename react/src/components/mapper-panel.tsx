@@ -492,9 +492,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
                     mapSettings={mapSettings}
-                    setMapSettings={(setter) => {
-                        setMapSettingsWrapper(setter(mapSettings))
-                    }}
+                    setMapSettings={setMapSettingsWrapper}
                     errors={errors}
                     counts={props.counts}
                 />
