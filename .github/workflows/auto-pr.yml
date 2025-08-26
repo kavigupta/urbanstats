@@ -8,14 +8,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Get Commit Message
         id: commit-message
-        run: git log -1 --pretty=%B | xargs
+        run: echo "pr-title=$(git log -1 --pretty=%B | xargs)" >> $GITHUB_OUTPUT
       - name: Create Pull Request
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/{owner}/{repo}/pulls
           owner: kavigupta
           repo: urbanstats
-          title: ${{ steps.commit-message.outputs.stdout }}
+          title: ${{ steps.commit-message.outputs.pr-title }}
           head: ${{ github.event.ref }}
           base: master
         env:
