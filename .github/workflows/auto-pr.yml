@@ -1,3 +1,4 @@
+# Automatically create a PR when branches are pushed
 name: auto-pr
 on: create
 jobs:
