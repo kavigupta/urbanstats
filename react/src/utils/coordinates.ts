@@ -42,5 +42,8 @@ export function computeAspectRatioForInsets(ins: Insets): number {
         return area(curr.coordBox) > area(prev.coordBox) ? curr : prev
     })
     const coordBox = biggestMap.coordBox
-    return computeAspectRatio(coordBox)
+    const onScreenWidth = biggestMap.topRight[0] - biggestMap.bottomLeft[0]
+    const onScreenHeight = biggestMap.topRight[1] - biggestMap.bottomLeft[1]
+    const onScreenAspectRatio = onScreenWidth / onScreenHeight
+    return computeAspectRatio(coordBox) / onScreenAspectRatio
 }
