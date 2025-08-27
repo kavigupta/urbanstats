@@ -4,6 +4,7 @@ import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { Property } from '../../utils/Property'
+import { TestUtils } from '../../utils/TestUtils'
 import { defaultTypeEnvironment } from '../context'
 import { settingNameStyle } from '../style'
 
@@ -28,6 +29,9 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
         setMapSettings,
         (selection) => {
             selectionContext.value = selection
+        },
+        {
+            undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
         },
     )
 

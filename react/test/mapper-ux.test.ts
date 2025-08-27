@@ -63,17 +63,17 @@ errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined varia
 
 mapper(() => test)('undo redo', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
     await replaceInput(t, 'Urban Center', 'Subnational Region')
-    await t.wait(1000)
+    await t.wait(2000)
     await replaceInput(t, 'Iceland', 'USA')
-    await t.wait(1000)
+    await t.wait(2000)
     await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression')
-    await t.wait(1000)
+    await t.wait(2000)
     await typeInEditor(t, 0, '⌂"Hello, World"\n')
-    await t.wait(1000)
+    await t.wait(2000)
     await replaceInput(t, 'Uridis', 'Custom Expression')
-    await t.wait(1000)
+    await t.wait(2000)
     await typeInEditor(t, 1, '⌂"Hello, World"\n')
-    await t.wait(1000)
+    await t.wait(2000)
 
     await t.pressKey('ctrl+z')
     await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
