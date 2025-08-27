@@ -196,7 +196,7 @@ export function Editor(
             <pre
                 style={{
                     ...codeStyle,
-                    caretColor: colors.textMain,
+                    caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
                     border: `1px solid ${borderColor}`,
                     borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
                 }}
