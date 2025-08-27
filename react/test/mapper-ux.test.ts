@@ -1,6 +1,8 @@
+import { Selector } from 'testcafe'
+
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { safeReload, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (name: string, code: string, testBlock: (t: TestController) => Promise<void>): void => {
     // use Iceland and Urban Center as a quick test (less data to load)
@@ -134,4 +136,22 @@ mapper(() => test)('undo redo', 'customNode("");\ncondition (true)\ncMap(data=de
     // On the next line
     await t.expect(getSelectionAnchor()).eql(1)
     await t.expect(getSelectionFocus()).eql(1)
+})
+
+mapper(() => test)('custom ramp', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+    // eslint-disable-next-line no-restricted-syntax -- Test color
+    await t.typeText(Selector('input[type="color"]'), '#ff0000')
+    await replaceInput(t, '0.353', '1')
+    await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp') })
+    await replaceInput(t, 'Custom Ramp', 'Custom Expression')
+    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.25, color: rgb(1, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+})
+
+mapper(() => test)('able to reload in invalid state', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+    await replaceInput(t, '0.353', ' ')
+    await safeReload(t)
+    await t.expect(Selector('#pageState_kind').value).eql('loaded')
+    await t.expect(Selector('#pageState_current_descriptor_kind').value).eql('mapper')
 })
