@@ -103,7 +103,7 @@ export function Selector(props: {
     const isNumber = props.type.some(type => type.type === 'number')
     const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
-    const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
+    const currentValue = props.uss.type === 'constant' ? props.uss.value.node.value.toString() : ''
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayResults results={errors} editor={false} />
 
@@ -120,16 +120,24 @@ export function Selector(props: {
             {showConstantInput && (
                 <input
                     type="text"
-                    value={currentValue.value}
+                    value={currentValue}
                     onChange={(e) => {
                         const value = e.target.value
-                        const newUss = {
-                            type: 'constant' as const,
+                        let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
+                        let numberValue
+                        if (isNumber && (numberValue = parseNumber(value)) !== undefined) {
+                            node = { type: 'number', value: numberValue }
+                        }
+                        else {
+                            node = { type: 'string', value }
+                        }
+                        const newUss: UrbanStatsASTExpression = {
+                            type: 'constant',
                             value: {
-                                node: { type: isNumber ? 'number' : 'string', value },
+                                node,
                                 location: emptyLocation(props.blockIdent),
                             },
-                        } satisfies UrbanStatsASTExpression
+                        }
                         props.setUss(newUss)
                     }}
                     style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
@@ -239,16 +247,14 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<str
         }
         case 'function': {
             const posArgs = expr.args.flatMap((arg) => {
-                let parsed
-                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
-                    return [parsed]
+                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
+                    return [arg.value.value.node.value]
                 }
                 return []
             })
             const kwArg = expr.args.flatMap((arg) => {
-                let parsed
-                if (arg.type === 'named' && arg.name.node === 'a' && arg.value.type === 'constant' && arg.value.value.node.type === 'number' && (parsed = parseNumber(arg.value.value.node.value)) !== undefined) {
-                    return [parsed]
+                if (arg.type === 'named' && arg.name.node === 'a' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
+                    return [arg.value.value.node.value]
                 }
                 return []
             })
