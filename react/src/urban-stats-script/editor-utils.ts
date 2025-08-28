@@ -13,11 +13,11 @@ import { renderValue, USSDocumentedType, USSValue } from './types-values'
 export type EditorError = ParseError & { kind: 'error' | 'warning' }
 export type EditorResult = EditorError | { kind: 'success', result: USSValue }
 
-export function longMessage(result: EditorResult): string {
+export function longMessage(result: EditorResult, includeLocationInfo: boolean): string {
     switch (result.kind) {
         case 'error':
         case 'warning':
-            return `${result.value} at ${renderLocInfo(result.location)}`
+            return includeLocationInfo ? `${result.value} at ${renderLocInfo(result.location)}` : result.value
         case 'success':
             return renderValue(result.result)
     }

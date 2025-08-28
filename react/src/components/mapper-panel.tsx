@@ -522,7 +522,7 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
             }) }).parse(JSON.parse(jsonedSettings))
         const uss = parse(rawSettings.script.uss)
         if (uss.type === 'error') {
-            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error })).join(', '))
+            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
         }
         settings = {
             ...rawSettings,
