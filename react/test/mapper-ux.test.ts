@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (name: string, code: string, testBlock: (t: TestController) => Promise<void>): void => {
     // use Iceland and Urban Center as a quick test (less data to load)
