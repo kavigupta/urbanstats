@@ -1,11 +1,11 @@
-import React, { ReactNode, useMemo, useCallback, useState, useEffect } from 'react'
+import React, { ReactNode, useMemo, useCallback } from 'react'
 
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { doRender, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
 import { Color, hexToColor } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation, noLocation, parseNumber } from '../../urban-stats-script/lexer'
+import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
@@ -81,17 +81,6 @@ export function Selector(props: {
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
-    const isNumber = props.type.some(type => type.type === 'number')
-    const isString = props.type.some(type => type.type === 'string')
-
-    const [internalErrors, setInternalErrors] = useState<EditorError[]>([])
-    const [currentValue, setCurrentValue] = useState<string>('')
-
-    useEffect(() => {
-        setCurrentValue((props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }).value.toString())
-        setInternalErrors([])
-    }, [props.uss, isNumber])
-
     const selected = classifyExpr(props.uss)
 
     const selectionPossibilities = useMemo(() => {
@@ -111,8 +100,11 @@ export function Selector(props: {
         return undefined
     }
 
+    const isNumber = props.type.some(type => type.type === 'number')
+    const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
-    const errors = internalErrors.concat(props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent))
+    const currentValue = props.uss.type === 'constant' ? props.uss.value.node : { type: isNumber ? 'number' : 'string', value: '' }
+    const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayResults results={errors} editor={false} />
 
     const colorValue = props.type.some(type => type.type === 'opaque' && type.name === 'color') ? getColor(props.uss, props.typeEnvironment) : undefined
@@ -128,31 +120,17 @@ export function Selector(props: {
             {showConstantInput && (
                 <input
                     type="text"
-                    value={currentValue}
+                    value={currentValue.value}
                     onChange={(e) => {
                         const value = e.target.value
-                        setCurrentValue(value)
-                        if (isNumber && parseNumber(value) === undefined) {
-                            setInternalErrors([
-                                {
-                                    kind: 'error',
-                                    type: 'error',
-                                    location: noLocation,
-                                    value: 'Invalid Number',
-                                },
-                            ])
-                        }
-                        else {
-                            const newUss = {
-                                type: 'constant' as const,
-                                value: {
-                                    node: { type: isNumber ? 'number' : 'string', value },
-                                    location: emptyLocation(props.blockIdent),
-                                },
-                            } satisfies UrbanStatsASTExpression
-                            props.setUss(newUss)
-                            setInternalErrors([])
-                        }
+                        const newUss = {
+                            type: 'constant' as const,
+                            value: {
+                                node: { type: isNumber ? 'number' : 'string', value },
+                                location: emptyLocation(props.blockIdent),
+                            },
+                        } satisfies UrbanStatsASTExpression
+                        props.setUss(newUss)
                     }}
                     style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
                     placeholder={isNumber ? 'Enter number' : 'Enter string'}
