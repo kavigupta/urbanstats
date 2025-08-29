@@ -2,7 +2,10 @@ import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation, Keyword } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword } from './lexer'
+import { noLocation } from './location'
+import { LocInfo } from './location'
+import { Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 import { USSType } from './types-values'
 

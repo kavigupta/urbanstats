@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { getPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {

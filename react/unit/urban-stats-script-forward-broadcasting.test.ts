@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
 import { broadcastApply, locateType } from '../src/urban-stats-script/forward-broadcasting'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 import { USSRawValue, USSType, renderType, undocValue } from '../src/urban-stats-script/types-values'
 
 import { emptyContext, multiObjType, multiObjVectorType, numMatrixType, numType, numVectorType, stringType, testFn1, testFn2, testFnType } from './urban-stats-script-utils'
