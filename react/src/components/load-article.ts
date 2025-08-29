@@ -62,7 +62,7 @@ function lookupInCompressedSequence(seq: [number, number][], idx: number): numbe
 }
 
 export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
-    const idx = stats.indexOf(statcol)
+    const idx = stats.indexOf(statcol) // Works because `require` is global
     if (!(universe in counts)) {
         return 0
     }
