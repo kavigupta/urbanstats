@@ -46,7 +46,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
 function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
-    uss: UrbanStatsASTExpression & { type: 'function', fn: UrbanStatsASTExpression & { type: 'identifier' } }
+    uss: UrbanStatsASTExpression & { type: 'call', fn: UrbanStatsASTExpression & { type: 'identifier' } }
     setUss: (u: UrbanStatsASTExpression) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
@@ -147,7 +147,7 @@ export function AutoUXEditor(props: {
         if (uss.type === 'identifier') {
             return undefined
         }
-        if (uss.type === 'function') {
+        if (uss.type === 'call') {
             assert(uss.fn.type === 'identifier', 'Function must be an identifier')
             const tdoc = props.typeEnvironment.get(uss.fn.name.node)
             assert(tdoc !== undefined, `Function ${uss.fn.name.node} not found in type environment`)
@@ -389,7 +389,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
         })
     }
     return {
-        type: 'function',
+        type: 'call',
         fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
         args,
         entireLoc: emptyLocation(blockIdent),
@@ -423,7 +423,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
                 return deconstruct(expr.expr.value, typeEnvironment, blockIdent, type, selection)
             }
             return
-        case 'function': {
+        case 'call': {
             if (type.type === 'opaque' && type.name === 'color' && selection.type === 'function') {
                 // Conversion between RGB and HSV functions
                 const color = getColor(expr, typeEnvironment)
@@ -600,7 +600,7 @@ function attemptParseExpr(
                 }
             }
             return undefined
-        case 'function':
+        case 'call':
             const fn = expr.fn
             if (fn.type !== 'identifier') {
                 return undefined
@@ -640,7 +640,7 @@ function attemptParseExpr(
                 value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
             }))
             return {
-                type: 'function',
+                type: 'call',
                 fn: { type: 'identifier', name: { node: fn.name.node, location: emptyLocation(blockIdent) } },
                 args: [...positionals, ...nameds],
                 entireLoc: emptyLocation(blockIdent),

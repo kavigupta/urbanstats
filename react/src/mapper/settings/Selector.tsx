@@ -162,7 +162,7 @@ export function Selector(props: {
                                 )
                                 break
                             case 'identifier':
-                            case 'function':
+                            case 'call':
                                 newUss = parseNoErrorAsExpression(
                                     newColorUss,
                                     props.blockIdent,
@@ -194,7 +194,7 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     if (uss.type === 'identifier') {
         return { type: 'variable', name: uss.name.node }
     }
-    if (uss.type === 'function') {
+    if (uss.type === 'call') {
         const classifiedFn = classifyExpr(uss.fn)
         assert(classifiedFn.type === 'variable', 'Function must be a variable or another function')
         return { type: 'function', name: classifiedFn.name }
@@ -245,7 +245,7 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<str
 
             return
         }
-        case 'function': {
+        case 'call': {
             const posArgs = expr.args.flatMap((arg) => {
                 if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
                     return [arg.value.value.node.value]
