@@ -104,7 +104,7 @@ export function loadInsetExpression(universe: Universe): UrbanStatsASTExpression
     })
 
     return {
-        type: 'function',
+        type: 'call',
         fn: { type: 'identifier', name: { node: 'constructInsets', location: noLocation } },
         args: [{
             type: 'unnamed',
