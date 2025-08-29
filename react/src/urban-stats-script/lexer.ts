@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { Block, LocInfo } from './location'
 import { expressionOperatorMap } from './operators'
 
-const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.', ':']
+const nonExpressionOperators = ['=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
 const keywords = ['if', 'do', 'else', 'customNode', 'condition']
@@ -82,11 +82,15 @@ const identifierLexer: GenericLexer = {
     parse: (string: string): Token => { return { type: keywords.includes(string) ? 'keyword' : 'identifier', value: string } },
 }
 
+function isOperator(string: string): boolean {
+    return nonExpressionOperators.includes(string) || expressionOperatorMap.has(string)
+}
+
 const operatorLexer: GenericLexer = {
     firstToken: (ch: string): boolean => operatorCharacters.includes(ch),
     innerToken: (ch: string): boolean => operatorCharacters.includes(ch),
     parse: (string: string): Token => {
-        if (operators.includes(string)) {
+        if (isOperator(string)) {
             return { type: 'operator', value: string }
         }
         return { type: 'error', value: `Invalid operator: ${string}` }
