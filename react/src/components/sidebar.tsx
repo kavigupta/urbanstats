@@ -63,6 +63,9 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'dataCredit', hash: '' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Data Credit</a>
                     </li>
+                    {/* <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'ussDocumentation', hash: '' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>USS Documentation</a>
+                    </li> */}
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Mapper (beta)</a>
                     </li>

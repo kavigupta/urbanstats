@@ -155,6 +155,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <AboutPanel />
         case 'dataCredit':
             return <pageData.dataCreditPanel />
+        case 'ussDocumentation':
+            return <pageData.ussDocumentationPanel />
         case 'quiz':
             return (
                 <pageData.quizPanel
