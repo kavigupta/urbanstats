@@ -189,7 +189,7 @@ export function Editor(
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
-    const borderColor = useResultsColor(results)
+    const borderColor = useResultsColor(colorKey(results))
 
     return (
         <div style={{ marginTop: '0.25em' }} id="test-editor-body">
@@ -234,23 +234,37 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-function useResultsColor(results: EditorResult[]): string {
-    const colors = useColors()
+function colorKey(results: EditorResult[]): 'r' | 'o' | 'g' | 's' {
     switch (true) {
         case results.some(r => r.kind === 'error'):
-            return colors.hueColors.red
+            return 'r'
         case results.some(r => r.kind === 'warning'):
-            return colors.hueColors.orange
+            return 'o'
         case results.some(r => r.kind === 'success'):
-            return colors.hueColors.green
+            return 'g'
         default:
+            return 's'
+    }
+}
+
+function useResultsColor(cKey: 'r' | 'o' | 'g' | 's'): string {
+    const colors = useColors()
+    switch (cKey) {
+        case 'r':
+            return colors.hueColors.red
+        case 'o':
+            return colors.hueColors.orange
+        case 'g':
+            return colors.hueColors.green
+        case 's':
             return colors.borderShadow
     }
 }
 
 export function DisplayResults(props: { results: EditorResult[], editor: boolean }): ReactNode | undefined {
     const colors = useColors()
-    const color = useResultsColor(props.results)
+    const cKey = colorKey(props.results)
+    const color = useResultsColor(cKey)
     if (props.results.length === 0) {
         return undefined
     }
@@ -267,7 +281,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
         marginTop: props.editor ? '0' : '0.25em',
     }
     return (
-        <div id="test-editor-result">
+        <div id="test-editor-result" className={`color-${cKey}`}>
             <pre style={style}>
                 {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error, props.editor)}`).join('\n')}
             </pre>
