@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { nthEditor, selectionNotPoint } from './editor_test_utils'
-import { downloadOrCheckString, screencap, urbanstatsFixture } from './test_utils'
+import { downloadOrCheckString, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('uss documentation', '/uss-documentation.html')
 
