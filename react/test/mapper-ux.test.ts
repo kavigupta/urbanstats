@@ -103,12 +103,15 @@ mapper(() => test)('undo redo', 'customNode("");\ncondition (true)\ncMap(data=de
 
     await t.pressKey('ctrl+z')
     await t.expect(getInput('Iceland').exists).ok()
+    await t.wait(2000)
 
     await t.pressKey('ctrl+z')
     await t.expect(getInput('Urban Center').exists).ok()
+    await t.wait(2000)
 
     await t.pressKey('ctrl+y')
     await t.expect(getInput('Subnational Region').exists).ok()
+    await t.wait(2000)
 
     await t.pressKey('ctrl+y')
     await t.expect(getInput('USA').exists).ok()
