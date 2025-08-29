@@ -674,15 +674,15 @@ void test('unparse', (): void => {
     )
     assert.deepStrictEqual(
         unparse({ type: 'statements', result: [
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
         ], entireLoc: noLocation }),
         'customNode("");\ncustomNode("")',
     )
     assert.deepStrictEqual(
         unparse({ type: 'statements', result: [
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
         ], entireLoc: noLocation }, { simplify: true }),
         '',
     )
@@ -740,6 +740,10 @@ void test('parse error nodes', (): void => {
                     },
                 },
             ],
+        },
+        entireLoc: {
+            start: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+            end: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 4, charIdx: 4 },
         },
     })
     assert.strictEqual(errorNode.type, 'customNode')

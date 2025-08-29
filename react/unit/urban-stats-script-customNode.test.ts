@@ -64,5 +64,25 @@ void test('customNode eats errors', (): void => {
         },
         originalCode: '2 +',
         type: 'customNode',
+        entireLoc: {
+            end: {
+                block: {
+                    ident: 'test',
+                    type: 'single',
+                },
+                charIdx: 16,
+                colIdx: 16,
+                lineIdx: 0,
+            },
+            start: {
+                block: {
+                    ident: 'test',
+                    type: 'single',
+                },
+                charIdx: 11,
+                colIdx: 11,
+                lineIdx: 0,
+            },
+        },
     })
 })
