@@ -54,7 +54,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 throw env.error(lookupResult.message, locationOf(expr))
             }
             return lookupResult.value
-        case 'function':
+        case 'call':
             const func = evaluate(expr.fn, env)
             const args = expr.args.map(arg => evaluateArg(arg, env))
             const broadcastResult = broadcastCall(func, args, env, locationOf(expr))
