@@ -192,8 +192,8 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     fs.copyFileSync(mrdp, dest)
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}.gz`)
+export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt', gzip = true): Promise<void> {
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}${gzip ? '.gz' : ''}`)
 
     switch (format) {
         case 'json':
@@ -202,18 +202,29 @@ export async function downloadOrCheckString(t: TestController, string: string, n
         case 'xml':
             string = xmlFormat(string)
             break
+        case 'txt':
+            break
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (checkString) {
-        const expected = gunzipSync(fs.readFileSync(pathToFile)).toString('utf8')
+        let expectedBuf: Buffer = fs.readFileSync(pathToFile)
+        if (gzip) {
+            expectedBuf = gunzipSync(expectedBuf)
+        }
+        const expected = expectedBuf.toString('utf-8')
         if (string !== expected) {
-            // Using this because these strings are massive and the diff generation times out
-            await t.expect(false).ok(`String does not match expected value`)
+            if (gzip) {
+                // Using this because these strings are massive and the diff generation times out
+                await t.expect(false).ok(`String does not match expected value`)
+            }
+            else {
+                await t.expect(string).eql(expected)
+            }
         }
     }
     else {
-        fs.writeFileSync(pathToFile, gzipSync(string))
+        fs.writeFileSync(pathToFile, gzip ? gzipSync(string) : string)
         fs.utimesSync(pathToFile, 0, 0)
     }
 }
