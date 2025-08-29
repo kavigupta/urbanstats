@@ -14,8 +14,8 @@ export type UrbanStatsASTLHS = (
 
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS |
-    { type: 'constant', value: Decorated<{ type: 'number', value: number | string } | { type: 'string', value: string }> } |
-    { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
+    { type: 'constant', value: Decorated<{ type: 'number', value: number } | { type: 'string', value: string }> } |
+    { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
     { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
     { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
@@ -62,7 +62,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return node.name.location
         case 'attribute':
             return unify(node.name.location, locationOf(node.expr))
-        case 'function':
+        case 'call':
             return node.entireLoc
         case 'unaryOperator':
             return unify(node.operator.location, locationOf(node.expr))
@@ -120,7 +120,7 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
             case 'attribute':
                 collectErrors(n.expr)
                 break
-            case 'function':
+            case 'call':
                 collectErrors(n.fn)
                 n.args.forEach(collectErrors)
                 break
