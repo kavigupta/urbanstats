@@ -31,7 +31,7 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(id ${node.name.node})`
         case 'attribute':
             return `(attr ${toSExp(node.expr)} ${node.name.node})`
-        case 'function':
+        case 'call':
             return `(fn ${[node.fn, ...node.args].map(toSExp).join(' ')})`
         case 'unaryOperator':
             return `(${node.operator.node} ${toSExp(node.expr)})`
@@ -271,7 +271,7 @@ class ParseState {
                     return args
                 }
                 fn = {
-                    type: 'function',
+                    type: 'call',
                     fn,
                     entireLoc: unify(locationOf(fn), args.args[1]),
                     args: args.args[0],
@@ -401,7 +401,7 @@ class ParseState {
             case 'attribute':
                 return expr
             case 'constant':
-            case 'function':
+            case 'call':
             case 'unaryOperator':
             case 'binaryOperator':
             case 'vectorLiteral':
@@ -666,7 +666,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 expressions.push(n)
                 helper(n.expr)
                 return true
-            case 'function':
+            case 'call':
                 expressions.push(n)
                 helper(n.fn)
                 n.args.forEach(helper)
@@ -803,7 +803,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'attribute':
             const exprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             return `${exprStr}.${node.name.node}`
-        case 'function':
+        case 'call':
             const fnStr = unparse(node.fn, { ...opts, inline: true, expressionalContext: true })
             const argsStr = node.args.map((arg) => {
                 switch (arg.type) {

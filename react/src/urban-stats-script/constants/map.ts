@@ -108,7 +108,7 @@ function mapConstructorArguments(
         ...intermediateArgs,
         basemap: {
             type: { type: 'concrete', value: basemapType },
-            defaultValue: { type: 'function', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
+            defaultValue: { type: 'call', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
         },
         insets: {
             type: { type: 'concrete', value: insetsType },
