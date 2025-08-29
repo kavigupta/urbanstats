@@ -44,9 +44,6 @@ export function constructInset(
 }
 
 export function constructInsets(insetList: Inset[]): USSRawValue {
-    if (!insetList.some(inset => inset.mainMap)) {
-        throw new Error('At least one inset must have mainMap=true')
-    }
     return {
         type: 'opaque',
         opaqueType: 'insets',
@@ -120,7 +117,7 @@ export const constructInsetsValue: USSValue = {
         humanReadableName: 'Custom Insets',
         category: 'inset',
         isDefault: true,
-        longDescription: 'Creates a collection of map insets. At least one inset must have mainMap=true.',
+        longDescription: 'Creates a collection of map insets.',
     },
 } satisfies USSValue
 
