@@ -1,0 +1,3 @@
+regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
+condition (population > 10000)
+cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ramp=rampUridis, label="Commute Transit above expectation based on ln(density) [%]", basemap=noBasemap())

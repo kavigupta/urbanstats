@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import os from 'node:os'
 import { run } from 'node:test'
 import { spec } from 'node:test/reporters'
@@ -53,3 +54,4 @@ testStream.on('test:summary', (event) => {
         }, 0)
     }
 })
+/* c8 ignore end */
