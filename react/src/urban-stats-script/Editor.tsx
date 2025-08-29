@@ -283,7 +283,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
     return (
         <div id="test-editor-result" className={`color-${cKey}`}>
             <pre style={style}>
-                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
+                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error, props.editor)}`).join('\n')}
             </pre>
         </div>
     )
