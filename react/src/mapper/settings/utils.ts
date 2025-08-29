@@ -58,27 +58,13 @@ export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStat
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
     const tle = defaultTopLevelEditor(defaultTypeEnvironment(addTo.universe ?? 'USA'))
-    const defaults: MapSettings = {
-        geographyKind: 'Subnational Region',
-        universe: 'USA',
-        script: {
+    return {
+        geographyKind: addTo.geographyKind ?? 'Subnational Region',
+        universe: addTo.universe ?? 'USA',
+        script: addTo.script ?? {
             uss: tle,
         },
     }
-    return merge(addTo, defaults)
-}
-
-function merge<T>(addTo: Partial<T>, addFrom: T): T {
-    let key: keyof T
-    for (key in addFrom) {
-        if (addTo[key] === undefined) {
-            addTo[key] = addFrom[key]
-        }
-        else if (typeof addTo[key] === 'object') {
-            merge(addTo[key] as object, addFrom[key])
-        }
-    }
-    return addTo as T
 }
 
 export function makeStatements<const T extends UrbanStatsASTStatement[]>(elements: T, identFallback?: string): UrbanStatsASTStatement & { type: 'statements', result: T } {
