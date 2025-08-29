@@ -596,7 +596,7 @@ function attemptParseExpr(
             if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && types.some(type => type.type === 'number')) {
                 return {
                     type: 'constant',
-                    value: { location: expr.expr.value.location, node: { type: 'number', value: -(expr.expr.value.node.value as number) } },
+                    value: { location: expr.expr.value.location, node: { type: 'number', value: -(expr.expr.value.node.value) } },
                 }
             }
             return undefined
