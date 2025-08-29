@@ -6,7 +6,7 @@ import { UrbanStatsASTStatement, UrbanStatsASTExpression } from '../src/urban-st
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 import { parse, toSExp, unparse } from '../src/urban-stats-script/parser'
 import { USSRawValue, USSType, USSValue, createConstantExpression, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
 

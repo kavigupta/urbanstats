@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
 

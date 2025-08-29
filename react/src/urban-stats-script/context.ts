@@ -1,7 +1,7 @@
 import assert from 'assert'
 
 import { Effect, InterpretationError } from './interpreter'
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { USSValue } from './types-values'
 
 export class Context {

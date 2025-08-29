@@ -1,5 +1,5 @@
 import { UrbanStatsASTExpression } from './ast'
-import { noLocation } from './lexer'
+import { noLocation } from './location'
 
 export function createConstantExpression(value: number | string | boolean | null): UrbanStatsASTExpression {
     // Create a simple constant expression for primitive values
