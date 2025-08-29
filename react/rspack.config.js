@@ -6,6 +6,15 @@ import { rspack } from "@rspack/core"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
+// Helpful for debugging loops in watch mode
+class LogChangedFile {
+  apply(compiler) {
+    compiler.hooks.invalid.tap('MyWatchPlugin', (fileName, changeTime) => {
+      console.log(`Changed file: ${fileName}, change time: ${new Date(changeTime).toLocaleString()}`);
+    });
+  }
+}
+
 export default env => ({
     entry: {
         index: ['./src/index.tsx'],
@@ -45,6 +54,7 @@ export default env => ({
     plugins: [
         new NodePolyfillPlugin(),
         new ForkTsCheckerWebpackPlugin(),
+        new LogChangedFile()
     ],
     devServer: {
         static: {
