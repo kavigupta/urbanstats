@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTExpression } from './ast'
 import { Context } from './context'
 import { InterpretationError, evaluate } from './interpreter'
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs, USSFunctionArgType } from './types-values'
 
 interface PredicateDescriptor {

@@ -2,7 +2,7 @@ import * as assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 

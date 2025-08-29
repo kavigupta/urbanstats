@@ -3,7 +3,7 @@ import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
-import { noLocation } from '../lexer'
+import { noLocation } from '../location'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
 

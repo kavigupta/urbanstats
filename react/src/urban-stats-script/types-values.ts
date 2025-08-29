@@ -7,7 +7,7 @@ import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
-import { noLocation } from './lexer'
+import { noLocation } from './location'
 import { unparse } from './parser'
 
 // Define Inset and Insets types locally to avoid import issues
