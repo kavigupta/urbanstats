@@ -1,5 +1,5 @@
 import { Context } from './context'
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
 
 interface Operator {

@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import { constantsByType, defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 
 void test('constant listing', (): void => {
     assert.deepStrictEqual(

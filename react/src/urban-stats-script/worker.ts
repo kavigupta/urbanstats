@@ -15,7 +15,7 @@ import { insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
-import { noLocation } from './lexer'
+import { noLocation } from './location'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { USSExecutionRequest, USSExecutionResult } from './workerManager'
 

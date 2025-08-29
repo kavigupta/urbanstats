@@ -25,7 +25,7 @@ import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
-import { noLocation } from '../urban-stats-script/lexer'
+import { noLocation } from '../urban-stats-script/location'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'

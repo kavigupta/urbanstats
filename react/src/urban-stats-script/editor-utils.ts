@@ -6,7 +6,8 @@ import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex, LocInfo } from './lexer'
+import { AnnotatedToken, lex } from './lexer'
+import { LocInfo } from './location'
 import { ParseError } from './parser'
 import { renderValue, USSDocumentedType, USSValue } from './types-values'
 
