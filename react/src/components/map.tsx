@@ -13,7 +13,7 @@ import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '.
 import { debugPerformance } from '../search'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
-import { computeAspectRatio } from '../utils/coordinates'
+import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { isHistoricalCD } from '../utils/is_historical'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
@@ -396,15 +396,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         const maps = await this.handler.getMaps()
         const insets = this.insets()
 
-        const mainMap = maps[0]
-        const mapBounds = mainMap.getBounds()
-
-        const aspectRatio = computeAspectRatio([
-            mapBounds.getWest(),
-            mapBounds.getSouth(),
-            mapBounds.getEast(),
-            mapBounds.getNorth(),
-        ])
+        const aspectRatio = computeAspectRatioForInsets(insets)
 
         const height = Math.round(width / aspectRatio)
 
