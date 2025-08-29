@@ -3,8 +3,7 @@ import fs from 'node:fs'
 import { test } from 'node:test'
 
 import { lex } from '../src/urban-stats-script/lexer'
-import { noLocation } from '../src/urban-stats-script/location'
-import { Block } from '../src/urban-stats-script/location'
+import { noLocation, Block } from '../src/urban-stats-script/location'
 import { allIdentifiers, parse, parseNoErrorAsCustomNode, toSExp, unparse } from '../src/urban-stats-script/parser'
 
 import { emptyContext, parseProgram } from './urban-stats-script-utils'
