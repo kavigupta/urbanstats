@@ -180,7 +180,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     } satisfies UrbanStatsASTStatement
 }
 
-export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
+export function defaultTopLevelEditor(): UrbanStatsASTStatement {
     const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, validMapperOutputs)
-    return attemptParseAsTopLevel(expr.expr, typeEnvironment)
+    return expr.expr
 }
