@@ -1,3 +1,4 @@
+import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
 
 import { useColors } from '../../page_template/colors'
@@ -57,7 +58,10 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     }, [bitapBuffers, searchValue, options])
 
     const handleOptionSelect = (option: typeof sortedOptions[number]): void => {
-        onChange(possibleValues[option.index])
+        const newValue = possibleValues[option.index]
+        if (stableStringify(newValue) !== stableStringify(value)) {
+            onChange(newValue)
+        }
         setSearchValue(option.renderedChoice)
         setIsOpen(false)
         setHighlightedIndex(0)
