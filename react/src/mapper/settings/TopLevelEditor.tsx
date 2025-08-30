@@ -153,16 +153,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
-    let conditionExpr: UrbanStatsASTExpression
-    let conditionRest: UrbanStatsASTStatement[]
-    if (conditionStmt?.type === 'condition') {
-        conditionExpr = parseNoErrorAsCustomNode(unparse(conditionStmt.condition), idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }])
-        conditionRest = conditionStmt.rest
-    }
-    else {
-        conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
-        conditionRest = conditionStmt !== undefined ? [conditionStmt] : []
-    }
+    const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
     const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode)
     const condition = {
         type: 'condition',
@@ -173,11 +164,29 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble), idPreamble) },
+            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: true }), idPreamble) },
             condition,
         ] as const,
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
+}
+
+function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+    let stmts = conditionStmt !== undefined ? [conditionStmt] : []
+    if (conditionStmt?.type === 'condition') {
+        const conditionText = unparse(conditionStmt.condition, { simplify: true })
+        if (conditionText.trim() !== 'true') {
+            return {
+                conditionExpr: parseNoErrorAsCustomNode(conditionText, idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }]),
+                conditionRest: conditionStmt.rest,
+            }
+        }
+        stmts = conditionStmt.rest
+    }
+    return {
+        conditionExpr: { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression,
+        conditionRest: stmts,
+    }
 }
 
 export function defaultTopLevelEditor(): UrbanStatsASTStatement {
