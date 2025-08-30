@@ -158,3 +158,14 @@ mapper(() => test)('able to reload in invalid state', 'customNode("");\nconditio
     await t.expect(Selector('#pageState_kind').value).eql('loaded')
     await t.expect(Selector('#pageState_current_descriptor_kind').value).eql('mapper')
 })
+
+mapper(() => test)('do not re quote when selecting custom expression again', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await replaceInput(t, 'Uridis', 'Custom Expression')
+    await t.expect(nthEditor(0).textContent).eql('rampUridis\n')
+    await replaceInput(t, 'Custom Expression', 'Custom Expression')
+    await t.expect(nthEditor(0).textContent).eql('rampUridis\n')
+
+    // Selecting again did not add a state
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Uridis').exists).ok()
+})
