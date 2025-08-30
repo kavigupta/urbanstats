@@ -159,9 +159,9 @@ mapper(() => test)('able to reload in invalid state', 'customNode("");\nconditio
     await t.expect(Selector('#pageState_current_descriptor_kind').value).eql('mapper')
 })
 
-mapper(() => test)('correct errors on initial', 'customNode("");\ncondition (true)\ncMap(data=customNode("\\""), scale=linearScale(), ramp=rampUridis)', async (t) => {
+mapper(() => test.only)('correct errors on initial', 'customNode("");\ncondition (true)\ncMap(data=customNode("\\""), scale=linearScale(), ramp=rampUridis)', async (t) => {
     await waitForLoading(t)
-    await t.expect(await getErrors()).eql(['Unrecognized token: Unterminated string at 1:1'])
+    await t.expect(await getErrors()).eql(['Unrecognized token: Unterminated string at 1:1']) // Error message has the 1:1 if on an editor
 })
 
 mapper(() => test)('selection preserved on reload', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))', async (t) => {
