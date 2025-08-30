@@ -1,5 +1,5 @@
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 export function testCode(geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
@@ -9,9 +9,18 @@ export function testCode(geographyKind: string, universe: string, code: string, 
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await t.expect(await getErrors()).eql([])
         await toggleCustomScript(t)
+        // now in autoux mode
         await t.expect(await getErrors()).eql([])
         await toggleCustomScript(t)
+        // now in custom mode
         await t.expect(await getErrors()).eql([])
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await toggleCustomScript(t)
+        // now in autoux mode
+        await t.expect(await getErrors()).eql([])
+        await safeReload(t)
+        await toggleCustomScript(t)
+        // back to custom mode
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await screencap(t)
         if (includeGeojson) {
