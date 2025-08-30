@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 import { USSType } from './types-values'
@@ -549,20 +549,22 @@ class ParseState {
     }
 
     parseCustomNodeExpression(): UrbanStatsASTExpression | ParseError {
-        const args = this.parseParenthesizedArgs()
+        const argsRes = this.parseParenthesizedArgs()
 
-        if (args === undefined) {
+        if (argsRes === undefined) {
             return { type: 'error', value: 'Expected arguments for customNode', location: this.maybeLastNonEOLToken(-1).location }
         }
 
-        if (args.type === 'error') {
-            return args
+        if (argsRes.type === 'error') {
+            return argsRes
         }
 
-        const code = args.args[0][0]
+        const [args, locArg] = argsRes.args
 
-        if (args.args[0].length !== 1 || code.type !== 'unnamed') {
-            return { type: 'error', value: 'Incorrect arguments for customNode, expected 1 unnamed argument', location: args.args[1] }
+        const code = args[0]
+
+        if (args.length !== 1 || code.type !== 'unnamed') {
+            return { type: 'error', value: 'Incorrect arguments for customNode, expected 1 unnamed argument', location: argsRes.args[1] }
         }
 
         if (code.value.type !== 'constant' || code.value.value.node.type !== 'string') {
@@ -580,6 +582,7 @@ class ParseState {
                     originalCode: code.value.value.node.value,
                 },
                 originalCode: code.value.value.node.value,
+                entireLoc: locArg,
             }
         }
 
@@ -587,6 +590,7 @@ class ParseState {
             type: 'customNode',
             expr: parseResult,
             originalCode: code.value.value.node.value,
+            entireLoc: locArg,
         }
     }
 }
@@ -912,6 +916,7 @@ export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedT
         expr: result,
         originalCode: uss,
         expectedType,
+        entireLoc: emptyLocation(blockId),
     }
 }
 

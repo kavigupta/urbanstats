@@ -23,7 +23,7 @@ export type UrbanStatsASTExpression = (
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
-    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
+    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
 )
 
 export type UrbanStatsASTStatement = (
@@ -83,7 +83,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             assert(node.errors.length > 0, 'parseError node must have at least one error')
             return node.errors[0].location
         case 'customNode':
-            return locationOf(node.expr)
+            return node.entireLoc
     }
     /* c8 ignore stop */
 }
