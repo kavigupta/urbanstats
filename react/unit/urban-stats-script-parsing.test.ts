@@ -743,7 +743,7 @@ void test('parse error nodes', (): void => {
         },
         entireLoc: {
             start: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
-            end: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 4, charIdx: 4 },
+            end: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
         },
     })
     assert.strictEqual(errorNode.type, 'customNode')
