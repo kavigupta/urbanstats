@@ -2,10 +2,11 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
+import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
@@ -59,7 +60,7 @@ function ArgumentEditor(props: {
     const argValue = functionUss.args.find(a => a.type === 'named' && a.name.node === props.name)
     const hasDefault = props.argWDefault.defaultValue !== undefined
     const isEnabled = argValue !== undefined
-    const subident = `${props.blockIdent}_${props.name}`
+    const subident = extendBlockIdKwarg(props.blockIdent, props.name)
 
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
@@ -127,25 +128,34 @@ export function AutoUXEditor(props: {
     label?: string
     labelWidth?: string
 }): ReactNode {
+    const ussLoc = locationOf(props.uss).start
+    if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
+        console.warn('USS: ', props.uss)
+        console.warn('USS Location: ', ussLoc)
+        console.warn('Editor blockIdent: ', props.blockIdent)
+        console.error('USS expression location does not match block identifier', props.uss, ussLoc, props.blockIdent)
+    }
     const labelWidth = props.labelWidth ?? '5%'
-    const subcomponent = (): ReactNode | undefined => {
+    const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         if (props.uss.type === 'constant') {
-            return undefined
+            return [undefined, 'does-not-consume-errors']
         }
         const uss = props.uss
         if (uss.type === 'customNode') {
-            return (
+            const editor = (
                 <CustomEditor
+                    key="custom"
                     uss={uss}
                     setUss={props.setUss}
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
-                    blockIdent={`${props.blockIdent}_custom`}
+                    blockIdent={props.blockIdent}
                 />
             )
+            return [editor, 'consumes-errors']
         }
         if (uss.type === 'identifier') {
-            return undefined
+            return [undefined, 'does-not-consume-errors']
         }
         if (uss.type === 'call') {
             assert(uss.fn.type === 'identifier', 'Function must be an identifier')
@@ -167,7 +177,7 @@ export function AutoUXEditor(props: {
                         }}
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
-                        blockIdent={`${props.blockIdent}_pos_${i}`}
+                        blockIdent={extendBlockIdPositionalArg(props.blockIdent, i)}
                         type={[arg.value]}
                     />,
                 )
@@ -189,11 +199,8 @@ export function AutoUXEditor(props: {
                     )
                 }
             })
-            return (
-                <div>
-                    {...subselectors}
-                </div>
-            )
+            const element = <div key="subselectors">{...subselectors}</div>
+            return [element, 'does-not-consume-errors']
         }
         if (uss.type === 'vectorLiteral') {
             // Determine the element type
@@ -202,7 +209,7 @@ export function AutoUXEditor(props: {
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
                 elementType = props.type[0].elementType as USSType
             }
-            return (
+            const element = (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
                     {uss.elements.map((el, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em', width: '100%' }}>
@@ -215,7 +222,7 @@ export function AutoUXEditor(props: {
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
-                                blockIdent={`${props.blockIdent}_el_${i}`}
+                                blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
                                 type={[elementType]}
                                 label={`${i + 1}`}
                             />
@@ -239,7 +246,7 @@ export function AutoUXEditor(props: {
                                 // Copy the last element if there is one
                                 uss.elements.length > 0
                                     ? uss.elements[uss.elements.length - 1]
-                                    : createDefaultExpression(elementType, `${props.blockIdent}_el_${uss.elements.length}`, props.typeEnvironment),
+                                    : createDefaultExpression(elementType, extendBlockIdVectorElement(props.blockIdent, uss.elements.length), props.typeEnvironment),
                             ]
                             props.setUss({ ...uss, elements: newElements })
                         }}
@@ -248,6 +255,7 @@ export function AutoUXEditor(props: {
                     </button>
                 </div>
             )
+            return [element, 'does-not-consume-errors']
         }
         if (uss.type === 'objectLiteral') {
             // Determine the element type
@@ -256,20 +264,20 @@ export function AutoUXEditor(props: {
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for objects
                 propertiesTypes = props.type[0].properties
             }
-            return (
+            const element = (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
                     {Array.from(propertiesTypes.keys()).sort().map((key) => {
                         const propertyType = propertiesTypes.get(key)!
                         return (
                             <AutoUXEditor
                                 key={key}
-                                uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, `${props.blockIdent}_prop_${key}`, props.typeEnvironment)}
+                                uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, extendBlockIdObjectProperty(props.blockIdent, key), props.typeEnvironment)}
                                 setUss={(newVal) => {
                                     props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) })
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
-                                blockIdent={`${props.blockIdent}_prop_${key}`}
+                                blockIdent={extendBlockIdObjectProperty(props.blockIdent, key)}
                                 type={[propertyType]}
                                 label={key}
                             />
@@ -277,9 +285,31 @@ export function AutoUXEditor(props: {
                     })}
                 </div>
             )
+            return [element, 'does-not-consume-errors']
         }
         throw new Error(`Unsupported USS expression type: ${props.uss.type}`) // TODO handle other types
     }
+
+    const wrappedSubcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
+        const [subc, doesConsume] = subcomponent()
+        if (subc === undefined) {
+            return [undefined, doesConsume]
+        }
+        const element = (
+            <div style={{ width: '100%', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
+                    {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
+                    <div style={{ flex: 1 }}>
+                        {subc}
+                    </div>
+                </div>
+            </div>
+        )
+        return [element, doesConsume]
+    }
+
+    const [wrapped, doesConsume] = wrappedSubcomponent()
+
     const leftSegment = props.label === undefined
         ? undefined
         : (
@@ -300,7 +330,7 @@ export function AutoUXEditor(props: {
                         typeEnvironment={props.typeEnvironment}
                         type={props.type}
                         blockIdent={props.blockIdent}
-                        errors={props.errors}
+                        errors={doesConsume === 'consumes-errors' ? [] : props.errors}
                     />
                 </div>
 
@@ -334,27 +364,10 @@ export function AutoUXEditor(props: {
         }
     }
 
-    const wrappedSubcomponent = (): ReactNode => {
-        const subc = subcomponent()
-        if (subc === undefined) {
-            return undefined
-        }
-        return (
-            <div style={{ width: '100%', flex: 1 }}>
-                <div style={{ display: 'flex', gap: '1em', marginLeft: labelWidth }}>
-                    {props.label && <span style={{ minWidth: 'fit-content' }}></span>}
-                    <div style={{ flex: 1 }}>
-                        {subcomponent()}
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.25em' }} id={`auto-ux-editor-${props.blockIdent}`}>
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
-            {wrappedSubcomponent()}
+            {wrapped}
         </div>
     )
 }
@@ -375,7 +388,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
         assert(arg.type === 'concrete', `Positional argument must be concrete`)
         args.push({
             type: 'unnamed',
-            value: createDefaultExpression(arg.value, `${blockIdent}_pos_${i}`, typeEnvironment),
+            value: createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
     const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
@@ -385,7 +398,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
         args.push({
             type: 'named',
             name: { node: name, location: emptyLocation(blockIdent) },
-            value: createDefaultExpression(arg.value, `${blockIdent}_${name}`, typeEnvironment),
+            value: createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
         })
     }
     return {
@@ -540,7 +553,7 @@ function attemptParseExpr(
             return {
                 type: 'vectorLiteral',
                 entireLoc: emptyLocation(blockIdent),
-                elements: expr.elements.map(elem => parseExpr(elem, blockIdent, elementTypes, typeEnvironment, fallback)),
+                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback)),
             }
         case 'objectLiteral':
             const exprProps = new Set(expr.properties.map(([key]) => key))
@@ -566,7 +579,7 @@ function attemptParseExpr(
                 entireLoc: emptyLocation(blockIdent),
                 properties: expr.properties.map(([key, value]) => [
                     key,
-                    parseExpr(value, blockIdent, compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback),
+                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback),
                 ]),
             }
         case 'do':
@@ -584,19 +597,19 @@ function attemptParseExpr(
         case 'identifier':
             const validVariableSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
             if (validVariableSelections.some(s => s.name === expr.name.node)) {
-                return expr
+                return { type: 'identifier', name: { node: expr.name.node, location: emptyLocation(blockIdent) } }
             }
             return undefined
         case 'constant':
             if (types.some(type => type.type === expr.value.node.type)) {
-                return expr
+                return { type: 'constant', value: { node: expr.value.node, location: emptyLocation(blockIdent) } }
             }
             return undefined
         case 'unaryOperator':
             if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && types.some(type => type.type === 'number')) {
                 return {
                     type: 'constant',
-                    value: { location: expr.expr.value.location, node: { type: 'number', value: -(expr.expr.value.node.value) } },
+                    value: { location: emptyLocation(blockIdent), node: { type: 'number', value: -(expr.expr.value.node.value) } },
                 }
             }
             return undefined
@@ -629,7 +642,7 @@ function attemptParseExpr(
             }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, `${blockIdent}_pos_${i}`, [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
+                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
             }))
             if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
                 return undefined
@@ -637,7 +650,7 @@ function attemptParseExpr(
             nameds = nameds.map(a => ({
                 type: 'named',
                 name: a.name,
-                value: parseExpr(a.value, `${blockIdent}_${a.name.node}`, [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
+                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
             }))
             return {
                 type: 'call',

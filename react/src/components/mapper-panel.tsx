@@ -520,7 +520,7 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
             script: z.object({
                 uss: z.string(),
             }) }).parse(JSON.parse(jsonedSettings))
-        const uss = parse(rawSettings.script.uss)
+        const uss = parse(rawSettings.script.uss, { type: 'single', ident: rootBlockIdent })
         if (uss.type === 'error') {
             throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
         }
