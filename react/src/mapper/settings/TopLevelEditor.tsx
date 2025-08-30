@@ -139,10 +139,13 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
+    if (stmt.type === 'customNode') {
+        return stmt
+    }
     const stmts = stmt.type === 'statements' ? stmt.result : [stmt]
     const preamble = {
         type: 'statements',
