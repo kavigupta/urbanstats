@@ -6,8 +6,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import ensure_writeable, write_gzip
-from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.protobuf.utils import ensure_writeable
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.output_geometry import convert_to_protobuf
