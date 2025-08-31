@@ -52,6 +52,7 @@ def top_level_pages():
         "https://urbanstats.org/quiz.html#mode=retro",
         "https://urbanstats.org/quiz.html#mode=infinite",
         "https://urbanstats.org/syau.html",
+        "https://urbanstats.org/uss-documentation.html",
     ]
 
 
