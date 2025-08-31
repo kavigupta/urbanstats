@@ -194,3 +194,11 @@ mapper(() => test)('selection preserved on reload', 'customNode("");\ncondition 
     await toggleCustomScript(t)
     await checkCode()
 })
+
+mapper(() => test)('custom expression preference saved across reload even if expression is compatible with autoux', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+    await replaceInput(t, 'Custom Ramp', 'Custom Expression')
+    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(0.592, 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+    await safeReload(t)
+    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(0.592, 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+})
