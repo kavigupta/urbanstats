@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
@@ -189,7 +187,7 @@ export type PageData =
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
-    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
@@ -673,16 +671,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const [mapSettings, panel] = await Promise.all([
-                mapSettingsFromURLParam(newDescriptor.settings),
-                import('../components/mapper-panel'),
-            ])
+            const panel = import('../components/mapper-panel')
+            const counts = getCountsByArticleType()
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettings,
-                    mapperPanel: panel.MapperPanel,
+                    settings: (await panel).mapSettingsFromURLParam(newDescriptor.settings),
+                    mapperPanel: (await panel).MapperPanel,
+                    counts: await counts,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -713,16 +710,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
     }
-}
-
-async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
-    const { defaultSettings } = await import('../mapper/settings/utils')
-    let settings: Partial<MapSettings> = {}
-    if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
-    }
-    return defaultSettings(settings)
 }
 
 export function pageTitle(pageData: PageData): string {

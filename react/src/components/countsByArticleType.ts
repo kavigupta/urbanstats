@@ -32,3 +32,10 @@ async function getCountsByArticleTypeDirect(): Promise<CountsByUT> {
         return [universe, countsByType]
     }))
 }
+
+export function articleTypes(counts: CountsByUT, universe: string): string[] {
+    if (!(universe in counts)) {
+        return []
+    }
+    return Object.keys(counts[universe]).filter(k => k !== 'overall')
+}

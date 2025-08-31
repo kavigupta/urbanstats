@@ -192,8 +192,9 @@ export function Editor(
     const borderColor = useResultsColor(colorKey(results))
 
     return (
-        <div style={{ marginTop: '0.25em' }} id="test-editor-body">
+        <div style={{ marginTop: '0.25em' }}>
             <pre
+                id="test-editor-body"
                 style={{
                     ...codeStyle,
                     caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
@@ -283,7 +284,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
     return (
         <div id="test-editor-result" className={`color-${cKey}`}>
             <pre style={style}>
-                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
+                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error, props.editor)}`).join('\n')}
             </pre>
         </div>
     )

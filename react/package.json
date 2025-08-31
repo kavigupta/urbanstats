@@ -78,7 +78,6 @@
     "better-react-mathjax": "^2.0.3",
     "color": "^5.0.0",
     "dom-to-image-more": "^3.3.0",
-    "expr-eval": "^2.0.2",
     "file-saver": "^2.0.5",
     "google-protobuf": "^3.21.2",
     "idb": "^8.0.2",
