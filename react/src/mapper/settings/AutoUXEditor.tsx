@@ -8,7 +8,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType } from '../../urban-stats-script/types-values'
+import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType, USSFunctionType } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
@@ -383,28 +383,51 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
     return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
 }
 
-function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
+// Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
+// Returns undefined if incompatible
+// We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
+function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
+    let type
+    if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
+        const foundType: USSFunctionType = type.type
+        return (arg, targetType) => {
+            if (typeof arg === 'number' && arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
+                return expr.args.filter(a => a.type === 'unnamed')[arg]?.value
+            }
+            if (typeof arg === 'string' && arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
+                return expr.args.find(a => a.type === 'named' && a.name.node === arg)?.value
+            }
+            return undefined
+        }
+    }
+    return () => undefined
+}
+
+function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
     const fn = typeEnvironment.get(selection.name)
     assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
+    const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
     const args: UrbanStatsASTArg[] = []
-    // Only include positional arguments by default, not named arguments with defaults
+    // Only include positional arguments by default, not named arguments with defaults, unless there's an existing value for the named argument
     for (let i = 0; i < fn.type.posArgs.length; i++) {
         const arg = fn.type.posArgs[i]
         assert(arg.type === 'concrete', `Positional argument must be concrete`)
         args.push({
             type: 'unnamed',
-            value: createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
+            value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
-    const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
-    for (const [name, argWDefault] of needed) {
+    for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
         const arg = argWDefault.type
         assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        args.push({
-            type: 'named',
-            name: { node: name, location: emptyLocation(blockIdent) },
-            value: createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
-        })
+        const prev = compatiblePreviousArg?.(name, arg.value)
+        if (prev || argWDefault.defaultValue === undefined) {
+            args.push({
+                type: 'named',
+                name: { node: name, location: emptyLocation(blockIdent) },
+                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+            })
+        }
     }
     return {
         type: 'call',
@@ -486,7 +509,7 @@ function defaultForSelection(
         case 'variable':
             return getDefaultVariable(selection as Selection & { type: 'variable' }, typeEnvironment, blockIdent)
         case 'function':
-            return getDefaultFunction(selection as Selection & { type: 'function' }, typeEnvironment, blockIdent)
+            return getDefaultFunction(selection as Selection & { type: 'function' }, typeEnvironment, blockIdent, current)
         case 'vector': {
             // Create an empty vectorLiteral of the right type
             return {
