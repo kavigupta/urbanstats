@@ -408,7 +408,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
     const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
     const args: UrbanStatsASTArg[] = []
-    // Only include positional arguments by default, not named arguments with defaults
+    // Only include positional arguments by default, not named arguments with defaults, unless there's an existing value for the named argument
     for (let i = 0; i < fn.type.posArgs.length; i++) {
         const arg = fn.type.posArgs[i]
         assert(arg.type === 'concrete', `Positional argument must be concrete`)
@@ -417,15 +417,17 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
             value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
-    const needed = Object.entries(fn.type.namedArgs).filter(([, a]) => a.defaultValue === undefined)
-    for (const [name, argWDefault] of needed) {
+    for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
         const arg = argWDefault.type
         assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        args.push({
-            type: 'named',
-            name: { node: name, location: emptyLocation(blockIdent) },
-            value: compatiblePreviousArg?.(name, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
-        })
+        const prev = compatiblePreviousArg?.(name, arg.value)
+        if (prev || argWDefault.defaultValue === undefined) {
+            args.push({
+                type: 'named',
+                name: { node: name, location: emptyLocation(blockIdent) },
+                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+            })
+        }
     }
     return {
         type: 'call',

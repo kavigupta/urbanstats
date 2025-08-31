@@ -203,7 +203,7 @@ mapper(() => test)('custom expression preference saved across reload even if exp
     await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(0.592, 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
 })
 
-mapper(() => test)('common arguments saved when switching functions', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+mapper(() => test)('common non-optional named arguments saved when switching functions', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
     await replaceInput(t, 'PW Density (r=1km)', 'Population')
     await replaceInput(t, 'Uridis', 'Hot')
     await replaceInput(t, 'Linear Scale', 'Custom Expression')
@@ -217,4 +217,14 @@ mapper(() => test)('common arguments saved when switching functions', 'customNod
     await t.expect(getInput('Population').exists).ok()
     await t.expect(getInput('Hot').exists).ok()
     await t.expect(nthEditor(0).textContent).eql('linearScale(min=10000000)\n')
+})
+
+mapper(() => test)('common optional named arguments saved when switching functions', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    await checkBox(t, /min/)
+    await checkBox(t, /center/)
+    await checkBox(t, /max/)
+    await replaceInput(t, 'Linear Scale', 'Logarithmic Scale')
+    await t.expect(getInput('0', 0).exists).ok()
+    await t.expect(getInput('0', 1).exists).ok()
+    await t.expect(getInput('0', 2).exists).ok()
 })
