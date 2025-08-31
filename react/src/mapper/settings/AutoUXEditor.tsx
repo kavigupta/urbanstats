@@ -78,14 +78,19 @@ function ArgumentEditor(props: {
                                     onChange={(checked) => {
                                         if (checked) {
                                             const defaultExpr = props.argWDefault.defaultValue
+                                            let exprToUse = defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')
+                                                ? createDefaultExpression(arg.value, subident, props.typeEnvironment)
+                                                : defaultExpr
+                                            exprToUse = parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
+                                                throw new Error('Should not happen')
+                                            }, true)
                                             // Add the argument with default value
-                                            const newArgs = [...functionUss.args, {
+                                            const newArg = {
                                                 type: 'named' as const,
                                                 name: { node: props.name, location: emptyLocation(subident) },
-                                                value: defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')
-                                                    ? createDefaultExpression(arg.value, subident, props.typeEnvironment)
-                                                    : defaultExpr,
-                                            }]
+                                                value: exprToUse,
+                                            }
+                                            const newArgs = [...functionUss.args, newArg]
                                             props.setUss({ ...functionUss, args: newArgs })
                                         }
                                         else {
@@ -133,7 +138,7 @@ export function AutoUXEditor(props: {
         console.warn('USS: ', props.uss)
         console.warn('USS Location: ', ussLoc)
         console.warn('Editor blockIdent: ', props.blockIdent)
-        console.error('USS expression location does not match block identifier', props.uss, ussLoc, props.blockIdent)
+        console.error('USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
     }
     const labelWidth = props.labelWidth ?? '5%'
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
