@@ -6,8 +6,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import ensure_writeable, write_gzip
-from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.protobuf.utils import ensure_writeable
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.output_geometry import convert_to_protobuf
@@ -93,8 +92,6 @@ def produce_results_for_type(folder, typ):
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(shapes)
-    stats = compute_statistics(data_table)
-    write_gzip(stats, f"{folder}/stats__{typ}.gz")
 
 
 def compute_geography(typ, data_table):
@@ -119,25 +116,6 @@ def compute_geography(typ, data_table):
     )
 
     return data_table, shapes, simplification
-
-
-def compute_statistics_for_row(row):
-    results = data_files_pb2.AllStats()
-    for stat in internal_statistic_names():
-        results.stats.append(row[stat])
-    return results
-
-
-def compute_statistics(data_table):
-    data_table = data_table.set_index("longname")
-    stats = data_files_pb2.ConsolidatedStatistics()
-    for longname in tqdm.tqdm(data_table.index):
-        row = data_table.loc[longname]
-        s = compute_statistics_for_row(row)
-        stats.longnames.append(longname)
-        stats.shortnames.append(row.shortname)
-        stats.stats.append(s)
-    return stats
 
 
 def full_consolidated_data(folder):
