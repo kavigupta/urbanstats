@@ -245,7 +245,7 @@ async function printConsoleMessages(t: TestController): Promise<void> {
         return
     }
     consoleEnabled.add(cdp)
-    cdp.Console.on('messageAdded', (event) => {
+    cdp.Console.on('messageAdded', async (event) => {
         const timestamp = new Date().toISOString()
         let text: string
         switch (event.message.level) {
@@ -259,6 +259,7 @@ async function printConsoleMessages(t: TestController): Promise<void> {
                 text = event.message.text
         }
         console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
+        await t.expect(event.message.level).notEql('error', 'Console errors message fail tests')
     })
     await cdp.Console.enable()
 }
