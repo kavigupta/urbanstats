@@ -192,8 +192,9 @@ export function Editor(
     const borderColor = useResultsColor(colorKey(results))
 
     return (
-        <div style={{ marginTop: '0.25em' }} id="test-editor-body">
+        <div style={{ marginTop: '0.25em' }}>
             <pre
+                id="test-editor-body"
                 style={{
                     ...codeStyle,
                     caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,

@@ -125,7 +125,7 @@ export function TopLevelEditor({
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment))
+                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false))
                     }
                 }}
                 style={{ margin: '0.5em 0' }}
@@ -139,10 +139,13 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>, preserveCustomNodes: boolean): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
+    if (stmt.type === 'customNode') {
+        return stmt
+    }
     const stmts = stmt.type === 'statements' ? stmt.result : [stmt]
     const preamble = {
         type: 'statements',
@@ -150,17 +153,8 @@ export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnviron
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
-    let conditionExpr: UrbanStatsASTExpression
-    let conditionRest: UrbanStatsASTStatement[]
-    if (conditionStmt?.type === 'condition') {
-        conditionExpr = parseNoErrorAsCustomNode(unparse(conditionStmt.condition), idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }])
-        conditionRest = conditionStmt.rest
-    }
-    else {
-        conditionExpr = { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression
-        conditionRest = conditionStmt !== undefined ? [conditionStmt] : []
-    }
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode)
+    const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
@@ -170,14 +164,32 @@ export function attemptParseAsTopLevel(stmt: UrbanStatsASTStatement, typeEnviron
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble), idPreamble) },
+            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: true }), idPreamble) },
             condition,
         ] as const,
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
 }
 
-export function defaultTopLevelEditor(typeEnvironment: Map<string, USSDocumentedType>): MapUSS {
+function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+    let stmts = conditionStmt !== undefined ? [conditionStmt] : []
+    if (conditionStmt?.type === 'condition') {
+        const conditionText = unparse(conditionStmt.condition, { simplify: true })
+        if (conditionText.trim() !== 'true') {
+            return {
+                conditionExpr: parseNoErrorAsCustomNode(conditionText, idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }]),
+                conditionRest: conditionStmt.rest,
+            }
+        }
+        stmts = conditionStmt.rest
+    }
+    return {
+        conditionExpr: { type: 'identifier', name: { node: 'true', location: emptyLocation(idCondition) } } satisfies UrbanStatsASTExpression,
+        conditionRest: stmts,
+    }
+}
+
+export function defaultTopLevelEditor(): UrbanStatsASTStatement {
     const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, validMapperOutputs)
-    return attemptParseAsTopLevel(expr.expr, typeEnvironment)
+    return expr.expr
 }
