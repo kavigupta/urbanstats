@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap, safeClearLocalStorage } from './test_utils'
+import { target, safeReload, screencap, safeClearLocalStorage, waitForDownload } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
@@ -222,7 +222,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // assert no element with id quiz-audience-statistics
         await t.expect(Selector('#quiz-audience-statistics').exists).notOk()
         // now become user 8
-        await safeClearLocalStorage()
+        await safeClearLocalStorage(t)
         await t.eval(() => {
             localStorage.setItem('persistent_id', '000000000000008')
             localStorage.setItem('testHostname', 'testproxy.nonexistent')
@@ -465,12 +465,13 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
     }
 
     test('export quiz progress', async (t) => {
+        const laterThan = new Date().getTime()
         await t.click(Selector('button').withExactText('Export Quiz History'))
 
         // Give it a second to download...
         await t.wait(1000)
 
-        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(mostRecentDownloadPath()).toString()) as Record<string, unknown>
+        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(await waitForDownload(t, laterThan, '.json')).toString()) as Record<string, unknown>
 
         await t.expect(typeof date_exported === 'string').ok()
 

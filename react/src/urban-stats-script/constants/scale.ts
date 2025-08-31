@@ -1,4 +1,4 @@
-import { USSType, USSValue, rawDefaultValue } from '../types-values'
+import { USSType, USSValue, createConstantExpression } from '../types-values'
 
 // Functions can't be send over the worker boundary, so instead we must send descriptors
 export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number }
@@ -94,15 +94,15 @@ export const linearScaleValue: USSValue = {
         namedArgs: {
             min: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             center: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             max: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
         },
         returnType: { type: 'concrete', value: scaleType },
@@ -114,11 +114,17 @@ export const linearScaleValue: USSValue = {
         // Return a scale function that closes over these params
         return {
             type: 'opaque',
+            opaqueType: 'scale',
             value: (values: number[]) => linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
         }
     },
-    documentation: { humanReadableName: 'Linear Scale', isDefault: true },
-}
+    documentation: {
+        humanReadableName: 'Linear Scale',
+        category: 'scale',
+        isDefault: true,
+        longDescription: 'Creates a linear scale that maps numeric values to a range. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+    },
+} satisfies USSValue
 
 export const logScaleValue: USSValue = {
     type: {
@@ -127,15 +133,15 @@ export const logScaleValue: USSValue = {
         namedArgs: {
             min: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             center: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
             max: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: rawDefaultValue(null),
+                defaultValue: createConstantExpression(null),
             },
         },
         returnType: { type: 'concrete', value: scaleType },
@@ -147,8 +153,13 @@ export const logScaleValue: USSValue = {
         // Return a scale function that closes over these params
         return {
             type: 'opaque',
+            opaqueType: 'scale',
             value: (values: number[]) => logScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
         }
     },
-    documentation: { humanReadableName: 'Logarithmic Scale' },
-}
+    documentation: {
+        humanReadableName: 'Logarithmic Scale',
+        category: 'scale',
+        longDescription: 'Creates a logarithmic scale that maps numeric values to a range using log transformation. Useful for data with wide ranges or exponential distributions. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+    },
+} satisfies USSValue

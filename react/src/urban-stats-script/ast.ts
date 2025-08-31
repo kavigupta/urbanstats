@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
 
@@ -14,8 +14,8 @@ export type UrbanStatsASTLHS = (
 
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS |
-    { type: 'constant', value: Decorated<{ type: 'number', value: number | string } | { type: 'string', value: string }> } |
-    { type: 'function', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
+    { type: 'constant', value: Decorated<{ type: 'number', value: number } | { type: 'string', value: string }> } |
+    { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
     { type: 'binaryOperator', operator: Decorated<string>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
     { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
@@ -23,7 +23,7 @@ export type UrbanStatsASTExpression = (
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
-    { type: 'customNode', expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType }
+    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
 )
 
 export type UrbanStatsASTStatement = (
@@ -62,7 +62,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return node.name.location
         case 'attribute':
             return unify(node.name.location, locationOf(node.expr))
-        case 'function':
+        case 'call':
             return node.entireLoc
         case 'unaryOperator':
             return unify(node.operator.location, locationOf(node.expr))
@@ -83,7 +83,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             assert(node.errors.length > 0, 'parseError node must have at least one error')
             return node.errors[0].location
         case 'customNode':
-            return locationOf(node.expr)
+            return node.entireLoc
     }
     /* c8 ignore stop */
 }
@@ -120,7 +120,7 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
             case 'attribute':
                 collectErrors(n.expr)
                 break
-            case 'function':
+            case 'call':
                 collectErrors(n.fn)
                 n.args.forEach(collectErrors)
                 break

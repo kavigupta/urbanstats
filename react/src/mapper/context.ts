@@ -1,29 +1,32 @@
 import statistic_variables_info from '../data/statistic_variables_info'
+import { Universe } from '../universe'
 import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
-import { InterpretationError } from '../urban-stats-script/interpreter'
+import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
 import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
+import { loadInsetExpression } from '../urban-stats-script/worker'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
-export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<Context> {
+export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universe: Universe): Promise<Context> {
     const ctx = new Context(
-        () => undefined,
+        (eff) => { effects.push(eff) },
         (msg, loc) => { return new InterpretationError(msg, loc) },
         defaultConstants,
         new Map(),
     )
 
-    await addVariablesToContext(ctx, stmts, getVariable)
+    await addVariablesToContext(ctx, stmts, getVariable, universe)
     return ctx
 }
 
-async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>): Promise<void> {
+async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, universe: Universe): Promise<void> {
+    const dte = defaultTypeEnvironment(universe)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'geoCentroid', 'defaultInsets']
 
     // Load all variables in parallel
     const variablePromises = variables
@@ -60,7 +63,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
             const valuesNotNull = values as number[][] // cast is fine because we checked for undefined above
             const value = valuesNotNull[0].map((_, i) => firstNonNan(valuesNotNull.map(v => v[i]))) // take first non-NaN value
 
-            const typeInfo = defaultTypeEnvironment.get(name)!
+            const typeInfo = dte.get(name)!
             ctx.assignVariable(name, {
                 type: typeInfo.type,
                 value,
@@ -71,7 +74,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     await Promise.all(multiSourcePromises)
 }
 
-export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
+export const defaultTypeEnvironment = (universe: Universe | undefined): Map<string, USSDocumentedType> => {
     const te = new Map<string, USSDocumentedType>()
 
     for (const [key, value] of defaultConstants) {
@@ -79,8 +82,31 @@ export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
     }
 
     te.set('geo', {
-        type: { type: 'vector', elementType: { type: 'string' } },
-        documentation: { humanReadableName: 'Geography Name' },
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        documentation: {
+            humanReadableName: 'Default Universe Geography',
+            category: 'map',
+            longDescription: 'A vector containing geographic feature handles for the current universe. Each element represents a geographic unit (e.g., census block, county) that can be used for mapping and spatial analysis.',
+        },
+    })
+
+    te.set('geoCentroid', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoCentroidHandle' } },
+        documentation: {
+            humanReadableName: 'Default Universe Geography (Centroids)',
+            category: 'mapper',
+            longDescription: 'A vector containing geographic centroid handles for the current universe. Each element represents the center point of a geographic unit, useful for point-based visualizations and distance calculations.',
+        },
+    })
+
+    te.set('defaultInsets', {
+        type: { type: 'opaque', name: 'insets' },
+        documentation: {
+            humanReadableName: 'Default Insets',
+            category: 'mapper',
+            longDescription: 'Predefined map inset configurations for the current universe (whatever that is). E.g., for the US, it would be the continental US, Alaska, Hawaii, Puerto Rico, and Guam.',
+            equivalentExpressions: universe !== undefined ? [loadInsetExpression(universe)] : [],
+        },
     })
 
     for (const variableInfo of statistic_variables_info.variableNames) {
@@ -90,6 +116,9 @@ export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
             documentation: {
                 humanReadableName: variableInfo.humanReadableName,
                 priority: variableInfo.comesFromMultiSourceSet ? 1000 + order : order,
+                category: 'mapper',
+                longDescription: `Data from ${variableInfo.humanReadableName}`,
+                documentationTable: 'mapper-data-variables',
             },
         })
     }
@@ -107,9 +136,13 @@ export const defaultTypeEnvironment = ((): Map<string, USSDocumentedType> => {
             documentation: {
                 humanReadableName: info.humanReadableName,
                 priority: minPriority,
+                category: 'mapper',
+                longDescription: `Data from ${info.humanReadableName} (from whatever source is most reliable)`,
+                documentationTable: 'mapper-data-variables',
+                isDefault: name === 'density_pw_1km',
             },
         })
     }
 
     return te
-})()
+}

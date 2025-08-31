@@ -4,7 +4,7 @@ import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { unparse, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
@@ -25,7 +25,7 @@ export function ConditionEditor({
     const conditionIsCustom = condition.type === 'customNode'
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
+        <div style={{ margin: '0.5em 0' }}>
             <CheckboxSettingCustom
                 name="Filter?"
                 checked={conditionIsCustom}
@@ -33,7 +33,7 @@ export function ConditionEditor({
                     if (checked) {
                         // Enable condition - keep current condition or set to 'true'
                         const currentCondition = unparse(condition) || 'true'
-                        const conditionExpr = parseNoErrorAsExpression(currentCondition, blockIdent, { type: 'vector', elementType: { type: 'boolean' } })
+                        const conditionExpr = parseNoErrorAsCustomNode(currentCondition, blockIdent, [{ type: 'vector', elementType: { type: 'boolean' } }])
                         setCondition(conditionExpr)
                     }
                     else {

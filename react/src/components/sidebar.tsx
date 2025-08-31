@@ -63,6 +63,9 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'dataCredit', hash: '' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Data Credit</a>
                     </li>
+                    {/* <li>
+                        <a style={linkStyle} {...navContext.link({ kind: 'ussDocumentation', hash: '' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>USS Documentation</a>
+                    </li> */}
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Mapper (beta)</a>
                     </li>
@@ -288,6 +291,7 @@ interface CheckboxSettingCustomJustInputProps {
     testId?: string
     highlight?: boolean
     forcedOn?: boolean
+    style?: CSSProperties
 }
 
 type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
@@ -301,6 +305,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     const divStyle: CSSProperties = {
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
+        ...props.style,
     }
     const id = useId()
     const inputId = props.id ?? id

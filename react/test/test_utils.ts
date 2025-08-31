@@ -7,7 +7,6 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
-import { DefaultMap } from '../src/utils/DefaultMap'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
@@ -124,50 +123,77 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector }: { fullPage?: boolean, wait?: boolean, selector?: Selector } = {}): Promise<void> {
     await prepForImage(t, { hover: fullPage, wait })
-    return t.takeScreenshot({
-        // include the browser name in the screenshot path
-        path: screenshotPath(t),
-        fullPage,
-    })
+    if (selector !== undefined) {
+        await t.takeElementScreenshot(selector, screenshotPath(t))
+    }
+    else {
+        await t.takeScreenshot({
+            path: screenshotPath(t),
+            fullPage,
+        })
+    }
 }
 
-export async function grabDownload(t: TestController, button: Selector): Promise<void> {
+export async function grabDownload(t: TestController, button: Selector, suffix: string): Promise<void> {
+    const laterThan = new Date().getTime()
     await prepForImage(t, { hover: true, wait: true })
     await t
         .click(button)
-    await t.wait(3000)
-    copyMostRecentFile(t)
+    await copyMostRecentFile(t, laterThan, suffix)
 }
 
 export async function downloadImage(t: TestController): Promise<void> {
     const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grabDownload(t, download)
+    await grabDownload(t, download, '.png')
 }
 
 export async function downloadHistogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grabDownload(t, download)
+    await grabDownload(t, download, '.png')
 }
 
-export function mostRecentDownloadPath(): string {
+function mostRecentDownload(suffix: string): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
-    const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
-    return sorted[0]
+    const sorted = files
+        .filter(x => !x.startsWith('.') && !x.endsWith('.crdownload') && x.endsWith(suffix))
+        .map(x => path.join(downloadsFolder(), x))
+        .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+    if (sorted.length === 0) {
+        return undefined
+    }
+    const latest = sorted[0]
+    const mtime = fs.statSync(latest).mtimeMs
+    return { path: latest, mtime }
 }
 
-function copyMostRecentFile(t: TestController): void {
+export async function waitForDownload(t: TestController, laterThan: number, suffix: string): Promise<string> {
+    while (true) {
+        const download = mostRecentDownload(suffix)
+        if (download !== undefined && download.mtime > laterThan) {
+            return download.path
+        }
+        console.warn(chalkTemplate`{yellow No file found in downloads folder, waiting for download to complete}`)
+        // wait for the download to finish
+        await t.wait(1000)
+    }
+}
+
+async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
     // copy the file to the screenshots folder
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
+    const mrdp = await waitForDownload(t, laterThan, suffix)
+    const dest = path.join(screenshotsFolder, screenshotPath(t))
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(mrdp, dest)
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml'): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}.gz`)
+export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt', gzip = true): Promise<void> {
+    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}${gzip ? '.gz' : ''}`)
 
     switch (format) {
         case 'json':
@@ -176,31 +202,87 @@ export async function downloadOrCheckString(t: TestController, string: string, n
         case 'xml':
             string = xmlFormat(string)
             break
+        case 'txt':
+            break
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
     if (checkString) {
-        const expected = gunzipSync(fs.readFileSync(pathToFile)).toString('utf8')
+        let expectedBuf: Buffer = fs.readFileSync(pathToFile)
+        if (gzip) {
+            expectedBuf = gunzipSync(expectedBuf)
+        }
+        const expected = expectedBuf.toString('utf-8')
         if (string !== expected) {
-            // Using this because these strings are massive and the diff generation times out
-            await t.expect(false).ok(`String does not match expected value`)
+            if (gzip) {
+                // Using this because these strings are massive and the diff generation times out
+                await t.expect(false).ok(`String does not match expected value`)
+            }
+            else {
+                await t.expect(string).eql(expected)
+            }
         }
     }
     else {
-        fs.writeFileSync(pathToFile, gzipSync(string))
+        fs.writeFileSync(pathToFile, gzip ? gzipSync(string) : string)
         fs.utimesSync(pathToFile, 0, 0)
     }
 }
 
-export async function safeClearLocalStorage(): Promise<void> {
-    await flaky(() =>
+export async function safeClearLocalStorage(t: TestController): Promise<void> {
+    await flaky(t, () =>
         ClientFunction(() => {
             (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
         })(),
     )
 }
 
-const consoleEnabled = new DefaultMap<unknown, boolean>(() => false)
+const consoleEnabled = new WeakSet()
+
+async function printConsoleMessages(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (consoleEnabled.has(cdp)) {
+        return
+    }
+    consoleEnabled.add(cdp)
+    cdp.Console.on('messageAdded', async (event) => {
+        const timestamp = new Date().toISOString()
+        let text: string
+        switch (event.message.level) {
+            case 'error':
+                text = chalkTemplate`{red ${event.message.text}}`
+                break
+            case 'warning':
+                text = chalkTemplate`{yellow ${event.message.text}}`
+                break
+            default:
+                text = event.message.text
+        }
+        console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
+        await t.expect(event.message.level).notEql('error', 'Console errors message fail tests')
+    })
+    await cdp.Console.enable()
+}
+
+const networkEnabled = new WeakSet()
+const requests = new Map<string, unknown>()
+
+async function printFailedNetworkRequests(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (networkEnabled.has(cdp)) {
+        return
+    }
+    networkEnabled.add(cdp)
+    cdp.Network.on('requestWillBeSent', (event) => {
+        requests.set(event.requestId, event.request)
+    })
+    cdp.Network.on('loadingFailed', (event) => {
+        if (!event.canceled) {
+            console.error(chalkTemplate`{red Request failed}`, event, requests.get(event.requestId))
+        }
+    })
+    await cdp.Network.enable({ })
+}
 
 export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
     if (url.startsWith('/')) {
@@ -215,29 +297,10 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
-            const cdp = await t.getCurrentCDPSession()
-            if (!consoleEnabled.get(cdp)) {
-                consoleEnabled.set(cdp, true)
-                cdp.Console.on('messageAdded', (event) => {
-                    const timestamp = new Date().toISOString()
-                    let text: string
-                    switch (event.message.level) {
-                        case 'error':
-                            text = chalkTemplate`{red ${event.message.text}}`
-                            break
-                        case 'warning':
-                            text = chalkTemplate`{yellow ${event.message.text}}`
-                            break
-                        default:
-                            text = event.message.text
-                    }
-                    console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
-                })
-                await cdp.Console.enable()
-            }
-
+            await printConsoleMessages(t)
+            await printFailedNetworkRequests(t)
             screenshotNumber = 0
-            await safeClearLocalStorage()
+            await safeClearLocalStorage(t)
             await t.resizeWindow(1400, 800)
             if (beforeEach !== undefined) {
                 await beforeEach(t)
@@ -245,13 +308,17 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
         }).skipJsErrors({ pageUrl: /google\.com/ })
 }
 
-export async function flaky<T>(doThing: () => Promise<T>): Promise<T> {
+export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
     while (true) {
         try {
             return await doThing()
         }
         catch (error) {
             console.error(chalkTemplate`{red flaky failed with error}`, error)
+            await t.takeScreenshot({
+                path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
+                fullPage: true,
+            })
         }
     }
 }
@@ -346,4 +413,21 @@ export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, session
             return value
         },
     })
+}
+
+export async function clickUniverseFlag(t: TestController, alt: string): Promise<void> {
+    await flaky(t, async () => { // Universe flag sometimes isn't loaded
+        await t.click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', alt))
+    })
+}
+
+// Gets the non-extension part of the test file, e.g. if running search.test.ts -> search
+export function getCurrentTest(t: TestController): string {
+    // @ts-expect-error -- TestCafe private API
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe private API
+    const testFileName: string = t.testRun.test.testFile.filename
+    return /([^/]+)\.test\.ts$/.exec(testFileName)![1]
 }

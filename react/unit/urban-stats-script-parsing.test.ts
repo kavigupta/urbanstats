@@ -2,10 +2,11 @@ import assert from 'assert/strict'
 import fs from 'node:fs'
 import { test } from 'node:test'
 
-import { Block, lex, noLocation } from '../src/urban-stats-script/lexer'
-import { allIdentifiers, parse, parseNoErrorAsExpression, toSExp, unparse } from '../src/urban-stats-script/parser'
+import { lex } from '../src/urban-stats-script/lexer'
+import { noLocation, Block } from '../src/urban-stats-script/location'
+import { allIdentifiers, parse, parseNoErrorAsCustomNode, toSExp, unparse } from '../src/urban-stats-script/parser'
 
-import { emptyContext } from './urban-stats-script-utils'
+import { emptyContext, parseProgram } from './urban-stats-script-utils'
 
 const testBlock: Block = {
     type: 'single',
@@ -285,11 +286,16 @@ void test('basic parsing', (): void => {
         parseAndRender('! x > 0'),
         parseAndRender(' ! (x > 0)'),
     )
+})
 
-    // assert.deepStrictEqual(
-    //     parseAndRender('(x * ----y) + z'),
-    //     parseAndRender('x * (-(-(-(- y)))) + z'),
-    // )
+void test('basic if parsing', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('if (x) { y = 2 }'),
+        '(expr (if (id x) (assign (id y) (const 2))))',
+    )
+})
+
+void test('more complex if parsing', (): void => {
     assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
         '(assign (id regr) (fn (id linear_regression) (named y (id commute_transit)) (named x0 (id commute_car)) (named weight (id population))))',
@@ -347,6 +353,61 @@ void test('basic parsing', (): void => {
     assert.deepStrictEqual(
         parseAndRender('if (x) {}'),
         '(expr (if (id x) (statements )))',
+    )
+})
+
+void test('parse custom nodes', (): void => {
+    const justTheExpression = `customNode("y = x * x")`
+    assert.deepStrictEqual(
+        parseAndRender(justTheExpression),
+        '(expr (customNode (assign (id y) (* (id x) (id x))) "y = x * x"))',
+    )
+    const singleLine = `2 + customNode("y = x * x")`
+    assert.deepStrictEqual(
+        parseAndRender(singleLine),
+        '(expr (+ (const 2) (customNode (assign (id y) (* (id x) (id x))) "y = x * x")))',
+    )
+    const multiLine = `x = [1, 2, 3]
+        2 + customNode("y = x * x\\ny")`
+    assert.deepStrictEqual(
+        parseAndRender(multiLine),
+        '(statements (assign (id x) (vector (const 1) (const 2) (const 3))) (expr (+ (const 2) (customNode (statements (assign (id y) (* (id x) (id x))) (expr (id y))) "y = x * x\\ny"))))',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("x * x")`)),
+        'x = [1, 2, 3];\ncustomNode("x * x")',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("x * x")`), { simplify: true }),
+        'x = [1, 2, 3];\nx * x',
+    )
+})
+
+void test('unparse multi-line customNode', (): void => {
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("y = x * x\\ny")`)),
+        'x = [1, 2, 3];\ncustomNode("y = x * x\\ny")',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram(`x = [1, 2, 3]
+            customNode("y = x * x\\ny")`), { simplify: true }),
+        'x = [1, 2, 3];\ny = x * x\ny',
+    )
+})
+
+void test('unparse multi-line customNode in an expressional context', (): void => {
+    const program = parseProgram(`x = [1, 2, 3]
+            2 + customNode("y = x * x\\ny")`)
+    assert.deepStrictEqual(
+        unparse(program),
+        'x = [1, 2, 3];\n2 + customNode("y = x * x\\ny")',
+    )
+    assert.deepStrictEqual(
+        unparse(program, { simplify: true }),
+        'x = [1, 2, 3];\n2 + do { y = x * x; y }',
     )
 })
 
@@ -496,8 +557,23 @@ void test('condition-expression', (): void => {
         '(errors (error "Expected closing bracket ) after condition" at 0:10))',
     )
     assert.deepStrictEqual(
+        parseAndRender('condition(x)'),
+        '(condition (id x) )',
+    )
+    assert.deepStrictEqual(
         parseAndRender('if (x) { condition(y); abcdefg = 3  }; x = 4'),
         '(statements (expr (if (id x) (condition (id y) (assign (id abcdefg) (const 3))))) (assign (id x) (const 4)))',
+    )
+})
+
+void test('unparse condition', (): void => {
+    assert.deepStrictEqual(
+        unparse(parseProgram('condition (x); y = 2; z = 3')),
+        'condition (x)\ny = 2;\nz = 3',
+    )
+    assert.deepStrictEqual(
+        unparse(parseProgram('condition (customNode("x")); y = 2; z = 3'), { simplify: true }),
+        'condition (x)\ny = 2;\nz = 3',
     )
 })
 
@@ -559,18 +635,18 @@ void test('collect identifiers', (): void => {
     )
     assert.deepStrictEqual(
         ids('regression(x1=x1+0, y=y)'),
-        new Set(['x1', 'y', 'regression']),
+        new Set(['x1', 'y', 'regression', 'null', 'false']),
     )
     assert.deepStrictEqual(
         ids('regression(x1=z+0, y=t)'),
-        new Set(['z', 't', 'regression']),
+        new Set(['z', 't', 'regression', 'null', 'false']),
     )
     assert.deepStrictEqual(
         ids('cMap(data=population, scale=linearScale())'),
-        new Set(['cMap', 'population', 'linearScale', 'osmBasemap', 'geo']),
+        new Set(['cMap', 'population', 'linearScale', 'osmBasemap', 'geo', 'defaultInsets', 'colorBlack', 'constructOutline', 'false', 'null', 'rgb']),
     )
     assert.deepStrictEqual(
-        allIdentifiers(parseNoErrorAsExpression('++', 'test'), emptyContext()),
+        allIdentifiers(parseNoErrorAsCustomNode('++', 'test'), emptyContext()),
         new Set([]),
     )
     assert.deepStrictEqual(
@@ -579,12 +655,12 @@ void test('collect identifiers', (): void => {
     )
 })
 
-function parseThenUnparse(code: string): string {
+function parseThenUnparse(code: string, opts?: Parameters<typeof unparse>[1]): string {
     const res = parse(code, testBlock)
     if (res.type === 'error') {
         throw new Error(`Parsing error: ${res.errors.map(err => err.value).join(', ')}`)
     }
-    return unparse(res)
+    return unparse(res, opts)
 }
 
 void test('unparse', (): void => {
@@ -598,14 +674,33 @@ void test('unparse', (): void => {
     )
     assert.deepStrictEqual(
         unparse({ type: 'statements', result: [
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
-            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '' } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
         ], entireLoc: noLocation }),
+        'customNode("");\ncustomNode("")',
+    )
+    assert.deepStrictEqual(
+        unparse({ type: 'statements', result: [
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
+            { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
+        ], entireLoc: noLocation }, { simplify: true }),
         '',
     )
     assert.deepStrictEqual(
         parseThenUnparse('condition(true); x = 2; y = 3'),
+        'condition (true)\nx = 2;\ny = 3',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('condition(true); x = 2; y = 3', { simplify: true }),
         'x = 2;\ny = 3',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('customNode("x = 2\\ny = 3")'),
+        'customNode("x = 2\\ny = 3")',
+    )
+    assert.deepStrictEqual(
+        parseThenUnparse('customNode("x = 2\\ny = 3")', { simplify: true }),
+        'x = 2\ny = 3',
     )
     assert.deepStrictEqual(
         parseThenUnparse('condition(x); x = 2; y = 3'),
@@ -627,7 +722,7 @@ void test('well-formatted-uss', (): void => {
 
 void test('parse error nodes', (): void => {
     // Test that parseErrorAsExpression creates an error node with the correct message
-    const errorNode = parseNoErrorAsExpression('This is a test error', 'test')
+    const errorNode = parseNoErrorAsCustomNode('This is a test error', 'test')
     assert.deepStrictEqual(errorNode, {
         type: 'customNode',
         originalCode: 'This is a test error',
@@ -646,48 +741,52 @@ void test('parse error nodes', (): void => {
                 },
             ],
         },
+        entireLoc: {
+            start: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+            end: { block: { type: 'single', ident: 'test' }, lineIdx: 0, colIdx: 0, charIdx: 0 },
+        },
     })
     assert.strictEqual(errorNode.type, 'customNode')
     assert.deepStrictEqual(unparse(errorNode.expr), 'This is a test error')
     assert.deepStrictEqual(toSExp(errorNode), '(customNode (parseError "This is a test error" [{"type":"error","value":"Expected end of line or ; after","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":4,"charIdx":4}}}]) "This is a test error")')
 
-    assert.deepStrictEqual(toSExp(parseNoErrorAsExpression('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unrecognized token: Invalid operator: ++","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
+    assert.deepStrictEqual(toSExp(parseNoErrorAsCustomNode('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unrecognized token: Invalid operator: ++","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
 })
 
 void test('unparse custom nodes with multiple lines', (): void => {
     // Test custom node with multiple statements that should become a do expression
-    const multiLineNode = parseNoErrorAsExpression('x = 1; y = 2; x + y', 'test')
-    assert.deepStrictEqual(unparse(multiLineNode), 'do { x = 1; y = 2; x + y }')
+    const multiLineNode = parseNoErrorAsCustomNode('x = 1; y = 2; x + y', 'test')
+    assert.deepStrictEqual(unparse(multiLineNode), 'customNode("x = 1; y = 2; x + y")')
 
     // Test custom node with nested do blocks
-    const nestedDoNode = parseNoErrorAsExpression('x = 1; do { y = x + 2 }; y', 'test')
-    assert.deepStrictEqual(unparse(nestedDoNode), 'do { x = 1; do { y = x + 2 }; y }')
+    const nestedDoNode = parseNoErrorAsCustomNode('x = 1; do { y = x + 2 }; y', 'test')
+    assert.deepStrictEqual(unparse(nestedDoNode), 'customNode("x = 1; do { y = x + 2 }; y")')
 
     // Test custom node with conditionals
-    const conditionalNode = parseNoErrorAsExpression('x = 3; if (x > 2) { y = 1 } else { y = 2 }; y', 'test')
-    assert.deepStrictEqual(unparse(conditionalNode), 'do { x = 3; if (x > 2) { y = 1 } else { y = 2 }; y }')
+    const conditionalNode = parseNoErrorAsCustomNode('x = 3; if (x > 2) { y = 1 } else { y = 2 }; y', 'test')
+    assert.deepStrictEqual(unparse(conditionalNode), 'customNode("x = 3; if (x > 2) { y = 1 } else { y = 2 }; y")')
 
     // Test custom node with function calls
-    const functionNode = parseNoErrorAsExpression('x = 5; y = x * 2; f(x, y)', 'test')
-    assert.deepStrictEqual(unparse(functionNode), 'do { x = 5; y = x * 2; f(x, y) }')
+    const functionNode = parseNoErrorAsCustomNode('x = 5; y = x * 2; f(x, y)', 'test')
+    assert.deepStrictEqual(unparse(functionNode), 'customNode("x = 5; y = x * 2; f(x, y)")')
 
     // Test custom node with object creation
-    const objectNode = parseNoErrorAsExpression('x = 1; y = 2; { a: x, b: y }', 'test')
-    assert.deepStrictEqual(unparse(objectNode), 'do { x = 1; y = 2; {a: x, b: y} }')
+    const objectNode = parseNoErrorAsCustomNode('x = 1; y = 2; { a: x, b: y }', 'test')
+    assert.deepStrictEqual(unparse(objectNode), 'customNode("x = 1; y = 2; { a: x, b: y }")')
 
     // Test custom node with vector creation
-    const vectorNode = parseNoErrorAsExpression('x = 1; y = 2; [x, y, x + y]', 'test')
-    assert.deepStrictEqual(unparse(vectorNode), 'do { x = 1; y = 2; [x, y, x + y] }')
+    const vectorNode = parseNoErrorAsCustomNode('x = 1; y = 2; [x, y, x + y]', 'test')
+    assert.deepStrictEqual(unparse(vectorNode), 'customNode("x = 1; y = 2; [x, y, x + y]")')
 
     // Test custom node with just one statement (should not become do)
-    const singleLineNode = parseNoErrorAsExpression('x + y', 'test')
-    assert.deepStrictEqual(unparse(singleLineNode), 'x + y')
+    const singleLineNode = parseNoErrorAsCustomNode('x + y', 'test')
+    assert.deepStrictEqual(unparse(singleLineNode), 'customNode("x + y")')
 
     // Test custom node with empty statements (should become do with empty block)
-    const emptyNode = parseNoErrorAsExpression('', 'test')
-    assert.deepStrictEqual(unparse(emptyNode), 'do {  }')
+    const emptyNode = parseNoErrorAsCustomNode('', 'test')
+    assert.deepStrictEqual(unparse(emptyNode), 'customNode("")')
 
     // Test custom node with complex nested structure
-    const complexNode = parseNoErrorAsExpression('x = 1; y = 2; if (x < y) { z = do { a = x; b = y; a + b } } else { z = x * y }; z', 'test')
-    assert.deepStrictEqual(unparse(complexNode), 'do { x = 1; y = 2; if (x < y) { z = do { a = x; b = y; a + b } } else { z = x * y }; z }')
+    const complexNode = parseNoErrorAsCustomNode('x = 1; y = 2; if (x < y) { z = do { a = x; b = y; a + b } } else { z = x * y }; z', 'test')
+    assert.deepStrictEqual(unparse(complexNode), 'customNode("x = 1; y = 2; if (x < y) { z = do { a = x; b = y; a + b } } else { z = x * y }; z")')
 })

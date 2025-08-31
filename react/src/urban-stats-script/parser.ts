@@ -2,7 +2,8 @@ import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
-import { AnnotatedToken, AnnotatedTokenWithValue, lex, LocInfo, Block, noLocation } from './lexer'
+import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
+import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
 import { USSType } from './types-values'
 
@@ -30,7 +31,7 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(id ${node.name.node})`
         case 'attribute':
             return `(attr ${toSExp(node.expr)} ${node.name.node})`
-        case 'function':
+        case 'call':
             return `(fn ${[node.fn, ...node.args].map(toSExp).join(' ')})`
         case 'unaryOperator':
             return `(${node.operator.node} ${toSExp(node.expr)})`
@@ -105,8 +106,12 @@ class ParseState {
         return this.consumeTokenOfType('bracket', ...oneOfBrackets)
     }
 
-    consumeIdentifier(...oneOfIdentifiers: string[]): boolean {
-        return this.consumeTokenOfType('identifier', ...oneOfIdentifiers)
+    consumeIdentifier(): boolean {
+        return this.consumeTokenOfType('identifier')
+    }
+
+    consumeKeyword(...oneOfKeywords: Keyword[]): boolean {
+        return this.consumeTokenOfType('keyword', ...oneOfKeywords)
     }
 
     maybeLastNonEOLToken(offset: number): AnnotatedTokenWithValue {
@@ -135,6 +140,8 @@ class ParseState {
             case 'identifier':
                 this.index++
                 return { type: 'identifier', name: { node: token.token.value, location: token.location } }
+            case 'keyword':
+                throw new Error(`Unexpected keyword ${token.token.value}`)
             case 'bracket':
                 switch (token.token.value) {
                     case '(':
@@ -247,6 +254,10 @@ class ParseState {
     }
 
     parseFunctionalExpression(): UrbanStatsASTExpression | ParseError {
+        if (this.consumeKeyword('customNode')) {
+            return this.parseCustomNodeExpression()
+        }
+
         let fn = this.parseSingleExpression()
         if (fn.type === 'error') {
             return fn
@@ -260,7 +271,7 @@ class ParseState {
                     return args
                 }
                 fn = {
-                    type: 'function',
+                    type: 'call',
                     fn,
                     entireLoc: unify(locationOf(fn), args.args[1]),
                     args: args.args[0],
@@ -287,11 +298,11 @@ class ParseState {
     }
 
     parseExpression(): UrbanStatsASTExpression | ParseError {
-        if (this.consumeIdentifier('if')) {
+        if (this.consumeKeyword('if')) {
             return this.parseIfExpression()
         }
 
-        if (this.consumeIdentifier('do')) {
+        if (this.consumeKeyword('do')) {
             return this.parseDoExpression()
         }
 
@@ -390,7 +401,7 @@ class ParseState {
             case 'attribute':
                 return expr
             case 'constant':
-            case 'function':
+            case 'call':
             case 'unaryOperator':
             case 'binaryOperator':
             case 'vectorLiteral':
@@ -403,7 +414,7 @@ class ParseState {
     }
 
     parseStatement(): UrbanStatsASTStatement | ParseError {
-        if (this.consumeIdentifier('condition')) {
+        if (this.consumeKeyword('condition')) {
             return this.parseConditionStatement()
         }
 
@@ -445,7 +456,7 @@ class ParseState {
             return then
         }
         let elseBranch: UrbanStatsASTStatement | undefined = undefined
-        if (this.consumeIdentifier('else')) {
+        if (this.consumeKeyword('else')) {
             if (!this.consumeBracket('{')) {
                 return { type: 'error', value: 'Expected opening bracket { after else', location: this.maybeLastNonEOLToken(-1).location }
             }
@@ -536,6 +547,52 @@ class ParseState {
                 : undefined,
         )
     }
+
+    parseCustomNodeExpression(): UrbanStatsASTExpression | ParseError {
+        const argsRes = this.parseParenthesizedArgs()
+
+        if (argsRes === undefined) {
+            return { type: 'error', value: 'Expected arguments for customNode', location: this.maybeLastNonEOLToken(-1).location }
+        }
+
+        if (argsRes.type === 'error') {
+            return argsRes
+        }
+
+        const [args, locArg] = argsRes.args
+
+        const code = args[0]
+
+        if (args.length !== 1 || code.type !== 'unnamed') {
+            return { type: 'error', value: 'Incorrect arguments for customNode, expected 1 unnamed argument', location: argsRes.args[1] }
+        }
+
+        if (code.value.type !== 'constant' || code.value.value.node.type !== 'string') {
+            return { type: 'error', value: 'Expected string constant as argument to customNode', location: locationOf(code) }
+        }
+
+        const parseResult = parse(code.value.value.node.value, code.value.value.location.start.block)
+
+        if (parseResult.type === 'error') {
+            return {
+                type: 'customNode',
+                expr: {
+                    type: 'parseError',
+                    errors: parseResult.errors,
+                    originalCode: code.value.value.node.value,
+                },
+                originalCode: code.value.value.node.value,
+                entireLoc: locArg,
+            }
+        }
+
+        return {
+            type: 'customNode',
+            expr: parseResult,
+            originalCode: code.value.value.node.value,
+            entireLoc: locArg,
+        }
+    }
 }
 
 export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
@@ -613,7 +670,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 expressions.push(n)
                 helper(n.expr)
                 return true
-            case 'function':
+            case 'call':
                 expressions.push(n)
                 helper(n.fn)
                 n.args.forEach(helper)
@@ -696,10 +753,10 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
             }
             Object.entries(t.namedArgs).forEach(([, arg]) => {
                 const dv = arg.defaultValue
-                if (dv === undefined || dv.type !== 'expression') {
+                if (dv === undefined) {
                     return
                 }
-                identifiersInExpr(dv.expr).forEach((newId) => {
+                identifiersInExpr(dv).forEach((newId) => {
                     if (!identifiers.has(newId)) {
                         newIdentifiers.add(newId)
                     }
@@ -714,28 +771,28 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, indent: number = 0, inline: boolean = false): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean } = {}): string {
+    if (opts.inline) {
+        assert(opts.expressionalContext ?? false, 'inline must be true if expressionalContext is true')
+    }
+    opts.indent = opts.indent ?? 0
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant'
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
     }
     switch (node.type) {
         case 'customNode':
-            // If the custom node contains multiple statements, convert it to a do expression
-            if (node.expr.type === 'statements') {
-                if (node.expr.result.length === 0) {
-                    return 'do {  }'
-                }
-                if (node.expr.result.length > 1) {
-                    const doStatements = { type: 'statements' as const, result: node.expr.result, entireLoc: node.expr.entireLoc }
-                    const doStr = unparse(doStatements, indent + 1, true) // <-- inline = true
-                    return `do { ${doStr} }`
-                }
+            if (!opts.simplify) {
+                return `customNode(${JSON.stringify(node.originalCode.trim())})`
             }
-            // For single statements or other types, return the original code
-            return node.originalCode
+            if (opts.expressionalContext && node.expr.type !== 'expression') {
+                return unparse({ type: 'do', statements: [node.expr], entireLoc: locationOf(node.expr) }, { ...opts, inline: true })
+            }
+            else {
+                return node.originalCode.trim()
+            }
         case 'parseError':
             return node.originalCode
         case 'constant':
@@ -748,29 +805,29 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'identifier':
             return node.name.node
         case 'attribute':
-            const exprStr = unparse(node.expr, indent, true)
+            const exprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             return `${exprStr}.${node.name.node}`
-        case 'function':
-            const fnStr = unparse(node.fn, indent, true)
+        case 'call':
+            const fnStr = unparse(node.fn, { ...opts, inline: true, expressionalContext: true })
             const argsStr = node.args.map((arg) => {
                 switch (arg.type) {
                     case 'unnamed':
-                        return unparse(arg.value, indent, true)
+                        return unparse(arg.value, { ...opts, inline: true, expressionalContext: true })
                     case 'named':
-                        return `${arg.name.node}=${unparse(arg.value, indent, true)}`
+                        return `${arg.name.node}=${unparse(arg.value, { ...opts, inline: true, expressionalContext: true })}`
                 }
             })
             const fnNeedsParens = !isSimpleExpression(node.fn)
             const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
             return `${fnWithParens}(${argsStr.join(', ')})`
         case 'unaryOperator':
-            const unaryExprStr = unparse(node.expr, indent, true)
+            const unaryExprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             const needsParens = !isSimpleExpression(node.expr)
             const exprWithParens = needsParens ? `(${unaryExprStr})` : unaryExprStr
             return `${node.operator.node}${exprWithParens}`
         case 'binaryOperator':
-            const leftStr = unparse(node.left, indent, true)
-            const rightStr = unparse(node.right, indent, true)
+            const leftStr = unparse(node.left, { ...opts, inline: true, expressionalContext: true })
+            const rightStr = unparse(node.right, { ...opts, inline: true, expressionalContext: true })
             const opPrecedence = expressionOperatorMap.get(node.operator.node)?.precedence ?? 0
             let leftWithParens = leftStr
             if (node.left.type === 'binaryOperator') {
@@ -794,53 +851,54 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             }
             return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
         case 'vectorLiteral':
-            const elementsStr = node.elements.map(elem => unparse(elem, indent, true))
+            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
             return `[${elementsStr.join(', ')}]`
         case 'objectLiteral':
             const propertiesStr = node.properties.map(([key, value]) => {
-                const valueStr = unparse(value, indent, true)
+                const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true })
                 return `${key}: ${valueStr}`
             })
             return `{${propertiesStr.join(', ')}}`
         case 'assignment':
-            const lhsStr = unparse(node.lhs, indent, inline)
-            const valueStr = unparse(node.value, indent, inline)
-            return inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(indent)}${lhsStr} = ${valueStr}`
+            const lhsStr = unparse(node.lhs, { ...opts, expressionalContext: true })
+            const valueStr = unparse(node.value, { ...opts, expressionalContext: true })
+            return opts.inline ? `${lhsStr} = ${valueStr}` : `${indentSpaces(opts.indent)}${lhsStr} = ${valueStr}`
         case 'expression':
-            return inline ? unparse(node.value, indent, inline) : `${indentSpaces(indent)}${unparse(node.value, indent, inline)}`
+            // despite being an expression, it is not in an expressional context if its parent is not
+            return opts.inline ? unparse(node.value, opts) : `${indentSpaces(opts.indent)}${unparse(node.value, opts)}`
         case 'statements':
             const statementsStr = node.result
-                .map(stmt => unparse(stmt, indent, inline))
+                .map(stmt => unparse(stmt, opts))
                 .filter(s => s !== '' && s !== 'do {  }')
-            return statementsStr.join(inline ? '; ' : ';\n')
+            return statementsStr.join(opts.inline ? '; ' : ';\n')
         case 'if':
-            const conditionStr = unparse(node.condition, indent, inline)
-            const thenStr = unparse(node.then, indent + 1, inline)
-            let ifStr = inline
+            const conditionStr = unparse(node.condition, { ...opts, expressionalContext: true })
+            const thenStr = unparse(node.then, { ...opts, indent: opts.indent + 1 })
+            let ifStr = opts.inline
                 ? `if (${conditionStr}) { ${thenStr} }`
-                : `if (${conditionStr}) {\n${thenStr}\n${indentSpaces(indent)}}`
+                : `if (${conditionStr}) {\n${thenStr}\n${indentSpaces(opts.indent)}}`
             if (node.else) {
-                const elseStr = unparse(node.else, indent + 1, inline)
-                ifStr += inline
+                const elseStr = unparse(node.else, { ...opts, indent: opts.indent + 1 })
+                ifStr += opts.inline
                     ? ` else { ${elseStr} }`
-                    : ` else {\n${elseStr}\n${indentSpaces(indent)}}`
+                    : ` else {\n${elseStr}\n${indentSpaces(opts.indent)}}`
             }
             return ifStr
         case 'do':
             const doStatements = { type: 'statements' as const, result: node.statements, entireLoc: node.entireLoc }
-            const doStr = unparse(doStatements, indent + 1, inline)
-            return inline
+            const doStr = unparse(doStatements, { ...opts, indent: opts.indent + 1 })
+            return opts.inline
                 ? `do { ${doStr} }`
-                : `do {\n${doStr}\n${indentSpaces(indent)}}`
+                : `do {\n${doStr}\n${indentSpaces(opts.indent)}}`
         case 'condition':
-            const condStr = unparse(node.condition, indent, inline)
+            const condStr = unparse(node.condition, { ...opts, expressionalContext: true })
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
-            const restStr = unparse(restStatements, indent, inline)
+            const restStr = unparse(restStatements, opts)
             // If condition is literal "true", elide it
-            if (node.condition.type === 'identifier' && node.condition.name.node === 'true') {
+            if (opts.simplify && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
-            return `${indentSpaces(indent)}condition (${condStr})\n${restStr}`
+            return `${indentSpaces(opts.indent)}condition (${condStr})\n${restStr}`
     }
 }
 
@@ -850,12 +908,20 @@ export function parseNoError(uss: string, blockId: string): UrbanStatsASTStateme
     return result
 }
 
-export function parseNoErrorAsExpression(uss: string, blockId: string, expectedType?: USSType): UrbanStatsASTExpression {
+export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedType?: USSType[]): Extract<UrbanStatsASTExpression, { type: 'customNode' }> {
+    assert(!blockId.startsWith('undefined'), 'blockId must not start with "undefined"')
     const result = parseNoError(uss, blockId)
     return {
         type: 'customNode',
         expr: result,
         originalCode: uss,
         expectedType,
+        entireLoc: emptyLocation(blockId),
     }
+}
+
+export function parseNoErrorAsExpression(uss: string, blockId: string): UrbanStatsASTExpression {
+    const result = parseNoError(uss, blockId)
+    assert(result.type === 'expression', 'Must be expression')
+    return result.value
 }

@@ -15,6 +15,7 @@ const options = argumentParser({
         proxy: booleanArgument({ defaultValue: false }),
         test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:unit -- --test='unit/*.test.ts'`) }),
         parallel: z.string().transform(string => parseInt(string)).default(os.cpus().length.toString()),
+        only: booleanArgument({ defaultValue: false }),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -28,13 +29,14 @@ if (testFiles.length === 0) {
 console.warn(`Using --parallel=${options.parallel}`)
 
 if (options.proxy) {
-    startProxy()
+    await startProxy()
 }
 
 const testStream = run({
     files: testFiles,
     concurrency: options.parallel,
     isolation: 'process',
+    only: options.only,
 })
 
 testStream.compose(spec).pipe(process.stdout)

@@ -1,52 +1,66 @@
 import '../common.css'
 import './article.css'
 
-import { gzipSync } from 'zlib'
+import { gunzipSync, gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import { z } from 'zod'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
+import { MapUSS, rootBlockIdent } from '../mapper/settings/TopLevelEditor'
+import { MapSettings, computeUSS, Basemap, defaultSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
-import { consolidatedShapeLink } from '../navigation/links'
+import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { loadCentroids } from '../syau/load'
+import { Universe } from '../universe'
+import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError } from '../urban-stats-script/editor-utils'
+import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
+import { noLocation } from '../urban-stats-script/location'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
+import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
+import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
 import { useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
-import { MapGeneric, MapGenericProps, Polygons } from './map'
+import { CountsByUT } from './countsByArticleType'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     rampCallback: (newRamp: EmpiricalRamp) => void
     basemapCallback: (basemap: Basemap) => void
-    height: number | string | undefined
+    insetsCallback: (insetsToUse: Insets) => void
+    height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
     colors: Colors
 }
 
 interface ShapesForUniverse {
-    shapes: NormalizeProto<IFeature>[]
+    shapes: { type: 'polygon', value: NormalizeProto<IFeature>[] } | { type: 'point', value: { lon: number, lat: number }[] }
     nameToIndex: Map<string, number>
 }
 
-async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
+type ActualShapeType = { type: 'polygon', value: NormalizeProto<Feature> } | { type: 'point', value: { lon: number, lat: number } }
+
+async function loadPolygons(geographyKind: typeof valid_geographies[number], universe: string): Promise<ShapesForUniverse> {
     const universeIdx = universes_ordered.indexOf(universe as (typeof universes_ordered)[number])
     const shapes = (await loadProtobuf(
         consolidatedShapeLink(geographyKind),
@@ -60,97 +74,158 @@ async function loadShapes(geographyKind: typeof valid_geographies[number], unive
             features.push(shapes.shapes[i])
         }
     }
-    return { shapes: features, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
+    return { shapes: { type: 'polygon', value: features }, nameToIndex: new Map(longnames.map((r, i) => [r, i])) }
 }
 
-interface Shapes { geographyKind: string, universe: string, data: Promise<ShapesForUniverse> }
+async function loadShapes(geographyKind: typeof valid_geographies[number], universe: string, shapeType: ShapeType): Promise<ShapesForUniverse> {
+    switch (shapeType) {
+        case 'polygon':
+            return loadPolygons(geographyKind, universe)
+        case 'point':
+            const idxLink = indexLink(universe, geographyKind)
+            const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+            const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+
+            return {
+                shapes: { type: 'point', value: centroids.map(c => ({ lon: c.lon!, lat: c.lat! })) },
+                nameToIndex: new Map(articles.longnames.map((r, i) => [r, i])),
+            }
+        default:
+            throw new Error(`Unknown shape type ${shapeType}`)
+    }
+}
+
+interface Shapes { geographyKind: string, universe: string, shapeType: string, data: Promise<ShapesForUniverse> }
 
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
-    private hasZoomed: boolean = false
+    private shapeType: undefined | ShapeType
+
+    override shouldHaveLoadingSpinner(): boolean {
+        return true
+    }
 
     private getShapes(): Shapes {
-        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe) {
+        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType === this.shapeType) {
             return this.shapes
         }
 
-        this.shapes = { geographyKind: this.props.geographyKind, universe: this.props.universe, data: (async () => {
-            return loadShapes(this.props.geographyKind, this.props.universe)
-        })() }
+        const st = this.shapeType
+        assert(st !== undefined, 'Shape type must be set before loading shapes')
+
+        this.shapes = {
+            geographyKind: this.props.geographyKind, universe: this.props.universe, shapeType: st, data: (async () => {
+                return loadShapes(this.props.geographyKind, this.props.universe, st)
+            })() }
 
         return this.shapes
     }
 
-    override async loadShape(name: string): Promise<NormalizeProto<Feature>> {
-        const { nameToIndex, shapes } = await this.getShapes().data
-        const index = nameToIndex.get(name)!
-        const data = shapes[index]
-        return data as NormalizeProto<Feature>
+    async loadShapes(name: string): Promise<ActualShapeType> {
+        const mapShapes = this.getShapes()
+        const { nameToIndex, shapes } = await mapShapes.data
+        const index = nameToIndex.get(name)
+        assert(index !== undefined && index >= 0 && index < shapes.value.length, `Shape ${name} not found in ${mapShapes.geographyKind} for ${mapShapes.universe}`)
+        switch (shapes.type) {
+            case 'polygon':
+                return { type: 'polygon', value: shapes.value[index] as NormalizeProto<Feature> }
+            case 'point':
+                return { type: 'point', value: shapes.value[index] }
+        }
     }
 
-    override async computePolygons(): Promise<Polygons> {
+    override async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'polygon', `Shape ${name} is not a polygon`)
+        return res.value
+    }
+
+    override async loadPoint(name: string): Promise<{ lon: number, lat: number }> {
+        const res = await this.loadShapes(name)
+        assert(res.type === 'point', `Shape ${name} is not a point`)
+        return res.value
+    }
+
+    override async computeShapesToRender(version: number): Promise<ShapeRenderingSpec> {
         const stmts = this.props.uss
         if (stmts === undefined) {
-            return { polygons: [], zoomIndex: -1 }
+            return { shapes: [], zoomIndex: -1 }
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
-        if (!result.success) {
-            this.props.setErrors([result.error])
-            return { polygons: [], zoomIndex: -1 }
+        if (version === this.version) {
+            this.props.setErrors(result.error)
+        }
+        if (result.resultingValue === undefined) {
+            return { shapes: [], zoomIndex: -1 }
+        }
+        const mapResultMain = result.resultingValue.value
+        const mapResult = mapResultMain.value
+        const st: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
+        this.shapeType = st
+
+        // Handle different map types
+        let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
+        let pointSizes: number[] | undefined
+
+        if (mapResultMain.opaqueType === 'cMap') {
+            // For choropleth maps, use the outline
+            lineStyle = mapResultMain.value.outline
+        }
+        else {
+            const maxRadius = mapResultMain.value.maxRadius
+            const relativeArea = mapResultMain.value.relativeArea
+            pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
         }
 
-        this.props.setErrors([])
-
-        const cMap = result.value.value.value
-        // Use the outline from cMap instead of hardcoded lineStyle
-        const lineStyle = cMap.outline
-
-        const names = cMap.geo
-        const ramp = cMap.ramp
-        const scale = instantiate(cMap.scale)
+        const names = mapResult.geo
+        const ramp = mapResult.ramp
+        const scale = instantiate(mapResult.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale, label: cMap.label, unit: cMap.unit })
-        this.props.basemapCallback(cMap.basemap)
-        const colors = cMap.data.map(
+        this.props.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
+        this.props.basemapCallback(mapResult.basemap)
+        this.props.insetsCallback(mapResult.insets)
+        const colors = mapResult.data.map(
             val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
         )
-        const styles = colors.map(
-            // use outline color from cMap, convert Color object to hex string
-            color => ({
-                fillColor: color,
-                fillOpacity: 1,
-                color: doRender(lineStyle.color),
-                opacity: 1,
-                weight: lineStyle.weight,
-            }),
+        const specs = colors.map(
+            // no outline, set color fill, alpha=1
+            (color, i): ShapeSpec => {
+                switch (st) {
+                    case 'polygon':
+                        return {
+                            type: 'polygon',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                color: doRender(lineStyle!.color),
+                                weight: lineStyle!.weight,
+                            },
+                        }
+                    case 'point':
+                        return {
+                            type: 'point',
+                            style: {
+                                fillColor: color,
+                                fillOpacity: 1,
+                                radius: pointSizes![i],
+                            },
+                        }
+                }
+            },
         )
-        const metas = cMap.data.map((x) => { return { statistic: x } })
+        const metas = mapResult.data.map((x) => { return { statistic: x } })
         return {
-            polygons: names.map((name, i) => ({
+            shapes: names.map((name, i) => ({
                 name,
-                style: styles[i],
+                spec: specs[i],
                 meta: metas[i],
             })),
             zoomIndex: -1,
         }
     }
 
-    override progressivelyLoadPolygons(): boolean {
+    override progressivelyLoadShapes(): boolean {
         return false
-    }
-
-    override mapDidRender(): Promise<void> {
-        // zoom map to fit united states
-        // do so instantly
-        if (this.hasZoomed) {
-            return Promise.resolve()
-        }
-        this.hasZoomed = true
-        this.map!.fitBounds([
-            [-124.7844079, 49.3457868],
-            [-66.9513812, 24.7433195],
-        ], { animate: false })
-        return Promise.resolve()
     }
 }
 
@@ -227,11 +302,11 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
 interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
-    universe: string
+    universe: Universe
     mapRef: React.RefObject<DisplayedMap>
-    height: number | string | undefined
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
+    colorbarRef: React.RefObject<HTMLDivElement>
 }
 
 interface EmpiricalRamp {
@@ -246,11 +321,14 @@ function MapComponent(props: MapComponentProps): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
+    const [currentInsets, setCurrentInsets] = useState<Insets>(loadInset(props.universe))
+
+    const aspectRatio = computeAspectRatioForInsets(currentInsets)
+
     return (
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            height: props.height,
         }}
         >
             <div style={{ height: '90%', width: '100%' }}>
@@ -259,16 +337,19 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     universe={props.universe}
                     rampCallback={(newRamp) => { setEmpiricalRamp(newRamp) }}
                     basemapCallback={(newBasemap) => { setBasemap(newBasemap) }}
+                    insetsCallback={(newInsets) => { setCurrentInsets(newInsets) }}
                     ref={props.mapRef}
                     uss={props.uss}
-                    height={props.height}
+                    height={{ type: 'aspect-ratio', value: aspectRatio }}
                     attribution="startVisible"
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
+                    insets={currentInsets}
+                    key={JSON.stringify(currentInsets)}
                 />
             </div>
-            <div style={{ height: '8%', width: '100%' }}>
+            <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
                     ramp={empiricalRamp}
                 />
@@ -277,8 +358,8 @@ function MapComponent(props: MapComponentProps): ReactNode {
     )
 }
 
-function saveAsFile(filename: string, data: string, type: string): void {
-    const blob = new Blob([data], { type })
+function saveAsFile(filename: string, data: string | Blob, type: string): void {
+    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -288,13 +369,18 @@ function saveAsFile(filename: string, data: string, type: string): void {
     document.body.removeChild(link)
 }
 
-function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
-    const exportAsSvg = async (): Promise<void> => {
+function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: React.RefObject<HTMLDivElement> }): ReactNode {
+    const colors = useColors()
+
+    const exportAsPng = async (): Promise<void> => {
         if (props.mapRef.current === null) {
             return
         }
-        const svg = await props.mapRef.current.exportAsSvg()
-        saveAsFile('map.svg', svg, 'image/svg+xml')
+        const colorbarElement = props.colorbarRef.current ?? undefined
+        const pngDataUrl = await props.mapRef.current.exportAsPng(colorbarElement, colors.background, colors.mapInsetBorderColor)
+        const data = await fetch(pngDataUrl)
+        const pngData = await data.blob()
+        saveAsFile('map.png', pngData, 'image/png')
     }
 
     const exportAsGeoJSON = async (): Promise<void> => {
@@ -306,12 +392,17 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     }
 
     return (
-        <div>
+        <div style={{
+            display: 'flex',
+            gap: '0.5em',
+            margin: '0.5em 0',
+        }}
+        >
             <button onClick={() => {
-                void exportAsSvg()
+                void exportAsPng()
             }}
             >
-                Export as SVG
+                Export as PNG
             </button>
             <button onClick={() => {
                 void exportAsGeoJSON()
@@ -333,7 +424,7 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap> }): ReactNode {
     )
 }
 
-export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }): ReactNode {
+export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
     const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
 
@@ -342,7 +433,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
         const result = computeUSS(newSettings.script)
         const errors = getAllParseErrors(result)
         if (errors.length > 0) {
-            setErrors(errors)
+            setErrors(errors.map(e => ({ ...e, kind: 'error' })))
         }
         setUSS(errors.length > 0 ? undefined : result)
     }
@@ -353,8 +444,14 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
     }, [props.mapSettings])
 
     const mapRef = useRef<DisplayedMap>(null)
+    const colorbarRef = useRef<HTMLDivElement>(null)
 
-    const jsonedSettings = JSON.stringify(mapSettings)
+    const jsonedSettings = JSON.stringify({
+        ...mapSettings,
+        script: {
+            uss: unparse(mapSettings.script.uss),
+        },
+    })
 
     const navContext = useContext(Navigator.Context)
 
@@ -369,28 +466,25 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
 
     const [errors, setErrors] = useState<EditorError[]>([])
 
-    const mapperPanel = (height: string | undefined): ReactNode => {
-        const geographyKind = mapSettings.geographyKind as typeof valid_geographies[number]
-        return (!valid_geographies.includes(geographyKind))
-            ? <div>Invalid geography kind</div>
+    const mapperPanel = (): ReactNode => {
+        return (mapSettings.geographyKind === undefined || mapSettings.universe === undefined)
+            ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
             : (
                     <MapComponent
-                        geographyKind={geographyKind}
+                        geographyKind={mapSettings.geographyKind}
                         universe={mapSettings.universe}
                         uss={uss}
-                        height={height}
                         mapRef={mapRef}
                         setErrors={setErrors}
+                        colorbarRef={colorbarRef}
                     />
                 )
     }
 
     const headerTextClass = useHeaderTextClass()
 
-    const getScript = useCallback(() => mapSettings.script, [mapSettings.script])
-
     if (props.view) {
-        return mapperPanel('100%')
+        return mapperPanel()
     }
 
     return (
@@ -398,20 +492,73 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean }):
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 <MapperSettings
-                    getScript={getScript}
                     mapSettings={mapSettings}
-                    setMapSettings={(setter) => {
-                        setMapSettingsWrapper(setter(mapSettings))
-                    }}
+                    setMapSettings={setMapSettingsWrapper}
                     errors={errors}
+                    counts={props.counts}
                 />
                 <Export
                     mapRef={mapRef}
+                    colorbarRef={colorbarRef}
                 />
                 {
-                    mapperPanel(undefined) // use default height
+                    mapperPanel()
                 }
             </div>
         </PageTemplate>
     )
+}
+
+export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
+    let settings: Partial<MapSettings> = {}
+    if (encodedSettings !== undefined) {
+        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
+        const rawSettings = z.object({
+            // Catch statements so we can remove universes/geos in the future and maps will still partially load
+            geographyKind: z.optional(z.enum(valid_geographies)).catch(undefined),
+            universe: z.optional(z.enum(universes_ordered)).catch(undefined),
+            script: z.object({
+                uss: z.string(),
+            }) }).parse(JSON.parse(jsonedSettings))
+        const uss = parse(rawSettings.script.uss)
+        if (uss.type === 'error') {
+            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
+        }
+        settings = {
+            ...rawSettings,
+            script: { uss: convertToMapUss(uss) },
+        }
+    }
+    return defaultSettings(settings)
+}
+
+function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
+    if (uss.type === 'expression' && uss.value.type === 'customNode') {
+        return uss.value
+    }
+    if (
+        uss.type === 'statements'
+        && uss.result.length === 2
+        && uss.result[0].type === 'expression'
+        && uss.result[0].value.type === 'customNode'
+        && uss.result[1].type === 'condition'
+        && uss.result[1].rest.length === 1
+        && uss.result[1].rest[0].type === 'expression'
+    ) {
+        return {
+            ...uss,
+            result: [
+                {
+                    ...uss.result[0],
+                    value: uss.result[0].value,
+                },
+                {
+                    ...uss.result[1],
+                    rest: [uss.result[1].rest[0]],
+                },
+            ],
+        }
+    }
+    // Support arbitrary scripts
+    return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
 }

@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
@@ -29,7 +27,8 @@ import type {
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import type { EditorPanel } from '../urban-stats-script/EditorPanel'
+import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
+import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
@@ -126,7 +125,6 @@ const quizSchema = z.intersection(
     z.object({
         name: z.optional(z.string()),
         id: z.optional(z.string()),
-        enableAuth: z.optional(z.enum(['true', 'false'])),
     }),
 )
 
@@ -145,6 +143,10 @@ const mapperSchemaForParams = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
+const editorSchema = z.object({
+    undoChunking: z.optional(z.coerce.number().int()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -153,10 +155,11 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('index') }),
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
+    z.object({ kind: z.literal('ussDocumentation'), hash: z.string() }),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
-    z.object({ kind: z.literal('editor') }),
+    z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
 ])
 
@@ -181,10 +184,11 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
-    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
-    | { kind: 'editor', editorPanel: typeof EditorPanel }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
+    | { kind: 'editor', editorPanel: typeof DebugEditorPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
@@ -223,8 +227,10 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/uss-documentation.html':
+            return { kind: 'ussDocumentation', hash: url.hash }
         case '/editor.html':
-            return { kind: 'editor' }
+            return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
             return { kind: 'oauthCallback', params }
         default:
@@ -285,6 +291,11 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {}
             hash = pageDescriptor.hash
             break
+        case 'ussDocumentation':
+            pathname = '/uss-documentation.html'
+            searchParams = {}
+            hash = pageDescriptor.hash
+            break
         case 'quiz':
             /**
              * We use hash params for quizzes since the juxtastat.org redirect doesn't preserve query params
@@ -300,7 +311,6 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizContent: pageDescriptor.quizContent,
                 name: pageDescriptor.name,
                 id: pageDescriptor.id,
-                enableAuth: pageDescriptor.enableAuth?.toString(),
             }).flatMap(([key, value]) => value !== undefined ? [[key, value]] : []))
             if (hashParams.size > 0) {
                 quizResult.hash = `#${hashParams.toString()}`
@@ -529,11 +539,21 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
 
+        case 'ussDocumentation':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    ussDocumentationPanel: (await import('../uss-documentation')).USSDocumentationPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
         case 'editor':
             return {
                 pageData: {
                     ...newDescriptor,
-                    editorPanel: (await import('../urban-stats-script/EditorPanel')).EditorPanel,
+                    editorPanel: (await import('../urban-stats-script/DebugEditorPanel')).DebugEditorPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -619,8 +639,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     // Remove friend stuff so it doesn't get triggered again
                     id: undefined,
                     name: undefined,
-                    // and enable auth
-                    enableAuth: undefined,
+
                 },
                 effects: () => {
                     if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
@@ -629,13 +648,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         void (async () => {
                             const { addFriendFromLink } = await import('../quiz/friends')
                             await addFriendFromLink(friendId, friendName)
-                        })()
-                    }
-                    if (newDescriptor.enableAuth !== undefined) {
-                        const enabled = newDescriptor.enableAuth
-                        void (async () => {
-                            const { QuizModel } = await quizImport
-                            QuizModel.shared.enableAuthFeatures.value = enabled === 'true'
                         })()
                     }
                 },
@@ -659,16 +671,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const [mapSettings, panel] = await Promise.all([
-                mapSettingsFromURLParam(newDescriptor.settings),
-                import('../components/mapper-panel'),
-            ])
+            const panel = import('../components/mapper-panel')
+            const counts = getCountsByArticleType()
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettings,
-                    mapperPanel: panel.MapperPanel,
+                    settings: (await panel).mapSettingsFromURLParam(newDescriptor.settings),
+                    mapperPanel: (await panel).MapperPanel,
+                    counts: await counts,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -701,16 +712,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
     }
 }
 
-async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
-    const { defaultSettings } = await import('../mapper/settings/utils')
-    let settings: Partial<MapSettings> = {}
-    if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
-    }
-    return defaultSettings(settings)
-}
-
 export function pageTitle(pageData: PageData): string {
     switch (pageData.kind) {
         case 'initialLoad':
@@ -720,6 +721,8 @@ export function pageTitle(pageData: PageData): string {
             return 'About Urban Stats'
         case 'dataCredit':
             return 'Urban Stats Credits'
+        case 'ussDocumentation':
+            return 'USS Documentation'
         case 'mapper':
             return 'Urban Stats Mapper'
         case 'quiz':

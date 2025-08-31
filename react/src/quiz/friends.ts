@@ -6,7 +6,7 @@ import { QuizModel } from './quiz'
 export async function addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
     const user = QuizModel.shared.uniquePersistentId.value
     const email = AuthenticationStateMachine.shared.state.email
-    const idOrEmail = `Friend ID${QuizModel.shared.enableAuthFeatures.value ? ' or Email' : ''}`
+    const idOrEmail = 'Friend ID or Email'
     if (friendID === '') {
         return { errorMessage: `${idOrEmail} cannot be empty`, problemDomain: 'friendID' }
     }

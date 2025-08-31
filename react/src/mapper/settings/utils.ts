@@ -1,12 +1,12 @@
-import { locationOf, toStatement, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import type valid_geographies from '../../data/mapper/used_geographies'
+import { Universe } from '../../universe'
+import { locationOf, toStatement, unify, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { defaultTypeEnvironment } from '../context'
 
-import { defaultTopLevelEditor } from './TopLevelEditor'
+import { defaultTopLevelEditor, MapUSS } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]
-
-export const rootBlockIdent = 'r'
 
 /* eslint-disable no-restricted-syntax -- This represents persitent links */
 export interface RegressionDescriptor {
@@ -43,12 +43,12 @@ export interface FilterSettings {
 }
 
 export interface MapperScriptSettings {
-    uss: UrbanStatsASTExpression | UrbanStatsASTStatement
+    uss: MapUSS
 }
 
 export interface MapSettings {
-    geographyKind: string
-    universe: string
+    geographyKind: typeof valid_geographies[number] | undefined
+    universe: Universe | undefined
     script: MapperScriptSettings
 }
 
@@ -57,31 +57,17 @@ export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStat
 }
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
-    const tle = defaultTopLevelEditor(defaultTypeEnvironment)
-    const defaults: MapSettings = {
-        geographyKind: 'Subnational Region',
-        universe: 'USA',
-        script: {
+    const tle = defaultTopLevelEditor(defaultTypeEnvironment(addTo.universe ?? 'USA'))
+    return {
+        geographyKind: addTo.geographyKind ?? 'Subnational Region',
+        universe: addTo.universe ?? 'USA',
+        script: addTo.script ?? {
             uss: tle,
         },
     }
-    return merge(addTo, defaults)
 }
 
-function merge<T>(addTo: Partial<T>, addFrom: T): T {
-    let key: keyof T
-    for (key in addFrom) {
-        if (addTo[key] === undefined) {
-            addTo[key] = addFrom[key]
-        }
-        else if (typeof addTo[key] === 'object') {
-            merge(addTo[key] as object, addFrom[key])
-        }
-    }
-    return addTo as T
-}
-
-export function makeStatements(elements: UrbanStatsASTStatement[], identFallback?: string): UrbanStatsASTStatement {
+export function makeStatements<const T extends UrbanStatsASTStatement[]>(elements: T, identFallback?: string): UrbanStatsASTStatement & { type: 'statements', result: T } {
     const locations = [...elements.map(locationOf)]
     if (identFallback !== undefined) {
         locations.push(emptyLocation(identFallback))

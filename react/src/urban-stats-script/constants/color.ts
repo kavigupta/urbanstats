@@ -2,28 +2,46 @@ import ColorLib from 'color'
 
 import hueColors from '../../data/hueColors'
 import { Context } from '../context'
-import { USSRawValue, USSType, USSValue } from '../types-values'
+import { parseNoErrorAsExpression } from '../parser'
+import { USSRawValue, USSType, USSValue, createConstantExpression } from '../types-values'
 
+import { Color, hexToColor } from './color-utils'
 import { camelToHuman } from './utils'
 
-export interface Color { r: number, g: number, b: number }
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
-function hexToColor(hex: string): Color {
-    const r = parseInt(hex.slice(1, 3), 16)
-    const g = parseInt(hex.slice(3, 5), 16)
-    const b = parseInt(hex.slice(5, 7), 16)
-    return { r, g, b }
-}
-
-function rgbToColor(red: number, green: number, blue: number): Color {
-    if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
-        throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue})`)
+export function rgbToColor(red: number, green: number, blue: number, alpha: number, tolerateError: true): Color | undefined
+export function rgbToColor(red: number, green: number, blue: number, alpha: number): Color
+export function rgbToColor(red: number, green: number, blue: number, alpha: number, tolerateError?: boolean): Color | undefined {
+    if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1 || alpha < 0 || alpha > 1) {
+        if (tolerateError) {
+            return undefined
+        }
+        throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue}, ${alpha})`)
     }
     const r = Math.round(red * 255)
     const g = Math.round(green * 255)
     const b = Math.round(blue * 255)
-    return { r, g, b }
+    const a = Math.round(alpha * 255)
+    return { r, g, b, a }
+}
+
+export function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError: true): Color | undefined
+export function hsvToColor(hue: number, saturation: number, value: number, alpha: number): Color
+export function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError?: boolean): Color | undefined {
+    if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1 || alpha < 0 || alpha > 1) {
+        if (tolerateError) {
+            return undefined
+        }
+        throw new Error(`HSV values must be (hue: 0-360, saturation: 0-1, value: 0-1, alpha: 0-1), got (${hue}, ${saturation}, ${value}, ${alpha})`)
+    }
+    const color = ColorLib.hsv(hue, saturation * 100, value * 100)
+    return {
+        r: Math.round(color.red()),
+        g: Math.round(color.green()),
+        b: Math.round(color.blue()),
+        a: Math.round(alpha * 255),
+    }
 }
 
 export const rgb = {
@@ -34,14 +52,22 @@ export const rgb = {
             { type: 'concrete', value: { type: 'number' } }, // green
             { type: 'concrete', value: { type: 'number' } }, // blue
         ],
-        namedArgs: {},
+        namedArgs: {
+            a: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
+        },
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        return { type: 'opaque', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number) }
+        const alpha = namedArgs.a as number
+        return { type: 'opaque', opaqueType: 'color', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
     },
-    documentation: { humanReadableName: 'Color (RGB)' },
+    documentation: {
+        humanReadableName: 'Color (RGB)',
+        category: 'color',
+        namedArgs: { a: 'Alpha' },
+        longDescription: 'Creates a color using RGB (Red, Green, Blue) values. Each component ranges from 0 to 1, where 0 is no color and 1 is full intensity.',
+    },
 } satisfies USSValue
 
 export const hsv = {
@@ -50,25 +76,23 @@ export const hsv = {
         posArgs: [
             { type: 'concrete', value: { type: 'number' } }, // hue
             { type: 'concrete', value: { type: 'number' } }, // saturation
-            { type: 'concrete', value: { type: 'number' } }, // lightness
+            { type: 'concrete', value: { type: 'number' } }, // value
         ],
-        namedArgs: {},
+        namedArgs: {
+            a: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(1) },
+        },
         returnType: { type: 'concrete', value: colorType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
-        const hue = posArgs[0] as number
-        const saturation = posArgs[1] as number
-        const value = posArgs[2] as number
-        if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1) {
-            throw new Error(`HSL values must be (hue: 0-360, saturation: 0-1, lightness: 0-1), got (${hue}, ${saturation}, ${value})`)
-        }
-        // Convert HSL to RGB using color library
-        const color = ColorLib.hsv(hue, saturation * 100, value * 100)
-        const rgbValues = color.rgb().object()
-        return { type: 'opaque', value: rgbToColor(rgbValues.r / 255, rgbValues.g / 255, rgbValues.b / 255) }
+        const alpha = namedArgs.a as number
+        return { type: 'opaque', opaqueType: 'color', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
     },
-    documentation: { humanReadableName: 'Color (HSV)' },
+    documentation: {
+        humanReadableName: 'Color (HSV)',
+        category: 'color',
+        longDescription: 'Creates a color using HSV (Hue, Saturation, Value) values. Hue ranges from 0 to 360 degrees, saturation and value range from 0 to 1.',
+    },
 } satisfies USSValue
 
 export const renderColor = {
@@ -80,23 +104,59 @@ export const renderColor = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
-        const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number } }).value
+        const color = (posArgs[0] as { type: 'opaque', value: { r: number, g: number, b: number, a: number } }).value
         return doRender(color)
     },
-    documentation: { humanReadableName: 'Color to String' },
+    documentation: {
+        humanReadableName: 'Color to String',
+        category: 'color',
+        longDescription: 'Converts a color object to its hexadecimal string representation (e.g., "#ff0000" for red). If the alpha channel is not 255, it will be included in the string, e.g., "#ff000088" for red with 50% opacity.',
+    },
 } satisfies USSValue
 
-export function doRender(color: Color): string {
+export function doRender(color: Color, ignoreAlpha?: boolean): string {
     const hex = (x: number): string => {
         const hexValue = x.toString(16)
         return hexValue.length === 1 ? `0${hexValue}` : hexValue
     }
-    return `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
+    let h = `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
+    if (color.a !== 255 && !ignoreAlpha) {
+        h += hex(color.a)
+    }
+    return h
 }
 
-function colorConstant(name: string, value: string): [string, USSValue] {
+function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number, round?: number): string {
+    const format: (num: number) => string = round !== undefined ? num => num.toFixed(round) : num => num.toString()
+    const alphaPart = alpha !== 255 ? `, a=${format(alpha / 255)}` : ''
+    return `${functionName}(${format(param1)}, ${format(param2)}, ${format(param3)}${alphaPart})`
+}
+
+export function rgbColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
+    return drawFunction('rgb', color.r / 255, color.g / 255, color.b / 255, forceAlpha ?? color.a, round)
+}
+
+export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
+    const c = ColorLib.rgb(color.r, color.g, color.b)
+    return drawFunction('hsv', c.hue(), c.saturationv() / 100, c.value() / 100, forceAlpha ?? color.a, round)
+}
+
+function colorConstant(name: string, value: string, isDefault?: boolean): [string, USSValue] {
     const humanReadableName = camelToHuman(name)
-    return [`color_${name}`, { type: colorType, value: { type: 'opaque', value: hexToColor(value) }, documentation: { humanReadableName } }] satisfies [string, USSValue]
+    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
+    const color = hexToColor(value)
+    return [`color${capitalizedName}`, {
+        type: colorType,
+        value: { type: 'opaque', opaqueType: 'color', value: color },
+        documentation: {
+            humanReadableName,
+            category: 'color',
+            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color, { round: 3 }), ''), parseNoErrorAsExpression(hsvColorExpression(color, { round: 3 }), '')],
+            isDefault,
+            longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
+            documentationTable: 'predefined-colors',
+        },
+    }] satisfies [string, USSValue]
 }
 
 export const colorConstants = [
@@ -104,5 +164,5 @@ export const colorConstants = [
     // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
     colorConstant('white', '#ffffff'),
     // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
-    colorConstant('black', '#000000'),
+    colorConstant('black', '#000000', true),
 ]

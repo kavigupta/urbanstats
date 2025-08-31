@@ -5,7 +5,8 @@ import { z } from 'zod'
 import { TestWindow } from '../src/utils/TestUtils'
 
 import { quizFixture } from './quiz_test_utils'
-import { flaky, safeReload, target, waitForPageLoaded } from './test_utils'
+import { getTOTPWait, setTOTPWait } from './scripts/util'
+import { flaky, getCurrentTest, safeReload, target, waitForPageLoaded } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
@@ -19,36 +20,77 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
 
-async function googleSignIn(t: TestController): Promise<void> {
-    await flaky(async () => {
-        await t.navigateTo('https://accounts.google.com')
-    })
-    await t.typeText('input[type=email]', email)
-    await t.click(Selector('button').withExactText('Next'))
-    await t.typeText('input[type=password]', z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
-    await t.click(Selector('button').withExactText('Next'))
+const totpInput = Selector('input[type=tel]')
 
-    while (true) {
-        // TOTP codes conflict on concurrent logins
-        const { otp, expires } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
-        await t.typeText('input[type=tel]', otp, { replace: true })
-        await t.click(Selector('button').withExactText('Next'))
-        try {
-            await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
-            break
-        }
-        catch {
-            // Wait until the code expires so we don't spam the same code
-            const wait = expires - Date.now()
-            if (wait > 0) {
-                await t.wait(wait)
-            }
-        }
+const nextButton = Selector('button').withExactText('Next')
+const emailInput = Selector('input[type=email]:not([aria-hidden="true"])')
+const passwordInput = Selector('input[type=password]')
+
+async function popTOTP(t: TestController): Promise<string> {
+    // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
+    const { useAfter } = z.object({ useAfter: z.number() }).parse(await (await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec')).json())
+    const wait = useAfter - Date.now()
+    if (wait > 0) {
+        console.warn(`TOTP waiting ${wait} ms...`)
+        await setTOTPWait(getCurrentTest(t), await getTOTPWait(getCurrentTest(t)) + wait)
+        await t.wait(wait)
+    }
+    console.warn(`Using TOTP for ${useAfter}`)
+    const { otp } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+    return otp
+}
+
+async function fillTOTP(t: TestController): Promise<void> {
+    await t.expect(totpInput.exists).ok()
+    await t.typeText(totpInput, await popTOTP(t), { replace: true })
+    await t.click(nextButton)
+    try {
+        await t.expect(totpInput.exists).notOk()
+        console.warn('TOTP Success')
+    }
+    catch (error) {
+        console.warn(`TOTP Failure!`)
+        throw error
     }
 }
 
+let googleCookies: CookieOptions[] | undefined
+async function googleSignIn(t: TestController): Promise<void> {
+    if (googleCookies !== undefined) {
+        await t.setCookies(googleCookies)
+    }
+    await flaky(t, async () => {
+        await t.navigateTo('https://accounts.google.com')
+    })
+    await flaky(t, async () => {
+        while (true) {
+            await t.wait(1000) // Wait for animation
+            if (await chooseEmail.exists) {
+                await t.click(chooseEmail)
+            }
+            else if (await emailInput.exists) {
+                await t.typeText(emailInput, email)
+                await t.click(nextButton)
+            }
+            else if (await passwordInput.exists) {
+                await t.typeText(passwordInput, z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
+                await t.click(nextButton)
+            }
+            else if (await totpInput.exists) {
+                await fillTOTP(t)
+            }
+            else {
+                await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+                break
+            }
+        }
+    })
+
+    googleCookies = (await t.getCookies()).filter(cookie => cookie.domain?.includes('google'))
+}
+
 async function googleSignOut(t: TestController): Promise<void> {
-    await flaky(async () => {
+    await flaky(t, async () => {
         await t.navigateTo('https://accounts.google.com/Logout')
     })
     await t.expect(Selector('h1').withExactText('Choose an account').exists).ok()
@@ -86,6 +128,12 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     }
     await t.wait(1000) // wait for loading
     await t.click(chooseEmail)
+    await flaky(t, async () => {
+        if (await totpInput.exists) {
+            await fillTOTP(t)
+        }
+        await t.expect(continueButton.exists).ok()
+    })
     await t.click(continueButton)
     const checkBox = Selector('input[type=checkbox]:not([disabled])')
     if (enableDrive && await checkBox.exists) {

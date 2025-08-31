@@ -31,7 +31,7 @@ export function SubsequentLoad(): ReactNode {
         case 'quickLoad':
             return <QuickLoad />
         case 'longLoad':
-            return <LongLoad />
+            return <LongLoad testId="longLoad" />
     }
 }
 
@@ -51,7 +51,7 @@ function QuickLoad(): ReactNode {
     return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
 }
 
-export function LongLoad(): ReactNode {
+export function LongLoad({ containerStyleOverride, testId }: { containerStyleOverride?: CSSProperties, testId?: string }): ReactNode {
     const colors = useColors()
     const containerStyle: CSSProperties = {
         position: 'fixed',
@@ -61,6 +61,7 @@ export function LongLoad(): ReactNode {
         bottom: 0,
         zIndex,
         backgroundColor: `${colors.background}80`,
+        ...containerStyleOverride,
     }
     const width = '78px'
     const loaderStyle: CSSProperties = {
@@ -71,7 +72,7 @@ export function LongLoad(): ReactNode {
         left: `calc(50% - ${width} / 2)`,
     }
     return (
-        <div style={containerStyle} data-test-id="longLoad">
+        <div style={containerStyle} data-test-id={testId}>
             <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
         </div>
     )

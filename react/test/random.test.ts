@@ -3,22 +3,19 @@ import { target, getLocation, urbanstatsFixture } from './test_utils'
 const repeats = 15
 
 async function assertIsArticle(t: TestController): Promise<void> {
-    await t.expect(await getLocation()).contains('/article.html?longname=')
+    await t.expect(getLocation()).contains('/article.html?longname=')
 }
 
 async function assertNoSetUniverse(t: TestController): Promise<void> {
-    await t.expect(await getLocation()).notContains('&universe=')
+    await t.expect(getLocation()).notContains('&universe=')
 }
 
 async function assertNoSpecials(t: TestController): Promise<void> {
-    const location = await getLocation()
-    await t.expect(location).notMatch(/\s(\(19\d\d|201\d|2021\)), USA$/)
-    await t.expect(location).notMatch(/.*PC%2C.*/)
+    await t.expect(getLocation()).notMatch(/\s(\(19\d\d|201\d|2021\)), USA$/)
+    await t.expect(getLocation()).notMatch(/.*PC%2C.*/)
 }
 
 async function assertCorrect(t: TestController): Promise<void> {
-    await t.wait(1000)
-    console.warn(`location: ${await getLocation()}`)
     await assertIsArticle(t)
     await assertNoSetUniverse(t)
     await assertNoSpecials(t)
@@ -29,7 +26,7 @@ urbanstatsFixture('random-usa-by-population', `${target}/random.html?sampleby=po
 for (let count = 0; count < repeats; count++) {
     test(`random-usa-by-population-${count}`, async (t) => {
         await assertCorrect(t)
-        await t.expect(await getLocation()).match(/.*USA.*/)
+        await t.expect(getLocation()).match(/.*USA.*/)
     })
 }
 

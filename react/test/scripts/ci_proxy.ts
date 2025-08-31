@@ -10,13 +10,30 @@
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
+import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-export function startProxy(): void {
-    const ciProxyOrigin = z.string().min(1).parse(process.env.CI_PROXY_ORIGIN)
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+
+export async function startProxy(): Promise<void> {
+    /**
+     * If the user is using a branch that also exists on densitydb, we should use it as well.
+     *
+     * Otherwise, use `master`
+     */
+    const targetBranch = z.string().parse(process.env.URBANSTATS_BRANCH_NAME)
+
+    const { data: remoteBranches } = await octokit.rest.repos.listBranches({
+        owner: 'densitydb',
+        repo: 'densitydb.github.io',
+    })
+
+    const branch = remoteBranches.find(({ name }) => name === targetBranch)
+        ?? remoteBranches.find(({ name }) => name === 'master')
+        ?? (() => { throw new Error('No master branch') })()
 
     // This is useful for debugging in case the proxy isn't working
-    console.warn('Proxy is using origin...', ciProxyOrigin)
+    console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)
 
     const app = express()
 
@@ -24,7 +41,22 @@ export function startProxy(): void {
 
     app.use(
         express.static('test/density-db'),
-        proxy(ciProxyOrigin), // Contacts the proxy in react/ci_proxy
+        proxy(`https://cdn.jsdelivr.net`, {
+            proxyReqPathResolver(req) {
+                // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
+                return `/gh/densitydb/densitydb.github.io@${branch.commit.sha}${req.path}`
+            },
+            userResHeaderDecorator(headers, userReq) {
+                const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
+                const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
+                const { 'content-security-policy': _, ...filteredHeaders } = headers
+                return {
+                    ...filteredHeaders,
+                    'content-type': mimeType ?? headers['content-type'],
+                }
+            },
+        }),
     )
 
     app.listen(8000)

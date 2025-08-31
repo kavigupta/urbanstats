@@ -22,6 +22,8 @@ export function getRamps(): Record<string, RampT> {
             [0.75, hueColors.green],
             [1, hueColors.yellow],
         ],
-        ...RAMPS,
+        ...Object.fromEntries(Object.entries(RAMPS).map(([name, ramp]) => {
+            return [name, ramp.ramp]
+        })),
     }
 }

@@ -1,6 +1,7 @@
-import { Basemap, LineStyle } from '../../mapper/settings/utils'
+import { LineStyle } from '../../mapper/settings/utils'
 import { Context } from '../context'
-import { USSType, USSValue, rawDefaultValue, USSRawValue, OriginalFunctionArgs } from '../types-values'
+import { parseNoErrorAsExpression } from '../parser'
+import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
 import { doRender } from './color'
 import { Outline } from './map'
@@ -22,11 +23,11 @@ export const osmBasemap: USSValue = {
         namedArgs: {
             noLabels: {
                 type: { type: 'concrete', value: { type: 'boolean' } },
-                defaultValue: rawDefaultValue(false),
+                defaultValue: createConstantExpression(false),
             },
             subnationalOutlines: {
                 type: { type: 'concrete', value: outlineType },
-                defaultValue: rawDefaultValue({ type: 'opaque', value: { color: { r: 0, g: 0, b: 0 }, weight: 1 } satisfies Outline }),
+                defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=1)', ''),
             },
         },
         returnType: { type: 'concrete', value: basemapType },
@@ -34,23 +35,25 @@ export const osmBasemap: USSValue = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
         const noLabels = namedArgs.noLabels as boolean
-        const subnationalOutlines = namedArgs.subnationalOutlines as { type: 'opaque', value: Outline }
+        const subnationalOutlines = namedArgs.subnationalOutlines as { type: 'opaque', opaqueType: 'outline', value: Outline }
         return {
-            type: 'opaque', value: {
+            type: 'opaque', opaqueType: 'basemap', value: {
                 type: 'osm', noLabels, subnationalOutlines: {
                     color: doRender(subnationalOutlines.value.color),
                     weight: subnationalOutlines.value.weight,
                 } satisfies LineStyle,
-            } satisfies Basemap,
+            },
         }
     },
     documentation: {
         humanReadableName: 'OSM Basemap',
+        category: 'map',
         isDefault: true,
         namedArgs: {
             noLabels: 'Disable Basemap Labels',
             subnationalOutlines: 'Subnational Outlines',
         },
+        longDescription: 'Creates an OpenStreetMap basemap with customizable label visibility and subnational boundary outlines. Provides geographic context for data visualization.',
     },
 } satisfies USSValue
 
@@ -63,7 +66,12 @@ export const noBasemap: USSValue = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
-        return { type: 'opaque', value: { type: 'none' } }
+        return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none' } }
     },
-    documentation: { humanReadableName: 'No Basemap', isDefault: true },
+    documentation: {
+        humanReadableName: 'No Basemap',
+        category: 'map',
+        isDefault: true,
+        longDescription: 'Creates a basemap with no background map, showing only the data visualization on a transparent background.',
+    },
 } satisfies USSValue

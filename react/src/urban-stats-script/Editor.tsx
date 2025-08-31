@@ -1,73 +1,40 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
+import { TestUtils } from '../utils/TestUtils'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorError, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
 import { USSDocumentedType } from './types-values'
 
-const setScriptDelay = 500
-
-const undoChunking = 1000
-const undoHistory = 100
-
-interface UndoRedoItem { time: number, uss: string, range: Range | undefined }
-
 export function Editor(
-    { uss, setUss, typeEnvironment, errors, placeholder }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: Map<string, USSDocumentedType>
-        errors: EditorError[]
+        results: EditorResult[]
         placeholder?: string
+        selection: Range | null
+        setSelection: (newRange: Range | null) => void
+        eRef?: React.MutableRefObject<HTMLPreElement | null>
     },
 ): ReactNode {
-    const setUssRef = useRef(setUss)
+    const setSelectionRef = useRef(setSelection)
+    setSelectionRef.current = setSelection
 
-    useEffect(() => {
-        setUssRef.current = setUss
-    }, [setUss])
-
-    const [script, setScript] = useState<Script>(() => makeScript(uss))
-
-    const undoStack = useRef<UndoRedoItem[]>([{ time: Date.now(), uss, range: undefined }])
-    const redoStack = useRef<UndoRedoItem[]>([])
-
-    // sync the script after some time of not typing
-    useEffect(() => {
-        const timeout = setTimeout(() => { setUssRef.current(script.uss.trimEnd()) }, setScriptDelay)
-        return () => { clearTimeout(timeout) }
-    }, [script])
+    const script = useMemo(() => makeScript(uss), [uss])
 
     const colors = useColors()
 
-    const editorRef = useRef<HTMLPreElement>(null)
-
-    const inhibitRangeUpdateEvents = useRef<number>(0)
+    const editorRef = useRef<HTMLPreElement | null>(null)
 
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
-    function newUndoState(newScript: Script, newRange: Range | undefined): void {
-        const currentUndoState = undoStack.current[undoStack.current.length - 1]
-        if (currentUndoState.time + undoChunking > Date.now()) {
-            // ammend current item rather than making a new one
-            currentUndoState.uss = newScript.uss
-            currentUndoState.range = newRange
-        }
-        else {
-            undoStack.current.push({ time: Date.now(), uss: newScript.uss, range: newRange })
-            while (undoStack.current.length > undoHistory) {
-                undoStack.current.shift()
-            }
-        }
-        redoStack.current = []
-    }
-
-    const renderScript = useCallback((newScript: Script, newRange: Range | undefined) => {
-        const fragment = renderCode(newScript, colors, errors, (token, content) => {
+    const renderScript = useCallback((newScript: Script) => {
+        const fragment = renderCode(newScript, colors, results.filter(r => r.kind !== 'success'), (token, content) => {
             if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
                 content.push(autocompleteState.element)
             }
@@ -77,52 +44,56 @@ export function Editor(
         })
 
         const editor = editorRef.current!
-        const rangeBefore = newRange ?? getRange(editor)
         editor.replaceChildren(...fragment)
-        if (rangeBefore !== undefined) {
-            // Otherwise, we get into a re-render loop
-            inhibitRangeUpdateEvents.current++
-            setRange(editor, rangeBefore)
-        }
-    }, [colors, errors, autocompleteState, placeholder])
+        // Usually you want to set the selection after this, since it has been reset
+    }, [colors, results, autocompleteState, placeholder])
+
+    const lastRenderScript = useRef<typeof renderScript>(renderScript)
+    const lastScript = useRef<Script | undefined>(undefined)
 
     useEffect(() => {
-        renderScript(script, undefined)
-    }, [renderScript, script])
+        const editor = editorRef.current!
 
-    const editScript = useCallback((newUss: string, newRange: Range | undefined, undoable: boolean) => {
-        const newScript = makeScript(newUss)
-        renderScript(newScript, newRange) // Need this to ensure cursor placement
-        setScript(newScript)
-        setAutocompleteState(undefined)
-        if (undoable) {
-            newUndoState(newScript, newRange)
+        // Rerendering when just a selection change happens causes the selection interaction to be interrupted
+        if (script !== lastScript.current || renderScript !== lastRenderScript.current) {
+            renderScript(script)
         }
-    }, [renderScript])
+        setRange(editor, selection)
+
+        lastRenderScript.current = renderScript
+        lastScript.current = script
+    }, [renderScript, script, selection])
+
+    const editScript = useCallback((newUss: string, newRange: Range) => {
+        const newScript = makeScript(newUss)
+        renderScript(newScript)
+        setRange(editorRef.current!, newRange)
+        setUss(newScript.uss)
+        setSelection(newRange)
+        setAutocompleteState(undefined)
+    }, [renderScript, setUss, setSelection])
 
     useEffect(() => {
         const listener = (): void => {
-            if (inhibitRangeUpdateEvents.current > 0) {
-                inhibitRangeUpdateEvents.current--
-            }
-            else {
-                const range = getRange(editorRef.current!)
-                setAutocompleteState(undefined)
-                undoStack.current[undoStack.current.length - 1].range = range // updates the selection of the current state
-            }
+            // These events are often spurious
+
+            const range = getRange(editorRef.current!)
+            setSelectionRef.current(range)
+            // Cancel autocomplete if the selection is no longer at the end
+            setAutocompleteState(s => s?.location.end.charIdx !== range?.start || s?.location.end.charIdx !== range?.end ? undefined : s)
         }
         document.addEventListener('selectionchange', listener)
         return () => {
             document.removeEventListener('selectionchange', listener)
         }
-    }, [])
+    }, []) // Rebinding can cause problems with multiple editors as they stop listening when one editor changes selection
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
             const range = getRange(editor)
             const newScript = makeScript(nodeContent(editor))
-            const token = range !== undefined && range.start === range.end
+            const token = range !== null && range.start === range.end
                 ? newScript.tokens.find(t => t.token.type === 'identifier' && t.location.end.charIdx === range.start)
                 : undefined
             if (token !== undefined) {
@@ -141,7 +112,7 @@ export function Editor(
                             const delta = option.length - tokenValue.length
                             const editedUss = newScript.uss.slice(0, token.location.start.charIdx) + option + newScript.uss.slice(token.location.end.charIdx)
                             const editedRange = { start: token.location.end.charIdx + delta, end: token.location.end.charIdx + delta }
-                            editScript(editedUss, editedRange, true)
+                            editScript(editedUss, editedRange)
                         },
                     })
                     setAutocompleteSelectionIdx(0)
@@ -150,12 +121,12 @@ export function Editor(
             else {
                 setAutocompleteState(undefined)
             }
-            setScript(newScript)
-            newUndoState(newScript, range)
+            setUss(newScript.uss)
+            setSelection(range)
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [setScript, typeEnvironment, colors, editScript])
+    }, [typeEnvironment, colors, editScript, setUss, setSelection])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -187,50 +158,27 @@ export function Editor(
             if (e.key === 'Tab') {
                 e.preventDefault()
                 const range = getRange(editor)
-                if (range !== undefined) {
+                if (range !== null) {
                     editScript(
                         `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                         { start: range.start + 4, end: range.start + 4 },
-                        true,
                     )
                 }
             }
             else if (e.key === 'Backspace') {
                 const range = getRange(editor)
-                if (range !== undefined && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
+                if (range !== null && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
-                        true,
                     )
-                }
-            }
-
-            const isMac = navigator.userAgent.includes('Mac')
-            if (isMac ? e.key === 'z' && e.metaKey && !e.shiftKey : e.key === 'z' && e.ctrlKey) {
-                e.preventDefault()
-                // Undo
-                if (undoStack.current.length >= 2) {
-                    const prevState = undoStack.current[undoStack.current.length - 2]
-                    // Prev state becomes current state, current state becomes redo state
-                    redoStack.current.push(undoStack.current.pop()!)
-                    editScript(prevState.uss, prevState.range, false)
-                }
-            }
-            else if (isMac ? e.key === 'z' && e.metaKey && e.shiftKey : e.key === 'y' && e.ctrlKey) {
-                e.preventDefault()
-                // Redo
-                const futureState = redoStack.current.pop()
-                if (futureState !== undefined) {
-                    undoStack.current.push(futureState)
-                    editScript(futureState.uss, futureState.range, false)
                 }
             }
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, setScript, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
+    }, [script, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
@@ -241,22 +189,27 @@ export function Editor(
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
-    const error = errors.length > 0
+    const borderColor = useResultsColor(colorKey(results))
 
     return (
-        <div style={{ margin: '2em' }}>
+        <div style={{ marginTop: '0.25em' }} id="test-editor-body">
             <pre
                 style={{
                     ...codeStyle,
-                    caretColor: colors.textMain,
-                    border: `1px solid ${error ? colors.hueColors.red : colors.borderShadow}`,
-                    borderRadius: error ? '5px 5px 0 0' : '5px',
+                    caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
                 }}
-                ref={editorRef}
+                ref={(e) => {
+                    editorRef.current = e
+                    if (eRef !== undefined) {
+                        eRef.current = e
+                    }
+                }}
                 contentEditable="plaintext-only"
                 spellCheck="false"
             />
-            <DisplayErrors errors={errors} />
+            <DisplayResults results={results} editor={true} />
             {autocompleteState === undefined
                 ? null
                 : createPortal(
@@ -281,28 +234,58 @@ export const codeStyle: CSSProperties = {
     padding: '1em',
 }
 
-export function DisplayErrors(props: { errors: EditorError[] }): ReactNode | undefined {
+function colorKey(results: EditorResult[]): 'r' | 'o' | 'g' | 's' {
+    switch (true) {
+        case results.some(r => r.kind === 'error'):
+            return 'r'
+        case results.some(r => r.kind === 'warning'):
+            return 'o'
+        case results.some(r => r.kind === 'success'):
+            return 'g'
+        default:
+            return 's'
+    }
+}
+
+function useResultsColor(cKey: 'r' | 'o' | 'g' | 's'): string {
     const colors = useColors()
-    if (props.errors.length === 0) {
+    switch (cKey) {
+        case 'r':
+            return colors.hueColors.red
+        case 'o':
+            return colors.hueColors.orange
+        case 'g':
+            return colors.hueColors.green
+        case 's':
+            return colors.borderShadow
+    }
+}
+
+export function DisplayResults(props: { results: EditorResult[], editor: boolean }): ReactNode | undefined {
+    const colors = useColors()
+    const cKey = colorKey(props.results)
+    const color = useResultsColor(cKey)
+    if (props.results.length === 0) {
         return undefined
     }
-    function style(color: string): CSSProperties {
-        const border = `2px solid ${color}`
-        return {
-            ...codeStyle,
-            borderRadius: '0 0 5px 5px',
-            backgroundColor: colors.slightlyDifferentBackground,
-            color: colors.textMain,
-            borderTop: 'none',
-            borderRight: border,
-            borderBottom: border,
-            borderLeft: border,
-        }
+    const border = `2px solid ${color}`
+    const style = {
+        ...codeStyle,
+        borderRadius: TestUtils.shared.isTesting ? 0 : (props.editor ? '0 0 5px 5px' : '5px'),
+        backgroundColor: colors.slightlyDifferentBackground,
+        color: colors.textMain,
+        borderTop: props.editor ? 'none' : border,
+        borderRight: border,
+        borderBottom: border,
+        borderLeft: border,
+        marginTop: props.editor ? '0' : '0.25em',
     }
     return (
-        <pre style={style(colors.hueColors.red)}>
-            {props.errors.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error)}`).join('\n')}
-        </pre>
+        <div id="test-editor-result" className={`color-${cKey}`}>
+            <pre style={style}>
+                {props.results.map((error, _, errors) => `${errors.length > 1 ? '- ' : ''}${longMessage(error, props.editor)}`).join('\n')}
+            </pre>
+        </div>
     )
 }
 

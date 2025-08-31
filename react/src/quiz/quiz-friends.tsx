@@ -406,8 +406,6 @@ function AddFriend(): ReactNode {
         }
     }
 
-    const authFeaturesEnabled = QuizModel.shared.enableAuthFeatures.use()
-
     const form = (
         <div style={{ display: 'flex', flexDirection: 'row', height: addFriendHeight, alignItems: 'center' }}>
             <div
@@ -427,7 +425,7 @@ function AddFriend(): ReactNode {
             >
                 <input
                     type="text"
-                    placeholder={authFeaturesEnabled ? 'Friend ID or Email' : 'Friend ID'}
+                    placeholder="Friend ID or Email"
                     value={friendIDField}
                     style={{ width: '100%', height: '100%' }}
                     onChange={(e) => { setFriendIDField(e.target.value) }}

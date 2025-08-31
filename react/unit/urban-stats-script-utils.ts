@@ -6,9 +6,9 @@ import { UrbanStatsASTStatement, UrbanStatsASTExpression } from '../src/urban-st
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 import { parse, toSExp, unparse } from '../src/urban-stats-script/parser'
-import { USSRawValue, USSType, USSValue, rawDefaultValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, createConstantExpression, OriginalFunctionArgs } from '../src/urban-stats-script/types-values'
 
 export const numType = { type: 'number' } satisfies USSType
 export const boolType = { type: 'boolean' } satisfies USSType
@@ -37,7 +37,7 @@ export const testFn2: USSRawValue = (ctx: Context, posArgs: USSRawValue[], named
 export const testFnTypeWithDefault = {
     type: 'function',
     posArgs: [{ type: 'concrete', value: numType }],
-    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: numType }, defaultValue: rawDefaultValue(1) } },
+    namedArgs: { a: { type: { type: 'concrete', value: numType } }, b: { type: { type: 'concrete', value: numType }, defaultValue: createConstantExpression(1) } },
     returnType: { type: 'concrete', value: numType },
 } satisfies USSType
 
@@ -102,11 +102,63 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
     )
 }
 
+export function emptyContextWithInsets(effects: Effect[] | undefined = undefined): Context {
+    const insetContinentalUSA = defaultConstants.get('insetContinentalUSA')
+    const insetHawaii = defaultConstants.get('insetHawaii')
+    const insetAlaska = defaultConstants.get('insetAlaska')
+    const insetGuam = defaultConstants.get('insetGuam')
+    const insetPuertoRicoUSVI = defaultConstants.get('insetPuertoRicoPlusUSVI')
+    const constructInsets = defaultConstants.get('constructInsets')
+
+    assert(insetContinentalUSA !== undefined, 'Expected insetContinentalUSA to be defined in defaultConstants')
+    assert(insetHawaii !== undefined, 'Expected insetHawaii to be defined in defaultConstants')
+    assert(insetAlaska !== undefined, 'Expected insetAlaska to be defined in defaultConstants')
+    assert(insetGuam !== undefined, 'Expected insetGuam to be defined in defaultConstants')
+    assert(insetPuertoRicoUSVI !== undefined, 'Expected insetPuertoRicoPlusUSVI to be defined in defaultConstants')
+    assert(constructInsets !== undefined, 'Expected constructInsets to be defined in defaultConstants')
+
+    // Create a USA insets collection from the individual insets
+    const insetArray = [insetContinentalUSA.value, insetHawaii.value, insetAlaska.value, insetGuam.value, insetPuertoRicoUSVI.value]
+
+    // Cast to function type and call
+    const constructInsetsFunc = constructInsets.value as (
+        ctx: Context,
+        posArgs: USSRawValue[],
+        namedArgs: Record<string, USSRawValue>,
+        originalArgs?: OriginalFunctionArgs
+    ) => USSRawValue
+
+    const usaInsets = constructInsetsFunc({} as Context, [insetArray], {})
+
+    // Create a default geo variable with geoFeatureHandle type
+    const defaultGeo = [
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+        { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'C' },
+    ]
+
+    return new Context(
+        (eff) => {
+            if (effects !== undefined) {
+                effects.push(eff)
+            }
+        },
+        (msg: string, location: LocInfo) => {
+            return new InterpretationError(msg, location)
+        },
+        defaultConstants,
+        new Map<string, USSValue>([
+            ['defaultInsets', { type: { type: 'opaque', name: 'insets' }, value: usaInsets, documentation: { humanReadableName: 'USA Insets' } }],
+            ['geo', { type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } }, value: defaultGeo, documentation: { humanReadableName: 'Geography' } }],
+        ]),
+    )
+}
+
 function checkUnparseForInline(parsed: UrbanStatsASTExpression | UrbanStatsASTStatement | { type: 'error' }, inline: boolean): void {
     if (parsed.type === 'error') {
         return
     }
-    const unparsed = unparse(parsed, 0, inline)
+    const unparsed = unparse(parsed, { inline, expressionalContext: inline })
     const reparsed = parse(unparsed, { type: 'single', ident: 'test' })
     if (reparsed.type === 'error') {
         throw new Error(`Reparsed AST of\n${unparsed}\nis an error: ${JSON.stringify(reparsed)}`)
@@ -131,7 +183,7 @@ export function parseExpr(input: string): UrbanStatsASTExpression {
 export function parseProgram(input: string): UrbanStatsASTStatement {
     const parsed = parse(input, { type: 'single', ident: 'test' })
     checkUnparse(parsed)
-    if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression') {
+    if (parsed.type !== 'assignment' && parsed.type !== 'statements' && parsed.type !== 'expression' && parsed.type !== 'condition') {
         throw new Error(`Expected an assignment or statements, but got ${JSON.stringify(parsed)}`)
     }
     return parsed

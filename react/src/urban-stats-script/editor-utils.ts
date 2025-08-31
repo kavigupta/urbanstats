@@ -1,16 +1,27 @@
+import { useCallback, useEffect, useRef } from 'react'
+
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
-import { AnnotatedToken, lex, LocInfo } from './lexer'
+import { AnnotatedToken, lex } from './lexer'
+import { LocInfo } from './location'
 import { ParseError } from './parser'
-import { USSDocumentedType } from './types-values'
+import { renderValue, USSDocumentedType, USSValue } from './types-values'
 
-export type EditorError = ParseError
+export type EditorError = ParseError & { kind: 'error' | 'warning' }
+export type EditorResult = EditorError | { kind: 'success', result: USSValue }
 
-export function longMessage(error: EditorError): string {
-    return `${error.value} at ${renderLocInfo(error.location)}`
+export function longMessage(result: EditorResult, includeLocationInfo: boolean): string {
+    switch (result.kind) {
+        case 'error':
+        case 'warning':
+            return includeLocationInfo ? `${result.value} at ${renderLocInfo(result.location)}` : result.value
+        case 'success':
+            return renderValue(result.result)
+    }
 }
 
 export interface Script { uss: string, tokens: AnnotatedToken[] }
@@ -93,7 +104,7 @@ export function nodeContent(node: Node): string {
 
 export interface Range { start: number, end: number }
 
-export function getRange(editor: HTMLElement): Range | undefined {
+export function getRange(editor: HTMLElement): Range | null {
     const selection = window.getSelection()
     if (selection?.rangeCount === 1) {
         const range = selection.getRangeAt(0)
@@ -105,7 +116,7 @@ export function getRange(editor: HTMLElement): Range | undefined {
         }
     }
 
-    return undefined
+    return null
 }
 
 // Traverse up the tree, counting text content of previous siblings along the way
@@ -121,16 +132,29 @@ function positionInEditor(editor: Node, node: Node, offset: number): number {
     return offset
 }
 
-export function setRange(editor: HTMLElement, { start, end }: Range): void {
+export function setRange(editor: HTMLElement, newRange: Range | null): void {
+    const currentRange = getRange(editor)
+
+    if (currentRange?.start === newRange?.start && currentRange?.end === newRange?.end) {
+        return
+    }
+
     const selection = window.getSelection()!
 
-    const range = document.createRange()
+    if (newRange === null) {
+        selection.removeAllRanges()
+        editor.blur()
+        return
+    }
 
-    range.setStart(...getContainerOffset(editor, start))
-    range.setEnd(...getContainerOffset(editor, end))
+    if (currentRange === null) {
+        editor.focus()
+    }
 
-    selection.removeAllRanges()
-    selection.addRange(range)
+    const [anchorNode, anchorOffset] = getContainerOffset(editor, newRange.start)
+    const [focusNode, focusOffset] = getContainerOffset(editor, newRange.end)
+
+    selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
 }
 
 // Inverse of `positionInEditor`
@@ -150,7 +174,7 @@ export function getContainerOffset(node: Node, position: number): [Node, number]
 function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
     const brackets = new DefaultMap<string, number>(() => 0)
 
-    const keywords = ['if', 'else', 'do', 'condition', 'true', 'false', 'null']
+    const basicConstants = ['true', 'false', 'null']
 
     return (token, content) => {
         const style: Record<string, string> = { position: 'relative' }
@@ -211,9 +235,12 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                 style.color = colors.hueColors.orange
                 break
             case 'identifier':
-                if (keywords.includes(token.value)) {
+                if (basicConstants.includes(token.value)) {
                     style.color = colors.hueColors.orange
                 }
+                break
+            case 'keyword':
+                style.color = colors.hueColors.purple
                 break
         }
 
@@ -273,7 +300,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'z-index': '1',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': '0.5em',
+        'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
     }
@@ -301,4 +328,101 @@ export function createPlaceholder(colors: Colors, placeholderText: string): HTML
     result.textContent = placeholderText
 
     return result
+}
+
+// Custom hook interfaces
+
+interface UndoRedoItem<T, S> {
+    time: number
+    state: T
+    selection: S
+}
+
+export interface UndoRedoOptions {
+    undoChunking?: number
+    undoHistory?: number
+    onlyElement?: { current: HTMLElement | null }
+}
+
+export function useUndoRedo<T, S>(
+    initialState: T,
+    initialSelection: S,
+    onStateChange: (state: T) => void,
+    onSelectionChange: (selection: S) => void,
+    { undoChunking = 1000, undoHistory = 100, onlyElement }: UndoRedoOptions = {},
+): {
+        addState: (state: T, selection: S) => void
+        updateCurrentSelection: (selection: S) => void
+    } {
+    const undoStack = useRef<UndoRedoItem<T, S>[]>([
+        { time: 0, state: initialState, selection: initialSelection },
+    ])
+    const redoStack = useRef<UndoRedoItem<T, S>[]>([])
+
+    const addState = useCallback((state: T, selection: S): void => {
+        const currentUndoState = undoStack.current[undoStack.current.length - 1]
+
+        if (currentUndoState.time + undoChunking > Date.now()) {
+            // Amend current item rather than making a new one
+            currentUndoState.state = state
+            currentUndoState.selection = selection
+        }
+        else {
+            undoStack.current.push({ time: Date.now(), state, selection })
+            while (undoStack.current.length > undoHistory) {
+                undoStack.current.shift()
+            }
+        }
+        redoStack.current = []
+    }, [undoChunking, undoHistory])
+
+    const updateCurrentSelection = useCallback((selection: S): void => {
+        undoStack.current[undoStack.current.length - 1].selection = selection
+    }, [])
+
+    const undo = useCallback((): void => {
+        if (undoStack.current.length >= 2) {
+            const prevState = undoStack.current[undoStack.current.length - 2]
+            // Prev state becomes current state, current state becomes redo state
+            redoStack.current.push(undoStack.current.pop()!)
+            onStateChange(prevState.state)
+            onSelectionChange(prevState.selection)
+        }
+    }, [onStateChange, onSelectionChange])
+
+    const redo = useCallback((): void => {
+        const futureState = redoStack.current.pop()
+        if (futureState !== undefined) {
+            undoStack.current.push(futureState)
+            onStateChange(futureState.state)
+            onSelectionChange(futureState.selection)
+        }
+    }, [onStateChange, onSelectionChange])
+
+    // Set up keyboard shortcuts
+    useEffect(() => {
+        const listener = (e: KeyboardEvent): void => {
+            if (onlyElement !== undefined && document.activeElement !== null && document.activeElement !== onlyElement.current) {
+                return
+            }
+
+            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
+            if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
+                e.preventDefault()
+                undo()
+            }
+            else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
+                e.preventDefault()
+                redo()
+            }
+        }
+
+        window.addEventListener('keydown', listener)
+        return () => { window.removeEventListener('keydown', listener) }
+    }, [undo, redo, onlyElement])
+
+    return {
+        addState,
+        updateCurrentSelection,
+    }
 }

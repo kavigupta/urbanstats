@@ -3,7 +3,7 @@ import React, { ReactNode, useState } from 'react'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { USSDocumentedType } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
@@ -16,7 +16,7 @@ export function PreambleEditor({
     blockIdent,
 }: {
     preamble: UrbanStatsASTExpression & { type: 'customNode' }
-    setPreamble: (conditionExpr: UrbanStatsASTExpression) => void
+    setPreamble: (conditionExpr: UrbanStatsASTExpression & { type: 'customNode' }) => void
     typeEnvironment: Map<string, USSDocumentedType>
     errors: EditorError[]
     blockIdent: string
@@ -24,13 +24,13 @@ export function PreambleEditor({
     const [showPreamble, setShowPreamble] = useState(preamble.originalCode.trim() !== '')
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
+        <div style={{ margin: '0.5em 0' }}>
             <CheckboxSettingCustom
                 name="Preamble"
                 checked={showPreamble}
                 onChange={(checked) => {
                     // Enable/disable preamble
-                    const preambleExpr = parseNoErrorAsExpression('', blockIdent)
+                    const preambleExpr = parseNoErrorAsCustomNode('', blockIdent)
                     setPreamble(preambleExpr)
                     setShowPreamble(checked)
                 }}

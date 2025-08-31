@@ -1,8 +1,33 @@
+import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
+import { Color, hexToColor } from './constants/color-utils'
+import { CMap, Outline, PMap } from './constants/map'
+import { RampT } from './constants/ramp'
+import { Scale } from './constants/scale'
 import { Context } from './context'
+import { noLocation } from './location'
 import { unparse } from './parser'
+
+// Define Inset and Insets types locally to avoid import issues
+interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
+type Insets = Inset[]
+
+// Define the tagged union for opaque values
+export type USSOpaqueValue =
+    | { type: 'opaque', opaqueType: 'color', value: Color }
+    | { type: 'opaque', opaqueType: 'scale', value: Scale }
+    | { type: 'opaque', opaqueType: 'inset', value: Inset }
+    | { type: 'opaque', opaqueType: 'insets', value: Insets }
+    | { type: 'opaque', opaqueType: 'cMap', value: CMap }
+    | { type: 'opaque', opaqueType: 'pMap', value: PMap }
+    | { type: 'opaque', opaqueType: 'outline', value: Outline }
+    | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
+    | { type: 'opaque', opaqueType: 'ramp', value: RampT }
+    | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
+    | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
+    | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
 
 interface USSNumberType {
     type: 'number'
@@ -38,13 +63,21 @@ export interface USSObjectType {
 export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
 export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' }
 
-export type USSDefaultValue = { type: 'raw', value: USSRawValue } | { type: 'expression', expr: UrbanStatsASTExpression }
+export interface NamedFunctionArgumentWithDocumentation {
+    type: USSFunctionArgType
+    defaultValue?: UrbanStatsASTExpression
+    documentation?: NamedFunctionArgumentDocumentation
+}
 
 export interface USSFunctionType {
     type: 'function'
     posArgs: USSFunctionArgType[]
-    namedArgs: Record<string, { type: USSFunctionArgType, defaultValue?: USSDefaultValue }>
+    namedArgs: Record<string, NamedFunctionArgumentWithDocumentation>
     returnType: USSFunctionReturnType
+}
+
+interface NamedFunctionArgumentDocumentation {
+    hide?: boolean
 }
 
 export type USSType = (
@@ -84,8 +117,14 @@ export type USSRawValue = (
             originalArgs: OriginalFunctionArgs
         ) => USSRawValue
     ) |
-    { type: 'opaque', value: object }
+    USSOpaqueValue
 )
+
+export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset'] as const
+
+export type ConstantCategory = typeof constantCategories[number]
+
+export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
 export interface Documentation {
     humanReadableName: string
@@ -98,6 +137,23 @@ export interface Documentation {
      * Human-readable names for named arguments. Maps argument name to display name.
      */
     namedArgs?: Record<string, string>
+    /**
+     * Should be included when a constant should be deconstructed into an expression for user editing
+     */
+    equivalentExpressions?: UrbanStatsASTExpression[]
+    /**
+     * Included for all bulit-in constants.
+     */
+    category?: ConstantCategory
+    /**
+     * Whether the constant should be grouped with other constants in a table in the documentation.
+     * If present, this field groups the constant with other similar ones.
+     */
+    documentationTable?: DocumentationTable
+    /**
+     * Included for all bulit-in constants. Will be displayed in the documentation.
+     */
+    longDescription?: string
 }
 
 export interface USSDocumentedType {
@@ -116,12 +172,34 @@ export function undocValue(value: USSRawValue, type: USSType): USSValue {
     }
 }
 
-export function rawDefaultValue(value: USSRawValue): USSDefaultValue {
-    return { type: 'raw', value }
-}
-
-export function expressionDefaultValue(expr: UrbanStatsASTExpression): USSDefaultValue {
-    return { type: 'expression', expr }
+export function createConstantExpression(value: number | string | boolean | null): UrbanStatsASTExpression {
+    // Create a simple constant expression for primitive values
+    if (typeof value === 'number') {
+        return {
+            type: 'constant',
+            value: { node: { type: 'number', value }, location: noLocation },
+        }
+    }
+    else if (typeof value === 'string') {
+        return {
+            type: 'constant',
+            value: { node: { type: 'string', value }, location: noLocation },
+        }
+    }
+    else if (typeof value === 'boolean') {
+        // For booleans, use identifier expressions that reference the predefined constants
+        return {
+            type: 'identifier',
+            name: { node: value.toString(), location: noLocation },
+        }
+    }
+    else {
+        // For null, use identifier expression that references the predefined null constant
+        return {
+            type: 'identifier',
+            name: { node: 'null', location: noLocation },
+        }
+    }
 }
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
@@ -164,19 +242,10 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
     return 'any'
 }
 
-export function renderDefaultValue(defaultValue: USSDefaultValue): string {
-    switch (defaultValue.type) {
-        case 'raw':
-            return JSON.stringify(defaultValue.value)
-        case 'expression':
-            return unparse(defaultValue.expr)
-    }
-}
-
-export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: USSDefaultValue }): string {
+export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
     const type = renderArgumentType(arg.type)
     if (arg.defaultValue !== undefined) {
-        return `${type} = ${renderDefaultValue(arg.defaultValue)}`
+        return `${type} = ${unparse(arg.defaultValue)}`
     }
     return type
 }
@@ -264,7 +333,60 @@ export function renderValue(input: USSValue): string {
             case 'string':
                 return `"${value.value}"`
             case 'opaque':
-                return JSON.stringify((value.value as { type: 'opaque', value: object }).value)
+                const opaqueValue = value.value as USSOpaqueValue
+                switch (opaqueValue.opaqueType) {
+                    case 'scale':
+                    case 'pMap':
+                    case 'cMap':
+                    case 'basemap':
+                    case 'inset':
+                    case 'insets':
+                    case 'geoFeatureHandle':
+                    case 'geoCentroidHandle':
+                    case 'unit':
+                        return `[${opaqueValue.opaqueType} object]`
+                    case 'color':
+                        const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }
+                        if (colorValue.a === 255) {
+                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255})`
+                        }
+                        else {
+                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255}, a=${colorValue.a / 255})`
+                        }
+                    case 'outline':
+                        const outline = opaqueValue.value as { color: { r: number, g: number, b: number, a: number }, weight: number }
+                        const outlineColor = outline.color
+                        if (outlineColor.a === 255) {
+                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}), weight=${outline.weight})`
+                        }
+                        else {
+                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}, a=${outlineColor.a / 255}), weight=${outline.weight})`
+                        }
+                    case 'ramp':
+                        const ramp = opaqueValue.value
+                        const rampValue = ramp.map(
+                            ([position, color]) => {
+                                const contents: [string, USSRawValue][] = [
+                                        ['value', position] satisfies [string, USSRawValue],
+                                        ['color', { type: 'opaque', opaqueType: 'color', value: hexToColor(color) }] satisfies [string, USSRawValue],
+                                ] satisfies [string, USSRawValue][]
+                                return new Map(contents) satisfies Map<string, USSRawValue>
+                            },
+                        )
+                        const interior = undocValue(rampValue,
+                            {
+                                type: 'vector',
+                                elementType: {
+                                    type: 'object',
+                                    properties: new Map([
+                                        ['value', { type: 'number' }],
+                                        ['color', { type: 'opaque', name: 'color' }],
+                                    ]),
+                                },
+                            },
+                        )
+                        return `[ramp ${renderValue(interior)}]`
+                }
             case 'vector':
                 const vector = value.value as USSRawValue[]
                 if (vector.length === 0) {

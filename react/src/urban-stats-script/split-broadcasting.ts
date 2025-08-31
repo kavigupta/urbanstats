@@ -1,7 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { Context } from './context'
-import { LocInfo } from './lexer'
+import { LocInfo } from './location'
 import { getPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
@@ -73,7 +73,7 @@ function repeatMany(value: USSValue, count: number): { type: 'success', value: U
     }
 }
 
-export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
+function indexMaskComposite(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
     /**
      * Indexes the value using the mask. The mask is expected to be a vector of numbers, strings, or booleans.
      * If the mask is not a valid mask, an error is returned.
@@ -94,7 +94,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
                 if (repeated.type === 'error') {
                     return repeated
                 }
-                return indexMask(repeated.value, mask, reference)
+                return indexMaskComposite(repeated.value, mask, reference)
             }
             const valueVector = value.value as USSRawValue[]
             if (maskVector.length !== valueVector.length) {
@@ -105,7 +105,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
             for (let i = 0; i < maskVector.length; i++) {
                 assert(valueType.elementType.type !== 'elementOfEmptyVector', `Value element type cannot be elementOfEmptyVector, got ${renderType(valueType)}`)
                 assert(maskType.elementType.type !== 'elementOfEmptyVector', `Mask element type cannot be elementOfEmptyVector, got ${renderType(maskType)}`)
-                const resultsOrErr = indexMask(
+                const resultsOrErr = indexMaskComposite(
                     { type: valueType.elementType, value: valueVector[i], documentation: value.documentation },
                     { type: maskType.elementType, value: maskVector[i], documentation: mask.documentation },
                     reference,
@@ -126,6 +126,21 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         case 'opaque':
             throw new Error('this case was already handled earlier, should not be reachable')
         /* c8 ignore stop */
+    }
+}
+
+export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimitiveRawValue): { type: 'success', value: USSValue } | { type: 'error', message: string } {
+    switch (value.type.type) {
+        case 'vector':
+        case 'object':
+            return indexMaskComposite(value, mask, reference)
+        case 'number':
+        case 'string':
+        case 'boolean':
+        case 'null':
+        case 'opaque':
+        case 'function':
+            return { type: 'success', value }
     }
 }
 
@@ -214,7 +229,7 @@ function mergeValuesViaMasksSpecialCaseMap(
         return undefined
     }
     const nonNullValue = nonNullValues[0]
-    if (nonNullValue.type.type !== 'opaque' || nonNullValue.type.name !== 'cMap') {
+    if (nonNullValue.type.type !== 'opaque' || (nonNullValue.type.name !== 'cMap' && nonNullValue.type.name !== 'pMap')) {
         // If the non-null value is not a map, this is not a special case we handle
         return undefined
     }
@@ -222,6 +237,30 @@ function mergeValuesViaMasksSpecialCaseMap(
         type: 'success',
         value: nonNullValue,
     }
+}
+
+/**
+ * Attempt to coerce the given value to the given type. This is used to ensure splitMask
+ * does not change the type of the value when possible.
+ */
+function attemptCoerceToType(value: USSValue, toType: USSType): USSValue | undefined {
+    if (renderType(value.type) === renderType(toType)) {
+        // success!
+        return value
+    }
+    if (value.type.type === 'vector') {
+        const contents = value.value as USSRawValue[]
+        if (contents.length > 0 && contents.every(x => x === contents[0])) {
+            assert(value.type.elementType.type !== 'elementOfEmptyVector', `Unreachable: elementType was elementOfEmptyVector but contents is non-empty`)
+            // all elements are the same, we can coerce
+            return attemptCoerceToType({
+                type: value.type.elementType,
+                value: contents[0],
+                documentation: value.documentation,
+            }, toType)
+        }
+    }
+    return undefined
 }
 
 export function mergeValuesViaMasks(
@@ -260,17 +299,26 @@ export function mergeValuesViaMasks(
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
         indices[whichValue]++
     }
-    const defaultV = defaultValueForType(firstType)
+    let defaultV: USSRawValue | undefined = undefined
     const finalRes = result.map(
-        x => x ? x.value : defaultV,
+        (x) => {
+            if (x !== undefined) {
+                return x.value
+            }
+            if (defaultV === undefined) {
+                defaultV = defaultValueForType(firstType)
+            }
+            return defaultV satisfies USSRawValue
+        },
     )
+    const finalResValue = {
+        type: { type: 'vector', elementType: types[0] },
+        value: finalRes,
+        documentation: values.find(x => x.documentation !== undefined)?.documentation,
+    } satisfies USSValue
     return {
         type: 'success',
-        value: {
-            type: { type: 'vector', elementType: types[0] },
-            value: finalRes,
-            documentation: values.find(x => x.documentation !== undefined)?.documentation,
-        },
+        value: attemptCoerceToType(finalResValue, firstType) ?? finalResValue,
     }
 }
 

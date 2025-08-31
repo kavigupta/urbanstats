@@ -5,6 +5,7 @@ import { ErrorBox } from '../ErrorBox'
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { PageTemplate } from '../page_template/template'
+import { Universe } from '../universe'
 
 import { Navigator } from './Navigator'
 import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
@@ -154,6 +155,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <AboutPanel />
         case 'dataCredit':
             return <pageData.dataCreditPanel />
+        case 'ussDocumentation':
+            return <pageData.ussDocumentationPanel />
         case 'quiz':
             return (
                 <pageData.quizPanel
@@ -163,11 +166,11 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                 />
             )
         case 'syau':
-            return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
+            return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe as Universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
-            return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} />
+            return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} counts={pageData.counts} />
         case 'editor':
-            return <pageData.editorPanel />
+            return <pageData.editorPanel {...pageData} />
         case 'oauthCallback':
             return <pageData.oauthCallbackPanel {...pageData} />
         case 'error':

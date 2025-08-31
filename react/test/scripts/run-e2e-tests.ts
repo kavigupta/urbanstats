@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
-import { booleanArgument } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -39,8 +39,11 @@ if (options.headless) {
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
 }
 
+// For debugging behavior differences
+await execa('lscpu', { reject: false, stdio: 'inherit' })
+
 if (options.proxy) {
-    startProxy()
+    await startProxy()
 }
 
 const testcafe = await createTestCafe('localhost', 1337, 1338)
@@ -57,7 +60,8 @@ for (const test of tests) {
     const testFile = `test/${test}.test.ts`
     let runner = testcafe.createRunner()
         .src(testFile)
-        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen`])
+        // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
+        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
         .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
@@ -79,13 +83,20 @@ for (const test of tests) {
         })
         : false
 
-    let killTimer: NodeJS.Timeout | undefined
+    await setTOTPWait(test, 0)
+
+    let killInterval: NodeJS.Timeout | undefined
     if (options.timeLimitSeconds !== undefined) {
-        const timeLimit = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
-        killTimer = setTimeout(() => {
-            console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimit}s)}`)
-            process.exit(1)
-        }, timeLimit * 1000)
+        const timeLimitSeconds = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
+        const killAfter = Date.now() + (timeLimitSeconds * 1000)
+        killInterval = setInterval(async () => {
+            if (Date.now() > killAfter + await getTOTPWait(test)) {
+                console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimitSeconds}s)}`)
+                clearInterval(killInterval)
+                await doComparisons()
+                process.exit(1)
+            }
+        }, 1000)
     }
 
     console.warn(chalkTemplate`{cyan ${testFile} running...}`)
@@ -103,7 +114,7 @@ for (const test of tests) {
 
     console.warn(chalkTemplate`{cyan ${testFile} done}`)
 
-    clearTimeout(killTimer)
+    clearInterval(killInterval)
 
     await fs.mkdir('durations', { recursive: true })
     await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
@@ -114,20 +125,24 @@ for (const test of tests) {
     }
 }
 
-if (options.compare) {
-    const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
-        cwd: '..',
-        stdio: 'inherit',
-        reject: false,
-    })))
-
-    if (comparisonResults.some(result => result.failed)) {
-        process.exit(1)
-    }
-}
+await doComparisons()
 
 if (testsFailed > 0) {
     process.exit(1)
 }
 
 process.exit(0) // Needed to clean up subprocesses
+
+async function doComparisons(): Promise<void> {
+    if (options.compare) {
+        const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
+            cwd: '..',
+            stdio: 'inherit',
+            reject: false,
+        })))
+
+        if (comparisonResults.some(result => result.failed)) {
+            process.exit(1)
+        }
+    }
+}

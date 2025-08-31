@@ -262,7 +262,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
-        case 'default':
+        case 'number':
             return {
                 renderValue: (value: number) => {
                     return {
@@ -314,5 +314,5 @@ export function classifyStatistic(statname: string): UnitType {
     if (statname.includes('Pollution')) {
         return 'contaminantLevel'
     }
-    return 'default'
+    return 'number'
 }

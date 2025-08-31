@@ -1,6 +1,7 @@
 import maplibregl, { LngLatLike } from 'maplibre-gl'
 
-import { MapGeneric, MapGenericProps, MapState, Polygons } from '../components/map'
+import { MapGeneric, MapGenericProps, MapState, ShapeRenderingSpec } from '../components/map'
+import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
@@ -24,15 +25,18 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     polysOnScreen: { name: string, isGuessed: boolean }[] = []
     updateAttached: boolean = false
 
-    override computePolygons(): Promise<Polygons> {
+    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
         return Promise.resolve({
-            polygons: this.polysOnScreen.map(({ name, isGuessed }) => ({
+            shapes: this.polysOnScreen.map(({ name, isGuessed }) => ({
                 name,
-                style: {
-                    fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                    fillOpacity: 0.5,
-                    color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                    weight: 2,
+                spec: {
+                    type: 'polygon',
+                    style: {
+                        fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                        fillOpacity: 0.5,
+                        color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
+                        weight: 2,
+                    },
                 },
                 notClickable: true,
                 meta: {},
@@ -120,8 +124,10 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
     }
 
     updateMarkers(): void {
-        const map = this.map
-        if (!map) return
+        const maps = this.handler.maps
+        if (!maps) return
+        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
+        const map = maps[0]
         const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
         const features = map.querySourceFeatures('centroids')
 
@@ -213,9 +219,13 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         }
     }
 
-    override async populateMap(map: maplibregl.Map, timeBasis: number): Promise<void> {
-        await super.populateMap(map, timeBasis)
-        await this.stylesheetPresent()
+    override async populateMap(maps: maplibregl.Map[], timeBasis: number, version: number): Promise<void> {
+        await super.populateMap(maps, timeBasis, version)
+        await this.handler.stylesheetPresent()
+
+        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
+
+        const map = maps[0]
 
         this.fitBounds(map)
         const source = this.updateCentroidsSource(map)

@@ -17,7 +17,7 @@ async function switchAwayFromUser(t: TestController, state: JuxtastatUserState):
         // await t.expect(localStorage.hasOwnProperty('persistent_id')).eql(true)
         state.allUserState.set(state.currentUser, localStorage as Storage)
     }
-    await safeClearLocalStorage()
+    await safeClearLocalStorage(t)
     state.currentUser = undefined
 }
 
@@ -59,7 +59,7 @@ export async function addFriend(t: TestController, friendName: string, friendID:
     if (friendName !== '') {
         await t.typeText(friendNameField, friendName)
     }
-    const friendIDField = Selector('input[placeholder="Friend ID"], input[placeholder="Friend ID or Email"]')
+    const friendIDField = Selector('input[placeholder="Friend ID or Email"]')
     await t.click(friendIDField)
     await t.pressKey('ctrl+a delete')
     if (friendID !== '') {

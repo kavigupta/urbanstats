@@ -1,35 +1,23 @@
 import { assert } from '../utils/defensive'
 
+import { Block, LocInfo } from './location'
 import { expressionOperatorMap } from './operators'
 
-const operators = [...expressionOperatorMap.keys(), '=', ',', ';', '.', ':']
+const nonExpressionOperators = ['=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
+
+const keywords = ['if', 'do', 'else', 'customNode', 'condition']
+export type Keyword = (typeof keywords)[number]
 
 interface NumericToken { type: 'number', value: number }
 interface IdentifierToken { type: 'identifier', value: string }
+interface KeywordToken { type: 'keyword', value: Keyword }
 interface StringToken { type: 'string', value: string }
 interface OperatorToken { type: 'operator', value: string }
 interface BracketToken { type: 'bracket', value: '(' | ')' | '{' | '}' | '[' | ']' }
 interface ErrorToken { type: 'error', value: string }
-type NonErrorToken = NumericToken | IdentifierToken | StringToken | OperatorToken | BracketToken
+type NonErrorToken = NumericToken | IdentifierToken | KeywordToken | StringToken | OperatorToken | BracketToken
 type Token = NonErrorToken | ErrorToken
-
-export type Block = { type: 'single', ident: string } | { type: 'multi' }
-
-export interface SingleLocationWithinBlock {
-    lineIdx: number
-    colIdx: number
-    charIdx: number
-}
-
-export type SingleLocation = SingleLocationWithinBlock & { block: Block }
-
-export interface LocInfo {
-    start: SingleLocation
-    end: SingleLocation
-}
-
-export const noLocation = { start: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 }, end: { block: { type: 'multi' }, lineIdx: 0, colIdx: 0, charIdx: 0 } } satisfies LocInfo
 
 export interface AnnotatedToken {
     token: Token
@@ -59,7 +47,7 @@ export function emptyLocation(ident: string): LocInfo {
 }
 
 export function parseNumber(input: string): number | undefined {
-    if (/^\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
+    if (/^-?\d*(\.\d+)?([eE][+-]?\d+)?$/i.test(input)) {
         // normal number format
         const value = parseFloat(input)
         if (isNaN(value)) {
@@ -87,14 +75,18 @@ export function parseNumber(input: string): number | undefined {
 const identifierLexer: GenericLexer = {
     firstToken: isAlpha,
     innerToken: (ch: string): boolean => isAlpha(ch) || isDigit(ch),
-    parse: (string: string): Token => { return { type: 'identifier', value: string } },
+    parse: (string: string): Token => { return { type: keywords.includes(string) ? 'keyword' : 'identifier', value: string } },
+}
+
+function isOperator(string: string): boolean {
+    return nonExpressionOperators.includes(string) || expressionOperatorMap.has(string)
 }
 
 const operatorLexer: GenericLexer = {
     firstToken: (ch: string): boolean => operatorCharacters.includes(ch),
     innerToken: (ch: string): boolean => operatorCharacters.includes(ch),
     parse: (string: string): Token => {
-        if (operators.includes(string)) {
+        if (isOperator(string)) {
             return { type: 'operator', value: string }
         }
         return { type: 'error', value: `Invalid operator: ${string}` }

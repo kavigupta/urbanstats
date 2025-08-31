@@ -2,7 +2,7 @@ import * as assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { Context } from '../src/urban-stats-script/context'
-import { LocInfo } from '../src/urban-stats-script/lexer'
+import { LocInfo } from '../src/urban-stats-script/location'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 
@@ -43,7 +43,7 @@ void test('index mask', (): void => {
             undocValue([2, 2, 3], numVectorType),
             2,
         ),
-        { type: 'success', value: undocValue([100, 100], numVectorType) },
+        { type: 'success', value: undocValue(100, numType) },
     )
     // empty mask
     assert.deepStrictEqual(
@@ -254,7 +254,7 @@ void test('split mask testing', (): void => {
             defaultLocInfo,
             defaultLocInfo,
         ),
-        undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
+        undocValue(1, numType),
     )
     assert.deepStrictEqual(
         splitMask(
@@ -269,7 +269,7 @@ void test('split mask testing', (): void => {
     assert.deepStrictEqual(
         splitMask(
             basicContext(),
-            undocValue([1, 1, 1, 1, 1, 1, 1, 1, 1], numVectorType),
+            undocValue(1, numType),
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,

@@ -3,12 +3,12 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTStatement, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTArg, locationOf, unify } from './ast'
 import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
-import { LocInfo, parseNumber } from './lexer'
+import { LocInfo } from './location'
 import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
 
-export interface Effect { type: 'warning', message: string }
+export interface Effect { type: 'warning', message: string, location: LocInfo }
 
 export function renderLocInfo(loc: LocInfo): string {
     if (loc.start.lineIdx === loc.end.lineIdx) {
@@ -31,23 +31,12 @@ export class InterpretationError extends Error {
     }
 }
 
-function parseNumberOrThrow(num: number | string, loc: LocInfo): number {
-    if (typeof num === 'number') {
-        return num
-    }
-    const parsed = parseNumber(num)
-    if (parsed === undefined) {
-        throw new InterpretationError(`Invalid number: ${num}`, loc)
-    }
-    return parsed
-}
-
 export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue {
     switch (expr.type) {
         case 'constant':
             const value = expr.value.node
             if (value.type === 'number') {
-                return undocValue(parseNumberOrThrow(value.value, expr.value.location), { type: 'number' })
+                return undocValue(value.value, { type: 'number' })
             }
             return undocValue(value.value satisfies string, { type: 'string' })
         case 'identifier':
@@ -65,7 +54,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 throw env.error(lookupResult.message, locationOf(expr))
             }
             return lookupResult.value
-        case 'function':
+        case 'call':
             const func = evaluate(expr.fn, env)
             const args = expr.args.map(arg => evaluateArg(arg, env))
             const broadcastResult = broadcastCall(func, args, env, locationOf(expr))
@@ -139,9 +128,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const result = execute(expr.expr, env)
 
             // Check type if expectedType is provided
-            if (expr.expectedType && !canUnifyTo(result.type, expr.expectedType)) {
+            if (expr.expectedType && !expr.expectedType.some(t => canUnifyTo(result.type, t))) {
                 throw env.error(
-                    `Custom expression expected to return type ${renderType(expr.expectedType)}, but got ${renderType(result.type)}`,
+                    `Custom expression expected to return type ${expr.expectedType.map(t => renderType(t)).join(' or ')}, but got ${renderType(result.type)}`,
                     locationOf(expr),
                 )
             }
@@ -153,6 +142,9 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
 export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
     switch (expr.type) {
         case 'condition':
+            if (expr.rest.length === 0) {
+                throw env.error('condition(..) must be followed by at least one statement', locationOf(expr))
+            }
             return evaluate(
                 { type: 'if',
                     condition: expr.condition,
