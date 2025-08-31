@@ -2,7 +2,7 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf, toStatement } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -508,7 +508,7 @@ function maybeParseExpr(
     try {
         return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
             throw new Error('parsing failed')
-        })
+        }, false)
     }
     catch {}
     return
@@ -522,8 +522,9 @@ export function parseExpr(
     types: USSType[],
     typeEnvironment: Map<string, USSDocumentedType>,
     fallback: Fallback,
+    preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression {
-    const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback)
+    const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
     return parsed ?? fallback(unparse(expr), blockIdent, types)
 }
 
@@ -533,6 +534,7 @@ function attemptParseExpr(
     types: USSType[],
     typeEnvironment: Map<string, USSDocumentedType>,
     fallback: Fallback,
+    preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'condition':
@@ -553,7 +555,7 @@ function attemptParseExpr(
             return {
                 type: 'vectorLiteral',
                 entireLoc: emptyLocation(blockIdent),
-                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback)),
+                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback, preserveCustomNodes)),
             }
         case 'objectLiteral':
             const exprProps = new Set(expr.properties.map(([key]) => key))
@@ -579,21 +581,31 @@ function attemptParseExpr(
                 entireLoc: emptyLocation(blockIdent),
                 properties: expr.properties.map(([key, value]) => [
                     key,
-                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback),
+                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback, preserveCustomNodes),
                 ]),
             }
         case 'do':
             const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback) ?? fallback(unparse(stmts), blockIdent, types)
+            return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes) ?? fallback(unparse(stmts), blockIdent, types)
         case 'customNode':
-            return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback)
+            if (preserveCustomNodes) {
+                return {
+                    type: 'customNode',
+                    entireLoc: emptyLocation(blockIdent),
+                    originalCode: expr.originalCode,
+                    expr: toStatement(fallback(unparse(expr.expr), blockIdent, types)),
+                }
+            }
+            else {
+                return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
+            }
         case 'statements':
             if (expr.result.length === 1) {
-                return parseExpr(expr.result[0], blockIdent, types, typeEnvironment, fallback)
+                return parseExpr(expr.result[0], blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
             }
             return undefined
         case 'expression':
-            return parseExpr(expr.value, blockIdent, types, typeEnvironment, fallback)
+            return parseExpr(expr.value, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
         case 'identifier':
             const validVariableSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
             if (validVariableSelections.some(s => s.name === expr.name.node)) {
@@ -642,7 +654,7 @@ function attemptParseExpr(
             }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
+                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
             }))
             if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
                 return undefined
@@ -650,7 +662,7 @@ function attemptParseExpr(
             nameds = nameds.map(a => ({
                 type: 'named',
                 name: a.name,
-                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback),
+                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
             }))
             return {
                 type: 'call',
