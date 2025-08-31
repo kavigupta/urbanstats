@@ -10,6 +10,7 @@ import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-
 import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import { parseExpr } from './AutoUXEditor'
 import { BetterSelector } from './BetterSelector'
 
 export const labelPadding = '4px'
@@ -169,6 +170,14 @@ export function Selector(props: {
                                 )
                         }
                         if (newUss !== undefined) {
+                            newUss = parseExpr(
+                                newUss,
+                                props.blockIdent,
+                                props.type,
+                                props.typeEnvironment,
+                                () => { throw new Error('Should not happen') },
+                                true,
+                            )
                             props.setUss(newUss)
                         }
                     }}
