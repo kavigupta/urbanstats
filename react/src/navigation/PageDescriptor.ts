@@ -30,6 +30,7 @@ import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
+import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
@@ -156,6 +157,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('index') }),
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
+    z.object({ kind: z.literal('ussDocumentation'), hash: z.string() }),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
@@ -184,6 +186,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel }
@@ -226,6 +229,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/uss-documentation.html':
+            return { kind: 'ussDocumentation', hash: url.hash }
         case '/editor.html':
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
@@ -285,6 +290,11 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'dataCredit':
             pathname = '/data-credit.html'
+            searchParams = {}
+            hash = pageDescriptor.hash
+            break
+        case 'ussDocumentation':
+            pathname = '/uss-documentation.html'
             searchParams = {}
             hash = pageDescriptor.hash
             break
@@ -531,6 +541,16 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
 
+        case 'ussDocumentation':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    ussDocumentationPanel: (await import('../uss-documentation')).USSDocumentationPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
         case 'editor':
             return {
                 pageData: {
@@ -714,6 +734,8 @@ export function pageTitle(pageData: PageData): string {
             return 'About Urban Stats'
         case 'dataCredit':
             return 'Urban Stats Credits'
+        case 'ussDocumentation':
+            return 'USS Documentation'
         case 'mapper':
             return 'Urban Stats Mapper'
         case 'quiz':
