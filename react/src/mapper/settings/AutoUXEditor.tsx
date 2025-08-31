@@ -589,7 +589,7 @@ function attemptParseExpr(
             return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes) ?? fallback(unparse(stmts), blockIdent, types)
         case 'customNode':
             if (preserveCustomNodes) {
-                return parseNoErrorAsCustomNode(unparse(expr, { simplify: true }), blockIdent, expr.expectedType)
+                return parseNoErrorAsCustomNode(unparse(expr, { simplify: true }), blockIdent, types)
             }
             else {
                 return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
