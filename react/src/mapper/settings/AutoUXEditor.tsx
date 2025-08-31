@@ -2,7 +2,7 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf, toStatement } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
