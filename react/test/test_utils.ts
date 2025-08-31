@@ -238,7 +238,7 @@ export async function safeClearLocalStorage(t: TestController): Promise<void> {
 }
 
 const consoleEnabled = new WeakSet()
-let consoleErrors: string[] = []
+let failTestConsoleMessages: string[] = []
 
 async function printConsoleMessages(t: TestController): Promise<void> {
     const cdp = await t.getCurrentCDPSession()
@@ -248,11 +248,13 @@ async function printConsoleMessages(t: TestController): Promise<void> {
     consoleEnabled.add(cdp)
     cdp.Console.on('messageAdded', (event) => {
         const timestamp = new Date().toISOString()
+        if (event.message.text.includes('[failtest]')) {
+            failTestConsoleMessages.push(event.message.text)
+        }
         let text: string
         switch (event.message.level) {
             case 'error':
                 text = chalkTemplate`{red ${event.message.text}}`
-                consoleErrors.push(event.message.text)
                 break
             case 'warning':
                 text = chalkTemplate`{yellow ${event.message.text}}`
@@ -265,12 +267,12 @@ async function printConsoleMessages(t: TestController): Promise<void> {
     await cdp.Console.enable()
 }
 
-async function throwIfConsoleError(t: TestController): Promise<void> {
+async function throwIfTestFailFromConsole(t: TestController): Promise<void> {
     try {
-        await t.expect(consoleErrors).eql([])
+        await t.expect(failTestConsoleMessages).eql([])
     }
     finally {
-        consoleErrors = []
+        failTestConsoleMessages = []
     }
 }
 
@@ -317,7 +319,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
             await t.resizeWindow(1400, 800)
             await beforeEach?.(t)
         }).skipJsErrors({ pageUrl: /google\.com/ }).afterEach(async (t) => {
-            await throwIfConsoleError(t)
+            await throwIfTestFailFromConsole(t)
             await afterEach?.(t)
         }).requestHooks(requestHooks)
 }

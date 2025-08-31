@@ -138,7 +138,7 @@ export function AutoUXEditor(props: {
         console.warn('USS: ', props.uss)
         console.warn('USS Location: ', ussLoc)
         console.warn('Editor blockIdent: ', props.blockIdent)
-        console.error('USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
+        console.error('[failtest] USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
     }
     const labelWidth = props.labelWidth ?? '5%'
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
