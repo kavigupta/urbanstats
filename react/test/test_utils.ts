@@ -238,6 +238,7 @@ export async function safeClearLocalStorage(t: TestController): Promise<void> {
 }
 
 const consoleEnabled = new WeakSet()
+let consoleErrors: string[] = []
 
 async function printConsoleMessages(t: TestController): Promise<void> {
     const cdp = await t.getCurrentCDPSession()
@@ -245,12 +246,13 @@ async function printConsoleMessages(t: TestController): Promise<void> {
         return
     }
     consoleEnabled.add(cdp)
-    cdp.Console.on('messageAdded', async (event) => {
+    cdp.Console.on('messageAdded', (event) => {
         const timestamp = new Date().toISOString()
         let text: string
         switch (event.message.level) {
             case 'error':
                 text = chalkTemplate`{red ${event.message.text}}`
+                consoleErrors.push(event.message.text)
                 break
             case 'warning':
                 text = chalkTemplate`{yellow ${event.message.text}}`
@@ -259,9 +261,17 @@ async function printConsoleMessages(t: TestController): Promise<void> {
                 text = event.message.text
         }
         console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
-        await t.expect(event.message.level).notEql('error', 'Console errors message fail tests')
     })
     await cdp.Console.enable()
+}
+
+async function throwIfConsoleError(t: TestController): Promise<void> {
+    try {
+        await t.expect(consoleErrors).eql([])
+    }
+    finally {
+        consoleErrors = []
+    }
 }
 
 const networkEnabled = new WeakSet()
@@ -284,7 +294,10 @@ async function printFailedNetworkRequests(t: TestController): Promise<void> {
     await cdp.Network.enable({ })
 }
 
-export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
+export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: TestController) => Promise<void>, { afterEach, requestHooks = [] }: {
+    afterEach?: (t: TestController) => Promise<void>
+    requestHooks?: object[]
+} = {}): void {
     if (url.startsWith('/')) {
         url = target + url
     }
@@ -294,7 +307,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             throw new Error(`URL ${url} does not start with ${target}`)
         }
     }
-    return fixture(name)
+    fixture(name)
         .page(url)
         .beforeEach(async (t) => {
             await printConsoleMessages(t)
@@ -302,10 +315,11 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
             screenshotNumber = 0
             await safeClearLocalStorage(t)
             await t.resizeWindow(1400, 800)
-            if (beforeEach !== undefined) {
-                await beforeEach(t)
-            }
-        }).skipJsErrors({ pageUrl: /google\.com/ })
+            await beforeEach?.(t)
+        }).skipJsErrors({ pageUrl: /google\.com/ }).afterEach(async (t) => {
+            await throwIfConsoleError(t)
+            await afterEach?.(t)
+        }).requestHooks(requestHooks)
 }
 
 export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {

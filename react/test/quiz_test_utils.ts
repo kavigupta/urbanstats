@@ -89,9 +89,7 @@ export function quizFixture(
                 break
         }
         await beforeEach?.(t)
-    }).afterEach(async (t) => {
-        await afterEach?.(t)
-    })
+    }, { afterEach })
 }
 
 export function tempfileName(): string {

@@ -145,7 +145,7 @@ const indexFilter: Filter = options => options.path === '/scripts/index.js'
 urbanstatsFixture('loading tests', '/', async (t) => {
     delayRequests.removeFilter()
     await (await t.getCurrentCDPSession()).Network.setCacheDisabled({ cacheDisabled: true })
-}).requestHooks(delayRequests)
+}, { requestHooks: [delayRequests] })
 
 // Prevents flashes when navigating to a hash below MathJax on the data credit page (MathJax loads from CloudFlare)
 // Also prevents test flakiness on the data credit page
