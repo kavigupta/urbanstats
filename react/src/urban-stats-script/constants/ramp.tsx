@@ -1,10 +1,15 @@
+import ColorLib from 'color'
+import React, { ReactNode } from 'react'
+
 import { getRamps } from '../../mapper/ramps'
+import { colorThemes } from '../../page_template/color-themes'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { rgbColorExpression, doRender } from './color'
 import { Color, hexToColor } from './color-utils'
+import { longDescriptionSubtitle } from './utils'
 
 export type RampT = [number, string][]
 
@@ -75,6 +80,7 @@ export const constructRampValue: USSValue = {
         humanReadableName: 'Custom Ramp',
         category: 'ramp',
         longDescription: 'Creates a custom color ramp from a vector of value-color pairs. Values should range from 0 to 1 and be strictly increasing.',
+        selectorNode: longDescriptionSubtitle,
     },
 } satisfies USSValue
 
@@ -103,6 +109,7 @@ export const reverseRampValue: USSValue = {
         humanReadableName: 'Reverse Ramp',
         category: 'ramp',
         longDescription: 'Represents a ramp that is ordered from highest to lowest value, in reverse order from the original ramp.',
+        selectorNode: longDescriptionSubtitle,
     },
 } satisfies USSValue
 
@@ -131,6 +138,7 @@ export const divergingRampValue: USSValue = {
         humanReadableName: 'Diverging Ramp',
         category: 'ramp',
         longDescription: 'Creates a diverging color ramp with three colors: first color at 0, middle color at 0.5, and last color at 1.',
+        selectorNode: longDescriptionSubtitle,
     },
 } satisfies USSValue
 
@@ -152,6 +160,29 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
             )],
             longDescription: `Predefined color ramp "${name}" for mapping numeric values to colors.`,
             documentationTable: 'predefined-ramps',
+            selectorNode: () => <RampSelectorOption name={name} ramp={ramp} />,
+            selectorBackground: (highlighted) => {
+                const highlightedColor = `rgb(from ${highlighted} r g b / 1)`
+                return highlighted ? `${selectionGradient(highlightedColor, 'bottom')}, ${selectionGradient(highlightedColor, 'right')}, ${toCssGradient(ramp)}` : toCssGradient(ramp)
+            },
         },
     },
 ])
+
+function RampSelectorOption(props: { name: string, ramp: RampT }): ReactNode {
+    const firstRampColor = ColorLib(props.ramp[0][1])
+    return (
+        <div style={{ color: colorThemes[firstRampColor.isLight() ? 'Light Mode' : 'Dark Mode'].textMain }}>
+            {props.name}
+        </div>
+    )
+}
+
+function toCssGradient(ramp: RampT): string {
+    return `linear-gradient(to right, ${ramp.map(([pos, color]) => `${color} ${Math.round(pos * 100)}%`).join(', ')})`
+}
+
+function selectionGradient(selectionColor: string, direction: string): string {
+    const border = `5px`
+    return `linear-gradient(to ${direction}, ${selectionColor} ${border}, transparent ${border}, transparent calc(100% - ${border}), ${selectionColor} calc(100% - ${border}))`
+}

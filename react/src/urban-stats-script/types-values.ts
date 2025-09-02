@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
@@ -154,6 +156,14 @@ export interface Documentation {
      * Included for all bulit-in constants. Will be displayed in the documentation.
      */
     longDescription?: string
+    /**
+     * Used when displaying this value in a selector
+     */
+    selectorNode?: (doc: this) => ReactNode
+    /**
+     * Used when rendering the background for a selector option
+     */
+    selectorBackground?: (highlighted: string | undefined) => string
 }
 
 export interface USSDocumentedType {

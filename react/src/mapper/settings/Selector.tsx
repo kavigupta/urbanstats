@@ -217,21 +217,30 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
-export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): string {
+export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): { text: string, node?: ReactNode, background?: (highlighted: string | undefined) => string } {
     if (selection.type === 'custom') {
-        return 'Custom Expression'
+        return { text: 'Custom Expression' }
     }
     if (selection.type === 'constant') {
-        return 'Constant'
+        return { text: 'Constant' }
     }
     if (selection.type === 'vector') {
-        return 'Manual List'
+        return { text: 'Manual List' }
     }
     if (selection.type === 'object') {
-        return 'Properties'
+        return { text: 'Properties' }
     }
-    const doc = typeEnvironment.get(selection.name)?.documentation?.humanReadableName
-    return doc ?? selection.name
+    const doc = typeEnvironment.get(selection.name)?.documentation
+    if (doc !== undefined) {
+        return {
+            text: doc.humanReadableName,
+            node: doc.selectorNode?.(doc),
+            background: doc.selectorBackground,
+        }
+    }
+    else {
+        return { text: selection.name }
+    }
 }
 
 export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): { color: Color, kind: 'rgb' | 'hsv' } | undefined {

@@ -13,6 +13,7 @@ import { Color } from './color-utils'
 import { insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
+import { longDescriptionSubtitle } from './utils'
 
 export interface Outline {
     color: Color
@@ -205,6 +206,7 @@ export const cMap: USSValue = {
             outline: 'Outline',
         },
         longDescription: 'Creates a choropleth map that displays data using color-coded geographic regions. Each region is colored according to its data value using the specified scale and color ramp.',
+        selectorNode: longDescriptionSubtitle,
     },
 } satisfies USSValue
 
@@ -270,5 +272,6 @@ export const pMap: USSValue = {
             relativeArea: 'Relative Area',
         },
         longDescription: 'Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the area of the points, which is used to determine the radius of the points. If not specified, the areas are all equal.',
+        selectorNode: longDescriptionSubtitle,
     },
 } satisfies USSValue

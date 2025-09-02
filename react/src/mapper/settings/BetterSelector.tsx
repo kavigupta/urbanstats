@@ -13,13 +13,13 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
-    renderValue: (v: T) => string // Memo this for performance
+    renderValue: (v: T) => { text: string, node?: ReactNode, background?: (highlighted: string | undefined) => string } // Memo this for performance
 }): ReactNode {
     const colors = useColors()
 
     const selectedRendered = renderValue(value)
 
-    const [searchValue, setSearchValue] = useState(selectedRendered)
+    const [searchValue, setSearchValue] = useState(selectedRendered.text)
     const [isOpen, setIsOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
 
@@ -29,13 +29,13 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
 
     // Needed if this component is reused in a different context
     useEffect(() => {
-        setSearchValue(selectedRendered)
-    }, [selectedRendered])
+        setSearchValue(selectedRendered.text)
+    }, [selectedRendered.text])
 
     const { bitapBuffers, options } = useMemo(() => {
         const optionsResult = possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index }))
 
-        const longestSelectionPossibility = optionsResult.reduce((acc, poss) => Math.max(acc, poss.renderedChoice.toLowerCase().length), 0)
+        const longestSelectionPossibility = optionsResult.reduce((acc, poss) => Math.max(acc, poss.renderedChoice.text.toLowerCase().length), 0)
         const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
 
         return {
@@ -48,10 +48,10 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
 
         return options.sort((a, b) => {
-            const aScore = bitap(a.renderedChoice.toLowerCase(), needle, maxErrors, bitapBuffers)
-            const bScore = bitap(b.renderedChoice.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
             if (aScore === bScore) {
-                return a.renderedChoice.length - b.renderedChoice.length
+                return a.renderedChoice.text.length - b.renderedChoice.text.length
             }
             return aScore - bScore
         })
@@ -62,7 +62,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         if (stableStringify(newValue) !== stableStringify(value)) {
             onChange(newValue)
         }
-        setSearchValue(option.renderedChoice)
+        setSearchValue(option.renderedChoice.text)
         setIsOpen(false)
         setHighlightedIndex(0)
     }
@@ -122,8 +122,8 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 onBlur={() => {
                     // Delay closing to allow clicking on options
                     setTimeout(() => {
-                        setIsOpen(false)
-                        setHighlightedIndex(0)
+                        // setIsOpen(false)
+                        // setHighlightedIndex(0)
                     }, 150)
                 }}
                 placeholder="Search options..."
@@ -166,12 +166,12 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                                 padding: '8px 12px',
                                 cursor: 'pointer',
                                 borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
-                                backgroundColor: index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
-                                color: option.renderedChoice === '' ? colors.ordinalTextColor : colors.textMain,
+                                background: option.renderedChoice.background?.(index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : undefined) ?? (index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground),
+                                color: option.renderedChoice.text === '' ? colors.ordinalTextColor : colors.textMain,
                             }}
                             onMouseEnter={() => { setHighlightedIndex(index) }}
                         >
-                            {option.renderedChoice === '' ? 'No Selection' : option.renderedChoice}
+                            {option.renderedChoice.text === '' ? 'No Selection' : option.renderedChoice.node ?? option.renderedChoice.text}
                         </div>
                     ))}
                 </div>
