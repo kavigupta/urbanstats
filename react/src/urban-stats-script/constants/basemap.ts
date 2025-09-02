@@ -54,6 +54,7 @@ export const osmBasemap: USSValue = {
             subnationalOutlines: 'Subnational Outlines',
         },
         longDescription: 'Creates an OpenStreetMap basemap with customizable label visibility and subnational boundary outlines. Provides geographic context for data visualization.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
 
@@ -73,5 +74,6 @@ export const noBasemap: USSValue = {
         category: 'map',
         isDefault: true,
         longDescription: 'Creates a basemap with no background map, showing only the data visualization on a transparent background.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue

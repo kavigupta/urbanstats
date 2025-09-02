@@ -47,7 +47,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
-    const renderString = useCallback((universe: string | undefined) => universe ?? '', [])
+    const renderString = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
 
     const universes = useMemo(() => [undefined, ...universes_ordered], [])
 
