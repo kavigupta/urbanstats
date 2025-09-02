@@ -6,8 +6,23 @@ import { createPortal } from 'react-dom'
 import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, AutocompleteState, createPlaceholder } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder } from './editor-utils'
+import { LocInfo } from './location'
 import { USSDocumentedType } from './types-values'
+
+type AutocompleteState = {
+    location: LocInfo
+    options: string[]
+    element: HTMLElement
+    apply: (optionIdx: number) => void
+} | undefined
+
+type DocumentationState = {
+    location: LocInfo
+    name: string
+    value: USSDocumentedType
+    element: HTMLElement
+} | undefined
 
 export function Editor(
     { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
@@ -33,20 +48,33 @@ export function Editor(
     const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
+    const [documentationState, setDocumentationState] = useState<DocumentationState>(undefined)
+
     const renderScript = useCallback((newScript: Script) => {
-        const fragment = renderCode(newScript, colors, results.filter(r => r.kind !== 'success'), (token, content) => {
-            if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                content.push(autocompleteState.element)
-            }
-            if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
-                content.push(createPlaceholder(colors, placeholder))
-            }
-        })
+        const fragment = renderCode(
+            newScript, colors, results.filter(r => r.kind !== 'success'),
+            (token, content) => {
+                if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                    content.push(autocompleteState.element)
+                }
+                if (documentationState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                    content.push(documentationState.element)
+                }
+                if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
+                    content.push(createPlaceholder(colors, placeholder))
+                }
+            },
+            (token, span) => {
+                if (token.token.type === 'identifier') {
+                    span.setAttribute('data-identifier', token.token.value)
+                }
+            },
+        )
 
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
-    }, [colors, results, autocompleteState, placeholder])
+    }, [colors, results, autocompleteState, placeholder, documentationState])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
@@ -187,6 +215,14 @@ export function Editor(
         }
         editor.addEventListener('blur', listener)
         return () => { editor.removeEventListener('blur', listener) }
+    }, [])
+
+    useEffect(() => {
+        const listener = (e: MouseEvent): void => {
+            console.log(document.elementsFromPoint(e.clientX, e.clientY))
+        }
+        document.addEventListener('mousemove', listener)
+        return () => { document.removeEventListener('mousemove', listener) }
     }, [])
 
     const borderColor = useResultsColor(colorKey(results))
