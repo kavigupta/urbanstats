@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { checkCode, getSelectionAnchor, getSelectionFocus, nthEditor, result, selectionIsNthEditor, typeTextWithKeys } from './editor_test_utils'
-import { safeReload, target, urbanstatsFixture } from './test_utils'
+import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('editor test', `${target}/editor.html`)
 
@@ -184,4 +184,28 @@ test('switch selection undo', async (t) => {
     await t.pressKey('ctrl+y')
     await t.expect(selectionIsNthEditor(1)).ok()
     await t.expect(result.textContent).eql('6')
+})
+
+test('show documentation popover', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, 'pi')
+    await t.expect(Selector('div').withExactText('colorPink').exists).ok() // Autocomplete menu
+    await t.hover(Selector('span').withText(/^pi/))
+    await t.wait(1000)
+    await t.expect(Selector('div').withExactText('colorPink').exists).notOk() // Autocomplete menu is closed
+    const doc = Selector('div').withText(/^The mathematical constant/)
+    await t.expect(doc.exists).ok()
+    await screencap(t, { fullPage: false, selector: Selector('#test-editor-panel') }) // Fullpage so we don't hover and close the popover
+
+    // hovering on the popover shouldn't close it
+    await t.hover(doc)
+    await t.expect(doc.exists).ok()
+
+    // hovering elsewhere should close the docs
+    await t.hover(Selector('#searchbox'))
+    await t.expect(doc.exists).notOk()
+
+    // Continuing to type should reopen autocomplete
+    await typeTextWithKeys(t, 'n')
+    await t.expect(Selector('div').withExactText('colorPink').exists).ok() // Autocomplete menu
 })
