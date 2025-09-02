@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
@@ -128,6 +126,7 @@ export type ConstantCategory = typeof constantCategories[number]
 
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
+export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
 export interface Documentation {
     humanReadableName: string
     priority?: number
@@ -159,11 +158,7 @@ export interface Documentation {
     /**
      * Used when displaying this value in a selector
      */
-    selectorNode?: (doc: this) => ReactNode
-    /**
-     * Used when rendering the background for a selector option
-     */
-    selectorBackground?: (highlighted: string | undefined) => string
+    selectorRendering?: SelectorRendering
 }
 
 export interface USSDocumentedType {

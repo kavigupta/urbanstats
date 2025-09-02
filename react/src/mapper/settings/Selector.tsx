@@ -1,17 +1,21 @@
+import ColorLib from 'color'
 import React, { ReactNode, useMemo, useCallback } from 'react'
 
+import { colorThemes } from '../../page_template/color-themes'
+import { useColors } from '../../page_template/colors'
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { doRender, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
 import { Color, hexToColor } from '../../urban-stats-script/constants/color-utils'
+import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { Documentation, renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
 import { parseExpr } from './AutoUXEditor'
-import { BetterSelector } from './BetterSelector'
+import { BetterSelector, SelectorRenderResult } from './BetterSelector'
 
 export const labelPadding = '4px'
 
@@ -217,7 +221,7 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
-export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): { text: string, node?: ReactNode, background?: (highlighted: string | undefined) => string } {
+export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -231,15 +235,21 @@ export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>,
         return { text: 'Properties' }
     }
     const doc = typeEnvironment.get(selection.name)?.documentation
-    if (doc !== undefined) {
+    if (doc?.selectorRendering?.kind === 'subtitleLongDescription') {
         return {
             text: doc.humanReadableName,
-            node: doc.selectorNode?.(doc),
-            background: doc.selectorBackground,
+            node: highlighted => <LongDescriptionSubtitle doc={doc} highlighted={highlighted} />,
+        }
+    }
+    if (doc?.selectorRendering?.kind === 'gradientBackground') {
+        const ramp = doc.selectorRendering.ramp
+        return {
+            text: doc.humanReadableName,
+            node: highlighted => <RampSelectorOption name={doc.humanReadableName} ramp={ramp} highlighted={highlighted} />,
         }
     }
     else {
-        return { text: selection.name }
+        return { text: doc?.humanReadableName ?? selection.name }
     }
 }
 
@@ -299,4 +309,45 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<str
         }
     }
     return
+}
+
+function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            padding: '8px 12px',
+            background: props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
+        }}
+        >
+            <div>{props.doc.humanReadableName}</div>
+            <div style={{ fontSize: 'smaller', color: colors.ordinalTextColor }}>
+                {props.doc.longDescription}
+            </div>
+        </div>
+    )
+}
+
+function RampSelectorOption(props: { name: string, ramp: RampT, highlighted: boolean }): ReactNode {
+    const colors = useColors()
+    const firstRampColor = ColorLib(props.ramp[0][1])
+    const highlightedColor = `rgb(from ${colors.slightlyDifferentBackgroundFocused} r g b / 1)`
+    return (
+        <div style={{
+            padding: '8px 12px',
+            color: colorThemes[firstRampColor.isLight() ? 'Light Mode' : 'Dark Mode'].textMain,
+            background: props.highlighted ? `${selectionGradient(highlightedColor, 'bottom')}, ${selectionGradient(highlightedColor, 'right')}, ${toCssGradient(props.ramp)}` : toCssGradient(props.ramp),
+        }}
+        >
+            {props.name}
+        </div>
+    )
+}
+
+function toCssGradient(ramp: RampT): string {
+    return `linear-gradient(to right, ${ramp.map(([pos, color]) => `${color} ${Math.round(pos * 100)}%`).join(', ')})`
+}
+
+function selectionGradient(selectionColor: string, direction: string): string {
+    const border = `5px`
+    return `linear-gradient(to ${direction}, ${selectionColor} ${border}, transparent ${border}, transparent calc(100% - ${border}), ${selectionColor} calc(100% - ${border}))`
 }

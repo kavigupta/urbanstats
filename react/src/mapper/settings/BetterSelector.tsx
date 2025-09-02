@@ -9,11 +9,13 @@ export const labelPadding = '4px'
 
 const maxErrors = 31
 
+export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
+
 export function BetterSelector<T>({ value, onChange, possibleValues, renderValue }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
-    renderValue: (v: T) => { text: string, node?: ReactNode, background?: (highlighted: string | undefined) => string } // Memo this for performance
+    renderValue: (v: T) => SelectorRenderResult // Memo this for performance
 }): ReactNode {
     const colors = useColors()
 
@@ -122,8 +124,8 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 onBlur={() => {
                     // Delay closing to allow clicking on options
                     setTimeout(() => {
-                        // setIsOpen(false)
-                        // setHighlightedIndex(0)
+                        setIsOpen(false)
+                        setHighlightedIndex(0)
                     }, 150)
                 }}
                 placeholder="Search options..."
@@ -163,19 +165,30 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                                 inputRef.current?.blur()
                             }}
                             style={{
-                                padding: '8px 12px',
                                 cursor: 'pointer',
                                 borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
-                                background: option.renderedChoice.background?.(index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : undefined) ?? (index === highlightedIndex ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground),
-                                color: option.renderedChoice.text === '' ? colors.ordinalTextColor : colors.textMain,
                             }}
                             onMouseEnter={() => { setHighlightedIndex(index) }}
                         >
-                            {option.renderedChoice.text === '' ? 'No Selection' : option.renderedChoice.node ?? option.renderedChoice.text}
+                            {option.renderedChoice.node?.(index === highlightedIndex) ?? <DefaultSelectorOption text={option.renderedChoice.text} highlighted={index === highlightedIndex} />}
                         </div>
                     ))}
                 </div>
             )}
+        </div>
+    )
+}
+
+function DefaultSelectorOption(props: { text: string, highlighted: boolean }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            padding: '8px 12px',
+            background: (props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground),
+            color: props.text === '' ? colors.ordinalTextColor : colors.textMain,
+        }}
+        >
+            {props.text === '' ? 'No Selection' : props.text}
         </div>
     )
 }
