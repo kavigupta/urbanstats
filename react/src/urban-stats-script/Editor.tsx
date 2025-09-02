@@ -4,25 +4,31 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRe
 import { createPortal } from 'react-dom'
 
 import { useColors } from '../page_template/colors'
+import { LongFormDocumentation } from '../uss-documentation'
 import { TestUtils } from '../utils/TestUtils'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder } from './editor-utils'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder, createDocumentationPopover } from './editor-utils'
+import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
 import { USSDocumentedType } from './types-values'
 
-type AutocompleteState = {
+interface AutocompleteState {
+    kind: 'autocomplete'
     location: LocInfo
     options: string[]
     element: HTMLElement
     apply: (optionIdx: number) => void
-} | undefined
+}
 
-type DocumentationState = {
+interface DocumentationState {
+    kind: 'documentation'
     location: LocInfo
     name: string
     value: USSDocumentedType
     element: HTMLElement
-} | undefined
+}
+
+type PopoverState = AutocompleteState | DocumentationState | undefined
 
 export function Editor(
     { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
@@ -45,36 +51,33 @@ export function Editor(
 
     const editorRef = useRef<HTMLPreElement | null>(null)
 
-    const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(undefined)
+    const [popoverState, setPopoverState] = useState<PopoverState>(undefined)
     const [autocompleteSelectionIdx, setAutocompleteSelectionIdx] = useState(0)
 
-    const [documentationState, setDocumentationState] = useState<DocumentationState>(undefined)
+    const spanTokenMapRef = useRef<Map<Element, AnnotatedToken>>(new Map())
 
     const renderScript = useCallback((newScript: Script) => {
+        spanTokenMapRef.current.clear()
+
         const fragment = renderCode(
             newScript, colors, results.filter(r => r.kind !== 'success'),
             (token, content) => {
-                if (autocompleteState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                    content.push(autocompleteState.element)
-                }
-                if (documentationState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                    content.push(documentationState.element)
+                if (popoverState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                    content.push(popoverState.element)
                 }
                 if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
                     content.push(createPlaceholder(colors, placeholder))
                 }
             },
             (token, span) => {
-                if (token.token.type === 'identifier') {
-                    span.setAttribute('data-identifier', token.token.value)
-                }
+                spanTokenMapRef.current.set(span, token)
             },
         )
 
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
-    }, [colors, results, autocompleteState, placeholder, documentationState])
+    }, [colors, results, popoverState, placeholder])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
@@ -98,7 +101,7 @@ export function Editor(
         setRange(editorRef.current!, newRange)
         setUss(newScript.uss)
         setSelection(newRange)
-        setAutocompleteState(undefined)
+        setPopoverState(undefined)
     }, [renderScript, setUss, setSelection])
 
     useEffect(() => {
@@ -108,7 +111,7 @@ export function Editor(
             const range = getRange(editorRef.current!)
             setSelectionRef.current(range)
             // Cancel autocomplete if the selection is no longer at the end
-            setAutocompleteState(s => s?.location.end.charIdx !== range?.start || s?.location.end.charIdx !== range?.end ? undefined : s)
+            setPopoverState(s => s?.location.end.charIdx !== range?.start || s?.location.end.charIdx !== range?.end ? undefined : s)
         }
         document.addEventListener('selectionchange', listener)
         return () => {
@@ -128,10 +131,11 @@ export function Editor(
                 const tokenValue = token.token.value as string
                 const options = getAutocompleteOptions(typeEnvironment, newScript.tokens, tokenValue)
                 if (options.length === 0) {
-                    setAutocompleteState(undefined)
+                    setPopoverState(undefined)
                 }
                 else {
-                    setAutocompleteState({
+                    setPopoverState({
+                        kind: 'autocomplete',
                         location: token.location,
                         options,
                         element: createAutocompleteMenu(colors),
@@ -147,7 +151,7 @@ export function Editor(
                 }
             }
             else {
-                setAutocompleteState(undefined)
+                setPopoverState(undefined)
             }
             setUss(newScript.uss)
             setSelection(range)
@@ -159,25 +163,25 @@ export function Editor(
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (e: KeyboardEvent): void => {
-            if (autocompleteState !== undefined) {
+            if (popoverState?.kind === 'autocomplete') {
                 switch (e.key) {
                     case 'Enter':
                     case 'Tab':
                         e.preventDefault()
-                        autocompleteState.apply(autocompleteSelectionIdx)
+                        popoverState.apply(autocompleteSelectionIdx)
                         return
                     case 'Escape':
                         e.preventDefault()
-                        setAutocompleteState(undefined)
+                        setPopoverState(undefined)
                         return
                     case 'ArrowDown':
                     case 'ArrowUp':
                         e.preventDefault()
                         if (e.key === 'ArrowDown') {
-                            setAutocompleteSelectionIdx(i => i + 1 >= autocompleteState.options.length ? 0 : i + 1)
+                            setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
                         }
                         else {
-                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? autocompleteState.options.length - 1 : i - 1)
+                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
                         }
                         return
                 }
@@ -206,24 +210,53 @@ export function Editor(
         }
         editor.addEventListener('keydown', listener)
         return () => { editor.removeEventListener('keydown', listener) }
-    }, [script, renderScript, autocompleteState, autocompleteSelectionIdx, editScript])
+    }, [script, renderScript, popoverState, autocompleteSelectionIdx, editScript])
 
     useEffect(() => {
         const editor = editorRef.current!
         const listener = (): void => {
-            setAutocompleteState(undefined)
+            setPopoverState(undefined)
         }
         editor.addEventListener('blur', listener)
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
     useEffect(() => {
-        const listener = (e: MouseEvent): void => {
-            console.log(document.elementsFromPoint(e.clientX, e.clientY))
+        let hoveredToken: AnnotatedToken | undefined
+        const listener = (event: MouseEvent): void => {
+            for (const elem of document.elementsFromPoint(event.clientX, event.clientY)) {
+                let token: AnnotatedToken | undefined, name, value
+                if ((token = spanTokenMapRef.current.get(elem)) !== undefined && token.token.type === 'identifier' && (name = token.token.value) && (value = typeEnvironment.get(name)) !== undefined) {
+                    hoveredToken = token
+                    const opts = {
+                        location: token.location,
+                        name,
+                        value,
+                    }
+                    setTimeout(() => {
+                        if (hoveredToken === token) {
+                            setPopoverState({
+                                kind: 'documentation',
+                                ...opts,
+                                element: createDocumentationPopover(colors),
+                            })
+                        }
+                    }, 500)
+                    return
+                }
+                if (popoverState?.kind === 'documentation' && popoverState.element === elem) {
+                    hoveredToken = undefined
+                    return
+                }
+            }
+            hoveredToken = undefined
+            if (popoverState?.kind === 'documentation') {
+                setPopoverState(undefined)
+            }
         }
         document.addEventListener('mousemove', listener)
         return () => { document.removeEventListener('mousemove', listener) }
-    }, [])
+    }, [colors, typeEnvironment, popoverState])
 
     const borderColor = useResultsColor(colorKey(results))
 
@@ -247,16 +280,20 @@ export function Editor(
                 spellCheck="false"
             />
             <DisplayResults results={results} editor={true} />
-            {autocompleteState === undefined
+            {popoverState === undefined
                 ? null
                 : createPortal(
-                    <Autocomplete
-                        state={autocompleteState}
-                        selectionIdx={autocompleteSelectionIdx}
-                        setSelectionIdx={setAutocompleteSelectionIdx}
-                        apply={(i) => { autocompleteState.apply(i) }}
-                    />,
-                    autocompleteState.element,
+                    popoverState.kind === 'autocomplete'
+                        ? (
+                                <Autocomplete
+                                    state={popoverState}
+                                    selectionIdx={autocompleteSelectionIdx}
+                                    setSelectionIdx={setAutocompleteSelectionIdx}
+                                    apply={(i) => { popoverState.apply(i) }}
+                                />
+                            )
+                        : <LongFormDocumentation name={popoverState.name} value={popoverState.value} />,
+                    popoverState.element,
                 )}
         </div>
     )

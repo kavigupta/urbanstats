@@ -316,7 +316,7 @@ export function createDocumentationPopover(colors: Colors): HTMLElement {
     const style = {
         'position': 'absolute',
         'top': '100%',
-        'left': '100%',
+        'left': '0%',
         'user-select': 'none',
         'z-index': '1',
         'overflow': 'scroll',
@@ -324,11 +324,15 @@ export function createDocumentationPopover(colors: Colors): HTMLElement {
         'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
+        'background-color': colors.slightlyDifferentBackground,
+        'min-width': '20em',
+        'padding': '0 1.33em',
     }
 
     const result = document.createElement('div')
     result.setAttribute('contenteditable', 'false')
     result.setAttribute('style', styleToString(style))
+    result.className = 'serif'
 
     return result
 }
