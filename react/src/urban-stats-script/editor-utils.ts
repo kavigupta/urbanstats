@@ -7,7 +7,6 @@ import { isAMatch } from '../utils/isAMatch'
 
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
-import { LocInfo } from './location'
 import { ParseError } from './parser'
 import { renderValue, USSDocumentedType, USSValue } from './types-values'
 
@@ -33,15 +32,14 @@ export function makeScript(uss: string): Script {
     return { uss, tokens: lex({ type: 'single', ident: 'editor' }, uss) }
 }
 
-export type AutocompleteState = {
-    location: LocInfo
-    options: string[]
-    element: HTMLElement
-    apply: (optionIdx: number) => void
-} | undefined
-
 // `errors` may not overlap
-export function renderCode(script: Script, colors: Colors, errors: EditorError[], modfiyTokenContent: (token: AnnotatedToken, content: Node[]) => void): Node[] {
+export function renderCode(
+    script: Script,
+    colors: Colors,
+    errors: EditorError[],
+    modfiyTokenContent: (token: AnnotatedToken, content: Node[]) => void,
+    modifyTokenSpan: (token: AnnotatedToken, span: HTMLSpanElement) => void,
+): Node[] {
     const span = spanFactory(colors)
 
     const lexSpans: Node[] = []
@@ -68,8 +66,10 @@ export function renderCode(script: Script, colors: Colors, errors: EditorError[]
         const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
             const content: Node[] = [document.createTextNode(script.uss.slice(token.location.start.charIdx, token.location.end.charIdx))]
-            modfiyTokenContent(token, content);
-            (errorSpans?.spans ?? lexSpans).push(span(token.token, content))
+            modfiyTokenContent(token, content)
+            const tokenSpan = span(token.token, content)
+            modifyTokenSpan(token, tokenSpan);
+            (errorSpans?.spans ?? lexSpans).push(tokenSpan)
             charIdx = token.location.end.charIdx
             indexInTokens++
         }
@@ -297,7 +297,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'top': '100%',
         'left': '100%',
         'user-select': 'none',
-        'z-index': '1',
+        'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
         'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
@@ -308,6 +308,31 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
     const result = document.createElement('div')
     result.setAttribute('contenteditable', 'false')
     result.setAttribute('style', styleToString(style))
+
+    return result
+}
+
+export function createDocumentationPopover(colors: Colors): HTMLElement {
+    const style = {
+        'position': 'absolute',
+        'top': '100%',
+        'left': '0%',
+        'user-select': 'none',
+        'z-index': '3',
+        'overflow': 'scroll',
+        'max-height': `10lh`,
+        'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
+        'border': `1px solid ${colors.borderNonShadow}`,
+        'color': colors.textMain,
+        'background-color': colors.slightlyDifferentBackground,
+        'width': '33vw',
+        'padding': '0 1.33em',
+    }
+
+    const result = document.createElement('div')
+    result.setAttribute('contenteditable', 'false')
+    result.setAttribute('style', styleToString(style))
+    result.className = 'serif'
 
     return result
 }
