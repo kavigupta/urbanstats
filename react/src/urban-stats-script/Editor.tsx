@@ -111,7 +111,7 @@ export function Editor(
             const range = getRange(editorRef.current!)
             setSelectionRef.current(range)
             // Cancel autocomplete if the selection is no longer at the end
-            setPopoverState(s => s?.location.end.charIdx !== range?.start || s?.location.end.charIdx !== range?.end ? undefined : s)
+            setPopoverState(s => s?.kind === 'autocomplete' && (s.location.end.charIdx !== range?.start || s.location.end.charIdx !== range.end) ? undefined : s)
         }
         document.addEventListener('selectionchange', listener)
         return () => {
