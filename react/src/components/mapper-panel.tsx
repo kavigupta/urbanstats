@@ -10,6 +10,7 @@ import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
+import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapUSS, rootBlockIdent } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap, defaultSettings } from '../mapper/settings/utils'
@@ -497,10 +498,16 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                     errors={errors}
                     counts={props.counts}
                 />
-                <Export
-                    mapRef={mapRef}
-                    colorbarRef={colorbarRef}
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Export
+                        mapRef={mapRef}
+                        colorbarRef={colorbarRef}
+                    />
+                    <ImportExportCode
+                        mapSettings={mapSettings}
+                        setMapSettings={setMapSettingsWrapper}
+                    />
+                </div>
                 {
                     mapperPanel()
                 }
@@ -509,14 +516,18 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     )
 }
 
+export const mapperMetaFields = {
+    // Catch statements so we can remove universes/geos in the future and maps will still partially load
+    geographyKind: z.optional(z.enum(valid_geographies)).catch(undefined),
+    universe: z.optional(z.enum(universes_ordered)).catch(undefined),
+}
+
 export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
         const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
         const rawSettings = z.object({
-            // Catch statements so we can remove universes/geos in the future and maps will still partially load
-            geographyKind: z.optional(z.enum(valid_geographies)).catch(undefined),
-            universe: z.optional(z.enum(universes_ordered)).catch(undefined),
+            ...mapperMetaFields,
             script: z.object({
                 uss: z.string(),
             }) }).parse(JSON.parse(jsonedSettings))
@@ -532,7 +543,7 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
     return defaultSettings(settings)
 }
 
-function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
+export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
         return uss.value
     }
