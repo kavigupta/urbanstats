@@ -87,6 +87,8 @@ def handle_recent_changes(frame, *, county_2010, county_2022):
     """
     handle recent changes as listed in https://www.census.gov/programs-surveys/geography/technical-documentation/county-changes.html
     """
+    # these "pointless string statements" are documentation for each change
+    # pylint: disable=pointless-string-statement
     frame = frame.copy()
     # AK
     """

@@ -28,13 +28,18 @@ def coordinates_blocks(extra_geographies):
     return coordinates, blocks
 
 
-def compute_suos(data):
-    coordinates, blocks = coordinates_blocks(data)
+def join_blocks_to_data(blocks, data):
     joined = gpd.sjoin(data[["geometry"]], blocks)
     missing = set(data.index) - set(joined.index)
     assert not missing, missing
     idx_data = np.array(joined.index)
     idx_blocks = np.array(joined.index_right)
+    return idx_data, idx_blocks
+
+
+def compute_suos(data):
+    coordinates, blocks = coordinates_blocks(data)
+    idx_data, idx_blocks = join_blocks_to_data(blocks, data)
     set_per_block = [[] for _ in tqdm.trange(len(blocks))]
     for idxd, idxb in zip(idx_data, tqdm.tqdm(idx_blocks)):
         set_per_block[idxb].append(idxd)
@@ -116,3 +121,4 @@ def clean_up_geometry(geom):
                 ), type(g)
         assert polygons, "no polygons found"
         return shapely.geometry.MultiPolygon(polygons)
+    raise ValueError(f"unexpected geometry type {type(geom)}")
