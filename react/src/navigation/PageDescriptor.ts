@@ -672,12 +672,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         }
         case 'mapper': {
             const panel = import('../components/mapper-panel')
+            const utils = import('../mapper/settings/utils')
             const counts = getCountsByArticleType()
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: (await panel).mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: (await utils).mapSettingsFromURLParam(newDescriptor.settings),
                     mapperPanel: (await panel).MapperPanel,
                     counts: await counts,
                 },
