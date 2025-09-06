@@ -31,7 +31,10 @@ def plurality_color(arr):
 def compute_delta_image(ref, act):
     ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]
-    diff_mask = (act != ref).any(-1)
+    threshold = 1  # If any RGBA element differs by more than this threshold, we consider the pixel to be different
+    diff_mask = np.greater(
+        np.abs(act.astype(np.int32) - ref.astype(np.int32)), threshold
+    ).any(-1)
     ref[diff_mask] = color
     indicator = np.zeros_like(ref, shape=(ref.shape[0], 100, ref.shape[-1]))
     indicator[..., -1] = 255
