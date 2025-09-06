@@ -278,6 +278,9 @@ export function Editor(
                 }}
                 contentEditable="plaintext-only"
                 spellCheck="false"
+                autoCorrect="false"
+                autoCapitalize="false"
+                {...{ autocomplete: 'false' }}
             />
             <DisplayResults results={results} editor={true} />
             {popoverState === undefined
