@@ -251,6 +251,7 @@ pMap(data=customNode("y"), scale=linearScale(center=0, min=customNode("percentil
 mapper(() => test)('export', userCode, async (t) => {
     // Set geo and universe
     await replaceInput(t, 'Iceland', 'USA')
+    await t.wait(2000) // Prevent races (should fix the races)
     await replaceInput(t, 'Urban Center', 'Urban Area')
 
     const laterThan = new Date().getTime()
