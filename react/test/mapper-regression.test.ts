@@ -30,5 +30,5 @@ cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ra
 
 regressionTest(
     'densityPointMap',
-    `pMap(data=density_pw_1km, scale=logScale(min=100, max=5000), ramp=rampUridis, relativeArea=population, maxRadius=20)\n`,
+    `pMap(data=density_pw_1km, scale=logScale(min=100, max=5000), ramp=rampUridis, relativeArea=population, maxRadius=20, basemap=noBasemap())\n`,
 )
