@@ -228,3 +228,10 @@ mapper(() => test)('common optional named arguments saved when switching functio
     await t.expect(getInput('0', 1).exists).ok()
     await t.expect(getInput('0', 2).exists).ok()
 })
+
+mapper(() => test)('custom rendering for selector options', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    const inputSelector = getInput('Uridis')
+    await t.typeText(inputSelector, 'Custom', { replace: true })
+    await t.hover(Selector('div').withExactText('Autumn'))
+    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp') })
+})
