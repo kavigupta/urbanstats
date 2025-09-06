@@ -300,7 +300,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
+        'border-radius': '5px',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
     }
@@ -321,7 +321,7 @@ export function createDocumentationPopover(colors: Colors): HTMLElement {
         'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
-        'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
+        'border-radius': '5px',
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
         'background-color': colors.slightlyDifferentBackground,
