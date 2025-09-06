@@ -1,10 +1,9 @@
 import '../common.css'
 import './article.css'
 
-import { gunzipSync, gzipSync } from 'zlib'
+import { gzipSync } from 'zlib'
 
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
-import { z } from 'zod'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -12,8 +11,7 @@ import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapUSS, rootBlockIdent } from '../mapper/settings/TopLevelEditor'
-import { MapSettings, computeUSS, Basemap, defaultSettings } from '../mapper/settings/utils'
+import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
@@ -25,9 +23,9 @@ import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError, longMessage } from '../urban-stats-script/editor-utils'
+import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
+import { unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { interpolateColor } from '../utils/color'
@@ -514,62 +512,4 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
             </div>
         </PageTemplate>
     )
-}
-
-export const mapperMetaFields = {
-    // Catch statements so we can remove universes/geos in the future and maps will still partially load
-    geographyKind: z.optional(z.enum(valid_geographies)).catch(undefined),
-    universe: z.optional(z.enum(universes_ordered)).catch(undefined),
-}
-
-export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
-    let settings: Partial<MapSettings> = {}
-    if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        const rawSettings = z.object({
-            ...mapperMetaFields,
-            script: z.object({
-                uss: z.string(),
-            }) }).parse(JSON.parse(jsonedSettings))
-        const uss = parse(rawSettings.script.uss)
-        if (uss.type === 'error') {
-            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
-        }
-        settings = {
-            ...rawSettings,
-            script: { uss: convertToMapUss(uss) },
-        }
-    }
-    return defaultSettings(settings)
-}
-
-export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
-    if (uss.type === 'expression' && uss.value.type === 'customNode') {
-        return uss.value
-    }
-    if (
-        uss.type === 'statements'
-        && uss.result.length === 2
-        && uss.result[0].type === 'expression'
-        && uss.result[0].value.type === 'customNode'
-        && uss.result[1].type === 'condition'
-        && uss.result[1].rest.length === 1
-        && uss.result[1].rest[0].type === 'expression'
-    ) {
-        return {
-            ...uss,
-            result: [
-                {
-                    ...uss.result[0],
-                    value: uss.result[0].value,
-                },
-                {
-                    ...uss.result[1],
-                    rest: [uss.result[1].rest[0]],
-                },
-            ],
-        }
-    }
-    // Support arbitrary scripts
-    return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
 }

@@ -2,12 +2,11 @@ import { saveAs } from 'file-saver'
 import React, { ReactNode } from 'react'
 import { z } from 'zod'
 
-import { convertToMapUss, mapperMetaFields } from '../../components/mapper-panel'
 import { renderLocInfo } from '../../urban-stats-script/interpreter'
 import { parse, unparse } from '../../urban-stats-script/parser'
 import { cancelled, uploadFile } from '../../utils/upload'
 
-import { defaultSettings, MapSettings } from './utils'
+import { convertToMapUss, defaultSettings, mapperMetaFields, MapSettings } from './utils'
 
 export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings: MapSettings, setMapSettings: (v: MapSettings) => void }): ReactNode {
     return (
@@ -48,7 +47,7 @@ export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings:
 
 const metadataSchema = z.object({
     kind: z.literal('mapper'),
-    ...mapperMetaFields,
+    ...mapperMetaFields.shape,
 })
 
 function importMapSettings(fileContent: string): { success: true, mapSettings: MapSettings } | { success: false, error: string } {
@@ -85,6 +84,7 @@ function importMapSettings(fileContent: string): { success: true, mapSettings: M
         }
 
         const metadataResult = metadataSchema.safeParse(Object.fromEntries(args))
+
         if (!metadataResult.success) {
             return {
                 success: false,

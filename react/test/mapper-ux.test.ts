@@ -1,8 +1,11 @@
+import fs from 'fs/promises'
+
 import { Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
-import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { tempfileName } from './quiz_test_utils'
+import { getLocation, safeReload, screencap, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (name: string, code: string, testBlock: (t: TestController) => Promise<void>): void => {
     // use Iceland and Urban Center as a quick test (less data to load)
@@ -234,4 +237,38 @@ mapper(() => test)('custom rendering for selector options', 'customNode("");\nco
     await t.typeText(inputSelector, 'Custom', { replace: true })
     await t.hover(Selector('div').withExactText('Autumn'))
     await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp') })
+})
+
+const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
+customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
+condition (customNode("population > 10000"))
+pMap(data=customNode("y"), scale=linearScale(center=0, min=customNode("percentile(y, 1)")), ramp=divergingRamp(first=colorBlue, last=colorYellow), label="Pedestrian fatalities per 100k (controlled for car commute % and density)", unit=unitNumber, maxRadius=20, relativeArea=population)`
+
+const userCode = `customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
+condition (customNode("population > 10000"))
+pMap(data=customNode("y"), scale=linearScale(center=0, min=customNode("percentile(y, 1)")), ramp=divergingRamp(first=colorBlue, last=colorYellow), label="Pedestrian fatalities per 100k (controlled for car commute % and density)", unit=unitNumber, maxRadius=20, relativeArea=population)`
+
+mapper(() => test)('export', userCode, async (t) => {
+    // Set geo and universe
+    await replaceInput(t, 'Iceland', 'USA')
+    await replaceInput(t, 'Urban Center', 'Urban Area')
+
+    const laterThan = new Date().getTime()
+    await t.click(Selector('button').withExactText('Export Script'))
+    const exportedContent = await fs.readFile(await waitForDownload(t, laterThan, '.uss'), 'utf-8')
+    await t.expect(exportedContent).eql(expectedExportOutput)
+})
+
+mapper(() => test)('import', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', async (t) => {
+    const tempfile = `${tempfileName()}.uss`
+    await fs.writeFile(tempfile, expectedExportOutput)
+    await t.click(Selector('button').withExactText('Import Script'))
+    await t.setFilesToUpload('input[type=file]', [tempfile])
+    await t.expect(settingsFromURL(await getLocation())).eql({
+        geographyKind: 'Urban Area',
+        universe: 'USA',
+        script: {
+            uss: userCode,
+        },
+    })
 })
