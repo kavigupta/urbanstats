@@ -42,7 +42,7 @@ export type Basemap = {
     type: 'osm'
     noLabels?: boolean
     subnationalOutlines?: LineStyle
-} | { type: 'none' }
+} | { type: 'none', backgroundColor: string }
 
 export interface FilterSettings {
     enabled: boolean

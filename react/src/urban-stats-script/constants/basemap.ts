@@ -4,6 +4,7 @@ import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
 import { doRender } from './color'
+import { Color } from './color-utils'
 import { Outline } from './map'
 
 export const outlineType = {
@@ -62,12 +63,18 @@ export const noBasemap: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: {},
+        namedArgs: {
+            backgroundColor: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                defaultValue: parseNoErrorAsExpression('rgb(1, 1, 1, a=0)', ''),
+            },
+        },
         returnType: { type: 'concrete', value: basemapType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
-        return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none' } }
+        const backgroundColor = namedArgs.backgroundColor as { type: 'opaque', value: Color }
+        return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none', backgroundColor: doRender(backgroundColor.value) } }
     },
     documentation: {
         humanReadableName: 'No Basemap',

@@ -402,7 +402,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
         const totalHeight = height + colorbarHeight
 
-        const params = { width, height, pixelRatio, insetBorderColor, backgroundColor: this.props.basemap.type === 'none' ? 'transparent' : undefined }
+        const params = { width, height, pixelRatio, insetBorderColor }
 
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')!
@@ -417,7 +417,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
             await renderMap(ctx, map, inset, params)
         }))
 
-        ctx.fillStyle = this.props.basemap.type === 'none' ? 'transparent' : backgroundColor
+        ctx.fillStyle = this.props.basemap.type === 'none' ? this.props.basemap.backgroundColor : backgroundColor
         ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
 
         if (colorbarElement) {
@@ -792,6 +792,9 @@ function isVisible(basemap: Basemap, layer: maplibregl.LayerSpecification): bool
     }
 }
 
+// eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
+const defaultBackgroundColor = '#f8f4f0'
+
 function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
     map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
         if (layerspec.id === 'background') {
@@ -800,6 +803,7 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
         const layer = map.getLayer(layerspec.id)!
         layer.setLayoutProperty('visibility', isVisible(basemap, layerspec) ? 'visible' : 'none')
     })
+    map.setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
 }
 
 function clickMapElement(longname: string): void {
