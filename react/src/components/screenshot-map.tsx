@@ -7,6 +7,7 @@ interface MapScreenshotParams {
     height: number
     pixelRatio: number
     insetBorderColor: string
+    backgroundColor?: string
 }
 
 function computeRelativeLocs(inset: Inset, params: MapScreenshotParams): { insetWidth: number, insetHeight: number, insetX: number, insetY: number } {
@@ -53,6 +54,12 @@ export async function renderMap(
         )
     }
     map.fitBounds(bounds, { animate: false, padding: 0 })
+
+    const previousBackgroundColor = map.getPaintProperty('background', 'background-color')
+    if (params.backgroundColor !== undefined) {
+        map.setPaintProperty('background', 'background-color', params.backgroundColor)
+    }
+
     // Wait for maps to re-render at high resolution
     await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -71,4 +78,5 @@ export async function renderMap(
     map.setPixelRatio(originalPixelRatio)
     map.resize()
     map.fitBounds(originalBounds, { animate: false })
+    map.setPaintProperty('background', 'background-color', previousBackgroundColor)
 }
