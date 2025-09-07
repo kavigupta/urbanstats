@@ -80,7 +80,7 @@ export const noBasemap: USSValue = {
         humanReadableName: 'No Basemap',
         category: 'map',
         isDefault: true,
-        longDescription: 'Creates a basemap with no background map, showing only the data visualization on a transparent background.',
+        longDescription: 'Creates a basemap with no background map, showing only the data visualization on a customizable background color (transparent by default).',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
