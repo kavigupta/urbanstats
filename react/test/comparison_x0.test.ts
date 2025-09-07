@@ -21,7 +21,7 @@ test('comparison-3-mobile-heterogenous', async (t) => {
 })
 
 test('comparison-heterogenous-search', async (t) => {
-    await createComparison(t, 'pasadena c cd', 'Pasadena city, California, USA') // Would be pasadena city otherwise
+    await createComparison(t, 'pasadena c cd', 'Pasadena city, California, USA')
 })
 
 urbanstatsFixture('comparison test homogenous (2)', comparisonPage([upperSGV, swSGV]))
@@ -32,7 +32,7 @@ test('comparison-2-mobile', async (t) => {
 })
 
 test('comparison-homogenous-search', async (t) => {
-    await createComparison(t, 'pasadena c cd', pasadena) // Would be pasadena city otherwise
+    await createComparison(t, 'pasadena ccd', pasadena)
 })
 
 urbanstatsFixture('comparison test homogenous (3)', comparisonPage([upperSGV, pasadena, swSGV]))
