@@ -526,7 +526,7 @@ void test('constant listing', (): void => {
             '(; noLabels: boolean = false, subnationalOutlines: outline = constructOutline(color=colorBlack, weight=1)) -> basemap': [
                 'osmBasemap',
             ],
-            '(; ) -> basemap': [
+            '(; backgroundColor: color = rgb(1, 1, 1, a=0)) -> basemap': [
                 'noBasemap',
             ],
         },
