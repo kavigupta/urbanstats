@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
-import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { checkBox, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
 import { getLocation, safeReload, screencap, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
@@ -272,4 +272,9 @@ mapper(() => test)('import', 'customNode("");\ncondition (true)\ncMap(data=densi
             uss: userCode,
         },
     })
+})
+
+mapper(() => test.only)('disable basemap', 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', async (t) => {
+    await replaceInput(t, 'OSM Basemap', 'No Basemap')
+    await downloadPNG(t)
 })
