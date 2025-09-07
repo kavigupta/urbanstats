@@ -402,7 +402,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
         const totalHeight = height + colorbarHeight
 
-        const params = { width, height, pixelRatio, insetBorderColor }
+        const params = { width, height, pixelRatio, insetBorderColor, backgroundColor: this.props.basemap.type === 'none' ? 'transparent' : undefined }
 
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')!
@@ -417,7 +417,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
             await renderMap(ctx, map, inset, params)
         }))
 
-        ctx.fillStyle = backgroundColor
+        ctx.fillStyle = this.props.basemap.type === 'none' ? 'transparent' : backgroundColor
         ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
 
         if (colorbarElement) {
