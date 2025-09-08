@@ -1,9 +1,10 @@
 import os
-from permacache import permacache
-import requests
-import us
 
 import pandas as pd
+import requests
+import us
+from permacache import permacache
+
 import urbanstats
 
 election_data_path = os.path.join(os.path.dirname(urbanstats.__file__), "election-data")
