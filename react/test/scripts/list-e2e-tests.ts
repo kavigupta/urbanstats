@@ -109,7 +109,7 @@ await execa(
         '--solution_file', 'test/scripts/solution',
         '--time_limit', '60',
     ],
-    { stdio: 'inherit' },
+    { stderr: process.stderr, stdout: process.stderr },
 )
 
 fs.readFileSync('test/scripts/solution', 'utf-8')
