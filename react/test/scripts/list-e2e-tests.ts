@@ -102,7 +102,15 @@ fs.writeFileSync('test/scripts/lp.lp', model.toLPFormat())
 
 // The highs integration that came with the library wasn't working
 // So, we execute a vendored in highs executable, and parse in the solution, assigning the variables back
-await execa(`test/scripts/vendor/${process.platform}/highs`, ['test/scripts/lp.lp', '--solution_file', 'test/scripts/solution'])
+await execa(
+    `test/scripts/vendor/${process.platform}/highs`,
+    [
+        'test/scripts/lp.lp',
+        '--solution_file', 'test/scripts/solution',
+        '--time_limit', '60',
+    ],
+    { stdio: 'inherit' },
+)
 
 fs.readFileSync('test/scripts/solution', 'utf-8')
     .split('\n')
