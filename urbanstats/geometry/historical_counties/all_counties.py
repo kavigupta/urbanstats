@@ -8,7 +8,7 @@ from permacache import permacache
 end_of_time = "9999-12-31"
 
 
-@permacache("urbanstats/geometry/historical_counties/all_counties/get_all_counties")
+@permacache("urbanstats/geometry/historical_counties/all_counties/get_all_counties_2")
 def get_all_counties():
     data = gpd.read_file(
         "named_region_shapefiles/historical-counties/US_AtlasHCB_Counties/US_HistCounties_Shapefile/US_HistCounties.shp"
@@ -24,6 +24,8 @@ def get_all_counties():
             "geometry",
         ]
     ]
+    data.START_DATE = data.START_DATE.apply(lambda x: x.replace("/", "-"))
+    data.END_DATE = data.END_DATE.apply(lambda x: x.replace("/", "-"))
     data.loc[data.END_DATE == "2000-12-31", "END_DATE"] = end_of_time
     county_2010 = gpd.read_file(
         "named_region_shapefiles/gz_2010_us_050_00_500k.zip"
@@ -31,7 +33,26 @@ def get_all_counties():
     # county_2015 = gpd.read_file("named_region_shapefiles/cb_2015_us_county_500k.zip")
     county_2022 = gpd.read_file("named_region_shapefiles/cb_2022_us_county_500k.zip")
     data = handle_recent_changes(data, county_2010=county_2010, county_2022=county_2022)
+    use_latest_shapefile(data, county_2022)
     return data
+
+
+def use_latest_shapefile(data, county_2022):
+    recents = data[data.END_DATE == end_of_time]
+    counties_shapefile = county_2022.copy()
+    counties_shapefile["geoid"] = (
+        counties_shapefile.STATEFP + counties_shapefile.COUNTYFP
+    )
+    extra_in_shapefile = {
+        us.states.lookup(x[:2])
+        for x in set(counties_shapefile.geoid) - set(recents.FIPS)
+    }
+    assert extra_in_shapefile.issubset(set(us.states.TERRITORIES)), extra_in_shapefile
+    extra_in_recents = set(recents.FIPS) - set(counties_shapefile.geoid)
+    assert not extra_in_recents, extra_in_recents
+    counties_shapefile = counties_shapefile.set_index("geoid")
+    geometries = list(counties_shapefile.loc[recents.FIPS].geometry)
+    data.loc[recents.index, "geometry"] = geometries
 
 
 def date_minus_one(date):
@@ -79,7 +100,7 @@ def introduce(frame, date, fips, county_source, *, alter=False):
             "STATE_TERR": us.states.lookup(row.STATEFP).name,
         }
     )
-    frame = frame.append(row, ignore_index=True)
+    frame = pd.concat([frame, pd.DataFrame([row])], ignore_index=True)
     return frame
 
 
