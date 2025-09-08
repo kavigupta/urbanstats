@@ -15,7 +15,7 @@ import { executeAsync } from './workerManager'
 export function StandaloneEditor(props: { ident: string, getCode: () => string, onChange?: (code: string) => void }): ReactNode {
     const editorRef = useRef<HTMLPreElement | null>(null)
 
-    const { uss, setUss, typeEnvironment, results, selection, setSelection } = useStandaloneEditorState<Range | null>({
+    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi } = useStandaloneEditorState<Range | null>({
         ...props,
         getSelection: () => null,
         undoRedoOptions: { onlyElement: editorRef },
@@ -33,6 +33,7 @@ export function StandaloneEditor(props: { ident: string, getCode: () => string, 
                 setSelection={setSelection}
                 eRef={editorRef}
             />
+            {undoRedoUi}
         </div>
     )
 }
@@ -50,6 +51,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         results: EditorResult[]
         selection: Selection
         setSelection: (newSelection: Selection) => void
+        undoRedoUi: ReactNode
     } {
     const [results, setResults] = useState<EditorResult[]>([])
 
@@ -81,7 +83,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         }
     }
 
-    const { addState, updateCurrentSelection } = useUndoRedo(
+    const { addState, updateCurrentSelection, ui: undoRedoUi } = useUndoRedo(
         uss,
         selection,
         updateUss,
@@ -112,5 +114,6 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         typeEnvironment,
         selection,
         results,
+        undoRedoUi,
     }
 }
