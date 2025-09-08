@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import List, Tuple
+
+import geopandas as gpd
 import numpy as np
 from permacache import permacache
-import geopandas as gpd
 
 from .compute_suos import current_suos
 
