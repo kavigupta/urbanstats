@@ -381,69 +381,58 @@ export function useUndoRedo<T, S>(
         updateCurrentSelection: (selection: S) => void
         ui: ReactNode
     } {
-    const [stacks, setStacks] = useState<{
-        undo: UndoRedoItem<T, S>[]
-        redo: UndoRedoItem<T, S>[]
-    }>({ undo: [
+    const undoStack = useRef<UndoRedoItem<T, S>[]>([
         { time: 0, state: initialState, selection: initialSelection },
-    ], redo: [] })
+    ])
+    const redoStack = useRef<UndoRedoItem<T, S>[]>([])
+
+    const [canUndo, setCanUndo] = useState(false)
+    const [canRedo, setCanRedo] = useState(false)
 
     const addState = useCallback((state: T, selection: S): void => {
-        setStacks(({ undo }) => {
-            const currentUndoState = undo[undo.length - 1]
+        const currentUndoState = undoStack.current[undoStack.current.length - 1]
 
-            if (currentUndoState.time + undoChunking > Date.now()) {
-                // Amend current item rather than making a new one
-                return {
-                    undo: undo.slice(0, undo.length - 1).concat([{ ...currentUndoState, state, selection }]),
-                    redo: [],
-                }
+        if (currentUndoState.time + undoChunking > Date.now()) {
+            // Amend current item rather than making a new one
+            currentUndoState.state = state
+            currentUndoState.selection = selection
+        }
+        else {
+            undoStack.current.push({ time: Date.now(), state, selection })
+            while (undoStack.current.length > undoHistory) {
+                undoStack.current.shift()
             }
-            else {
-                return {
-                    undo: undo.slice(Math.max(0, (undo.length + 1) - undoHistory)).concat([{ time: Date.now(), state, selection }]),
-                    redo: [],
-                }
-            }
-        })
+            setCanUndo(true)
+        }
+        redoStack.current = []
+        setCanRedo(false)
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
-        setStacks(({ undo, redo }) => ({
-            undo: undo.slice(0, undo.length - 1).concat([{ ...undo[undo.length - 1], selection }]),
-            redo,
-        }))
+        undoStack.current[undoStack.current.length - 1].selection = selection
     }, [])
 
     const doUndo = useCallback((): void => {
-        setStacks(({ undo, redo }) => {
-            if (undo.length >= 2) {
-                const prevState = undo[undo.length - 2]
-                // Prev state becomes current state, current state becomes redo state
-                onStateChange(prevState.state)
-                onSelectionChange(prevState.selection)
-                return {
-                    undo: undo.slice(0, undo.length - 1),
-                    redo: redo.concat([undo[undo.length - 1]]),
-                }
-            }
-            return { undo, redo }
-        })
+        if (undoStack.current.length >= 2) {
+            const prevState = undoStack.current[undoStack.current.length - 2]
+            // Prev state becomes current state, current state becomes redo state
+            redoStack.current.push(undoStack.current.pop()!)
+            onStateChange(prevState.state)
+            onSelectionChange(prevState.selection)
+            setCanRedo(true)
+            setCanUndo(undoStack.current.length >= 2)
+        }
     }, [onStateChange, onSelectionChange])
 
     const doRedo = useCallback((): void => {
-        setStacks(({ undo, redo }) => {
-            if (redo.length >= 1) {
-                const futureState = redo[redo.length - 1]
-                onStateChange(futureState.state)
-                onSelectionChange(futureState.selection)
-                return {
-                    undo: undo.concat([futureState]),
-                    redo: redo.slice(0, redo.length - 1),
-                }
-            }
-            return { undo, redo }
-        })
+        const futureState = redoStack.current.pop()
+        if (futureState !== undefined) {
+            undoStack.current.push(futureState)
+            onStateChange(futureState.state)
+            onSelectionChange(futureState.selection)
+            setCanUndo(true)
+            setCanRedo(redoStack.current.length >= 1)
+        }
     }, [onStateChange, onSelectionChange])
 
     const getIsActive = useCallback(() => {
@@ -487,7 +476,7 @@ export function useUndoRedo<T, S>(
         }
     }, [getIsActive])
 
-    const ui: ReactNode = isActive ? <UndoRedoControls doUndo={doUndo} doRedo={doRedo} canUndo={stacks.undo.length >= 2} canRedo={stacks.redo.length >= 1} /> : null
+    const ui: ReactNode = isActive ? <UndoRedoControls {...{ doUndo, doRedo, canUndo, canRedo }} /> : null
 
     return {
         addState,
