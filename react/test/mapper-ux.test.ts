@@ -70,83 +70,122 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
 errorInSubsubfield(() => test)('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
 errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')
 
-mapper(() => test)('undo redo', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
-    await replaceInput(t, 'Urban Center', 'Subnational Region')
-    await t.wait(2000)
-    await replaceInput(t, 'Iceland', 'USA')
-    await t.wait(2000)
-    await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression')
-    await t.wait(2000)
-    await typeInEditor(t, 0, '⌂"Hello, World"\n')
-    await t.wait(2000)
-    await replaceInput(t, 'Uridis', 'Custom Expression')
-    await t.wait(2000)
-    await typeInEditor(t, 1, '⌂"Hello, World"\n')
-    await t.wait(2000)
-
-    await t.pressKey('ctrl+z')
-    await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
-    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
-    await t.expect(selectionIsNthEditor(1)).ok()
-    await t.expect(getSelectionAnchor()).eql(0)
-    await t.expect(getSelectionFocus()).eql(0)
-
-    await t.pressKey('ctrl+z')
-    await t.expect(getInput('Uridis').exists).ok()
-    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
-    await t.expect(nthEditor(1).exists).notOk()
-    await t.expect(selectionIsNthEditor(null)).ok()
-
-    await t.pressKey('ctrl+z')
-    await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
-    await t.expect(selectionIsNthEditor(0)).ok()
-    await t.expect(getSelectionAnchor()).eql(0)
-    await t.expect(getSelectionFocus()).eql(0)
-
-    await t.pressKey('ctrl+z')
-    await t.expect(getInput('PW Density (r=1km)').exists).ok()
-    await t.expect(nthEditor(0).exists).notOk()
-    await t.expect(selectionIsNthEditor(null)).ok()
-
-    await t.pressKey('ctrl+z')
-    await t.expect(getInput('Iceland').exists).ok()
-    await t.wait(2000)
-
-    await t.pressKey('ctrl+z')
-    await t.expect(getInput('Urban Center').exists).ok()
-    await t.wait(2000)
-
-    await t.pressKey('ctrl+y')
-    await t.expect(getInput('Subnational Region').exists).ok()
-    await t.wait(2000)
-
-    await t.pressKey('ctrl+y')
-    await t.expect(getInput('USA').exists).ok()
-    await t.expect(selectionIsNthEditor(null)).ok()
-
-    await t.pressKey('ctrl+y')
-    await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
-    await t.expect(selectionIsNthEditor(0)).ok()
-    await t.expect(getSelectionAnchor()).eql(0)
-    await t.expect(getSelectionFocus()).eql(0)
-
-    await t.pressKey('ctrl+y')
-    await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
-    await t.expect(selectionIsNthEditor(null)).ok()
-
-    await t.pressKey('ctrl+y')
-    await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
-    await t.expect(selectionIsNthEditor(1)).ok()
-    await t.expect(getSelectionAnchor()).eql(0)
-    await t.expect(getSelectionFocus()).eql(0)
-
-    await t.pressKey('ctrl+y')
-    await t.expect(nthEditor(1).textContent).eql('"Hello, World"\nrampUridis\n')
-    await t.expect(selectionIsNthEditor(1)).ok()
-    // On the next line
-    await t.expect(getSelectionAnchor()).eql(1)
-    await t.expect(getSelectionFocus()).eql(1)
+undoRedoTest(() => test.only, 'desktop', {
+    doUndo: t => t.pressKey('ctrl+z'),
+    doRedo: t => t.pressKey('ctrl+y'),
 })
+
+undoRedoTest(() => test.only, 'mobile', {
+    before: t => t.resizeWindow(400, 800),
+    doUndo: t => t.click(Selector('button:not(:disabled)').withExactText('Undo')),
+    doRedo: t => t.click(Selector('button:not(:disabled)').withExactText('Redo')),
+    canUndo: () => Selector('button:not(:disabled)').withExactText('Undo').exists,
+    canRedo: () => Selector('button:not(:disabled)').withExactText('Redo').exists,
+})
+
+function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canUndo, canRedo, before }: {
+    doUndo: (t: TestController) => Promise<void>
+    doRedo: (t: TestController) => Promise<void>
+    canUndo?: (t: TestController) => Promise<boolean>
+    canRedo?: (t: TestController) => Promise<boolean>
+    before?: (t: TestController) => Promise<void>
+}): void {
+    mapper(testFn)(`undo redo ${name}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+        await before?.(t)
+
+        await replaceInput(t, 'Urban Center', 'Subnational Region')
+        await t.wait(2000)
+        await replaceInput(t, 'Iceland', 'USA')
+        await t.wait(2000)
+        await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression')
+        await t.wait(2000)
+        await typeInEditor(t, 0, '⌂"Hello, World"\n')
+        await t.wait(2000)
+        await replaceInput(t, 'Uridis', 'Custom Expression')
+        await t.wait(2000)
+        await typeInEditor(t, 1, '⌂"Hello, World"\n')
+        await t.wait(2000)
+
+        await doUndo(t)
+        await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
+        await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+        await t.expect(selectionIsNthEditor(1)).ok()
+        await t.expect(getSelectionAnchor()).eql(0)
+        await t.expect(getSelectionFocus()).eql(0)
+
+        await doUndo(t)
+        await t.expect(getInput('Uridis').exists).ok()
+        await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+        await t.expect(nthEditor(1).exists).notOk()
+        await t.expect(selectionIsNthEditor(null)).ok()
+
+        await doUndo(t)
+        await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
+        await t.expect(selectionIsNthEditor(0)).ok()
+        await t.expect(getSelectionAnchor()).eql(0)
+        await t.expect(getSelectionFocus()).eql(0)
+
+        await doUndo(t)
+        await t.expect(getInput('PW Density (r=1km)').exists).ok()
+        await t.expect(nthEditor(0).exists).notOk()
+        await t.expect(selectionIsNthEditor(null)).ok()
+
+        await doUndo(t)
+        await t.expect(getInput('Iceland').exists).ok()
+        await t.wait(2000)
+
+        await doUndo(t)
+        await t.expect(getInput('Urban Center').exists).ok()
+        await t.wait(2000)
+
+        if (canUndo) {
+            await t.expect(canUndo(t)).notOk()
+        }
+
+        if (canRedo) {
+            await t.expect(canRedo(t)).ok()
+        }
+
+        await doRedo(t)
+        await t.expect(getInput('Subnational Region').exists).ok()
+        await t.wait(2000)
+
+        await doRedo(t)
+        await t.expect(getInput('USA').exists).ok()
+        await t.expect(selectionIsNthEditor(null)).ok()
+
+        await doRedo(t)
+        await t.expect(nthEditor(0).textContent).eql('density_pw_1km\n')
+        await t.expect(selectionIsNthEditor(0)).ok()
+        await t.expect(getSelectionAnchor()).eql(0)
+        await t.expect(getSelectionFocus()).eql(0)
+
+        await doRedo(t)
+        await t.expect(nthEditor(0).textContent).eql('"Hello, World"\ndensity_pw_1km\n')
+        await t.expect(selectionIsNthEditor(null)).ok()
+
+        await doRedo(t)
+        await t.expect(nthEditor(1).textContent).eql('rampUridis\n')
+        await t.expect(selectionIsNthEditor(1)).ok()
+        await t.expect(getSelectionAnchor()).eql(0)
+        await t.expect(getSelectionFocus()).eql(0)
+
+        await doRedo(t)
+        await t.expect(nthEditor(1).textContent).eql('"Hello, World"\nrampUridis\n')
+        await t.expect(selectionIsNthEditor(1)).ok()
+        // On the next line
+        await t.expect(getSelectionAnchor()).eql(1)
+        await t.expect(getSelectionFocus()).eql(1)
+
+        if (canUndo) {
+            await t.expect(canUndo(t)).ok()
+        }
+
+        if (canRedo) {
+            await t.expect(canRedo(t)).notOk()
+        }
+    })
+}
 
 mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await replaceInput(t, 'Uridis', 'Custom Ramp')
