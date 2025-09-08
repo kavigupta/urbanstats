@@ -496,7 +496,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                     errors={errors}
                     counts={props.counts}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
                     <Export
                         mapRef={mapRef}
                         colorbarRef={colorbarRef}

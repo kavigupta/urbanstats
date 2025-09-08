@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
+import { useMobileLayout } from '../utils/responsive'
 
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
@@ -378,76 +379,204 @@ export function useUndoRedo<T, S>(
 ): {
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
+        ui: ReactNode
     } {
-    const undoStack = useRef<UndoRedoItem<T, S>[]>([
+    const [stacks, setStacks] = useState<{
+        undo: UndoRedoItem<T, S>[]
+        redo: UndoRedoItem<T, S>[]
+    }>({ undo: [
         { time: 0, state: initialState, selection: initialSelection },
-    ])
-    const redoStack = useRef<UndoRedoItem<T, S>[]>([])
+    ], redo: [] })
 
     const addState = useCallback((state: T, selection: S): void => {
-        const currentUndoState = undoStack.current[undoStack.current.length - 1]
+        setStacks(({ undo }) => {
+            const currentUndoState = undo[undo.length - 1]
 
-        if (currentUndoState.time + undoChunking > Date.now()) {
-            // Amend current item rather than making a new one
-            currentUndoState.state = state
-            currentUndoState.selection = selection
-        }
-        else {
-            undoStack.current.push({ time: Date.now(), state, selection })
-            while (undoStack.current.length > undoHistory) {
-                undoStack.current.shift()
+            if (currentUndoState.time + undoChunking > Date.now()) {
+                // Amend current item rather than making a new one
+                return {
+                    undo: undo.slice(0, undo.length - 1).concat([{ ...currentUndoState, state, selection }]),
+                    redo: [],
+                }
             }
-        }
-        redoStack.current = []
+            else {
+                return {
+                    undo: undo.slice(Math.max(0, (undo.length + 1) - undoHistory)).concat([{ time: Date.now(), state, selection }]),
+                    redo: [],
+                }
+            }
+        })
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
-        undoStack.current[undoStack.current.length - 1].selection = selection
+        setStacks(({ undo, redo }) => ({
+            undo: undo.slice(0, undo.length - 1).concat([{ ...undo[undo.length - 1], selection }]),
+            redo,
+        }))
     }, [])
 
-    const undo = useCallback((): void => {
-        if (undoStack.current.length >= 2) {
-            const prevState = undoStack.current[undoStack.current.length - 2]
-            // Prev state becomes current state, current state becomes redo state
-            redoStack.current.push(undoStack.current.pop()!)
-            onStateChange(prevState.state)
-            onSelectionChange(prevState.selection)
-        }
+    const doUndo = useCallback((): void => {
+        setStacks(({ undo, redo }) => {
+            if (undo.length >= 2) {
+                const prevState = undo[undo.length - 2]
+                // Prev state becomes current state, current state becomes redo state
+                onStateChange(prevState.state)
+                onSelectionChange(prevState.selection)
+                return {
+                    undo: undo.slice(0, undo.length - 1),
+                    redo: redo.concat([undo[undo.length - 1]]),
+                }
+            }
+            return { undo, redo }
+        })
     }, [onStateChange, onSelectionChange])
 
-    const redo = useCallback((): void => {
-        const futureState = redoStack.current.pop()
-        if (futureState !== undefined) {
-            undoStack.current.push(futureState)
-            onStateChange(futureState.state)
-            onSelectionChange(futureState.selection)
-        }
+    const doRedo = useCallback((): void => {
+        setStacks(({ undo, redo }) => {
+            if (redo.length >= 1) {
+                const futureState = redo[redo.length - 1]
+                onStateChange(futureState.state)
+                onSelectionChange(futureState.selection)
+                return {
+                    undo: undo.concat([futureState]),
+                    redo: redo.slice(0, redo.length - 1),
+                }
+            }
+            return { undo, redo }
+        })
     }, [onStateChange, onSelectionChange])
+
+    const getIsActive = useCallback(() => {
+        return onlyElement === undefined || (document.activeElement !== null && document.activeElement === onlyElement.current)
+    }, [onlyElement])
 
     // Set up keyboard shortcuts
     useEffect(() => {
         const listener = (e: KeyboardEvent): void => {
-            if (onlyElement !== undefined && document.activeElement !== null && document.activeElement !== onlyElement.current) {
+            if (!getIsActive()) {
                 return
             }
 
             const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 e.preventDefault()
-                undo()
+                doUndo()
             }
             else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
                 e.preventDefault()
-                redo()
+                doRedo()
             }
         }
 
         window.addEventListener('keydown', listener)
         return () => { window.removeEventListener('keydown', listener) }
-    }, [undo, redo, onlyElement])
+    }, [doUndo, doRedo, getIsActive])
+
+    const [isActive, setIsActive] = useState(getIsActive)
+
+    useEffect(() => {
+        const listener = (): void => {
+            setIsActive(getIsActive())
+        }
+        window.addEventListener('focusin', listener)
+        window.addEventListener('focusout', listener)
+        listener()
+        return () => {
+            window.removeEventListener('focusin', listener)
+            window.removeEventListener('focusout', listener)
+        }
+    }, [getIsActive])
+
+    const ui: ReactNode = isActive ? <UndoRedoControls doUndo={doUndo} doRedo={doRedo} canUndo={stacks.undo.length >= 2} canRedo={stacks.redo.length >= 1} /> : null
 
     return {
         addState,
         updateCurrentSelection,
+        ui,
     }
+}
+
+function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => void, doRedo: () => void, canUndo: boolean, canRedo: boolean }): ReactNode {
+    const outer = useRef<HTMLDivElement>(null)
+    const inner = useRef<HTMLDivElement>(null)
+
+    const width = 150
+    const height = 50
+
+    const padding = 10
+
+    /**
+     * iPhone safari is awful and ignores `position: fixed` when they keyboard is out
+     * So we need to do manual positioning
+     */
+    const positionInner = useCallback(() => {
+        // Get outer's position in the window
+        // Position inner at an offset from outer that matches up with the current scroll position
+        if (outer.current === null || inner.current === null) {
+            return
+        }
+
+        const outerBounds = outer.current.getBoundingClientRect()
+
+        inner.current.style.top = `${(window.visualViewport?.height ?? window.innerHeight) - outerBounds.top - height}px`
+        inner.current.style.left = `${(window.visualViewport?.width ?? window.innerWidth) - outerBounds.left - width}px`
+    }, [])
+
+    useEffect(positionInner)
+
+    useEffect(() => {
+        window.addEventListener('scroll', positionInner)
+        window.addEventListener('resize', positionInner)
+        window.visualViewport?.addEventListener('resize', positionInner)
+        return () => {
+            window.removeEventListener('scroll', positionInner)
+            window.removeEventListener('resize', positionInner)
+            window.visualViewport?.removeEventListener('resize', positionInner)
+        }
+    }, [positionInner])
+
+    const isMobile = useMobileLayout()
+
+    if (!isMobile) {
+        return null
+    }
+
+    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: 100 }
+
+    return (
+        <div ref={outer} style={{ position: 'absolute' }}>
+            <div
+                ref={inner}
+                style={{
+                    position: 'absolute',
+                    display: 'flex',
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    gap: `${padding}px`,
+                    padding: `${padding}px`,
+                }}
+            >
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault()
+                        doUndo()
+                    }}
+                    disabled={!canUndo}
+                    style={buttonStyle}
+                >
+                    Undo
+                </button>
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault()
+                        doRedo()
+                    }}
+                    disabled={!canRedo}
+                    style={buttonStyle}
+                >
+                    Redo
+                </button>
+            </div>
+        </div>
+    )
 }
