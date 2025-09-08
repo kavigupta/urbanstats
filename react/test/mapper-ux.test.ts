@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -315,4 +315,11 @@ mapper(() => test)('import', { code: 'customNode("");\ncondition (true)\ncMap(da
 mapper(() => test)('disable basemap', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', universe: 'USA', geo: 'Subnational Region' }, async (t) => {
     await replaceInput(t, 'OSM Basemap', 'No Basemap')
     await downloadPNG(t)
+})
+
+urbanstatsFixture('mapper default', `${target}/mapper.html`)
+
+test('mobile appearance', async (t) => {
+    await t.resizeWindow(400, 800)
+    await screencap(t)
 })
