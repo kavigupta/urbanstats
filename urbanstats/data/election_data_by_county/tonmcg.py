@@ -4,6 +4,7 @@ import us
 from urbanstats.geometry.historical_counties.historical_county_file import (
     counties_at_date,
 )
+from urbanstats.geometry.historical_counties.suo_data_source import SUODataSource
 
 
 def load_toncmg_raw_2024():
@@ -162,3 +163,10 @@ def load_2024_suo():
         "2024-11-05",
         {"name": "Kalawao", "fips": "15005", "dem": 15, "gop": 3, "total": 18},
     )
+
+
+tonmcg_elections = [
+    SUODataSource("tonmcg-2008_2", load_2008_suo, ["dem", "gop", "total"]),
+    SUODataSource("tonmcg-2012_2", load_2012_suo, ["dem", "gop", "total"]),
+    SUODataSource("tonmcg-2024_2", load_2024_suo, ["dem", "gop", "total"]),
+]
