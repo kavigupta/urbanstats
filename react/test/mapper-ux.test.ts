@@ -70,12 +70,12 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
 errorInSubsubfield(() => test)('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
 errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')
 
-undoRedoTest(() => test.only, 'desktop', {
+undoRedoTest(() => test, 'desktop', {
     doUndo: t => t.pressKey('ctrl+z'),
     doRedo: t => t.pressKey('ctrl+y'),
 })
 
-undoRedoTest(() => test.only, 'mobile', {
+undoRedoTest(() => test, 'mobile', {
     before: t => t.resizeWindow(400, 800),
     doUndo: t => t.click(Selector('button:not(:disabled)').withExactText('Undo')),
     doRedo: t => t.click(Selector('button:not(:disabled)').withExactText('Redo')),
