@@ -111,7 +111,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     {props.statNameOverride ?? 'Statistic'}
                 </span>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
         },
         {
             columnIdentifier: 'statval',
@@ -121,7 +121,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     Value
                 </span>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
@@ -134,7 +134,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -146,7 +146,7 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
                     }
                 </span>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
         },
         ...PointerHeaderCells({ ordinalStyle }),
     ] satisfies ColumnLayoutProps['cells']
@@ -165,14 +165,14 @@ function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayou
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
         content: <span className="serif" style={props.ordinalStyle}>Within Type</span>,
-        style: { textAlign: 'center' },
+        style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
         content: <span className="serif" style={props.ordinalStyle}>Overall</span>,
-        style: { textAlign: 'center' },
+        style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
     }
 
     // Must be outside branch because uses hooks

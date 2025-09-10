@@ -305,6 +305,8 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     const divStyle: CSSProperties = {
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
+        display: 'flex',
+        alignItems: 'flex-start',
         ...props.style,
     }
     const id = useId()
@@ -315,6 +317,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
             <CheckboxSettingJustBox
                 {...props}
                 id={inputId}
+                style={{ marginTop: '0.33em', ...props.style }}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
@@ -340,7 +343,7 @@ export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProp
             disabled={forcedOn}
             onChange={(e) => { props.onChange(e.target.checked) }}
             ref={checkboxRef}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
+            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, ...props.style }}
             data-test-id={props.testId}
             data-test-highlight={props.highlight}
         />
