@@ -99,7 +99,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
         fontWeight: 400,
         color: colors.ordinalTextColor,
         margin: 0,
-        textAlign: 'right',
     }
 
     const cells = [
@@ -129,12 +128,12 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             content: (
                 <span className="serif" key="ordinal" style={ordinalStyle}>
                     {
-                        (props.simpleOrdinals ? rightAlign('%ile') : 'Percentile')
+                        (props.simpleOrdinals ? '%ile' : 'Percentile')
 
                     }
                 </span>
             ),
-            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
@@ -142,11 +141,11 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             content: (
                 <span className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
-                        (props.simpleOrdinals ? rightAlign('Ord') : 'Ordinal')
+                        (props.simpleOrdinals ? 'Ord' : 'Ordinal')
                     }
                 </span>
             ),
-            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
         ...PointerHeaderCells({ ordinalStyle }),
     ] satisfies ColumnLayoutProps['cells']
@@ -629,16 +628,20 @@ function Ordinal(props: {
             onNewNumber={onNewNumber}
         />
     )
-    if (props.simpleOrdinals) {
-        return rightAlign(en)
-    }
     return (
-        <div className="serif" style={{ textAlign: 'right' }}>
+        <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}>
             {en}
-            {' of '}
-            {total}
-            {' '}
-            {displayType(currentUniverse, type)}
+            {props.simpleOrdinals
+                ? <></>
+                : (
+                        <>
+                            {' of '}
+                            {total}
+                            {' '}
+                            {displayType(currentUniverse, type)}
+                        </>
+                    )}
+
         </div>
     )
 }
@@ -733,12 +736,12 @@ export function Percentile(props: {
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
     const percentile = props.percentileByPopulation
-    if (props.simpleOrdinals) {
-        return rightAlign(`${percentile.toString()}%`)
-    }
     // something like Xth percentile
     let text = `${percentile}th percentile`
-    if (percentile % 10 === 1 && percentile % 100 !== 11) {
+    if (props.simpleOrdinals) {
+        text = `${percentile.toString()}%`
+    }
+    else if (percentile % 10 === 1 && percentile % 100 !== 11) {
         text = `${percentile}st percentile`
     }
     else if (percentile % 10 === 2 && percentile % 100 !== 12) {
@@ -747,7 +750,7 @@ export function Percentile(props: {
     else if (percentile % 10 === 3 && percentile % 100 !== 13) {
         text = `${percentile}rd percentile`
     }
-    return <div className="serif" style={{ textAlign: 'right' }}>{text}</div>
+    return <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>{text}</div>
 }
 
 // Lacks some customization since its column is not show in the comparison view
@@ -851,16 +854,6 @@ function PointerButtonIndex(props: {
         >
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
-    )
-}
-
-function rightAlign(value: React.ReactNode): ReactNode {
-    return (
-        <span
-            style={{ float: 'right', marginRight: '5px' }}
-        >
-            {value}
-        </span>
     )
 }
 
