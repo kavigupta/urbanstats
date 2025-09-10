@@ -306,7 +306,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         ...props.style,
     }
     const id = useId()
@@ -317,7 +317,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
             <CheckboxSettingJustBox
                 {...props}
                 id={inputId}
-                style={{ marginTop: '0.33em', ...props.style }}
+                style={{ ...props.style }}
             />
             <label htmlFor={inputId}>{props.name}</label>
         </div>
