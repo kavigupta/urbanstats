@@ -23,6 +23,7 @@ def csa_or_msa(hash_key, typ, path):
             link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
         ),
         include_in_syau=True,
+        special_data_sources=["composed_of_counties"],
     )
 
 
