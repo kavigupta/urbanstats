@@ -10,7 +10,6 @@ from urbanstats.games.quiz_region_types import (
     QUIZ_REGION_TYPES_INTERNATIONAL,
     QUIZ_REGION_TYPES_USA,
 )
-from urbanstats.geometry.historical_counties.aggregation import aggregate_to_suos
 from urbanstats.geometry.shapefiles.shapefile import (
     EmptyShapefileError,
     subset_mask_key,
