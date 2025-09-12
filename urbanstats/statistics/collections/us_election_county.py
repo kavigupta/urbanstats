@@ -48,7 +48,7 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
         ]
 
     def explanation_page_for_each_statistic(self):
-        return self.same_for_each_name("county-elections")  # TODO make this page
+        return self.same_for_each_name("county-elections")
 
     def quiz_question_descriptors(self):
         return QuizQuestionDescriptor.several(

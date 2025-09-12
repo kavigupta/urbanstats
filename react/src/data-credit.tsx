@@ -656,34 +656,29 @@ export function DataCreditPanel(): ReactNode {
                             for each geography.
                         </div>
 
-                        <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
+                        <h1>Elections</h1>
+
+                        <NRef name="election" h="h2">2016 and 2020 Election Data</NRef>
                         <div>
-                            Election Data is from
+                            2016 and 2020 Election Data is aggregated from counties from
                             {' '}
                             <FootnoteRef
                                 description={(
                                     <span>
-                                        Voting and Election Science Team, 2020,
+                                        McGovern, Tony (2025):
                                         {' '}
-                                        &quot;2020 Precinct-Level Election Results&quot;,
+                                        <i>US County Level Election Results 08-24,</i>
                                         {' '}
-                                        <a href="https://doi.org/10.7910/DVN/K7760H">https://doi.org/10.7910/DVN/K7760H</a>
-                                        , Harvard Dataverse, V45
+                                        <a href="https://github.com/tonmcg/US_County_Level_Election_Results_08-24">https://github.com/tonmcg/US_County_Level_Election_Results_08-24</a>
                                     </span>
                                 )}
                             >
-                                VEST
+                                Tony McGovern.
                             </FootnoteRef>
-                            {' '}
-                            .
-                            {' '}
-                            Election Data is approximate and uses
-                            VTD estimates when available. Data is precinct-level, disaggregated to the census block level
-                            and then aggregated to the geography of interest based on the centroid. Results might not
-                            match official results. Data is from the 2016 and 2020 US Presidential general elections. N/A
-                            indicates that the statistic is not available for the given geography, possibly because the
-                            precinct boundaries in the dataset are slightly inaccurate, or there are no results for
-                            the precincts overlapping the geography.
+                            We do not perform disaggregation as counties are massive, instead we only report county level data and
+                            data for geographies that are aggregations of counties (states, MSAs, etc). Some counties have changed over
+                            time, in cases where modern counties disagree with 2008/2012 counties, we do not report results. Alaska is
+                            aggregated into a single &quot;county&quot; for this purpose.
                         </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
