@@ -6,7 +6,7 @@ from urbanstats.statistics.statistic_collection import USAStatisticsCounties
 from urbanstats.data.election_data_by_county.tonmcg import tonmcg_elections
 
 
-class CountyLevelElections(USAStatisticsCounties):
+class USCountyLevelElectionsStatistics(USAStatisticsCounties):
     version = 8
 
     def compute_statistics_dictionary_usa(

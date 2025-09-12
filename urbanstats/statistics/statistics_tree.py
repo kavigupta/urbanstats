@@ -590,14 +590,27 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
-            "election",
-            "Election",
-            ("2020 Presidential Election", "margin"),
-            ("2016 Presidential Election", "margin"),
-            ("2016-2020 Swing", "margin"),
+        "election": StatisticCategory(
+            name="Election",
+            contents={
+                **just_2020(
+                    ("2008 Presidential Election", "margin"),
+                    ("2008-2012 Swing", "margin"),
+                    ("2012 Presidential Election", "margin"),
+                    ("2012-2016 Swing", "margin"),
+                    year=2010,
+                ),
+                **just_2020(
+                    ("2016 Presidential Election", "margin"),
+                    ("2016-2020 Swing", "margin"),
+                    ("2020 Presidential Election", "margin"),
+                    ("2020-2024 Swing", "margin"),
+                    ("2024 Presidential Election", "margin"),
+                    year=2020,
+                ),
+            },
         ),
-        **just_2020_category(
+        ** just_2020_category(
             "distance_from_features",
             "Distance from Features",
             "park_percent_1km_v2",

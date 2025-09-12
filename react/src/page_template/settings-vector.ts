@@ -411,6 +411,13 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_16', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_32', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_64', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2008 Presidential Election-margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2008-2012 Swing-margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2012 Presidential Election-margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2012-2016 Swing-margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2020-2024 Swing-margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_2024 Presidential Election-margin', coder: booleanSettingCoder }),
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
