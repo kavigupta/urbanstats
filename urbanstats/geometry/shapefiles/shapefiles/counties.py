@@ -36,4 +36,5 @@ COUNTIES = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
     ),
     include_in_syau=True,
+    special_data_sources=["composed_of_counties"],
 )

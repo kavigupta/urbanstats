@@ -19,4 +19,5 @@ CSAs = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
+    special_data_sources=["composed_of_counties"],
 )
