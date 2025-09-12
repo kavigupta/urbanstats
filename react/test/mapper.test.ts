@@ -75,3 +75,9 @@ cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis,
 `
 
 testCode('County', 'USA', codeSetCenterWithExpression, 'code-set-center-with-expression', true)
+
+const translucentOutlineCustomBackground = `
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5)))
+`
+
+testCode('County', 'USA', translucentOutlineCustomBackground, 'translucent-outline-custom-background')

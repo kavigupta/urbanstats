@@ -54,6 +54,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
         document.documentElement.style.setProperty('--background', colors.background)
         document.documentElement.style.setProperty('--highlight', colors.highlight)
+        document.documentElement.style.setProperty('--border-non-shadow', colors.borderNonShadow)
     }, [colors, juxtaColors])
 
     useEffect(() => {

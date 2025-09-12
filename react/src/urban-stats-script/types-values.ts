@@ -126,6 +126,7 @@ export type ConstantCategory = typeof constantCategories[number]
 
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
+export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
 export interface Documentation {
     humanReadableName: string
     priority?: number
@@ -154,6 +155,10 @@ export interface Documentation {
      * Included for all bulit-in constants. Will be displayed in the documentation.
      */
     longDescription?: string
+    /**
+     * Used when displaying this value in a selector
+     */
+    selectorRendering?: SelectorRendering
 }
 
 export interface USSDocumentedType {

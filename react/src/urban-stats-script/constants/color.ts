@@ -155,6 +155,10 @@ function colorConstant(name: string, value: string, isDefault?: boolean): [strin
             isDefault,
             longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
             documentationTable: 'predefined-colors',
+            selectorRendering: {
+                kind: 'gradientBackground',
+                ramp: [[0, value], [1, value]],
+            },
         },
     }] satisfies [string, USSValue]
 }

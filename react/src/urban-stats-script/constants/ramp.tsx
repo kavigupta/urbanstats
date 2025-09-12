@@ -1,7 +1,7 @@
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
-import { USSRawValue, USSType, USSValue } from '../types-values'
+import { Documentation, USSRawValue, USSType, USSValue } from '../types-values'
 
 import { rgbColorExpression, doRender } from './color'
 import { Color, hexToColor } from './color-utils'
@@ -75,6 +75,7 @@ export const constructRampValue: USSValue = {
         humanReadableName: 'Custom Ramp',
         category: 'ramp',
         longDescription: 'Creates a custom color ramp from a vector of value-color pairs. Values should range from 0 to 1 and be strictly increasing.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
 
@@ -103,6 +104,7 @@ export const reverseRampValue: USSValue = {
         humanReadableName: 'Reverse Ramp',
         category: 'ramp',
         longDescription: 'Represents a ramp that is ordered from highest to lowest value, in reverse order from the original ramp.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
 
@@ -131,6 +133,7 @@ export const divergingRampValue: USSValue = {
         humanReadableName: 'Diverging Ramp',
         category: 'ramp',
         longDescription: 'Creates a diverging color ramp with three colors: first color at 0, middle color at 0.5, and last color at 1.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
 
@@ -152,6 +155,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
             )],
             longDescription: `Predefined color ramp "${name}" for mapping numeric values to colors.`,
             documentationTable: 'predefined-ramps',
-        },
+            selectorRendering: { kind: 'gradientBackground', ramp },
+        } satisfies Documentation,
     },
 ])

@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { gzipSync } from 'zlib'
+import { gunzipSync, gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
@@ -24,7 +24,6 @@ export async function checkBox(t: TestController, label: RegExp): Promise<void> 
     const labelEl = Selector('label').withText(label)
     const parent = labelEl.parent()
     const checkbox = parent.find('input[type="checkbox"]')
-    // console.log(.innerHTML)
     await t.click(checkbox)
     await waitForLoading(t)
 }
@@ -42,9 +41,12 @@ export function urlFromCode(geographyKind: string, universe: string, code: strin
         },
     })
     const url = `${target}/mapper.html?settings=${encodeURIComponent(gzipSync(settingsJSON).toString('base64'))}`
-    // eslint-disable-next-line no-console -- helpful for debugging the test
-    console.log('url', url)
     return url
+}
+
+export function settingsFromURL(url: string): unknown {
+    const encodedSettings = new URL(url).searchParams.get('settings') ?? (() => { throw new Error('no settings') })()
+    return JSON.parse(gunzipSync(Buffer.from(encodedSettings, 'base64')).toString())
 }
 
 export async function getCodeFromMainField(): Promise<string> {

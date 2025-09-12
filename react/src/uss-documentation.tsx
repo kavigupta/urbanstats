@@ -456,7 +456,7 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
     )
 }
 
-function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
+export function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
     const colors = useColors()
     return (
         <Header key={props.name} title={props.name} header="h4" ident={`constant-${props.name}`}>
