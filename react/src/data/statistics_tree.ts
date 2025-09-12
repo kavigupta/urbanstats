@@ -4559,28 +4559,8 @@ export const rawStatsTree = [
         "name": "Election",
         "contents": [
             {
-                "id": "2020 Presidential Election-margin",
-                "name": "2020 Presidential Election",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "2020 Presidential Election",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 2
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2016 Presidential Election-margin",
-                "name": "2016 Presidential Election",
+                "id": "us_presidential_election",
+                "name": "US Presidential Election",
                 "contents": [
                     {
                         "year": 2020,
@@ -4593,24 +4573,22 @@ export const rawStatsTree = [
                                         "column": 0
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2016-2020 Swing-margin",
-                "name": "2016-2020 Swing",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2016-2020 Swing",
                                 "stats": [
                                     {
                                         "source": null,
                                         "column": 1
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "2020 Presidential Election",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 2
                                     }
                                 ]
                             }

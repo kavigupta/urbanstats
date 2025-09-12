@@ -1800,25 +1800,25 @@ export default {
             "index": 231
         },
         {
-            "varName": "pres_2020_margin",
-            "humanReadableName": "2020 Presidential Election",
-            "comesFromMultiSourceSet": false,
-            "order": 257,
-            "index": 2
-        },
-        {
             "varName": "pres_2016_margin",
             "humanReadableName": "2016 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 258,
+            "order": 257,
             "index": 0
         },
         {
             "varName": "pres_swing_2016_2020",
             "humanReadableName": "2016-2020 Swing",
             "comesFromMultiSourceSet": false,
-            "order": 259,
+            "order": 258,
             "index": 1
+        },
+        {
+            "varName": "pres_2020_margin",
+            "humanReadableName": "2020 Presidential Election",
+            "comesFromMultiSourceSet": false,
+            "order": 259,
+            "index": 2
         },
         {
             "varName": "park_1km",
