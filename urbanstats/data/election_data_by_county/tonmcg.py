@@ -165,8 +165,14 @@ def load_2024_suo():
     )
 
 
-tonmcg_elections = [
-    SUODataSource("tonmcg-2008_2", load_2008_suo, ["dem", "gop", "total"]),
-    SUODataSource("tonmcg-2012_2", load_2012_suo, ["dem", "gop", "total"]),
-    SUODataSource("tonmcg-2024_2", load_2024_suo, ["dem", "gop", "total"]),
-]
+tonmcg_elections = {
+    "2008 Presidential Election": SUODataSource(
+        "tonmcg-2008_2", load_2008_suo, ["dem", "gop", "total"]
+    ),
+    "2012 Presidential Election": SUODataSource(
+        "tonmcg-2012_2", load_2012_suo, ["dem", "gop", "total"]
+    ),
+    "2024 Presidential Election": SUODataSource(
+        "tonmcg-2024_2", load_2024_suo, ["dem", "gop", "total"]
+    ),
+}
