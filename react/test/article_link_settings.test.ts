@@ -15,5 +15,5 @@ urbanstatsFixture('article with election category param', `${target}/article.htm
 
 test('contains only stats for election', async (t) => {
     const statisticLinkTests = ClientFunction(() => Array.from(document.querySelectorAll('[data-test-id=statistic-link]')).map(element => element.textContent))
-    await t.expect(statisticLinkTests()).eql(['2020 Presidential Election', '2016 Presidential Election', '2016-2020 Swing'])
+    await t.expect(statisticLinkTests()).eql(['2020 Presidential Election', '2016-2020 Swing', '2016 Presidential Election'])
 })
