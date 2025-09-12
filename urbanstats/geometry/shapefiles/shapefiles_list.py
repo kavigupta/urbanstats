@@ -20,7 +20,7 @@ from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
-from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
+from urbanstats.geometry.shapefiles.shapefiles.csas_msas import CSAs, MSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import (
     HISTORICAL_CONGRESSIONALs,
@@ -31,7 +31,6 @@ from urbanstats.geometry.shapefiles.shapefiles.media_markets import MEDIA_MARKET
 from urbanstats.geometry.shapefiles.shapefiles.metropolitan_clusters import (
     METROPOLITAN_CLUSTERS,
 )
-from urbanstats.geometry.shapefiles.shapefiles.msas import MSAs
 from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
 from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
