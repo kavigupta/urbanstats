@@ -7,7 +7,7 @@ from urbanstats.data.election_data_by_county.tonmcg import tonmcg_elections
 
 
 class USCountyLevelElectionsStatistics(USAStatisticsCounties):
-    version = 8
+    version = 9
 
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
