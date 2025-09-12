@@ -1,9 +1,9 @@
 import numpy as np
+
+from urbanstats.data.election_data_by_county.tonmcg import tonmcg_elections
 from urbanstats.games.quiz_question_metadata import ELECTION, QuizQuestionDescriptor
 from urbanstats.geometry.historical_counties.aggregation import aggregate_to_suos
 from urbanstats.statistics.statistic_collection import USAStatisticsCounties
-
-from urbanstats.data.election_data_by_county.tonmcg import tonmcg_elections
 
 
 class USCountyLevelElectionsStatistics(USAStatisticsCounties):
