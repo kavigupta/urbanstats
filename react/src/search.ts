@@ -72,7 +72,7 @@ const weights = {
     population: 2,
     incompleteMatches: 1,
     swapOverlap: 1,
-    priorityType: 0.4,
+    priorityType: 0.2,
 }
 
 const sumOfWeights = Object.values(weights).reduce((total, value) => total + value, 0)

@@ -123,6 +123,7 @@ export const linearScaleValue: USSValue = {
         category: 'scale',
         isDefault: true,
         longDescription: 'Creates a linear scale that maps numeric values to a range. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
 
@@ -161,5 +162,6 @@ export const logScaleValue: USSValue = {
         humanReadableName: 'Logarithmic Scale',
         category: 'scale',
         longDescription: 'Creates a logarithmic scale that maps numeric values to a range using log transformation. Useful for data with wide ranges or exponential distributions. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue

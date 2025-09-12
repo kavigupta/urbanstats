@@ -77,6 +77,11 @@ button:hover:not(:disabled) {
     background-color: var(--slightly-different-background-focused);
 }
 
+button:disabled {
+    color: var(--ordinal-text-color);
+    border: 1px solid var(--border-non-shadow);
+}
+
 .centered_text {
     font-family: 'Jost', 'Arial', sans-serif;
     text-align: center;

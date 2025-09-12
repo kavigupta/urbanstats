@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
+import { useMobileLayout } from '../utils/responsive'
 
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
-import { LocInfo } from './location'
 import { ParseError } from './parser'
 import { renderValue, USSDocumentedType, USSValue } from './types-values'
 
@@ -33,15 +33,14 @@ export function makeScript(uss: string): Script {
     return { uss, tokens: lex({ type: 'single', ident: 'editor' }, uss) }
 }
 
-export type AutocompleteState = {
-    location: LocInfo
-    options: string[]
-    element: HTMLElement
-    apply: (optionIdx: number) => void
-} | undefined
-
 // `errors` may not overlap
-export function renderCode(script: Script, colors: Colors, errors: EditorError[], modfiyTokenContent: (token: AnnotatedToken, content: Node[]) => void): Node[] {
+export function renderCode(
+    script: Script,
+    colors: Colors,
+    errors: EditorError[],
+    modfiyTokenContent: (token: AnnotatedToken, content: Node[]) => void,
+    modifyTokenSpan: (token: AnnotatedToken, span: HTMLSpanElement) => void,
+): Node[] {
     const span = spanFactory(colors)
 
     const lexSpans: Node[] = []
@@ -68,8 +67,10 @@ export function renderCode(script: Script, colors: Colors, errors: EditorError[]
         const token = script.tokens[indexInTokens]
         if (charIdx === token.location.start.charIdx) {
             const content: Node[] = [document.createTextNode(script.uss.slice(token.location.start.charIdx, token.location.end.charIdx))]
-            modfiyTokenContent(token, content);
-            (errorSpans?.spans ?? lexSpans).push(span(token.token, content))
+            modfiyTokenContent(token, content)
+            const tokenSpan = span(token.token, content)
+            modifyTokenSpan(token, tokenSpan);
+            (errorSpans?.spans ?? lexSpans).push(tokenSpan)
             charIdx = token.location.end.charIdx
             indexInTokens++
         }
@@ -297,7 +298,7 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
         'top': '100%',
         'left': '100%',
         'user-select': 'none',
-        'z-index': '1',
+        'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
         'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
@@ -308,6 +309,31 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
     const result = document.createElement('div')
     result.setAttribute('contenteditable', 'false')
     result.setAttribute('style', styleToString(style))
+
+    return result
+}
+
+export function createDocumentationPopover(colors: Colors): HTMLElement {
+    const style = {
+        'position': 'absolute',
+        'top': '100%',
+        'left': '0%',
+        'user-select': 'none',
+        'z-index': '3',
+        'overflow': 'scroll',
+        'max-height': `10lh`,
+        'border-radius': TestUtils.shared.isTesting ? '0' : '5px',
+        'border': `1px solid ${colors.borderNonShadow}`,
+        'color': colors.textMain,
+        'background-color': colors.slightlyDifferentBackground,
+        'width': '33vw',
+        'padding': '0 1.33em',
+    }
+
+    const result = document.createElement('div')
+    result.setAttribute('contenteditable', 'false')
+    result.setAttribute('style', styleToString(style))
+    result.className = 'serif'
 
     return result
 }
@@ -353,11 +379,15 @@ export function useUndoRedo<T, S>(
 ): {
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
+        ui: ReactNode
     } {
     const undoStack = useRef<UndoRedoItem<T, S>[]>([
         { time: 0, state: initialState, selection: initialSelection },
     ])
     const redoStack = useRef<UndoRedoItem<T, S>[]>([])
+
+    const [canUndo, setCanUndo] = useState(false)
+    const [canRedo, setCanRedo] = useState(false)
 
     const addState = useCallback((state: T, selection: S): void => {
         const currentUndoState = undoStack.current[undoStack.current.length - 1]
@@ -372,57 +402,170 @@ export function useUndoRedo<T, S>(
             while (undoStack.current.length > undoHistory) {
                 undoStack.current.shift()
             }
+            setCanUndo(true)
         }
         redoStack.current = []
+        setCanRedo(false)
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
         undoStack.current[undoStack.current.length - 1].selection = selection
     }, [])
 
-    const undo = useCallback((): void => {
+    const doUndo = useCallback((): void => {
         if (undoStack.current.length >= 2) {
             const prevState = undoStack.current[undoStack.current.length - 2]
             // Prev state becomes current state, current state becomes redo state
             redoStack.current.push(undoStack.current.pop()!)
             onStateChange(prevState.state)
             onSelectionChange(prevState.selection)
+            setCanRedo(true)
+            setCanUndo(undoStack.current.length >= 2)
         }
     }, [onStateChange, onSelectionChange])
 
-    const redo = useCallback((): void => {
+    const doRedo = useCallback((): void => {
         const futureState = redoStack.current.pop()
         if (futureState !== undefined) {
             undoStack.current.push(futureState)
             onStateChange(futureState.state)
             onSelectionChange(futureState.selection)
+            setCanUndo(true)
+            setCanRedo(redoStack.current.length >= 1)
         }
     }, [onStateChange, onSelectionChange])
+
+    const getIsActive = useCallback(() => {
+        return onlyElement === undefined || (document.activeElement !== null && document.activeElement === onlyElement.current)
+    }, [onlyElement])
 
     // Set up keyboard shortcuts
     useEffect(() => {
         const listener = (e: KeyboardEvent): void => {
-            if (onlyElement !== undefined && document.activeElement !== null && document.activeElement !== onlyElement.current) {
+            if (!getIsActive()) {
                 return
             }
 
             const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 e.preventDefault()
-                undo()
+                doUndo()
             }
             else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
                 e.preventDefault()
-                redo()
+                doRedo()
             }
         }
 
         window.addEventListener('keydown', listener)
         return () => { window.removeEventListener('keydown', listener) }
-    }, [undo, redo, onlyElement])
+    }, [doUndo, doRedo, getIsActive])
+
+    const [isActive, setIsActive] = useState(getIsActive)
+
+    useEffect(() => {
+        const listener = (): void => {
+            setIsActive(getIsActive())
+        }
+        window.addEventListener('focusin', listener)
+        window.addEventListener('focusout', listener)
+        listener()
+        return () => {
+            window.removeEventListener('focusin', listener)
+            window.removeEventListener('focusout', listener)
+        }
+    }, [getIsActive])
+
+    const ui: ReactNode = isActive ? <UndoRedoControls {...{ doUndo, doRedo, canUndo, canRedo }} /> : null
 
     return {
         addState,
         updateCurrentSelection,
+        ui,
     }
+}
+
+function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => void, doRedo: () => void, canUndo: boolean, canRedo: boolean }): ReactNode {
+    const outer = useRef<HTMLDivElement>(null)
+    const inner = useRef<HTMLDivElement>(null)
+
+    const width = 150
+    const height = 50
+
+    const padding = 10
+
+    /**
+     * iPhone safari is awful and ignores `position: fixed` when they keyboard is out
+     * So we need to do manual positioning
+     */
+    const positionInner = useCallback(() => {
+        // Get outer's position in the window
+        // Position inner at an offset from outer that matches up with the current scroll position
+        if (outer.current === null || inner.current === null) {
+            return
+        }
+
+        const outerBounds = outer.current.getBoundingClientRect()
+
+        inner.current.style.top = `${(window.visualViewport?.height ?? window.innerHeight) - outerBounds.top - height}px`
+        inner.current.style.left = `${(window.visualViewport?.width ?? window.innerWidth) - outerBounds.left - width}px`
+    }, [])
+
+    useEffect(positionInner)
+
+    useEffect(() => {
+        window.addEventListener('scroll', positionInner)
+        window.addEventListener('resize', positionInner)
+        window.visualViewport?.addEventListener('resize', positionInner)
+        return () => {
+            window.removeEventListener('scroll', positionInner)
+            window.removeEventListener('resize', positionInner)
+            window.visualViewport?.removeEventListener('resize', positionInner)
+        }
+    }, [positionInner])
+
+    const isMobile = useMobileLayout()
+
+    if (!isMobile) {
+        return null
+    }
+
+    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: 100 }
+
+    return (
+        <div ref={outer} style={{ position: 'absolute' }}>
+            <div
+                ref={inner}
+                style={{
+                    position: 'absolute',
+                    display: 'flex',
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    gap: `${padding}px`,
+                    padding: `${padding}px`,
+                }}
+            >
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault()
+                        doUndo()
+                    }}
+                    disabled={!canUndo}
+                    style={buttonStyle}
+                >
+                    Undo
+                </button>
+                <button
+                    onPointerDown={(e) => {
+                        e.preventDefault()
+                        doRedo()
+                    }}
+                    disabled={!canRedo}
+                    style={buttonStyle}
+                >
+                    Redo
+                </button>
+            </div>
+        </div>
+    )
 }

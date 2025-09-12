@@ -106,6 +106,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): Map<stri
             category: 'mapper',
             longDescription: 'Predefined map inset configurations for the current universe (whatever that is). E.g., for the US, it would be the continental US, Alaska, Hawaii, Puerto Rico, and Guam.',
             equivalentExpressions: universe !== undefined ? [loadInsetExpression(universe)] : [],
+            selectorRendering: { kind: 'subtitleLongDescription' },
         },
     })
 
@@ -140,6 +141,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): Map<stri
                 longDescription: `Data from ${info.humanReadableName} (from whatever source is most reliable)`,
                 documentationTable: 'mapper-data-variables',
                 isDefault: name === 'density_pw_1km',
+                selectorRendering: { kind: 'subtitleLongDescription' },
             },
         })
     }

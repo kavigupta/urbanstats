@@ -13,7 +13,7 @@ type Selections = [Range | null, Range | null]
  * This panel used for developing + debugging editor functionality.
  */
 export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
-    const { uss, setUss, typeEnvironment, results, selection, setSelection } = useStandaloneEditorState<Selections>({
+    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi } = useStandaloneEditorState<Selections>({
         ident: 'editor-panel',
         getCode: () => localStorage.getItem('editor-code') ?? '',
         onChange: (newScript) => { localStorage.setItem('editor-code', newScript) },
@@ -66,6 +66,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                         setSelection([selection[0], newSelection])
                     }}
                 />
+                {undoRedoUi}
             </div>
         </PageTemplate>
     )
