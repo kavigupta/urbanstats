@@ -4559,26 +4559,6 @@ export const rawStatsTree = [
         "name": "Election",
         "contents": [
             {
-                "id": "2020 Presidential Election-margin",
-                "name": "2020 Presidential Election",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "2020 Presidential Election",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 2
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
                 "id": "2016 Presidential Election-margin",
                 "name": "2016 Presidential Election",
                 "contents": [
@@ -4611,6 +4591,26 @@ export const rawStatsTree = [
                                     {
                                         "source": null,
                                         "column": 1
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "2020 Presidential Election-margin",
+                "name": "2020 Presidential Election",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2020 Presidential Election",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 2
                                     }
                                 ]
                             }

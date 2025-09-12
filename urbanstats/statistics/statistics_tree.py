@@ -590,12 +590,15 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
-            "election",
-            "Election",
-            ("2020 Presidential Election", "margin"),
-            ("2016 Presidential Election", "margin"),
-            ("2016-2020 Swing", "margin"),
+        "election": StatisticCategory(
+            name="Election",
+            contents={
+                **just_2020(
+                    ("2016 Presidential Election", "margin"),
+                    ("2016-2020 Swing", "margin"),
+                    ("2020 Presidential Election", "margin"),
+                ),
+            },
         ),
         **just_2020_category(
             "distance_from_features",
