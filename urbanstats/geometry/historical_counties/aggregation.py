@@ -9,6 +9,7 @@ from .compute_suos import current_suos
 
 
 def join_with_suos(shapes):
+    shapes = shapes.reset_index(drop=True)
     _, coords, _, _ = current_suos()
     suo_shapefile = gpd.GeoDataFrame(
         dict(
@@ -24,7 +25,7 @@ def join_with_suos(shapes):
 
 
 @permacache(
-    "urbanstats/geometry/historical_counties/aggregation/aggregate_to_suos_4",
+    "urbanstats/geometry/historical_counties/aggregation/aggregate_to_suos_5",
     key_function=dict(
         shapefile=lambda x: x.hash_key, suo_data_source=lambda x: x.hash_key
     ),
