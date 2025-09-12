@@ -4559,8 +4559,8 @@ export const rawStatsTree = [
         "name": "Election",
         "contents": [
             {
-                "id": "2008 Presidential Election-margin",
-                "name": "2008 Presidential Election",
+                "id": "us_presidential_election",
+                "name": "US Presidential Election",
                 "contents": [
                     {
                         "year": 2010,
@@ -4573,18 +4573,7 @@ export const rawStatsTree = [
                                         "column": 0
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2008-2012 Swing-margin",
-                "name": "2008-2012 Swing",
-                "contents": [
-                    {
-                        "year": 2010,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2008-2012 Swing",
                                 "stats": [
@@ -4593,18 +4582,7 @@ export const rawStatsTree = [
                                         "column": 1
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2012 Presidential Election-margin",
-                "name": "2012 Presidential Election",
-                "contents": [
-                    {
-                        "year": 2010,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2012 Presidential Election",
                                 "stats": [
@@ -4613,18 +4591,7 @@ export const rawStatsTree = [
                                         "column": 2
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2012-2016 Swing-margin",
-                "name": "2012-2016 Swing",
-                "contents": [
-                    {
-                        "year": 2010,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2012-2016 Swing",
                                 "stats": [
@@ -4635,13 +4602,7 @@ export const rawStatsTree = [
                                 ]
                             }
                         ]
-                    }
-                ]
-            },
-            {
-                "id": "2016 Presidential Election-margin",
-                "name": "2016 Presidential Election",
-                "contents": [
+                    },
                     {
                         "year": 2020,
                         "stats_by_source": [
@@ -4653,18 +4614,7 @@ export const rawStatsTree = [
                                         "column": 4
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2016-2020 Swing-margin",
-                "name": "2016-2020 Swing",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2016-2020 Swing",
                                 "stats": [
@@ -4673,18 +4623,7 @@ export const rawStatsTree = [
                                         "column": 5
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2020 Presidential Election-margin",
-                "name": "2020 Presidential Election",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2020 Presidential Election",
                                 "stats": [
@@ -4693,18 +4632,7 @@ export const rawStatsTree = [
                                         "column": 6
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2020-2024 Swing-margin",
-                "name": "2020-2024 Swing",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2020-2024 Swing",
                                 "stats": [
@@ -4713,18 +4641,7 @@ export const rawStatsTree = [
                                         "column": 7
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "2024 Presidential Election-margin",
-                "name": "2024 Presidential Election",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
+                            },
                             {
                                 "name": "2024 Presidential Election",
                                 "stats": [

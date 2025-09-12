@@ -75,6 +75,7 @@ class StatisticGroup:
 
     by_year: dict[int | NoneType, list[MultiSource]]
     group_name_statcol: str = None
+    group_name: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
@@ -118,6 +119,9 @@ class StatisticGroup:
         }
 
     def compute_group_name(self, name_map):
+        if self.group_name is not None:
+            assert self.group_name_statcol is None
+            return self.group_name
         short_statcol = self.group_name_statcol
         if short_statcol is None:
             year = None if None in self.by_year else max(self.by_year)
@@ -593,24 +597,33 @@ statistics_tree = StatisticTree(
         "election": StatisticCategory(
             name="Election",
             contents={
-                **just_2020(
-                    ("2008 Presidential Election", "margin"),
-                    ("2008-2012 Swing", "margin"),
-                    ("2012 Presidential Election", "margin"),
-                    ("2012-2016 Swing", "margin"),
-                    year=2010,
-                ),
-                **just_2020(
-                    ("2016 Presidential Election", "margin"),
-                    ("2016-2020 Swing", "margin"),
-                    ("2020 Presidential Election", "margin"),
-                    ("2020-2024 Swing", "margin"),
-                    ("2024 Presidential Election", "margin"),
-                    year=2020,
-                ),
+                "us_presidential_election": StatisticGroup(
+                    {
+                        2010: [
+                            single_source(col_name)
+                            for col_name in [
+                                ("2008 Presidential Election", "margin"),
+                                ("2008-2012 Swing", "margin"),
+                                ("2012 Presidential Election", "margin"),
+                                ("2012-2016 Swing", "margin"),
+                            ]
+                        ],
+                        2020: [
+                            single_source(col_name)
+                            for col_name in [
+                                ("2016 Presidential Election", "margin"),
+                                ("2016-2020 Swing", "margin"),
+                                ("2020 Presidential Election", "margin"),
+                                ("2020-2024 Swing", "margin"),
+                                ("2024 Presidential Election", "margin"),
+                            ]
+                        ],
+                    },
+                    group_name="US Presidential Election",
+                )
             },
         ),
-        ** just_2020_category(
+        **just_2020_category(
             "distance_from_features",
             "Distance from Features",
             "park_percent_1km_v2",

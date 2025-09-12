@@ -289,9 +289,9 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_marriage_never_married', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_marriage_married_not_divorced', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_marriage_divorced', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_park_percent_1km_v2', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_within_Hospital_10', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_mean_dist_Hospital_updated', coder: booleanSettingCoder }),
@@ -411,13 +411,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_16', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_32', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_64', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2008 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2008-2012 Swing-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2012 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2012-2016 Swing-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2020-2024 Swing-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2024 Presidential Election-margin', coder: booleanSettingCoder }),
-
+    new ActiveSetting({ key: 'show_stat_group_us_presidential_election', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
