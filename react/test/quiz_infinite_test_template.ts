@@ -62,7 +62,7 @@ export function regressionTestForVersions(versions: number[], ignoredVersions: n
     const vs = files.map(f => parseInt(/(\d+).json$/.exec(f)![0]))
     for (const v of vs) {
         if (!versions.includes(v) && !ignoredVersions.includes(v)) {
-            throw new Error(`Version ${v} not in versions or ignoredVersions`)
+            throw new Error(`Version ${v} not in versions (${JSON.stringify(versions)}) or ignoredVersions (${JSON.stringify(ignoredVersions)})`)
         }
     }
 
