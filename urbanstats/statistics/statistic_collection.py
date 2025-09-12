@@ -139,6 +139,7 @@ class USAStatisticsCounties(USAStatistics):
             shapefile_table=shapefile_table,
         )
 
+
 class CanadaStatistics(StatisticCollection):
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_CANADA
