@@ -115,6 +115,7 @@ export function TopLevelEditor({
     }
     return (
         <div>
+            <div style={{ margin: '0.5em 0px' }} />
             <CheckboxSettingCustom
                 name="Enable custom script"
                 checked={uss.type === 'customNode'}
@@ -128,7 +129,6 @@ export function TopLevelEditor({
                         setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false))
                     }
                 }}
-                style={{ margin: '0.5em 0' }}
             />
             { subcomponent() }
             <DisplayResults
