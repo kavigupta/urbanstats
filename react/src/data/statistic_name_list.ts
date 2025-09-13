@@ -1,7 +1,13 @@
 export default [
+    "2008 Presidential Election",
+    "2008-2012 Swing",
+    "2012 Presidential Election",
+    "2012-2016 Swing",
     "2016 Presidential Election",
     "2016-2020 Swing",
     "2020 Presidential Election",
+    "2020-2024 Swing",
+    "2024 Presidential Election",
     "Arthritis %",
     "Binge drinking among adults %",
     "High blood pressure %",

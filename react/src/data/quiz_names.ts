@@ -1,7 +1,13 @@
 export default [
+    "!FULL Which voted more for Obama in the 2008 presidential election?",
+    "!FULL Which swung less towards Republicans from 2008 to 2012?",
+    "!FULL Which voted more for Obama in the 2012 presidential election?",
+    "!FULL Which swung less towards Republicans from 2012 to 2016?",
     "!FULL Which voted more for Clinton in the 2016 presidential election?",
     "!FULL Which swung towards Democrats more from 2016 to 2020?",
     "!FULL Which voted more for Biden in the 2020 presidential election?",
+    "!FULL Which swung less towards Republicans from 2020 to 2024?",
+    "!FULL Which voted more for Harris in the 2024 presidential election?",
     "higher % of adults with arthritis",
     "higher % of adults who binge drink",
     "higher % of adults with high blood pressure",
