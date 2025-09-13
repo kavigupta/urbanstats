@@ -128,7 +128,6 @@ export function TopLevelEditor({
                         setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false))
                     }
                 }}
-                style={{ margin: '0.5em 0' }}
             />
             { subcomponent() }
             <DisplayResults
