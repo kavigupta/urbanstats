@@ -599,12 +599,23 @@ statistics_tree = StatisticTree(
             contents={
                 "us_presidential_election": StatisticGroup(
                     {
+                        2010: [
+                            single_source(col_name)
+                            for col_name in [
+                                ("2008 Presidential Election", "margin"),
+                                ("2008-2012 Swing", "margin"),
+                                ("2012 Presidential Election", "margin"),
+                                ("2012-2016 Swing", "margin"),
+                            ]
+                        ],
                         2020: [
                             single_source(col_name)
                             for col_name in [
                                 ("2016 Presidential Election", "margin"),
                                 ("2016-2020 Swing", "margin"),
                                 ("2020 Presidential Election", "margin"),
+                                ("2020-2024 Swing", "margin"),
+                                ("2024 Presidential Election", "margin"),
                             ]
                         ],
                     },

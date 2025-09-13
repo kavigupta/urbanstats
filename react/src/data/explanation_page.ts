@@ -1,7 +1,13 @@
 export default [
+    "county-elections",
+    "county-elections",
+    "county-elections",
+    "county-elections",
     "election",
     "election",
     "election",
+    "county-elections",
+    "county-elections",
     "health",
     "health",
     "health",

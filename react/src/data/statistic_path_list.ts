@@ -1,7 +1,13 @@
 export default [
+    "2008 Presidential Election-margin",
+    "2008-2012 Swing-margin",
+    "2012 Presidential Election-margin",
+    "2012-2016 Swing-margin",
     "2016 Presidential Election-margin",
     "2016-2020 Swing-margin",
     "2020 Presidential Election-margin",
+    "2020-2024 Swing-margin",
+    "2024 Presidential Election-margin",
     "ARTHRITIS_cdc_2",
     "BINGE_cdc_2",
     "BPHIGH_cdc_2",
