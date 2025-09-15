@@ -263,35 +263,29 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
     return (
         <div>
-            <table style={{ width: '100%', height: '100%' }}>
-                <tbody>
-                    <tr>
-                        {
-                            values.map((x, i) => (
-                                <td
-                                    key={i}
-                                    style={
-                                        {
-                                            width, height: '1em',
-                                            backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
-                                        }
-                                    }
-                                >
-                                </td>
-                            ))
-                        }
-                    </tr>
-                    <tr>
-                        {
-                            values.map((x, i) => (
-                                <td key={i} style={{ width, height: '1em' }}>
-                                    {createValue(x)}
-                                </td>
-                            ))
-                        }
-                    </tr>
-                </tbody>
-            </table>
+            <div style={{ display: 'flex', width: '100%' }}>
+                {
+                    values.map((x, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                width, height: '1em',
+                                backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
+                            }}
+                        >
+                        </div>
+                    ))
+                }
+            </div>
+            <div style={{ display: 'flex', width: '100%' }}>
+                {
+                    values.map((x, i) => (
+                        <div key={i} style={{ width, height: '1em' }}>
+                            {createValue(x)}
+                        </div>
+                    ))
+                }
+            </div>
             <div className="centered_text">
                 {label}
             </div>
