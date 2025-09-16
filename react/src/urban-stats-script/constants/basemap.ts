@@ -66,7 +66,7 @@ export const noBasemap: USSValue = {
         namedArgs: {
             backgroundColor: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: parseNoErrorAsExpression('rgb(1, 1, 1, a=0)', ''),
+                defaultValue: parseNoErrorAsExpression('rgb(1, 1, 1, a=1)', ''),
             },
         },
         returnType: { type: 'concrete', value: basemapType },
