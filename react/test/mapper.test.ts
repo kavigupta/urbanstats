@@ -81,3 +81,9 @@ cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=construc
 `
 
 testCode('County', 'USA', translucentOutlineCustomBackground, 'translucent-outline-custom-background')
+
+const translucentOutlineCustomBackgroundAndTextColor = `
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5), textColor=rgb(1, 1, 1)))
+`
+
+testCode('County', 'USA', translucentOutlineCustomBackgroundAndTextColor, 'translucent-outline-custom-background-and-text-color')

@@ -228,7 +228,16 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 }
 
-function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
+function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
+    switch (basemap.type) {
+        case 'osm':
+            return { }
+        case 'none':
+            return { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
+    }
+}
+
+function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -261,10 +270,11 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     const label = props.ramp.label
     const values = props.ramp.interpolations
     const unit = props.ramp.unit
+    const style = colorbarStyleFromBasemap(props.basemap)
 
     const createValue = (stat: number): ReactNode => {
         return (
-            <div className="centered_text">
+            <div className="centered_text" style={style}>
                 <Statistic
                     statname={label}
                     value={stat}
@@ -312,7 +322,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     ))
 
     return (
-        <div style={{ position: 'relative' }}>
+        <div style={{ ...style, position: 'relative' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
                     values.map((x, i) => (
@@ -390,6 +400,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
                 <Colorbar
                     ramp={empiricalRamp}
+                    basemap={basemap}
                 />
             </div>
         </div>
