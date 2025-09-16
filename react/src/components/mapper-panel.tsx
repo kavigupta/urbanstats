@@ -105,7 +105,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     private getShapes(): Shapes {
-        if (this.shapes && this.shapes.geographyKind === this.props.geographyKind && this.shapes.universe === this.props.universe && this.shapes.shapeType === this.shapeType) {
+        if (this.shapes && this.shapes.geographyKind === this.versionProps.geographyKind && this.shapes.universe === this.versionProps.universe && this.shapes.shapeType === this.shapeType) {
             return this.shapes
         }
 
@@ -113,8 +113,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         assert(st !== undefined, 'Shape type must be set before loading shapes')
 
         this.shapes = {
-            geographyKind: this.props.geographyKind, universe: this.props.universe, shapeType: st, data: (async () => {
-                return loadShapes(this.props.geographyKind, this.props.universe, st)
+            geographyKind: this.versionProps.geographyKind, universe: this.versionProps.universe, shapeType: st, data: (async () => {
+                return loadShapes(this.versionProps.geographyKind, this.versionProps.universe, st)
             })() }
 
         return this.shapes
@@ -146,13 +146,13 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     }
 
     override async computeShapesToRender(version: number): Promise<ShapeRenderingSpec> {
-        const stmts = this.props.uss
+        const stmts = this.versionProps.uss
         if (stmts === undefined) {
             return { shapes: [], zoomIndex: -1 }
         }
-        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.props.geographyKind, universe: this.props.universe }, stmts })
+        const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.versionProps.geographyKind, universe: this.versionProps.universe }, stmts })
         if (version === this.version) {
-            this.props.setErrors(result.error)
+            this.versionProps.setErrors(result.error)
         }
         if (result.resultingValue === undefined) {
             return { shapes: [], zoomIndex: -1 }
@@ -180,11 +180,11 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const ramp = mapResult.ramp
         const scale = instantiate(mapResult.scale)
         const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.props.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
-        this.props.basemapCallback(mapResult.basemap)
-        this.props.insetsCallback(mapResult.insets)
+        this.versionProps.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
+        this.versionProps.basemapCallback(mapResult.basemap)
+        this.versionProps.insetsCallback(mapResult.insets)
         const colors = mapResult.data.map(
-            val => interpolateColor(ramp, scale.forward(val), this.props.colors.mapInvalidFillColor),
+            val => interpolateColor(ramp, scale.forward(val), this.versionProps.colors.mapInvalidFillColor),
         )
         const specs = colors.map(
             // no outline, set color fill, alpha=1
