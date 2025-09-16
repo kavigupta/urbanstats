@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -32,7 +32,7 @@ import { interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
-import { useHeaderTextClass } from '../utils/responsive'
+import { onWidthChange, useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
@@ -233,9 +233,31 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
     const colors = useColors()
+    const valuesRef = useRef<HTMLDivElement>(null)
+    const shouldRotate: boolean = useSyncExternalStore(onWidthChange, () => {
+        if (valuesRef.current === null) {
+            return false
+        }
+        const current = valuesRef.current
+        const containers = current.querySelectorAll('.containerOfXticks')
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- this isn't a loop over an array
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i] as HTMLDivElement
+            const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
+            if (contained === null) {
+                continue
+            }
+            if (contained.offsetWidth > container.offsetWidth * 0.9) {
+                return true
+            }
+        }
+        return false
+    })
+
     if (props.ramp === undefined) {
         return <div></div>
     }
+
     const label = props.ramp.label
     const values = props.ramp.interpolations
     const unit = props.ramp.unit
@@ -261,8 +283,36 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
 
     const width = `${100 / values.length}%`
 
+    const valuesDivs = (rotate: boolean): ReactNode[] => values.map((x, i) => (
+        <div
+            key={i}
+            style={{
+                width,
+                // height: rotate ? '2em' : '1em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            className="containerOfXticks"
+        >
+            <div
+                style={{
+                    // transform: rotate ? 'rotate(-45deg)' : 'none',
+                    writingMode: rotate ? 'sideways-lr' : 'horizontal-tb',
+                    padding: rotate ? '0.5em' : '0',
+                    // transformOrigin: 'center',
+                    // whiteSpace: 'nowrap',
+                    // fontSize: rotate ? '0.8em' : '1em',
+                }}
+                className="containedOfXticks"
+            >
+                {createValue(x)}
+            </div>
+        </div>
+    ))
+
     return (
-        <div>
+        <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
                     values.map((x, i) => (
@@ -277,15 +327,8 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                     ))
                 }
             </div>
-            <div style={{ display: 'flex', width: '100%' }}>
-                {
-                    values.map((x, i) => (
-                        <div key={i} style={{ width, height: '1em' }}>
-                            {createValue(x)}
-                        </div>
-                    ))
-                }
-            </div>
+            <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
+            <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
             <div className="centered_text">
                 {label}
             </div>
