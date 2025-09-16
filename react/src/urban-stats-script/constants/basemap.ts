@@ -3,7 +3,7 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
-import { doRender } from './color'
+import { doRender, rgbColorExpression } from './color'
 import { Color } from './color-utils'
 import { Outline } from './map'
 
@@ -68,13 +68,20 @@ export const noBasemap: USSValue = {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
                 defaultValue: parseNoErrorAsExpression('rgb(1, 1, 1, a=1)', ''),
             },
+            textColor: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                defaultValue: createConstantExpression(null),
+            },
+
         },
         returnType: { type: 'concrete', value: basemapType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
         const backgroundColor = namedArgs.backgroundColor as { type: 'opaque', value: Color }
-        return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none', backgroundColor: doRender(backgroundColor.value) } }
+        const textColorProvided = namedArgs.textColor as { type: 'opaque', value: Color } | null
+        const textColor = textColorProvided?.value ?? invert(backgroundColor.value)
+        return { type: 'opaque', opaqueType: 'basemap', value: { type: 'none', backgroundColor: doRender(backgroundColor.value), textColor: doRender(textColor) } }
     },
     documentation: {
         humanReadableName: 'No Basemap',
@@ -84,3 +91,12 @@ export const noBasemap: USSValue = {
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+function invert(color: Color): Color {
+    return {
+        r: 255 - color.r,
+        g: 255 - color.g,
+        b: 255 - color.b,
+        a: 255,
+    }
+}
