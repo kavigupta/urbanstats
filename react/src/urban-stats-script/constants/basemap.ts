@@ -3,7 +3,7 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
-import { doRender, rgbColorExpression } from './color'
+import { doRender } from './color'
 import { Color } from './color-utils'
 import { Outline } from './map'
 
