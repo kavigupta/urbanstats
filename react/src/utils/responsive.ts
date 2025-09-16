@@ -7,16 +7,18 @@ export function isMobileLayout(): boolean {
 }
 
 export function useMobileLayout(): boolean {
-    return useSyncExternalStore((listener) => {
-        const myListener = (): void => {
-            if (window.innerWidth !== 1) {
-                // When taking screenshots, testcafe sets the inner width to 1, so we want to throw away those updates
-                listener()
-            }
+    return useSyncExternalStore(onWidthChange, isMobileLayout)
+}
+
+export function onWidthChange(listener: () => void): () => void {
+    const myListener = (): void => {
+        if (window.innerWidth !== 1) {
+            // When taking screenshots, testcafe sets the inner width to 1, so we want to throw away those updates
+            listener()
         }
-        window.addEventListener('resize', myListener)
-        return () => { window.removeEventListener('resize', myListener) }
-    }, isMobileLayout)
+    }
+    window.addEventListener('resize', myListener)
+    return () => { window.removeEventListener('resize', myListener) }
 }
 
 export function useHeaderTextClass(): string {
