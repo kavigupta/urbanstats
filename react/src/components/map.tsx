@@ -202,6 +202,7 @@ const potentialOutlineLayerIds = [
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export abstract class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     protected version = 0
+    protected versionProps: P // Used to avoid race conditions
     private lastUpdate: Promise<void> | undefined
     private basemap_props: null | Basemap = null
     private exist_this_time: string[] = []
@@ -211,6 +212,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
     constructor(props: P) {
         super(props)
+        this.versionProps = props
         this.state = { loading: true, shapeByName: new Map(), mapIsVisible: this.insets().map(() => true) }
         activeMaps.push(this)
         this.handler = new MapHandler(this.insets().map(inset => inset.mainMap))
@@ -478,6 +480,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         }
         this.lastUpdate = (async () => {
             const updateStart = Date.now()
+            this.versionProps = this.props
             await this.updateFn(version)
             const updateDuration = Date.now() - updateStart
             // Can only update once per second
