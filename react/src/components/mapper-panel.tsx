@@ -321,6 +321,8 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined }): ReactNode {
                             style={{
                                 width, height: '1em',
                                 backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
+                                marginLeft: '1px',
+                                marginRight: '1px',
                             }}
                         >
                         </div>
