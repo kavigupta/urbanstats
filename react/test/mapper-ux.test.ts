@@ -70,6 +70,19 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
 errorInSubsubfield(() => test)('syntax', '0.1 + ', 'Unexpected end of input at 1:5')
 errorInSubsubfield(() => test)('semantic', 'unknownFunction()', 'Undefined variable: unknownFunction at 1:1-15')
 
+mapper(() => test)('race condition', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    for (let i = 0; i < 10; i++) {
+        await replaceInput(t, 'Urban Center', 'Subnational Region')
+        await replaceInput(t, 'Iceland', 'USA')
+
+        await t.pressKey('ctrl+z')
+        await t.expect(getInput('Iceland').exists).ok()
+
+        await t.pressKey('ctrl+z')
+        await t.expect(getInput('Urban Center').exists).ok()
+    }
+})
+
 undoRedoTest(() => test, 'desktop', {
     doUndo: t => t.pressKey('ctrl+z'),
     doRedo: t => t.pressKey('ctrl+y'),
@@ -132,11 +145,9 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
 
         await doUndo(t)
         await t.expect(getInput('Iceland').exists).ok()
-        await t.wait(2000)
 
         await doUndo(t)
         await t.expect(getInput('Urban Center').exists).ok()
-        await t.wait(2000)
 
         if (canUndo) {
             await t.expect(canUndo(t)).notOk()
@@ -148,7 +159,6 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
 
         await doRedo(t)
         await t.expect(getInput('Subnational Region').exists).ok()
-        await t.wait(2000)
 
         await doRedo(t)
         await t.expect(getInput('USA').exists).ok()
