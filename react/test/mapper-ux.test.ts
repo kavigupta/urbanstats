@@ -145,11 +145,9 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
 
         await doUndo(t)
         await t.expect(getInput('Iceland').exists).ok()
-        await t.wait(2000)
 
         await doUndo(t)
         await t.expect(getInput('Urban Center').exists).ok()
-        await t.wait(2000)
 
         if (canUndo) {
             await t.expect(canUndo(t)).notOk()
@@ -161,7 +159,6 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
 
         await doRedo(t)
         await t.expect(getInput('Subnational Region').exists).ok()
-        await t.wait(2000)
 
         await doRedo(t)
         await t.expect(getInput('USA').exists).ok()
