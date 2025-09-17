@@ -331,7 +331,8 @@ def html_index(
     image="/link-preview.png",
     description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
 ):
-    return f"""<html>
+    return f"""<!DOCTYPE html>
+<html>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/thumbnail.png" />
