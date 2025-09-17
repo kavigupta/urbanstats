@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Olympia-Tumwater MSA, WA, USA",
+      "longname_b": "San Antonio-New Braunfels MSA, TX, USA",
+      "stat_a": 64.38753782172496,
+      "stat_b": 21.90394993251627
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Gainesville [Urban Area], GA, USA",
+      "longname_b": "Spokane [Urban Area], WA, USA",
+      "stat_a": 0.110010674497382,
+      "stat_b": 0.4107259183190372
+    },
+    "a_ease": 0.7477876106194691,
+    "b_ease": 0.3351028533510285
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "El Paso TX (Las Cruces NM) Media Market, USA",
+      "longname_b": "Hattiesburg-Laurel MS Media Market, USA",
+      "stat_a": -0.011059319305458226,
+      "stat_b": -0.0652363412950987
+    },
+    "b": {
+      "stat_column": "Installation, maintenance, and repair occupations %",
+      "stat_path": "occupation_installation,_maintenance,_and_repair_occupations",
+      "question": "higher % of workers employed in installation, maintenance, and repair occupations!TOOLTIP mechanics, HVAC technicians, electricians, plumbers, etc.",
+      "longname_a": "CA-02 (2023), USA",
+      "longname_b": "GA-10 (2025), USA",
+      "stat_a": 0.021427096927571068,
+      "stat_b": 0.041926040153140345
+    },
+    "a_ease": 0.26858213616489696,
+    "b_ease": 0.6996336996336996
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rent/Income > 40%",
+      "stat_path": "rent_burden_over_40",
+      "question": "higher % of people whose rent is greater than 40% of their income",
+      "longname_a": "Shreveport LA Media Market, USA",
+      "longname_b": "Savannah GA Media Market, USA",
+      "stat_a": 0.36745126536565775,
+      "stat_b": 0.3283419110578595
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Canada",
+      "longname_b": "USA",
+      "stat_a": 0.3228107826213363,
+      "stat_b": 0.25575061291223283
+    },
+    "a_ease": 0.20478036175710596,
+    "b_ease": 0.6246096189881324
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Illinois, USA",
+      "longname_b": "Idaho, USA",
+      "stat_a": 0.07399953200996362,
+      "stat_b": 0.02502957302785273
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Jackson MS Media Market, USA",
+      "longname_b": "Yuma AZ-El Centro CA Media Market, USA",
+      "stat_a": 0.10291671078739772,
+      "stat_b": 0.061402003774533455
+    },
+    "a_ease": 0.8512756689483509,
+    "b_ease": 0.44738955823293175
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rent/Income > 40%",
+      "stat_path": "rent_burden_over_40",
+      "question": "higher % of people whose rent is greater than 40% of their income",
+      "longname_a": "Summit County, Ohio, USA",
+      "longname_b": "Monterey County, California, USA",
+      "stat_a": 0.3118787241001717,
+      "stat_b": 0.37643894033594366
+    },
+    "b": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Saskatoon City, Division No. 11, Saskatchewan, Canada",
+      "longname_b": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "stat_a": 0.0521485994100749,
+      "stat_b": 0.0563296500023969
+    },
+    "a_ease": 0.8722891566265061,
+    "b_ease": 0.46172993154947106
+  }
+]
