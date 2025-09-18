@@ -72,18 +72,9 @@ export function mixWithBackground(color: string, fraction: number, background: s
     return interpolateColor(ramp, fraction)
 }
 
-let total = 0
-let breakTimer: ReturnType<typeof setTimeout> | undefined
-
 type LABColor = [number, number, number]
 
 export function furthestColor(fromColors: string[]): string {
-    clearTimeout(breakTimer)
-    breakTimer = setTimeout(() => {
-        console.log(`break ${total}`)
-        total = 0
-    }, 0)
-    const start = performance.now()
     // tries every 16 * 16 * 16 color and finds the one that maximizes the minimum distance to any of the given colors
     const avoidColors: LABColor[] = fromColors.map(color => Color(color).lab().array() as LABColor)
     let bestColor: [number, number, number] = [0, 0, 0]
@@ -100,11 +91,7 @@ export function furthestColor(fromColors: string[]): string {
             }
         }
     }
-    const result = `#${bestColor[0].toString(16).padStart(2, '0')}${bestColor[1].toString(16).padStart(2, '0')}${bestColor[2].toString(16).padStart(2, '0')}`
-    const took = performance.now() - start
-    total += took
-    console.log(`furthestColor ${took}`)
-    return result
+    return `#${bestColor[0].toString(16).padStart(2, '0')}${bestColor[1].toString(16).padStart(2, '0')}${bestColor[2].toString(16).padStart(2, '0')}`
 }
 
 function colorDistance(c1: LABColor, c2: LABColor): number {
