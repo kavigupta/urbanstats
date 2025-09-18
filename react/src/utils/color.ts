@@ -1,4 +1,4 @@
-import Color, { ColorInstance } from 'color'
+import Color from 'color'
 
 import { Keypoints } from '../mapper/ramps'
 
