@@ -1,3 +1,5 @@
+import Color from 'color'
+
 import { Keypoints } from '../mapper/ramps'
 
 import { assert } from './defensive'
@@ -83,12 +85,7 @@ export function furthestColor(colors: string[]): string {
     for (let r = 0; r < 256; r += 17) {
         for (let g = 0; g < 256; g += 17) {
             for (let b = 0; b < 256; b += 17) {
-                const minDistance = Math.min(...colorsRGB.map(([r2, g2, b2]) => {
-                    const dr = r - r2
-                    const dg = g - g2
-                    const db = b - b2
-                    return dr * dr + dg * dg + db * db
-                }))
+                const minDistance = Math.min(...colorsRGB.map(([r2, g2, b2]) => colorDistance(r, g, b, r2, g2, b2)))
                 if (minDistance > bestDistance) {
                     bestDistance = minDistance
                     bestColor = [r, g, b]
@@ -97,4 +94,13 @@ export function furthestColor(colors: string[]): string {
         }
     }
     return `#${bestColor[0].toString(16).padStart(2, '0')}${bestColor[1].toString(16).padStart(2, '0')}${bestColor[2].toString(16).padStart(2, '0')}`
+}
+
+function colorDistance(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number): number {
+    // compute lab color distance
+    const c1 = Color.rgb(r1, g1, b1)
+    const c2 = Color.rgb(r2, g2, b2)
+    const [l1, a1, b1c] = c1.lab().array()
+    const [l2, a2, b2c] = c2.lab().array()
+    return Math.sqrt((l1 - l2) ** 2 + (a1 - a2) ** 2 + (b1c - b2c) ** 2)
 }
