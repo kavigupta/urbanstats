@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -263,12 +263,13 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
         return false
     })
 
+    const furthest = useMemo(() => props.ramp === undefined ? undefined : furthestColor(props.ramp.ramp.map(x => x[1])), [props.ramp])
+
     if (props.ramp === undefined) {
         return <div></div>
     }
 
     const ramp = props.ramp.ramp
-    const furthest = furthestColor(ramp.map(x => x[1]))
     const label = props.ramp.label
     const values = props.ramp.interpolations
     const unit = props.ramp.unit

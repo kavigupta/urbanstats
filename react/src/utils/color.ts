@@ -1,4 +1,4 @@
-import Color from 'color'
+import Color, { ColorInstance } from 'color'
 
 import { Keypoints } from '../mapper/ramps'
 
@@ -75,7 +75,9 @@ export function mixWithBackground(color: string, fraction: number, background: s
 let total = 0
 let breakTimer: ReturnType<typeof setTimeout> | undefined
 
-export function furthestColor(colors: string[]): string {
+type LABColor = [number, number, number]
+
+export function furthestColor(fromColors: string[]): string {
     clearTimeout(breakTimer)
     breakTimer = setTimeout(() => {
         console.log(`break ${total}`)
@@ -83,18 +85,14 @@ export function furthestColor(colors: string[]): string {
     }, 0)
     const start = performance.now()
     // tries every 16 * 16 * 16 color and finds the one that maximizes the minimum distance to any of the given colors
-    const colorsRGB: [number, number, number][] = colors.map((color) => {
-        const r = parseInt(color.slice(1, 3), 16)
-        const g = parseInt(color.slice(3, 5), 16)
-        const b = parseInt(color.slice(5, 7), 16)
-        return [r, g, b]
-    })
+    const avoidColors: LABColor[] = fromColors.map(color => Color(color).lab().array() as LABColor)
     let bestColor: [number, number, number] = [0, 0, 0]
     let bestDistance = 0
     for (let r = 0; r < 256; r += 17) {
         for (let g = 0; g < 256; g += 17) {
             for (let b = 0; b < 256; b += 17) {
-                const minDistance = Math.min(...colorsRGB.map(([r2, g2, b2]) => colorDistance(r, g, b, r2, g2, b2)))
+                const candidate = Color.rgb(r, g, b).lab().array() as LABColor
+                const minDistance = avoidColors.reduce((result, color) => Math.min(result, colorDistance(color, candidate)), 0)
                 if (minDistance > bestDistance) {
                     bestDistance = minDistance
                     bestColor = [r, g, b]
@@ -109,11 +107,7 @@ export function furthestColor(colors: string[]): string {
     return result
 }
 
-function colorDistance(r1: number, g1: number, b1: number, r2: number, g2: number, b2: number): number {
+function colorDistance(c1: LABColor, c2: LABColor): number {
     // compute lab color distance
-    const c1 = Color.rgb(r1, g1, b1)
-    const c2 = Color.rgb(r2, g2, b2)
-    const [l1, a1, b1c] = c1.lab().array()
-    const [l2, a2, b2c] = c2.lab().array()
-    return Math.sqrt((l1 - l2) ** 2 + (a1 - a2) ** 2 + (b1c - b2c) ** 2)
+    return Math.sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2 + (c1[2] - c2[2]) ** 2)
 }
