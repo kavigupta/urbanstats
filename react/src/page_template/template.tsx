@@ -54,6 +54,7 @@ export function PageTemplate({
         document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
         document.documentElement.style.setProperty('--background', colors.background)
         document.documentElement.style.setProperty('--highlight', colors.highlight)
+        document.documentElement.style.setProperty('--border-non-shadow', colors.borderNonShadow)
     }, [colors, juxtaColors])
 
     useEffect(() => {
@@ -141,7 +142,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '28.0.0'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '29.0.0'}
         </span>
     )
 }
@@ -149,7 +150,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-08-30'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-09-12'}
         </span>
     )
 }

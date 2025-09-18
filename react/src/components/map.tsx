@@ -195,9 +195,14 @@ function createMaps(
     return [maps, ensureStyleLoaded]
 }
 
+const potentialOutlineLayerIds = [
+    'boundary_subn_overlayed',
+] as const
+
 // eslint-disable-next-line prefer-function-component/prefer-function-component  -- TODO: Maps don't support function components yet.
 export abstract class MapGeneric<P extends MapGenericProps> extends React.Component<P, MapState> {
     protected version = 0
+    protected versionProps: P // Used to avoid race conditions
     private lastUpdate: Promise<void> | undefined
     private basemap_props: null | Basemap = null
     private exist_this_time: string[] = []
@@ -207,6 +212,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
     constructor(props: P) {
         super(props)
+        this.versionProps = props
         this.state = { loading: true, shapeByName: new Map(), mapIsVisible: this.insets().map(() => true) }
         activeMaps.push(this)
         this.handler = new MapHandler(this.insets().map(inset => inset.mainMap))
@@ -306,7 +312,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         throw new Error('loadPoint not implemented by default')
     }
 
-    subnationalOutlines(): maplibregl.LayerSpecification[] {
+    subnationalOutlines(): (maplibregl.LayerSpecification & ({ id: typeof potentialOutlineLayerIds[number] }))[] {
         const basemap = this.props.basemap
         if (basemap.type !== 'osm' || !basemap.subnationalOutlines) {
             return []
@@ -417,7 +423,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
             await renderMap(ctx, map, inset, params)
         }))
 
-        ctx.fillStyle = backgroundColor
+        ctx.fillStyle = this.props.basemap.type === 'none' ? this.props.basemap.backgroundColor : backgroundColor
         ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
 
         if (colorbarElement) {
@@ -474,6 +480,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         }
         this.lastUpdate = (async () => {
             const updateStart = Date.now()
+            this.versionProps = this.props
             await this.updateFn(version)
             const updateDuration = Date.now() - updateStart
             // Can only update once per second
@@ -698,12 +705,16 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         count += setUpPolygonSource(shapes.filter(([type]) => type === 'polygon').map(([, feature]) => feature))
         count += setUpPointSource(shapes.filter(([type]) => type === 'point').map(([, feature]) => feature))
 
-        for (const layer of this.subnationalOutlines()) {
-            if (map.getLayer(layer.id) !== undefined) {
-                map.removeLayer(layer.id)
+        for (const layerId of potentialOutlineLayerIds) {
+            if (map.getLayer(layerId) !== undefined) {
+                map.removeLayer(layerId)
             }
+        }
+
+        for (const layer of this.subnationalOutlines()) {
             map.addLayer(layer, labelId)
         }
+
         return count > 0 || inset.mainMap
     }
 
@@ -792,6 +803,9 @@ function isVisible(basemap: Basemap, layer: maplibregl.LayerSpecification): bool
     }
 }
 
+// eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
+const defaultBackgroundColor = '#f8f4f0'
+
 function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
     map.style.stylesheet.layers.forEach((layerspec: maplibregl.LayerSpecification) => {
         if (layerspec.id === 'background') {
@@ -800,6 +814,7 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
         const layer = map.getLayer(layerspec.id)!
         layer.setLayoutProperty('visibility', isVisible(basemap, layerspec) ? 'visible' : 'none')
     })
+    map.setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
 }
 
 function clickMapElement(longname: string): void {

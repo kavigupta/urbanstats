@@ -23,7 +23,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
-    const { addState, updateCurrentSelection } = useUndoRedo(
+    const { addState, updateCurrentSelection, ui: undoRedoUi } = useUndoRedo(
         mapSettings,
         selectionContext.value,
         setMapSettings,
@@ -114,6 +114,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                 typeEnvironment={typeEnvironment}
                 errors={errors}
             />
+            {undoRedoUi}
         </SelectionContext.Provider>
     )
 }

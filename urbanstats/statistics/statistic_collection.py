@@ -126,6 +126,19 @@ class USAStatistics(StatisticCollection):
         pass
 
 
+class USAStatisticsCounties(USAStatistics):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        if "composed_of_counties" not in shapefile.special_data_sources:
+            return {}
+        return super().compute_statistics_dictionary(
+            shapefile=shapefile,
+            existing_statistics=existing_statistics,
+            shapefile_table=shapefile_table,
+        )
+
+
 class CanadaStatistics(StatisticCollection):
     def quiz_question_types(self):
         return QUIZ_REGION_TYPES_CANADA

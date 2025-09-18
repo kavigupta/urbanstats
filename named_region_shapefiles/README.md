@@ -23,6 +23,10 @@ Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-b
 
  - cb_2015_us_county_500k.zip
 
+Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.2010.html#list-tab-1556094155
+
+ - gz_2010_us_050_00_500k.zip
+
 # USDA
 
 Source: https://www.ers.usda.gov/data-products/county-typology-codes/
