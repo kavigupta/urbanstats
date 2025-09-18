@@ -82,6 +82,11 @@ export function furthestColor(fromColors: string[]): string {
     for (let r = 0; r < 256; r += 17) {
         for (let g = 0; g < 256; g += 17) {
             for (let b = 0; b < 256; b += 17) {
+                const saturation = Math.max(r, g, b) - Math.min(r, g, b)
+                // skip saturated colors (they feel like they mean something)
+                if (saturation > 0x80) {
+                    continue
+                }
                 const candidate = Color.rgb(r, g, b).lab().array() as LABColor
                 const minDistance = avoidColors.reduce((result, color) => Math.min(result, colorDistance(color, candidate)), Infinity)
                 if (minDistance > bestDistance) {
