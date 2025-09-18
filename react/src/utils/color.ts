@@ -69,3 +69,32 @@ export function mixWithBackground(color: string, fraction: number, background: s
     const ramp: [number, string][] = [[0, color], [1, background]]
     return interpolateColor(ramp, fraction)
 }
+
+export function furthestColor(colors: string[]): string {
+    // tries every 16 * 16 * 16 color and finds the one that maximizes the minimum distance to any of the given colors
+    const colorsRGB: [number, number, number][] = colors.map((color) => {
+        const r = parseInt(color.slice(1, 3), 16)
+        const g = parseInt(color.slice(3, 5), 16)
+        const b = parseInt(color.slice(5, 7), 16)
+        return [r, g, b]
+    })
+    let bestColor: [number, number, number] = [0, 0, 0]
+    let bestDistance = 0
+    for (let r = 0; r < 256; r += 17) {
+        for (let g = 0; g < 256; g += 17) {
+            for (let b = 0; b < 256; b += 17) {
+                const minDistance = Math.min(...colorsRGB.map(([r2, g2, b2]) => {
+                    const dr = r - r2
+                    const dg = g - g2
+                    const db = b - b2
+                    return dr * dr + dg * dg + db * db
+                }))
+                if (minDistance > bestDistance) {
+                    bestDistance = minDistance
+                    bestColor = [r, g, b]
+                }
+            }
+        }
+    }
+    return `#${bestColor[0].toString(16).padStart(2, '0')}${bestColor[1].toString(16).padStart(2, '0')}${bestColor[2].toString(16).padStart(2, '0')}`
+}

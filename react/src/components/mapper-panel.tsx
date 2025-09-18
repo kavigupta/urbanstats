@@ -28,7 +28,7 @@ import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
-import { interpolateColor } from '../utils/color'
+import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
@@ -183,8 +183,9 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.versionProps.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
         this.versionProps.basemapCallback(mapResult.basemap)
         this.versionProps.insetsCallback(mapResult.insets)
+        const furthest = furthestColor(ramp.map(x => x[1]))
         const colors = mapResult.data.map(
-            val => interpolateColor(ramp, scale.forward(val), this.versionProps.colors.mapInvalidFillColor),
+            val => interpolateColor(ramp, scale.forward(val), furthest),
         )
         const specs = colors.map(
             // no outline, set color fill, alpha=1
@@ -267,6 +268,8 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
         return <div></div>
     }
 
+    const ramp = props.ramp.ramp
+    const furthest = furthestColor(ramp.map(x => x[1]))
     const label = props.ramp.label
     const values = props.ramp.interpolations
     const unit = props.ramp.unit
@@ -330,7 +333,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
                             key={i}
                             style={{
                                 width, height: '1em',
-                                backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
+                                backgroundColor: interpolateColor(ramp, props.ramp!.scale.forward(x), furthest),
                                 marginLeft: '1px',
                                 marginRight: '1px',
                             }}
