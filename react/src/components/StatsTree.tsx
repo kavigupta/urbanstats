@@ -102,6 +102,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                     onChange={changeCategorySetting}
                     testId={`category_${category.id}`}
                     highlight={highlight}
+                    style={{ zIndex: 1 }}
                 />
             </div>
             <CategoryContents
