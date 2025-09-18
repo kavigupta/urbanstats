@@ -1,4 +1,5 @@
 import ColorLib from 'color'
+import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useMemo, useCallback } from 'react'
 
 import { colorThemes } from '../../page_template/color-themes'
@@ -97,7 +98,8 @@ export function Selector(props: {
         })
 
         return Array.from(allPossibilities)
-    }, [props.type, props.typeEnvironment])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- props.type keeps the same deep value but changes reference. It's simpler to stringify it here than track it down everywhere
+    }, [stableStringify(props.type), props.typeEnvironment])
 
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
 
