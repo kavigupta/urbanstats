@@ -120,6 +120,7 @@ export const constructInsetsValue: USSValue = {
         category: 'inset',
         isDefault: true,
         longDescription: 'Creates a collection of map insets.',
+        customConstructor: true,
     },
 } satisfies USSValue
 
