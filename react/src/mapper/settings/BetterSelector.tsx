@@ -19,7 +19,6 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     return (
         <button
             style={{
-                background: 'none',
                 border: 'none',
                 cursor: 'pointer',
                 padding: '0 0',
