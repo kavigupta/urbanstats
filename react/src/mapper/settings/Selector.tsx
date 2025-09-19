@@ -115,13 +115,7 @@ export function Selector(props: {
 
     const onEdit = useCallback(() => {
         // Find the custom constructor option and select it
-        const customConstructorOption = selectionPossibilities.find((possibility) => {
-            if (possibility.type === 'function') {
-                const doc = typeEnvironment.get(possibility.name)?.documentation
-                return doc?.customConstructor === true
-            }
-            return false
-        })
+        const customConstructorOption = selectionPossibilities.find(possibility => isCustomConstructor(possibility, typeEnvironment))
         if (customConstructorOption) {
             setSelection(customConstructorOption)
         }
