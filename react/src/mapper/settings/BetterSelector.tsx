@@ -13,6 +13,40 @@ const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
+function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
+    const colors = useColors()
+    return (
+        <button
+            style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                marginLeft: '4px',
+                opacity: 0.7,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onEdit()
+            }}
+            title="Edit"
+        >
+            <img
+                src={colors.pencilIcon}
+                alt="Edit"
+                style={{
+                    width: '20px',
+                    height: '20px',
+                }}
+            />
+        </button>
+    )
+}
+
 export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit }: {
     value: T
     onChange: (newValue: T) => void
@@ -140,30 +174,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     fontSize: '14px',
                 }}
             />
-            {onEdit && (
-                <button
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                    }}
-                    onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        onEdit()
-                    }}
-                    title="Edit"
-                >
-                    <img
-                        src={colors.pencilIcon}
-                        alt="Edit"
-                        style={{
-                            width: '20px',
-                            height: '20px',
-                        }}
-                    />
-                </button>
-            )}
+            {onEdit && <PencilButton onEdit={onEdit} />}
             {isOpen && sortedOptions.length > 0 && (
                 <div
                     style={{
