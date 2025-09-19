@@ -5,6 +5,8 @@ import { useColors } from '../../page_template/colors'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 
+import '../../common.css'
+
 export const labelPadding = '4px'
 
 const maxErrors = 31
@@ -144,12 +146,6 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        padding: '4px 8px',
-                        marginLeft: '4px',
-                        opacity: 0.7,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
                     }}
                     onClick={(e) => {
                         e.preventDefault()
