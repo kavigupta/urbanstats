@@ -31,7 +31,6 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
-    mapInvalidFillColor: string
     mapInsetBorderColor: string
     buttonTextWhite: string
     bannerURL: string
@@ -72,7 +71,6 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
-        mapInvalidFillColor: '#000000',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
         bannerURL: '/banner.png',
@@ -97,7 +95,6 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
         blueLink: '#aaaaff',
-        mapInvalidFillColor: '#000000',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
         bannerURL: '/banner-dark.png',
