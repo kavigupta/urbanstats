@@ -78,6 +78,10 @@ export function possibilities(target: USSType[], env: Map<string, USSDocumentedT
     return results
 }
 
+function isCustomConstructor(possibility: Selection, typeEnvironment: Map<string, USSDocumentedType>): boolean {
+    return possibility.type === 'function' && typeEnvironment.get(possibility.name)?.documentation?.customConstructor === true
+}
+
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
@@ -87,6 +91,7 @@ export function Selector(props: {
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
+    const { setSelection, typeEnvironment } = props
     const selected = classifyExpr(props.uss)
 
     const selectionPossibilities = useMemo(() => {
@@ -101,7 +106,18 @@ export function Selector(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.type keeps the same deep value but changes reference. It's simpler to stringify it here than track it down everywhere
     }, [stableStringify(props.type), props.typeEnvironment])
 
+    const hasCustomConstructor = useMemo(() => {
+        return selectionPossibilities.some(possibility => isCustomConstructor(possibility, props.typeEnvironment)) && !isCustomConstructor(selected, props.typeEnvironment)
+    }, [selectionPossibilities, props.typeEnvironment, selected])
+
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
+
+    const onEdit = useCallback(() => {
+        const customConstructorOption = selectionPossibilities.find(possibility => isCustomConstructor(possibility, typeEnvironment))
+        if (customConstructorOption) {
+            setSelection(customConstructorOption)
+        }
+    }, [selectionPossibilities, typeEnvironment, setSelection])
 
     if (selectionPossibilities.length < 2) {
         return undefined
@@ -123,6 +139,7 @@ export function Selector(props: {
                 possibleValues={selectionPossibilities}
                 renderValue={renderPossibility}
                 onChange={props.setSelection}
+                onEdit={hasCustomConstructor ? onEdit : undefined}
             />
             {showConstantInput && (
                 <input

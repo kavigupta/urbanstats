@@ -76,6 +76,7 @@ export const constructRampValue: USSValue = {
         category: 'ramp',
         longDescription: 'Creates a custom color ramp from a vector of value-color pairs. Values should range from 0 to 1 and be strictly increasing.',
         selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
     },
 } satisfies USSValue
 
