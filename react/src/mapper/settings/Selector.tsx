@@ -87,6 +87,7 @@ export function Selector(props: {
     blockIdent: string
     errors: EditorError[]
 }): ReactNode {
+    const { setSelection, typeEnvironment } = props
     const selected = classifyExpr(props.uss)
 
     const selectionPossibilities = useMemo(() => {
@@ -114,6 +115,20 @@ export function Selector(props: {
 
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
 
+    const onEdit = useCallback(() => {
+        // Find the custom constructor option and select it
+        const customConstructorOption = selectionPossibilities.find((possibility) => {
+            if (possibility.type === 'function') {
+                const doc = typeEnvironment.get(possibility.name)?.documentation
+                return doc?.customConstructor === true
+            }
+            return false
+        })
+        if (customConstructorOption) {
+            setSelection(customConstructorOption)
+        }
+    }, [selectionPossibilities, typeEnvironment, setSelection])
+
     if (selectionPossibilities.length < 2) {
         return undefined
     }
@@ -134,20 +149,7 @@ export function Selector(props: {
                 possibleValues={selectionPossibilities}
                 renderValue={renderPossibility}
                 onChange={props.setSelection}
-                showEditButton={hasCustomConstructor}
-                onEdit={() => {
-                    // Find the custom constructor option and select it
-                    const customConstructorOption = selectionPossibilities.find((possibility) => {
-                        if (possibility.type === 'function') {
-                            const doc = props.typeEnvironment.get(possibility.name)?.documentation
-                            return doc?.customConstructor === true
-                        }
-                        return false
-                    })
-                    if (customConstructorOption) {
-                        props.setSelection(customConstructorOption)
-                    }
-                }}
+                onEdit={hasCustomConstructor ? onEdit : undefined}
             />
             {showConstantInput && (
                 <input

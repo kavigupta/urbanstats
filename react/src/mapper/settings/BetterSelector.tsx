@@ -11,13 +11,12 @@ const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, showEditButton = false }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
     onEdit?: () => void
-    showEditButton?: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -139,7 +138,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     fontSize: '14px',
                 }}
             />
-            {showEditButton && (
+            {onEdit && (
                 <button
                     style={{
                         background: 'none',
@@ -155,7 +154,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        onEdit?.()
+                        onEdit()
                     }}
                     title="Edit"
                 >
