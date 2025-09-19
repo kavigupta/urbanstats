@@ -160,7 +160,7 @@ export interface Documentation {
      */
     selectorRendering?: SelectorRendering
     /**
-     * True if this is a custom constructor that should show an edit icon
+     * True if this is a custom constructor that should invoke edit icons elsewhere
      */
     customConstructor?: boolean
 }
