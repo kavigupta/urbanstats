@@ -26,7 +26,7 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     await toggleCustomScript(t)
     await t.expect(await getErrors()).eql([])
     await checkBox(t, /^Insets/)
-    await replaceInput(t, 'Default Insets', 'Custom Inset')
+    await t.expect(getInput('Custom Insets').exists).ok() // Insets immediately deconsturct when checked
     await waitForLoading(t)
     await replaceInput(t, 'Iceland', 'Custom Inset', 1) // second one, since the first is the universe selector
     await waitForLoading(t)
