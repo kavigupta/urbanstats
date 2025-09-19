@@ -147,8 +147,10 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                         cursor: 'pointer',
                         padding: '4px 8px',
                         marginLeft: '4px',
-                        fontSize: '16px',
                         opacity: 0.7,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                     }}
                     onClick={(e) => {
                         e.preventDefault()
@@ -157,7 +159,14 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     }}
                     title="Edit"
                 >
-                    ✏️
+                    <img
+                        src={colors.pencilIcon}
+                        alt="Edit"
+                        style={{
+                            width: '20px',
+                            height: '20px',
+                        }}
+                    />
                 </button>
             )}
             {isOpen && sortedOptions.length > 0 && (
