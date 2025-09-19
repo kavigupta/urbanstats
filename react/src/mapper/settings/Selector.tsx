@@ -104,13 +104,9 @@ export function Selector(props: {
 
     // Check if there are any custom constructors available
     const hasCustomConstructor = useMemo(() => {
-        return selectionPossibilities.some((possibility) => {
-            if (possibility.type === 'function') {
-                const doc = props.typeEnvironment.get(possibility.name)?.documentation
-                return doc?.customConstructor === true
-            }
-            return false
-        })
+        return selectionPossibilities.some(possibility =>
+            possibility.type === 'function' && props.typeEnvironment.get(possibility.name)?.documentation?.customConstructor,
+        )
     }, [selectionPossibilities, props.typeEnvironment])
 
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
