@@ -14,6 +14,7 @@ const maxErrors = 31
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
 function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
+    const size = { width: '20px', height: '20px' }
     const colors = useColors()
     return (
         <button
@@ -21,12 +22,13 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: '4px 8px',
+                padding: '0 0',
                 marginLeft: '4px',
                 opacity: 0.7,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                ...size,
             }}
             onClick={(e) => {
                 e.preventDefault()
@@ -38,10 +40,7 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
             <img
                 src={colors.pencilIcon}
                 alt="Edit"
-                style={{
-                    width: '20px',
-                    height: '20px',
-                }}
+                style={{ ...size }}
             />
         </button>
     )

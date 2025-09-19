@@ -232,7 +232,7 @@ export function AutoUXEditor(props: {
                                 label={`${i + 1}`}
                             />
                             <button
-                                style={{ marginLeft: 8, flexShrink: 0 }}
+                                style={{ flexShrink: 0 }}
                                 onClick={() => {
                                     const newElements = uss.elements.filter((_, j) => j !== i)
                                     props.setUss({ ...uss, elements: newElements })
