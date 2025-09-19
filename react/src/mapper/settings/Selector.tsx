@@ -101,6 +101,17 @@ export function Selector(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.type keeps the same deep value but changes reference. It's simpler to stringify it here than track it down everywhere
     }, [stableStringify(props.type), props.typeEnvironment])
 
+    // Check if there are any custom constructors available
+    const hasCustomConstructor = useMemo(() => {
+        return selectionPossibilities.some((possibility) => {
+            if (possibility.type === 'function') {
+                const doc = props.typeEnvironment.get(possibility.name)?.documentation
+                return doc?.customConstructor === true
+            }
+            return false
+        })
+    }, [selectionPossibilities, props.typeEnvironment])
+
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
 
     if (selectionPossibilities.length < 2) {
@@ -123,6 +134,20 @@ export function Selector(props: {
                 possibleValues={selectionPossibilities}
                 renderValue={renderPossibility}
                 onChange={props.setSelection}
+                showEditButton={hasCustomConstructor}
+                onEdit={() => {
+                    // Find the custom constructor option and select it
+                    const customConstructorOption = selectionPossibilities.find((possibility) => {
+                        if (possibility.type === 'function') {
+                            const doc = props.typeEnvironment.get(possibility.name)?.documentation
+                            return doc?.customConstructor === true
+                        }
+                        return false
+                    })
+                    if (customConstructorOption) {
+                        props.setSelection(customConstructorOption)
+                    }
+                }}
             />
             {showConstantInput && (
                 <input

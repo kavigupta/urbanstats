@@ -11,11 +11,13 @@ const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, showEditButton = false }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
+    onEdit?: () => void
+    showEditButton?: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -100,7 +102,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     }
 
     return (
-        <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             <input
                 ref={inputRef}
                 type="text"
@@ -130,13 +132,34 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 }}
                 placeholder="Search options..."
                 style={{
-                    width: '100%',
+                    flex: 1,
                     padding: `${labelPadding} 8px`,
                     border: `1px solid ${colors.ordinalTextColor}`,
                     borderRadius: '4px',
                     fontSize: '14px',
                 }}
             />
+            {showEditButton && (
+                <button
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        marginLeft: '4px',
+                        fontSize: '16px',
+                        opacity: 0.7,
+                    }}
+                    onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        onEdit?.()
+                    }}
+                    title="Edit"
+                >
+                    ✏️
+                </button>
+            )}
             {isOpen && sortedOptions.length > 0 && (
                 <div
                     style={{

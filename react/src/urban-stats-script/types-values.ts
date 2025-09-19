@@ -159,6 +159,10 @@ export interface Documentation {
      * Used when displaying this value in a selector
      */
     selectorRendering?: SelectorRendering
+    /**
+     * True if this is a custom constructor that should show an edit icon
+     */
+    customConstructor?: boolean
 }
 
 export interface USSDocumentedType {
