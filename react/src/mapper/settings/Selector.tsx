@@ -78,6 +78,10 @@ export function possibilities(target: USSType[], env: Map<string, USSDocumentedT
     return results
 }
 
+function isCustomConstructor(possibility: Selection, typeEnvironment: Map<string, USSDocumentedType>): boolean {
+    return possibility.type === 'function' && typeEnvironment.get(possibility.name)?.documentation?.customConstructor === true
+}
+
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
@@ -104,10 +108,8 @@ export function Selector(props: {
 
     // Check if there are any custom constructors available
     const hasCustomConstructor = useMemo(() => {
-        return selectionPossibilities.some(possibility =>
-            possibility.type === 'function' && props.typeEnvironment.get(possibility.name)?.documentation?.customConstructor,
-        )
-    }, [selectionPossibilities, props.typeEnvironment])
+        return selectionPossibilities.some(possibility => isCustomConstructor(possibility, props.typeEnvironment)) && !isCustomConstructor(selected, props.typeEnvironment)
+    }, [selectionPossibilities, props.typeEnvironment, selected])
 
     const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
 
