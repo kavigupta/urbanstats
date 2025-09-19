@@ -95,6 +95,10 @@ function mapConstructorArguments(
             type: { type: 'concrete', value: { type: 'string' } },
             defaultValue: createConstantExpression(null),
         },
+        unit: {
+            type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
+            defaultValue: createConstantExpression(null),
+        },
         geo: {
             type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: isPmap ? 'geoCentroidHandle' : 'geoFeatureHandle' } } },
             defaultValue: {
@@ -116,10 +120,6 @@ function mapConstructorArguments(
                 type: 'identifier',
                 name: { node: 'defaultInsets', location: noLocation },
             },
-        },
-        unit: {
-            type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
-            defaultValue: createConstantExpression(null),
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }
