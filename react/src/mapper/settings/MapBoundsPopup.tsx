@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useRef, useEffect, useState, useCallback } from 'react'
+import { iso } from 'zod/v4'
 
 import { useColors } from '../../page_template/colors'
 import { assert } from '../../utils/defensive'
@@ -41,6 +42,16 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
     useEffect(() => {
         setPendingBounds(currentBounds)
     }, [currentBounds])
+
+    useEffect(() => {
+        if (isOpen) {
+            assert(popupRef.current !== null, 'popupRef.current is null')
+            setOriginalHeight(popupRef.current.offsetHeight)
+        }
+        else {
+            setOriginalHeight(undefined)
+        }
+    }, [isOpen])
 
     const updateMapBounds = useCallback(() => {
         if (mapRef.current && popupRef.current) {
@@ -133,11 +144,8 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
         setResizeStartY(e.clientY)
         if (popupRef.current) {
             setResizeStartHeight(popupRef.current.offsetHeight)
-            if (originalHeight === undefined) {
-                setOriginalHeight(popupRef.current.offsetHeight)
-            }
         }
-    }, [originalHeight])
+    }, [])
 
     const handleResizeMove = useCallback((e: MouseEvent) => {
         if (isResizing && popupRef.current) {
@@ -172,22 +180,9 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
         return undefined
     }, [isResizing, handleResizeMove, handleResizeEnd])
 
-    const handleClear = useCallback(() => {
-        // Create a default bounds object
-        const defaultBounds = { north: 90, south: -90, east: 180, west: -180 }
-        setPendingBounds(defaultBounds)
-    }, [])
-
     const handleDone = useCallback(() => {
         onDone(pendingBounds)
     }, [pendingBounds, onDone])
-
-    const formatBounds = (bounds: MapBounds | undefined): string => {
-        if (!bounds || typeof bounds.north !== 'number' || typeof bounds.south !== 'number' || typeof bounds.east !== 'number' || typeof bounds.west !== 'number') {
-            return 'No bounds selected'
-        }
-        return `N: ${bounds.north.toFixed(4)}, S: ${bounds.south.toFixed(4)}, E: ${bounds.east.toFixed(4)}, W: ${bounds.west.toFixed(4)}`
-    }
 
     if (!isOpen) return null
 
@@ -243,15 +238,6 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                         </h3>
                         <div style={{ fontSize: '12px', color: colors.ordinalTextColor, marginTop: '4px' }}>
                             Resize this window to adjust the map bounds
-                            <span style={{ marginLeft: '8px' }}>
-                                (Original aspect ratio:
-                                {aspectRatio.toFixed(2)}
-                                :1)
-                            </span>
-                        </div>
-                        <div style={{ fontSize: '12px', color: colors.ordinalTextColor, marginTop: '4px' }}>
-                            Pending:
-                            {formatBounds(pendingBounds)}
                         </div>
                     </div>
                     <button
@@ -289,22 +275,6 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                         justifyContent: 'space-between',
                     }}
                 >
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            onClick={handleClear}
-                            style={{
-                                padding: '6px 12px',
-                                backgroundColor: colors.slightlyDifferentBackground,
-                                color: colors.textMain,
-                                border: `1px solid ${colors.borderNonShadow}`,
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                            }}
-                        >
-                            Reset to World
-                        </button>
-                    </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={onClose}
