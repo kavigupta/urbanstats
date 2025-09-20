@@ -263,11 +263,11 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                     >
                         {/* Resize grip lines */}
                         <div style={{ display: 'flex', gap: '2px' }}>
-                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
-                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
-                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                            <div style={{ width: '2px', height: '10px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                            <div style={{ width: '2px', height: '10px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                            <div style={{ width: '2px', height: '10px', backgroundColor: colors.textMain, opacity: 0.6 }} />
                         </div>
-                        <span>Drag to resize</span>
+                        <span style={{ paddingLeft: '4px' }}>Drag to resize</span>
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px' }}>
