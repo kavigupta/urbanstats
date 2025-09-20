@@ -170,6 +170,21 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
 
     return (
         <>
+            {/* Backdrop with blur */}
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: `${colors.background}40`,
+                    backdropFilter: 'blur(4px)',
+                    zIndex: 9999,
+                }}
+                onClick={onClose}
+            />
+
             <div
                 ref={popupRef}
                 style={{
