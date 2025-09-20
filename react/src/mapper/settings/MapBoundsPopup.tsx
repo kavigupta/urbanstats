@@ -3,6 +3,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useRef, useEffect, useState, useCallback } from 'react'
 
 import { useColors } from '../../page_template/colors'
+import { assert } from '../../utils/defensive'
 
 export interface MapBounds {
     north: number
@@ -27,7 +28,14 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
     const [resizeStartY, setResizeStartY] = useState(0)
     const [resizeStartHeight, setResizeStartHeight] = useState(0)
     const [pendingBounds, setPendingBounds] = useState<MapBounds>(currentBounds)
+    const [originalHeight, setOriginalHeight] = useState<number | undefined>(undefined)
     const popupRef = useRef<HTMLDivElement>(null)
+    const widthPx = 600
+    const heightPxDefault = widthPx / aspectRatio
+
+    const [mapHeight, setMapHeight] = useState(heightPxDefault)
+    const width = `${widthPx}px`
+    const height = `${mapHeight}px`
 
     // Update pendingBounds when currentBounds changes
     useEffect(() => {
@@ -125,22 +133,27 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
         setResizeStartY(e.clientY)
         if (popupRef.current) {
             setResizeStartHeight(popupRef.current.offsetHeight)
+            if (originalHeight === undefined) {
+                setOriginalHeight(popupRef.current.offsetHeight)
+            }
         }
-    }, [])
+    }, [originalHeight])
 
     const handleResizeMove = useCallback((e: MouseEvent) => {
         if (isResizing && popupRef.current) {
             const deltaY = e.clientY - resizeStartY
-            const newHeight = Math.max(300, resizeStartHeight + deltaY) // Minimum height of 300px
+            const newHeight = resizeStartHeight + deltaY // Minimum height of 300px
 
             // Validate height before applying
             if (isFinite(newHeight) && newHeight > 0) {
                 popupRef.current.style.height = `${newHeight}px`
+                assert(originalHeight !== undefined, 'originalHeight is undefined')
+                setMapHeight(heightPxDefault + newHeight - originalHeight)
                 // Delay updateMapBounds to ensure DOM has updated
                 setTimeout(updateMapBounds, 50)
             }
         }
-    }, [isResizing, resizeStartY, resizeStartHeight, updateMapBounds])
+    }, [isResizing, resizeStartY, resizeStartHeight, updateMapBounds, originalHeight, heightPxDefault])
 
     const handleResizeEnd = useCallback(() => {
         setIsResizing(false)
@@ -202,8 +215,8 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: '600px',
-                    height: '400px',
+                    width,
+                    // height: '400px',
                     backgroundColor: colors.background,
                     border: `2px solid ${colors.borderNonShadow}`,
                     borderRadius: '8px',
@@ -256,12 +269,12 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                     </button>
                 </div>
 
-                <div id="abc" style={{ flex: 1, position: 'relative', height: `${400 / aspectRatio}px`, width: '400px' }}>
+                <div id="abc" style={{ flex: 1, position: 'relative', height, width }}>
                     <div
                         ref={mapContainerRef}
                         style={{
-                            width: '100%',
-                            height: '100%',
+                            width,
+                            height,
                             borderRadius: '0 0 8px 8px',
                         }}
                     />
