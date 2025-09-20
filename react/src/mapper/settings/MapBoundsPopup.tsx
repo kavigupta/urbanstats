@@ -102,27 +102,8 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                 ),
             })
 
-            // mapContainerRef.current.style.height = `${mapContainerRef.current.offsetWidth / aspectRatio}px`
-            // console.log('mapContainerRef.current.style.height', mapContainerRef.current.style.height)
-
             mapRef.current = map
 
-            // Wait for map to load
-            map.on('load', () => {
-                setPendingBounds(currentBounds)
-
-                // // Validate bounds before creating LngLatBounds
-                // if (isFinite(currentBounds.north) && isFinite(currentBounds.south)
-                //     && isFinite(currentBounds.east) && isFinite(currentBounds.west)) {
-                //     const bounds = new maplibregl.LngLatBounds(
-                //         [currentBounds.west, currentBounds.south],
-                //         [currentBounds.east, currentBounds.north],
-                //     )
-                //     map.fitBounds(bounds, { padding: 20, animate: false })
-                // }
-            })
-
-            // Update bounds when map moves (with a small delay to ensure container is ready)
             map.on('moveend', () => {
                 setTimeout(updateMapBounds, 100)
             })
@@ -189,21 +170,6 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
 
     return (
         <>
-            {/* Backdrop */}
-            <div
-                style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: colors.slightlyDifferentBackground,
-                    zIndex: 9999,
-                }}
-                onClick={onClose}
-            />
-
-            {/* Popup */}
             <div
                 ref={popupRef}
                 style={{
