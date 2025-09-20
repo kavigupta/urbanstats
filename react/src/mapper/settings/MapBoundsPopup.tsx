@@ -204,7 +204,7 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                             Select Map Bounds
                         </h3>
                         <div style={{ fontSize: '12px', color: colors.ordinalTextColor, marginTop: '4px' }}>
-                            Resize this window to adjust the map bounds
+                            Zoom or drag the map to adjust the bounds. Resize the window to adjust the aspect ratio.
                         </div>
                     </div>
                     <button
@@ -257,14 +257,17 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '2px',
+                            gap: '6px',
                             minHeight: '28px',
                         }}
                     >
                         {/* Resize grip lines */}
-                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
-                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
-                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                            <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                        </div>
+                        <span>Drag to resize</span>
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px' }}>
