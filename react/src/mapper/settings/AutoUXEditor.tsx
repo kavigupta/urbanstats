@@ -14,6 +14,7 @@ import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
+import { MapBoundsSelector } from './MapBoundsSelector'
 import { Selector, Selection, classifyExpr, possibilities, getColor, labelPadding } from './Selector'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
@@ -106,17 +107,35 @@ function ArgumentEditor(props: {
                 </div>
                 {isEnabled
                 && (
-                    <AutoUXEditor
-                        uss={argValue.value}
-                        setUss={(newUss) => {
-                            const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                            props.setUss({ ...functionUss, args: newArgs })
-                        }}
-                        typeEnvironment={props.typeEnvironment}
-                        errors={props.errors}
-                        blockIdent={subident}
-                        type={[arg.value]}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', width: '100%' }}>
+                        <div style={{ flex: 1 }}>
+                            <AutoUXEditor
+                                uss={argValue.value}
+                                setUss={(newUss) => {
+                                    const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                    props.setUss({ ...functionUss, args: newArgs })
+                                }}
+                                typeEnvironment={props.typeEnvironment}
+                                errors={props.errors}
+                                blockIdent={subident}
+                                type={[arg.value]}
+                            />
+                        </div>
+                        {props.name === 'mapBounds' && !props.blockIdent.includes('_prop_') && (
+                            <div style={{ flexShrink: 0, marginTop: '4px' }}>
+                                <MapBoundsSelector
+                                    uss={argValue.value}
+                                    setUss={(newUss) => {
+                                        const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                        props.setUss({ ...functionUss, args: newArgs })
+                                    }}
+                                    blockIdent={subident}
+                                    type={[arg.value]}
+                                    typeEnvironment={props.typeEnvironment}
+                                />
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         </div>
