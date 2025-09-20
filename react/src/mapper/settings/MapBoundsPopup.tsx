@@ -1,7 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useRef, useEffect, useState, useCallback } from 'react'
-import { iso } from 'zod/v4'
 
 import { useColors } from '../../page_template/colors'
 import { assert } from '../../utils/defensive'
@@ -93,12 +92,14 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
             const map = new maplibregl.Map({
                 container: mapContainerRef.current,
                 style: 'https://tiles.openfreemap.org/styles/bright',
-                center: [0, 0],
-                zoom: 2,
                 scrollZoom: true,
                 dragPan: true,
                 dragRotate: false,
                 attributionControl: false,
+                bounds: new maplibregl.LngLatBounds(
+                    [currentBounds.west, currentBounds.south],
+                    [currentBounds.east, currentBounds.north],
+                ),
             })
 
             // mapContainerRef.current.style.height = `${mapContainerRef.current.offsetWidth / aspectRatio}px`
@@ -110,15 +111,15 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
             map.on('load', () => {
                 setPendingBounds(currentBounds)
 
-                // Validate bounds before creating LngLatBounds
-                if (isFinite(currentBounds.north) && isFinite(currentBounds.south)
-                    && isFinite(currentBounds.east) && isFinite(currentBounds.west)) {
-                    const bounds = new maplibregl.LngLatBounds(
-                        [currentBounds.west, currentBounds.south],
-                        [currentBounds.east, currentBounds.north],
-                    )
-                    map.fitBounds(bounds, { padding: 20 })
-                }
+                // // Validate bounds before creating LngLatBounds
+                // if (isFinite(currentBounds.north) && isFinite(currentBounds.south)
+                //     && isFinite(currentBounds.east) && isFinite(currentBounds.west)) {
+                //     const bounds = new maplibregl.LngLatBounds(
+                //         [currentBounds.west, currentBounds.south],
+                //         [currentBounds.east, currentBounds.north],
+                //     )
+                //     map.fitBounds(bounds, { padding: 20, animate: false })
+                // }
             })
 
             // Update bounds when map moves (with a small delay to ensure container is ready)
