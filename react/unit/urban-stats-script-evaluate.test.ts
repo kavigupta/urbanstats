@@ -1445,21 +1445,21 @@ void test('test basic RGB map', () => {
 
 void test('test RGB map validation errors', () => {
     assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[1.5, 0.5], dataG=[0.2, 0.6], dataB=[0.3, 0.7], label="Invalid RGB")'), emptyContextWithInsets()),
+        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[1.5, 0.5, 0.8], dataG=[0.2, 0.6, 0.7], dataB=[0.3, 0.7, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
         (err: Error): boolean => {
             return err.message.includes('dataR values must be between 0 and 1')
         },
     )
 
     assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5], dataG=[-0.1, 0.6], dataB=[0.3, 0.7], label="Invalid RGB")'), emptyContextWithInsets()),
+        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5, 0.8], dataG=[-0.1, 0.6, 0.7], dataB=[0.3, 0.7, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
         (err: Error): boolean => {
             return err.message.includes('dataG values must be between 0 and 1')
         },
     )
 
     assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5], dataG=[0.2, 0.6], dataB=[0.3, 1.5], label="Invalid RGB")'), emptyContextWithInsets()),
+        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5, 0.8], dataG=[0.2, 0.6, 0.7], dataB=[0.3, 1.5, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
         (err: Error): boolean => {
             return err.message.includes('dataB values must be between 0 and 1')
         },
