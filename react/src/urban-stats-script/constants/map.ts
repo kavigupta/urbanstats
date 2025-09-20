@@ -1,3 +1,5 @@
+import convert from 'color-convert'
+
 import { Insets } from '../../components/map'
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
@@ -336,9 +338,16 @@ export const cMapRGB: USSValue = {
         returnType: { type: 'concrete', value: cMapRGBType },
     },
     value: (ctx, posArgs, namedArgs) => {
-        const dataR = namedArgs.dataR as number[]
-        const dataG = namedArgs.dataG as number[]
-        const dataB = namedArgs.dataB as number[]
+        const clipValues = (values: number[]): number[] => values.map(v => Math.max(0, Math.min(1, v)))
+
+        const [dataR, dataG, dataB] = reproject(
+            clipValues(namedArgs.dataR as number[]),
+            clipValues(namedArgs.dataG as number[]),
+            clipValues(namedArgs.dataB as number[]),
+            'OKLCH-RGB',
+            0,
+        )
+
         const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
 
         const geoRaw = namedArgs.geo as USSRawValue[]
@@ -356,19 +365,6 @@ export const cMapRGB: USSValue = {
         if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
             throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
         }
-
-        // Validate RGB values are within 0-1 range
-        const validateRGBValues = (values: number[], name: string): void => {
-            const invalidValues = values.filter(v => v < 0 || v > 1)
-            if (invalidValues.length > 0) {
-                throw new Error(`${name} values must be between 0 and 1, but found: ${invalidValues.slice(0, 5).join(', ')}${invalidValues.length > 5 ? '...' : ''}`)
-            }
-        }
-
-        validateRGBValues(dataR, 'dataR')
-        validateRGBValues(dataG, 'dataG')
-        validateRGBValues(dataB, 'dataB')
-
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
@@ -394,3 +390,29 @@ export const cMapRGB: USSValue = {
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+function projectBackOKLCH(h: number, s: number, l: number): [number, number, number] {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any -- this exists
+    const oklabToRGB: (l2: number, a2: number, b2: number) => [number, number, number] = (convert as any).oklch.rgb
+    return oklabToRGB(l, s * 0.32, (h + 30) % 360)
+}
+
+function projectBackSRGB(h: number, s: number, l: number): [number, number, number] {
+    return convert.hsl.rgb(h, s, l)
+}
+
+const projections = {
+    'sRGB': projectBackSRGB,
+    'OKLCH-RGB': projectBackOKLCH,
+}
+
+function reprojectSingleChannel(r: number, g: number, b: number, projectionType: keyof typeof projections, hueOffset: number): [number, number, number] {
+    const [h, s, l] = convert.rgb.hsl(r * 255, g * 255, b * 255)
+    const [r2, g2, b2] = projections[projectionType]((h + hueOffset) % 360, s, l)
+    return [r2 / 255, g2 / 255, b2 / 255]
+}
+
+function reproject(dataR: number[], dataG: number[], dataB: number[], projectionType: keyof typeof projections, hueOffset: number): [number[], number[], number[]] {
+    const elements = dataR.map((r, i) => reprojectSingleChannel(r, dataG[i], dataB[i], projectionType, hueOffset))
+    return [elements.map(element => element[0]), elements.map(element => element[1]), elements.map(element => element[2])]
+}
