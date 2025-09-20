@@ -240,8 +240,33 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                         display: 'flex',
                         gap: '8px',
                         justifyContent: 'space-between',
+                        alignItems: 'center',
                     }}
                 >
+                    {/* Resize handle */}
+                    <div
+                        onMouseDown={handleResizeStart}
+                        style={{
+                            padding: '6px 12px',
+                            backgroundColor: colors.slightlyDifferentBackground,
+                            color: colors.textMain,
+                            border: `1px solid ${colors.borderNonShadow}`,
+                            borderRadius: '4px',
+                            cursor: 'ns-resize',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '2px',
+                            minHeight: '28px',
+                        }}
+                    >
+                        {/* Resize grip lines */}
+                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                        <div style={{ width: '2px', height: '8px', backgroundColor: colors.textMain, opacity: 0.6 }} />
+                    </div>
+
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={onClose}
@@ -273,22 +298,6 @@ export function MapBoundsPopup({ isOpen, onClose, onDone, currentBounds, aspectR
                         </button>
                     </div>
                 </div>
-
-                {/* Resize handle */}
-                <div
-                    onMouseDown={handleResizeStart}
-                    style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '8px',
-                        cursor: 'ns-resize',
-                        backgroundColor: 'transparent',
-                        borderBottomLeftRadius: '8px',
-                        borderBottomRightRadius: '8px',
-                    }}
-                />
             </div>
         </>
     )
