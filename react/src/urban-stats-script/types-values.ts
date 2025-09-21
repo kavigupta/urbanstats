@@ -7,7 +7,7 @@ import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
-import { noLocation } from './location'
+import { LocInfo, noLocation } from './location'
 import { unparse } from './parser'
 
 // Define Inset and Insets types locally to avoid import issues
@@ -42,6 +42,10 @@ interface USSBooleanType {
 
 interface USSNullType {
     type: 'null'
+}
+
+interface USSSetType {
+    type: 'set'
 }
 
 export interface USSOpaqueType {
@@ -85,6 +89,7 @@ export type USSType = (
     | USSStringType
     | USSBooleanType
     | USSNullType
+    | USSSetType
     | USSOpaqueType
     | USSObjectType
     | USSVectorType
@@ -95,7 +100,8 @@ export type USSPrimitiveRawValue = (
     number |
     string |
     boolean |
-    null
+    null |
+        Set<USSRawValue>
 )
 
 export interface OriginalFunctionArgs {
@@ -215,7 +221,7 @@ export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): bool
     if (param.type === 'concrete') {
         return renderType(param.value) === renderType(arg)
     }
-    return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null'
+    return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null' || arg.type === 'set'
 }
 
 export function renderType(type: USSType): string {
@@ -227,6 +233,9 @@ export function renderType(type: USSType): string {
     }
     if (type.type === 'boolean') {
         return 'boolean'
+    }
+    if (type.type === 'set') {
+        return 'Set'
     }
     if (type.type === 'vector') {
         return `[${type.elementType.type === 'elementOfEmptyVector' ? '' : renderType(type.elementType)}]`
@@ -285,6 +294,9 @@ export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType
         if (value === null) {
             return { type: 'null' }
         }
+        if (value instanceof Set) {
+            return { type: 'set' }
+        }
     }
     assert(Array.isArray(value), `Expected a primitive value, but got ${typeof value}`)
     return getPrimitiveType(value[0], depth - 1)
@@ -304,10 +316,14 @@ export function unifyType(
     if (renderType(a) === renderType(b)) {
         return a
     }
+    if (a.type === 'set' && b.type === 'set') {
+        return { type: 'set' }
+    }
     if (a.type === 'vector' && b.type === 'vector') {
+        const unifiedElementType = unifyType(a.elementType, b.elementType, error)
         return {
             type: 'vector',
-            elementType: unifyType(a.elementType, b.elementType, error),
+            elementType: unifiedElementType,
         }
     }
     if (a.type === 'object' && b.type === 'object') {
@@ -341,6 +357,12 @@ export function renderValue(input: USSValue): string {
                 return `${value.value}`
             case 'string':
                 return `"${value.value}"`
+            case 'set':
+                const set = value.value as Set<USSRawValue>
+                if (set.size === 0) {
+                    return `{}`
+                }
+                return `set(${Array.from(set).map(element => helper(undocValue(element, getPrimitiveType(element)), indent)).join(', ')})`
             case 'opaque':
                 const opaqueValue = value.value as USSOpaqueValue
                 switch (opaqueValue.opaqueType) {
@@ -431,6 +453,7 @@ export function canUnifyTo(a: USSType, b: USSType): boolean {
         case 'string':
         case 'boolean':
         case 'null':
+        case 'set':
         case 'opaque':
             // these are all primitive types, so no way to substitute them
             return false
@@ -451,4 +474,17 @@ export function canUnifyTo(a: USSType, b: USSType): boolean {
         case 'function':
             return false
     }
+}
+
+export function validateSetElements(setElements: USSRawValue[], env: Context, loc: LocInfo, descriptor: string): Set<USSRawValue> {
+    if (setElements.length !== 0) {
+        const firstElementType = getPrimitiveType(setElements[0])
+        for (let i = 1; i < setElements.length; i++) {
+            const et = getPrimitiveType(setElements[i])
+            if (renderType(et) !== renderType(firstElementType)) {
+                throw env.error(`heterogenous types ${renderType(firstElementType)} and ${renderType(et)} in ${descriptor}`, loc)
+            }
+        }
+    }
+    return new Set(setElements)
 }

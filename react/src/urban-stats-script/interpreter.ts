@@ -6,7 +6,7 @@ import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broa
 import { LocInfo } from './location'
 import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
-import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
+import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo, getPrimitiveType, validateSetElements } from './types-values'
 
 export interface Effect { type: 'warning', message: string, location: LocInfo }
 
@@ -79,6 +79,13 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 })
             }
             return undocValue(elements.map(e => e.value), { type: 'vector', elementType })
+        case 'setLiteral':
+            const set = validateSetElements(
+                expr.elements.map(e => evaluate(e, env).value),
+                env, locationOf(expr),
+                'set literal',
+            )
+            return undocValue(set, { type: 'set' })
         case 'objectLiteral':
             const ts = new Map<string, USSType>()
             const vs = new Map<string, USSRawValue>()

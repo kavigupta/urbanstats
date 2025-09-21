@@ -21,6 +21,9 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
             }
             const results = (mask.value as USSRawValue[]).map(x => collectUniqueMaskValues(collectIn, undocValue(x, et)))
             return results.every(x => x)
+        case 'set':
+            // Sets are not supported as masks, so we return false
+            return false
         case 'object':
         case 'function':
         case 'opaque':
@@ -121,6 +124,7 @@ function indexMaskComposite(value: USSValue, mask: USSValue, reference: USSPrimi
             return { type: 'success', value: { type: { type: 'vector', elementType: referenceType }, value: results, documentation: value.documentation } }
         /* c8 ignore start */
         // If we reach here, it means the mask is not a valid mask. We checked for this earlier.
+        case 'set':
         case 'object':
         case 'function':
         case 'opaque':
@@ -134,6 +138,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
         case 'vector':
         case 'object':
             return indexMaskComposite(value, mask, reference)
+        case 'set':
         case 'number':
         case 'string':
         case 'boolean':
@@ -204,6 +209,8 @@ function defaultValueForType(type: USSType): USSRawValue {
             return null
         case 'vector':
             return []
+        case 'set':
+            return new Set<USSRawValue>()
         case 'object':
             return new Map<string, USSRawValue>([...type.properties.entries()].map(([k, v]) => [k, defaultValueForType(v)]))
         case 'function':
