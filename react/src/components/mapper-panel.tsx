@@ -535,6 +535,10 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
 
     const headerTextClass = useHeaderTextClass()
 
+    const [editInsets, setEditInsets] = useState(false)
+
+    const colors = useColors()
+
     if (props.view) {
         return mapperPanel()
     }
@@ -554,11 +558,48 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         colorbarRef={colorbarRef}
                     />
+                    {
+                        !editInsets && (
+                            <div style={{
+                                display: 'flex',
+                                gap: '0.5em',
+                                margin: '0.5em 0',
+                            }}
+                            >
+                                <button onClick={() => { setEditInsets(true) }}>
+                                    Edit Insets
+                                </button>
+                            </div>
+                        )
+                    }
                     <ImportExportCode
                         mapSettings={mapSettings}
                         setMapSettings={setMapSettingsWrapper}
                     />
                 </div>
+                {
+                    editInsets && (
+                        <div style={{
+                            backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                            borderRadius: '5px',
+                            padding: '10px',
+                            margin: '10px 0',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            gap: '0.5em',
+                        }}
+                        >
+                            <div>
+                                <b>Editing Insets.</b>
+                                {' '}
+                                Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                            </div>
+                            <button onClick={() => { setEditInsets(false) }}>
+                                Stop Editing
+                            </button>
+                        </div>
+                    )
+                }
                 {
                     mapperPanel()
                 }
