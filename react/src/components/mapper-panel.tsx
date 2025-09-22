@@ -37,7 +37,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, Inset } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -358,6 +358,7 @@ interface MapComponentProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
     colorbarRef: React.RefObject<HTMLDivElement>
+    editInsets?: (index: number, newInset: Inset) => void
 }
 
 interface EmpiricalRamp {
@@ -398,6 +399,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     colors={useColors()}
                     insets={currentInsets}
                     key={JSON.stringify(currentInsets)}
+                    editInsets={props.editInsets}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -529,6 +531,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         setErrors={setErrors}
                         colorbarRef={colorbarRef}
+                        editInsets={editInsets ? () => undefined : undefined} // TODO
                     />
                 )
     }

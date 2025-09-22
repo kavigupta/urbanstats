@@ -36,6 +36,7 @@ export interface MapGenericProps {
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
     insets?: Insets
+    editInsets?: (index: number, newInsets: Inset) => void
 }
 
 export interface Shape {
@@ -241,6 +242,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             bbox={bbox}
                             insetBoundary={i > 0}
                             visible={this.state.mapIsVisible[i]}
+                            editInset={this.props.editInsets !== undefined ? (newInset: Inset) => { this.props.editInsets?.(i, newInset) } : undefined}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -757,7 +759,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean }): ReactNode {
+function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean, editInset?: (newInset: Inset) => void }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
@@ -772,7 +774,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `2px solid ${props.editInset ? colors.slightlyDifferentBackgroundFocused : colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
