@@ -1,3 +1,4 @@
+import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { CSSProperties, ReactNode } from 'react'
@@ -31,12 +32,15 @@ export type MapHeight =
     | { type: 'fixed-height', value: number | string }
     | { type: 'aspect-ratio', value: number }
 
+export type EditSingleInset = (newInset: Partial<Inset>) => void
+export type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
+
 export interface MapGenericProps {
     height?: MapHeight
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
     insets?: Insets
-    editInsets?: (index: number, newInsets: Inset) => void
+    editInsets?: EditMultipleInsets
 }
 
 export interface Shape {
@@ -106,7 +110,7 @@ class MapHandler {
         this.mainMaps = mainMaps
     }
 
-    initialize(onClick: (name: string) => void, editInsets?: (index: number, inset: Inset) => void): void {
+    initialize(onClick: (name: string) => void, editInsets?: EditMultipleInsets): void {
         [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick, editInsets)
     }
 
@@ -144,7 +148,7 @@ function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
-    editInset?: (newInset: Inset) => void,
+    editInset?: EditSingleInset,
 ): [maplibregl.Map, Promise<void>] {
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
@@ -175,9 +179,6 @@ function createMap(
             }
             onClick(names[0])
         })
-        map.on('zoomend', () => {
-            editInset(map.getBounds())
-        })
     }
 
     const ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve)) satisfies Promise<void>
@@ -188,12 +189,12 @@ function createMaps(
     ids: string[],
     mainMaps: boolean[],
     onClick: (name: string) => void,
-    editInsets?: (index: number, inset: Inset) => void,
+    editInsets?: EditMultipleInsets,
 ): [maplibregl.Map[], Promise<void>] {
     const maps = []
     const ensureStyleLoadeds = []
     for (const [i, id] of ids.entries()) {
-        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets)
+        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets !== undefined ? (newInset) => { editInsets(i, newInset) } : undefined)
         maps.push(map)
         ensureStyleLoadeds.push(ensureStyleLoaded)
     }
@@ -372,6 +373,8 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         ]
     }
 
+    private cleanup: (() => void)[] = []
+
     override async componentDidMount(): Promise<void> {
         this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets)
         const maps = await this.handler.getMaps()
@@ -387,9 +390,45 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                 )
                 map.fitBounds(bounds, { animate: false })
             }
+
+            if (this.props.editInsets) {
+                const editInsets = this.props.editInsets
+
+                const getCoordBox = (): [number, number, number, number] => {
+                    const bounds = map.getBounds()
+                    const sw = bounds.getSouthWest()
+                    const ne = bounds.getNorthEast()
+                    return [sw.lng, sw.lat, ne.lng, ne.lat]
+                }
+
+                void map.once('load', () => {
+                    let lastCoordBox = getCoordBox()
+
+                    const panZoomHandler = (): void => {
+                        const newCoordBox = getCoordBox()
+                        if (stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
+                            editInsets(i, { coordBox: newCoordBox })
+                            lastCoordBox = newCoordBox
+                        }
+                    }
+
+                    map.on('zoomend', panZoomHandler)
+                    map.on('moveend', panZoomHandler)
+
+                    this.cleanup.push(() => {
+                        map.off('zoomend', panZoomHandler)
+                        map.off('moveend', panZoomHandler)
+                    })
+                })
+            }
         }
         this.hasZoomed = true
         await this.componentDidUpdate(this.props, this.state)
+    }
+
+    override componentWillUnmount(): void {
+        this.cleanup.forEach((cb) => { cb() })
+        this.cleanup = []
     }
 
     onClick(name: string): void {

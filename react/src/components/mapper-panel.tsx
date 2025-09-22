@@ -38,7 +38,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, Inset } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -359,7 +359,7 @@ interface MapComponentProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors: (errors: EditorError[]) => void
     colorbarRef: React.RefObject<HTMLDivElement>
-    editInsets?: (index: number, newInset: Inset) => void
+    editInsets?: EditMultipleInsets
 }
 
 interface EmpiricalRamp {
