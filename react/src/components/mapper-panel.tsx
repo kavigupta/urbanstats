@@ -3,6 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
+import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
@@ -398,7 +399,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     setErrors={props.setErrors}
                     colors={useColors()}
                     insets={currentInsets}
-                    key={JSON.stringify(currentInsets)}
+                    key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
                 />
             </div>

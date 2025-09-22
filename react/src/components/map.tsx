@@ -106,8 +106,8 @@ class MapHandler {
         this.mainMaps = mainMaps
     }
 
-    initialize(onClick: (name: string) => void): void {
-        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick)
+    initialize(onClick: (name: string) => void, editInsets?: (index: number, inset: Inset) => void): void {
+        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick, editInsets)
     }
 
     container(): HTMLElement {
@@ -144,12 +144,13 @@ function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
+    editInset?: (newInset: Inset) => void,
 ): [maplibregl.Map, Promise<void>] {
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
         container: id,
-        scrollZoom: fullMap,
-        dragPan: fullMap,
+        scrollZoom: fullMap || !!editInset,
+        dragPan: fullMap || !!editInset,
         dragRotate: false,
         canvasContextAttributes: {
             preserveDrawingBuffer: true,
@@ -174,6 +175,9 @@ function createMap(
             }
             onClick(names[0])
         })
+        map.on('zoomend', () => {
+            editInset(map.getBounds())
+        })
     }
 
     const ensureStyleLoaded = new Promise(resolve => map.on('style.load', resolve)) satisfies Promise<void>
@@ -184,11 +188,12 @@ function createMaps(
     ids: string[],
     mainMaps: boolean[],
     onClick: (name: string) => void,
+    editInsets?: (index: number, inset: Inset) => void,
 ): [maplibregl.Map[], Promise<void>] {
     const maps = []
     const ensureStyleLoadeds = []
     for (const [i, id] of ids.entries()) {
-        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i])
+        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets)
         maps.push(map)
         ensureStyleLoadeds.push(ensureStyleLoaded)
     }
@@ -368,7 +373,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     override async componentDidMount(): Promise<void> {
-        this.handler.initialize((name) => { this.onClick(name) })
+        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets)
         const maps = await this.handler.getMaps()
         const insets = this.insets()
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
