@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { ReactNode } from 'react'
+import React, { CSSProperties, ReactNode } from 'react'
 
 import './map.css'
 
@@ -759,6 +759,8 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
+const insetBorderWidth = 2
+
 function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean, editInset?: (newInset: Inset) => void }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
@@ -774,12 +776,13 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid ${props.editInset ? colors.slightlyDifferentBackgroundFocused : colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
                 backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
                 ...(props.visible ? {} : { display: 'none' }),
+                ...(props.editInset ? { overflow: 'visible' } : {}),
             }}
         >
             {/* place this on the right of the map */}
@@ -789,7 +792,32 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
             >
                 {props.buttons}
             </div>
+            { props.editInset && props.insetBoundary && <EditInsetsHandles inset={props.bbox} editInset={props.editInset} /> }
         </div>
+    )
+}
+
+function EditInsetsHandles(props: { inset: Inset, editInset: (newInset: Inset) => void }): ReactNode {
+    const colors = useColors()
+
+    const handleStyle: (handleSize: number) => CSSProperties = handleSize => ({
+        backgroundColor: colors.slightlyDifferentBackground,
+        border: `1px solid ${colors.textMain}`,
+        position: 'absolute',
+        width: `${handleSize}px`,
+        height: `${handleSize}px`,
+        borderRadius: '2px',
+        zIndex: 1000,
+    })
+
+    return (
+        <>
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
+            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} />
+        </>
     )
 }
 
