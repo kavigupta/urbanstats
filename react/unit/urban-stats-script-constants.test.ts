@@ -90,7 +90,9 @@ void test('constant listing', (): void => {
                 'quantile',
                 'percentile',
             ],
-
+            '(any, Set; ) -> boolean': [
+                'in',
+            ],
             '(any; ) -> number': [
                 'toNumber',
             ],

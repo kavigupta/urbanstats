@@ -161,7 +161,7 @@ export const expressionOperatorMap = new Map<string, Operator>([
             binary: binaryOperator([
                 numericBinaryOperation((a, b) => a + b),
                 { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
-                setOperation((a, b) => validateSetElements([...a, ...b], ctx, locInfo)),
+                setOperation((a, b) => validateSetElements([...a, ...b], msg => new Error(msg), 'set union')),
             ]),
             description: 'Unary plus, Addition, String concatenation, Set union',
             examples: ['+5', '2 + 3 → 5', '"hello" + "world" → "helloworld"', 'set(1, 2) + set(2, 3) → set(1, 2, 3)'],

@@ -82,7 +82,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
         case 'setLiteral':
             const set = validateSetElements(
                 expr.elements.map(e => evaluate(e, env).value),
-                env, locationOf(expr),
+                (msg: string) => env.error(msg, locationOf(expr)),
                 'set literal',
             )
             return undocValue(set, { type: 'set' })

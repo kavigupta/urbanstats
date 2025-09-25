@@ -7,7 +7,7 @@ import { CMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
-import { LocInfo, noLocation } from './location'
+import { noLocation } from './location'
 import { unparse } from './parser'
 
 // Define Inset and Insets types locally to avoid import issues
@@ -476,13 +476,13 @@ export function canUnifyTo(a: USSType, b: USSType): boolean {
     }
 }
 
-export function validateSetElements(setElements: USSRawValue[], env: Context, loc: LocInfo, descriptor: string): Set<USSRawValue> {
+export function validateSetElements(setElements: USSRawValue[], error: (msg: string) => Error, descriptor: string): Set<USSRawValue> {
     if (setElements.length !== 0) {
         const firstElementType = getPrimitiveType(setElements[0])
         for (let i = 1; i < setElements.length; i++) {
             const et = getPrimitiveType(setElements[i])
             if (renderType(et) !== renderType(firstElementType)) {
-                throw env.error(`heterogenous types ${renderType(firstElementType)} and ${renderType(et)} in ${descriptor}`, loc)
+                throw error(`heterogenous types ${renderType(firstElementType)} and ${renderType(et)} in ${descriptor}`)
             }
         }
     }

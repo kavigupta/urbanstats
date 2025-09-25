@@ -2232,6 +2232,32 @@ void test('evaluate sets', (): void => {
         evaluate(parseExpr('set7 - emptySet2'), ctx),
         undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }),
     )
+
+    // Test in function
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(1, set1)'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(3, set1)'), ctx),
+        undocValue(false, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in("hello", set("hello", "world"))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(true, set(true, false))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(null, set(null))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
 })
 
 void test('set type inference and unification', (): void => {
