@@ -6,7 +6,7 @@ import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broa
 import { LocInfo } from './location'
 import { expressionOperatorMap } from './operators'
 import { splitMask } from './split-broadcasting'
-import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo, getPrimitiveType, validateSetElements } from './types-values'
+import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo, validateSetElements } from './types-values'
 
 export interface Effect { type: 'warning', message: string, location: LocInfo }
 
