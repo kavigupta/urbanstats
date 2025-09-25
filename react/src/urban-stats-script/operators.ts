@@ -1,6 +1,6 @@
 import { Context } from './context'
 import { LocInfo } from './location'
-import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
+import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue, validateSetElements } from './types-values'
 
 interface Operator {
     precedence: number
@@ -111,6 +111,14 @@ function booleanOperation(fn: (a: boolean, b: boolean) => boolean): BinaryOperat
     }
 }
 
+function setOperation(fn: (a: Set<USSRawValue>, b: Set<USSRawValue>) => Set<USSRawValue>): BinaryOperation {
+    return {
+        leftType: 'set',
+        rightType: 'set',
+        fn: (a, b) => fn(a as Set<USSRawValue>, b as Set<USSRawValue>),
+    }
+}
+
 export const expressionOperatorMap = new Map<string, Operator>([
     // E
     [
@@ -127,9 +135,12 @@ export const expressionOperatorMap = new Map<string, Operator>([
         '*',
         {
             precedence: 900,
-            binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]),
-            description: 'Multiplication',
-            examples: ['3 * 4 → 12', '5 * 2 → 10'],
+            binary: binaryOperator([
+                numericBinaryOperation((a, b) => a * b),
+                setOperation((a, b) => new Set([...a].filter(x => b.has(x)))),
+            ]),
+            description: 'Multiplication, Set intersection',
+            examples: ['3 * 4 → 12', '5 * 2 → 10', 'set(1, 2, 3) * set(2, 3, 4) → set(2, 3)'],
         },
     ],
     [
@@ -150,9 +161,10 @@ export const expressionOperatorMap = new Map<string, Operator>([
             binary: binaryOperator([
                 numericBinaryOperation((a, b) => a + b),
                 { leftType: 'string', rightType: 'string', fn: (a, b) => (a as string) + (b as string) },
+                setOperation((a, b) => validateSetElements([...a, ...b], ctx, locInfo)),
             ]),
-            description: 'Unary plus, Addition, String concatenation',
-            examples: ['+5', '2 + 3 → 5', '"hello" + "world" → "helloworld"'],
+            description: 'Unary plus, Addition, String concatenation, Set union',
+            examples: ['+5', '2 + 3 → 5', '"hello" + "world" → "helloworld"', 'set(1, 2) + set(2, 3) → set(1, 2, 3)'],
         },
     ],
     [
@@ -160,9 +172,12 @@ export const expressionOperatorMap = new Map<string, Operator>([
         {
             precedence: 800,
             unary: unaryOperator([{ type: 'number', fn: x => -(x as number) }]),
-            binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
-            description: 'Unary minus, Subtraction',
-            examples: ['-5', '7 - 3 → 4'],
+            binary: binaryOperator([
+                numericBinaryOperation((a, b) => a - b),
+                setOperation((a, b) => new Set([...a].filter(x => !b.has(x)))),
+            ]),
+            description: 'Unary minus, Subtraction, Set difference',
+            examples: ['-5', '7 - 3 → 4', 'set(1, 2, 3) - set(2, 3) → set(1)'],
         },
     ],
     // Comparators

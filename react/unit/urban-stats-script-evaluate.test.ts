@@ -2190,6 +2190,48 @@ void test('evaluate sets', (): void => {
         evaluate(parseExpr('set(1, 2, 1, 3, 2)'), ctx),
         undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
     )
+
+    // Test set union operation - using variables to avoid parsing issues
+    ctx.assignVariable('set1', undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }))
+    ctx.assignVariable('set2', undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set1 + set2'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set intersection operation
+    ctx.assignVariable('set3', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    ctx.assignVariable('set4', undocValue(new Set<USSRawValue>([2, 3, 4]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set3 * set4'), ctx),
+        undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }),
+    )
+
+    // Test set difference operation
+    ctx.assignVariable('set5', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    ctx.assignVariable('set6', undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set5 - set6'), ctx),
+        undocValue(new Set<USSRawValue>([1]), { type: 'set' }),
+    )
+
+    // Test set operations with empty sets
+    ctx.assignVariable('emptySet2', undocValue(new Set<USSRawValue>([]), { type: 'set' }))
+    ctx.assignVariable('set7', undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('emptySet2 + set7'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set7 * emptySet2'), ctx),
+        undocValue(new Set<USSRawValue>([]), { type: 'set' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set7 - emptySet2'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }),
+    )
 })
 
 void test('set type inference and unification', (): void => {
