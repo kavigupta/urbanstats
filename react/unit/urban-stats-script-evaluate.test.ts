@@ -9,7 +9,7 @@ import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/c
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { parseNoErrorAsCustomNode } from '../src/urban-stats-script/parser'
-import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs, canUnifyTo } from '../src/urban-stats-script/types-values'
+import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs, canUnifyTo, getPrimitiveType, unifyFunctionType } from '../src/urban-stats-script/types-values'
 
 import { boolType, emptyContext, emptyContextWithInsets, multiArgFnType, numMatrixType, numType, numVectorType, parseExpr, parseProgram, stringType, testFn1, testFn2, testFnMultiArg, testFnType, testFnTypeWithDefault, testFnWithDefault, testingContext, testObjType } from './urban-stats-script-utils'
 
@@ -2118,5 +2118,234 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     assert.deepStrictEqual(resultMapRaw.label, 'hi')
     assert.deepStrictEqual(
         effects, [],
+    )
+})
+
+void test('evaluate sets', (): void => {
+    const ctx: Context = emptyContext()
+
+    // Test empty set - we need to create it manually since empty vectors can't be inferred
+    ctx.assignVariable('emptySet', undocValue(new Set<USSRawValue>(), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('emptySet'), ctx),
+        undocValue(new Set<USSRawValue>(), { type: 'set' }),
+    )
+
+    // Test set with numbers
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set(1, 2, 3)'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set with duplicate values (should deduplicate) - using set literal
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set(1, 2, 1, 3, 2)'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set type inference from variables
+    ctx.assignVariable('numSet', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('numSet'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set in object
+    ctx.assignVariable('emptySet', undocValue(new Set<USSRawValue>(), { type: 'set' }))
+    ctx.assignVariable('numSet', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('{numbers: numSet, empty: emptySet}'), ctx),
+        undocValue(new Map<string, USSRawValue>([
+            ['numbers', new Set<USSRawValue>([1, 2, 3])],
+            ['empty', new Set<USSRawValue>([])],
+        ]), {
+            type: 'object',
+            properties: new Map<string, USSType>([
+                ['numbers', { type: 'set' }],
+                ['empty', { type: 'set' }],
+            ]),
+        }),
+    )
+
+    // Test set literal syntax
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set(1, 2, 3)'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test empty set literal
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set()'), ctx),
+        undocValue(new Set<USSRawValue>(), { type: 'set' }),
+    )
+
+    // Test set literal with mixed types (should error)
+    assert.throws(
+        () => evaluate(parseExpr('set(1, "hello", true, null)'), ctx),
+        /heterogenous types number and string in set literal/,
+    )
+
+    // Test set literal with duplicate values (should deduplicate)
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set(1, 2, 1, 3, 2)'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set union operation - using variables to avoid parsing issues
+    ctx.assignVariable('set1', undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }))
+    ctx.assignVariable('set2', undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set1 + set2'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }),
+    )
+
+    // Test set intersection operation
+    ctx.assignVariable('set3', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    ctx.assignVariable('set4', undocValue(new Set<USSRawValue>([2, 3, 4]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set3 * set4'), ctx),
+        undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }),
+    )
+
+    // Test set difference operation
+    ctx.assignVariable('set5', undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' }))
+    ctx.assignVariable('set6', undocValue(new Set<USSRawValue>([2, 3]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set5 - set6'), ctx),
+        undocValue(new Set<USSRawValue>([1]), { type: 'set' }),
+    )
+
+    // Test set operations with empty sets
+    ctx.assignVariable('emptySet2', undocValue(new Set<USSRawValue>([]), { type: 'set' }))
+    ctx.assignVariable('set7', undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('emptySet2 + set7'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set7 * emptySet2'), ctx),
+        undocValue(new Set<USSRawValue>([]), { type: 'set' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set7 - emptySet2'), ctx),
+        undocValue(new Set<USSRawValue>([1, 2]), { type: 'set' }),
+    )
+
+    // Test in function
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(1, set1)'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(3, set1)'), ctx),
+        undocValue(false, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in("hello", set("hello", "world"))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(true, set(true, false))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('in(null, set(null))'), ctx),
+        undocValue(true, { type: 'boolean' }),
+    )
+})
+
+void test('set type inference and unification', (): void => {
+    const ctx: Context = emptyContext()
+
+    // Test empty set type inference - we need to create it manually since empty vectors can't be inferred
+    ctx.assignVariable('emptySet', undocValue(new Set<USSRawValue>(), { type: 'set' }))
+    assert.deepStrictEqual(
+        evaluate(parseExpr('emptySet'), ctx),
+        undocValue(new Set<USSRawValue>(), { type: 'set' }),
+    )
+
+    // Test set type inference from first element
+    assert.deepStrictEqual(
+        evaluate(parseExpr('set(1)'), ctx),
+        undocValue(new Set<USSRawValue>([1]), { type: 'set' }),
+    )
+
+    // Test set type compatibility
+    const setType = { type: 'set' } satisfies USSType
+
+    // These should be compatible for unification
+    assert.strictEqual(canUnifyTo(setType, setType), true)
+})
+
+void test('set value rendering', (): void => {
+    // Test empty set rendering
+    assert.strictEqual(
+        renderValue(undocValue(new Set<USSRawValue>(), { type: 'set' })),
+        '{}',
+    )
+
+    // Test set with numbers rendering
+    assert.strictEqual(
+        renderValue(undocValue(new Set<USSRawValue>([1, 2, 3]), { type: 'set' })),
+        'set(1, 2, 3)',
+    )
+
+    // Test set with strings rendering
+    assert.strictEqual(
+        renderValue(undocValue(new Set<USSRawValue>(['hello', 'world']), { type: 'set' })),
+        'set("hello", "world")',
+    )
+
+    // Test set with booleans rendering
+    assert.strictEqual(
+        renderValue(undocValue(new Set<USSRawValue>([true, false]), { type: 'set' })),
+        'set(true, false)',
+    )
+
+    // Test nested set rendering
+    const nestedSet = undocValue([
+        new Set<USSRawValue>([1, 2]),
+        new Set<USSRawValue>([3, 4]),
+    ], { type: 'vector', elementType: { type: 'set' } })
+
+    assert.strictEqual(
+        renderValue(nestedSet),
+        `[
+    set(1, 2),
+    set(3, 4)
+]`,
+    )
+})
+
+void test('set primitive type handling', (): void => {
+    // Test that set is treated as primitive in function arguments
+    const setType = { type: 'set' } satisfies USSType
+
+    // Test primitive type checking
+    assert.strictEqual(unifyFunctionType({ type: 'anyPrimitive' }, setType), true)
+
+    // Test concrete type checking
+    assert.strictEqual(unifyFunctionType({ type: 'concrete', value: setType }, setType), true)
+
+    // Test getPrimitiveType with sets
+    assert.deepStrictEqual(
+        getPrimitiveType(new Set<USSRawValue>([1, 2, 3])),
+        { type: 'set' },
+    )
+
+    assert.deepStrictEqual(
+        getPrimitiveType(new Set<USSRawValue>(['hello', 'world'])),
+        { type: 'set' },
+    )
+
+    assert.deepStrictEqual(
+        getPrimitiveType(new Set<USSRawValue>([])),
+        { type: 'set' },
     )
 })

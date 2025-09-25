@@ -225,6 +225,30 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
         const q = p / 100
         return weightedQuantile(values, weights, q)
     }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
+    ['in', {
+        type: {
+            type: 'function',
+            posArgs: [
+                { type: 'anyPrimitive' },
+                { type: 'concrete', value: { type: 'set' } },
+            ],
+            namedArgs: {},
+            returnType: { type: 'concrete', value: { type: 'boolean' } },
+        },
+        value: (_ctx: Context, posArgs: USSRawValue[]): USSRawValue => {
+            const element = posArgs[0]
+            const set = posArgs[1] as Set<USSRawValue>
+            if (!(set instanceof Set)) {
+                throw new Error('in: second argument must be a set')
+            }
+            return set.has(element)
+        },
+        documentation: {
+            humanReadableName: 'Contains',
+            category: 'basic',
+            longDescription: 'Checks if an element is contained in a set. Returns true if the element exists in the set, false otherwise.',
+        },
+    }] satisfies [string, USSValue],
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],

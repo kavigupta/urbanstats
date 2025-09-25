@@ -20,6 +20,7 @@ export type UrbanStatsASTExpression = (
     { type: 'unaryOperator', operator: Decorated<string>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
+    { type: 'setLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
@@ -70,6 +71,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
             return unify(locationOf(node.left), locationOf(node.right), node.operator.location)
         case 'objectLiteral':
         case 'vectorLiteral':
+        case 'setLiteral':
         case 'if':
         case 'do':
         case 'condition':
