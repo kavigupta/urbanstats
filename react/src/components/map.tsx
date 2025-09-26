@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { CSSProperties, ReactNode } from 'react'
+import React, { CSSProperties, ReactNode, Ref, RefObject, useEffect, useRef, useState } from 'react'
 
 import './map.css'
 
@@ -216,6 +216,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     private attributionControl: CustomAttributionControl | undefined
     protected handler: MapHandler
     private hasZoomed = false
+    private containerRef = React.createRef<HTMLDivElement>()
 
     constructor(props: P) {
         super(props)
@@ -238,7 +239,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <div style={{ position: 'relative', ...this.mapStyle() }}>
+                <div style={{ position: 'relative', ...this.mapStyle() }} ref={this.containerRef}>
                     {this.insets().map((bbox, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
@@ -248,7 +249,8 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             bbox={bbox}
                             insetBoundary={i > 0}
                             visible={this.state.mapIsVisible[i]}
-                            editInset={this.props.editInsets !== undefined ? (newInset: Inset) => { this.props.editInsets?.(i, newInset) } : undefined}
+                            editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.(i, newInset) } : undefined}
+                            container={this.containerRef}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -805,12 +807,30 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
 const insetBorderWidth = 2
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean, editInset?: (newInset: Inset) => void }): ReactNode {
+type Frame = [number, number, number, number]
+
+function MapBody(props: {
+    id: string
+    height: number | string
+    buttons: ReactNode
+    bbox: Inset
+    insetBoundary: boolean
+    visible: boolean
+    editInset?: EditSingleInset
+    container: RefObject<HTMLDivElement>
+}): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
+
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
-    const [x0, y0] = props.bbox.bottomLeft
-    const [x1, y1] = props.bbox.topRight
+    // Frame is separate so we can interactively edit it
+    const [frame, setFrame] = useState<Frame>(() => [...props.bbox.bottomLeft, ...props.bbox.topRight])
+    const [x0, y0, x1, y1] = frame
+
+    useEffect(() => {
+        setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight])
+    }, [props.bbox])
+
     return (
         <div
             id={props.id}
@@ -836,12 +856,26 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
             >
                 {props.buttons}
             </div>
-            { props.editInset && props.insetBoundary && <EditInsetsHandles inset={props.bbox} editInset={props.editInset} /> }
+            { props.editInset && props.insetBoundary && (
+                <EditInsetsHandles
+                    frame={frame}
+                    setFrame={setFrame}
+                    commitChanges={() => { props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] }) }}
+                    container={props.container}
+                    discardChanges={() => { setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight]) }}
+                />
+            ) }
         </div>
     )
 }
 
-function EditInsetsHandles(props: { inset: Inset, editInset: (newInset: Inset) => void }): ReactNode {
+function EditInsetsHandles(props: {
+    frame: Frame
+    setFrame: (newFrame: Frame) => void
+    commitChanges: () => void
+    discardChanges: () => void
+    container: RefObject<HTMLDivElement>
+}): ReactNode {
     const colors = useColors()
 
     const handleStyle: (handleSize: number) => CSSProperties = handleSize => ({
@@ -854,13 +888,55 @@ function EditInsetsHandles(props: { inset: Inset, editInset: (newInset: Inset) =
         zIndex: 1000,
     })
 
+    const activeDrag = useRef<{ kind: 'move', startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
+
     return (
         <>
             <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
             <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
             <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
             <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
-            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} />
+            <div
+                style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }}
+                onPointerDown={(e) => {
+                    if (activeDrag.current !== undefined) {
+                        return
+                    }
+                    const thisElem = e.target as HTMLDivElement
+                    activeDrag.current = {
+                        kind: 'move',
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        startFrame: props.frame,
+                        pointerId: e.pointerId,
+                    }
+                    thisElem.setPointerCapture(e.pointerId)
+                }}
+                onPointerMove={(e) => {
+                    if (activeDrag.current?.pointerId !== e.pointerId) {
+                        return
+                    }
+                    const drag = activeDrag.current
+                    const movementX = Math.max(0 - drag.startFrame[0], Math.min((e.clientX - drag.startX) / props.container.current!.clientWidth, 1 - drag.startFrame[2]))
+                    const movementY = Math.max(0 - drag.startFrame[1], Math.min(-(e.clientY - drag.startY) / props.container.current!.clientHeight, 1 - drag.startFrame[3]))
+                    const newFrame: Frame = [drag.startFrame[0] + movementX, drag.startFrame[1] + movementY, drag.startFrame[2] + movementX, drag.startFrame[3] + movementY]
+                    props.setFrame(newFrame)
+                }}
+                onPointerUp={(e) => {
+                    if (activeDrag.current?.pointerId !== e.pointerId) {
+                        return
+                    }
+                    activeDrag.current = undefined
+                    props.commitChanges()
+                }}
+                onPointerCancel={(e) => {
+                    if (activeDrag.current?.pointerId !== e.pointerId) {
+                        return
+                    }
+                    activeDrag.current = undefined
+                    props.discardChanges()
+                }}
+            />
         </>
     )
 }
