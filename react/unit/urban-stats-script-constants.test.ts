@@ -517,7 +517,7 @@ void test('constant listing', (): void => {
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), colorSpace: colorSpace = sRGB, hueRotation: number = 0, basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMapRGB': [
                 'cMapRGB',
             ],
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> pMap': [
@@ -531,6 +531,10 @@ void test('constant listing', (): void => {
             ],
             '(; backgroundColor: color = rgb(1, 1, 1, a=1), textColor: color = null) -> basemap': [
                 'noBasemap',
+            ],
+            'colorSpace': [
+                'sRGB',
+                'OKRGB',
             ],
         },
     )

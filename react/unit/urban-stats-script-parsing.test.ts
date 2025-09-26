@@ -647,7 +647,7 @@ void test('collect identifiers', (): void => {
     )
     assert.deepStrictEqual(
         ids('cMapRGB(dataR=population, dataG=commute_transit, dataB=commute_walk, label="RGB Map")'),
-        new Set(['cMapRGB', 'population', 'commute_transit', 'commute_walk', 'osmBasemap', 'geo', 'defaultInsets', 'colorBlack', 'constructOutline', 'false', 'null', 'rgb']),
+        new Set(['cMapRGB', 'population', 'commute_transit', 'commute_walk', 'osmBasemap', 'geo', 'defaultInsets', 'colorBlack', 'constructOutline', 'false', 'null', 'rgb', 'sRGB']),
     )
     assert.deepStrictEqual(
         allIdentifiers(parseNoErrorAsCustomNode('++', 'test'), emptyContext()),
