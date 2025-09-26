@@ -392,7 +392,6 @@ export const cMapRGB: USSValue = {
 } satisfies USSValue
 
 function projectBackOKLCH(h: number, s: number, l: number): [number, number, number] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any -- this exists
     const oklabToRGB: (l2: number, a2: number, b2: number) => [number, number, number] = (convert as any).oklch.rgb
     return oklabToRGB(l, s * 0.32, (h + 30) % 360)
 }
