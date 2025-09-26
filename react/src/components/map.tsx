@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { CSSProperties, ReactNode, Ref, RefObject, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, Ref, RefObject, useEffect, useMemo, useRef, useState } from 'react'
 
 import './map.css'
 
@@ -869,6 +869,8 @@ function MapBody(props: {
     )
 }
 
+type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
+
 function EditInsetsHandles(props: {
     frame: Frame
     setFrame: (newFrame: Frame) => void
@@ -888,55 +890,86 @@ function EditInsetsHandles(props: {
         zIndex: 1000,
     })
 
-    const activeDrag = useRef<{ kind: 'move', startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
+    const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
+
+    const pointerHandlers = (kind: DragKind): {
+        onPointerDown: (e: React.PointerEvent) => void
+        onPointerMove: (e: React.PointerEvent) => void
+        onPointerUp: (e: React.PointerEvent) => void
+        onPointerCancel: (e: React.PointerEvent) => void
+    } => ({
+        onPointerDown: (e: React.PointerEvent) => {
+            if (activeDrag.current !== undefined) {
+                return
+            }
+            const thisElem = e.target as HTMLDivElement
+            activeDrag.current = {
+                kind,
+                startX: e.clientX,
+                startY: e.clientY,
+                startFrame: props.frame,
+                pointerId: e.pointerId,
+            }
+            thisElem.setPointerCapture(e.pointerId)
+        },
+        onPointerMove: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            const drag = activeDrag.current
+            const rawMovementX = (e.clientX - drag.startX) / props.container.current!.clientWidth
+            const rawMovementY = -(e.clientY - drag.startY) / props.container.current!.clientHeight
+            const resizedFrame: Frame = [
+                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
+                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
+                Math.max(drag.startFrame[0] + 0.05, Math.min(drag.startFrame[2] + rawMovementX, 1)),
+                Math.max(drag.startFrame[1] + 0.1, Math.min(drag.startFrame[3] + rawMovementY, 1)),
+            ]
+            let newFrame: Frame
+            switch (drag.kind) {
+                case 'move':
+                    const movementX = Math.max(0 - drag.startFrame[0], Math.min(rawMovementX, 1 - drag.startFrame[2]))
+                    const movementY = Math.max(0 - drag.startFrame[1], Math.min(rawMovementY, 1 - drag.startFrame[3]))
+                    newFrame = [drag.startFrame[0] + movementX, drag.startFrame[1] + movementY, drag.startFrame[2] + movementX, drag.startFrame[3] + movementY]
+                    break
+                case 'topRight':
+                    newFrame = [drag.startFrame[0], drag.startFrame[1], resizedFrame[2], resizedFrame[3]]
+                    break
+                case 'bottomRight':
+                    newFrame = [drag.startFrame[0], resizedFrame[1], resizedFrame[2], drag.startFrame[3]]
+                    break
+                case 'bottomLeft':
+                    newFrame = [resizedFrame[0], resizedFrame[1], drag.startFrame[2], drag.startFrame[3]]
+                    break
+                case 'topLeft':
+                    newFrame = [resizedFrame[0], drag.startFrame[1], drag.startFrame[2], resizedFrame[3]]
+                    break
+            }
+            props.setFrame(newFrame)
+        },
+        onPointerUp: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+            props.commitChanges()
+        },
+        onPointerCancel: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+            props.discardChanges()
+        },
+    })
 
     return (
         <>
-            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
-            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
-            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} />
-            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} />
-            <div
-                style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }}
-                onPointerDown={(e) => {
-                    if (activeDrag.current !== undefined) {
-                        return
-                    }
-                    const thisElem = e.target as HTMLDivElement
-                    activeDrag.current = {
-                        kind: 'move',
-                        startX: e.clientX,
-                        startY: e.clientY,
-                        startFrame: props.frame,
-                        pointerId: e.pointerId,
-                    }
-                    thisElem.setPointerCapture(e.pointerId)
-                }}
-                onPointerMove={(e) => {
-                    if (activeDrag.current?.pointerId !== e.pointerId) {
-                        return
-                    }
-                    const drag = activeDrag.current
-                    const movementX = Math.max(0 - drag.startFrame[0], Math.min((e.clientX - drag.startX) / props.container.current!.clientWidth, 1 - drag.startFrame[2]))
-                    const movementY = Math.max(0 - drag.startFrame[1], Math.min(-(e.clientY - drag.startY) / props.container.current!.clientHeight, 1 - drag.startFrame[3]))
-                    const newFrame: Frame = [drag.startFrame[0] + movementX, drag.startFrame[1] + movementY, drag.startFrame[2] + movementX, drag.startFrame[3] + movementY]
-                    props.setFrame(newFrame)
-                }}
-                onPointerUp={(e) => {
-                    if (activeDrag.current?.pointerId !== e.pointerId) {
-                        return
-                    }
-                    activeDrag.current = undefined
-                    props.commitChanges()
-                }}
-                onPointerCancel={(e) => {
-                    if (activeDrag.current?.pointerId !== e.pointerId) {
-                        return
-                    }
-                    activeDrag.current = undefined
-                    props.discardChanges()
-                }}
-            />
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
+            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
         </>
     )
 }
