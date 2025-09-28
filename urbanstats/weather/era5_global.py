@@ -32,6 +32,8 @@ class GlobalWeatherData(GriddedDataSource):
         url = url_for_path(self.commit_hash, f"output/{self.column_name}.npz")
         with requests.get(url) as response:
             response.raise_for_status()
+            # this is a context manager, but pylint doesn't know that for some reason
+            # pylint: disable=not-context-manager
             with np.load(io.BytesIO(response.content)) as data:
                 return data["arr"]
 
