@@ -12,7 +12,6 @@ from urbanstats.data.nasa import get_nasa_data
 
 PER_CELL = 3600
 CHUNK = 15  # double GPW's 30 arcsecond resolution
-reduced_cell = PER_CELL // CHUNK
 
 r_earth = 6371
 hilliness_dist = 0.1

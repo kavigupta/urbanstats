@@ -621,9 +621,6 @@ named_populations = {
     1e9: "1B",
 }
 
-pc_types = {x + " Person Circle" for x in named_populations.values()}
-
-
 @permacache(
     "urbanstats/data/circle/create_circle_image",
 )
@@ -660,7 +657,6 @@ def circle_shapefile_object(country_shapefile, population):
         filter=lambda x: True,
         does_overlap_self=False,
         special_data_sources=["international_gridded_data"],
-        tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(
             [
                 ConstantUniverseProvider(["world"]),

@@ -24,7 +24,9 @@ from urbanstats_persistent_data.routes.stats import (
     retrostat_latest_week_request,
     retrostat_store_user_stats_request,
     juxtastat_infinite_store_user_stats_request,
+    HasInfiniteStatsResponse,
 )
+from urbanstats_persistent_data.utils import HTTPExceptionModel
 from tests.conftest import setup_app
 
 get_email_route
@@ -50,11 +52,23 @@ juxtastat_infinite_store_user_stats_request
 
 # not routes but same category
 setup_app
-inf_result = InfiniteResult()
+inf_result = InfiniteResult(
+    friends=True,
+    forThisSeed=9,
+    maxScore=456,
+    maxScoreSeed="789",
+    maxScoreVersion=1
+)
 inf_result.forThisSeed
 inf_result.maxScore
 inf_result.maxScoreSeed
 inf_result.maxScoreVersion
 
-per_q = PerQuestionStats(1, [0, 0, 0, 0, 1])
+per_q = PerQuestionStats(total=1, per_question=[0, 0, 0, 0, 1])
 per_q.per_question
+
+has_inf = HasInfiniteStatsResponse(has=[True])
+has_inf.has
+
+http_exc = HTTPExceptionModel()
+http_exc.detail

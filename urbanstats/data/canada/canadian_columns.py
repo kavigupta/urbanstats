@@ -155,3 +155,6 @@ get_to_these_now = [
         "Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (200)",
     ],
 ]
+
+# vulture should not report these as unused.
+unused, get_to_these_later, completed, get_to_these_now

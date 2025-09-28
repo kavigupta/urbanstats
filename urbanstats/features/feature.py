@@ -3,7 +3,6 @@ import geopandas as gpd
 import pandas as pd
 
 from ..osm.buses import national_stops
-from .within_distance import shapefile_points_to_radius
 
 
 @attr.s

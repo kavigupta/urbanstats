@@ -18,18 +18,6 @@ def point_to_radius(r, p):
     return shape
 
 
-def shapefile_points_to_radius(r, shapefile):
-    """
-    Convert the given shapefile of points to a shapefile of circles (in real space) with the given radius.
-    does so non destructively.
-    """
-    return gpd.GeoDataFrame(
-        shapefile,
-        geometry=shapefile.geometry.apply(lambda p: point_to_radius(r, p)),
-        crs=shapefile.crs,
-    )
-
-
 def census_block_coordinates():
     _, _, _, _, coordinates = load_raw_census()
     census_blocks = gpd.GeoDataFrame(

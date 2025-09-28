@@ -15,15 +15,6 @@ from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
 
-GPW_PATH = (
-    "gpw_v4_population_count_rev11_2020_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip",
-)
-
-GPW_LAND_PATH = (
-    "gpw_v4_land_water_area_rev11_landareakm_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
-)
 
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
