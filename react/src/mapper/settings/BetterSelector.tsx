@@ -5,17 +5,52 @@ import { useColors } from '../../page_template/colors'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 
+import '../../common.css'
+
 export const labelPadding = '4px'
 
 const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue }: {
+function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
+    const size = { width: '20px', height: '20px' }
+    const colors = useColors()
+    return (
+        <button
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0 0',
+                marginLeft: '4px',
+                opacity: 0.7,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...size,
+            }}
+            onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onEdit()
+            }}
+            title="Edit"
+        >
+            <img
+                src={colors.pencilIcon}
+                alt="Edit"
+                style={{ ...size }}
+            />
+        </button>
+    )
+}
+
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
+    onEdit?: () => void
 }): ReactNode {
     const colors = useColors()
 
@@ -100,7 +135,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     }
 
     return (
-        <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
             <input
                 ref={inputRef}
                 type="text"
@@ -130,13 +165,14 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 }}
                 placeholder="Search options..."
                 style={{
-                    width: '100%',
+                    flex: 1,
                     padding: `${labelPadding} 8px`,
                     border: `1px solid ${colors.ordinalTextColor}`,
                     borderRadius: '4px',
                     fontSize: '14px',
                 }}
             />
+            {onEdit && <PencilButton onEdit={onEdit} />}
             {isOpen && sortedOptions.length > 0 && (
                 <div
                     style={{

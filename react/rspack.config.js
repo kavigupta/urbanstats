@@ -65,6 +65,9 @@ export default env => ({
         devMiddleware: {
             writeToDisk: true,
         },
+        allowedHosts: [
+            '.local'
+        ],
     },
     performance: {
         hints: isProduction ? 'error' : false,

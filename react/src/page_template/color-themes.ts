@@ -31,13 +31,13 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
-    mapInvalidFillColor: string
     mapInsetBorderColor: string
     buttonTextWhite: string
     bannerURL: string
     mixPct: number
     hueColors: HueColors
     screenshotFooterUrl: string
+    pencilIcon: string
 }
 
 export interface JuxtastatColors {
@@ -72,13 +72,13 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
-        mapInvalidFillColor: '#000000',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
         bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer.svg',
+        pencilIcon: '/pencil-light.png',
     },
     'Dark Mode': {
         background: '#00060f',
@@ -97,13 +97,13 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
         blueLink: '#aaaaff',
-        mapInvalidFillColor: '#000000',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
         bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
+        pencilIcon: '/pencil-dark.png',
     },
 }
 /* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

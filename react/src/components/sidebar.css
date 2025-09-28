@@ -71,10 +71,7 @@
     transition: transform 0.25s;
     font-size: 12px;
     vertical-align: middle;
-}
-
-.expandButton:hover {
-    background-color: transparent;
+    border-radius: 50%;
 }
 
 .sidebar-section-content .sidebar-section-content .expandButton {

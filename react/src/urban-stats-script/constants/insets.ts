@@ -91,6 +91,7 @@ export const constructInsetValue: USSValue = {
         category: 'inset',
         longDescription: 'Creates a custom map inset with specified screen bounds (bounding box of the inset on the screen, where bottom left corner has (0, 0) and top right corner has (1, 1)), map bounds (bounding box of the inset on the map, in longitude and latitude), and whether it is the main map (the interactive map).',
         selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
     },
 } satisfies USSValue
 
@@ -119,6 +120,7 @@ export const constructInsetsValue: USSValue = {
         category: 'inset',
         isDefault: true,
         longDescription: 'Creates a collection of map insets.',
+        customConstructor: true,
     },
 } satisfies USSValue
 

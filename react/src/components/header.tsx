@@ -126,6 +126,9 @@ function HeaderImage(): ReactNode {
     return (
         <a
             {...navContext.link({ kind: 'index' }, { scroll: { kind: 'position', top: 0 } })}
+            style={{
+                display: 'flex',
+            }}
         >
             <img
                 src={path}

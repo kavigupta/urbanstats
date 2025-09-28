@@ -41,13 +41,15 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
 
     const navContext = useContext(Navigator.Context)
 
+    const fontSize = useMobileLayout() ? '27px' : '16px'
+
     return (
         <div
             className={`serif ${useMobileLayout() ? 'sidebar_mobile' : ''}`}
             style={{
                 backgroundColor: colors.slightlyDifferentBackground,
                 padding: '2rem',
-                fontSize: useMobileLayout() ? '27px' : '16px',
+                fontSize,
                 borderRadius: '5px',
             }}
         >
@@ -122,18 +124,21 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                             name="Use Imperial Units"
                             settingKey="use_imperial"
                             testId="use_imperial"
+                            fontSize={fontSize}
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Include Historical Districts"
                             settingKey="show_historical_cds"
+                            fontSize={fontSize}
                         />
                     </li>
                     <li>
                         <CheckboxSetting
                             name="Simple Ordinals"
                             settingKey="simple_ordinals"
+                            fontSize={fontSize}
                         />
                     </li>
                     <li>
@@ -142,7 +147,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 </ul>
             </div>
             { navContext.useStatPathsAll() !== undefined
-                ? <SidebarForStatisticChoice />
+                ? <SidebarForStatisticChoice fontSize={fontSize} />
                 : null}
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Appearance</div>
@@ -154,6 +159,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                         <CheckboxSetting
                             name="Colorblind Mode"
                             settingKey="colorblind_mode"
+                            fontSize={fontSize}
                         />
                     </li>
                     <li>
@@ -161,6 +167,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                             // eslint-disable-next-line no-restricted-syntax -- these aren't colors, they're just names and also they're part of the settings
                             name={`${currentTheme === 'Dark Mode' ? 'Black' : 'White'} Background`}
                             settingKey="clean_background"
+                            fontSize={fontSize}
                         />
                     </li>
                 </ul>
@@ -169,7 +176,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     )
 }
 
-export function SidebarForStatisticChoice(): ReactNode {
+export function SidebarForStatisticChoice({ fontSize }: { fontSize: string }): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const checkboxes = useDataSourceCheckboxes()
@@ -187,6 +194,7 @@ export function SidebarForStatisticChoice(): ReactNode {
                                         settingKey={sourceEnabledKey({ category, name })}
                                         forcedOn={forcedOn}
                                         testId={`source ${category} ${name}`}
+                                        fontSize={fontSize}
                                     />
                                 </li>
                             ))
@@ -213,7 +221,7 @@ export function SidebarForStatisticChoice(): ReactNode {
 // type representing a key of SettingsDictionary that have boolean values
 type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-export function CheckboxSetting(props: { name: string, settingKey: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean }): ReactNode {
+export function CheckboxSetting(props: { name: string, settingKey: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean, fontSize?: string }): ReactNode {
     const [checked, setChecked] = useSetting(props.settingKey)
     const info = useSettingInfo(props.settingKey)
 
@@ -227,6 +235,7 @@ export function CheckboxSetting(props: { name: string, settingKey: BooleanSettin
             id={props.id}
             testId={props.testId}
             highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+            fontSize={props.fontSize}
         />
     )
 };
@@ -292,7 +301,10 @@ interface CheckboxSettingCustomJustInputProps {
     highlight?: boolean
     forcedOn?: boolean
     style?: CSSProperties
+    fontSize?: string
 }
+
+const defaultFontSize = '16px'
 
 type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
     name: string
@@ -305,6 +317,8 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     const divStyle: CSSProperties = {
         backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
+        display: 'flex',
+        alignItems: 'top',
         ...props.style,
     }
     const id = useId()
@@ -315,8 +329,9 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
             <CheckboxSettingJustBox
                 {...props}
                 id={inputId}
+                style={{ ...props.style }}
             />
-            <label htmlFor={inputId}>{props.name}</label>
+            <label htmlFor={inputId} style={{ fontSize: props.fontSize ?? defaultFontSize }}>{props.name}</label>
         </div>
     )
 };
@@ -340,7 +355,7 @@ export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProp
             disabled={forcedOn}
             onChange={(e) => { props.onChange(e.target.checked) }}
             ref={checkboxRef}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background }}
+            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, ...props.style, height: props.fontSize ?? defaultFontSize }}
             data-test-id={props.testId}
             data-test-highlight={props.highlight}
         />

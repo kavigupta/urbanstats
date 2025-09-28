@@ -514,10 +514,10 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMap': [
                 'cMap',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, unit: Unit = null) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> pMap': [
                 'pMap',
             ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [

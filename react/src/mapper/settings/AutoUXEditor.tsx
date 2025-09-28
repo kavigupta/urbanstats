@@ -81,7 +81,7 @@ function ArgumentEditor(props: {
                                             let exprToUse = defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')
                                                 ? createDefaultExpression(arg.value, subident, props.typeEnvironment)
                                                 : defaultExpr
-                                            exprToUse = parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
+                                            exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, arg.value) ?? parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
                                                 throw new Error('Should not happen')
                                             }, true)
                                             // Add the argument with default value
@@ -232,7 +232,7 @@ export function AutoUXEditor(props: {
                                 label={`${i + 1}`}
                             />
                             <button
-                                style={{ marginLeft: 8, flexShrink: 0 }}
+                                style={{ flexShrink: 0 }}
                                 onClick={() => {
                                     const newElements = uss.elements.filter((_, j) => j !== i)
                                     props.setUss({ ...uss, elements: newElements })
@@ -437,7 +437,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType, selection: Selection): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -452,7 +452,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
 
             for (const equiv of reference.documentation.equivalentExpressions) {
                 const valid = maybeParseExpr(equiv, blockIdent, type, typeEnvironment)
-                if (valid !== undefined && stableStringify(classifyExpr(valid)) === stableStringify(selection)) {
+                if (valid !== undefined && (selection === undefined || stableStringify(classifyExpr(valid)) === stableStringify(selection))) {
                     return valid
                 }
             }
@@ -465,7 +465,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
             }
             return
         case 'call': {
-            if (type.type === 'opaque' && type.name === 'color' && selection.type === 'function') {
+            if (type.type === 'opaque' && type.name === 'color' && selection?.type === 'function') {
                 // Conversion between RGB and HSV functions
                 const color = getColor(expr, typeEnvironment)
                 switch (true) {

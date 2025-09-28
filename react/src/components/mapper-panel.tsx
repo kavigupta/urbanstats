@@ -3,7 +3,7 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -28,11 +28,11 @@ import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
-import { interpolateColor } from '../utils/color'
+import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
-import { useHeaderTextClass } from '../utils/responsive'
+import { onWidthChange, useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
@@ -183,8 +183,9 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.versionProps.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
         this.versionProps.basemapCallback(mapResult.basemap)
         this.versionProps.insetsCallback(mapResult.insets)
+        const furthest = furthestColor(ramp.map(x => x[1]))
         const colors = mapResult.data.map(
-            val => interpolateColor(ramp, scale.forward(val), this.versionProps.colors.mapInvalidFillColor),
+            val => interpolateColor(ramp, scale.forward(val), furthest),
         )
         const specs = colors.map(
             // no outline, set color fill, alpha=1
@@ -241,10 +242,34 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
-    const colors = useColors()
+    const valuesRef = useRef<HTMLDivElement>(null)
+    const shouldRotate: boolean = useSyncExternalStore(onWidthChange, () => {
+        if (valuesRef.current === null) {
+            return false
+        }
+        const current = valuesRef.current
+        const containers = current.querySelectorAll('.containerOfXticks')
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- this isn't a loop over an array
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i] as HTMLDivElement
+            const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
+            if (contained === null) {
+                continue
+            }
+            if (contained.offsetWidth > container.offsetWidth * 0.9) {
+                return true
+            }
+        }
+        return false
+    })
+
+    const furthest = useMemo(() => props.ramp === undefined ? undefined : furthestColor(props.ramp.ramp.map(x => x[1])), [props.ramp])
+
     if (props.ramp === undefined) {
         return <div></div>
     }
+
+    const ramp = props.ramp.ramp
     const label = props.ramp.label
     const values = props.ramp.interpolations
     const unit = props.ramp.unit
@@ -271,37 +296,54 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
 
     const width = `${100 / values.length}%`
 
+    const valuesDivs = (rotate: boolean): ReactNode[] => values.map((x, i) => (
+        <div
+            key={i}
+            style={{
+                width,
+                // height: rotate ? '2em' : '1em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            className="containerOfXticks"
+        >
+            <div
+                style={{
+                    // transform: rotate ? 'rotate(-45deg)' : 'none',
+                    writingMode: rotate ? 'sideways-lr' : 'horizontal-tb',
+                    padding: rotate ? '0.5em' : '0',
+                    // transformOrigin: 'center',
+                    // whiteSpace: 'nowrap',
+                    // fontSize: rotate ? '0.8em' : '1em',
+                }}
+                className="containedOfXticks"
+            >
+                {createValue(x)}
+            </div>
+        </div>
+    ))
+
     return (
-        <div style={style}>
-            <table style={{ width: '100%', height: '100%' }}>
-                <tbody>
-                    <tr>
-                        {
-                            values.map((x, i) => (
-                                <td
-                                    key={i}
-                                    style={
-                                        {
-                                            width, height: '1em',
-                                            backgroundColor: interpolateColor(props.ramp!.ramp, props.ramp!.scale.forward(x), colors.mapInvalidFillColor),
-                                        }
-                                    }
-                                >
-                                </td>
-                            ))
-                        }
-                    </tr>
-                    <tr>
-                        {
-                            values.map((x, i) => (
-                                <td key={i} style={{ width, height: '1em' }}>
-                                    {createValue(x)}
-                                </td>
-                            ))
-                        }
-                    </tr>
-                </tbody>
-            </table>
+        <div style={{ ...style, position: 'relative' }}>
+            <div style={{ display: 'flex', width: '100%' }}>
+                {
+                    values.map((x, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                width, height: '1em',
+                                backgroundColor: interpolateColor(ramp, props.ramp!.scale.forward(x), furthest),
+                                marginLeft: '1px',
+                                marginRight: '1px',
+                            }}
+                        >
+                        </div>
+                    ))
+                }
+            </div>
+            <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
+            <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
             <div className="centered_text">
                 {label}
             </div>
