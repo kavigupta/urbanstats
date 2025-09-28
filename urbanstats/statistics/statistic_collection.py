@@ -9,6 +9,7 @@ from urbanstats.geometry.shapefiles.shapefile import (
     subset_mask_key,
 )
 
+
 class StatisticCollection(ABC):
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())

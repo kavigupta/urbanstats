@@ -118,7 +118,6 @@ def binary_search_map(map_arr, ban, P, start_radius=1, high=None):
     return dset.binary_search(P, start_radius, high=high, eps=0.25)
 
 
-
 @permacache(
     "urbanstats/data/circle/overlapping_circles_fast",
     key_function=dict(map=stable_hash),
