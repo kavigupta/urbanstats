@@ -17,6 +17,7 @@ def pad_images(ref, act):
         ref = np.pad(ref, ((0, 0), (0, act.shape[1] - ref.shape[1]), (0, 0)))
     return ref, act
 
+
 def compute_delta_image(ref, act):
     ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]

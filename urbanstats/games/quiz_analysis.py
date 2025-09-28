@@ -40,6 +40,7 @@ def get_named_users():
     named_users = {k: email_mapping.get(v, v) for k, v in named_users_basal.items()}
     return named_users
 
+
 # vulture: ignore -- used in notebooks
 def unique_names_each_user():
     names = {k: "" for k in get_named_users()}
@@ -187,6 +188,7 @@ def rounded_power(x):
     fl = int(np.floor(x))
     x -= fl
     return 10**fl * {0: 1, 3: 2, 7: 5}[round(x * 10)]
+
 
 # vulture: ignore -- used in notebooks
 def plot_sampling_bias(prob_res):

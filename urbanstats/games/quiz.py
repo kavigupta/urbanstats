@@ -101,6 +101,7 @@ def generate_quizzes(folder):
         with open(path(i), "w") as f:
             json.dump(outs, f)
 
+
 # vulture: ignore -- used by notebooks
 renamed = {
     "higher housing units per adult": "housing_per_pop",

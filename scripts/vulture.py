@@ -20,9 +20,8 @@ def relevant_files():
     return files
 
 
-VULTURE_DIRECTIVE = (
-    r"(.*#\s+vulture:\s+ignore(\s+--.*)?$)|(@app.(route|post|get).*)|(@pytest.fixture.*)"
-)
+VULTURE_DIRECTIVE = r"(.*#\s+vulture:\s+ignore(\s+--.*)?$)|(@app.(route|post|get).*)|(@pytest.fixture.*)"
+
 
 def is_ignored(line):
     match = re.match(r"^([^:]*):(\d+):", line)
@@ -66,8 +65,9 @@ def vulture_errors():
 
 def main():
     lines = vulture_errors()
-    print("\n".join(lines))
     if lines:
+        print(f"Found {len(lines)} vulture issues:")
+        print("\n".join(lines))
         exit(1)
     exit(0)
 
