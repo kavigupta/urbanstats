@@ -119,48 +119,6 @@ def binary_search_map(map_arr, ban, P, start_radius=1, high=None):
 
 
 @permacache(
-    "urbanstats/data/circle/non_overlapping_circles_2",
-    key_function=dict(map_arr=stable_hash),
-    multiprocess_safe=True,
-)
-def non_overlapping_circles(map_arr, P, limit=100):
-    map_arr = np.array(map_arr)
-    ban = np.zeros(map_arr.shape, dtype=np.int32)
-    circles = []
-    for _ in tqdm.trange(limit):
-        bsm = binary_search_map(map_arr, ban, P)
-        if bsm[1] is None:
-            break
-        r, (y, x) = bsm
-        circles.append((r, (y, x)))
-        ys, xs = clear_location(map_arr, r, y, x)
-        ban[ys, xs] = 1
-    return circles
-
-
-@permacache(
-    "urbanstats/data/circle/overlapping_circles_2",
-    key_function=dict(map_arr=stable_hash),
-    multiprocess_safe=True,
-)
-def overlapping_circles(map_arr, P, limit=100):
-    map_arr = np.array(map_arr)
-    circle_map = np.zeros(map_arr.shape, dtype=np.int32)
-    circles = []
-    for i in tqdm.trange(limit):
-        bsm = binary_search_map(map_arr, ban=None, P=P)
-        if bsm[1] is None:
-            break
-        r, (y, x) = bsm
-        circles.append((r, (y, x)))
-        ys, xs = clear_location(map_arr, r, y, x)
-        existing_cm = circle_map[ys, xs]
-        existing_cm[existing_cm == 0] = i + 1
-        circle_map[ys, xs] = existing_cm
-    return circles, circle_map
-
-
-@permacache(
     "urbanstats/data/circle/overlapping_circles_fast",
     key_function=dict(map=stable_hash),
     multiprocess_safe=True,
@@ -235,40 +193,8 @@ def clear_location(map_arr, r, y, x):
     return ys[mask], xs[mask]
 
 
-def plot_circles(map_arr, circles, *, reduce=10, **kwargs):
-    plot_ghs(map_arr, reduce)
-    for r, (y, x) in circles:
-        # rx = r * secy
-        secy = compute_secants(map_arr, y)
-        r, x, y = (
-            r / map_arr.shape[1] * 360,
-            x / map_arr.shape[1] * 360 - 180,
-            90 - y / map_arr.shape[0] * 180,
-        )
-        ellipse = patches.Ellipse(
-            (x, y), r * secy * 2, r * 2, fill=False, edgecolor="red", **kwargs
-        )
-        plt.gca().add_artist(ellipse)
-    plt.xlim(-180, 180)
-    plt.ylim(-90, 90)
-    # turn off axis
-    plt.axis("off")
-
-
 def reduce_circles(circles, reduce):
     return [(r / reduce, (y // reduce, x // reduce)) for r, (y, x) in circles]
-
-
-def plot_overlapping_circles(map_arr, circles, circle_map, *, reduce=10):
-    map_arr = chunk(map_arr, reduce)
-    circles = reduce_circles(circles, reduce)
-    if circle_map is None:
-        circle_map = make_circle_map(map_arr.shape, circles)
-    else:
-        circle_map = chunk(circle_map, reduce)
-    plot_circles(map_arr, circles, reduce=1, linewidth=0.2)
-    circle_rgb = get_rgb_circles(circles, circle_map)
-    plt.imshow(circle_rgb, extent=[-180, 180, -90, 90])
 
 
 def get_rgb_circles(circles, circle_map):
@@ -303,80 +229,6 @@ def create_rgb_image(ghs, circles, reduce):
     rgb[:, :, -1] = 255
 
     return Image.fromarray(rgb)
-
-
-def plot_ghs(map_arr, reduce):
-    map_reduced = chunk(map_arr, reduce)
-    perc_90 = np.percentile(map_reduced, 99.9)
-    # imshow from -180 to 180, -90 to 90
-    plt.imshow(map_reduced, extent=[-180, 180, -90, 90], clim=[0, perc_90], cmap="gray")
-
-
-def cumulative_sum_vertically(map_arr):
-    out = np.zeros((map_arr.shape[0] + 1, map_arr.shape[1]), dtype=map_arr.dtype)
-    np.cumsum(map_arr, axis=0, out=out[1:])
-    return out
-
-
-def cumulative_sum_horizontally(map_arr):
-    out = np.zeros((map_arr.shape[0], map_arr.shape[1] + 1), dtype=map_arr.dtype)
-    np.cumsum(map_arr, axis=1, out=out[:, 1:])
-    return out
-
-
-@dataclass
-class MapCumulativeSum:
-    cumul: np.ndarray
-    height: int
-    width: int
-
-    @classmethod
-    def from_map(cls, map_arr):
-        return cls(
-            cumulative_sum_horizontally(cumulative_sum_vertically(map_arr)),
-            *map_arr.shape,
-        )
-
-    def compute_range(self, y1, y2, x1, x2):
-        """
-        Computes sum(map_arr[y, x % map_arr.shape[1]] if 0 <= y < map_arr.shape[0] else 0 for y in range(y1, y2) for x in range(x1, x2)]
-        """
-        y2 = np.clip(y2, 0, self.height)
-        y1 = np.clip(y1, 0, self.height)
-        x_cycles = ((x2 - x2 % self.width) - (x1 - x1 % self.width)) // self.width
-        x1 = x1 % self.width
-        x2 = x2 % self.width
-        result = (
-            self.cumul[y2, x2]
-            - self.cumul[y2, x1]
-            - self.cumul[y1, x2]
-            + self.cumul[y1, x1]
-        )
-        result += x_cycles * (
-            self.cumul[y2, -1]
-            - self.cumul[y2, 0]
-            - self.cumul[y1, -1]
-            + self.cumul[y1, 0]
-        )
-        return result
-
-
-def high_density_chunks(population_map, y_rad, chunk_size, min_density):
-    """
-    Return the chunks (yl, xl) corresponding to regions of population_map[yl*chunk_size:(yl+1) * chunk_sie, xl*chunk_size:(xl+1) * chunk_size]
-       with population density at least min_density.
-
-    The area of a pixel in population_map at index (y, x) is cos(y_rad[y])
-    """
-    y_rad_padded = np.pad(
-        y_rad,
-        (0, (-population_map.shape[0]) % chunk_size),
-        mode="constant",
-        constant_values=0,
-    )
-    area_chunk = np.cos(y_rad_padded).reshape(-1, chunk_size).sum(1) * chunk_size
-    population_map_padded = chunk(population_map, chunk_size)
-    return np.where(population_map_padded > area_chunk[:, None] * min_density)
 
 
 def chunk(population_map, chunk_size):
@@ -730,8 +582,6 @@ named_populations = {
     1e9: "1B",
 }
 
-pc_types = {x + " Person Circle" for x in named_populations.values()}
-
 
 @permacache(
     "urbanstats/data/circle/create_circle_image",
@@ -769,7 +619,6 @@ def circle_shapefile_object(country_shapefile, population):
         filter=lambda x: True,
         does_overlap_self=False,
         special_data_sources=["international_gridded_data"],
-        tolerate_no_state=True,
         universe_provider=CombinedUniverseProvider(
             [
                 ConstantUniverseProvider(["world"]),

@@ -83,16 +83,6 @@ class OrdinalInfo:
         ordering = np.argsort(self.index_order.iloc[indices])
         return np.array(self.longnames.iloc[indices])[ordering].tolist()
 
-    def compute_ordinals_for_name(self, col, longname, tu_idxs):
-        row_idx = self.longname_to_idx[longname]
-        row = self.by_column[col].ordinal[row_idx, tu_idxs].toarray() + 1
-        return row[0]
-
-    def compute_percentile(self, universe, typ, col, longname):
-        row_idx = self.longname_to_idx[longname]
-        col_idx = self.universe_type_to_idx[universe, typ]
-        return self.by_column[col].percentile[row_idx, col_idx]
-
 
 def type_matches(table_type, t):
     if t == "overall":

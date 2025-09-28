@@ -1,4 +1,3 @@
-import calendar
 import tempfile
 from datetime import datetime
 
@@ -44,12 +43,6 @@ all_times = [
     "22:00",
     "23:00",
 ]
-
-
-def month_counts(year):
-    return np.array(
-        [calendar.monthrange(int(year), int(month))[1] for month in range(1, 1 + 12)]
-    )
 
 
 def query(bounds, *, time=None, day=None, month=None, year, variables, path):

@@ -110,21 +110,6 @@ def display_question(question):
     return f"Which has a {question}?"
 
 
-def discordify_question(question):
-    return "\n".join(
-        [
-            display_question(question["question"]),
-            "a) " + question["longname_a"],
-            "b) " + question["longname_b"],
-            "||" + ("a" if question["stat_a"] > question["stat_b"] else "b") + "||",
-        ]
-    )
-
-
-def discordify(quiz):
-    return "\n\n".join(discordify_question(q) for q in quiz)
-
-
 renamed = {
     "higher housing units per adult": "housing_per_pop",
     "higher % of people who are born in the us outside their state of residence": "birthplace_us_not_state",
