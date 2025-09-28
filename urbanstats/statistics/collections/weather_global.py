@@ -226,22 +226,22 @@ class GlobalWeatherStatistics(GeographicStatistics):
 
     def extra_stats(self):
         return {
-            "high_temp_histogram": TemperatureHistogramSpec(
+            "mean_high_temp": TemperatureHistogramSpec(
                 min_value=MIN_BIN,
                 max_value=MAX_BIN,
                 bin_size=BIN_SIZE,
                 key="high_temp_histogram",
             ),
-            "low_temp_histogram": TemperatureHistogramSpec(
+            "mean_low_temp": TemperatureHistogramSpec(
                 min_value=MIN_BIN,
                 max_value=MAX_BIN,
                 bin_size=BIN_SIZE,
                 key="low_temp_histogram",
             ),
-            "rainfall_by_month": MonthlyTimeSeriesSpec(
+            "rainfall": MonthlyTimeSeriesSpec(
                 name="Rainfall by month", key="rainfall_by_month"
             ),
-            "snowfall_by_month": MonthlyTimeSeriesSpec(
+            "snowfall": MonthlyTimeSeriesSpec(
                 name="Snowfall by month", key="snowfall_by_month"
             ),
         }
