@@ -4,7 +4,7 @@ from .weather_statistic import ERA5WeatherStatistic, for_season_mask
 era5_statistics = []
 era5_statistics += [
     ERA5WeatherStatistic(
-        "mean_high_temp_4",
+        "mean_high_temp",
         "Mean high temp",
         lambda dates, weather: k_to_f(weather["t2m_max"].mean(0)),
     )
@@ -12,7 +12,7 @@ era5_statistics += [
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "mean_high_heat_index_4",
+        "mean_high_heat_index",
         "Mean high heat index",
         lambda dates, weather: compute_heat_index(
             weather["t2m_max"], weather["d2m_max"]
@@ -22,7 +22,7 @@ era5_statistics += [
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "mean_high_dewpoint_4",
+        "mean_high_dewpoint",
         "Mean high dewpt",
         lambda dates, weather: k_to_f(weather["d2m_max"].mean(0)),
     )
@@ -67,7 +67,7 @@ for low, high, display_name in dewpoint_bands:
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "hours_sunny_4",
+        "hours_sunny",
         "Mean sunny hours",
         lambda dates, weather: weather["non_cloudy_sunny_pct"].mean(0) * 24,
     )
@@ -75,7 +75,7 @@ era5_statistics += [
 
 era5_statistics += [
     ERA5WeatherStatistic(
-        "rainfall_4", "Rainfall", lambda dates, weather: weather["rain"].mean(0) * 365
+        "rainfall", "Rainfall", lambda dates, weather: weather["rain"].mean(0) * 365
     )
 ]
 era5_statistics += [
