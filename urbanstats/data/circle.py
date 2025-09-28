@@ -118,47 +118,6 @@ def binary_search_map(map_arr, ban, P, start_radius=1, high=None):
     return dset.binary_search(P, start_radius, high=high, eps=0.25)
 
 
-@permacache(
-    "urbanstats/data/circle/non_overlapping_circles_2",
-    key_function=dict(map_arr=stable_hash),
-    multiprocess_safe=True,
-)
-def non_overlapping_circles(map_arr, P, limit=100):
-    map_arr = np.array(map_arr)
-    ban = np.zeros(map_arr.shape, dtype=np.int32)
-    circles = []
-    for _ in tqdm.trange(limit):
-        bsm = binary_search_map(map_arr, ban, P)
-        if bsm[1] is None:
-            break
-        r, (y, x) = bsm
-        circles.append((r, (y, x)))
-        ys, xs = clear_location(map_arr, r, y, x)
-        ban[ys, xs] = 1
-    return circles
-
-
-@permacache(
-    "urbanstats/data/circle/overlapping_circles_2",
-    key_function=dict(map_arr=stable_hash),
-    multiprocess_safe=True,
-)
-def overlapping_circles(map_arr, P, limit=100):
-    map_arr = np.array(map_arr)
-    circle_map = np.zeros(map_arr.shape, dtype=np.int32)
-    circles = []
-    for i in tqdm.trange(limit):
-        bsm = binary_search_map(map_arr, ban=None, P=P)
-        if bsm[1] is None:
-            break
-        r, (y, x) = bsm
-        circles.append((r, (y, x)))
-        ys, xs = clear_location(map_arr, r, y, x)
-        existing_cm = circle_map[ys, xs]
-        existing_cm[existing_cm == 0] = i + 1
-        circle_map[ys, xs] = existing_cm
-    return circles, circle_map
-
 
 @permacache(
     "urbanstats/data/circle/overlapping_circles_fast",
@@ -322,43 +281,6 @@ def cumulative_sum_horizontally(map_arr):
     out = np.zeros((map_arr.shape[0], map_arr.shape[1] + 1), dtype=map_arr.dtype)
     np.cumsum(map_arr, axis=1, out=out[:, 1:])
     return out
-
-
-@dataclass
-class MapCumulativeSum:
-    cumul: np.ndarray
-    height: int
-    width: int
-
-    @classmethod
-    def from_map(cls, map_arr):
-        return cls(
-            cumulative_sum_horizontally(cumulative_sum_vertically(map_arr)),
-            *map_arr.shape,
-        )
-
-    def compute_range(self, y1, y2, x1, x2):
-        """
-        Computes sum(map_arr[y, x % map_arr.shape[1]] if 0 <= y < map_arr.shape[0] else 0 for y in range(y1, y2) for x in range(x1, x2)]
-        """
-        y2 = np.clip(y2, 0, self.height)
-        y1 = np.clip(y1, 0, self.height)
-        x_cycles = ((x2 - x2 % self.width) - (x1 - x1 % self.width)) // self.width
-        x1 = x1 % self.width
-        x2 = x2 % self.width
-        result = (
-            self.cumul[y2, x2]
-            - self.cumul[y2, x1]
-            - self.cumul[y1, x2]
-            + self.cumul[y1, x1]
-        )
-        result += x_cycles * (
-            self.cumul[y2, -1]
-            - self.cumul[y2, 0]
-            - self.cumul[y1, -1]
-            + self.cumul[y1, 0]
-        )
-        return result
 
 
 def high_density_chunks(population_map, y_rad, chunk_size, min_density):

@@ -195,33 +195,6 @@ def load_shapefile(file_name, *, only_keep, minimum_district_length):
     raise ValueError(f"Unknown value for only_keep: {only_keep}")
 
 
-def deduplicate(for_state, existing):
-    districts_a = for_state.district.apply(
-        lambda x: int(x) if x.isnumeric() else x.lstrip("0")
-    )
-    districts_existing = existing.district.apply(
-        lambda x: int(x) if x.isnumeric() else x.lstrip("0")
-    )
-    keep_mask = []
-    existing_changed_idxs = []
-    for a in districts_a:
-        if a not in districts_existing:
-            keep_mask.append(True)
-            continue
-        [[idx_a]] = np.where(districts_a == a)
-        [[idx_existing]] = np.where(districts_existing == a)
-        geo_a = for_state.geometry.iloc[idx_a]
-        geo_existing = existing.geometry.iloc[idx_existing]
-        existing_changed_idxs.append(idx_existing)
-        # keep only if district is not a duplicate
-        keep_mask.append(
-            geo_a.intersection(geo_existing).area / min(geo_a.area, geo_existing.area)
-            < 1 - 0.00001
-        )
-    for_state = for_state[keep_mask]
-    return for_state, existing_changed_idxs
-
-
 def get_shortname(district_abbrev, x, include_date=True):
     district = x["district"]
     if district == "" or district.isnumeric() and int(district) == 0:

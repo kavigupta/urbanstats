@@ -181,13 +181,3 @@ elevation_gds = {
     "gridded_hilliness": HillinessGriddedData(),
     "gridded_elevation": ElevationGriddedData(),
 }
-
-
-@lru_cache(maxsize=1)
-def full_elevation():
-    return create_full_image(aggregated_elevation, 2)
-
-
-@lru_cache(maxsize=1)
-def full_hilliness():
-    return create_full_image(aggregated_hilliness, 2)

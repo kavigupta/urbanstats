@@ -8,18 +8,6 @@ import zarr
 from permacache import stable_hash
 
 
-def hash_full_table(sh):
-    non_float_columns = [x for x in sh if sh[x].dtype not in {np.float64, np.float32}]
-    return stable_hash(
-        (
-            stable_hash([sh[x] for x in non_float_columns]),
-            stable_hash(np.array([sh[x] for x in sh if x not in non_float_columns])),
-            list(sh),
-            non_float_columns,
-        )
-    )
-
-
 def compute_bins_slow(data, weight, *, bin_size=0.1):
     max_value = data.max() if len(data) > 0 else 0
     if max_value < 0:

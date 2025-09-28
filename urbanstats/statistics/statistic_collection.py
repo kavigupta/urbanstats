@@ -4,20 +4,10 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
-from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_ALL,
-    QUIZ_REGION_TYPES_CANADA,
-    QUIZ_REGION_TYPES_INTERNATIONAL,
-    QUIZ_REGION_TYPES_USA,
-)
 from urbanstats.geometry.shapefiles.shapefile import (
     EmptyShapefileError,
     subset_mask_key,
 )
-
-ORDER_CATEGORY_MAIN = 0
-ORDER_CATEGORY_OTHER_DENSITIES = 1
-
 
 class StatisticCollection(ABC):
     def __init__(self):
@@ -40,9 +30,6 @@ class StatisticCollection(ABC):
 
     @abstractmethod
     def explanation_page_for_each_statistic(self):
-        pass
-
-    def quiz_question_names(self):
         pass
 
     @abstractmethod
@@ -77,14 +64,10 @@ class StatisticCollection(ABC):
 
 
 class GeographicStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_ALL
+    pass
 
 
 class InternationalStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_INTERNATIONAL
-
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
@@ -104,9 +87,6 @@ class InternationalStatistics(StatisticCollection):
 
 
 class USAStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_USA
-
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
@@ -140,9 +120,6 @@ class USAStatisticsCounties(USAStatistics):
 
 
 class CanadaStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_CANADA
-
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
