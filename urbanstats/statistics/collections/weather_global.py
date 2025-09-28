@@ -1,4 +1,5 @@
 import numpy as np
+
 from urbanstats.data.aggregate_gridded_data import disaggregate_gridded_data
 from urbanstats.games.quiz_question_metadata import (
     WEATHER,
@@ -10,8 +11,6 @@ from urbanstats.statistics.extra_statistics import (
     TemperatureHistogramSpec,
 )
 from urbanstats.statistics.statistic_collection import GeographicStatistics
-
-
 from urbanstats.weather.era5_global import weather_stats
 from urbanstats.weather.utils import k_to_f
 

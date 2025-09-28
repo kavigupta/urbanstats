@@ -1,11 +1,12 @@
+import io
 from dataclasses import dataclass
 from functools import lru_cache
-import io
 
-import requests
 import numpy as np
+import requests
 
 from urbanstats.data.aggregate_gridded_data import GriddedDataSource
+
 from .all_stats import all_stats
 
 LATEST_COMMIT = "24f3767f70d27412f9dd776789eefe6d1cdefc56"
