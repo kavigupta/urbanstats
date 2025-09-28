@@ -2045,487 +2045,487 @@ export default {
             "index": 350
         },
         {
-            "varName": "high_temp_summer",
-            "humanReadableName": "Mean high temperature in summer",
-            "comesFromMultiSourceSet": false,
-            "order": 292,
-            "index": 251
-        },
-        {
-            "varName": "high_temp_winter",
-            "humanReadableName": "Mean high temperature in winter",
-            "comesFromMultiSourceSet": false,
-            "order": 293,
-            "index": 252
-        },
-        {
-            "varName": "high_temp_fall",
-            "humanReadableName": "Mean high temperature in fall",
-            "comesFromMultiSourceSet": false,
-            "order": 294,
-            "index": 249
-        },
-        {
-            "varName": "high_temp_spring",
-            "humanReadableName": "Mean high temperature in spring",
-            "comesFromMultiSourceSet": false,
-            "order": 295,
-            "index": 250
-        },
-        {
             "varName": "no_internet",
             "humanReadableName": "No internet access %",
             "comesFromMultiSourceSet": false,
-            "order": 296,
+            "order": 292,
             "index": 227
         },
         {
             "varName": "uninsured",
             "humanReadableName": "Uninsured %",
             "comesFromMultiSourceSet": false,
-            "order": 297,
+            "order": 293,
             "index": 225
         },
         {
             "varName": "public_insurance",
             "humanReadableName": "Public Insurance %",
             "comesFromMultiSourceSet": false,
-            "order": 298,
+            "order": 294,
             "index": 224
         },
         {
             "varName": "private_insurance",
             "humanReadableName": "Private Insurance %",
             "comesFromMultiSourceSet": false,
-            "order": 299,
+            "order": 295,
             "index": 226
         },
         {
             "varName": "density_pw_250m_us_census",
             "humanReadableName": "PW Density (r=250m) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 300,
+            "order": 296,
             "index": 35
         },
         {
             "varName": "density_pw_250m_statcan",
             "humanReadableName": "PW Density (250m) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 301,
+            "order": 297,
             "index": 105
         },
         {
             "varName": "density_pw_250m_2010",
             "humanReadableName": "PW Density (r=250m) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 302,
+            "order": 298,
             "index": 37
         },
         {
             "varName": "density_pw_250m_change_2010_2020",
             "humanReadableName": "PW Density (r=250m) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 303,
+            "order": 299,
             "index": 39
         },
         {
             "varName": "density_pw_250m_2000",
             "humanReadableName": "PW Density (r=250m) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 304,
+            "order": 300,
             "index": 36
         },
         {
             "varName": "density_pw_250m_change_2000_2020",
             "humanReadableName": "PW Density (r=250m) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 305,
+            "order": 301,
             "index": 38
         },
         {
             "varName": "density_pw_500m_us_census",
             "humanReadableName": "PW Density (r=500m) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 306,
+            "order": 302,
             "index": 40
         },
         {
             "varName": "density_pw_500m_statcan",
             "humanReadableName": "PW Density (500m) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 307,
+            "order": 303,
             "index": 106
         },
         {
             "varName": "density_pw_500m_2010",
             "humanReadableName": "PW Density (r=500m) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 308,
+            "order": 304,
             "index": 42
         },
         {
             "varName": "density_pw_500m_change_2010_2020",
             "humanReadableName": "PW Density (r=500m) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 309,
+            "order": 305,
             "index": 44
         },
         {
             "varName": "density_pw_500m_2000",
             "humanReadableName": "PW Density (r=500m) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 310,
+            "order": 306,
             "index": 41
         },
         {
             "varName": "density_pw_500m_change_2000_2020",
             "humanReadableName": "PW Density (r=500m) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 311,
+            "order": 307,
             "index": 43
         },
         {
             "varName": "density_pw_1mi_us_census",
             "humanReadableName": "PW Density (r=1mi) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 312,
+            "order": 308,
             "index": 46
         },
         {
             "varName": "density_pw_1mi_statcan",
             "humanReadableName": "PW Density (1mi) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 313,
+            "order": 309,
             "index": 107
         },
         {
             "varName": "density_pw_1mi_ghsl",
             "humanReadableName": "PW Density (r=1mi) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 314,
+            "order": 310,
             "index": 142
         },
         {
             "varName": "density_pw_1mi_2010",
             "humanReadableName": "PW Density (r=1mi) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 315,
+            "order": 311,
             "index": 48
         },
         {
             "varName": "density_pw_1mi_change_2010_2020",
             "humanReadableName": "PW Density (r=1mi) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 316,
+            "order": 312,
             "index": 50
         },
         {
             "varName": "density_pw_1mi_2000",
             "humanReadableName": "PW Density (r=1mi) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 317,
+            "order": 313,
             "index": 47
         },
         {
             "varName": "density_pw_1mi_change_2000_2020",
             "humanReadableName": "PW Density (r=1mi) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 318,
+            "order": 314,
             "index": 49
         },
         {
             "varName": "density_pw_2km_us_census",
             "humanReadableName": "PW Density (r=2km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 319,
+            "order": 315,
             "index": 60
         },
         {
             "varName": "density_pw_2km_statcan",
             "humanReadableName": "PW Density (2km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 320,
+            "order": 316,
             "index": 110
         },
         {
             "varName": "density_pw_2km_ghsl",
             "humanReadableName": "PW Density (r=2km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 321,
+            "order": 317,
             "index": 144
         },
         {
             "varName": "density_pw_2km_2010",
             "humanReadableName": "PW Density (r=2km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 322,
+            "order": 318,
             "index": 62
         },
         {
             "varName": "density_pw_2km_change_2010_2020",
             "humanReadableName": "PW Density (r=2km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 323,
+            "order": 319,
             "index": 64
         },
         {
             "varName": "density_pw_2km_2000",
             "humanReadableName": "PW Density (r=2km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 324,
+            "order": 320,
             "index": 61
         },
         {
             "varName": "density_pw_2km_change_2000_2020",
             "humanReadableName": "PW Density (r=2km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 325,
+            "order": 321,
             "index": 63
         },
         {
             "varName": "density_pw_4km_us_census",
             "humanReadableName": "PW Density (r=4km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 326,
+            "order": 322,
             "index": 70
         },
         {
             "varName": "density_pw_4km_statcan",
             "humanReadableName": "PW Density (4km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 327,
+            "order": 323,
             "index": 112
         },
         {
             "varName": "density_pw_4km_ghsl",
             "humanReadableName": "PW Density (r=4km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 328,
+            "order": 324,
             "index": 146
         },
         {
             "varName": "density_pw_4km_2010",
             "humanReadableName": "PW Density (r=4km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 329,
+            "order": 325,
             "index": 72
         },
         {
             "varName": "density_pw_4km_change_2010_2020",
             "humanReadableName": "PW Density (r=4km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 330,
+            "order": 326,
             "index": 74
         },
         {
             "varName": "density_pw_4km_2000",
             "humanReadableName": "PW Density (r=4km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 331,
+            "order": 327,
             "index": 71
         },
         {
             "varName": "density_pw_4km_change_2000_2020",
             "humanReadableName": "PW Density (r=4km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 332,
+            "order": 328,
             "index": 73
         },
         {
             "varName": "density_pw_8km_us_census",
             "humanReadableName": "PW Density (r=8km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 333,
+            "order": 329,
             "index": 80
         },
         {
             "varName": "density_pw_8km_statcan",
             "humanReadableName": "PW Density (8km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 334,
+            "order": 330,
             "index": 114
         },
         {
             "varName": "density_pw_8km_ghsl",
             "humanReadableName": "PW Density (r=8km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 335,
+            "order": 331,
             "index": 148
         },
         {
             "varName": "density_pw_8km_2010",
             "humanReadableName": "PW Density (r=8km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 336,
+            "order": 332,
             "index": 82
         },
         {
             "varName": "density_pw_8km_change_2010_2020",
             "humanReadableName": "PW Density (r=8km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 337,
+            "order": 333,
             "index": 84
         },
         {
             "varName": "density_pw_8km_2000",
             "humanReadableName": "PW Density (r=8km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 338,
+            "order": 334,
             "index": 81
         },
         {
             "varName": "density_pw_8km_change_2000_2020",
             "humanReadableName": "PW Density (r=8km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 339,
+            "order": 335,
             "index": 83
         },
         {
             "varName": "density_pw_16km_us_census",
             "humanReadableName": "PW Density (r=16km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 340,
+            "order": 336,
             "index": 51
         },
         {
             "varName": "density_pw_16km_statcan",
             "humanReadableName": "PW Density (16km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 341,
+            "order": 337,
             "index": 108
         },
         {
             "varName": "density_pw_16km_ghsl",
             "humanReadableName": "PW Density (r=16km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 342,
+            "order": 338,
             "index": 143
         },
         {
             "varName": "density_pw_16km_2010",
             "humanReadableName": "PW Density (r=16km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 343,
+            "order": 339,
             "index": 53
         },
         {
             "varName": "density_pw_16km_change_2010_2020",
             "humanReadableName": "PW Density (r=16km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 344,
+            "order": 340,
             "index": 55
         },
         {
             "varName": "density_pw_16km_2000",
             "humanReadableName": "PW Density (r=16km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 345,
+            "order": 341,
             "index": 52
         },
         {
             "varName": "density_pw_16km_change_2000_2020",
             "humanReadableName": "PW Density (r=16km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 346,
+            "order": 342,
             "index": 54
         },
         {
             "varName": "density_pw_32km_us_census",
             "humanReadableName": "PW Density (r=32km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 347,
+            "order": 343,
             "index": 65
         },
         {
             "varName": "density_pw_32km_statcan",
             "humanReadableName": "PW Density (32km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 348,
+            "order": 344,
             "index": 111
         },
         {
             "varName": "density_pw_32km_ghsl",
             "humanReadableName": "PW Density (r=32km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 349,
+            "order": 345,
             "index": 145
         },
         {
             "varName": "density_pw_32km_2010",
             "humanReadableName": "PW Density (r=32km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 350,
+            "order": 346,
             "index": 67
         },
         {
             "varName": "density_pw_32km_change_2010_2020",
             "humanReadableName": "PW Density (r=32km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 351,
+            "order": 347,
             "index": 69
         },
         {
             "varName": "density_pw_32km_2000",
             "humanReadableName": "PW Density (r=32km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 352,
+            "order": 348,
             "index": 66
         },
         {
             "varName": "density_pw_32km_change_2000_2020",
             "humanReadableName": "PW Density (r=32km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 353,
+            "order": 349,
             "index": 68
         },
         {
             "varName": "density_pw_64km_us_census",
             "humanReadableName": "PW Density (r=64km) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 354,
+            "order": 350,
             "index": 75
         },
         {
             "varName": "density_pw_64km_statcan",
             "humanReadableName": "PW Density (64km) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 355,
+            "order": 351,
             "index": 113
         },
         {
             "varName": "density_pw_64km_ghsl",
             "humanReadableName": "PW Density (r=64km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 356,
+            "order": 352,
             "index": 147
         },
         {
             "varName": "density_pw_64km_2010",
             "humanReadableName": "PW Density (r=64km) (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 357,
+            "order": 353,
             "index": 77
         },
         {
             "varName": "density_pw_64km_change_2010_2020",
             "humanReadableName": "PW Density (r=64km) Change (2010-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 358,
+            "order": 354,
             "index": 79
         },
         {
             "varName": "density_pw_64km_2000",
             "humanReadableName": "PW Density (r=64km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 359,
+            "order": 355,
             "index": 76
         },
         {
             "varName": "density_pw_64km_change_2000_2020",
             "humanReadableName": "PW Density (r=64km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 360,
+            "order": 356,
             "index": 78
+        },
+        {
+            "varName": "high_temp_summer",
+            "humanReadableName": "Mean high temperature in summer",
+            "comesFromMultiSourceSet": false,
+            "order": 357,
+            "index": 251
+        },
+        {
+            "varName": "high_temp_winter",
+            "humanReadableName": "Mean high temperature in winter",
+            "comesFromMultiSourceSet": false,
+            "order": 358,
+            "index": 252
+        },
+        {
+            "varName": "high_temp_fall",
+            "humanReadableName": "Mean high temperature in fall",
+            "comesFromMultiSourceSet": false,
+            "order": 359,
+            "index": 249
+        },
+        {
+            "varName": "high_temp_spring",
+            "humanReadableName": "Mean high temperature in spring",
+            "comesFromMultiSourceSet": false,
+            "order": 360,
+            "index": 250
         }
     ],
     "multiSourceVariables": [
