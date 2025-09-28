@@ -12,6 +12,7 @@ import { loadProtobuf } from '../load_json'
 import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { MapUSS } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -21,12 +22,12 @@ import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { unparse } from '../urban-stats-script/parser'
+import { hasCustomNode, unparse } from '../urban-stats-script/parser'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -532,7 +533,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         setErrors={setErrors}
                         colorbarRef={colorbarRef}
-                        editInsets={editInsets ? () => undefined : undefined} // TODO
+                        editInsets={editInsets ? (i, e) => { setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings.script.uss, [i, e]) } }) } : undefined}
                     />
                 )
     }
@@ -563,7 +564,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         colorbarRef={colorbarRef}
                     />
                     {
-                        !editInsets && (
+                        !editInsets && canEditInsets(mapSettings.script.uss).result && (
                             <div style={{
                                 display: 'flex',
                                 gap: '0.5em',
@@ -610,4 +611,58 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
             </div>
         </PageTemplate>
     )
+}
+
+function canEditInsets(uss: MapUSS): { result: true, arg: { value: UrbanStatsASTExpression, edit: (newArgVal: UrbanStatsASTExpression) => MapUSS } | undefined } | { result: false } {
+    let call, insetsArg
+    if (
+        uss.type === 'statements'
+        && (call = uss.result[1].rest[0].value)
+        && call.type === 'call'
+        && ((insetsArg = call.args.find(arg => arg.type === 'named' && arg.name.node === 'insets')) || true)
+        && (insetsArg === undefined || !hasCustomNode(insetsArg))
+    ) {
+        const resolvedCall = call
+        const resolvedInsetsArg = insetsArg
+        return { result: true, arg: insetsArg === undefined
+            ? undefined
+            : { value: insetsArg.value, edit: (newArgVal) => {
+                    return {
+                        ...uss,
+                        result: [
+                            uss.result[0],
+                            {
+                                ...uss.result[1],
+                                value: {
+                                    ...resolvedCall,
+                                    args: resolvedCall.args.map(arg => arg === resolvedInsetsArg ? { ...arg, value: newArgVal } : arg),
+                                },
+                            },
+                        ],
+                    }
+                } } }
+    }
+    return { result: false }
+}
+
+function doEditInsets(uss: MapUSS, edit: Parameters<EditMultipleInsets>): MapUSS {
+    const canEdit = canEditInsets(uss)
+    assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
+
+    if (canEdit.arg === undefined) {
+        // TODO: Deconstruct the default inset and edit
+    }
+    else {
+        // Edit the specified index (maybe need to deconstruct it first)
+        assert(canEdit.arg.value.type === 'call' && canEdit.arg.value.args[0].value.type === 'vectorLiteral', 'Unexpected inset arg structure')
+        return canEdit.arg.edit(editInsetsList(canEdit.arg.value.args[0].value, edit))
+    }
+}
+
+function editInsetsList(
+    vec: UrbanStatsASTExpression & { type: 'vectorLiteral' },
+    [index, newInset]: Parameters<EditMultipleInsets>,
+): UrbanStatsASTExpression & { type: 'vectorLiteral' } {
+    // TODO
+    return vec
 }
