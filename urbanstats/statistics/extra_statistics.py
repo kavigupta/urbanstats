@@ -47,6 +47,7 @@ class HistogramSpec(ExtraStatistic):
         )
 
 
+# vulture: ignore -- not currently used but will be used in future
 @dataclass
 class TimeSeriesSpec(ExtraStatistic):
     years: List[int]
