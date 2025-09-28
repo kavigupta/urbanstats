@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
+from functools import lru_cache
+import re
 import subprocess
+
+
+@lru_cache(None)
+def load_file(path):
+    with open(path) as f:
+        return f.read()
 
 
 def relevant_files():
@@ -10,6 +18,21 @@ def relevant_files():
     files = files.split("\n")
     files = [f for f in files if f]
     return files
+
+
+VULTURE_DIRECTIVE = r"#\s+vulture:\s+ignore(\s+--.*)?$"
+
+
+def is_ignored(line):
+    match = re.match(r"^([^:]*):(\d+):", line)
+    assert match, "Failed to parse line: " + line
+    file, line_no = match.groups()
+    line_no = int(line_no) - 1
+    text = load_file(file).split("\n")
+    assert 0 <= line_no < len(text), (file, line_no, len(text))
+    if line_no > 0 and re.match("^" + VULTURE_DIRECTIVE, text[line_no - 1].strip()):
+        return True
+    return re.match(VULTURE_DIRECTIVE, text[line_no].strip())
 
 
 def vulture_errors():
@@ -36,6 +59,7 @@ def vulture_errors():
 
     lines = results.split("\n")
     lines = [line for line in lines if line.strip()]
+    lines = [line for line in lines if not is_ignored(line)]
     return lines
 
 
