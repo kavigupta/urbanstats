@@ -38,9 +38,15 @@ message TimeSeries {
     repeated float values = 1;
 }
 
+message TemperatureHistogram {
+    // the counts are normalized to sum to 2**16
+    repeated int32 counts = 4;
+}
+
 message ExtraStatistic {
     optional Histogram histogram = 1;
     optional TimeSeries timeseries = 2;
+    optional TemperatureHistogram timeseries = 2;
 }
 
 message Article {
