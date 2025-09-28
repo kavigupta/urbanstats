@@ -37,9 +37,11 @@ def output_tronche(tronche_vqq, tronche_p, tronche_path):
     write_gzip(tronche_proto, tronche_path)
     return tronche_total_p
 
+
 def _vulture_ignore():
     tronche_proto = data_files_pb2.QuizQuestionTronche()
     tronche_proto.neg_log_prob_x10_basis
+
 
 def output_quiz_question(q, p, site_folder, question_folder):
     idxs = compute_order(q)

@@ -621,6 +621,7 @@ named_populations = {
     1e9: "1B",
 }
 
+
 @permacache(
     "urbanstats/data/circle/create_circle_image",
 )

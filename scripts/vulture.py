@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from functools import lru_cache
 import re
 import subprocess
+from functools import lru_cache
 
 
 @lru_cache(None)

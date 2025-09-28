@@ -16,7 +16,6 @@ from urbanstats.utils import cached_zarr_array, compute_bins
 GPW_RADII = [k for k in RADII if k >= 1]
 
 
-
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
 def load_full_ghs_30_arcsec():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
