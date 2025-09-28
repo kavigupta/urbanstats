@@ -220,6 +220,7 @@ class GlobalWeatherStatistics(GeographicStatistics):
         gts = np.array(
             [results[f"{key}_gt_{i:+04d}"] for i in range(MIN_BIN, MAX_BIN + 1, 10)]
         )
+        # pylint: disable=invalid-unary-operand-type
         hist = -np.diff(
             np.concatenate(([np.ones(gts.shape[1])], gts, [np.zeros(gts.shape[1])])),
             axis=0,

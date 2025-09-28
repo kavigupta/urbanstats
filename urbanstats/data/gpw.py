@@ -7,6 +7,7 @@ import tqdm.auto as tqdm
 import zarr
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
+from scipy.interpolate import RegularGridInterpolator
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
@@ -280,8 +281,6 @@ def _compute_bilinear_subinterpolation(data, fractional_rows, fractional_cols):
     """
     Does a bilinear interpolation of the data at the given fractional rows and columns. Treat the first data point as being at (0.5, 0.5).
     """
-    from scipy.interpolate import RegularGridInterpolator
-
     # add 0.5 to center these. e.g., row 0 is centered at 0.5
     row_coords = np.arange(data.shape[0]) + 0.5
     col_coords = np.arange(data.shape[1]) + 0.5
