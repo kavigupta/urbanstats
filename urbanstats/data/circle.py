@@ -270,18 +270,6 @@ def plot_ghs(map_arr, reduce):
     plt.imshow(map_reduced, extent=[-180, 180, -90, 90], clim=[0, perc_90], cmap="gray")
 
 
-def cumulative_sum_vertically(map_arr):
-    out = np.zeros((map_arr.shape[0] + 1, map_arr.shape[1]), dtype=map_arr.dtype)
-    np.cumsum(map_arr, axis=0, out=out[1:])
-    return out
-
-
-def cumulative_sum_horizontally(map_arr):
-    out = np.zeros((map_arr.shape[0], map_arr.shape[1] + 1), dtype=map_arr.dtype)
-    np.cumsum(map_arr, axis=1, out=out[:, 1:])
-    return out
-
-
 def chunk(population_map, chunk_size):
     population_map_padded = np.pad(
         population_map,
