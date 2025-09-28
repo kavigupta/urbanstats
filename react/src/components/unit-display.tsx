@@ -302,7 +302,7 @@ export function classifyStatistic(statname: string): UnitType {
     if (statname.includes('Election') || statname.includes('Swing')) {
         return 'democraticMargin'
     }
-    if (statname.includes('high temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
+    if (statname.includes('high temp') || statname.includes('low temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
         return 'temperature'
     }
     if (statname === 'Mean sunny hours') {
