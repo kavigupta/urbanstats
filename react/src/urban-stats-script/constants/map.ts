@@ -412,8 +412,8 @@ export const cMapRGB: USSValue = {
 } satisfies USSValue
 
 function projectBackOKLCH(h: number, s: number, l: number): [number, number, number] {
-    const oklabToRGB: (l2: number, a2: number, b2: number) => [number, number, number] = (convert as unknown as { oklch: { rgb: (l2: number, a2: number, b2: number) => [number, number, number] } }).oklch.rgb
-    return oklabToRGB(l, s * 0.32, (h + 30) % 360)
+    const oklchToRGB: (l2: number, a2: number, b2: number) => [number, number, number] = (convert as unknown as { oklch: { rgb: (l2: number, a2: number, b2: number) => [number, number, number] } }).oklch.rgb
+    return oklchToRGB(l, s * 0.32, (h + 30) % 360)
 }
 
 function projectBackSRGB(h: number, s: number, l: number): [number, number, number] {
