@@ -282,24 +282,6 @@ def cumulative_sum_horizontally(map_arr):
     return out
 
 
-def high_density_chunks(population_map, y_rad, chunk_size, min_density):
-    """
-    Return the chunks (yl, xl) corresponding to regions of population_map[yl*chunk_size:(yl+1) * chunk_sie, xl*chunk_size:(xl+1) * chunk_size]
-       with population density at least min_density.
-
-    The area of a pixel in population_map at index (y, x) is cos(y_rad[y])
-    """
-    y_rad_padded = np.pad(
-        y_rad,
-        (0, (-population_map.shape[0]) % chunk_size),
-        mode="constant",
-        constant_values=0,
-    )
-    area_chunk = np.cos(y_rad_padded).reshape(-1, chunk_size).sum(1) * chunk_size
-    population_map_padded = chunk(population_map, chunk_size)
-    return np.where(population_map_padded > area_chunk[:, None] * min_density)
-
-
 def chunk(population_map, chunk_size):
     population_map_padded = np.pad(
         population_map,

@@ -13,9 +13,6 @@ class Feature:
     radius_km = attr.ib()
     load_fn = attr.ib()
 
-    def load_as_shapefile(self):
-        return shapefile_points_to_radius(self.radius_km, self.load_fn())
-
     def within_distance_column_name(self):
         return (
             f"within_{self.name}_{self.radius_km}",

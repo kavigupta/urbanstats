@@ -177,41 +177,6 @@ def merge_all_boxes(bounding_boxes):
     return overall
 
 
-def merge_largest_if_too_similar_in_size(bounding_boxes, indices_each, tolerance=2 / 3):
-    """
-    Merge the largest bounding box with the smallest if they are too similar in size.
-    """
-    if len(bounding_boxes) < 2:
-        return bounding_boxes, indices_each
-    areas_each = [bounding_box_area(bbox) for bbox in bounding_boxes]
-    print("Areas each:", areas_each)
-    largest_idx, second_largest_idx = np.argsort(areas_each)[::-1][:2]
-    print("Highest areas:", areas_each[largest_idx], areas_each[second_largest_idx])
-    ratio = areas_each[largest_idx] / sum(areas_each)
-    print("Ratio:", ratio, "Tolerance:", tolerance)
-    if ratio > tolerance:
-        return bounding_boxes, indices_each
-    print("starting indices", indices_each)
-    merged_box = merge_bounding_boxes(
-        bounding_boxes[largest_idx], bounding_boxes[second_largest_idx]
-    )
-    merged_indices = indices_each[largest_idx] + indices_each[second_largest_idx]
-    bounding_boxes = [
-        bbox
-        for i, bbox in enumerate(bounding_boxes)
-        if i not in (largest_idx, second_largest_idx)
-    ]
-    indices_each = [
-        idx
-        for i, idx in enumerate(indices_each)
-        if i not in (largest_idx, second_largest_idx)
-    ]
-    bounding_boxes.append(merged_box)
-    indices_each.append(merged_indices)
-    print("ending indices", indices_each)
-    return bounding_boxes, indices_each
-
-
 def iterated_merge(bounding_boxes, indices, tolerance):
     """
     Do an iteration of merging, also merging the indices.
@@ -221,23 +186,6 @@ def iterated_merge(bounding_boxes, indices, tolerance):
         [idx for i in superindex for idx in indices[i]] for superindex in superindices
     ]
     return bounding_boxes, indices
-
-
-def perform_merges(bounding_boxes, tolerance):
-    count = len(bounding_boxes)
-    merged_boxes = bounding_boxes[:]
-    indices_each = [[i] for i in range(len(bounding_boxes))]
-    while True:
-        merged_boxes, indices_each = iterated_merge(
-            merged_boxes, indices_each, tolerance
-        )
-        merged_boxes, indices_each = merge_largest_if_too_similar_in_size(
-            merged_boxes, indices_each
-        )
-        if len(merged_boxes) == count:
-            break
-        count = len(merged_boxes)
-    return merged_boxes, indices_each
 
 
 def automatically_compute_insets(name_to_type, swo_subnats, u):

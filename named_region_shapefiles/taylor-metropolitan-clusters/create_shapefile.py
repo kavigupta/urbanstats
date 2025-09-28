@@ -478,19 +478,6 @@ def deduplicate_names(names):
     return names
 
 
-def remove_suffixes(name):
-    for suffix in [
-        " township",
-        " urban area",
-        " new area",
-        " industrial area",
-        " management area",
-    ]:
-        if name.lower().endswith(suffix):
-            return name[: -len(suffix)]
-    return name
-
-
 def process_and_deduplicate_names(names):
     """
     Process names by deduplicating them and removing empty names.
