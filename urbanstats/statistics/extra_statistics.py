@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List
 
+import numpy as np
+
 from urbanstats.protobuf import data_files_pb2
 
 
@@ -91,9 +93,10 @@ class TemperatureHistogramSpec(ExtraStatistic):
         if isinstance(data_row[self.key], float):
             assert data_row[self.key] != data_row[self.key]
             return result
-        result.temperature_histogram.values.extend(
+        result.temperature_histogram.counts.extend(
             normalize_to_uint16(data_row[self.key])
         )
+        return result
 
     def extra_stat_spec(self, stat_names):
         return dict(
@@ -105,6 +108,7 @@ class TemperatureHistogramSpec(ExtraStatistic):
 
 
 def normalize_to_uint16(histogram):
+    histogram = np.array(histogram)
     histogram = histogram / histogram.sum()
     histogram = histogram * (2**16)
     histogram = histogram.round().astype(int)

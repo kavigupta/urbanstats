@@ -155,6 +155,7 @@ class GlobalWeatherStatistics(GeographicStatistics):
             existing_statistics=existing_statistics,
             shapefile_table=shapefile_table,
         )
+        result = {k: np.array(v) for k, v in result.items()}
         return {
             "mean_high_temp": k_to_f(result["maxdaily_temp"]),
             "mean_low_temp": k_to_f(result["mindaily_temp"]),

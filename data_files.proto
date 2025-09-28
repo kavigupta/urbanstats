@@ -46,7 +46,7 @@ message TemperatureHistogram {
 message ExtraStatistic {
     optional Histogram histogram = 1;
     optional TimeSeries timeseries = 2;
-    optional TemperatureHistogram timeseries = 2;
+    optional TemperatureHistogram temperature_histogram = 3;
 }
 
 message Article {

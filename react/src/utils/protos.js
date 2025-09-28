@@ -1556,6 +1556,233 @@ export const TimeSeries = $root.TimeSeries = (() => {
     return TimeSeries;
 })();
 
+export const TemperatureHistogram = $root.TemperatureHistogram = (() => {
+
+    /**
+     * Properties of a TemperatureHistogram.
+     * @exports ITemperatureHistogram
+     * @interface ITemperatureHistogram
+     * @property {Array.<number>|null} [counts] TemperatureHistogram counts
+     */
+
+    /**
+     * Constructs a new TemperatureHistogram.
+     * @exports TemperatureHistogram
+     * @classdesc Represents a TemperatureHistogram.
+     * @implements ITemperatureHistogram
+     * @constructor
+     * @param {ITemperatureHistogram=} [properties] Properties to set
+     */
+    function TemperatureHistogram(properties) {
+        this.counts = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * TemperatureHistogram counts.
+     * @member {Array.<number>} counts
+     * @memberof TemperatureHistogram
+     * @instance
+     */
+    TemperatureHistogram.prototype.counts = $util.emptyArray;
+
+    /**
+     * Creates a new TemperatureHistogram instance using the specified properties.
+     * @function create
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {ITemperatureHistogram=} [properties] Properties to set
+     * @returns {TemperatureHistogram} TemperatureHistogram instance
+     */
+    TemperatureHistogram.create = function create(properties) {
+        return new TemperatureHistogram(properties);
+    };
+
+    /**
+     * Encodes the specified TemperatureHistogram message. Does not implicitly {@link TemperatureHistogram.verify|verify} messages.
+     * @function encode
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {ITemperatureHistogram} message TemperatureHistogram message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TemperatureHistogram.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.counts != null && message.counts.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
+            for (let i = 0; i < message.counts.length; ++i)
+                writer.int32(message.counts[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified TemperatureHistogram message, length delimited. Does not implicitly {@link TemperatureHistogram.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {ITemperatureHistogram} message TemperatureHistogram message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TemperatureHistogram.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a TemperatureHistogram message from the specified reader or buffer.
+     * @function decode
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {TemperatureHistogram} TemperatureHistogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TemperatureHistogram.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.TemperatureHistogram();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 4: {
+                    if (!(message.counts && message.counts.length))
+                        message.counts = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.counts.push(reader.int32());
+                    } else
+                        message.counts.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a TemperatureHistogram message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {TemperatureHistogram} TemperatureHistogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TemperatureHistogram.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a TemperatureHistogram message.
+     * @function verify
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    TemperatureHistogram.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.counts != null && message.hasOwnProperty("counts")) {
+            if (!Array.isArray(message.counts))
+                return "counts: array expected";
+            for (let i = 0; i < message.counts.length; ++i)
+                if (!$util.isInteger(message.counts[i]))
+                    return "counts: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a TemperatureHistogram message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {TemperatureHistogram} TemperatureHistogram
+     */
+    TemperatureHistogram.fromObject = function fromObject(object) {
+        if (object instanceof $root.TemperatureHistogram)
+            return object;
+        let message = new $root.TemperatureHistogram();
+        if (object.counts) {
+            if (!Array.isArray(object.counts))
+                throw TypeError(".TemperatureHistogram.counts: array expected");
+            message.counts = [];
+            for (let i = 0; i < object.counts.length; ++i)
+                message.counts[i] = object.counts[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a TemperatureHistogram message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {TemperatureHistogram} message TemperatureHistogram
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    TemperatureHistogram.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.counts = [];
+        if (message.counts && message.counts.length) {
+            object.counts = [];
+            for (let j = 0; j < message.counts.length; ++j)
+                object.counts[j] = message.counts[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this TemperatureHistogram to JSON.
+     * @function toJSON
+     * @memberof TemperatureHistogram
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    TemperatureHistogram.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TemperatureHistogram
+     * @function getTypeUrl
+     * @memberof TemperatureHistogram
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TemperatureHistogram.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/TemperatureHistogram";
+    };
+
+    return TemperatureHistogram;
+})();
+
 export const ExtraStatistic = $root.ExtraStatistic = (() => {
 
     /**
@@ -1564,6 +1791,7 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
      * @interface IExtraStatistic
      * @property {IHistogram|null} [histogram] ExtraStatistic histogram
      * @property {ITimeSeries|null} [timeseries] ExtraStatistic timeseries
+     * @property {ITemperatureHistogram|null} [temperatureHistogram] ExtraStatistic temperatureHistogram
      */
 
     /**
@@ -1597,6 +1825,14 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
      */
     ExtraStatistic.prototype.timeseries = null;
 
+    /**
+     * ExtraStatistic temperatureHistogram.
+     * @member {ITemperatureHistogram|null|undefined} temperatureHistogram
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    ExtraStatistic.prototype.temperatureHistogram = null;
+
     // OneOf field names bound to virtual getters and setters
     let $oneOfFields;
 
@@ -1619,6 +1855,17 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
      */
     Object.defineProperty(ExtraStatistic.prototype, "_timeseries", {
         get: $util.oneOfGetter($oneOfFields = ["timeseries"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * ExtraStatistic _temperatureHistogram.
+     * @member {"temperatureHistogram"|undefined} _temperatureHistogram
+     * @memberof ExtraStatistic
+     * @instance
+     */
+    Object.defineProperty(ExtraStatistic.prototype, "_temperatureHistogram", {
+        get: $util.oneOfGetter($oneOfFields = ["temperatureHistogram"]),
         set: $util.oneOfSetter($oneOfFields)
     });
 
@@ -1650,6 +1897,8 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
             $root.Histogram.encode(message.histogram, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
         if (message.timeseries != null && Object.hasOwnProperty.call(message, "timeseries"))
             $root.TimeSeries.encode(message.timeseries, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.temperatureHistogram != null && Object.hasOwnProperty.call(message, "temperatureHistogram"))
+            $root.TemperatureHistogram.encode(message.temperatureHistogram, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
         return writer;
     };
 
@@ -1690,6 +1939,10 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
                 }
             case 2: {
                     message.timeseries = $root.TimeSeries.decode(reader, reader.uint32());
+                    break;
+                }
+            case 3: {
+                    message.temperatureHistogram = $root.TemperatureHistogram.decode(reader, reader.uint32());
                     break;
                 }
             default:
@@ -1744,6 +1997,14 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
                     return "timeseries." + error;
             }
         }
+        if (message.temperatureHistogram != null && message.hasOwnProperty("temperatureHistogram")) {
+            properties._temperatureHistogram = 1;
+            {
+                let error = $root.TemperatureHistogram.verify(message.temperatureHistogram);
+                if (error)
+                    return "temperatureHistogram." + error;
+            }
+        }
         return null;
     };
 
@@ -1768,6 +2029,11 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
             if (typeof object.timeseries !== "object")
                 throw TypeError(".ExtraStatistic.timeseries: object expected");
             message.timeseries = $root.TimeSeries.fromObject(object.timeseries);
+        }
+        if (object.temperatureHistogram != null) {
+            if (typeof object.temperatureHistogram !== "object")
+                throw TypeError(".ExtraStatistic.temperatureHistogram: object expected");
+            message.temperatureHistogram = $root.TemperatureHistogram.fromObject(object.temperatureHistogram);
         }
         return message;
     };
@@ -1794,6 +2060,11 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
             object.timeseries = $root.TimeSeries.toObject(message.timeseries, options);
             if (options.oneofs)
                 object._timeseries = "timeseries";
+        }
+        if (message.temperatureHistogram != null && message.hasOwnProperty("temperatureHistogram")) {
+            object.temperatureHistogram = $root.TemperatureHistogram.toObject(message.temperatureHistogram, options);
+            if (options.oneofs)
+                object._temperatureHistogram = "temperatureHistogram";
         }
         return object;
     };
