@@ -58,6 +58,9 @@ jobs:
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
         if: "!cancelled()" # Runs even if other steps fail
+      - name: Lint with vulture
+        run: python -m vulture --min-confidence 10 --sort-by-size $(git ls-files '*.py' ':!:legacy')
+        if: "!cancelled()"
       - name: format
         run: ./scripts/format-python.sh
         if: "!cancelled()"
