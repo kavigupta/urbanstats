@@ -39,13 +39,6 @@ def save_search_index(longnames, types, is_usas, path, *, symlinks):
     write_gzip(res, path)
 
 
-def save_ordered_list(ordered_list, path):
-    res = data_files_pb2.OrderList()
-    for x in ordered_list:
-        res.order_idxs.append(x)
-    write_gzip(res, path)
-
-
 def ensure_writeable(path):
     folder = os.path.dirname(path)
     try:

@@ -20,8 +20,9 @@ def relevant_files():
     return files
 
 
-VULTURE_DIRECTIVE = r"#\s+vulture:\s+ignore(\s+--.*)?$"
-
+VULTURE_DIRECTIVE = (
+    r"(.*#\s+vulture:\s+ignore(\s+--.*)?$)|(@app.(route|post|get).*)|(@pytest.fixture.*)"
+)
 
 def is_ignored(line):
     match = re.match(r"^([^:]*):(\d+):", line)
@@ -30,7 +31,7 @@ def is_ignored(line):
     line_no = int(line_no) - 1
     text = load_file(file).split("\n")
     assert 0 <= line_no < len(text), (file, line_no, len(text))
-    if line_no > 0 and re.match("^" + VULTURE_DIRECTIVE, text[line_no - 1].strip()):
+    if line_no > 0 and re.match(VULTURE_DIRECTIVE, text[line_no - 1].strip()):
         return True
     return re.match(VULTURE_DIRECTIVE, text[line_no].strip())
 

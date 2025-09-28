@@ -2,8 +2,6 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from ..osm.buses import national_stops
-
 
 @attr.s
 class Feature:
@@ -45,15 +43,6 @@ def load_airports():
         | (file["type"] == "medium_airport") & (file.scheduled_ == "yes")
     ]
     return file[["geometry"]]
-
-
-def load_buses():
-    s = national_stops().copy()
-    s.geometry = s.geometry.centroid
-    s = s[~s.geometry.is_empty]
-    s = s.set_crs("epsg:4326")
-    # s = s[["geometry"]]
-    return s
 
 
 def load_schools():

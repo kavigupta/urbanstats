@@ -1,4 +1,3 @@
-import calendar
 import tempfile
 from datetime import datetime
 

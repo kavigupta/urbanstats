@@ -24,6 +24,7 @@ class HistogramSpec(ExtraStatistic):
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()
+        # vulture: ignore -- not actually creating a field. this is from protobuf
         result.histogram.bin_min = self.min_value
         result.histogram.bin_size = self.bin_size
         histogram = data_row[self.key]

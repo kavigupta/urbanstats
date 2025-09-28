@@ -9,7 +9,6 @@ import shapely
 import shapely.affinity
 import shapely.geometry
 import tqdm.auto as tqdm
-from matplotlib import patches
 from matplotlib import pyplot as plt
 from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
@@ -193,40 +192,8 @@ def clear_location(map_arr, r, y, x):
     return ys[mask], xs[mask]
 
 
-def plot_circles(map_arr, circles, *, reduce=10, **kwargs):
-    plot_ghs(map_arr, reduce)
-    for r, (y, x) in circles:
-        # rx = r * secy
-        secy = compute_secants(map_arr, y)
-        r, x, y = (
-            r / map_arr.shape[1] * 360,
-            x / map_arr.shape[1] * 360 - 180,
-            90 - y / map_arr.shape[0] * 180,
-        )
-        ellipse = patches.Ellipse(
-            (x, y), r * secy * 2, r * 2, fill=False, edgecolor="red", **kwargs
-        )
-        plt.gca().add_artist(ellipse)
-    plt.xlim(-180, 180)
-    plt.ylim(-90, 90)
-    # turn off axis
-    plt.axis("off")
-
-
 def reduce_circles(circles, reduce):
     return [(r / reduce, (y // reduce, x // reduce)) for r, (y, x) in circles]
-
-
-def plot_overlapping_circles(map_arr, circles, circle_map, *, reduce=10):
-    map_arr = chunk(map_arr, reduce)
-    circles = reduce_circles(circles, reduce)
-    if circle_map is None:
-        circle_map = make_circle_map(map_arr.shape, circles)
-    else:
-        circle_map = chunk(circle_map, reduce)
-    plot_circles(map_arr, circles, reduce=1, linewidth=0.2)
-    circle_rgb = get_rgb_circles(circles, circle_map)
-    plt.imshow(circle_rgb, extent=[-180, 180, -90, 90])
 
 
 def get_rgb_circles(circles, circle_map):
@@ -261,13 +228,6 @@ def create_rgb_image(ghs, circles, reduce):
     rgb[:, :, -1] = 255
 
     return Image.fromarray(rgb)
-
-
-def plot_ghs(map_arr, reduce):
-    map_reduced = chunk(map_arr, reduce)
-    perc_90 = np.percentile(map_reduced, 99.9)
-    # imshow from -180 to 180, -90 to 90
-    plt.imshow(map_reduced, extent=[-180, 180, -90, 90], clim=[0, perc_90], cmap="gray")
 
 
 def chunk(population_map, chunk_size):
@@ -635,6 +595,7 @@ def create_circle_image(population):
     return out
 
 
+# vulture: ignore -- used in notebooks
 def produce_image(population):
     name = named_populations[population]
     print("Creating image for population", name)

@@ -69,7 +69,7 @@ class HasInfiniteStatsBody(BaseModel):
 
 
 class HasInfiniteStatsResponse(BaseModel):
-    has: t.List[bool]
+    has: t.List[bool]  # vulture: ignore -- used by the client
 
 
 @app.post("/juxtastat_infinite/has_infinite_stats", responses=authenticate_responses)

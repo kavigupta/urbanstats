@@ -177,17 +177,6 @@ def merge_all_boxes(bounding_boxes):
     return overall
 
 
-def iterated_merge(bounding_boxes, indices, tolerance):
-    """
-    Do an iteration of merging, also merging the indices.
-    """
-    bounding_boxes, superindices = merge_all_negative_cost(bounding_boxes, tolerance)
-    indices = [
-        [idx for i in superindex for idx in indices[i]] for superindex in superindices
-    ]
-    return bounding_boxes, indices
-
-
 def automatically_compute_insets(name_to_type, swo_subnats, u):
     geo = load_geo(u, shapefiles_by_type[name_to_type[u]])
 
