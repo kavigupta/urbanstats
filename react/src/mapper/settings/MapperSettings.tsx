@@ -3,9 +3,9 @@ import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
+import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
-import { defaultTypeEnvironment } from '../context'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
@@ -13,11 +13,12 @@ import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: {
+export function MapperSettings({ mapSettings, setMapSettings, errors, counts, typeEnvironment }: {
     mapSettings: MapSettings
     setMapSettings: (s: MapSettings) => void
     errors: EditorError[]
     counts: CountsByUT
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const uss = mapSettings.script.uss
 
@@ -44,8 +45,6 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
         selectionContext.observers.add(observer)
         return () => { selectionContext.observers.delete(observer) }
     }, [selectionContext, updateCurrentSelection])
-
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
     const renderString = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
 

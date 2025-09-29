@@ -9,6 +9,7 @@ import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, use
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
+import { defaultTypeEnvironment } from '../mapper/context'
 import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
@@ -22,12 +23,14 @@ import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { getAllParseErrors, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
+import { deconstruct } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { hasCustomNode, unparse } from '../urban-stats-script/parser'
+import { hasCustomNode, parseNoErrorAsExpression, unparse } from '../urban-stats-script/parser'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset, loadInsetExpression } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -39,7 +42,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets, Inset } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -533,7 +536,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         setErrors={setErrors}
                         colorbarRef={colorbarRef}
-                        editInsets={editInsets ? (i, e) => { setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings, [i, e]) } }) } : undefined}
+                        editInsets={editInsets ? (i, e) => { setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings, [i, e], typeEnvironment) } }) } : undefined}
                     />
                 )
     }
@@ -543,6 +546,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     const [editInsets, setEditInsets] = useState(false)
 
     const colors = useColors()
+
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
     if (props.view) {
         return mapperPanel()
@@ -557,6 +562,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                     setMapSettings={setMapSettingsWrapper}
                     errors={errors}
                     counts={props.counts}
+                    typeEnvironment={typeEnvironment}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
                     <Export
@@ -658,7 +664,7 @@ function canEditInsets(settings: MapSettings):
     return { result: false }
 }
 
-function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets>): MapUSS {
+function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets>, typeEnvironment: TypeEnvironment): MapUSS {
     const canEdit = canEditInsets(settings)
     assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
 
@@ -672,13 +678,98 @@ function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets
 
     // Edit the specified index (maybe need to deconstruct it first)
     assert(arg.type === 'call' && arg.args[0].value.type === 'vectorLiteral', 'Unexpected inset arg structure')
-    return canEdit.edit(editInsetsList(arg.args[0].value, edit))
+    return canEdit.edit(editInsetsList(arg.args[0].value, edit, typeEnvironment))
 }
 
 function editInsetsList(
     vec: UrbanStatsASTExpression & { type: 'vectorLiteral' },
-    [index, newInset]: Parameters<EditMultipleInsets>,
+    [index, edit]: Parameters<EditMultipleInsets>,
+    typeEnvironment: TypeEnvironment,
 ): UrbanStatsASTExpression & { type: 'vectorLiteral' } {
-    // TODO
-    return vec
+    assert(!hasCustomNode(vec), 'Cannot edit an insets list with custom nodes')
+
+    const elem = vec.elements[index]
+
+    let constructInset
+
+    switch (elem.type) {
+        case 'identifier':
+            const type = typeEnvironment.get(elem.name.node)
+            if (type === undefined) {
+                throw new Error(`Inset identifier ${elem.name.node} not found in type environment`)
+            }
+            if (type.documentation?.equivalentExpressions === undefined || type.documentation.equivalentExpressions.length === 0) {
+                throw new Error(`Inset identifier ${elem.name.node} has no equivalent expressions`)
+            }
+            constructInset = parseNoErrorAsExpression(unparse(type.documentation.equivalentExpressions[0]), elem.name.location.start.block.type === 'single' ? elem.name.location.start.block.ident : 'multi')
+            break
+        case 'call':
+            constructInset = elem
+            break
+        default:
+            throw new Error(`Unexpected elem type ${elem.type}`)
+    }
+
+    assert(constructInset.type === 'call' && constructInset.fn.type === 'identifier' && constructInset.fn.name.node === 'constructInset', 'Must be a constructInset function call')
+
+    const screenBounds = getArg(constructInset.args, 'screenBounds', getNESW)
+    const mapBounds = getArg(constructInset.args, 'mapBounds', getNESW)
+    const mainMap = getArg(constructInset.args, 'mainMap', getBoolean)
+    const name = getArg(constructInset.args, 'name', getString)
+
+    const inset: Inset = {
+        bottomLeft: [screenBounds.west, screenBounds.south],
+        topRight: [screenBounds.east, screenBounds.north],
+        coordBox: [mapBounds.west, mapBounds.south, mapBounds.east, mapBounds.north],
+        mainMap,
+        name,
+    }
+
+    const newInset = {
+        ...inset,
+        edit,
+    }
+
+    return {
+        ...vec,
+        elements: [...vec.elements.slice(0, index), deconstruct(newInset, constructInset.entireLoc.start.block.type === 'single' ? constructInset.entireLoc.start.block.ident : 'multi'), ...vec.elements.slice(index + 1)],
+    }
+}
+
+function getArg<T>(args: UrbanStatsASTArg[], argName: string, parseValue: (value: UrbanStatsASTExpression) => T): T {
+    const arg = args.find(a => a.type === 'named' && a.name.node === argName)
+    if (!arg) {
+        throw new Error(`Couldn't find arg named ${argName}`)
+    }
+    return parseValue(arg.value)
+}
+
+function getNESW(expr: UrbanStatsASTExpression): { north: number, east: number, south: number, west: number } {
+    assert(expr.type === 'objectLiteral', 'not object')
+
+    const props = Object.fromEntries(expr.properties)
+
+    assert('north' in props && 'east' in props && 'south' in props && 'west' in props, 'Props missing one of north east south west')
+
+    return {
+        north: getNumber(props.north),
+        east: getNumber(props.east),
+        south: getNumber(props.south),
+        west: getNumber(props.west),
+    }
+}
+
+function getNumber(expr: UrbanStatsASTExpression): number {
+    assert(expr.type === 'constant' && expr.value.node.type === 'number', 'Not number constant')
+    return expr.value.node.value
+}
+
+function getBoolean(expr: UrbanStatsASTExpression): boolean {
+    assert(expr.type === 'identifier' && ['true', 'false'].includes(expr.name.node), 'must be true or false')
+    return expr.name.node === 'true'
+}
+
+function getString(expr: UrbanStatsASTExpression): string {
+    assert(expr.type === 'constant' && expr.value.node.type === 'string', 'Not a string constant')
+    return expr.value.node.value
 }

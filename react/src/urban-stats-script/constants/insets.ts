@@ -132,9 +132,9 @@ function computeInsetConstantName(name: string): string {
     return name
 }
 
-export function deconstruct(inset: typeof insets[keyof typeof insets][number] | Inset): UrbanStatsASTExpression {
+export function deconstruct(inset: typeof insets[keyof typeof insets][number] | Inset, blockId: string): UrbanStatsASTExpression {
     const uss = `constructInset(screenBounds={ north: ${inset.topRight[1]}, east: ${inset.topRight[0]}, south: ${inset.bottomLeft[1]}, west: ${inset.bottomLeft[0]} }, mapBounds={ north: ${inset.coordBox[3]}, east: ${inset.coordBox[2]}, south: ${inset.coordBox[1]}, west: ${inset.coordBox[0]} }, mainMap=${inset.mainMap}, name="${inset.name}")`
-    return parseNoErrorAsExpression(uss, '')
+    return parseNoErrorAsExpression(uss, blockId)
 }
 
 export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(([, regionInsets]) =>
@@ -161,7 +161,7 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                 documentation: {
                     humanReadableName: insetName,
                     category: 'inset',
-                    equivalentExpressions: [deconstruct(inset)],
+                    equivalentExpressions: [deconstruct(inset, '')],
                     longDescription: `Predefined map inset for the region "${insetName}".`,
                     documentationTable: 'predefined-insets',
                 },

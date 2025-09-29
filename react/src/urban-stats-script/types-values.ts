@@ -171,6 +171,8 @@ export interface USSDocumentedType {
 
 }
 
+export type TypeEnvironment = Map<string, USSDocumentedType>
+
 export type USSValue = { value: USSRawValue } & USSDocumentedType
 
 export function undocValue(value: USSRawValue, type: USSType): USSValue {

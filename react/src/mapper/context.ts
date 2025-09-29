@@ -5,7 +5,7 @@ import { defaultConstants } from '../urban-stats-script/constants/constants'
 import { Context } from '../urban-stats-script/context'
 import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
 import { allIdentifiers } from '../urban-stats-script/parser'
-import { USSDocumentedType, USSValue } from '../urban-stats-script/types-values'
+import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
 import { loadInsetExpression } from '../urban-stats-script/worker'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
@@ -74,8 +74,8 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     await Promise.all(multiSourcePromises)
 }
 
-export const defaultTypeEnvironment = (universe: Universe | undefined): Map<string, USSDocumentedType> => {
-    const te = new Map<string, USSDocumentedType>()
+export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvironment => {
+    const te: TypeEnvironment = new Map()
 
     for (const [key, value] of defaultConstants) {
         te.set(key, value)
