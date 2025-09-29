@@ -5186,86 +5186,6 @@ export const rawStatsTree = [
                         ]
                     }
                 ]
-            },
-            {
-                "id": "mean_high_temp_summer_4",
-                "name": "Mean high temperature in summer",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in summer",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 251
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_winter_4",
-                "name": "Mean high temperature in winter",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in winter",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 252
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_fall_4",
-                "name": "Mean high temperature in fall",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in fall",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 249
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_spring_4",
-                "name": "Mean high temperature in spring",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in spring",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 250
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
             }
         ]
     },
@@ -6085,6 +6005,92 @@ export const rawStatsTree = [
                                     {
                                         "source": null,
                                         "column": 78
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "deprecated",
+        "name": "Deprecated",
+        "contents": [
+            {
+                "id": "mean_high_temp_summer_4",
+                "name": "Mean high temperature in summer",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in summer",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 251
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_winter_4",
+                "name": "Mean high temperature in winter",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in winter",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 252
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_fall_4",
+                "name": "Mean high temperature in fall",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in fall",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 249
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_spring_4",
+                "name": "Mean high temperature in spring",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in spring",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 250
                                     }
                                 ]
                             }

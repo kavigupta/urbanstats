@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import zarr
-from permacache import stable_hash
 
 
 def compute_bins_slow(data, weight, *, bin_size=0.1):

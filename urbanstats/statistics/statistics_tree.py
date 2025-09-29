@@ -656,10 +656,6 @@ statistics_tree = StatisticTree(
             "rainfall_4",
             "snowfall_4",
             "wind_speed_over_10mph_4",
-            "mean_high_temp_summer_4",
-            "mean_high_temp_winter_4",
-            "mean_high_temp_fall_4",
-            "mean_high_temp_spring_4",
         ),
         **just_2020_category(
             "misc",
@@ -685,6 +681,14 @@ statistics_tree = StatisticTree(
                 ]
                 for k, v in kvs.items()
             },
+        ),
+        **just_2020_category(
+            "deprecated",
+            "Deprecated",
+            "mean_high_temp_summer_4",
+            "mean_high_temp_winter_4",
+            "mean_high_temp_fall_4",
+            "mean_high_temp_spring_4",
         ),
     }
 )

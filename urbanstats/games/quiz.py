@@ -103,6 +103,15 @@ def generate_quizzes(folder):
 
 
 # vulture: ignore -- used by notebooks
+def display_question(question):
+    if "!TOOLTIP" in question:
+        return question[: question.index("!TOOLTIP")].strip()
+    if question.startswith("!FULL"):
+        return question[6:]
+    return f"Which has a {question}?"
+
+
+# vulture: ignore -- used by notebooks
 renamed = {
     "higher housing units per adult": "housing_per_pop",
     "higher % of people who are born in the us outside their state of residence": "birthplace_us_not_state",
