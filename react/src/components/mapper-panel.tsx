@@ -11,6 +11,7 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { Keypoints } from '../mapper/ramps'
+import { parseExpr } from '../mapper/settings/AutoUXEditor'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapUSS } from '../mapper/settings/TopLevelEditor'
@@ -25,11 +26,11 @@ import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
-import { deconstruct } from '../urban-stats-script/constants/insets'
+import { deconstruct, insetsType } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { hasCustomNode, parseNoErrorAsExpression, unparse } from '../urban-stats-script/parser'
+import { hasCustomNode, parseNoErrorAsExpression, simplifyNegatives, unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset, loadInsetExpression } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -678,7 +679,19 @@ function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets
 
     // Edit the specified index (maybe need to deconstruct it first)
     assert(arg.type === 'call' && arg.args[0].value.type === 'vectorLiteral', 'Unexpected inset arg structure')
-    return canEdit.edit(editInsetsList(arg.args[0].value, edit, typeEnvironment))
+    return canEdit.edit(parseExpr(
+        {
+            ...arg,
+            args: [
+                {
+                    ...arg.args[0],
+                    value: editInsetsList(arg.args[0].value, edit, typeEnvironment),
+                },
+            ],
+        },
+        'ro_insets', [insetsType], typeEnvironment, () => {
+            throw new Error('Should not happen')
+        }, true))
 }
 
 function editInsetsList(
@@ -701,7 +714,7 @@ function editInsetsList(
             if (type.documentation?.equivalentExpressions === undefined || type.documentation.equivalentExpressions.length === 0) {
                 throw new Error(`Inset identifier ${elem.name.node} has no equivalent expressions`)
             }
-            constructInset = parseNoErrorAsExpression(unparse(type.documentation.equivalentExpressions[0]), elem.name.location.start.block.type === 'single' ? elem.name.location.start.block.ident : 'multi')
+            constructInset = parseNoErrorAsExpression(unparse(type.documentation.equivalentExpressions[0]), '')
             break
         case 'call':
             constructInset = elem
@@ -727,12 +740,14 @@ function editInsetsList(
 
     const newInset = {
         ...inset,
-        edit,
+        ...edit,
     }
+
+    const newAst = deconstruct(newInset)
 
     return {
         ...vec,
-        elements: [...vec.elements.slice(0, index), deconstruct(newInset, constructInset.entireLoc.start.block.type === 'single' ? constructInset.entireLoc.start.block.ident : 'multi'), ...vec.elements.slice(index + 1)],
+        elements: [...vec.elements.slice(0, index), newAst, ...vec.elements.slice(index + 1)],
     }
 }
 
@@ -760,7 +775,8 @@ function getNESW(expr: UrbanStatsASTExpression): { north: number, east: number, 
 }
 
 function getNumber(expr: UrbanStatsASTExpression): number {
-    assert(expr.type === 'constant' && expr.value.node.type === 'number', 'Not number constant')
+    simplifyNegatives(expr)
+    assert(expr.type === 'constant' && expr.value.node.type === 'number', 'must be a number')
     return expr.value.node.value
 }
 
