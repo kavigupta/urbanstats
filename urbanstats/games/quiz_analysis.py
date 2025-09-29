@@ -41,6 +41,7 @@ def get_named_users():
     return named_users
 
 
+# vulture: ignore -- used in notebooks
 def unique_names_each_user():
     names = {k: "" for k in get_named_users()}
     while True:
@@ -136,6 +137,7 @@ def get_full_statistics(*, after_problem, debug=False):
     return result
 
 
+# vulture: ignore -- used in notebooks
 def get_dau(after_problem=49, radius=14):
     result = get_full_statistics(after_problem=after_problem, debug=False)
     num_users_by_problem = result.groupby("problem").count().user_id
@@ -188,6 +190,7 @@ def rounded_power(x):
     return 10**fl * {0: 1, 3: 2, 7: 5}[round(x * 10)]
 
 
+# vulture: ignore -- used in notebooks
 def plot_sampling_bias(prob_res):
     qqp = prob_res["qqp"]
     geo_target = prob_res["geo_target"]

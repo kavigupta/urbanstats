@@ -594,6 +594,7 @@ def create_circle_image(population):
     return out
 
 
+# vulture: ignore -- used in notebooks
 def produce_image(population):
     name = named_populations[population]
     print("Creating image for population", name)

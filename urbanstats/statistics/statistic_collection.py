@@ -9,9 +9,6 @@ from urbanstats.geometry.shapefiles.shapefile import (
     subset_mask_key,
 )
 
-ORDER_CATEGORY_MAIN = 0
-ORDER_CATEGORY_OTHER_DENSITIES = 1
-
 
 class StatisticCollection(ABC):
     def __init__(self):
@@ -34,9 +31,6 @@ class StatisticCollection(ABC):
 
     @abstractmethod
     def explanation_page_for_each_statistic(self):
-        pass
-
-    def quiz_question_names(self):
         pass
 
     @abstractmethod

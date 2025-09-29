@@ -53,6 +53,7 @@ def global_bounding_boxes():
     return list(produce_all_bounding_boxes())
 
 
+# vulture: ignore -- used in global plotting
 def plot_bounding_boxes():
     _, ax = plt.subplots(figsize=(10, 5))
     for box in global_bounding_boxes():

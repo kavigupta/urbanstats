@@ -107,7 +107,7 @@ def store_user_stats_infinite(
 
 class PerQuestionStats(BaseModel):
     total: int
-    per_question: t.List[int]
+    per_question: t.List[int]  # vulture: ignore -- used by the client
 
 
 def get_per_question_stats_from_table(

@@ -32,6 +32,7 @@ def output_tronche(tronche_vqq, tronche_p, tronche_path):
     tronche_proto.geography_a.extend(tronche_vqq.geography_index_a)
     tronche_proto.geography_b.extend(tronche_vqq.geography_index_b)
     tronche_proto.stat.extend(tronche_vqq.stat_indices)
+    # vulture: ignore -- not actually creating a field. this is from protobuf
     tronche_proto.neg_log_prob_x10_basis = int(binned_probs.min())
     tronche_proto.neg_log_prob_x10_minus_basis.extend(binned_probs - binned_probs.min())
     write_gzip(tronche_proto, tronche_path)
