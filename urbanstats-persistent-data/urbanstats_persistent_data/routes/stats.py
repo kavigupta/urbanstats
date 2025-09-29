@@ -112,10 +112,6 @@ def juxtastat_get_per_question_stats_request(
     return get_per_question_stats(s, day)
 
 
-class GetPerQuestionRetroStatsRequest(BaseModel):
-    week: int
-
-
 @app.get("/retrostat/get_per_question_stats")
 def retrostat_get_per_question_stats_request(
     s: GetDbSession, week: int

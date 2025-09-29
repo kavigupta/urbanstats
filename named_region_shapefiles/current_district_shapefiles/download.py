@@ -35,10 +35,6 @@ def download():
                 f.write(resp.content)
 
 
-def num_digits(x):
-    return len(str(x - 1))
-
-
 def path(fips, suffix):
     return f"shapefiles/tl_rd22_{fips}_{suffix}.zip"
 
