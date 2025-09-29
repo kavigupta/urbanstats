@@ -36,17 +36,6 @@ def from_row_idx(row, resolution):
     return 90 - row / resolution
 
 
-def from_col_idx(col, resolution):
-    """
-    Convert a column index to a longitude value.
-
-    :param col: Column index.
-    :param resolution: Resolution of the grid, as pixels per degree.
-    :return: Longitude value corresponding to the given column index.
-    """
-    return col / resolution - 180
-
-
 @permacache(
     "urbanstats/geometry/rasterize/rasterize_using_lines_6",
     key_function=dict(

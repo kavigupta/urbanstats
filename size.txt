@@ -390,3 +390,30 @@ add taylor metropolitan clusters
 1629    order
 1668    data
 4815    total
+
+mapper changes
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+
+add weather data internationally + histograms
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+

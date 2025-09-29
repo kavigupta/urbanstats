@@ -21,10 +21,6 @@ class QuizQuestionPossibilities:
         # p = torch.tensor(np.log(np.concatenate(ps)), dtype=torch.float32)
         return [x.numpy() for x in self._aggregate_torch(ps)]
 
-    def probabilities_each(self, p):
-        p = torch.tensor(p, dtype=torch.float32)
-        return [x.numpy() for x in self._probabilities_each_torch(p)]
-
     def _aggregate_torch(self, ps):
         g = torch.zeros(len(self.all_geographies))
         for q, p_q in zip(self.questions_by_number, ps):
