@@ -185,7 +185,9 @@ def automatically_compute_insets(name_to_type, swo_subnats, u):
         .set_index("longname")
         .copy()
     )
-    filt_table["priority"] = (
+    filt_table[
+        "priority"
+    ] = (
         filt_table.best_population_estimate
     )  # * filt_table.geometry.map(lambda x: x.area) ** 0.5
     sorted_fracs = (filt_table.priority / filt_table.priority.sum()).sort_values()
