@@ -1,6 +1,6 @@
 # pylint: disable=line-too-long
 
-# vulture: disable -- these are lists of strings used to track progress on
+# vulture: ignore -- these are lists of strings used to track progress on
 unused = [
     # have block-level data
     "Population, 2021 (1)",
@@ -75,7 +75,7 @@ unused = [
     "Total - Pre-admission experience for the immigrant population in private households who were admitted between 1980 and 2021 - 25% sample data (110)",
 ]
 
-# vulture: disable -- these are lists of strings used to track progress on
+# vulture: ignore -- these are lists of strings used to track progress on
 get_to_these_later = [
     "Total - Occupied private dwellings by structural type of dwelling - 100% data",
     "Total - Private households by household size - 100% data",
@@ -118,7 +118,7 @@ get_to_these_later = [
     "Total - Eligibility and instruction in the minority official language, for the population in private households born between 2003 and 2015 (inclusive) - 100% data (204)",
 ]
 
-# vulture: disable -- these are lists of strings used to track progress on
+# vulture: ignore -- these are lists of strings used to track progress on
 completed = [
     "Total - Age groups of the population - 100% data",
     "Total - Marital status for the total population aged 15 years and over - 100% data",
@@ -130,7 +130,7 @@ completed = [
     "Total - Highest certificate, diploma or degree for the population aged 25 to 64 years in private households - 25% sample data (165)",
 ]
 
-# vulture: disable -- these are lists of strings used to track progress on
+# vulture: ignore -- these are lists of strings used to track progress on
 get_to_these_now = [
     "Total - Language spoken most often at home for the total population excluding institutional residents - 100% data (41)",
     "Total - Occupied private dwellings by period of construction - 25% sample data (56)",
