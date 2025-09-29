@@ -2,8 +2,8 @@
 
 import re
 import subprocess
-from functools import lru_cache
 import sys
+from functools import lru_cache
 
 
 @lru_cache(None)
