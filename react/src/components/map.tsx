@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { CSSProperties, ReactNode, Ref, RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
 import './map.css'
 
@@ -26,7 +26,7 @@ import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox: [number, number, number, number], mainMap: boolean, name?: string }
 export type Insets = Inset[]
 export type MapHeight =
     | { type: 'fixed-height', value: number | string }
@@ -227,7 +227,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     insets(): Insets {
-        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true, coordBox: [-180, -180, 180, 180] }]
     }
 
     /* Override if you want the loading spinner */
@@ -385,21 +385,19 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         for (const i of insets.keys()) {
             const map = maps[i]
             const { coordBox } = insets[i]
-            if (coordBox) {
-                const bounds = new maplibregl.LngLatBounds(
-                    new maplibregl.LngLat(coordBox[0], coordBox[1]),
-                    new maplibregl.LngLat(coordBox[2], coordBox[3]),
-                )
-                map.fitBounds(bounds, { animate: false })
-            }
+            const bounds = new maplibregl.LngLatBounds(
+                new maplibregl.LngLat(coordBox[0], coordBox[1]),
+                new maplibregl.LngLat(coordBox[2], coordBox[3]),
+            )
+            map.fitBounds(bounds, { animate: false })
 
             if (this.props.editInsets) {
                 const editInsets = this.props.editInsets
 
                 const getCoordBox = (): [number, number, number, number] => {
-                    const bounds = map.getBounds()
-                    const sw = bounds.getSouthWest()
-                    const ne = bounds.getNorthEast()
+                    const mapBounds = map.getBounds()
+                    const sw = mapBounds.getSouthWest()
+                    const ne = mapBounds.getNorthEast()
                     return [sw.lng, sw.lat, ne.lng, ne.lat]
                 }
 
@@ -674,7 +672,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     setUpMap(map: maplibregl.Map, shapes: [ShapeType, GeoJSON.Feature][], inset: Inset): boolean {
         function filterOverlaps(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
             const bbox = inset.coordBox
-            if (!inset.mainMap && bbox !== undefined) {
+            if (!inset.mainMap) {
                 features = features.filter((poly) => {
                     const bounds = boundingBox(poly.geometry)
                     // Check if the polygon overlaps the inset bounds
