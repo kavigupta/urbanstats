@@ -104,10 +104,12 @@ class MapHandler {
     public mainMaps: boolean[] = []
     public maps: maplibregl.Map[] | undefined = undefined
     private ensureStyleLoaded: Promise<void> | undefined = undefined
+    public isResizing: boolean[]
 
     constructor(mainMaps: boolean[]) {
         this.ids = Array.from({ length: mainMaps.length }, (_, i) => `map-${i}-${Math.random().toString(36).substring(2)}`)
         this.mainMaps = mainMaps
+        this.isResizing = Array.from({ length: mainMaps.length }, () => false)
     }
 
     initialize(onClick: (name: string) => void, editInsets?: EditMultipleInsets): void {
@@ -251,6 +253,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             visible={this.state.mapIsVisible[i]}
                             editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.(i, newInset) } : undefined}
                             container={this.containerRef}
+                            setIsResizing={v => this.handler.isResizing[i] = v}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -406,7 +409,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
                     const panZoomHandler = (): void => {
                         const newCoordBox = getCoordBox()
-                        if (stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
+                        if (!this.handler.isResizing[i] && stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
                             editInsets(i, { coordBox: newCoordBox })
                             lastCoordBox = newCoordBox
                         }
@@ -816,6 +819,7 @@ function MapBody(props: {
     visible: boolean
     editInset?: EditSingleInset
     container: RefObject<HTMLDivElement>
+    setIsResizing: (v: boolean) => void
 }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
@@ -858,9 +862,10 @@ function MapBody(props: {
                 <EditInsetsHandles
                     frame={frame}
                     setFrame={setFrame}
-                    commitChanges={() => { props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] }) }}
+                    commitChanges={() => { props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] }); props.setIsResizing(false) }}
                     container={props.container}
-                    discardChanges={() => { setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight]) }}
+                    discardChanges={() => { setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight]); props.setIsResizing(false) }}
+                    startChanges={() => { props.setIsResizing(true) }}
                 />
             ) }
         </div>
@@ -872,6 +877,7 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 function EditInsetsHandles(props: {
     frame: Frame
     setFrame: (newFrame: Frame) => void
+    startChanges: () => void
     commitChanges: () => void
     discardChanges: () => void
     container: RefObject<HTMLDivElement>
@@ -909,6 +915,7 @@ function EditInsetsHandles(props: {
                 pointerId: e.pointerId,
             }
             thisElem.setPointerCapture(e.pointerId)
+            props.startChanges()
         },
         onPointerMove: (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {

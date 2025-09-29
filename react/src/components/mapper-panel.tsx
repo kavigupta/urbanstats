@@ -30,7 +30,7 @@ import { deconstruct, insetsType } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { hasCustomNode, parseNoErrorAsExpression, simplifyNegatives, unparse } from '../urban-stats-script/parser'
+import { hasCustomNode, parseNoErrorAsExpression, unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset, loadInsetExpression } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -775,7 +775,9 @@ function getNESW(expr: UrbanStatsASTExpression): { north: number, east: number, 
 }
 
 function getNumber(expr: UrbanStatsASTExpression): number {
-    simplifyNegatives(expr)
+    if (expr.type === 'unaryOperator' && expr.operator.node === '-') {
+        return -getNumber(expr.expr)
+    }
     assert(expr.type === 'constant' && expr.value.node.type === 'number', 'must be a number')
     return expr.value.node.value
 }
