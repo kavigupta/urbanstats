@@ -69,7 +69,7 @@ class HasInfiniteStatsBody(BaseModel):
 
 
 class HasInfiniteStatsResponse(BaseModel):
-    has: t.List[bool]
+    has: t.List[bool]  # vulture: ignore -- used by the client
 
 
 @app.post("/juxtastat_infinite/has_infinite_stats", responses=authenticate_responses)
@@ -110,10 +110,6 @@ def juxtastat_get_per_question_stats_request(
     s: GetDbSession, day: int
 ) -> PerQuestionStats:
     return get_per_question_stats(s, day)
-
-
-class GetPerQuestionRetroStatsRequest(BaseModel):
-    week: int
 
 
 @app.get("/retrostat/get_per_question_stats")

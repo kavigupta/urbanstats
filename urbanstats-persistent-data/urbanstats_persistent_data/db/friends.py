@@ -37,10 +37,10 @@ class Corrects(PositiveResult):
 
 
 class InfiniteResult(PositiveResult):
-    forThisSeed: t.Optional[int]
-    maxScore: t.Optional[int]
-    maxScoreSeed: t.Optional[str]
-    maxScoreVersion: t.Optional[int]
+    forThisSeed: t.Optional[int]  # vulture: ignore -- used by the client
+    maxScore: t.Optional[int]  # vulture: ignore -- used by the client
+    maxScoreSeed: t.Optional[str]  # vulture: ignore -- used by the client
+    maxScoreVersion: t.Optional[int]  # vulture: ignore -- used by the client
 
 
 def todays_score_for(

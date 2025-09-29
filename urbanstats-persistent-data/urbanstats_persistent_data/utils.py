@@ -22,4 +22,4 @@ Hexadecimal = BeforeValidator(from_hex, json_schema_input_type=str)
 
 
 class HTTPExceptionModel(BaseModel):
-    detail: t.Any = None
+    detail: t.Any = None  # vulture: ignore -- used by the client
