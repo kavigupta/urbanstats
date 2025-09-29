@@ -14,7 +14,7 @@ import { Keypoints } from '../mapper/ramps'
 import { parseExpr } from '../mapper/settings/AutoUXEditor'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapUSS } from '../mapper/settings/TopLevelEditor'
+import { idOutput, MapUSS, rootBlockIdent, validMapperOutputs } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -571,7 +571,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         colorbarRef={colorbarRef}
                     />
                     {
-                        !editInsets && canEditInsets(mapSettings).result && (
+                        !editInsets && canEditInsets(mapSettings, typeEnvironment).result && (
                             <div style={{
                                 display: 'flex',
                                 gap: '0.5em',
@@ -620,7 +620,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     )
 }
 
-function canEditInsets(settings: MapSettings):
+function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnvironment):
     { result: true, edit: (newArgVal: UrbanStatsASTExpression) => MapUSS, arg: { present: true, value: UrbanStatsASTExpression } | { present: false, universe: Universe } }
     | { result: false } {
     const uss = settings.script.uss
@@ -644,10 +644,10 @@ function canEditInsets(settings: MapSettings):
                         rest: [
                             {
                                 ...uss.result[1].rest[0],
-                                value: {
+                                value: parseExpr({
                                     ...resolvedCall,
-                                    args: resolvedCall.args.map(arg => arg === resolvedInsetsArg ? { ...arg, value: newArgVal } : arg),
-                                },
+                                    args: [...resolvedCall.args.filter(arg => arg !== resolvedInsetsArg), { type: 'named', name: { location: noLocation, node: 'insets' }, value: newArgVal }],
+                                }, idOutput, validMapperOutputs, typeEnvironment, () => { throw new Error('should not happen') }, true),
                             },
                         ],
                     },
@@ -666,7 +666,7 @@ function canEditInsets(settings: MapSettings):
 }
 
 function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets>, typeEnvironment: TypeEnvironment): MapUSS {
-    const canEdit = canEditInsets(settings)
+    const canEdit = canEditInsets(settings, typeEnvironment)
     assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
 
     let arg: UrbanStatsASTExpression
@@ -679,7 +679,7 @@ function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets
 
     // Edit the specified index (maybe need to deconstruct it first)
     assert(arg.type === 'call' && arg.args[0].value.type === 'vectorLiteral', 'Unexpected inset arg structure')
-    return canEdit.edit(parseExpr(
+    return canEdit.edit(
         {
             ...arg,
             args: [
@@ -688,10 +688,7 @@ function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets
                     value: editInsetsList(arg.args[0].value, edit, typeEnvironment),
                 },
             ],
-        },
-        'ro_insets', [insetsType], typeEnvironment, () => {
-            throw new Error('Should not happen')
-        }, true))
+        })
 }
 
 function editInsetsList(

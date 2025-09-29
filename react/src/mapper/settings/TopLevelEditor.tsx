@@ -19,12 +19,12 @@ import { makeStatements } from './utils'
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
 
-const validMapperOutputs = [cMap, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, pMap] satisfies USSType[]
 
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
-const idOutput = `${rootBlockIdent}o`
+export const idOutput = `${rootBlockIdent}o`
 
 export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
     (UrbanStatsASTStatement &
