@@ -523,7 +523,8 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         },
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
-            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined, // Prevent keyboard shortcusts when in insets editing mode
+            // Prevent keyboard shortcusts when in insets editing mode, since insets has its own undo stack
+            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined,
         },
     )
 
@@ -584,7 +585,7 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
-                {undoRedo.ui}
+                {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
             </SelectionContext.Provider>
         </PageTemplate>
     )
@@ -665,6 +666,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
 
+    const { addState, ui: undoRedoUi } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
+
     return (
         <>
             <div style={{
@@ -706,10 +709,12 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     setInsetEdits((edits) => {
                         const newEdits = new Map(edits)
                         newEdits.set(i, { ...newEdits.get(i), ...e })
+                        addState(newEdits, undefined)
                         return newEdits
                     })
                 }}
             />
+            {undoRedoUi}
         </>
     )
 }
