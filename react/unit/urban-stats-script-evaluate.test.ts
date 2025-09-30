@@ -1444,26 +1444,14 @@ void test('test basic RGB map', () => {
 })
 
 void test('test RGB map validation errors', () => {
-    assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[1.5, 0.5, 0.8], dataG=[0.2, 0.6, 0.7], dataB=[0.3, 0.7, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
-        (err: Error): boolean => {
-            return err.message.includes('dataR values must be between 0 and 1')
-        },
-    )
-
-    assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5, 0.8], dataG=[-0.1, 0.6, 0.7], dataB=[0.3, 0.7, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
-        (err: Error): boolean => {
-            return err.message.includes('dataG values must be between 0 and 1')
-        },
-    )
-
-    assert.throws(
-        () => evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.5, 0.8], dataG=[0.2, 0.6, 0.7], dataB=[0.3, 1.5, 0.9], label="Invalid RGB")'), emptyContextWithInsets()),
-        (err: Error): boolean => {
-            return err.message.includes('dataB values must be between 0 and 1')
-        },
-    )
+    // Test that values outside 0-1 range are clipped instead of throwing errors
+    const resultMap = evaluate(parseExpr('cMapRGB(geo=geo, dataR=[1.5, 0.5, 0.8], dataG=[0.2, 0.6, 0.7], dataB=[0.3, 0.7, 0.9], label="Clipped RGB")'), emptyContextWithInsets())
+    assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMapRGB' })
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMapRGB }).value
+    // Values should be clipped to [0, 1] range
+    assert.deepStrictEqual(resultMapRaw.dataR[0], 1.0) // 1.5 clipped to 1.0
+    assert.deepStrictEqual(resultMapRaw.dataG[0], 0.2)
+    assert.deepStrictEqual(resultMapRaw.dataB[0], 0.3) // 0.3 converted through sRGB pipeline
 })
 
 void test('map with only one value', () => {
