@@ -11,11 +11,10 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { Keypoints } from '../mapper/ramps'
-import { parseExpr } from '../mapper/settings/AutoUXEditor'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
-import { idOutput, MapUSS, validMapperOutputs } from '../mapper/settings/TopLevelEditor'
+import { canEditInsets, doEditInsets, InsetEdits } from '../mapper/settings/insets'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -25,15 +24,13 @@ import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { getAllParseErrors, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
-import { deconstruct } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { hasCustomNode, parseNoErrorAsExpression, unparse } from '../urban-stats-script/parser'
-import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { loadInset, loadInsetExpression } from '../urban-stats-script/worker'
+import { unparse } from '../urban-stats-script/parser'
+import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
@@ -46,7 +43,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets, Inset } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets } from './map'
 import { Statistic } from './table'
 
 interface DisplayedMapProps extends MapGenericProps {
@@ -487,8 +484,6 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     )
 }
 
-type InsetEdits = ReadonlyMap<number, Partial<Inset>>
-
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
     const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
@@ -679,173 +674,4 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
             </SelectionContext.Provider>
         </PageTemplate>
     )
-}
-
-function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnvironment):
-    { result: true, edit: (newArgVal: UrbanStatsASTExpression) => MapUSS, arg: { present: true, value: UrbanStatsASTExpression } | { present: false, universe: Universe } }
-    | { result: false } {
-    const uss = settings.script.uss
-    let call, insetsArg
-    if (
-        uss.type === 'statements'
-        && (call = uss.result[1].rest[0].value)
-        && call.type === 'call'
-        && ((insetsArg = call.args.find(arg => arg.type === 'named' && arg.name.node === 'insets')) || true)
-        && (insetsArg === undefined || !hasCustomNode(insetsArg))
-    ) {
-        const resolvedCall = call
-        const resolvedInsetsArg = insetsArg
-        const edit = (newArgVal: UrbanStatsASTExpression): MapUSS => {
-            return {
-                ...uss,
-                result: [
-                    uss.result[0],
-                    {
-                        ...uss.result[1],
-                        rest: [
-                            {
-                                ...uss.result[1].rest[0],
-                                value: parseExpr({
-                                    ...resolvedCall,
-                                    args: [...resolvedCall.args.filter(arg => arg !== resolvedInsetsArg), { type: 'named', name: { location: noLocation, node: 'insets' }, value: newArgVal }],
-                                }, idOutput, validMapperOutputs, typeEnvironment, () => { throw new Error('should not happen') }, true),
-                            },
-                        ],
-                    },
-                ],
-            }
-        }
-        if (insetsArg === undefined) {
-            if (settings.universe === undefined) {
-                return { result: false }
-            }
-            return { result: true, edit, arg: { present: false, universe: settings.universe } }
-        }
-        return { result: true, edit, arg: { present: true, value: insetsArg.value } }
-    }
-    return { result: false }
-}
-
-function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
-    const canEdit = canEditInsets(settings, typeEnvironment)
-    assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
-
-    let arg: UrbanStatsASTExpression
-    if (!canEdit.arg.present) {
-        arg = loadInsetExpression(canEdit.arg.universe)
-    }
-    else {
-        arg = canEdit.arg.value
-    }
-
-    // Edit the specified index (maybe need to deconstruct it first)
-    assert(arg.type === 'call' && arg.args[0].value.type === 'vectorLiteral', 'Unexpected inset arg structure')
-    return canEdit.edit(
-        {
-            ...arg,
-            args: [
-                {
-                    ...arg.args[0],
-                    value: Array.from(edits).reduce((vec, edit) => editInsetsList(vec, edit, typeEnvironment), arg.args[0].value),
-                },
-            ],
-        })
-}
-
-function editInsetsList(
-    vec: UrbanStatsASTExpression & { type: 'vectorLiteral' },
-    [index, edit]: Parameters<EditMultipleInsets>,
-    typeEnvironment: TypeEnvironment,
-): UrbanStatsASTExpression & { type: 'vectorLiteral' } {
-    assert(!hasCustomNode(vec), 'Cannot edit an insets list with custom nodes')
-
-    const elem = vec.elements[index]
-
-    let constructInset
-
-    switch (elem.type) {
-        case 'identifier':
-            const type = typeEnvironment.get(elem.name.node)
-            if (type === undefined) {
-                throw new Error(`Inset identifier ${elem.name.node} not found in type environment`)
-            }
-            if (type.documentation?.equivalentExpressions === undefined || type.documentation.equivalentExpressions.length === 0) {
-                throw new Error(`Inset identifier ${elem.name.node} has no equivalent expressions`)
-            }
-            constructInset = parseNoErrorAsExpression(unparse(type.documentation.equivalentExpressions[0]), '')
-            break
-        case 'call':
-            constructInset = elem
-            break
-        default:
-            throw new Error(`Unexpected elem type ${elem.type}`)
-    }
-
-    assert(constructInset.type === 'call' && constructInset.fn.type === 'identifier' && constructInset.fn.name.node === 'constructInset', 'Must be a constructInset function call')
-
-    const screenBounds = getArg(constructInset.args, 'screenBounds', getNESW)
-    const mapBounds = getArg(constructInset.args, 'mapBounds', getNESW)
-    const mainMap = getArg(constructInset.args, 'mainMap', getBoolean)
-    const name = getArg(constructInset.args, 'name', getString)
-
-    const inset: Inset = {
-        bottomLeft: [screenBounds.west, screenBounds.south],
-        topRight: [screenBounds.east, screenBounds.north],
-        coordBox: [mapBounds.west, mapBounds.south, mapBounds.east, mapBounds.north],
-        mainMap,
-        name,
-    }
-
-    const newInset = {
-        ...inset,
-        ...edit,
-    }
-
-    const newAst = deconstruct(newInset)
-
-    return {
-        ...vec,
-        elements: [...vec.elements.slice(0, index), newAst, ...vec.elements.slice(index + 1)],
-    }
-}
-
-function getArg<T>(args: UrbanStatsASTArg[], argName: string, parseValue: (value: UrbanStatsASTExpression) => T): T {
-    const arg = args.find(a => a.type === 'named' && a.name.node === argName)
-    if (!arg) {
-        throw new Error(`Couldn't find arg named ${argName}`)
-    }
-    return parseValue(arg.value)
-}
-
-function getNESW(expr: UrbanStatsASTExpression): { north: number, east: number, south: number, west: number } {
-    assert(expr.type === 'objectLiteral', 'not object')
-
-    const props = Object.fromEntries(expr.properties)
-
-    assert('north' in props && 'east' in props && 'south' in props && 'west' in props, 'Props missing one of north east south west')
-
-    return {
-        north: getNumber(props.north),
-        east: getNumber(props.east),
-        south: getNumber(props.south),
-        west: getNumber(props.west),
-    }
-}
-
-function getNumber(expr: UrbanStatsASTExpression): number {
-    if (expr.type === 'unaryOperator' && expr.operator.node === '-') {
-        return -getNumber(expr.expr)
-    }
-    assert(expr.type === 'constant' && expr.value.node.type === 'number', 'must be a number')
-    return expr.value.node.value
-}
-
-function getBoolean(expr: UrbanStatsASTExpression): boolean {
-    assert(expr.type === 'identifier' && ['true', 'false'].includes(expr.name.node), 'must be true or false')
-    return expr.name.node === 'true'
-}
-
-function getString(expr: UrbanStatsASTExpression): string {
-    assert(expr.type === 'constant' && expr.value.node.type === 'string', 'Not a string constant')
-    return expr.value.node.value
 }
