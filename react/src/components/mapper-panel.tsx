@@ -4,7 +4,7 @@ import './article.css'
 import { gzipSync } from 'zlib'
 
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -14,6 +14,7 @@ import { Keypoints } from '../mapper/ramps'
 import { parseExpr } from '../mapper/settings/AutoUXEditor'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
 import { idOutput, MapUSS, validMapperOutputs } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
@@ -28,12 +29,14 @@ import { getAllParseErrors, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStat
 import { doRender } from '../urban-stats-script/constants/color'
 import { deconstruct } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError } from '../urban-stats-script/editor-utils'
+import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { hasCustomNode, parseNoErrorAsExpression, unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset, loadInsetExpression } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { Property } from '../utils/Property'
+import { TestUtils } from '../utils/TestUtils'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
@@ -490,7 +493,26 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
     const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
 
-    const setMapSettingsWrapper = (newSettings: MapSettings): void => {
+    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
+
+    const [editInsets, setEditInsets] = useState<InsetEdits | undefined>(undefined)
+
+    const undoRedo = useUndoRedo(
+        mapSettings,
+        selectionContext.value,
+        setMapSettings,
+        (selection) => {
+            selectionContext.value = selection
+        },
+        {
+            undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
+            onlyElement: editInsets === undefined ? undefined : { current: null }, // Prevent keyboard shortcusts when in insets editing mode
+        },
+    )
+
+    const { updateCurrentSelection, addState } = undoRedo
+
+    const setMapSettingsWrapper = useCallback((newSettings: MapSettings): void => {
         setMapSettings(newSettings)
         const result = computeUSS(newSettings.script)
         const errors = getAllParseErrors(result)
@@ -498,12 +520,13 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
             setErrors(errors.map(e => ({ ...e, kind: 'error' })))
         }
         setUSS(errors.length > 0 ? undefined : result)
-    }
+        addState(newSettings, selectionContext.value)
+    }, [selectionContext, addState])
 
     useEffect(() => {
         // So that map settings are updated when the prop changes
         setMapSettingsWrapper(props.mapSettings)
-    }, [props.mapSettings])
+    }, [props.mapSettings, setMapSettingsWrapper])
 
     const mapRef = useRef<DisplayedMap>(null)
     const colorbarRef = useRef<HTMLDivElement>(null)
@@ -557,11 +580,19 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
 
     const headerTextClass = useHeaderTextClass()
 
-    const [editInsets, setEditInsets] = useState<InsetEdits | undefined>(undefined)
-
     const colors = useColors()
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
+
+    // Update current selection when it changes
+    useEffect(() => {
+        const observer = (): void => {
+            updateCurrentSelection(selectionContext.value)
+        }
+
+        selectionContext.observers.add(observer)
+        return () => { selectionContext.observers.delete(observer) }
+    }, [selectionContext, updateCurrentSelection])
 
     if (props.view) {
         return mapperPanel()
@@ -569,7 +600,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
 
     return (
         <PageTemplate>
-            <div>
+            <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 { editInsets === undefined && (
                     <>
@@ -644,7 +675,8 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                 {
                     mapperPanel()
                 }
-            </div>
+                {undoRedo.ui}
+            </SelectionContext.Provider>
         </PageTemplate>
     )
 }
