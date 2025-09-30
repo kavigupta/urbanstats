@@ -253,7 +253,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             visible={this.state.mapIsVisible[i]}
                             editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.(i, newInset) } : undefined}
                             container={this.containerRef}
-                            setIsResizing={v => this.handler.isResizing[i] = v}
+                            getMap={() => this.handler.maps![i]}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -387,12 +387,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
         for (const i of insets.keys()) {
             const map = maps[i]
-            const { coordBox } = insets[i]
-            const bounds = new maplibregl.LngLatBounds(
-                new maplibregl.LngLat(coordBox[0], coordBox[1]),
-                new maplibregl.LngLat(coordBox[2], coordBox[3]),
-            )
-            map.fitBounds(bounds, { animate: false })
+            map.fitBounds(mapBoundsFromInset(insets[i]), { animate: false })
 
             if (this.props.editInsets) {
                 const editInsets = this.props.editInsets
@@ -819,7 +814,7 @@ function MapBody(props: {
     visible: boolean
     editInset?: EditSingleInset
     container: RefObject<HTMLDivElement>
-    setIsResizing: (v: boolean) => void
+    getMap: () => maplibregl.Map
 }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
@@ -861,11 +856,12 @@ function MapBody(props: {
             { props.editInset && props.insetBoundary && (
                 <EditInsetsHandles
                     frame={frame}
-                    setFrame={setFrame}
-                    commitChanges={() => { props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] }); props.setIsResizing(false) }}
+                    setFrame={(newFrame) => {
+                        setFrame(newFrame)
+                        props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] })
+                        props.getMap().fitBounds(mapBoundsFromInset(props.bbox), { animate: false })
+                    }}
                     container={props.container}
-                    discardChanges={() => { setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight]); props.setIsResizing(false) }}
-                    startChanges={() => { props.setIsResizing(true) }}
                 />
             ) }
         </div>
@@ -877,9 +873,6 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 function EditInsetsHandles(props: {
     frame: Frame
     setFrame: (newFrame: Frame) => void
-    startChanges: () => void
-    commitChanges: () => void
-    discardChanges: () => void
     container: RefObject<HTMLDivElement>
 }): ReactNode {
     const colors = useColors()
@@ -915,7 +908,6 @@ function EditInsetsHandles(props: {
                 pointerId: e.pointerId,
             }
             thisElem.setPointerCapture(e.pointerId)
-            props.startChanges()
         },
         onPointerMove: (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
@@ -957,14 +949,12 @@ function EditInsetsHandles(props: {
                 return
             }
             activeDrag.current = undefined
-            props.commitChanges()
         },
         onPointerCancel: (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
                 return
             }
             activeDrag.current = undefined
-            props.discardChanges()
         },
     })
 
@@ -1109,4 +1099,12 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         }
         return result
     }
+}
+
+function mapBoundsFromInset(inset: Inset): maplibregl.LngLatBounds {
+    const { coordBox } = inset
+    return new maplibregl.LngLatBounds(
+        new maplibregl.LngLat(coordBox[0], coordBox[1]),
+        new maplibregl.LngLat(coordBox[2], coordBox[3]),
+    )
 }

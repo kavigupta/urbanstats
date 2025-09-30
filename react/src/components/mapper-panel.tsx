@@ -484,7 +484,7 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     )
 }
 
-type InsetEdits = Parameters<EditMultipleInsets>[]
+type InsetEdits = ReadonlyMap<number, Partial<Inset>>
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
@@ -539,7 +539,18 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         setErrors={setErrors}
                         colorbarRef={colorbarRef}
-                        editInsets={editInsets !== undefined ? (i, e) => { setEditInsets([...editInsets, [i, e]]) } : undefined}
+                        editInsets={editInsets !== undefined
+                            ? (i, e) => {
+                                    setEditInsets((edits) => {
+                                        if (edits === undefined) {
+                                            return undefined
+                                        }
+                                        const newEdits = new Map(edits)
+                                        newEdits.set(i, { ...newEdits.get(i), ...e })
+                                        return newEdits
+                                    })
+                                }
+                            : undefined}
                     />
                 )
     }
@@ -582,7 +593,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                                         margin: '0.5em 0',
                                     }}
                                     >
-                                        <button onClick={() => { setEditInsets([]) }}>
+                                        <button onClick={() => { setEditInsets(new Map()) }}>
                                             Edit Insets
                                         </button>
                                     </div>
@@ -622,7 +633,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                                         setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings, editInsets, typeEnvironment) } })
                                         setEditInsets(undefined)
                                     }}
-                                    disabled={editInsets.length === 0}
+                                    disabled={editInsets.size === 0}
                                 >
                                     Accept
                                 </button>
@@ -703,7 +714,7 @@ function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment:
             args: [
                 {
                     ...arg.args[0],
-                    value: edits.reduce((list, edit) => editInsetsList(list, edit, typeEnvironment), arg.args[0].value),
+                    value: Array.from(edits).reduce((vec, edit) => editInsetsList(vec, edit, typeEnvironment), arg.args[0].value),
                 },
             ],
         })
