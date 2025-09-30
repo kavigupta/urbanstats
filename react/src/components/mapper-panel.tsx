@@ -161,8 +161,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return { shapes: [], zoomIndex: -1 }
         }
         const mapResultMain = result.resultingValue.value
-        const mapResult = mapResultMain.value
         const st: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
+        const label = mapResultMain.value.label
         this.shapeType = st
 
         // Handle different map types
@@ -179,30 +179,30 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
         }
 
-        const names = mapResult.geo
-        this.versionProps.basemapCallback(mapResult.basemap)
-        this.versionProps.insetsCallback(mapResult.insets)
+        const names = mapResultMain.value.geo
+        this.versionProps.basemapCallback(mapResultMain.value.basemap)
+        this.versionProps.insetsCallback(mapResultMain.value.insets)
 
         let colors: string[]
 
         if (mapResultMain.opaqueType === 'cMapRGB') {
             // For RGB maps, use the RGB values directly
-            const rgbMap = mapResult as CMapRGB
+            const rgbMap = mapResultMain.value
             colors = rgbMap.dataR.map((r, i) => doRender({
                 r: r * 255,
                 g: rgbMap.dataG[i] * 255,
                 b: rgbMap.dataB[i] * 255,
                 a: 255,
             }))
-            this.versionProps.rampCallback({ type: 'label', value: mapResult.label })
+            this.versionProps.rampCallback({ type: 'label', value: label })
         }
         else {
             // For regular cMap, use ramp and scale
-            const cMap = mapResult as CMap | PMap
+            const cMap = mapResultMain.value
             const ramp = cMap.ramp
             const scale = instantiate(cMap.scale)
             const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-            this.versionProps.rampCallback({ type: 'ramp', value: { ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit } })
+            this.versionProps.rampCallback({ type: 'ramp', value: { ramp, interpolations, scale, label, unit: mapResultMain.value.unit } })
             const furthest = furthestColor(ramp.map(x => x[1]))
             colors = cMap.data.map(
                 val => interpolateColor(ramp, scale.forward(val), furthest),
@@ -235,8 +235,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             },
         )
         const metas = mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'pMap'
-            ? (mapResult as CMap | PMap).data.map((x) => { return { statistic: x } })
-            : (mapResult as CMapRGB).dataR.map((x, i) => { return { statistic: [x, (mapResult as CMapRGB).dataG[i], (mapResult as CMapRGB).dataB[i]] } })
+            ? mapResultMain.value.data.map((x) => { return { statistic: x } })
+            : mapResultMain.value.dataR.map((x, i) => { return { statistic: [x, mapResultMain.value.dataG[i], mapResultMain.value.dataB[i]] } })
         return {
             shapes: names.map((name, i) => ({
                 name,
