@@ -104,12 +104,10 @@ class MapHandler {
     public mainMaps: boolean[] = []
     public maps: maplibregl.Map[] | undefined = undefined
     private ensureStyleLoaded: Promise<void> | undefined = undefined
-    public isResizing: boolean[]
 
     constructor(mainMaps: boolean[]) {
         this.ids = Array.from({ length: mainMaps.length }, (_, i) => `map-${i}-${Math.random().toString(36).substring(2)}`)
         this.mainMaps = mainMaps
-        this.isResizing = Array.from({ length: mainMaps.length }, () => false)
     }
 
     initialize(onClick: (name: string) => void, editInsets?: EditMultipleInsets): void {
@@ -253,7 +251,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             visible={this.state.mapIsVisible[i]}
                             editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.(i, newInset) } : undefined}
                             container={this.containerRef}
-                            getMap={() => this.handler.maps![i]}
+                            getMap={() => this.handler.maps?.[i]}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -404,7 +402,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
                     const panZoomHandler = (): void => {
                         const newCoordBox = getCoordBox()
-                        if (!this.handler.isResizing[i] && stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
+                        if (stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
                             editInsets(i, { coordBox: newCoordBox })
                             lastCoordBox = newCoordBox
                         }
@@ -814,7 +812,7 @@ function MapBody(props: {
     visible: boolean
     editInset?: EditSingleInset
     container: RefObject<HTMLDivElement>
-    getMap: () => maplibregl.Map
+    getMap: () => maplibregl.Map | undefined
 }): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
@@ -859,7 +857,6 @@ function MapBody(props: {
                     setFrame={(newFrame) => {
                         setFrame(newFrame)
                         props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] })
-                        props.getMap().fitBounds(mapBoundsFromInset(props.bbox), { animate: false })
                     }}
                     container={props.container}
                 />
