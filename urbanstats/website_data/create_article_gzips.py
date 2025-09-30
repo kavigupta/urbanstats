@@ -41,6 +41,7 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
+    # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
     data.shortname = row.shortname
     data.longname = row.longname
@@ -61,6 +62,7 @@ def create_article_gzip(
         stat = statistic_names[idx]
         counts_for_stat = counts_this[idx]
         statrow = data.rows.add()
+        # vulture: ignore -- not actually creating a field. this is from protobuf
         statrow.statval = float(row[stat])
 
         ordinals_by_type, ordinals_overall = ords[idx]
@@ -85,6 +87,7 @@ def create_article_gzip(
                 fol = data.overall_first_or_last.add()
                 fol.article_row_idx = article_row_idx
                 fol.article_universes_idx = article_universes_idx
+                # vulture: ignore -- not actually creating a field. this is from protobuf
                 fol.is_first = ordinal_overall == 1
             statrow.percentile_by_population_by_universe.append(
                 int(percentile_by_type * 100)
@@ -104,6 +107,7 @@ def create_article_gzip(
             related_button = related_buttons.buttons.add()
             related_button.longname = x
             related_button.shortname = long_to_short[x]
+            # vulture: ignore -- not actually creating a field. this is from protobuf
             related_button.row_type = long_to_type[x]
 
     name = create_filename(row.longname, "gz")

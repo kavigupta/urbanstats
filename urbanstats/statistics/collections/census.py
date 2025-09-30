@@ -24,10 +24,6 @@ from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
 
-DENSITY_EXPLANATION_AW = (
-    "!TOOLTIP Area-weighted density is the total population divided by the total area."
-)
-
 DENSITY_EXPLANATION_PW = (
     "!TOOLTIP Population-weighted density is computed by computing the density"
     " within the given radius for each person in the region and then averaging the results."
@@ -194,9 +190,6 @@ class CensusChange(USAStatistics):
             }
         )
         return result
-
-    def category_for_each_statistic(self):
-        return self.same_for_each_name(str(self.year()))
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))

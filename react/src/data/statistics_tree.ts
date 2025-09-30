@@ -38,14 +38,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 286
+                                        "column": 295
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 289
+                                        "column": 298
                                     },
                                     {
                                         "source": {
@@ -66,7 +66,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 288
+                                        "column": 297
                                     }
                                 ]
                             },
@@ -75,7 +75,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 291
+                                        "column": 300
                                     }
                                 ]
                             }
@@ -89,7 +89,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 287
+                                        "column": 296
                                     }
                                 ]
                             },
@@ -98,7 +98,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 290
+                                        "column": 299
                                     }
                                 ]
                             }
@@ -204,14 +204,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 304
+                                        "column": 313
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 307
+                                        "column": 316
                                     },
                                     {
                                         "source": {
@@ -232,7 +232,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 306
+                                        "column": 315
                                     }
                                 ]
                             }
@@ -246,7 +246,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 305
+                                        "column": 314
                                     }
                                 ]
                             }
@@ -358,7 +358,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 347
+                                        "column": 356
                                     }
                                 ]
                             }
@@ -372,7 +372,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 349
+                                        "column": 358
                                     }
                                 ]
                             }
@@ -386,7 +386,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 348
+                                        "column": 357
                                     }
                                 ]
                             }
@@ -550,7 +550,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 253
+                                        "column": 262
                                     }
                                 ]
                             }
@@ -564,7 +564,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 255
+                                        "column": 264
                                     }
                                 ]
                             }
@@ -578,7 +578,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 254
+                                        "column": 263
                                     }
                                 ]
                             }
@@ -646,7 +646,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 281
+                                        "column": 290
                                     }
                                 ]
                             }
@@ -660,7 +660,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 283
+                                        "column": 292
                                     }
                                 ]
                             }
@@ -674,7 +674,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 282
+                                        "column": 291
                                     }
                                 ]
                             }
@@ -760,7 +760,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 313
+                                        "column": 322
                                     }
                                 ]
                             },
@@ -769,7 +769,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 316
+                                        "column": 325
                                     }
                                 ]
                             }
@@ -783,7 +783,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 314
+                                        "column": 323
                                     }
                                 ]
                             },
@@ -792,7 +792,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 317
+                                        "column": 326
                                     }
                                 ]
                             }
@@ -806,7 +806,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 315
+                                        "column": 324
                                     }
                                 ]
                             }
@@ -826,7 +826,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 308
+                                        "column": 317
                                     }
                                 ]
                             },
@@ -835,7 +835,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 311
+                                        "column": 320
                                     }
                                 ]
                             }
@@ -849,7 +849,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 309
+                                        "column": 318
                                     }
                                 ]
                             },
@@ -858,7 +858,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 312
+                                        "column": 321
                                     }
                                 ]
                             }
@@ -872,7 +872,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 310
+                                        "column": 319
                                     }
                                 ]
                             }
@@ -1516,7 +1516,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 292
+                                        "column": 301
                                     }
                                 ]
                             }
@@ -1850,7 +1850,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 341
+                                        "column": 350
                                     }
                                 ]
                             }
@@ -1864,7 +1864,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 343
+                                        "column": 352
                                     }
                                 ]
                             }
@@ -1878,7 +1878,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 342
+                                        "column": 351
                                     }
                                 ]
                             }
@@ -1898,7 +1898,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 302
+                                        "column": 311
                                     }
                                 ]
                             }
@@ -1918,7 +1918,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 300
+                                        "column": 309
                                     }
                                 ]
                             }
@@ -1938,7 +1938,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 301
+                                        "column": 310
                                     }
                                 ]
                             }
@@ -1958,7 +1958,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 296
+                                        "column": 305
                                     }
                                 ]
                             }
@@ -1978,7 +1978,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 294
+                                        "column": 303
                                     }
                                 ]
                             }
@@ -1998,7 +1998,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 295
+                                        "column": 304
                                     }
                                 ]
                             }
@@ -2018,7 +2018,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 299
+                                        "column": 308
                                     }
                                 ]
                             }
@@ -2038,7 +2038,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 297
+                                        "column": 306
                                     }
                                 ]
                             }
@@ -2058,7 +2058,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 298
+                                        "column": 307
                                     }
                                 ]
                             }
@@ -2078,7 +2078,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 355
+                                        "column": 364
                                     }
                                 ]
                             }
@@ -2098,7 +2098,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 356
+                                        "column": 365
                                     }
                                 ]
                             }
@@ -2118,7 +2118,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 357
+                                        "column": 366
                                     }
                                 ]
                             }
@@ -2138,7 +2138,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 358
+                                        "column": 367
                                     }
                                 ]
                             }
@@ -2158,7 +2158,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 359
+                                        "column": 368
                                     }
                                 ]
                             }
@@ -2178,7 +2178,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 360
+                                        "column": 369
                                     }
                                 ]
                             }
@@ -2198,7 +2198,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 303
+                                        "column": 312
                                     }
                                 ]
                             }
@@ -2224,7 +2224,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 337
+                                        "column": 346
                                     }
                                 ]
                             }
@@ -2244,7 +2244,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 336
+                                        "column": 345
                                     }
                                 ]
                             }
@@ -2264,7 +2264,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 339
+                                        "column": 348
                                     }
                                 ]
                             }
@@ -2284,7 +2284,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 338
+                                        "column": 347
                                     }
                                 ]
                             }
@@ -2304,7 +2304,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 340
+                                        "column": 349
                                     }
                                 ]
                             }
@@ -2327,14 +2327,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 334
+                                        "column": 343
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 335
+                                        "column": 344
                                     }
                                 ]
                             }
@@ -2357,14 +2357,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 328
+                                        "column": 337
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 329
+                                        "column": 338
                                     }
                                 ]
                             }
@@ -2387,14 +2387,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 330
+                                        "column": 339
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 331
+                                        "column": 340
                                     }
                                 ]
                             }
@@ -2417,14 +2417,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 332
+                                        "column": 341
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 333
+                                        "column": 342
                                     }
                                 ]
                             }
@@ -2444,7 +2444,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 346
+                                        "column": 355
                                     }
                                 ]
                             }
@@ -2464,7 +2464,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 344
+                                        "column": 353
                                     }
                                 ]
                             }
@@ -2484,7 +2484,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 345
+                                        "column": 354
                                     }
                                 ]
                             }
@@ -2504,7 +2504,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 325
+                                        "column": 334
                                     }
                                 ]
                             }
@@ -2524,7 +2524,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 327
+                                        "column": 336
                                     }
                                 ]
                             }
@@ -2544,7 +2544,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 324
+                                        "column": 333
                                     }
                                 ]
                             }
@@ -2564,7 +2564,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 326
+                                        "column": 335
                                     }
                                 ]
                             }
@@ -3116,7 +3116,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 285
+                                        "column": 294
                                     }
                                 ]
                             }
@@ -3868,7 +3868,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 256
+                                        "column": 265
                                     }
                                 ]
                             }
@@ -3888,7 +3888,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 261
+                                        "column": 270
                                     }
                                 ]
                             }
@@ -3908,7 +3908,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 273
+                                        "column": 282
                                     }
                                 ]
                             }
@@ -3928,7 +3928,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 257
+                                        "column": 266
                                     }
                                 ]
                             }
@@ -3948,7 +3948,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 260
+                                        "column": 269
                                     }
                                 ]
                             }
@@ -3968,7 +3968,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 263
+                                        "column": 272
                                     }
                                 ]
                             }
@@ -3988,7 +3988,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 272
+                                        "column": 281
                                     }
                                 ]
                             }
@@ -4008,7 +4008,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 267
+                                        "column": 276
                                     }
                                 ]
                             }
@@ -4028,7 +4028,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 268
+                                        "column": 277
                                     }
                                 ]
                             }
@@ -4048,7 +4048,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 259
+                                        "column": 268
                                     }
                                 ]
                             }
@@ -4068,7 +4068,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 274
+                                        "column": 283
                                     }
                                 ]
                             }
@@ -4088,7 +4088,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 262
+                                        "column": 271
                                     }
                                 ]
                             }
@@ -4108,7 +4108,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 264
+                                        "column": 273
                                     }
                                 ]
                             }
@@ -4128,7 +4128,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 270
+                                        "column": 279
                                     }
                                 ]
                             }
@@ -4148,7 +4148,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 275
+                                        "column": 284
                                     }
                                 ]
                             }
@@ -4168,7 +4168,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 278
+                                        "column": 287
                                     }
                                 ]
                             }
@@ -4188,7 +4188,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 280
+                                        "column": 289
                                     }
                                 ]
                             }
@@ -4208,7 +4208,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 276
+                                        "column": 285
                                     }
                                 ]
                             }
@@ -4228,7 +4228,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 279
+                                        "column": 288
                                     }
                                 ]
                             }
@@ -4248,7 +4248,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 258
+                                        "column": 267
                                     }
                                 ]
                             }
@@ -4268,7 +4268,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 266
+                                        "column": 275
                                     }
                                 ]
                             }
@@ -4288,7 +4288,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 269
+                                        "column": 278
                                     }
                                 ]
                             }
@@ -4308,7 +4308,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 277
+                                        "column": 286
                                     }
                                 ]
                             }
@@ -4328,7 +4328,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 265
+                                        "column": 274
                                     }
                                 ]
                             }
@@ -4348,7 +4348,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 271
+                                        "column": 280
                                     }
                                 ]
                             }
@@ -4374,7 +4374,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 323
+                                        "column": 332
                                     }
                                 ]
                             }
@@ -4394,7 +4394,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 320
+                                        "column": 329
                                     }
                                 ]
                             }
@@ -4414,7 +4414,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 321
+                                        "column": 330
                                     }
                                 ]
                             }
@@ -4434,7 +4434,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 319
+                                        "column": 328
                                     }
                                 ]
                             }
@@ -4454,7 +4454,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 322
+                                        "column": 331
                                     }
                                 ]
                             }
@@ -4673,7 +4673,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 284
+                                        "column": 293
                                     }
                                 ]
                             }
@@ -4693,7 +4693,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 353
+                                        "column": 362
                                     }
                                 ]
                             }
@@ -4733,7 +4733,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 354
+                                        "column": 363
                                     }
                                 ]
                             }
@@ -4773,7 +4773,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 352
+                                        "column": 361
                                     }
                                 ]
                             }
@@ -4813,7 +4813,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 351
+                                        "column": 360
                                     }
                                 ]
                             }
@@ -4940,6 +4940,26 @@ export const rawStatsTree = [
                                     {
                                         "source": null,
                                         "column": 248
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp",
+                "name": "Mean low temp",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temp",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 257
                                     }
                                 ]
                             }
@@ -5139,7 +5159,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 293
+                                        "column": 302
                                     }
                                 ]
                             }
@@ -5159,7 +5179,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 318
+                                        "column": 327
                                     }
                                 ]
                             }
@@ -5179,7 +5199,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 350
+                                        "column": 359
                                     }
                                 ]
                             }
@@ -5188,54 +5208,14 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "mean_high_temp_summer_4",
-                "name": "Mean high temperature in summer",
+                "id": "mean_high_temp_djf",
+                "name": "Mean high temperature in Dec/Jan/Feb",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Mean high temperature in summer",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 251
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_winter_4",
-                "name": "Mean high temperature in winter",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in winter",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 252
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_fall_4",
-                "name": "Mean high temperature in fall",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in fall",
+                                "name": "Mean high temperature in Dec/Jan/Feb",
                                 "stats": [
                                     {
                                         "source": null,
@@ -5248,18 +5228,138 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "mean_high_temp_spring_4",
-                "name": "Mean high temperature in spring",
+                "id": "mean_high_temp_mam",
+                "name": "Mean high temperature in Mar/Apr/May",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Mean high temperature in spring",
+                                "name": "Mean high temperature in Mar/Apr/May",
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 250
+                                        "column": 252
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_jja",
+                "name": "Mean high temperature in Jun/Jul/Aug",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Jun/Jul/Aug",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 251
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_son",
+                "name": "Mean high temperature in Sep/Oct/Nov",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Sep/Oct/Nov",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 253
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_djf",
+                "name": "Mean low temperature in Dec/Jan/Feb",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Dec/Jan/Feb",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 258
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_mam",
+                "name": "Mean low temperature in Mar/Apr/May",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Mar/Apr/May",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 260
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_jja",
+                "name": "Mean low temperature in Jun/Jul/Aug",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Jun/Jul/Aug",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 259
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_son",
+                "name": "Mean low temperature in Sep/Oct/Nov",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Sep/Oct/Nov",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 261
                                     }
                                 ]
                             }
@@ -6085,6 +6185,92 @@ export const rawStatsTree = [
                                     {
                                         "source": null,
                                         "column": 78
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "deprecated",
+        "name": "Deprecated",
+        "contents": [
+            {
+                "id": "mean_high_temp_summer_4",
+                "name": "Mean high temperature in summer",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in summer",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 255
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_winter_4",
+                "name": "Mean high temperature in winter",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in winter",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 256
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_fall_4",
+                "name": "Mean high temperature in fall",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in fall",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 250
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_spring_4",
+                "name": "Mean high temperature in spring",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in spring",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 254
                                     }
                                 ]
                             }

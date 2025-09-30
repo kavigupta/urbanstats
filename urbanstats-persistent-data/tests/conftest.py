@@ -33,4 +33,5 @@ def setup_app(mocker):
 @pytest.fixture()
 # pylint: disable=redefined-outer-name,unused-argument
 def client(setup_app):
+    del setup_app
     return fastapi.testclient.TestClient(app)

@@ -13,13 +13,16 @@ class IntegerIndex(NumericIndex):
     pass
 
 
+# vulture: ignore -- needed for loading pandas dataframes from pickle
 class Int64Index(IntegerIndex):
     pass
 
 
+# vulture: ignore -- needed for loading pandas dataframes from pickle
 class UInt64Index(IntegerIndex):
     pass
 
 
+# vulture: ignore -- needed for loading pandas dataframes from pickle
 class Float64Index(NumericIndex):
     pass

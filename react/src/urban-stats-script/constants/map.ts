@@ -111,15 +111,22 @@ export const constructOutline = {
 
 function mapConstructorArguments(
     isPmap: boolean,
+    isRGB: boolean,
     intermediateArgs: Record<string, NamedFunctionArgumentWithDocumentation>,
 ): Record<string, NamedFunctionArgumentWithDocumentation> {
+    const dataType = { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } } satisfies NamedFunctionArgumentWithDocumentation
+    const dataArgs: Record<string, NamedFunctionArgumentWithDocumentation> = isRGB
+        ? { dataR: dataType, dataG: dataType, dataB: dataType }
+        : {
+                data: dataType,
+                scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
+                ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+            }
     return {
-        data: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
-        scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
-        ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+        ...dataArgs,
         label: {
             type: { type: 'concrete', value: { type: 'string' } },
-            defaultValue: createConstantExpression(null),
+            defaultValue: isRGB ? undefined : createConstantExpression(null),
         },
         unit: {
             type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
@@ -205,7 +212,7 @@ export const cMap: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: mapConstructorArguments(false, {
+        namedArgs: mapConstructorArguments(false, false, {
             outline: {
                 type: { type: 'concrete', value: outlineType },
                 defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
@@ -239,7 +246,7 @@ export const pMap: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: mapConstructorArguments(true, {
+        namedArgs: mapConstructorArguments(true, false, {
             maxRadius: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: parseNoErrorAsExpression('10', ''),
@@ -305,27 +312,7 @@ export const cMapRGB: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: {
-            dataR: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
-            dataG: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
-            dataB: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
-            label: {
-                type: { type: 'concrete', value: { type: 'string' } },
-            },
-            unit: {
-                type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
-                defaultValue: createConstantExpression(null),
-            },
-            geo: {
-                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } } },
-                defaultValue: {
-                    type: 'identifier',
-                    name: { node: 'geo', location: noLocation },
-                },
-                documentation: {
-                    hide: true,
-                },
-            },
+        namedArgs: mapConstructorArguments(false, true, {
             outline: {
                 type: { type: 'concrete', value: outlineType },
                 defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
@@ -338,18 +325,7 @@ export const cMapRGB: USSValue = {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: parseNoErrorAsExpression('0', ''),
             },
-            basemap: {
-                type: { type: 'concrete', value: basemapType },
-                defaultValue: { type: 'call', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
-            },
-            insets: {
-                type: { type: 'concrete', value: insetsType },
-                defaultValue: {
-                    type: 'identifier',
-                    name: { node: 'defaultInsets', location: noLocation },
-                },
-            },
-        },
+        }),
         returnType: { type: 'concrete', value: cMapRGBType },
     },
     value: (ctx, posArgs, namedArgs) => {

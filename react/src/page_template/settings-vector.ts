@@ -412,6 +412,19 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_32', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__gpw_pw_density_64', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_us_presidential_election', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_djf', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_mam', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_jja', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_son', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_djf', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_mam', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_jja', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_son', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__mean_high_temp_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__mean_low_temp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__rainfall_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__snowfall_4', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

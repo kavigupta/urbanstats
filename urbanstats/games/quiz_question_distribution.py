@@ -23,6 +23,7 @@ MIN_POP = 250_000
 MIN_POP_INTERNATIONAL = 2_500_000
 
 
+# vulture: ignore -- used in notebooks
 def compute_difficulty(stat_a, stat_b, stat_column_original, a, b):
     diffmult = stat_to_difficulty()[stat_column_original]
     if not any(x.endswith("USA") or x.endswith("Canada") for x in (a, b)):
