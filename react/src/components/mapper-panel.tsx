@@ -14,7 +14,7 @@ import { Keypoints } from '../mapper/ramps'
 import { parseExpr } from '../mapper/settings/AutoUXEditor'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { idOutput, MapUSS, rootBlockIdent, validMapperOutputs } from '../mapper/settings/TopLevelEditor'
+import { idOutput, MapUSS, validMapperOutputs } from '../mapper/settings/TopLevelEditor'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -26,7 +26,7 @@ import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
-import { deconstruct, insetsType } from '../urban-stats-script/constants/insets'
+import { deconstruct } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
@@ -484,6 +484,8 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
     )
 }
 
+type InsetEdits = Parameters<EditMultipleInsets>[]
+
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
     const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
@@ -537,14 +539,14 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                         mapRef={mapRef}
                         setErrors={setErrors}
                         colorbarRef={colorbarRef}
-                        editInsets={editInsets ? (i, e) => { setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings, [i, e], typeEnvironment) } }) } : undefined}
+                        editInsets={editInsets !== undefined ? (i, e) => { setEditInsets([...editInsets, [i, e]]) } : undefined}
                     />
                 )
     }
 
     const headerTextClass = useHeaderTextClass()
 
-    const [editInsets, setEditInsets] = useState(false)
+    const [editInsets, setEditInsets] = useState<InsetEdits | undefined>(undefined)
 
     const colors = useColors()
 
@@ -558,39 +560,43 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
         <PageTemplate>
             <div>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                <MapperSettings
-                    mapSettings={mapSettings}
-                    setMapSettings={setMapSettingsWrapper}
-                    errors={errors}
-                    counts={props.counts}
-                    typeEnvironment={typeEnvironment}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                    <Export
-                        mapRef={mapRef}
-                        colorbarRef={colorbarRef}
-                    />
-                    {
-                        !editInsets && canEditInsets(mapSettings, typeEnvironment).result && (
-                            <div style={{
-                                display: 'flex',
-                                gap: '0.5em',
-                                margin: '0.5em 0',
-                            }}
-                            >
-                                <button onClick={() => { setEditInsets(true) }}>
-                                    Edit Insets
-                                </button>
-                            </div>
-                        )
-                    }
-                    <ImportExportCode
-                        mapSettings={mapSettings}
-                        setMapSettings={setMapSettingsWrapper}
-                    />
-                </div>
+                { editInsets === undefined && (
+                    <>
+                        <MapperSettings
+                            mapSettings={mapSettings}
+                            setMapSettings={setMapSettingsWrapper}
+                            errors={errors}
+                            counts={props.counts}
+                            typeEnvironment={typeEnvironment}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                            <Export
+                                mapRef={mapRef}
+                                colorbarRef={colorbarRef}
+                            />
+                            {
+                                canEditInsets(mapSettings, typeEnvironment).result && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setEditInsets([]) }}>
+                                            Edit Insets
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            <ImportExportCode
+                                mapSettings={mapSettings}
+                                setMapSettings={setMapSettingsWrapper}
+                            />
+                        </div>
+                    </>
+                )}
                 {
-                    editInsets && (
+                    editInsets !== undefined && (
                         <div style={{
                             backgroundColor: colors.slightlyDifferentBackgroundFocused,
                             borderRadius: '5px',
@@ -606,9 +612,21 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
                                 {' '}
                                 Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
                             </div>
-                            <button onClick={() => { setEditInsets(false) }}>
-                                Stop Editing
-                            </button>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+
+                                <button onClick={() => { setEditInsets(undefined) }}>
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setMapSettingsWrapper({ ...mapSettings, script: { uss: doEditInsets(mapSettings, editInsets, typeEnvironment) } })
+                                        setEditInsets(undefined)
+                                    }}
+                                    disabled={editInsets.length === 0}
+                                >
+                                    Accept
+                                </button>
+                            </div>
                         </div>
                     )
                 }
@@ -665,7 +683,7 @@ function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnvironment):
     return { result: false }
 }
 
-function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets>, typeEnvironment: TypeEnvironment): MapUSS {
+function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     const canEdit = canEditInsets(settings, typeEnvironment)
     assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
 
@@ -685,7 +703,7 @@ function doEditInsets(settings: MapSettings, edit: Parameters<EditMultipleInsets
             args: [
                 {
                     ...arg.args[0],
-                    value: editInsetsList(arg.args[0].value, edit, typeEnvironment),
+                    value: edits.reduce((list, edit) => editInsetsList(list, edit, typeEnvironment), arg.args[0].value),
                 },
             ],
         })

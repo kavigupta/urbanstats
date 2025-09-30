@@ -9,7 +9,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
 import { ParseError } from './parser'
-import { renderValue, TypeEnvironment, USSDocumentedType, USSValue } from './types-values'
+import { renderValue, TypeEnvironment, USSValue } from './types-values'
 
 export type EditorError = ParseError & { kind: 'error' | 'warning' }
 export type EditorResult = EditorError | { kind: 'success', result: USSValue }
