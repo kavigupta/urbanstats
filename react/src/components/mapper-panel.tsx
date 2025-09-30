@@ -523,7 +523,7 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         },
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
-            onlyElement: mapEditorMode === 'uss' ? { current: null } : undefined, // Prevent keyboard shortcusts when in insets editing mode
+            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined, // Prevent keyboard shortcusts when in insets editing mode
         },
     )
 
