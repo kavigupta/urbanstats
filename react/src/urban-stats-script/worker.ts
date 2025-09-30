@@ -160,6 +160,9 @@ function removeFunctions(value: USSRawValue): USSRawValue {
     else if (value instanceof Map) {
         return new Map(Array.from(value.entries()).map(([k, v]) => [k, removeFunctions(v)]))
     }
+    else if (value instanceof Set) {
+        return new Set(Array.from(value).map(removeFunctions))
+    }
     else if (value instanceof Object && value.value instanceof Function) {
         assert(value.opaqueType === 'scale', 'only scales can have functions in their value')
         return null

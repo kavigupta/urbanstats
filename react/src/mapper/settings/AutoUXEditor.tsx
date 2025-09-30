@@ -585,6 +585,15 @@ function attemptParseExpr(
                 entireLoc: emptyLocation(blockIdent),
                 elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback, preserveCustomNodes)),
             }
+        case 'setLiteral':
+            if (!types.some(t => t.type === 'set')) {
+                return undefined
+            }
+            return {
+                type: 'setLiteral',
+                entireLoc: emptyLocation(blockIdent),
+                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), [{ type: 'number' }, { type: 'string' }, { type: 'boolean' }, { type: 'null' }], typeEnvironment, fallback, preserveCustomNodes)),
+            }
         case 'objectLiteral':
             const exprProps = new Set(expr.properties.map(([key]) => key))
             const compatibleTypes = types.filter(

@@ -39,6 +39,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(${node.operator.node} ${toSExp(node.left)} ${toSExp(node.right)})`
         case 'vectorLiteral':
             return `(vector ${node.elements.map(toSExp).join(' ')})`
+        case 'setLiteral':
+            return `(set ${node.elements.map(toSExp).join(' ')})`
         case 'objectLiteral':
             return `(object ${node.properties.map(([key, value]) => `(${key} ${toSExp(value)})`).join(' ')})`
         case 'assignment':
@@ -306,6 +308,10 @@ class ParseState {
             return this.parseDoExpression()
         }
 
+        if (this.consumeKeyword('set')) {
+            return this.parseSetExpression()
+        }
+
         const operatorExpSequence: USSInfixSequenceElement[] = []
         // State Machine with states expressionOrUnaryOperator; binaryOperator
         let state: 'expressionOrUnaryOperator' | 'binaryOperator' = 'expressionOrUnaryOperator'
@@ -405,6 +411,7 @@ class ParseState {
             case 'unaryOperator':
             case 'binaryOperator':
             case 'vectorLiteral':
+            case 'setLiteral':
             case 'objectLiteral':
             case 'if':
             case 'do':
@@ -490,6 +497,30 @@ class ParseState {
             type: 'do',
             entireLoc: unify(doToken.location, lastToken.location),
             statements: statements.type === 'statements' ? statements.result : [statements],
+        }
+    }
+
+    parseSetExpression(): UrbanStatsASTExpression | ParseError {
+        const setToken = this.tokens[this.index - 1]
+        if (!this.consumeBracket('(')) {
+            return { type: 'error', value: 'Expected opening bracket ( after set', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        const elements: UrbanStatsASTExpression[] = []
+        while (!this.consumeBracket(')')) {
+            if (elements.length > 0 && !this.consumeOperator(',')) {
+                return { type: 'error', value: 'Expected comma , or closing bracket ) after set element', location: this.maybeLastNonEOLToken(0).location }
+            }
+            const element = this.parseExpression()
+            if (element.type === 'error') {
+                return element
+            }
+            elements.push(element)
+        }
+        const setEndLoc = this.tokens[this.index - 1].location
+        return {
+            type: 'setLiteral',
+            entireLoc: unify(setToken.location, setEndLoc),
+            elements,
         }
     }
 
@@ -695,6 +726,10 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 expressions.push(n)
                 n.elements.forEach(helper)
                 return true
+            case 'setLiteral':
+                expressions.push(n)
+                n.elements.forEach(helper)
+                return true
             case 'assignment':
                 helper(n.lhs)
                 helper(n.value)
@@ -777,7 +812,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     opts.indent = opts.indent ?? 0
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'setLiteral' || expr.type === 'constant' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
@@ -853,6 +888,9 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'vectorLiteral':
             const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
             return `[${elementsStr.join(', ')}]`
+        case 'setLiteral':
+            const setElementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
+            return `set(${setElementsStr.join(', ')})`
         case 'objectLiteral':
             const propertiesStr = node.properties.map(([key, value]) => {
                 const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true })
