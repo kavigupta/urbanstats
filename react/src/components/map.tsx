@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl'
+import maplibregl, { setRTLTextPlugin } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode } from 'react'
 
@@ -139,11 +139,22 @@ class MapHandler {
     }
 }
 
+let rtlConfigured = false
+
+function configRTL(): void {
+    if (rtlConfigured) {
+        return
+    }
+    void setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
+    rtlConfigured = true
+}
+
 function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
 ): [maplibregl.Map, Promise<void>] {
+    configRTL()
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
         container: id,
