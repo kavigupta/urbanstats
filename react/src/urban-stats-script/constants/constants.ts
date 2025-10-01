@@ -5,7 +5,7 @@ import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
 import { constructInsetValue, constructInsetsValue, insetConsts } from './insets'
-import { cMap, constructOutline, pMap } from './map'
+import { cMap, cMapRGB, constructOutline, pMap } from './map'
 import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
 import { linearScaleValue, logScaleValue } from './scale'
@@ -241,6 +241,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['linearScale', linearScaleValue],
     ['logScale', logScaleValue],
     ['cMap', cMap],
+    ['cMapRGB', cMapRGB],
     ['pMap', pMap],
     ['constructOutline', constructOutline],
     ['osmBasemap', osmBasemap],

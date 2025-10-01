@@ -40,10 +40,12 @@ import { CountsByUT } from './countsByArticleType'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
 import { Statistic } from './table'
 
+type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
+
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
-    rampCallback: (newRamp: EmpiricalRamp) => void
+    rampCallback: (newRamp: RampToDisplay) => void
     basemapCallback: (basemap: Basemap) => void
     insetsCallback: (insetsToUse: Insets) => void
     height: MapHeight | undefined
@@ -158,15 +160,15 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             return { shapes: [], zoomIndex: -1 }
         }
         const mapResultMain = result.resultingValue.value
-        const mapResult = mapResultMain.value
         const st: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
+        const label = mapResultMain.value.label
         this.shapeType = st
 
         // Handle different map types
         let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
         let pointSizes: number[] | undefined
 
-        if (mapResultMain.opaqueType === 'cMap') {
+        if (mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'cMapRGB') {
             // For choropleth maps, use the outline
             lineStyle = mapResultMain.value.outline
         }
@@ -176,17 +178,35 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
             pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
         }
 
-        const names = mapResult.geo
-        const ramp = mapResult.ramp
-        const scale = instantiate(mapResult.scale)
-        const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        this.versionProps.rampCallback({ ramp, interpolations, scale, label: mapResult.label, unit: mapResult.unit })
-        this.versionProps.basemapCallback(mapResult.basemap)
-        this.versionProps.insetsCallback(mapResult.insets)
-        const furthest = furthestColor(ramp.map(x => x[1]))
-        const colors = mapResult.data.map(
-            val => interpolateColor(ramp, scale.forward(val), furthest),
-        )
+        const names = mapResultMain.value.geo
+        this.versionProps.basemapCallback(mapResultMain.value.basemap)
+        this.versionProps.insetsCallback(mapResultMain.value.insets)
+
+        let colors: string[]
+
+        if (mapResultMain.opaqueType === 'cMapRGB') {
+            // For RGB maps, use the RGB values directly
+            const rgbMap = mapResultMain.value
+            colors = rgbMap.dataR.map((r, i) => doRender({
+                r: r * 255,
+                g: rgbMap.dataG[i] * 255,
+                b: rgbMap.dataB[i] * 255,
+                a: 255,
+            }))
+            this.versionProps.rampCallback({ type: 'label', value: label })
+        }
+        else {
+            // For regular cMap, use ramp and scale
+            const cMap = mapResultMain.value
+            const ramp = cMap.ramp
+            const scale = instantiate(cMap.scale)
+            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+            this.versionProps.rampCallback({ type: 'ramp', value: { ramp, interpolations, scale, label, unit: mapResultMain.value.unit } })
+            const furthest = furthestColor(ramp.map(x => x[1]))
+            colors = cMap.data.map(
+                val => interpolateColor(ramp, scale.forward(val), furthest),
+            )
+        }
         const specs = colors.map(
             // no outline, set color fill, alpha=1
             (color, i): ShapeSpec => {
@@ -213,7 +233,9 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
                 }
             },
         )
-        const metas = mapResult.data.map((x) => { return { statistic: x } })
+        const metas = mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'pMap'
+            ? mapResultMain.value.data.map((x) => { return { statistic: x } })
+            : mapResultMain.value.dataR.map((x, i) => { return { statistic: [x, mapResultMain.value.dataG[i], mapResultMain.value.dataB[i]] } })
         return {
             shapes: names.map((name, i) => ({
                 name,
@@ -238,7 +260,7 @@ function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
     }
 }
 
-function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }): ReactNode {
+function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -263,16 +285,25 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
         return false
     })
 
-    const furthest = useMemo(() => props.ramp === undefined ? undefined : furthestColor(props.ramp.ramp.map(x => x[1])), [props.ramp])
+    const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
 
     if (props.ramp === undefined) {
         return <div></div>
     }
 
-    const ramp = props.ramp.ramp
-    const label = props.ramp.label
-    const values = props.ramp.interpolations
-    const unit = props.ramp.unit
+    if (props.ramp.type === 'label') {
+        return (
+            <div className="centered_text" style={colorbarStyleFromBasemap(props.basemap)}>
+                {props.ramp.value}
+            </div>
+        )
+    }
+
+    const ramp = props.ramp.value.ramp
+    const scale = props.ramp.value.scale
+    const label = props.ramp.value.label
+    const values = props.ramp.value.interpolations
+    const unit = props.ramp.value.unit
     const style = colorbarStyleFromBasemap(props.basemap)
 
     const createValue = (stat: number): ReactNode => {
@@ -333,7 +364,7 @@ function Colorbar(props: { ramp: EmpiricalRamp | undefined, basemap: Basemap }):
                             key={i}
                             style={{
                                 width, height: '1em',
-                                backgroundColor: interpolateColor(ramp, props.ramp!.scale.forward(x), furthest),
+                                backgroundColor: interpolateColor(ramp, scale.forward(x), furthest),
                                 marginLeft: '1px',
                                 marginRight: '1px',
                             }}
@@ -369,7 +400,7 @@ interface EmpiricalRamp {
 }
 
 function MapComponent(props: MapComponentProps): ReactNode {
-    const [empiricalRamp, setEmpiricalRamp] = useState<EmpiricalRamp | undefined>(undefined)
+    const [empiricalRamp, setEmpiricalRamp] = useState<RampToDisplay | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
     const [currentInsets, setCurrentInsets] = useState<Insets>(loadInset(props.universe))

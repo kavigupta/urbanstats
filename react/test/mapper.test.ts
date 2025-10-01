@@ -87,3 +87,9 @@ cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=construc
 `
 
 testCode('County', 'USA', translucentOutlineCustomBackgroundAndTextColor, 'translucent-outline-custom-background-and-text-color')
+
+const rgbMap = `
+cMapRGB(dataR=commute_car, dataG=commute_transit, dataB=commute_walk, label="RGB Map: Density (R), Transit (G), Walk (B)", basemap=noBasemap())
+`
+
+testCode('County', 'USA', rgbMap, 'rgb-map')

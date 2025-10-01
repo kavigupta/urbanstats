@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, hexToColor } from './constants/color-utils'
-import { CMap, Outline, PMap } from './constants/map'
+import { CMap, CMapRGB, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
@@ -21,6 +21,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'inset', value: Inset }
     | { type: 'opaque', opaqueType: 'insets', value: Insets }
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
+    | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
@@ -347,6 +348,7 @@ export function renderValue(input: USSValue): string {
                     case 'scale':
                     case 'pMap':
                     case 'cMap':
+                    case 'cMapRGB':
                     case 'basemap':
                     case 'inset':
                     case 'insets':
