@@ -410,7 +410,6 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         }
         let width = colorbarElement.offsetWidth
         let height = colorbarElement.offsetHeight
-        console.log('native hw', height, width)
         {
             // do this no matter what, to fill the space
             const scale = maxHeight / height
@@ -431,7 +430,6 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         const width = 4096
         const cBarPad = 40
         const { height: colorbarHeight, width: colorbarWidth } = this.colorbarDimensions(colorbarElement, width * 0.8, 300 - cBarPad)
-        console.log(colorbarElement, colorbarHeight, colorbarWidth)
 
         const maps = await this.handler.getMaps()
         const insets = this.insets()
