@@ -404,11 +404,34 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         }, { history: 'push', scroll: { kind: 'element', element: this.handler.container() } })
     }
 
+    colorbarDimensions(colorbarElement: HTMLElement | undefined, maxWidth: number, maxHeight: number): { width: number, height: number } {
+        if (colorbarElement === undefined) {
+            return { width: 0, height: 0 }
+        }
+        let width = colorbarElement.offsetWidth
+        let height = colorbarElement.offsetHeight
+        console.log('native hw', height, width)
+        {
+            // do this no matter what, to fill the space
+            const scale = maxHeight / height
+            height = maxHeight
+            width = width * scale
+        }
+        if (width > maxWidth) {
+            // rescale if it is now too wide
+            const scale = maxWidth / width
+            width = maxWidth
+            height = height * scale
+        }
+        return { width, height }
+    }
+
     async exportAsPng(colorbarElement: HTMLElement | undefined, backgroundColor: string, insetBorderColor: string): Promise<string> {
         const pixelRatio = 4
         const width = 4096
-        const colorbarHeight = 300
         const cBarPad = 40
+        const { height: colorbarHeight, width: colorbarWidth } = this.colorbarDimensions(colorbarElement, width * 0.8, 300 - cBarPad)
+        console.log(colorbarElement, colorbarHeight, colorbarWidth)
 
         const maps = await this.handler.getMaps()
         const insets = this.insets()
@@ -417,7 +440,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
         const height = Math.round(width / aspectRatio)
 
-        const totalHeight = height + colorbarHeight
+        const totalHeight = height + colorbarHeight + cBarPad
 
         const params = { width, height, pixelRatio, insetBorderColor }
 
@@ -435,11 +458,9 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         }))
 
         ctx.fillStyle = this.props.basemap.type === 'none' ? this.props.basemap.backgroundColor : backgroundColor
-        ctx.fillRect(0, height, width, colorbarHeight) // Fill the entire colorbar area
+        ctx.fillRect(0, height, width, colorbarHeight + cBarPad) // Fill the entire colorbar area
 
         if (colorbarElement) {
-            const colorbarWidth = (colorbarHeight - cBarPad) * colorbarElement.offsetWidth / colorbarElement.offsetHeight
-
             const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
 
             ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
