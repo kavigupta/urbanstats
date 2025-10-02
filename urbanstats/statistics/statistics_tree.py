@@ -239,7 +239,11 @@ def census_basics(col_name, *, change):
     for year in [2010, 2000]:
         results[year] = [single_source(f"{col_name}_{year}", indented_name=f"{year}")]
         if change:
-            results[year].append(single_source(f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"))
+            results[year].append(
+                single_source(
+                    f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"
+                )
+            )
     results = StatisticGroup(results)
     return {col_name: results}
 
@@ -250,11 +254,15 @@ def census_segregation(col_name):
             {
                 2000: [
                     single_source(f"{col_name}_2000", indented_name="2000"),
-                    single_source(f"{col_name}_diff_2000", indented_name="2000-2020 Change"),
+                    single_source(
+                        f"{col_name}_diff_2000", indented_name="2000-2020 Change"
+                    ),
                 ],
                 2010: [
                     single_source(f"{col_name}_2010", indented_name="2010"),
-                    single_source(f"{col_name}_diff_2010", indented_name="2010-2020 Change"),
+                    single_source(
+                        f"{col_name}_diff_2010", indented_name="2010-2020 Change"
+                    ),
                 ],
                 2020: [single_source(f"{col_name}_2020", indented_name="2020")],
             }
@@ -264,7 +272,9 @@ def census_segregation(col_name):
 
 def just_2020(*col_names, year=2020):
     return {
-        col_name: StatisticGroup({year: [single_source(col_name, indented_name="2020")]})
+        col_name: StatisticGroup(
+            {year: [single_source(col_name, indented_name="2020")]}
+        )
         for col_name in col_names
     }
 
@@ -331,7 +341,9 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
         population_ghsl: gpw_name,
     }
     by_source = {k: v for k, v in by_source.items() if v is not None}
-    result[col_name].by_year[2020] = [MultiSource(by_source, col_name, indented_name="2020")]
+    result[col_name].by_year[2020] = [
+        MultiSource(by_source, col_name, indented_name="2020")
+    ]
     result[col_name].group_name_statcol = col_name
     return result
 
