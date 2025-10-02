@@ -251,6 +251,7 @@ export function StatisticRowCells(props: {
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
+    isFirstInGroup?: boolean
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -271,10 +272,11 @@ export function StatisticRowCells(props: {
                         row={props.row}
                         longname={props.longname}
                         currentUniverse={currentUniverse}
+                        isFirstInGroup={props.isFirstInGroup}
                     />
                 </span>
             ),
-            style: { textAlign: 'left' },
+            style: { textAlign: 'left', paddingLeft: props.isFirstInGroup ? '0' : '1em' },
         },
         {
             widthPercentage: 15,
@@ -433,10 +435,12 @@ export function StatisticName(props: {
     longname: string
     currentUniverse: string
     center?: boolean
+    isFirstInGroup?: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}

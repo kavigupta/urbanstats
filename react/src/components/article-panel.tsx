@@ -8,6 +8,7 @@ import { sanitize } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -55,15 +56,22 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
                     <div className="stats_table" ref={tableRef}>
                         <StatisticTableHeader />
-                        {filteredRows.map((row, index) => (
-                            <StatisticTableRow
-                                row={row}
-                                index={index}
-                                key={row.statpath}
-                                longname={article.longname}
-                                shortname={article.shortname}
-                            />
-                        ))}
+                        {filteredRows.map((row, index) => {
+                            // Determine if this is the first row in its group
+                            const currentGroupId = statParents.get(row.statpath)?.group.id
+                            const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
+
+                            return (
+                                <StatisticTableRow
+                                    row={row}
+                                    index={index}
+                                    key={row.statpath}
+                                    longname={article.longname}
+                                    shortname={article.shortname}
+                                    isFirstInGroup={isFirstInGroup}
+                                />
+                            )
+                        })}
                         <ArticleWarnings />
                     </div>
 
@@ -127,7 +135,7 @@ function StatisticTableHeader(): ReactNode {
     )
 }
 
-function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number }): ReactNode {
+function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number, isFirstInGroup?: boolean }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(rowExpandedKey(props.row.statpath))
     const currentUniverse = useUniverse()
@@ -149,6 +157,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                         }, { history: 'push', scroll: { kind: 'none' } })
                     }}
                     simpleOrdinals={simpleOrdinals}
+                    isFirstInGroup={props.isFirstInGroup}
                 />
             </TableRowContainer>
             {expanded
