@@ -64,9 +64,9 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
             ...group,
             contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
-                stats: stats_by_source.map(({ name, indented_name, stats: s }) => ({
+                stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
                     name,
-                    indentedName: indented_name,
+                    indentedName: indentedName ?? undefined,
                     bySource: s.map(({ source, column }) => ({
                         source,
                         path: statPaths[column],

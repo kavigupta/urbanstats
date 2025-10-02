@@ -56,8 +56,7 @@ class MultiSource:
                 }
             )
         output = dict(name=self.compute_name(name_map), stats=result)
-        if self.indented_name is not None:
-            output["indented_name"] = self.indented_name
+        output["indentedName"] = self.indented_name
         return output
 
     def canonical_column(self):
