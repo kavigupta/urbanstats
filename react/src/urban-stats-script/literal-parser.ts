@@ -186,31 +186,23 @@ export function deconstruct<T>(schema: LiteralParser<T>): LiteralParser<T> {
 
 /**
  * Enables selectively editing an AST (does a shallow copy)
- *
- * simplified example usage:
- *
- * edit(selector => object({ a: number(), b: selector(number()) })).parse({ a: 1, b: 2 }).b.edit(3) // { a: 1, b: 3 }
  */
 export function edit<T>(
-    schema: (selector: <U>(selectorSchema: LiteralParser<U>) => LiteralParser<{
-        currentValue: U
+    schema: LiteralParser<T>,
+): LiteralParser<{
+        currentValue: T
         edit: (newExpr: UrbanStatsASTExpression) => UrbanStatsASTExpression
-    }>) => LiteralParser<T>,
-): LiteralParser<T> {
+    }> {
     return {
         parse(expr, env, doEdit = e => e) {
-            return schema(selectorSchema => ({
-                parse(selectorExpr, selectorEnv, doSelectorEdit) {
-                    const parsed = selectorSchema.parse(selectorExpr, selectorEnv)
-                    if (parsed === undefined) {
-                        return
-                    }
-                    return {
-                        currentValue: parsed,
-                        edit: doSelectorEdit!,
-                    }
-                },
-            })).parse(expr, env, doEdit)
+            const parsed = schema.parse(expr, env, doEdit)
+            if (parsed === undefined) {
+                return undefined
+            }
+            return {
+                currentValue: parsed,
+                edit: doEdit,
+            }
         },
     }
 }

@@ -17,7 +17,7 @@ void test('object', () => {
 void test('edit', () => {
     assert.equal(
         unparse(
-            l.edit(selector => l.object({ a: l.number(), b: selector(l.number()) }))
+            l.object({ a: l.number(), b: l.edit(l.number()) })
                 .parse(parseExpr('{a: 1, b: 2}'), defaultConstants)!.b.edit(parseExpr('3'))),
         '{a: 1, b: 3}',
     )
