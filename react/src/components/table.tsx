@@ -283,30 +283,6 @@ export function StatisticRowCells(props: {
                         ),
                         style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '0' },
                     },
-                    {
-                        widthPercentage: 15,
-                        columnIdentifier: 'statval',
-                        content: <span></span>,
-                        style: { textAlign: 'right' },
-                    },
-                    {
-                        widthPercentage: 10,
-                        columnIdentifier: 'statval_unit',
-                        content: <span></span>,
-                        style: { textAlign: 'right' },
-                    },
-                    {
-                        widthPercentage: props.simpleOrdinals ? 7 : 17,
-                        columnIdentifier: 'statistic_percentile',
-                        content: <span></span>,
-                        style: { textAlign: 'right' },
-                    },
-                    {
-                        widthPercentage: props.simpleOrdinals ? 8 : 25,
-                        columnIdentifier: 'statistic_ordinal',
-                        content: <span></span>,
-                        style: { textAlign: 'right' },
-                    },
                 ]}
                 totalWidth={props.totalWidth}
             />
