@@ -274,7 +274,7 @@ export function StatisticRowCells(props: {
             <ColumnLayout
                 cells={[
                     {
-                        widthPercentage: 31,
+                        widthPercentage: 100,
                         columnIdentifier: 'statname',
                         content: (
                             <span className="serif value">

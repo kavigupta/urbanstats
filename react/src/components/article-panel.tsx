@@ -24,7 +24,6 @@ type ProcessedArticleRow = ArticleRow & {
     isIndented: boolean
     indentedName: string | undefined
     groupHasMultipleSources: boolean
-    groupSources: string[]
 }
 
 function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
@@ -33,11 +32,9 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
         const currentGroupId = statParent?.group.id
         const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
 
-        // Count how many rows are in this group
         const groupRows = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId)
         const groupSize = groupRows.length
 
-        // Check if this group has multiple sources
         const groupSourcesSet = new Set(
             groupRows
                 .map(r => statParents.get(r.statpath)?.source)
@@ -45,7 +42,6 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
                 .map(source => source!.name),
         )
         const groupHasMultipleSources = groupSourcesSet.size > 1
-        const groupSources = Array.from(groupSourcesSet)
 
         return {
             ...row,
@@ -55,10 +51,8 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
             groupSize,
             showGroupHeader: isFirstInGroup && groupSize > 1,
             isIndented: groupSize > 1,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indentedName is string | undefined which is safe
             indentedName: statParent ? statParent.indentedName : undefined,
             groupHasMultipleSources,
-            groupSources,
         }
     })
 }
