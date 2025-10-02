@@ -8,6 +8,7 @@ import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
+import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
@@ -256,6 +257,8 @@ export function StatisticRowCells(props: {
     isGroupHeader?: boolean
     groupName?: string
     indentedName?: string
+    groupHasMultipleSources?: boolean
+    statParent?: ReturnType<typeof statParents.get>
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -322,6 +325,8 @@ export function StatisticRowCells(props: {
                         currentUniverse={currentUniverse}
                         isFirstInGroup={props.isFirstInGroup}
                         indentedName={props.indentedName}
+                        groupHasMultipleSources={props.groupHasMultipleSources}
+                        sourceName={props.statParent?.source?.name}
                     />
                 </span>
             ),
@@ -486,6 +491,8 @@ export function StatisticName(props: {
     center?: boolean
     isFirstInGroup?: boolean
     indentedName?: string
+    groupHasMultipleSources?: boolean
+    sourceName?: string
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -508,6 +515,13 @@ export function StatisticName(props: {
             data-test-id="statistic-link"
         >
             {props.indentedName ?? props.row.renderedStatname}
+            {props.groupHasMultipleSources && props.sourceName && (
+                <span>
+                    {' ['}
+                    {props.sourceName}
+                    &#93;
+                </span>
+            )}
         </a>
     )
     const screenshotMode = useScreenshotMode()
