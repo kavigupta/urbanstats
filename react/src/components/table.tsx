@@ -303,6 +303,7 @@ export function StatisticRowCells(props: {
                         indentedName={props.indentedName}
                         groupHasMultipleSources={props.groupHasMultipleSources}
                         sourceName={props.statParent?.source?.name}
+                        isIndented={props.isIndented}
                     />
                 </span>
             ),
@@ -469,6 +470,7 @@ export function StatisticName(props: {
     indentedName?: string
     groupHasMultipleSources?: boolean
     sourceName?: string
+    isIndented?: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -490,7 +492,7 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {props.indentedName ?? props.row.renderedStatname}
+            {props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname}
             {props.groupHasMultipleSources && props.sourceName && (
                 <span>
                     {' ['}
