@@ -15,6 +15,38 @@ import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
+type ProcessedArticleRow = ArticleRow & {
+    statParent: ReturnType<typeof statParents.get>
+    currentGroupId: string | undefined
+    isFirstInGroup: boolean
+    groupSize: number
+    showGroupHeader: boolean
+    isIndented: boolean
+    indentedName: string | undefined
+}
+
+function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
+    return filteredRows.map((row, index) => {
+        const statParent = statParents.get(row.statpath)
+        const currentGroupId = statParent?.group.id
+        const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
+
+        // Count how many rows are in this group
+        const groupSize = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId).length
+
+        return {
+            ...row,
+            statParent,
+            currentGroupId,
+            isFirstInGroup,
+            groupSize,
+            showGroupHeader: isFirstInGroup && groupSize > 1,
+            isIndented: groupSize > 1,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indentedName is string | undefined which is safe
+            indentedName: statParent ? statParent.indentedName : undefined,
+        }
+    })
+}
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
@@ -41,7 +73,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
     const settings = useSettings(groupYearKeys())
-    const filteredRows = rows(settings)[0]
+    const filteredRows = preprocessRows(rows(settings)[0])
     const [simpleOrdinals] = useSetting('simple_ordinals')
 
     return (
@@ -57,52 +89,35 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
                     <div className="stats_table" ref={tableRef}>
                         <StatisticTableHeader />
-                        {filteredRows.map((row, index) => {
-                            // Determine if this is the first row in its group
-                            const currentGroupId = statParents.get(row.statpath)?.group.id
-                            const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
-
-                            // Count how many rows are in this group
-                            const groupSize = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId).length
-
-                            // Show group header only for groups with more than 1 element
-                            const showGroupHeader = isFirstInGroup && groupSize > 1
-                            const isIndented = groupSize > 1
-                            const statParent = statParents.get(row.statpath)
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indentedName is string | undefined which is safe
-                            const indentedName = statParent ? statParent.indentedName : undefined
-
-                            return (
-                                <>
-                                    {showGroupHeader && (
-                                        <TableRowContainer index={index}>
-                                            <StatisticRowCells
-                                                totalWidth={100}
-                                                longname={article.longname}
-                                                row={row}
-                                                onNavigate={() => { /* No navigation for group headers */ }}
-                                                simpleOrdinals={simpleOrdinals}
-                                                isFirstInGroup={true}
-                                                isIndented={false}
-                                                isGroupHeader={true}
-                                                groupName={statParent?.group.name}
-                                            />
-                                        </TableRowContainer>
-                                    )}
-                                    <StatisticTableRow
-                                        row={row}
-                                        index={index}
-                                        key={row.statpath}
-                                        longname={article.longname}
-                                        shortname={article.shortname}
-                                        isFirstInGroup={isFirstInGroup}
-                                        isIndented={isIndented}
-                                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- indentedName is string | undefined which is safe
-                                        indentedName={indentedName}
-                                    />
-                                </>
-                            )
-                        })}
+                        {filteredRows.map((row, index) => (
+                            <>
+                                {row.showGroupHeader && (
+                                    <TableRowContainer index={index}>
+                                        <StatisticRowCells
+                                            totalWidth={100}
+                                            longname={article.longname}
+                                            row={row}
+                                            onNavigate={() => { /* No navigation for group headers */ }}
+                                            simpleOrdinals={simpleOrdinals}
+                                            isFirstInGroup={true}
+                                            isIndented={false}
+                                            isGroupHeader={true}
+                                            groupName={row.statParent?.group.name}
+                                        />
+                                    </TableRowContainer>
+                                )}
+                                <StatisticTableRow
+                                    row={row}
+                                    index={index}
+                                    key={row.statpath}
+                                    longname={article.longname}
+                                    shortname={article.shortname}
+                                    isFirstInGroup={row.isFirstInGroup}
+                                    isIndented={row.isIndented}
+                                    indentedName={row.indentedName}
+                                />
+                            </>
+                        ))}
                         <ArticleWarnings />
                     </div>
 
