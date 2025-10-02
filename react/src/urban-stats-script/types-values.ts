@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, hexToColor } from './constants/color-utils'
-import { CMap, CMapRGB, Outline, PMap } from './constants/map'
+import { CMap, CMapRGB, ColorSpace, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
@@ -27,6 +27,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
     | { type: 'opaque', opaqueType: 'ramp', value: RampT }
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
+    | { type: 'opaque', opaqueType: 'colorSpace', value: ColorSpace }
     | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
     | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
 
@@ -397,6 +398,8 @@ export function renderValue(input: USSValue): string {
                             },
                         )
                         return `[ramp ${renderValue(interior)}]`
+                    case 'colorSpace':
+                        return `constructColorSpace(space="${opaqueValue.value}")`
                 }
             case 'vector':
                 const vector = value.value as USSRawValue[]

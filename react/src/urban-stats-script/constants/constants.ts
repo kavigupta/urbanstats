@@ -244,6 +244,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['cMapRGB', cMapRGB],
     ['pMap', pMap],
     ['constructOutline', constructOutline],
+    ['sRGB', { type: { type: 'opaque', name: 'colorSpace' }, value: { type: 'opaque', opaqueType: 'colorSpace', value: 'sRGB' }, documentation: { humanReadableName: 'sRGB', category: 'color', isDefault: true, longDescription: 'Standard RGB color space for color processing.' } }],
+    ['OKRGB', { type: { type: 'opaque', name: 'colorSpace' }, value: { type: 'opaque', opaqueType: 'colorSpace', value: 'OKRGB' }, documentation: { humanReadableName: 'OKRGB', category: 'color', isDefault: true, longDescription: 'OKLCH-based RGB color space for perceptually uniform color processing.' } }],
     ['osmBasemap', osmBasemap],
     ['noBasemap', noBasemap],
 ] satisfies [string, USSValue][])

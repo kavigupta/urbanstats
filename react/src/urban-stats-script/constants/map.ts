@@ -1,3 +1,5 @@
+import convert from 'color-convert'
+
 import { Insets } from '../../components/map'
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
@@ -59,6 +61,13 @@ export const cMapType = {
 export const cMapRGBType = {
     type: 'opaque',
     name: 'cMapRGB',
+} satisfies USSType
+
+export type ColorSpace = 'sRGB' | 'OKRGB'
+
+export const colorSpaceType = {
+    type: 'opaque',
+    name: 'colorSpace',
 } satisfies USSType
 
 export const pMapType = {
@@ -308,17 +317,30 @@ export const cMapRGB: USSValue = {
                 type: { type: 'concrete', value: outlineType },
                 defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
             },
+            colorSpace: {
+                type: { type: 'concrete', value: colorSpaceType },
+                defaultValue: { type: 'identifier', name: { node: 'sRGB', location: noLocation } },
+            },
+            hueRotation: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('0', ''),
+            },
         }),
         returnType: { type: 'concrete', value: cMapRGBType },
     },
     value: (ctx, posArgs, namedArgs) => {
         const clipValues = (values: number[]): number[] => values.map(v => Math.max(0, Math.min(1, v)))
 
-        const [dataR, dataG, dataB] = [
+        const colorSpace = (namedArgs.colorSpace as { type: 'opaque', opaqueType: 'colorSpace', value: ColorSpace }).value
+        const hueRotation = namedArgs.hueRotation as number
+
+        const [dataR, dataG, dataB] = reproject(
             clipValues(namedArgs.dataR as number[]),
             clipValues(namedArgs.dataG as number[]),
             clipValues(namedArgs.dataB as number[]),
-        ]
+            colorSpace,
+            hueRotation,
+        )
 
         const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
 
@@ -354,11 +376,38 @@ export const cMapRGB: USSValue = {
             label: 'Label',
             geo: 'Geography',
             outline: 'Outline',
+            colorSpace: 'Color Space',
+            hueRotation: 'Hue Rotation (degrees)',
             basemap: 'Basemap',
             insets: 'Insets',
             unit: 'Unit',
         },
-        longDescription: 'Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps.',
+        longDescription: 'Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps. The colorSpace parameter allows you to choose between sRGB and OKRGB color spaces (use the sRGB or OKRGB constants), and hueRotation allows you to rotate the hue of all colors by a specified number of degrees.',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+function projectBackOKLCH(h: number, s: number, l: number): [number, number, number] {
+    const oklchToRGB: (l2: number, a2: number, b2: number) => [number, number, number] = (convert as unknown as { oklch: { rgb: (l2: number, a2: number, b2: number) => [number, number, number] } }).oklch.rgb
+    return oklchToRGB(l, s * 0.32, (h + 30) % 360)
+}
+
+function projectBackSRGB(h: number, s: number, l: number): [number, number, number] {
+    return convert.hsl.rgb(h, s, l)
+}
+
+const projections = {
+    sRGB: projectBackSRGB,
+    OKRGB: projectBackOKLCH,
+}
+
+function reprojectSingleChannel(r: number, g: number, b: number, projectionType: ColorSpace, hueOffset: number): [number, number, number] {
+    const [h, s, l] = convert.rgb.hsl(r * 255, g * 255, b * 255)
+    const [r2, g2, b2] = projections[projectionType]((h + hueOffset) % 360, s, l)
+    return [r2 / 255, g2 / 255, b2 / 255]
+}
+
+function reproject(dataR: number[], dataG: number[], dataB: number[], projectionType: ColorSpace, hueOffset: number): [number[], number[], number[]] {
+    const elements = dataR.map((r, i) => reprojectSingleChannel(r, dataG[i], dataB[i], projectionType, hueOffset))
+    return [elements.map(element => element[0]), elements.map(element => element[1]), elements.map(element => element[2])]
+}
