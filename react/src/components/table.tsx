@@ -266,25 +266,63 @@ export function StatisticRowCells(props: {
         margin: 0,
     }
 
+    if (props.isGroupHeader) {
+        return (
+            <ColumnLayout
+                cells={[
+                    {
+                        widthPercentage: 31,
+                        columnIdentifier: 'statname',
+                        content: (
+                            <span className="serif value">
+                                <span>{props.groupName}</span>
+                            </span>
+                        ),
+                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '0' },
+                    },
+                    {
+                        widthPercentage: 15,
+                        columnIdentifier: 'statval',
+                        content: <span></span>,
+                        style: { textAlign: 'right' },
+                    },
+                    {
+                        widthPercentage: 10,
+                        columnIdentifier: 'statval_unit',
+                        content: <span></span>,
+                        style: { textAlign: 'right' },
+                    },
+                    {
+                        widthPercentage: props.simpleOrdinals ? 7 : 17,
+                        columnIdentifier: 'statistic_percentile',
+                        content: <span></span>,
+                        style: { textAlign: 'right' },
+                    },
+                    {
+                        widthPercentage: props.simpleOrdinals ? 8 : 25,
+                        columnIdentifier: 'statistic_ordinal',
+                        content: <span></span>,
+                        style: { textAlign: 'right' },
+                    },
+                ]}
+                totalWidth={props.totalWidth}
+            />
+        )
+    }
+
     const cells = [
         {
             widthPercentage: 31,
             columnIdentifier: 'statname',
             content: (
                 <span className="serif value">
-                    {props.isGroupHeader
-                        ? (
-                                <span>{props.groupName}</span>
-                            )
-                        : (
-                                <StatisticName
-                                    row={props.row}
-                                    longname={props.longname}
-                                    currentUniverse={currentUniverse}
-                                    isFirstInGroup={props.isFirstInGroup}
-                                    indentedName={props.indentedName}
-                                />
-                            )}
+                    <StatisticName
+                        row={props.row}
+                        longname={props.longname}
+                        currentUniverse={currentUniverse}
+                        isFirstInGroup={props.isFirstInGroup}
+                        indentedName={props.indentedName}
+                    />
                 </span>
             ),
             style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '0' },
@@ -292,83 +330,67 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: 15,
             columnIdentifier: 'statval',
-            content: props.isGroupHeader
-                ? (
-                        <span></span>
-                    )
-                : (
-                        <span className="serif value testing-statistic-value">
-                            <Statistic
-                                statname={props.row.statname}
-                                value={props.row.statval}
-                                isUnit={false}
-                                style={props.statisticStyle ?? {}}
-                            />
-                        </span>
-                    ),
+            content: (
+                <span className="serif value testing-statistic-value">
+                    <Statistic
+                        statname={props.row.statname}
+                        value={props.row.statval}
+                        isUnit={false}
+                        style={props.statisticStyle ?? {}}
+                    />
+                </span>
+            ),
             style: { textAlign: 'right' },
         },
         {
             widthPercentage: 10,
             columnIdentifier: 'statval_unit',
-            content: props.isGroupHeader
-                ? (
-                        <span></span>
-                    )
-                : (
-                        <div className="value_unit">
-                            <span className="serif value">
-                                <Statistic
-                                    statname={props.row.statname}
-                                    value={props.row.statval}
-                                    isUnit={true}
-                                />
-                            </span>
-                        </div>
-                    ),
+            content: (
+                <div className="value_unit">
+                    <span className="serif value">
+                        <Statistic
+                            statname={props.row.statname}
+                            value={props.row.statval}
+                            isUnit={true}
+                        />
+                    </span>
+                </div>
+            ),
             style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
-            content: props.isGroupHeader
-                ? (
-                        <span></span>
-                    )
-                : (
-                        <span className="serif" style={ordinalStyle}>
-                            <Percentile
-                                ordinal={props.row.ordinal}
-                                total={props.row.totalCountInClass}
-                                percentileByPopulation={props.row.percentileByPopulation}
-                                simpleOrdinals={props.simpleOrdinals}
-                            />
-                        </span>
-                    ),
+            content: (
+                <span className="serif" style={ordinalStyle}>
+                    <Percentile
+                        ordinal={props.row.ordinal}
+                        total={props.row.totalCountInClass}
+                        percentileByPopulation={props.row.percentileByPopulation}
+                        simpleOrdinals={props.simpleOrdinals}
+                    />
+                </span>
+            ),
             style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
-            content: props.isGroupHeader
-                ? (
-                        <span></span>
-                    )
-                : (
-                        <span className="serif" style={ordinalStyle}>
-                            <Ordinal
-                                ordinal={props.row.ordinal}
-                                total={props.row.totalCountInClass}
-                                type={props.row.articleType}
-                                statpath={props.row.statpath}
-                                simpleOrdinals={props.simpleOrdinals}
-                                onNavigate={props.onNavigate}
-                            />
-                        </span>
-                    ),
+            content: (
+                <span className="serif" style={ordinalStyle}>
+                    <Ordinal
+                        ordinal={props.row.ordinal}
+                        total={props.row.totalCountInClass}
+                        type={props.row.articleType}
+                        statpath={props.row.statpath}
+                        simpleOrdinals={props.simpleOrdinals}
+                        onNavigate={props.onNavigate}
+                    />
+                </span>
+            ),
             style: { textAlign: 'right' },
         },
-        ...(props.isGroupHeader ? [] : PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname })),
+        ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
