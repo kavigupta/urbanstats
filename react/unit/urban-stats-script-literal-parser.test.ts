@@ -98,13 +98,29 @@ void test('call', () => {
 })
 
 void test('deconstruct', () => {
-    // This test assumes a constant with equivalentExpressions is present in defaultConstants
-    // If not, this will just return undefined
+    const schema = l.deconstruct(l.call({ namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.number()] }))
+
     assert.deepEqual(
-        l.deconstruct(l.call({ namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.number()] })).parse(parseExpr('colorBlue'), defaultConstants),
+        schema.parse(parseExpr('colorBlue'), defaultConstants),
         {
             namedArgs: {},
             unnamedArgs: [0.353, 0.49, 0.765],
         },
+    )
+
+    assert.deepEqual(
+        // eslint-disable-next-line no-restricted-syntax -- This is USS
+        schema.parse(parseExpr('rgb(0, 0, 1)'), defaultConstants),
+        {
+            namedArgs: {},
+            unnamedArgs: [0, 0, 1],
+        },
+    )
+
+    // edit deconstruct
+    const editSchema = l.deconstruct(l.call({ namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.edit(l.number())] }))
+    assert.equal(
+        unparse(editSchema.parse(parseExpr('colorBlue'), defaultConstants)!.unnamedArgs[2].edit(parseExpr('1'))),
+        'rgb(0.353, 0.49, 1)',
     )
 })
