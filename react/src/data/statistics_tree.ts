@@ -4791,7 +4791,7 @@ export const rawStatsTree = [
                                         "column": 0
                                     }
                                 ],
-                                "indentedName": "2008 Presidential Election"
+                                "indentedName": "2008"
                             },
                             {
                                 "name": "2008-2012 Swing",
@@ -4811,7 +4811,7 @@ export const rawStatsTree = [
                                         "column": 2
                                     }
                                 ],
-                                "indentedName": "2012 Presidential Election"
+                                "indentedName": "2012"
                             },
                             {
                                 "name": "2012-2016 Swing",
@@ -4836,7 +4836,7 @@ export const rawStatsTree = [
                                         "column": 4
                                     }
                                 ],
-                                "indentedName": "2016 Presidential Election"
+                                "indentedName": "2016"
                             },
                             {
                                 "name": "2016-2020 Swing",
@@ -4856,7 +4856,7 @@ export const rawStatsTree = [
                                         "column": 6
                                     }
                                 ],
-                                "indentedName": "2020 Presidential Election"
+                                "indentedName": "2020"
                             },
                             {
                                 "name": "2020-2024 Swing",
@@ -4876,7 +4876,7 @@ export const rawStatsTree = [
                                         "column": 8
                                     }
                                 ],
-                                "indentedName": "2024 Presidential Election"
+                                "indentedName": "2024"
                             }
                         ]
                     }
