@@ -31,6 +31,7 @@ class MultiSource:
 
     by_source: dict[str | NoneType, str]
     multi_source_colname: str = None
+    indented_name: str = None
 
     def __post_init__(self):
         if None in self.by_source:
@@ -54,7 +55,10 @@ class MultiSource:
                     "column": names.index(col),
                 }
             )
-        return dict(name=self.compute_name(name_map), stats=result)
+        output = dict(name=self.compute_name(name_map), stats=result)
+        if self.indented_name is not None:
+            output["indented_name"] = self.indented_name
+        return output
 
     def canonical_column(self):
         if self.multi_source_colname is not None:
@@ -225,18 +229,18 @@ class StatisticTree:
         return deduplicated_sources
 
 
-def single_source(col_name):
-    return MultiSource({None: col_name})
+def single_source(col_name, indented_name=None):
+    return MultiSource({None: col_name}, indented_name=indented_name)
 
 
 def census_basics(col_name, *, change):
     results = {
-        2020: [single_source(col_name)],
+        2020: [single_source(col_name, indented_name="2020")],
     }
     for year in [2010, 2000]:
-        results[year] = [single_source(f"{col_name}_{year}")]
+        results[year] = [single_source(f"{col_name}_{year}", indented_name=f"{year}")]
         if change:
-            results[year].append(single_source(f"{col_name}_change_{year}"))
+            results[year].append(single_source(f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"))
     results = StatisticGroup(results)
     return {col_name: results}
 
@@ -246,14 +250,14 @@ def census_segregation(col_name):
         col_name: StatisticGroup(
             {
                 2000: [
-                    single_source(f"{col_name}_2000"),
-                    single_source(f"{col_name}_diff_2000"),
+                    single_source(f"{col_name}_2000", indented_name="2000"),
+                    single_source(f"{col_name}_diff_2000", indented_name="2000-2020 Change"),
                 ],
                 2010: [
-                    single_source(f"{col_name}_2010"),
-                    single_source(f"{col_name}_diff_2010"),
+                    single_source(f"{col_name}_2010", indented_name="2010"),
+                    single_source(f"{col_name}_diff_2010", indented_name="2010-2020 Change"),
                 ],
-                2020: [single_source(f"{col_name}_2020")],
+                2020: [single_source(f"{col_name}_2020", indented_name="2020")],
             }
         )
     }
@@ -261,7 +265,7 @@ def census_segregation(col_name):
 
 def just_2020(*col_names, year=2020):
     return {
-        col_name: StatisticGroup({year: [single_source(col_name)]})
+        col_name: StatisticGroup({year: [single_source(col_name, indented_name="2020")]})
         for col_name in col_names
     }
 
@@ -277,6 +281,7 @@ def just_2020_with_canada(*col_names, year=2020):
                             population_canada: col_name + "_canada",
                         },
                         col_name,
+                        indented_name="2020",
                     )
                 ]
             },
@@ -327,7 +332,7 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
         population_ghsl: gpw_name,
     }
     by_source = {k: v for k, v in by_source.items() if v is not None}
-    result[col_name].by_year[2020] = [MultiSource(by_source, col_name)]
+    result[col_name].by_year[2020] = [MultiSource(by_source, col_name, indented_name="2020")]
     result[col_name].group_name_statcol = col_name
     return result
 
@@ -600,7 +605,7 @@ statistics_tree = StatisticTree(
                 "us_presidential_election": StatisticGroup(
                     {
                         2010: [
-                            single_source(col_name)
+                            single_source(col_name, indented_name=col_name[0])
                             for col_name in [
                                 ("2008 Presidential Election", "margin"),
                                 ("2008-2012 Swing", "margin"),
@@ -609,7 +614,7 @@ statistics_tree = StatisticTree(
                             ]
                         ],
                         2020: [
-                            single_source(col_name)
+                            single_source(col_name, indented_name=col_name[0])
                             for col_name in [
                                 ("2016 Presidential Election", "margin"),
                                 ("2016-2020 Swing", "margin"),

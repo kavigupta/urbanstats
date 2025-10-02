@@ -54,7 +54,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 140
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -68,7 +69,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 297
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "Population Change (2010-2020)",
@@ -77,7 +79,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 300
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -91,7 +94,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 296
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "Population Change (2000-2020)",
@@ -100,7 +104,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 299
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -137,7 +142,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 141
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -151,7 +157,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 57
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=1km) Change (2010-2020)",
@@ -160,7 +167,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 59
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -174,7 +182,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 56
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=1km) Change (2000-2020)",
@@ -183,7 +192,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 58
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -220,7 +230,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 139
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -234,7 +245,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 315
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -248,7 +260,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 314
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -314,7 +327,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 150
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -334,7 +348,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 149
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -360,7 +375,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 356
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -374,7 +390,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 358
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -388,7 +405,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 357
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -408,7 +426,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 160
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -422,7 +441,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 162
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -436,7 +456,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 161
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -456,7 +477,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 92
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -470,7 +492,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 94
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -484,7 +507,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 93
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -504,7 +528,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 86
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -518,7 +543,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 88
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -532,7 +558,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 87
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -552,7 +579,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 262
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -566,7 +594,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 264
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -580,7 +609,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 263
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -600,7 +630,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 151
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -614,7 +645,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 153
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -628,7 +660,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 152
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -648,7 +681,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 290
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -662,7 +696,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 292
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -676,7 +711,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 291
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -696,7 +732,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 163
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "Racial Homogeneity Change (2000-2020) %",
@@ -705,7 +742,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 166
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     },
@@ -719,7 +757,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 164
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "Racial Homogeneity Change (2010-2020) %",
@@ -728,7 +767,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 167
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -742,7 +782,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 165
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -762,7 +803,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 322
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "Segregation Change (2000-2020) %",
@@ -771,7 +813,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 325
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     },
@@ -785,7 +828,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 323
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "Segregation Change (2010-2020) %",
@@ -794,7 +838,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 326
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -808,7 +853,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 324
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -828,7 +874,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 317
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "Mean Local Segregation Change (2000-2020) %",
@@ -837,7 +884,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 320
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     },
@@ -851,7 +899,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 318
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "Mean Local Segregation Change (2010-2020) %",
@@ -860,7 +909,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 321
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -874,7 +924,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 319
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -900,7 +951,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 95
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -920,7 +972,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 96
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -940,7 +993,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 97
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -960,7 +1014,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 89
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -980,7 +1035,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 90
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1000,7 +1056,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 91
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1020,7 +1077,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 228
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1040,7 +1098,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 230
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1060,7 +1119,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 229
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1086,7 +1146,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 120
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1106,7 +1167,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 122
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1126,7 +1188,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 118
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1146,7 +1209,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 121
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1166,7 +1230,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 123
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1186,7 +1251,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 119
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1206,7 +1272,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 117
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1226,7 +1293,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 116
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1246,7 +1314,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 115
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1266,7 +1335,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 125
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1286,7 +1356,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 126
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1306,7 +1377,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 124
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1342,7 +1414,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 138
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1372,7 +1445,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 128
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1402,7 +1476,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 132
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1432,7 +1507,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 136
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1462,7 +1538,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 134
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1492,7 +1569,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 130
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1518,7 +1596,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 301
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1538,7 +1617,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 235
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1558,7 +1638,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 174
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1578,7 +1659,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 170
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1598,7 +1680,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 172
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1618,7 +1701,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 173
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1638,7 +1722,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 169
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1658,7 +1743,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 171
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1678,7 +1764,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 183
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1698,7 +1785,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 179
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1718,7 +1806,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 181
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1738,7 +1827,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 182
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1758,7 +1848,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 178
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1778,7 +1869,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 180
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1804,7 +1896,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 175
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -1818,7 +1911,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 177
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -1832,7 +1926,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 176
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -1852,7 +1947,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 350
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -1866,7 +1962,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 352
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             }
                         ]
                     },
@@ -1880,7 +1977,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 351
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             }
                         ]
                     }
@@ -1900,7 +1998,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 311
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1920,7 +2019,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 309
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1940,7 +2040,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 310
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1960,7 +2061,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 305
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -1980,7 +2082,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 303
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2000,7 +2103,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 304
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2020,7 +2124,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 308
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2040,7 +2145,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 306
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2060,7 +2166,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 307
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2080,7 +2187,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 364
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2100,7 +2208,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 365
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2120,7 +2229,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 366
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2140,7 +2250,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 367
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2160,7 +2271,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 368
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2180,7 +2292,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 369
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2200,7 +2313,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 312
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2226,7 +2340,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 346
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2246,7 +2361,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 345
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2266,7 +2382,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 348
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2286,7 +2403,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 347
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2306,7 +2424,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 349
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2336,7 +2455,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 344
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2366,7 +2486,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 338
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2396,7 +2517,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 340
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2426,7 +2548,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 342
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2446,7 +2569,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 355
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2466,7 +2590,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 353
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2486,7 +2611,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 354
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2506,7 +2632,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 334
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2526,7 +2653,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 336
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2546,7 +2674,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 333
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2566,7 +2695,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 335
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2592,7 +2722,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 23
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2612,7 +2743,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 30
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2632,7 +2764,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 9
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2652,7 +2785,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 13
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2672,7 +2806,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 11
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2692,7 +2827,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 12
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2712,7 +2848,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 26
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2732,7 +2869,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 18
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2752,7 +2890,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 14
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2772,7 +2911,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 21
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2792,7 +2932,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 29
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2812,7 +2953,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 33
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2832,7 +2974,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 22
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2852,7 +2995,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 24
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2872,7 +3016,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 34
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2892,7 +3037,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 17
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2912,7 +3058,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 28
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2932,7 +3079,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 31
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2952,7 +3100,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 25
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2972,7 +3121,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 10
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -2992,7 +3142,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 19
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3012,7 +3163,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 27
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3032,7 +3184,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 32
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3052,7 +3205,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 15
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3072,7 +3226,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 20
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3092,7 +3247,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 16
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3118,7 +3274,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 294
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3138,7 +3295,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 159
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3158,7 +3316,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 155
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3178,7 +3337,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 154
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3198,7 +3358,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 156
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3218,7 +3379,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 158
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3238,7 +3400,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 157
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3274,7 +3437,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 189
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3304,7 +3468,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 207
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3334,7 +3499,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 185
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3364,7 +3530,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 191
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3394,7 +3561,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 193
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3424,7 +3592,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 195
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3454,7 +3623,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 199
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3484,7 +3654,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 197
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3514,7 +3685,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 215
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3544,7 +3716,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 201
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3574,7 +3747,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 205
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3604,7 +3778,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 209
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3634,7 +3809,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 187
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3664,7 +3840,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 203
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3694,7 +3871,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 211
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3724,7 +3902,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 213
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3754,7 +3933,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 217
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3784,7 +3964,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 219
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3814,7 +3995,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 221
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3844,7 +4026,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 223
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3870,7 +4053,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 265
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3890,7 +4074,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 270
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3910,7 +4095,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 282
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3930,7 +4116,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 266
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3950,7 +4137,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 269
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3970,7 +4158,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 272
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -3990,7 +4179,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 281
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4010,7 +4200,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 276
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4030,7 +4221,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 277
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4050,7 +4242,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 268
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4070,7 +4263,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 283
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4090,7 +4284,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 271
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4110,7 +4305,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 273
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4130,7 +4326,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 279
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4150,7 +4347,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 284
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4170,7 +4368,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 287
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4190,7 +4389,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 289
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4210,7 +4410,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 285
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4230,7 +4431,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 288
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4250,7 +4452,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 267
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4270,7 +4473,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 275
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4290,7 +4494,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 278
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4310,7 +4515,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 286
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4330,7 +4536,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 274
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4350,7 +4557,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 280
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4376,7 +4584,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 332
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4396,7 +4605,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 329
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4416,7 +4626,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 330
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4436,7 +4647,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 328
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4456,7 +4668,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 331
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4486,7 +4699,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 241
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4516,7 +4730,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 239
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4546,7 +4761,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 237
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4572,7 +4788,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 0
                                     }
-                                ]
+                                ],
+                                "indented_name": "2008 Presidential Election"
                             },
                             {
                                 "name": "2008-2012 Swing",
@@ -4581,7 +4798,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 1
                                     }
-                                ]
+                                ],
+                                "indented_name": "2008-2012 Swing"
                             },
                             {
                                 "name": "2012 Presidential Election",
@@ -4590,7 +4808,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 2
                                     }
-                                ]
+                                ],
+                                "indented_name": "2012 Presidential Election"
                             },
                             {
                                 "name": "2012-2016 Swing",
@@ -4599,7 +4818,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 3
                                     }
-                                ]
+                                ],
+                                "indented_name": "2012-2016 Swing"
                             }
                         ]
                     },
@@ -4613,7 +4833,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 4
                                     }
-                                ]
+                                ],
+                                "indented_name": "2016 Presidential Election"
                             },
                             {
                                 "name": "2016-2020 Swing",
@@ -4622,7 +4843,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 5
                                     }
-                                ]
+                                ],
+                                "indented_name": "2016-2020 Swing"
                             },
                             {
                                 "name": "2020 Presidential Election",
@@ -4631,7 +4853,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 6
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020 Presidential Election"
                             },
                             {
                                 "name": "2020-2024 Swing",
@@ -4640,7 +4863,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 7
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020-2024 Swing"
                             },
                             {
                                 "name": "2024 Presidential Election",
@@ -4649,7 +4873,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 8
                                     }
-                                ]
+                                ],
+                                "indented_name": "2024 Presidential Election"
                             }
                         ]
                     }
@@ -4675,7 +4900,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 293
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4695,7 +4921,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 362
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4715,7 +4942,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 244
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4735,7 +4963,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 363
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4755,7 +4984,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 245
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4775,7 +5005,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 361
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4795,7 +5026,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 243
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4815,7 +5047,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 360
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4835,7 +5068,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 242
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4855,7 +5089,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 234
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4875,7 +5110,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 232
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4895,7 +5131,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 231
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4915,7 +5152,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 233
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4941,7 +5179,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 248
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4961,7 +5200,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 257
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -4981,7 +5221,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 247
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5001,7 +5242,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 246
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5021,7 +5263,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 99
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5041,7 +5284,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 101
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5061,7 +5305,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 100
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5081,7 +5326,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 104
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5101,7 +5347,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 103
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5121,7 +5368,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 102
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5141,7 +5389,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 168
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5161,7 +5410,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 302
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5181,7 +5431,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 327
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5201,7 +5452,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 359
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5221,7 +5473,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 249
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5241,7 +5494,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 252
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5261,7 +5515,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 251
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5281,7 +5536,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 253
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5301,7 +5557,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 258
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5321,7 +5578,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 260
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5341,7 +5599,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 259
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5361,7 +5620,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 261
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5387,7 +5647,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 227
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5407,7 +5668,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 225
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5427,7 +5689,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 224
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5447,7 +5710,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 226
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -5483,7 +5747,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 105
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5497,7 +5762,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 37
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=250m) Change (2010-2020)",
@@ -5506,7 +5772,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 39
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5520,7 +5787,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 36
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=250m) Change (2000-2020)",
@@ -5529,7 +5797,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 38
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5559,7 +5828,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 106
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5573,7 +5843,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 42
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=500m) Change (2010-2020)",
@@ -5582,7 +5853,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 44
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5596,7 +5868,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 41
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=500m) Change (2000-2020)",
@@ -5605,7 +5878,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 43
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5642,7 +5916,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 142
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5656,7 +5931,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 48
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=1mi) Change (2010-2020)",
@@ -5665,7 +5941,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 50
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5679,7 +5956,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 47
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=1mi) Change (2000-2020)",
@@ -5688,7 +5966,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 49
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5725,7 +6004,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 144
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5739,7 +6019,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 62
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=2km) Change (2010-2020)",
@@ -5748,7 +6029,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 64
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5762,7 +6044,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 61
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=2km) Change (2000-2020)",
@@ -5771,7 +6054,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 63
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5808,7 +6092,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 146
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5822,7 +6107,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 72
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=4km) Change (2010-2020)",
@@ -5831,7 +6117,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 74
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5845,7 +6132,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 71
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=4km) Change (2000-2020)",
@@ -5854,7 +6142,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 73
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5891,7 +6180,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 148
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5905,7 +6195,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 82
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=8km) Change (2010-2020)",
@@ -5914,7 +6205,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 84
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -5928,7 +6220,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 81
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=8km) Change (2000-2020)",
@@ -5937,7 +6230,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 83
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -5974,7 +6268,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 143
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -5988,7 +6283,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 53
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=16km) Change (2010-2020)",
@@ -5997,7 +6293,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 55
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -6011,7 +6308,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 52
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=16km) Change (2000-2020)",
@@ -6020,7 +6318,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 54
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -6057,7 +6356,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 145
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -6071,7 +6371,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 67
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=32km) Change (2010-2020)",
@@ -6080,7 +6381,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 69
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -6094,7 +6396,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 66
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=32km) Change (2000-2020)",
@@ -6103,7 +6406,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 68
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -6140,7 +6444,8 @@ export const rawStatsTree = [
                                         },
                                         "column": 147
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     },
@@ -6154,7 +6459,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 77
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010"
                             },
                             {
                                 "name": "PW Density (r=64km) Change (2010-2020)",
@@ -6163,7 +6469,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 79
                                     }
-                                ]
+                                ],
+                                "indented_name": "2010-2020 Change"
                             }
                         ]
                     },
@@ -6177,7 +6484,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 76
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000"
                             },
                             {
                                 "name": "PW Density (r=64km) Change (2000-2020)",
@@ -6186,7 +6494,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 78
                                     }
-                                ]
+                                ],
+                                "indented_name": "2000-2020 Change"
                             }
                         ]
                     }
@@ -6212,7 +6521,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 255
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -6232,7 +6542,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 256
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -6252,7 +6563,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 250
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }
@@ -6272,7 +6584,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "column": 254
                                     }
-                                ]
+                                ],
+                                "indented_name": "2020"
                             }
                         ]
                     }

@@ -43,6 +43,7 @@ export interface GroupYear {
 
 export interface MultiSourceStatistic {
     name: string
+    indentedName?: string
     bySource: Statistic[]
 }
 
@@ -63,8 +64,9 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
             ...group,
             contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
-                stats: stats_by_source.map(({ name, stats: s }) => ({
+                stats: stats_by_source.map(({ name, indented_name, stats: s }) => ({
                     name,
+                    indentedName: indented_name,
                     bySource: s.map(({ source, column }) => ({
                         source,
                         path: statPaths[column],
@@ -123,6 +125,7 @@ interface StatParent {
     group: Group
     year: Year | null
     groupYearName: string
+    indentedName?: string
     source: DataSource | null
 }
 
@@ -131,7 +134,7 @@ const statParentsList: [StatPath, StatParent][] = allGroups
         .flatMap(({ year, stats: s }) => s
             .flatMap(stat => stat.bySource
                 .map(({ source, path }) =>
-                    [path, { group, year, groupYearName: stat.name, source }] satisfies [StatPath, StatParent]))))
+                    [path, { group, year, groupYearName: stat.name, indentedName: stat.indentedName, source }] satisfies [StatPath, StatParent]))))
 
 export const statParents = new Map<StatPath, StatParent>(
     statParentsList,

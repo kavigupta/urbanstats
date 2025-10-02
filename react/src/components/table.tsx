@@ -255,6 +255,7 @@ export function StatisticRowCells(props: {
     isIndented?: boolean
     isGroupHeader?: boolean
     groupName?: string
+    indentedName?: string
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -281,6 +282,7 @@ export function StatisticRowCells(props: {
                                     longname={props.longname}
                                     currentUniverse={currentUniverse}
                                     isFirstInGroup={props.isFirstInGroup}
+                                    indentedName={props.indentedName}
                                 />
                             )}
                 </span>
@@ -461,6 +463,7 @@ export function StatisticName(props: {
     currentUniverse: string
     center?: boolean
     isFirstInGroup?: boolean
+    indentedName?: string
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -482,7 +485,7 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {props.row.renderedStatname}
+            {props.indentedName ?? props.row.renderedStatname}
         </a>
     )
     const screenshotMode = useScreenshotMode()
