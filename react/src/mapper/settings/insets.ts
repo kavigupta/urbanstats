@@ -13,18 +13,18 @@ import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
 export function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnvironment):
-    { result: true, edit: (newArgVal: UrbanStatsASTExpression) => MapUSS, arg: { present: true, value: UrbanStatsASTExpression } | { present: false, universe: Universe } }
+    { result: true, edit: (newArgVal: UrbanStatsASTExpression) => MapUSS, insets: Inset[] }
     | { result: false } {
     const uss = settings.script.uss
-    let call, insetsArg
+    let mapConstructorCall, insetsArg
     if (
         uss.type === 'statements'
-        && (call = uss.result[1].rest[0].value)
-        && call.type === 'call'
-        && ((insetsArg = call.args.find(arg => arg.type === 'named' && arg.name.node === 'insets')) || true)
+        && (mapConstructorCall = uss.result[1].rest[0].value)
+        && mapConstructorCall.type === 'call'
+        && ((insetsArg = mapConstructorCall.args.find(arg => arg.type === 'named' && arg.name.node === 'insets')) || true)
         && (insetsArg === undefined || !hasCustomNode(insetsArg))
     ) {
-        const resolvedCall = call
+        const resolvedCall = mapConstructorCall
         const resolvedInsetsArg = insetsArg
         const edit = (newArgVal: UrbanStatsASTExpression): MapUSS => {
             return {
@@ -50,16 +50,16 @@ export function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnviro
             if (settings.universe === undefined) {
                 return { result: false }
             }
-            return { result: true, edit, arg: { present: false, universe: settings.universe } }
+            return { result: true, edit, insets: getInsets(loadInsetExpression(settings.universe), typeEnvironment) }
         }
-        return { result: true, edit, arg: { present: true, value: insetsArg.value } }
+        return { result: true, edit, arg: { present: true, insets: getInsets(resolvedInsetsArg.va) } }
     }
     return { result: false }
 }
 
 export type InsetEdits = ReadonlyMap<number, Partial<Inset>>
 
-export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
+export function doEditInsets(settings: MapSettings, newInsets: Inset[], typeEnvironment: TypeEnvironment): MapUSS {
     const canEdit = canEditInsets(settings, typeEnvironment)
     assert(canEdit.result, 'Trying to do an inset edit on USS that should not be inset editable')
 
@@ -94,24 +94,49 @@ function editInsetsList(
 
     const elem = vec.elements[index]
 
+    const inset = getInset(elem, typeEnvironment)
+
+    const newInset = {
+        ...inset,
+        ...edit,
+    }
+
+    const newAst = deconstruct(newInset)
+
+    return {
+        ...vec,
+        elements: [...vec.elements.slice(0, index), newAst, ...vec.elements.slice(index + 1)],
+    }
+}
+
+function getInsets(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Inset[] {
+    return getVector(expr, elem => getInset(elem, typeEnvironment))
+}
+
+function getVector<T>(expr: UrbanStatsASTExpression, parseValue: (value: UrbanStatsASTExpression) => T): T[] {
+    assert(expr.type === 'vectorLiteral', 'expression must be vector literal')
+    return expr.elements.map(parseValue)
+}
+
+function getInset(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Inset {
     let constructInset
 
-    switch (elem.type) {
+    switch (expr.type) {
         case 'identifier':
-            const type = typeEnvironment.get(elem.name.node)
+            const type = typeEnvironment.get(expr.name.node)
             if (type === undefined) {
-                throw new Error(`Inset identifier ${elem.name.node} not found in type environment`)
+                throw new Error(`Inset identifier ${expr.name.node} not found in type environment`)
             }
             if (type.documentation?.equivalentExpressions === undefined || type.documentation.equivalentExpressions.length === 0) {
-                throw new Error(`Inset identifier ${elem.name.node} has no equivalent expressions`)
+                throw new Error(`Inset identifier ${expr.name.node} has no equivalent expressions`)
             }
             constructInset = parseNoErrorAsExpression(unparse(type.documentation.equivalentExpressions[0]), '')
             break
         case 'call':
-            constructInset = elem
+            constructInset = expr
             break
         default:
-            throw new Error(`Unexpected elem type ${elem.type}`)
+            throw new Error(`Unexpected elem type ${expr.type}`)
     }
 
     assert(constructInset.type === 'call' && constructInset.fn.type === 'identifier' && constructInset.fn.name.node === 'constructInset', 'Must be a constructInset function call')
@@ -129,17 +154,7 @@ function editInsetsList(
         name,
     }
 
-    const newInset = {
-        ...inset,
-        ...edit,
-    }
-
-    const newAst = deconstruct(newInset)
-
-    return {
-        ...vec,
-        elements: [...vec.elements.slice(0, index), newAst, ...vec.elements.slice(index + 1)],
-    }
+    return inset
 }
 
 function getArg<T>(args: UrbanStatsASTArg[], argName: string, parseValue: (value: UrbanStatsASTExpression) => T): T {
