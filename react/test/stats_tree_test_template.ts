@@ -161,7 +161,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
                 await screencap(t)
             }
         })
-        await t.expect(Selector('a').withExactText('Population (2010)').exists).ok()
+        await t.expect(Selector('a').withExactText('2010').exists).ok()
         await screencap(t)
     })
 
