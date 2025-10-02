@@ -42,6 +42,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
+    const [simpleOrdinals] = useSetting('simple_ordinals')
 
     return (
         <>
@@ -61,15 +62,40 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             const currentGroupId = statParents.get(row.statpath)?.group.id
                             const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
 
+                            // Count how many rows are in this group
+                            const groupSize = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId).length
+
+                            // Show group header only for groups with more than 1 element
+                            const showGroupHeader = isFirstInGroup && groupSize > 1
+                            const isIndented = groupSize > 1
+
                             return (
-                                <StatisticTableRow
-                                    row={row}
-                                    index={index}
-                                    key={row.statpath}
-                                    longname={article.longname}
-                                    shortname={article.shortname}
-                                    isFirstInGroup={isFirstInGroup}
-                                />
+                                <>
+                                    {showGroupHeader && (
+                                        <TableRowContainer index={index}>
+                                            <StatisticRowCells
+                                                totalWidth={100}
+                                                longname={article.longname}
+                                                row={row}
+                                                onNavigate={() => { /* No navigation for group headers */ }}
+                                                simpleOrdinals={simpleOrdinals}
+                                                isFirstInGroup={true}
+                                                isIndented={false}
+                                                isGroupHeader={true}
+                                                groupName={statParents.get(row.statpath)?.group.name}
+                                            />
+                                        </TableRowContainer>
+                                    )}
+                                    <StatisticTableRow
+                                        row={row}
+                                        index={index}
+                                        key={row.statpath}
+                                        longname={article.longname}
+                                        shortname={article.shortname}
+                                        isFirstInGroup={isFirstInGroup}
+                                        isIndented={isIndented}
+                                    />
+                                </>
                             )
                         })}
                         <ArticleWarnings />
@@ -135,7 +161,7 @@ function StatisticTableHeader(): ReactNode {
     )
 }
 
-function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number, isFirstInGroup?: boolean }): ReactNode {
+function StatisticTableRow(props: { shortname: string, longname: string, row: ArticleRow, index: number, isFirstInGroup?: boolean, isIndented?: boolean }): ReactNode {
     const colors = useColors()
     const [expanded] = useSetting(rowExpandedKey(props.row.statpath))
     const currentUniverse = useUniverse()
@@ -158,6 +184,7 @@ function StatisticTableRow(props: { shortname: string, longname: string, row: Ar
                     }}
                     simpleOrdinals={simpleOrdinals}
                     isFirstInGroup={props.isFirstInGroup}
+                    isIndented={props.isIndented}
                 />
             </TableRowContainer>
             {expanded
