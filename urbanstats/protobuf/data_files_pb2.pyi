@@ -93,16 +93,25 @@ class TimeSeries(_message.Message):
     values: _containers.RepeatedScalarFieldContainer[float]
     def __init__(self, values: _Optional[_Iterable[float]] = ...) -> None: ...
 
+class TemperatureHistogram(_message.Message):
+    __slots__ = ("counts",)
+    COUNTS_FIELD_NUMBER: _ClassVar[int]
+    counts: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, counts: _Optional[_Iterable[int]] = ...) -> None: ...
+
 class ExtraStatistic(_message.Message):
-    __slots__ = ("histogram", "timeseries")
+    __slots__ = ("histogram", "timeseries", "temperature_histogram")
     HISTOGRAM_FIELD_NUMBER: _ClassVar[int]
     TIMESERIES_FIELD_NUMBER: _ClassVar[int]
+    TEMPERATURE_HISTOGRAM_FIELD_NUMBER: _ClassVar[int]
     histogram: Histogram
     timeseries: TimeSeries
+    temperature_histogram: TemperatureHistogram
     def __init__(
         self,
         histogram: _Optional[_Union[Histogram, _Mapping]] = ...,
         timeseries: _Optional[_Union[TimeSeries, _Mapping]] = ...,
+        temperature_histogram: _Optional[_Union[TemperatureHistogram, _Mapping]] = ...,
     ) -> None: ...
 
 class Article(_message.Message):

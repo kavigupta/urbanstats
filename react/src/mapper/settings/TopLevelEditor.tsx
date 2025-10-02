@@ -17,9 +17,10 @@ import { PreambleEditor } from './PreambleEditor'
 import { makeStatements } from './utils'
 
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
+const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
 
-export const validMapperOutputs = [cMap, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
 
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`

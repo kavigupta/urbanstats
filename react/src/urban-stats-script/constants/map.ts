@@ -34,6 +34,18 @@ export interface CMap extends CommonMap {
     outline: Outline
 }
 
+export interface CMapRGB {
+    geo: string[]
+    dataR: number[]
+    dataG: number[]
+    dataB: number[]
+    label: string
+    basemap: Basemap
+    insets: Insets
+    unit?: UnitType
+    outline: Outline
+}
+
 export interface PMap extends CommonMap {
     maxRadius: number
     relativeArea: number[]
@@ -42,6 +54,11 @@ export interface PMap extends CommonMap {
 export const cMapType = {
     type: 'opaque',
     name: 'cMap',
+} satisfies USSType
+
+export const cMapRGBType = {
+    type: 'opaque',
+    name: 'cMapRGB',
 } satisfies USSType
 
 export const pMapType = {
@@ -85,15 +102,22 @@ export const constructOutline = {
 
 function mapConstructorArguments(
     isPmap: boolean,
+    isRGB: boolean,
     intermediateArgs: Record<string, NamedFunctionArgumentWithDocumentation>,
 ): Record<string, NamedFunctionArgumentWithDocumentation> {
+    const dataType = { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } } satisfies NamedFunctionArgumentWithDocumentation
+    const dataArgs: Record<string, NamedFunctionArgumentWithDocumentation> = isRGB
+        ? { dataR: dataType, dataG: dataType, dataB: dataType }
+        : {
+                data: dataType,
+                scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
+                ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+            }
     return {
-        data: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
-        scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
-        ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+        ...dataArgs,
         label: {
             type: { type: 'concrete', value: { type: 'string' } },
-            defaultValue: createConstantExpression(null),
+            defaultValue: isRGB ? undefined : createConstantExpression(null),
         },
         unit: {
             type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
@@ -179,7 +203,7 @@ export const cMap: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: mapConstructorArguments(false, {
+        namedArgs: mapConstructorArguments(false, false, {
             outline: {
                 type: { type: 'concrete', value: outlineType },
                 defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
@@ -213,7 +237,7 @@ export const pMap: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
-        namedArgs: mapConstructorArguments(true, {
+        namedArgs: mapConstructorArguments(true, false, {
             maxRadius: {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: parseNoErrorAsExpression('10', ''),
@@ -271,6 +295,70 @@ export const pMap: USSValue = {
             relativeArea: 'Relative Area',
         },
         longDescription: 'Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the area of the points, which is used to determine the radius of the points. If not specified, the areas are all equal.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+    },
+} satisfies USSValue
+
+export const cMapRGB: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: mapConstructorArguments(false, true, {
+            outline: {
+                type: { type: 'concrete', value: outlineType },
+                defaultValue: parseNoErrorAsExpression('constructOutline(color=colorBlack, weight=0)', ''),
+            },
+        }),
+        returnType: { type: 'concrete', value: cMapRGBType },
+    },
+    value: (ctx, posArgs, namedArgs) => {
+        const clipValues = (values: number[]): number[] => values.map(v => Math.max(0, Math.min(1, v)))
+
+        const [dataR, dataG, dataB] = [
+            clipValues(namedArgs.dataR as number[]),
+            clipValues(namedArgs.dataG as number[]),
+            clipValues(namedArgs.dataB as number[]),
+        ]
+
+        const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
+
+        const geoRaw = namedArgs.geo as USSRawValue[]
+        const geo: string[] = geoRaw.map((g) => {
+            const geoHandle = g as { type: 'opaque', opaqueType: string, value: string }
+            assert(geoHandle.opaqueType === 'geoFeatureHandle', 'Expected geoFeatureHandle opaque value')
+            return geoHandle.value
+        })
+        const label = namedArgs.label as string
+        const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
+        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
+        const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
+        const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+
+        if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
+            throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
+        }
+        return {
+            type: 'opaque',
+            opaqueType: 'cMapRGB',
+            value: { geo, dataR, dataG, dataB, label, basemap, insets, unit, outline } satisfies CMapRGB,
+        }
+    },
+    documentation: {
+        humanReadableName: 'RGB Choropleth Map',
+        category: 'map',
+        isDefault: true,
+        namedArgs: {
+            dataR: 'Red Data (0-1)',
+            dataG: 'Green Data (0-1)',
+            dataB: 'Blue Data (0-1)',
+            label: 'Label',
+            geo: 'Geography',
+            outline: 'Outline',
+            basemap: 'Basemap',
+            insets: 'Insets',
+            unit: 'Unit',
+        },
+        longDescription: 'Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps.',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue

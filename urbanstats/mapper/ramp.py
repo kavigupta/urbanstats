@@ -167,6 +167,7 @@ def interpolate_ramp(ramp, relative_pos):
     )
 
 
+# vulture: ignore -- used in notebooks
 def plot_ramp(y, ramp, segments=101):
     xs = np.linspace(0, 1, segments)
     colors = [interpolate_ramp(ramp, x) for x in xs]

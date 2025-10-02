@@ -18,16 +18,6 @@ def pad_images(ref, act):
     return ref, act
 
 
-def plurality_color(arr):
-    arr = arr.astype(np.uint32) << np.arange(24, -1, -8)
-    arr = arr.sum(-1)
-    arr = arr.flatten()
-    # pylint: disable=unpacking-non-sequence
-    unique, counts = np.unique(arr, return_counts=True)
-    plur = unique[counts.argmax()]
-    return np.array([(plur >> x) & 0xFF for x in range(24, -1, -8)])
-
-
 def compute_delta_image(ref, act):
     ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]

@@ -7,6 +7,7 @@ import tqdm.auto as tqdm
 import zarr
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
+from scipy.interpolate import RegularGridInterpolator
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
@@ -14,16 +15,6 @@ from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_
 from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
-
-GPW_PATH = (
-    "gpw_v4_population_count_rev11_2020_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip",
-)
-
-GPW_LAND_PATH = (
-    "gpw_v4_land_water_area_rev11_landareakm_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
-)
 
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
@@ -247,7 +238,9 @@ def compute_gpw_weighted_for_shape(
     result = {}
     hists = {}
     for name, (data, pop_weight) in gridded_statistics.items():
-        data_selected = data[row_selected, col_selected]
+        data_selected = _compute_gridded_statistics_for_coordinates(
+            row_selected, col_selected, glo_pop.shape[0], glo_pop.shape[1], data
+        )
         if pop_weight:
             result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
         else:
@@ -256,6 +249,38 @@ def compute_gpw_weighted_for_shape(
             assert pop_weight, "pop_weight is required for histograms"
             hists[name] = produce_histogram(data_selected, pop)
     return result, hists
+
+
+def _compute_gridded_statistics_for_coordinates(
+    row_selected, col_selected, height, width, data
+):
+    if data.shape == (height, width):
+        return data[row_selected, col_selected]
+    scale = data.shape[0] / height
+    assert np.isclose(
+        data.shape[1] / width, scale
+    ), f"data shape {data.shape} not compatible with {height}x{width}"
+
+    # add 0.5 before scaling to center the points in the cells
+    return _compute_bilinear_subinterpolation(
+        data, (row_selected + 0.5) * scale, (col_selected + 0.5) * scale
+    )
+
+
+def _compute_bilinear_subinterpolation(data, fractional_rows, fractional_cols):
+    """
+    Does a bilinear interpolation of the data at the given fractional rows and columns. Treat the first data point as being at (0.5, 0.5).
+    """
+    # add 0.5 to center these. e.g., row 0 is centered at 0.5
+    row_coords = np.arange(data.shape[0]) + 0.5
+    col_coords = np.arange(data.shape[1]) + 0.5
+    interp = RegularGridInterpolator(
+        (row_coords, col_coords), data, bounds_error=True, fill_value=None
+    )
+    fractional_rows = np.clip(fractional_rows, 0.5, data.shape[0] - 0.5)
+    fractional_cols = np.clip(fractional_cols, 0.5, data.shape[1] - 0.5)
+    points = np.array([fractional_rows, fractional_cols]).T
+    return interp(points)
 
 
 @permacache(

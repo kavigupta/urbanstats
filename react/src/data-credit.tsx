@@ -563,24 +563,65 @@ export function DataCreditPanel(): ReactNode {
                                     >
                                         ERA5
                                     </FootnoteRef>
+                                    {' '}
+                                    using
+                                    {' '}
+                                    <FootnoteRef
+                                        description={(
+                                            <span>
+                                                Gorelick, N., Hancher, M., Dixon, M., Ilyushchenko, S.,
+                                                Thau, D., &amp; Moore, R. (2017). Google Earth Engine:
+                                                Planetary-scale geospatial analysis for everyone.
+                                                <em>Remote Sensing of Environment.</em>
+                                            </span>
+                                        )}
+                                    >
+                                        Google Earth Engine
+                                    </FootnoteRef>
                                     {'. '}
-                                    We collect data over the time period 1991-2021 and
+                                    We collect data over the time period 1990-2020 and
                                     over the 0.25 degree grid.
                                 </p>
                                 <p>
                                     For each grid point, we compute each of our weather statistics.
+                                </p>
 
-                                    We compute mean high temperatures by aggregating the daily high temperature for each day
-                                    in the time period, and then taking the mean of these values. We perform a similar
-                                    computation for mean high dew point. Using these values, we compute the mean high heat index.
+                                <ul>
+                                    <li>
+                                        We compute mean high/low temperatures by aggregating the daily high/low temperature for each day
+                                        in the time period, and then taking the mean of these values. We perform a similar
+                                        computation for mean high dew point. Using these values, we compute the mean high heat index.
+                                    </li>
+                                    <li>
+                                        We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
+                                        Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
+                                        and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
+                                    </li>
 
-                                    We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
-                                    Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
-                                    and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
+                                    <li>
+                                        Wind speed is computed by taking the mean of the hourly wind speed values per day, then comparing
+                                        to 10mph per day.
+                                    </li>
+                                    <li>
+                                        We compute the mean hourly sunshine by taking the mean amount of (1 - cloud cover) per daylit hour.
+                                        Prior to version 30.0.0, we fractionalized hours based on the amount of time there was daylight,
+                                        however, this was computationally difficult using Earth Engine, so we instead used all hours with
+                                        any daylight, and subtracted half an hour from the final sunniness metric to compensate.
+                                    </li>
+                                </ul>
+                                <p>
+                                    Every statistic except dewpoint and wind-speed are computed using the full 30-year
+                                    timespan. Dewpoint and wind speed are computed using a random sample of 2000 days.
                                 </p>
                                 <p>
-                                    These estimates are then interpolated to the block level using the census block centroid
-                                    using bilinear interpolation. We then compute the population weighted average of these
+                                    Weather statistics were added to all countries in version 30.0.0;
+                                    this necessitated switching to Earth Engine and slightly different computation
+                                    techniques; as a result they may differ slightly from previous versions.
+                                </p>
+                                <p>
+                                    These estimates are then interpolated using bilinear interpolation to the block
+                                    level using the census block centroid for US/Canada and the grid square for international
+                                    data. We then compute the population weighted average of these
                                     statistics for each geography.
                                 </p>
                             </div>

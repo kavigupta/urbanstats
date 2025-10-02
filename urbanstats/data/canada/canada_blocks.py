@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from permacache import permacache
 
-POPULATION_COLUMN = 1
-
 census_files = [
     "98-401-X2021006_English_CSV_data_Prairies.csv",
     "98-401-X2021006_English_CSV_data_Atlantic.csv",

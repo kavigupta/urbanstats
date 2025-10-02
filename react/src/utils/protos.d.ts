@@ -636,6 +636,103 @@ export class TimeSeries implements ITimeSeries {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a TemperatureHistogram. */
+export interface ITemperatureHistogram {
+
+    /** TemperatureHistogram counts */
+    counts?: (number[]|null);
+}
+
+/** Represents a TemperatureHistogram. */
+export class TemperatureHistogram implements ITemperatureHistogram {
+
+    /**
+     * Constructs a new TemperatureHistogram.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ITemperatureHistogram);
+
+    /** TemperatureHistogram counts. */
+    public counts: number[];
+
+    /**
+     * Creates a new TemperatureHistogram instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns TemperatureHistogram instance
+     */
+    public static create(properties?: ITemperatureHistogram): TemperatureHistogram;
+
+    /**
+     * Encodes the specified TemperatureHistogram message. Does not implicitly {@link TemperatureHistogram.verify|verify} messages.
+     * @param message TemperatureHistogram message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ITemperatureHistogram, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified TemperatureHistogram message, length delimited. Does not implicitly {@link TemperatureHistogram.verify|verify} messages.
+     * @param message TemperatureHistogram message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ITemperatureHistogram, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a TemperatureHistogram message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns TemperatureHistogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): TemperatureHistogram;
+
+    /**
+     * Decodes a TemperatureHistogram message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns TemperatureHistogram
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): TemperatureHistogram;
+
+    /**
+     * Verifies a TemperatureHistogram message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a TemperatureHistogram message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns TemperatureHistogram
+     */
+    public static fromObject(object: { [k: string]: any }): TemperatureHistogram;
+
+    /**
+     * Creates a plain object from a TemperatureHistogram message. Also converts values to other types if specified.
+     * @param message TemperatureHistogram
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: TemperatureHistogram, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this TemperatureHistogram to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TemperatureHistogram
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of an ExtraStatistic. */
 export interface IExtraStatistic {
 
@@ -644,6 +741,9 @@ export interface IExtraStatistic {
 
     /** ExtraStatistic timeseries */
     timeseries?: (ITimeSeries|null);
+
+    /** ExtraStatistic temperatureHistogram */
+    temperatureHistogram?: (ITemperatureHistogram|null);
 }
 
 /** Represents an ExtraStatistic. */
@@ -661,11 +761,17 @@ export class ExtraStatistic implements IExtraStatistic {
     /** ExtraStatistic timeseries. */
     public timeseries?: (ITimeSeries|null);
 
+    /** ExtraStatistic temperatureHistogram. */
+    public temperatureHistogram?: (ITemperatureHistogram|null);
+
     /** ExtraStatistic _histogram. */
     public _histogram?: "histogram";
 
     /** ExtraStatistic _timeseries. */
     public _timeseries?: "timeseries";
+
+    /** ExtraStatistic _temperatureHistogram. */
+    public _temperatureHistogram?: "temperatureHistogram";
 
     /**
      * Creates a new ExtraStatistic instance using the specified properties.

@@ -66,7 +66,7 @@ from urbanstats.statistics.collections.us_election_county import (
     USCountyLevelElectionsStatistics,
 )
 from urbanstats.statistics.collections.usda_fra_statistics import USDAFRAStatistics
-from urbanstats.statistics.collections.weather import USWeatherStatistics
+from urbanstats.statistics.collections.weather_global import GlobalWeatherStatistics
 
 statistic_collections = (
     AreaAndCompactnessStatistics(),
@@ -104,7 +104,7 @@ statistic_collections = (
     USCountyLevelElectionsStatistics(),
     USFeatureDistanceStatistics(),
     USDAFRAStatistics(),
-    USWeatherStatistics(),
+    GlobalWeatherStatistics(),
     InternetAccessStatistics(),
     InsuranceTypeStatistics(),
     MarriageStatistics(),

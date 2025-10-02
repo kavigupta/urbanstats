@@ -29,15 +29,6 @@ def consolidate_rings_single(original):
     return rings
 
 
-def consolidate_rings(rings):
-    size = len(rings)
-    while True:
-        rings = consolidate_rings_single(rings)
-        if len(rings) == size:
-            return rings
-        size = len(rings)
-
-
 def polygon_for_node(node):
     return Point(node.lon, node.lat)
 

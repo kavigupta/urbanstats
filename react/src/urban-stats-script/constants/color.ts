@@ -116,6 +116,7 @@ export const renderColor = {
 
 export function doRender(color: Color, ignoreAlpha?: boolean): string {
     const hex = (x: number): string => {
+        x = Math.round(x)
         const hexValue = x.toString(16)
         return hexValue.length === 1 ? `0${hexValue}` : hexValue
     }

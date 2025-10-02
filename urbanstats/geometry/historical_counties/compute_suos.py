@@ -146,3 +146,9 @@ def clean_up_geometry(geom):
         assert polygons, "no polygons found"
         return shapely.geometry.MultiPolygon(polygons)
     raise ValueError(f"unexpected geometry type {type(geom)}")
+
+
+if __name__ == "__main__":
+    from sys import argv
+
+    compute_suo_geometry().to_file(argv[1])
