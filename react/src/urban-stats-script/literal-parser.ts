@@ -72,6 +72,7 @@ export function object<T extends Record<string, unknown>>(schema: { [K in keyof 
                     }
                     result[key] = parsed
                 }
+                return result
             }
             return undefined
         },
@@ -186,12 +187,15 @@ export function deconstruct<T>(schema: LiteralParser<T>): LiteralParser<T> {
 /**
  * Enables selectively editing an AST (does a shallow copy)
  *
- * Example usage:
+ * simplified example usage:
  *
  * edit(selector => object({ a: number(), b: selector(number()) })).parse({ a: 1, b: 2 }).b.edit(3) // { a: 1, b: 3 }
  */
 export function edit<T>(
-    schema: (selector: <U>(selectorSchema: LiteralParser<U>) => LiteralParser<{ currentValue: U, edit: (newExpr: UrbanStatsASTExpression) => UrbanStatsASTExpression }>) => LiteralParser<T>,
+    schema: (selector: <U>(selectorSchema: LiteralParser<U>) => LiteralParser<{
+        currentValue: U
+        edit: (newExpr: UrbanStatsASTExpression) => UrbanStatsASTExpression
+    }>) => LiteralParser<T>,
 ): LiteralParser<T> {
     return {
         parse(expr, env, doEdit = e => e) {
