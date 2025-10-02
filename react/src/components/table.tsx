@@ -281,7 +281,7 @@ export function StatisticRowCells(props: {
                                 <span>{props.groupName}</span>
                             </span>
                         ),
-                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '0' },
+                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
                     },
                 ]}
                 totalWidth={props.totalWidth}
@@ -307,7 +307,7 @@ export function StatisticRowCells(props: {
                     />
                 </span>
             ),
-            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '0' },
+            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
         },
         {
             widthPercentage: 15,
