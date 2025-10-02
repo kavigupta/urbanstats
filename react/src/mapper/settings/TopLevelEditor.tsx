@@ -8,7 +8,7 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { TypeEnvironment, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
