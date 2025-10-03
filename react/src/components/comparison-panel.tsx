@@ -23,7 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
 
 const barHeight = '5px'
 
@@ -176,25 +176,27 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
+    // Precompute specs for comparison longname header cells (one per article)
+    const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
+        {
+            type: 'comparison-longname',
+            articleIndex,
+            width: transpose ? (leftMarginPercent - 2 * leftBarMargin) * 100 : columnWidth,
+            articles: props.articles,
+            names,
+            transpose,
+            sharedTypeOfAllArticles,
+            highlightIndex: articleIndex,
+        } satisfies CellSpec
+    ))
+
     const normalTableContents = (): ReactNode => {
-        const headerSpecs = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
-            {
-                type: 'comparison-longname',
-                articleIndex,
-                width: columnWidth,
-                articles: props.articles,
-                names,
-                transpose,
-                sharedTypeOfAllArticles,
-                highlightIndex: articleIndex,
-            } satisfies CellSpec
-        ))
         return (
             <>
                 {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
-                    {headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
+                    {longnameHeaderSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
                 </div>
                 {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
 
@@ -274,15 +276,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {props.articles.map((_: Article, articleIndex: number) => {
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
-                                <ComparisonLongnameCell
-                                    articleIndex={articleIndex}
-                                    width={(leftMarginPercent - 2 * leftBarMargin) * 100}
-                                    articles={props.articles}
-                                    names={names}
-                                    transpose={transpose}
-                                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
-                                    highlightIndex={articleIndex}
-                                />
+                                <Cell {...longnameHeaderSpecs[articleIndex]} />
                                 { dataByArticleStat[articleIndex].map((stat: ArticleRow, statIndex: number) => {
                                     return valueCells(articleIndex, statIndex)
                                 })}
