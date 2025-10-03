@@ -176,7 +176,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
-    // Precompute specs for comparison longname header cells (one per article)
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
         {
             type: 'comparison-longname',
