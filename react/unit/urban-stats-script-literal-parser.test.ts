@@ -178,3 +178,15 @@ void test('transformStmt', () => {
     const exprStmt = parseProgram('41')
     assert.equal(parser.parse(exprStmt, defaultConstants), 42)
 })
+
+void test('edit statements', () => {
+    // Parses and edits a statements node
+    const stmt = parseProgram('1; 2')
+    const parser = l.statements([l.expression(l.number()), l.expression(l.edit(l.number()))])
+    const parsed = parser.parse(stmt, defaultConstants)
+    assert.partialDeepStrictEqual(parsed, [1, { currentValue: 2 }])
+
+    // Edit the second statement
+    const edited = parsed![1].edit(parseExpr('3'))
+    assert.equal(unparse(edited), '1;\n3')
+})

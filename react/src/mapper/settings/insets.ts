@@ -86,5 +86,7 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
         currentInsetsAst = insets[index].edit(deconstruct({ ...insets[index].currentValue, ...partialInset })) as UrbanStatsASTExpression
     }
 
-    return mapInsets.edit(currentInsetsAst) as MapUSS
+    const result = mapInsets.edit(currentInsetsAst)
+    console.log(result)
+    return result as MapUSS
 }

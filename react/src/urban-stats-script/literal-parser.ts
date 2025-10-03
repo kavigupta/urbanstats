@@ -257,7 +257,7 @@ function parseStatements<T extends unknown[]>(
             return
         }
         const parsed = s.parse(stmts[i], env,
-            newStmt => doEdit([...stmts.slice(i), newStmt, ...stmts.slice(i + 1)]),
+            newStmt => doEdit([...stmts.slice(0, i), newStmt, ...stmts.slice(i + 1)]),
         )
         if (parsed === undefined) {
             return
