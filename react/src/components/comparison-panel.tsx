@@ -23,7 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow } from './table'
 
 const barHeight = '5px'
 
@@ -135,16 +135,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
-    const comparisonHeaders = (statNameOverride?: string): ReactNode => {
-        return [
-            <ComparisonColorBar key="color" highlightIndex={undefined} />,
-            <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} extraSpaceRight={0} />,
-            ...Array.from({ length: numColumns })
-                .map((_, columnIndex) => [
-                    <StatisticHeaderCells key={`headerCells_${columnIndex}`} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} extraSpaceRight={transposeHistogramSpacer(columnIndex)} />,
-                ]),
-        ]
-    }
+    const perColumnExtraRight = Array.from({ length: numColumns }).map((_, i) => transposeHistogramSpacer(i))
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
@@ -212,7 +203,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
 
                 <TableHeaderContainer>
-                    {comparisonHeaders()}
+                    <ComparisonHeaderRow
+                        columnWidth={columnWidth}
+                        statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
+                        onlyColumns={onlyColumns}
+                        extraSpaceRight={perColumnExtraRight}
+                    />
                 </TableHeaderContainer>
 
                 {
@@ -261,7 +257,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
 
                     <TableHeaderContainer>
-                        {comparisonHeaders('Region')}
+                        <ComparisonHeaderRow
+                            columnWidth={columnWidth}
+                            statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
+                            onlyColumns={onlyColumns}
+                            statNameOverride="Region"
+                            extraSpaceRight={perColumnExtraRight}
+                        />
                     </TableHeaderContainer>
 
                     {props.articles.map((_: Article, articleIndex: number) => {

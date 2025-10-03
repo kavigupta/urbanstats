@@ -99,6 +99,37 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
+export function ComparisonHeaderRow(props: {
+    columnWidth: number
+    statNameTotalWidth: number
+    onlyColumns: ColumnIdentifier[]
+    statNameOverride?: string
+    extraSpaceRight: number[]
+}): ReactNode {
+    return (
+        <>
+            <ComparisonColorBar key="color" highlightIndex={undefined} />
+            <StatisticHeaderCells
+                key="statname"
+                onlyColumns={['statname']}
+                simpleOrdinals={true}
+                totalWidth={props.statNameTotalWidth}
+                statNameOverride={props.statNameOverride}
+                extraSpaceRight={0}
+            />
+            {props.extraSpaceRight.map((_, columnIndex) => (
+                <StatisticHeaderCells
+                    key={`headerCells_${columnIndex}`}
+                    onlyColumns={props.onlyColumns}
+                    simpleOrdinals={true}
+                    totalWidth={props.columnWidth}
+                    extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
+                />
+            ))}
+        </>
+    )
+}
+
 export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
