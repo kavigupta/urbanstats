@@ -661,7 +661,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                     colorbarRef={colorbarRef}
                 />
                 {
-                    canEditInsets(mapSettings, typeEnvironment).result && (
+                    canEditInsets(mapSettings, typeEnvironment) && (
                         <div style={{
                             display: 'flex',
                             gap: '0.5em',

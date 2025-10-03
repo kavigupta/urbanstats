@@ -771,43 +771,6 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function hasCustomNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression | UrbanStatsASTArg): boolean {
-    switch (n.type) {
-        case 'unnamed':
-        case 'named':
-        case 'expression':
-            return hasCustomNode(n.value)
-        case 'constant':
-        case 'identifier':
-            return false
-        case 'attribute':
-        case 'unaryOperator':
-            return hasCustomNode(n.expr)
-        case 'call':
-            return hasCustomNode(n.fn) || n.args.some(hasCustomNode)
-        case 'binaryOperator':
-            return hasCustomNode(n.left) || hasCustomNode(n.right)
-        case 'objectLiteral':
-            return n.properties.some(([,value]) => hasCustomNode(value))
-        case 'vectorLiteral':
-            return n.elements.some(hasCustomNode)
-        case 'assignment':
-            return hasCustomNode(n.lhs) || hasCustomNode(n.value)
-        case 'statements':
-            return n.result.some(hasCustomNode)
-        case 'if':
-            return hasCustomNode(n.condition) || hasCustomNode(n.then) || (n.else ? hasCustomNode(n.else) : false)
-        case 'do':
-            return n.statements.some(hasCustomNode)
-        case 'condition':
-            return hasCustomNode(n.condition) || n.rest.some(hasCustomNode)
-        case 'parseError':
-            return false
-        case 'customNode':
-            return true
-    }
-}
-
 export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean } = {}): string {
     if (opts.inline) {
         assert(opts.expressionalContext ?? false, 'inline must be true if expressionalContext is true')
