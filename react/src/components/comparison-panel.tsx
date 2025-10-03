@@ -23,7 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
 
 const barHeight = '5px'
 
@@ -189,6 +189,19 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         } satisfies CellSpec
     ))
 
+    const statisticNameHeaderSpecs: CellSpec[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
+        {
+            type: 'statistic-name',
+            row: rowToDisplayForStat(statIndex),
+            longname: names[0],
+            currentUniverse,
+            width: transpose ? expandedColumnWidth(statIndex) : 100 * (leftMarginPercent - leftBarMargin),
+            center: transpose ? true : false,
+            transpose,
+            highlightIndex: transpose ? undefined : highlightArticleIndicesByStat[statIndex],
+        } satisfies CellSpec
+    ))
+
     const normalTableContents = (): ReactNode => {
         return (
             <>
@@ -208,15 +221,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         return (
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
-                                    <StatisticNameCell
-                                        row={rowToDisplayForStat(statIndex)}
-                                        longname={names[0]}
-                                        currentUniverse={currentUniverse}
-                                        width={100 * (leftMarginPercent - leftBarMargin)}
-                                        center={false}
-                                        highlightIndex={highlightArticleIndicesByStat[statIndex]}
-                                        transpose={transpose}
-                                    />
+                                    <Cell {...statisticNameHeaderSpecs[statIndex]} />
                                     {dataByStatArticle[statIndex].map((_, articleIndex) => {
                                         return valueCells(articleIndex, statIndex)
                                     })}
@@ -241,18 +246,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
-        const headerSpecs = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-            {
-                type: 'statistic-name',
-                row: rowToDisplayForStat(statIndex),
-                longname: names[0],
-                currentUniverse,
-                width: expandedColumnWidth(statIndex),
-                center: true,
-                transpose,
-            } satisfies CellSpec
-        ))
-
         return (
             <>
                 {bars(
@@ -263,7 +256,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     flexDirection: 'row' }}
                 >
                     {leftSpacerCell()}
-                    {headerSpecs.map((cellSpec, statIndex) => <Cell key={statIndex} {...cellSpec} />)}
+                    {statisticNameHeaderSpecs.map((cellSpec, statIndex) => <Cell key={statIndex} {...cellSpec} />)}
                 </div>
 
                 <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
