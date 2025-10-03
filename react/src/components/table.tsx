@@ -99,6 +99,51 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
+export interface LongnameHeaderSectionProps {
+    headerSpecs: (CellSpec & { highlightIndex?: number })[]
+    showBottomBar: boolean
+    leftSpacerWidth: number
+}
+
+export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactNode {
+    const colors = useColors()
+    const barHeight = '5px'
+    const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
+        return (
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: `${props.leftSpacerWidth * 100}%`, height: barHeight }} />
+                {Array.from({ length: props.headerSpecs.length }).map(
+                    (_, i) => (
+                        <div
+                            key={`bar_${i}`}
+                            style={{
+                                width: `${props.headerSpecs[i].width}%`,
+                                height: barHeight,
+                                backgroundColor: backgroundColor(i),
+                            }}
+                        />
+                    ),
+                )}
+            </div>
+        )
+    }
+
+    const getBarColor = (idx: number): string | undefined => {
+        const spec = props.headerSpecs[idx]
+        return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
+    }
+    return (
+        <>
+            {bars(getBarColor)}
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: `${props.leftSpacerWidth * 100}%` }} />
+                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
+            </div>
+            {props.showBottomBar && bars(getBarColor)}
+        </>
+    )
+}
+
 export function ComparisonHeaderRow(props: {
     columnWidth: number
     statNameTotalWidth: number
@@ -284,7 +329,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
 }
 
 export function StatisticRowCells(props: {
-    totalWidth: number
+    width: number
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
@@ -326,7 +371,7 @@ export function StatisticRowCells(props: {
                             style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
                         },
                     ]}
-                    totalWidth={props.totalWidth}
+                    totalWidth={props.width}
                 />
                 <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
             </>
@@ -423,7 +468,7 @@ export function StatisticRowCells(props: {
         <>
             <ColumnLayout
                 cells={cells}
-                totalWidth={props.totalWidth}
+                totalWidth={props.width}
                 onlyColumns={props.onlyColumns}
                 blankColumns={props.blankColumns}
             />
@@ -624,7 +669,7 @@ interface StatisticNameCellProps {
 }
 
 interface StatisticRowCellProps {
-    totalWidth: number
+    width: number
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow

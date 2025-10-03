@@ -23,9 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow } from './table'
-
-const barHeight = '5px'
+import { TableRowContainer, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow, LongnameHeaderSection } from './table'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
@@ -115,26 +113,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
 
-    const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
-        return (
-            <div style={{ display: 'flex' }}>
-                {leftSpacerCell()}
-                {Array.from({ length: numColumns }).map(
-                    (_, i) => (
-                        <div
-                            key={`bar_${i}`}
-                            style={{
-                                width: `${expandedColumnWidth(i)}%`,
-                                height: barHeight,
-                                backgroundColor: backgroundColor(i),
-                            }}
-                        />
-                    ),
-                )}
-            </div>
-        )
-    }
-
     const perColumnExtraRight = Array.from({ length: numColumns }).map((_, i) => transposeHistogramSpacer(i))
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
@@ -165,7 +143,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             width: transpose ? expandedColumnWidth(statIndex) : 100 * (leftMarginPercent - leftBarMargin),
             center: transpose ? true : false,
             transpose,
-            highlightIndex: transpose ? undefined : highlightArticleIndicesByStat[statIndex],
+            highlightIndex: highlightArticleIndicesByStat[statIndex],
         } satisfies CellSpec
     ))
 
@@ -185,7 +163,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     longnames: names.map((value, index) => index === articleIndex ? x : value),
                 }, { history: 'push', scroll: { kind: 'none' } })
             },
-            totalWidth: columnWidth,
+            width: columnWidth,
             extraSpaceRight: transposeHistogramSpacer(statIndex),
         }))
     ))
@@ -193,12 +171,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const normalTableContents = (): ReactNode => {
         return (
             <>
-                {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
-                <div style={{ display: 'flex' }}>
-                    {leftSpacerCell()}
-                    {longnameHeaderSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
-                </div>
-                {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
+                <LongnameHeaderSection
+                    headerSpecs={longnameHeaderSpecs}
+                    showBottomBar={true}
+                    leftSpacerWidth={leftMarginPercent}
+                />
 
                 <TableHeaderContainer>
                     <ComparisonHeaderRow
@@ -242,16 +219,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
         return (
             <>
-                {bars(
-                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? colorFromCycle(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
-                )}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'row' }}
-                >
-                    {leftSpacerCell()}
-                    {statisticNameHeaderSpecs.map((cellSpec, statIndex) => <Cell key={statIndex} {...cellSpec} />)}
-                </div>
+                <LongnameHeaderSection
+                    headerSpecs={statisticNameHeaderSpecs}
+                    showBottomBar={false}
+                    leftSpacerWidth={leftMarginPercent}
+                />
 
                 <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
 
