@@ -164,7 +164,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         }))
     ))
 
-    const rowSpecsByStatTransposed = rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
+    const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
     const normalTableContents = (): ReactNode => {
         return (
