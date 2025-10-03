@@ -2,7 +2,7 @@
  * A zod-like parser to extract static values from and edit USS ASTs
  */
 
-import { parseExpr } from '../mapper/settings/AutoUXEditor'
+import { parseExpr } from '../mapper/settings/parseExpr'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { noLocation } from './location'

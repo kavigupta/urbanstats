@@ -12,71 +12,13 @@ import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { Documentation, renderType, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
-import { parseExpr } from './AutoUXEditor'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
+import { parseExpr, possibilities, Selection } from './parseExpr'
 
 export const labelPadding = '4px'
-
-export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
-
-function shouldShowConstant(type: USSType): boolean {
-    return type.type === 'number' || type.type === 'string'
-}
-
-export function possibilities(target: USSType[], env: TypeEnvironment): Selection[] {
-    const results: Selection[] = []
-    // Add vector option if the type is a vector
-    if (target.some(t => t.type === 'vector')) {
-        results.push({ type: 'vector' })
-    }
-    // Add properties option if the type is an object
-    if (target.some(t => t.type === 'object')) {
-        results.push({ type: 'object' })
-    }
-    // Add custom option for non-opaque or custom-allowed types
-    if (target.some(t => t.type !== 'opaque' || t.allowCustomExpression !== false)) {
-        results.push({ type: 'custom' })
-    }
-    // Add constant option for numbers and strings
-    if (target.some(shouldShowConstant)) {
-        results.push({ type: 'constant' })
-    }
-    else {
-        const renderedTypes = target.map(renderType)
-        // Only add variables and functions if constants are not shown
-        const variables: Selection[] = []
-        const functions: Selection[] = []
-        for (const [name, type] of env) {
-            const t: USSType = type.type
-            // if (renderType(t) === renderType(target)) {
-            if (renderedTypes.includes(renderType(t))) {
-                variables.push({ type: 'variable', name })
-            }
-            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderedTypes.includes(renderType(t.returnType.value))) {
-                functions.push({ type: 'function', name })
-            }
-        }
-        // Sort variables by priority (lower numbers first)
-        variables.sort((a, b) => {
-            const aPriority = a.type === 'variable' ? (env.get(a.name)?.documentation?.priority ?? 1) : 1
-            const bPriority = b.type === 'variable' ? (env.get(b.name)?.documentation?.priority ?? 1) : 1
-            return aPriority - bPriority
-        })
-        // Sort functions by priority (functions get priority 0 by default)
-        functions.sort((a, b) => {
-            const aPriority = a.type === 'function' ? (env.get(a.name)?.documentation?.priority ?? 0) : 0
-            const bPriority = b.type === 'function' ? (env.get(b.name)?.documentation?.priority ?? 0) : 0
-            return aPriority - bPriority
-        })
-        // Functions first, then variables
-        results.push(...functions)
-        results.push(...variables)
-    }
-    return results
-}
 
 function isCustomConstructor(possibility: Selection, typeEnvironment: TypeEnvironment): boolean {
     return possibility.type === 'function' && typeEnvironment.get(possibility.name)?.documentation?.customConstructor === true
