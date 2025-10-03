@@ -23,7 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow } from './table'
+import { TableRowContainer, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow } from './table'
 
 const barHeight = '5px'
 
@@ -141,29 +141,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
-    const valueCells = (articleIndex: number, statIndex: number): ReactNode => {
-        return [
-            <StatisticRowCells
-                key={`rowCells_${articleIndex}_${statIndex}`}
-                row={dataByArticleStat[articleIndex][statIndex]}
-                longname={names[articleIndex]}
-                onlyColumns={onlyColumns}
-                blankColumns={validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile']}
-                simpleOrdinals={true}
-                statisticStyle={highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {}}
-                onNavigate={(x) => {
-                    void navContext.navigate({
-                        kind: 'comparison',
-                        universe: navContext.universe,
-                        longnames: names.map((value, index) => index === articleIndex ? x : value),
-                    }, { history: 'push', scroll: { kind: 'none' } })
-                }}
-                totalWidth={columnWidth}
-                extraSpaceRight={transposeHistogramSpacer(statIndex)}
-            />,
-        ]
-    }
-
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
@@ -192,6 +169,27 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         } satisfies CellSpec
     ))
 
+    const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
+        Array.from({ length: props.articles.length }).map((unused, articleIndex) => ({
+            type: 'statistic-row',
+            row: dataByArticleStat[articleIndex][statIndex],
+            longname: names[articleIndex],
+            onlyColumns,
+            blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
+            simpleOrdinals: true,
+            statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {},
+            onNavigate: (x: string) => {
+                void navContext.navigate({
+                    kind: 'comparison',
+                    universe: navContext.universe,
+                    longnames: names.map((value, index) => index === articleIndex ? x : value),
+                }, { history: 'push', scroll: { kind: 'none' } })
+            },
+            totalWidth: columnWidth,
+            extraSpaceRight: transposeHistogramSpacer(statIndex),
+        }))
+    ))
+
     const normalTableContents = (): ReactNode => {
         return (
             <>
@@ -213,13 +211,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                 {
                     dataByStatArticle.map((articlesStatData, statIndex) => {
+                        const rowSpecs = rowSpecsByStat[statIndex]
                         return (
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
                                     <Cell {...statisticNameHeaderSpecs[statIndex]} />
-                                    {dataByStatArticle[statIndex].map((_, articleIndex) => {
-                                        return valueCells(articleIndex, statIndex)
-                                    })}
+                                    {rowSpecs.map((spec, articleIndex) => (
+                                        <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
+                                    ))}
                                 </TableRowContainer>
                                 {expandedByStatIndex[statIndex]
                                     ? (
@@ -270,9 +269,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <Cell {...longnameHeaderSpecs[articleIndex]} />
-                                { dataByArticleStat[articleIndex].map((stat: ArticleRow, statIndex: number) => {
-                                    return valueCells(articleIndex, statIndex)
-                                })}
+                                { dataByArticleStat[articleIndex].map((row: ArticleRow, statIndex: number) => (
+                                    <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...rowSpecsByStat[statIndex][articleIndex]} />
+                                ))}
                             </TableRowContainer>
                         )
                     })}

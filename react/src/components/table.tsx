@@ -623,8 +623,28 @@ interface StatisticNameCellProps {
     transpose?: boolean
 }
 
+interface StatisticRowCellProps {
+    totalWidth: number
+    longname: string
+    statisticStyle?: CSSProperties
+    row: ArticleRow
+    onlyColumns?: string[]
+    blankColumns?: string[]
+    onNavigate?: (newArticle: string) => void
+    simpleOrdinals: boolean
+    isFirstInGroup?: boolean
+    isIndented?: boolean
+    isGroupHeader?: boolean
+    groupName?: string
+    indentedName?: string
+    groupHasMultipleSources?: boolean
+    statParent?: ReturnType<typeof statParents.get>
+    extraSpaceRight?: number
+}
+
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps)
     | ({ type: 'statistic-name' } & StatisticNameCellProps)
+    | ({ type: 'statistic-row' } & StatisticRowCellProps)
 
 export function Cell(props: CellSpec): ReactNode {
     switch (props.type) {
@@ -632,6 +652,8 @@ export function Cell(props: CellSpec): ReactNode {
             return <ComparisonLongnameCell {...props} />
         case 'statistic-name':
             return <StatisticNameCell {...props} />
+        case 'statistic-row':
+            return <StatisticRowCells {...props} />
     }
 }
 
