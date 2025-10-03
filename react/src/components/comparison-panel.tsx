@@ -25,7 +25,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticName } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell } from './table'
 
 const leftBarMargin = 0.02
 const barHeight = '5px'
@@ -176,19 +176,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         ]
     }
 
-    const statName = (statIndex: number, width: number, center: boolean): ReactNode => {
-        // So that we show the expand if there's a least one extra
-        const nameRow = dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
-        return (
-            <div key={`statName_${nameRow.statpath}`} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: center ? 'center' : undefined }}>
-                <StatisticName
-                    row={nameRow}
-                    longname={names[0]}
-                    currentUniverse={currentUniverse}
-                    center={center}
-                />
-            </div>
-        )
+    const rowToDisplayForStat = (statIndex: number): ArticleRow => {
+        return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
     const valueCells = (articleIndex: number, statIndex: number): ReactNode => {
@@ -236,7 +225,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
                                     <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
-                                    {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false)}
+                                    <StatisticNameCell
+                                        row={rowToDisplayForStat(statIndex)}
+                                        longname={names[0]}
+                                        currentUniverse={currentUniverse}
+                                        width={100 * (leftMarginPercent - leftBarMargin)}
+                                        center={false}
+                                    />
                                     {dataByStatArticle[statIndex].map((_, articleIndex) => {
                                         return valueCells(articleIndex, statIndex)
                                     })}
@@ -273,7 +268,16 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {leftSpacerCell()}
                     {
                         dataByStatArticle.map((_, statIndex) => {
-                            return statName(statIndex, expandedColumnWidth(statIndex), true)
+                            return (
+                                <StatisticNameCell
+                                    key={`statName_${statIndex}`}
+                                    row={rowToDisplayForStat(statIndex)}
+                                    longname={names[0]}
+                                    currentUniverse={currentUniverse}
+                                    width={expandedColumnWidth(statIndex)}
+                                    center={true}
+                                />
+                            )
                         })
                     }
                 </div>

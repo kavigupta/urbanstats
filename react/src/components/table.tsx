@@ -461,6 +461,35 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
+export function StatisticNameCell(props: {
+    row: ArticleRow
+    longname: string
+    currentUniverse: string
+    width: number
+    center?: boolean
+    isFirstInGroup?: boolean
+    indentedName?: string
+    groupHasMultipleSources?: boolean
+    sourceName?: string
+    isIndented?: boolean
+}): ReactNode {
+    return (
+        <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${props.width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
+            <StatisticName
+                row={props.row}
+                longname={props.longname}
+                currentUniverse={props.currentUniverse}
+                center={props.center}
+                isFirstInGroup={props.isFirstInGroup}
+                indentedName={props.indentedName}
+                groupHasMultipleSources={props.groupHasMultipleSources}
+                sourceName={props.sourceName}
+                isIndented={props.isIndented}
+            />
+        </div>
+    )
+}
+
 export function StatisticName(props: {
     row: ArticleRow
     longname: string
