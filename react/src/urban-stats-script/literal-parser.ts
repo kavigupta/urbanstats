@@ -6,6 +6,7 @@ import { parseExpr } from '../mapper/settings/parseExpr'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { noLocation } from './location'
+import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
 
 interface LiteralExprParser<T> {
@@ -29,10 +30,28 @@ export function string(): LiteralExprParser<string> {
 }
 
 export function boolean(): LiteralExprParser<boolean> {
+    return transformExpr(union([identifier('true'), identifier('false')]), i => i === 'true')
+}
+
+export function identifier<T extends string>(name: T): LiteralExprParser<T> {
     return {
         parse(expr) {
-            if (expr?.type === 'identifier' && ['true', 'false'].includes(expr.name.node)) {
-                return expr.name.node === 'true'
+            if (expr?.type === 'identifier' && expr.name.node === name) {
+                return name
+            }
+            return undefined
+        },
+    }
+}
+
+export function union<T>(schemas: LiteralExprParser<T>[]): LiteralExprParser<T> {
+    return {
+        parse(expr, env, doEdit) {
+            for (const schema of schemas) {
+                const parsed = schema.parse(expr, env, doEdit)
+                if (parsed !== undefined) {
+                    return parsed
+                }
             }
             return undefined
         },
@@ -92,13 +111,20 @@ export function optional<T>(schema: LiteralExprParser<T>): LiteralExprParser<T |
     }
 }
 
-export function call<N extends Record<string, unknown>, U extends unknown[]>(schema: {
+export function call<N extends Record<string, unknown>, U extends unknown[], F>(schema: {
     namedArgs: { [K in keyof N]: LiteralExprParser<N[K]> }
     unnamedArgs: { [I in keyof U]: LiteralExprParser<U[I]> }
-}): LiteralExprParser<{ namedArgs: N, unnamedArgs: U }> {
+    fn: LiteralExprParser<F>
+}): LiteralExprParser<{ namedArgs: N, unnamedArgs: U, fn: F }> {
     return {
         parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'call') {
+                const fn = schema.fn.parse(expr.fn, env,
+                    newExpr => doEdit({ ...expr, fn: newExpr }),
+                )
+                if (fn === undefined) {
+                    return
+                }
                 const namedResult = {} as N
                 for (const key of Object.keys(schema.namedArgs)) {
                     const match = expr.args.find(arg => arg.type === 'named' && arg.name.node === key)
@@ -135,7 +161,7 @@ export function call<N extends Record<string, unknown>, U extends unknown[]>(sch
                     return // not found
                 }
 
-                return { namedArgs: namedResult, unnamedArgs: unnamedResult }
+                return { namedArgs: namedResult, unnamedArgs: unnamedResult, fn }
             }
             return
         },
@@ -330,6 +356,25 @@ export function transformStmt<T, U>(schema: LiteralStmtParser<T>, map: (t: T) =>
                 return map(parsed)
             }
             return
+        },
+    }
+}
+
+export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
+    return {
+        parse(expr, env, doEdit = e => e) {
+            if (expr?.type === 'customNode' && expr.expr.type === 'expression') {
+                const expressionStatement = expr.expr
+                return schema.parse(expr.expr.value, env, newExpr => doEdit({
+                    ...expr,
+                    expr: {
+                        ...expressionStatement,
+                        value: newExpr,
+                    },
+                    originalCode: unparse(newExpr),
+                }))
+            }
+            return schema.parse(expr, env, doEdit)
         },
     }
 }

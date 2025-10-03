@@ -16,7 +16,7 @@ const neswSchema = l.object({
     west: l.number(),
 })
 
-const insetSchema = l.transformExpr(l.deconstruct(l.call({ unnamedArgs: [], namedArgs: {
+const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('constructInset'), unnamedArgs: [], namedArgs: {
     mainMap: l.boolean(),
     name: l.string(),
     screenBounds: neswSchema,
@@ -30,7 +30,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ unnamedArgs: [], name
     name,
 } satisfies Inset))
 
-const constructInsetsSchema = l.transformExpr(l.call({ namedArgs: {}, unnamedArgs: [l.vector(l.edit(insetSchema))] }), call => call.unnamedArgs[0])
+const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.vector(l.edit(insetSchema))] }), call => call.unnamedArgs[0])
 
 const mapInsetsSchema = l.transformStmt(l.statements([
     l.ignore(),
@@ -39,6 +39,7 @@ const mapInsetsSchema = l.transformStmt(l.statements([
         rest: [
             l.expression(l.reparse(idOutput, validMapperOutputs,
                 l.call({
+                    fn: l.ignore(),
                     unnamedArgs: [],
                     namedArgs: {
                         insets: l.edit(l.optional(l.deconstruct(constructInsetsSchema))),
@@ -87,6 +88,5 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
     }
 
     const result = mapInsets.edit(currentInsetsAst)
-    console.log(result)
     return result as MapUSS
 }

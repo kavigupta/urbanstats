@@ -82,14 +82,21 @@ void test('vector', () => {
     )
 })
 
+void test('identifier', () => {
+    const parser = l.identifier('testIdent')
+    assert.equal(parser.parse(parseExpr('testIdent'), defaultConstants), 'testIdent')
+    assert.equal(parser.parse(parseExpr('wrongIdent'), defaultConstants), undefined)
+})
+
 void test('call', () => {
     const parser = l.call({
+        fn: l.identifier('bar'),
         namedArgs: { foo: l.number() },
         unnamedArgs: [l.string(), l.boolean()],
     })
     assert.deepEqual(
         parser.parse(parseExpr('bar("hi", true, foo=7)'), defaultConstants),
-        { namedArgs: { foo: 7 }, unnamedArgs: ['hi', true] },
+        { fn: 'bar', namedArgs: { foo: 7 }, unnamedArgs: ['hi', true] },
     )
     assert.equal(
         parser.parse(parseExpr('bar("hi", foo="no", true)'), defaultConstants),
@@ -98,11 +105,12 @@ void test('call', () => {
 })
 
 void test('deconstruct', () => {
-    const schema = l.deconstruct(l.call({ namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.number()] }))
+    const schema = l.deconstruct(l.call({ fn: l.identifier('rgb'), namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.number()] }))
 
     assert.deepEqual(
         schema.parse(parseExpr('colorBlue'), defaultConstants),
         {
+            fn: 'rgb',
             namedArgs: {},
             unnamedArgs: [0.353, 0.49, 0.765],
         },
@@ -112,13 +120,14 @@ void test('deconstruct', () => {
         // eslint-disable-next-line no-restricted-syntax -- This is USS
         schema.parse(parseExpr('rgb(0, 0, 1)'), defaultConstants),
         {
+            fn: 'rgb',
             namedArgs: {},
             unnamedArgs: [0, 0, 1],
         },
     )
 
     // edit deconstruct
-    const editSchema = l.deconstruct(l.call({ namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.edit(l.number())] }))
+    const editSchema = l.deconstruct(l.call({ fn: l.ignore(), namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.edit(l.number())] }))
     assert.equal(
         unparse(editSchema.parse(parseExpr('colorBlue'), defaultConstants)!.unnamedArgs[2].edit(parseExpr('1'))),
         'rgb(0.353, 0.49, 1)',

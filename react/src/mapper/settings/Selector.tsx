@@ -15,6 +15,7 @@ import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
 import { parseExpr, possibilities, Selection } from './parseExpr'
 
@@ -214,62 +215,28 @@ export function renderSelection(typeEnvironment: TypeEnvironment, selection: Sel
     }
 }
 
-export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
-    switch (expr.type) {
-        case 'customNode':
-            if (expr.expr.type === 'expression') {
-                return getColor(expr.expr.value, typeEnvironment)
-            }
-            return
-        case 'identifier': {
-            const reference = typeEnvironment.get(expr.name.node)
-
-            if (reference === undefined || !('value' in reference)) {
-                return
-            }
-
-            if (reference.type.type === 'opaque' && reference.type.name === 'color') {
-                return { color: (reference.value as { value: Color }).value, kind: 'rgb' }
-            }
-
-            return
-        }
-        case 'call': {
-            const posArgs = expr.args.flatMap((arg) => {
-                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
-                    return [arg.value.value.node.value]
-                }
-                return []
-            })
-            const kwArg = expr.args.flatMap((arg) => {
-                if (arg.type === 'named' && arg.name.node === 'a' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
-                    return [arg.value.value.node.value]
-                }
-                return []
-            })
-            assert(kwArg.length <= 1, 'There should be at most one "a" named argument')
-            const alpha = kwArg.length === 1 ? kwArg[0] : 1
-            if (expr.fn.type === 'identifier' && (posArgs.length === 3 || posArgs.length === 4)) {
-                switch (expr.fn.name.node) {
-                    case 'rgb':
-                        const rgbColor = rgbToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
-                        if (rgbColor === undefined) {
-                            return
-                        }
-                        return { color: rgbColor, kind: 'rgb' }
-                    case 'hsv':
-                        const hsvColor = hsvToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
-                        if (hsvColor === undefined) {
-                            return
-                        }
-                        return { color: hsvColor, kind: 'hsv' }
-                    default:
-                        return
-                }
-            }
-        }
+const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
+    fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
+    unnamedArgs: [l.number(), l.number(), l.number()],
+    namedArgs: { a: l.optional(l.number()) },
+}))), (call) => {
+    let color: Color | undefined
+    switch (call.fn) {
+        case 'rgb':
+            color = rgbToColor(call.unnamedArgs[0], call.unnamedArgs[1], call.unnamedArgs[2], call.namedArgs.a ?? 1, true)
+            break
+        case 'hsv':
+            color = hsvToColor(call.unnamedArgs[0], call.unnamedArgs[1], call.unnamedArgs[2], call.namedArgs.a ?? 1, true)
+            break
     }
-    return
+    if (color === undefined) {
+        return undefined
+    }
+    return { color, kind: call.fn }
+})
+
+export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
+    return colorSchema.parse(expr, typeEnvironment)
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
