@@ -79,10 +79,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return transpose && expandedByStatIndex[columnIndex] ? 2 * columnWidth : columnWidth
     }
 
-    const leftSpacerCell = (): ReactNode => {
-        return <div style={{ width: `${leftMarginPercent * 100}%` }}></div>
-    }
-
     const transposeHistogramSpacer = (columnIndex: number): number => {
         return transpose && expandedByStatIndex[columnIndex] ? columnWidth : 0
     }
@@ -168,6 +164,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         }))
     ))
 
+    const rowSpecsByStatTransposed = rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
+
     const normalTableContents = (): ReactNode => {
         return (
             <>
@@ -187,8 +185,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 </TableHeaderContainer>
 
                 {
-                    dataByStatArticle.map((articlesStatData, statIndex) => {
-                        const rowSpecs = rowSpecsByStat[statIndex]
+                    rowSpecsByStat.map((rowSpecs, statIndex) => {
+                        const articlesStatData = dataByStatArticle[statIndex]
                         return (
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
@@ -237,12 +235,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         />
                     </TableHeaderContainer>
 
-                    {props.articles.map((_: Article, articleIndex: number) => {
+                    {rowSpecsByStatTransposed.map((rowSpecs, articleIndex: number) => {
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <Cell {...longnameHeaderSpecs[articleIndex]} />
-                                { dataByArticleStat[articleIndex].map((row: ArticleRow, statIndex: number) => (
-                                    <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...rowSpecsByStat[statIndex][articleIndex]} />
+                                {rowSpecs.map((spec, statIndex) => (
+                                    <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
                                 ))}
                             </TableRowContainer>
                         )
