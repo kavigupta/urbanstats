@@ -175,7 +175,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
-    const normalTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const normalTableContents = (headerSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
@@ -201,13 +201,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         />
                     </TableHeaderContainer>
                     {
-                        rowSpecsByStat.map((rowSpecs, rowIndex) => {
+                        rowSpecs.map((rowSpecsForItem, rowIndex) => {
                             const plotSpec = horizontalPlotSpecs[rowIndex]
                             return (
                                 <div key={`TableRowContainer_${rowIndex}`}>
                                     <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
                                         <Cell {...statisticNameHeaderSpecs[rowIndex]} />
-                                        {rowSpecs.map((spec, colIndex) => (
+                                        {rowSpecsForItem.map((spec, colIndex) => (
                                             <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
                                         ))}
                                     </TableRowContainer>
@@ -235,7 +235,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
-    const transposeTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const transposeTableContents = (headerSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
@@ -262,13 +262,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         />
                     </TableHeaderContainer>
                     {
-                        rowSpecsByStatTransposed.map((rowSpecs, rowIndex: number) => {
+                        rowSpecs.map((rowSpecsForItem, rowIndex: number) => {
                             const plotSpec = horizontalPlotSpecs[rowIndex]
                             return (
                                 <div key={`TableRowContainer_${rowIndex}`}>
                                     <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
                                         <Cell {...longnameHeaderSpecs[rowIndex]} />
-                                        {rowSpecs.map((spec, colIndex) => (
+                                        {rowSpecsForItem.map((spec, colIndex) => (
                                             <Cell key={`rowCells_${rowIndex}_${colIndex}`} {...spec} />
                                         ))}
                                     </TableRowContainer>
@@ -330,8 +330,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {maybeScroll(
                         <div ref={tableRef}>
                             {transpose
-                                ? transposeTableContents(statisticNameHeaderSpecs, plotSpecs.map(() => undefined), plotSpecs)
-                                : normalTableContents(longnameHeaderSpecs, plotSpecs, [])}
+                                ? transposeTableContents(statisticNameHeaderSpecs, rowSpecsByStatTransposed, plotSpecs.map(() => undefined), plotSpecs)
+                                : normalTableContents(longnameHeaderSpecs, rowSpecsByStat, plotSpecs, [])}
                             <ArticleWarnings />
                         </div>,
                     )}
