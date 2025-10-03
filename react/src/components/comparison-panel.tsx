@@ -166,6 +166,26 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
+    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
+        expandedByStatIndex[statIndex]
+            ? {
+                    statDescription: dataByStatArticle[statIndex][0].renderedStatname,
+                    plotProps: plotProps(statIndex),
+                }
+            : undefined,
+    )
+
+    const transposePlotSpecs: ({ statDescription: string, plotProps: PlotProps[], leftPercent: number, width: number } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
+        expandedByStatIndex[statIndex]
+            ? {
+                    statDescription: dataByStatArticle[statIndex][0].renderedStatname,
+                    plotProps: plotProps(statIndex),
+                    leftPercent: 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), columnWidth),
+                    width: columnWidth,
+                }
+            : undefined,
+    )
+
     const normalTableContents = (): ReactNode => {
         const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
@@ -190,7 +210,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     </TableHeaderContainer>
                     {
                         rowSpecsByStat.map((rowSpecs, statIndex) => {
-                            const articlesStatData = dataByStatArticle[statIndex]
+                            const plotSpec = plotSpecs[statIndex]
                             return (
                                 <div key={`TableRowContainer_${statIndex}`}>
                                     <TableRowContainer index={statIndex}>
@@ -199,13 +219,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
                                         ))}
                                     </TableRowContainer>
-                                    {expandedByStatIndex[statIndex]
-                                        ? (
-                                                <div style={{ width: '100%', position: 'relative' }}>
-                                                    <RenderedPlot statDescription={articlesStatData[0].renderedStatname} plotProps={plotProps(statIndex)} />
-                                                </div>
-                                            )
-                                        : null}
+                                    {plotSpec && (
+                                        <div style={{ width: '100%', position: 'relative' }}>
+                                            <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })
@@ -250,18 +268,15 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             </TableRowContainer>
                         )
                     })}
-                    {dataByStatArticle.map((rows, statIndex) => {
-                        if (!expandedByStatIndex[statIndex]) {
-                            return null
-                        }
-                        // Must account for other expanded columns
-                        const leftPercent = 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, _, i) => acc + expandedColumnWidth(i), columnWidth)
-                        return (
-                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${leftPercent}%`, bottom: 0, width: `${columnWidth}%` }}>
-                                <RenderedPlot statDescription={rows[0].renderedStatname} plotProps={plotProps(statIndex)} />
-                            </div>
-                        )
-                    })}
+                    {transposePlotSpecs.map((plotSpec, statIndex) =>
+                        plotSpec
+                            ? (
+                                    <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${plotSpec.leftPercent}%`, bottom: 0, width: `${plotSpec.width}%` }}>
+                                        <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
+                                    </div>
+                                )
+                            : null,
+                    )}
                 </div>
             </>
         )
