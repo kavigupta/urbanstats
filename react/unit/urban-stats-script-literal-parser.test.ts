@@ -5,7 +5,7 @@ import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import * as l from '../src/urban-stats-script/literal-parser'
 import { unparse } from '../src/urban-stats-script/parser'
 
-import { parseExpr } from './urban-stats-script-utils'
+import { parseExpr, parseProgram } from './urban-stats-script-utils'
 
 void test('object', () => {
     assert.deepEqual(
@@ -123,4 +123,58 @@ void test('deconstruct', () => {
         unparse(editSchema.parse(parseExpr('colorBlue'), defaultConstants)!.unnamedArgs[2].edit(parseExpr('1'))),
         'rgb(0.353, 0.49, 1)',
     )
+})
+
+void test('reparse', () => {
+    // Should parse and reparse the expression when editing
+    const parser = l.reparse('testBlock', [{ type: 'number' }], l.edit(l.number()))
+    const editResult = parser.parse(parseExpr('5'), defaultConstants)!.edit(parseExpr('4'))
+    assert.equal(editResult.type, 'constant')
+    assert.deepEqual(editResult.value.location.start.block, { type: 'single', ident: 'testBlock' })
+})
+
+void test('expression', () => {
+    // Wraps an expression statement
+    const exprStmt = parseProgram('42')
+    const parser = l.expression(l.number())
+    assert.equal(parser.parse(exprStmt, defaultConstants), 42)
+    // Should return undefined for non-expression
+    assert.equal(parser.parse(undefined, defaultConstants), undefined)
+})
+
+void test('statements', () => {
+    // Wraps a statements node
+    const stmt = parseProgram('1; 2')
+    const parser = l.statements([l.expression(l.number()), l.expression(l.number())])
+    assert.deepEqual(parser.parse(stmt, defaultConstants), [1, 2])
+    // Should return undefined for non-statements
+    assert.equal(parser.parse(undefined, defaultConstants), undefined)
+})
+
+void test('ignore', () => {
+    // Always returns null
+    assert.equal(l.ignore().parse(parseExpr('123'), defaultConstants), null)
+    assert.equal(l.ignore().parse(undefined, defaultConstants), null)
+})
+
+void test('condition', () => {
+    // Parses a condition statement
+    const stmt = parseProgram('condition (true); 5')
+    const parser = l.condition({ condition: l.boolean(), rest: [l.expression(l.number())] })
+    assert.deepEqual(parser.parse(stmt, defaultConstants), { condition: true, rest: [5] })
+    // Should return undefined for non-condition
+    assert.equal(parser.parse(undefined, defaultConstants), undefined)
+})
+
+void test('transformExpr', () => {
+    // Maps the result of a parser
+    const parser = l.transformExpr(l.number(), n => n * 2)
+    assert.equal(parser.parse(parseExpr('21'), defaultConstants), 42)
+})
+
+void test('transformStmt', () => {
+    // Maps the result of a statement parser
+    const parser = l.transformStmt(l.expression(l.number()), n => n + 1)
+    const exprStmt = parseProgram('41')
+    assert.equal(parser.parse(exprStmt, defaultConstants), 42)
 })
