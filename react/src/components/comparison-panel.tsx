@@ -6,7 +6,7 @@ import React, { ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
 import { HueColors } from '../page_template/color-themes'
-import { useColors } from '../page_template/colors'
+import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
@@ -24,9 +24,8 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell, leftBarMargin, ComparisonColorBar } from './table'
 
-const leftBarMargin = 0.02
 const barHeight = '5px'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
@@ -162,7 +161,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 onlyColumns={onlyColumns}
                 blankColumns={validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile']}
                 simpleOrdinals={true}
-                statisticStyle={highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(color(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {}}
+                statisticStyle={highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {}}
                 onNavigate={(x) => {
                     void navContext.navigate({
                         kind: 'comparison',
@@ -176,12 +175,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         ]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: color(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
     const normalTableContents = (): ReactNode => {
         return (
             <>
-                {bars(articleIndex => color(colors.hueColors, articleIndex))}
+                {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
                     {Array.from({ length: props.articles.length }).map((_, articleIndex) => (
@@ -196,7 +195,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         />
                     ))}
                 </div>
-                {bars(articleIndex => color(colors.hueColors, articleIndex))}
+                {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
 
                 <TableHeaderContainer>
                     {comparisonHeaders()}
@@ -207,13 +206,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         return (
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
-                                    <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
                                     <StatisticNameCell
                                         row={rowToDisplayForStat(statIndex)}
                                         longname={names[0]}
                                         currentUniverse={currentUniverse}
                                         width={100 * (leftMarginPercent - leftBarMargin)}
                                         center={false}
+                                        highlightIndex={highlightArticleIndicesByStat[statIndex]}
+                                        transpose={transpose}
                                     />
                                     {dataByStatArticle[statIndex].map((_, articleIndex) => {
                                         return valueCells(articleIndex, statIndex)
@@ -242,7 +242,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return (
             <>
                 {bars(
-                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
+                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? colorFromCycle(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
                 )}
                 <div style={{
                     display: 'flex',
@@ -259,6 +259,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                     currentUniverse={currentUniverse}
                                     width={expandedColumnWidth(statIndex)}
                                     center={true}
+                                    transpose={transpose}
                                 />
                             )
                         })
@@ -271,7 +272,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         {comparisonHeaders('Region')}
                     </TableHeaderContainer>
 
-                    {props.articles.map((_, articleIndex) => {
+                    {props.articles.map((_: Article, articleIndex: number) => {
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <ComparisonColorBar highlightIndex={articleIndex} />
@@ -284,7 +285,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                     sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                                 />
                                 <ComparisonColorBar highlightIndex={articleIndex} />
-                                { dataByArticleStat[articleIndex].map((stat, statIndex) => {
+                                { dataByArticleStat[articleIndex].map((stat: ArticleRow, statIndex: number) => {
                                     return valueCells(articleIndex, statIndex)
                                 })}
                             </TableRowContainer>
@@ -350,7 +351,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     <div ref={mapRef}>
                         <ComparisonMultiMap
                             longnames={props.articles.map(x => x.longname)}
-                            colors={props.articles.map((_, i) => color(colors.hueColors, i))}
+                            colors={props.articles.map((_, i) => colorFromCycle(colors.hueColors, i))}
                             basemap={{ type: 'osm' }}
                             mapPartitions={props.mapPartitions}
                         />
@@ -359,20 +360,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             </PageTemplate>
         </TransposeContext.Provider>
     )
-}
-
-function color(colors: HueColors, i: number): string {
-    const colorCycle = [
-        colors.blue,
-        colors.orange,
-        colors.purple,
-        colors.red,
-        colors.grey,
-        colors.pink,
-        colors.yellow,
-        colors.green,
-    ]
-    return colorCycle[i % colorCycle.length]
 }
 
 function getHighlightIndex(rows: ArticleRow[]): number | undefined {
@@ -385,30 +372,6 @@ function getHighlightIndex(rows: ArticleRow[]): number | undefined {
         }
         return x > arr[iMax] ? i : iMax
     }, undefined)
-}
-
-function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
-    const colors = useColors()
-
-    return (
-        <div
-            key="color"
-            style={{
-                width: `${100 * leftBarMargin}%`,
-                alignSelf: 'stretch',
-                position: 'relative',
-            }}
-        >
-            <div style={{
-                backgroundColor: highlightIndex === undefined ? colors.background : color(colors.hueColors, highlightIndex),
-                height: '100%',
-                width: '50%',
-                left: '25%',
-                position: 'absolute',
-            }}
-            />
-        </div>
-    )
 }
 
 function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {

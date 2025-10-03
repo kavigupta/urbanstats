@@ -6,7 +6,7 @@ import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
-import { useColors } from '../page_template/colors'
+import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
 import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
@@ -24,6 +24,8 @@ import { SearchBox } from './search'
 import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+
+export const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
     display: 'flex',
@@ -604,18 +606,25 @@ interface StatisticNameCellProps {
     currentUniverse: string
     width: number
     center?: boolean
+    highlightIndex?: number
+    transpose?: boolean
 }
 
 export function StatisticNameCell(props: StatisticNameCellProps): ReactNode {
     return (
-        <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${props.width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
-            <StatisticName
-                row={props.row}
-                longname={props.longname}
-                currentUniverse={props.currentUniverse}
-                center={props.center}
-            />
-        </div>
+        <>
+            {!props.transpose && props.highlightIndex !== undefined && (
+                <ComparisonColorBar highlightIndex={props.highlightIndex} />
+            )}
+            <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${props.width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
+                <StatisticName
+                    row={props.row}
+                    longname={props.longname}
+                    currentUniverse={props.currentUniverse}
+                    center={props.center}
+                />
+            </div>
+        </>
     )
 }
 
@@ -695,6 +704,30 @@ export function StatisticName(props: {
         )
     }
     return link
+}
+
+export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+    const colors = useColors()
+
+    return (
+        <div
+            key="color"
+            style={{
+                width: `${100 * leftBarMargin}%`,
+                alignSelf: 'stretch',
+                position: 'relative',
+            }}
+        >
+            <div style={{
+                backgroundColor: highlightIndex === undefined ? colors.background : colorFromCycle(colors.hueColors, highlightIndex),
+                height: '100%',
+                width: '50%',
+                left: '25%',
+                position: 'absolute',
+            }}
+            />
+        </div>
+    )
 }
 
 function computeDisclaimerText(disclaimer: Disclaimer): string {
