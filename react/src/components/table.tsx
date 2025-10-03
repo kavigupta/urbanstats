@@ -11,12 +11,16 @@ import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../
 import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
-import { isMobileLayout, useMobileLayout } from '../utils/responsive'
+import { Article } from '../utils/protos'
+import { useComparisonHeadStyle, useMobileLayout, isMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { useTranspose } from '../utils/transpose'
 import { UnitType } from '../utils/unit'
 
+import { Icon } from './Icon'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
+import { SearchBox } from './search'
 import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -461,18 +465,148 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
-export function StatisticNameCell(props: {
+const manipulationButtonHeight = '24px'
+
+function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
+    const isMobile = useMobileLayout()
+    const isTranspose = useTranspose()
+    const colors = useColors()
+
+    return (
+        <div
+            style={{
+                height: manipulationButtonHeight,
+                lineHeight: manipulationButtonHeight,
+                cursor: 'pointer',
+                paddingLeft: '0.5em', paddingRight: '0.5em',
+                borderRadius: '0.25em',
+                verticalAlign: 'middle',
+                backgroundColor: buttonColor,
+            }}
+            className={`serif manipulation-button-${text}`}
+            onClick={onClick}
+        >
+            {!(isMobile && isTranspose) ? text : <Icon src={image} size={manipulationButtonHeight} color={colors.textMain} />}
+        </div>
+    )
+}
+
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+    longname: string
+    includeDelete: boolean
+    onDelete: () => void
+    onReplace: (q: string) => ReturnType<Navigator['link']>
+    manipulationJustify: CSSProperties['justifyContent']
+    sharedTypeOfAllArticles: string | null | undefined
+}): ReactNode {
+    const colors = useColors()
+    const [isEditing, setIsEditing] = React.useState(false)
+    const currentUniverse = useUniverse()
+    const comparisonHeadStyle = useComparisonHeadStyle()
+
+    const manipulationButtons = (
+        <div style={{ height: manipulationButtonHeight }}>
+            <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
+                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" image="/replace.png" />
+                {!includeDelete
+                    ? null
+                    : (
+                            <>
+                                <div style={{ width: '5px' }} />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" image="/close.png" />
+                            </>
+                        )}
+                <div style={{ width: '5px' }} />
+            </div>
+        </div>
+    )
+
+    const screenshotMode = useScreenshotMode()
+
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <div>
+            {screenshotMode ? undefined : manipulationButtons}
+            <div style={{ height: '5px' }} />
+            <a
+                className="serif"
+                {
+                    ...navContext.link({
+                        kind: 'article',
+                        longname,
+                        universe: currentUniverse,
+                    }, { scroll: { kind: 'position', top: 0 } })
+                }
+                style={{ textDecoration: 'none' }}
+            >
+                <div style={useComparisonHeadStyle()}>{longname}</div>
+            </a>
+            {isEditing
+                ? (
+                        <SearchBox
+                            autoFocus={true}
+                            style={{ ...comparisonHeadStyle, width: '100%' }}
+                            placeholder="Replacement"
+                            onChange={() => {
+                                setIsEditing(false)
+                            }}
+                            link={onReplace}
+                            prioritizeArticleType={sharedTypeOfAllArticles ?? undefined}
+                        />
+                    )
+                : null}
+        </div>
+    )
+}
+
+interface ComparisonLongnameCellProps {
+    articleIndex: number
+    width: number
+    articles: Article[]
+    names: string[]
+    transpose: boolean
+    sharedTypeOfAllArticles: string | null | undefined
+}
+
+export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): ReactNode {
+    const currentUniverse = useUniverse()
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <div key={`heading_${props.articleIndex}`} style={{ width: `${props.width}%` }}>
+            <HeadingDisplay
+                longname={props.articles[props.articleIndex].longname}
+                includeDelete={props.articles.length > 1}
+                onDelete={() => {
+                    void navContext.navigate({
+                        kind: 'comparison',
+                        universe: currentUniverse,
+                        longnames: props.names.filter((_, index) => index !== props.articleIndex),
+                    }, { history: 'push', scroll: { kind: 'none' } })
+                }}
+                onReplace={x =>
+                    navContext.link({
+                        kind: 'comparison',
+                        universe: currentUniverse,
+                        longnames: props.names.map((value, index) => index === props.articleIndex ? x : value),
+                    }, { scroll: { kind: 'none' } })}
+                manipulationJustify={props.transpose ? 'center' : 'flex-end'}
+                sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            />
+        </div>
+    )
+}
+
+interface StatisticNameCellProps {
     row: ArticleRow
     longname: string
     currentUniverse: string
     width: number
     center?: boolean
-    isFirstInGroup?: boolean
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    sourceName?: string
-    isIndented?: boolean
-}): ReactNode {
+}
+
+export function StatisticNameCell(props: StatisticNameCellProps): ReactNode {
     return (
         <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${props.width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
             <StatisticName
@@ -480,11 +614,6 @@ export function StatisticNameCell(props: {
                 longname={props.longname}
                 currentUniverse={props.currentUniverse}
                 center={props.center}
-                isFirstInGroup={props.isFirstInGroup}
-                indentedName={props.indentedName}
-                groupHasMultipleSources={props.groupHasMultipleSources}
-                sourceName={props.sourceName}
-                isIndented={props.isIndented}
             />
         </div>
     )

@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -14,10 +14,9 @@ import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
-import { TransposeContext, useTranspose } from '../utils/transpose'
+import { TransposeContext } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
-import { Icon } from './Icon'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
@@ -25,7 +24,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell } from './table'
 
 const leftBarMargin = 0.02
 const barHeight = '5px'
@@ -118,32 +117,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
 
-    const heading = (articleIndex: number, width: number): ReactNode => {
-        return (
-            <div key={`heading_${articleIndex}`} style={{ width: `${width}%` }}>
-                <HeadingDisplay
-                    longname={props.articles[articleIndex].longname}
-                    includeDelete={props.articles.length > 1}
-                    onDelete={() => {
-                        void navContext.navigate({
-                            kind: 'comparison',
-                            universe: currentUniverse,
-                            longnames: names.filter((_, index) => index !== articleIndex),
-                        }, { history: 'push', scroll: { kind: 'none' } })
-                    }}
-                    onReplace={x =>
-                        navContext.link({
-                            kind: 'comparison',
-                            universe: currentUniverse,
-                            longnames: names.map((value, index) => index === articleIndex ? x : value),
-                        }, { scroll: { kind: 'none' } })}
-                    manipulationJustify={transpose ? 'center' : 'flex-end'}
-                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
-                />
-            </div>
-        )
-    }
-
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
             <div style={{ display: 'flex' }}>
@@ -211,7 +184,17 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 {bars(articleIndex => color(colors.hueColors, articleIndex))}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
-                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth))}
+                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => (
+                        <ComparisonLongnameCell
+                            key={`heading_${articleIndex}`}
+                            articleIndex={articleIndex}
+                            width={columnWidth}
+                            articles={props.articles}
+                            names={names}
+                            transpose={transpose}
+                            sharedTypeOfAllArticles={sharedTypeOfAllArticles}
+                        />
+                    ))}
                 </div>
                 {bars(articleIndex => color(colors.hueColors, articleIndex))}
 
@@ -292,7 +275,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <ComparisonColorBar highlightIndex={articleIndex} />
-                                {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
+                                <ComparisonLongnameCell
+                                    articleIndex={articleIndex}
+                                    width={(leftMarginPercent - 2 * leftBarMargin) * 100}
+                                    articles={props.articles}
+                                    names={names}
+                                    transpose={transpose}
+                                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
+                                />
                                 <ComparisonColorBar highlightIndex={articleIndex} />
                                 { dataByArticleStat[articleIndex].map((stat, statIndex) => {
                                     return valueCells(articleIndex, statIndex)
@@ -417,101 +407,6 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
                 position: 'absolute',
             }}
             />
-        </div>
-    )
-}
-
-const manipulationButtonHeight = '24px'
-
-function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
-    const isMobile = useMobileLayout()
-    const isTranspose = useTranspose()
-    const colors = useColors()
-
-    return (
-        <div
-            style={{
-                height: manipulationButtonHeight,
-                lineHeight: manipulationButtonHeight,
-                cursor: 'pointer',
-                paddingLeft: '0.5em', paddingRight: '0.5em',
-                borderRadius: '0.25em',
-                verticalAlign: 'middle',
-                backgroundColor: buttonColor,
-            }}
-            className={`serif manipulation-button-${text}`}
-            onClick={onClick}
-        >
-            {!(isMobile && isTranspose) ? text : <Icon src={image} size={manipulationButtonHeight} color={colors.textMain} />}
-        </div>
-    )
-}
-
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
-    longname: string
-    includeDelete: boolean
-    onDelete: () => void
-    onReplace: (q: string) => ReturnType<Navigator['link']>
-    manipulationJustify: CSSProperties['justifyContent']
-    sharedTypeOfAllArticles: string | undefined
-}): ReactNode {
-    const colors = useColors()
-    const [isEditing, setIsEditing] = React.useState(false)
-    const currentUniverse = useUniverse()
-    const comparisonHeadStyle = useComparisonHeadStyle()
-
-    const manipulationButtons = (
-        <div style={{ height: manipulationButtonHeight }}>
-            <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
-                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" image="/replace.png" />
-                {!includeDelete
-                    ? null
-                    : (
-                            <>
-                                <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" image="/close.png" />
-                            </>
-                        )}
-                <div style={{ width: '5px' }} />
-            </div>
-        </div>
-    )
-
-    const screenshotMode = useScreenshotMode()
-
-    const navContext = useContext(Navigator.Context)
-
-    return (
-        <div>
-            {screenshotMode ? undefined : manipulationButtons}
-            <div style={{ height: '5px' }} />
-            <a
-                className="serif"
-                {
-                    ...navContext.link({
-                        kind: 'article',
-                        longname,
-                        universe: currentUniverse,
-                    }, { scroll: { kind: 'position', top: 0 } })
-                }
-                style={{ textDecoration: 'none' }}
-            >
-                <div style={useComparisonHeadStyle()}>{longname}</div>
-            </a>
-            {isEditing
-                ? (
-                        <SearchBox
-                            autoFocus={true}
-                            style={{ ...comparisonHeadStyle, width: '100%' }}
-                            placeholder="Replacement"
-                            onChange={() => {
-                                setIsEditing(false)
-                            }}
-                            link={onReplace}
-                            prioritizeArticleType={sharedTypeOfAllArticles}
-                        />
-                    )
-                : null}
         </div>
     )
 }
