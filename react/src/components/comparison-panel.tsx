@@ -198,14 +198,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         />
                     </TableHeaderContainer>
                     {
-                        rowSpecsByStat.map((rowSpecs, statIndex) => {
-                            const plotSpec = horizontalPlotSpecs[statIndex]
+                        rowSpecsByStat.map((rowSpecs, rowIndex) => {
+                            const plotSpec = horizontalPlotSpecs[rowIndex]
                             return (
-                                <div key={`TableRowContainer_${statIndex}`}>
-                                    <TableRowContainer index={statIndex}>
-                                        <Cell {...statisticNameHeaderSpecs[statIndex]} />
-                                        {rowSpecs.map((spec, articleIndex) => (
-                                            <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
+                                <div key={`TableRowContainer_${rowIndex}`}>
+                                    <TableRowContainer index={rowIndex}>
+                                        <Cell {...statisticNameHeaderSpecs[rowIndex]} />
+                                        {rowSpecs.map((spec, colIndex) => (
+                                            <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
                                         ))}
                                     </TableRowContainer>
                                     {plotSpec && (
@@ -246,7 +246,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 />
 
                 <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
-
                     <TableHeaderContainer>
                         <ComparisonHeaderRow
                             columnWidth={columnWidth}
@@ -256,27 +255,26 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             extraSpaceRight={perColumnExtraRight}
                         />
                     </TableHeaderContainer>
-
-                    {rowSpecsByStatTransposed.map((rowSpecs, articleIndex: number) => {
-                        const plotSpec = horizontalPlotSpecs[articleIndex]
-                        return (
-                            <div key={`TableRowContainer_${articleIndex}`}>
-                                <TableRowContainer index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
-                                    <Cell {...longnameHeaderSpecs[articleIndex]} />
-                                    {rowSpecs.map((spec, statIndex) => (
-                                        <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
-                                    ))}
-                                </TableRowContainer>
-                                {
-                                    plotSpec && (
+                    {
+                        rowSpecsByStatTransposed.map((rowSpecs, rowIndex: number) => {
+                            const plotSpec = horizontalPlotSpecs[rowIndex]
+                            return (
+                                <div key={`TableRowContainer_${rowIndex}`}>
+                                    <TableRowContainer index={rowIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
+                                        <Cell {...longnameHeaderSpecs[rowIndex]} />
+                                        {rowSpecs.map((spec, colIndex) => (
+                                            <Cell key={`rowCells_${rowIndex}_${colIndex}`} {...spec} />
+                                        ))}
+                                    </TableRowContainer>
+                                    {plotSpec && (
                                         <div style={{ width: '100%', position: 'relative' }}>
                                             <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                                         </div>
-                                    )
-                                }
-                            </div>
-                        )
-                    })}
+                                    ) }
+                                </div>
+                            )
+                        })
+                    }
                     {verticalPlotSpecs.map((plotSpec, statIndex) =>
                         plotSpec
                             ? (
