@@ -205,12 +205,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const normalTableContents = (): ReactNode => {
         return (
             <>
-                {/* {bars(articleIndex => color(colors.hueColors, articleIndex))} */}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
                     {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth, true, color(colors.hueColors, articleIndex)))}
                 </div>
-                {/* {bars(articleIndex => color(colors.hueColors, articleIndex))} */}
 
                 <TableHeaderContainer>
                     {comparisonHeaders()}
@@ -249,9 +247,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
         return (
             <>
-                {/* {bars(
-                    statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
-                )} */}
                 <div style={{
                     display: 'flex',
                     flexDirection: 'row' }}
