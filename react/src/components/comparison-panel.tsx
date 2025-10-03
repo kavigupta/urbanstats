@@ -175,17 +175,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
-    const transposePlotSpecs: ({ statDescription: string, plotProps: PlotProps[], leftPercent: number, width: number } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
-        expandedByStatIndex[statIndex]
-            ? {
-                    statDescription: dataByStatArticle[statIndex][0].renderedStatname,
-                    plotProps: plotProps(statIndex),
-                    leftPercent: 100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), columnWidth),
-                    width: columnWidth,
-                }
-            : undefined,
-    )
-
     const normalTableContents = (): ReactNode => {
         const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
@@ -268,10 +257,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             </TableRowContainer>
                         )
                     })}
-                    {transposePlotSpecs.map((plotSpec, statIndex) =>
+                    {plotSpecs.map((plotSpec, statIndex) =>
                         plotSpec
                             ? (
-                                    <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${plotSpec.leftPercent}%`, bottom: 0, width: `${plotSpec.width}%` }}>
+                                    <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
                                         <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                                     </div>
                                 )
