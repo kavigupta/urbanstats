@@ -167,6 +167,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
     const normalTableContents = (): ReactNode => {
+        const someExpanded = expandedByStatIndex.some(e => e)
+        const headerHeight = transposeSettingsHeight
+        const contentHeight = '379.5px'
+
         return (
             <>
                 <LongnameHeaderSection
@@ -175,37 +179,38 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     leftSpacerWidth={leftMarginPercent}
                 />
 
-                <TableHeaderContainer>
-                    <ComparisonHeaderRow
-                        columnWidth={columnWidth}
-                        statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
-                        onlyColumns={onlyColumns}
-                        extraSpaceRight={perColumnExtraRight}
-                    />
-                </TableHeaderContainer>
-
-                {
-                    rowSpecsByStat.map((rowSpecs, statIndex) => {
-                        const articlesStatData = dataByStatArticle[statIndex]
-                        return (
-                            <div key={`TableRowContainer_${statIndex}`}>
-                                <TableRowContainer index={statIndex}>
-                                    <Cell {...statisticNameHeaderSpecs[statIndex]} />
-                                    {rowSpecs.map((spec, articleIndex) => (
-                                        <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
-                                    ))}
-                                </TableRowContainer>
-                                {expandedByStatIndex[statIndex]
-                                    ? (
-                                            <div style={{ width: '100%', position: 'relative' }}>
-                                                <RenderedPlot statDescription={articlesStatData[0].renderedStatname} plotProps={plotProps(statIndex)} />
-                                            </div>
-                                        )
-                                    : null}
-                            </div>
-                        )
-                    })
-                }
+                <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
+                    <TableHeaderContainer>
+                        <ComparisonHeaderRow
+                            columnWidth={columnWidth}
+                            statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
+                            onlyColumns={onlyColumns}
+                            extraSpaceRight={perColumnExtraRight}
+                        />
+                    </TableHeaderContainer>
+                    {
+                        rowSpecsByStat.map((rowSpecs, statIndex) => {
+                            const articlesStatData = dataByStatArticle[statIndex]
+                            return (
+                                <div key={`TableRowContainer_${statIndex}`}>
+                                    <TableRowContainer index={statIndex}>
+                                        <Cell {...statisticNameHeaderSpecs[statIndex]} />
+                                        {rowSpecs.map((spec, articleIndex) => (
+                                            <Cell key={`rowCells_${articleIndex}_${statIndex}`} {...spec} />
+                                        ))}
+                                    </TableRowContainer>
+                                    {expandedByStatIndex[statIndex]
+                                        ? (
+                                                <div style={{ width: '100%', position: 'relative' }}>
+                                                    <RenderedPlot statDescription={articlesStatData[0].renderedStatname} plotProps={plotProps(statIndex)} />
+                                                </div>
+                                            )
+                                        : null}
+                                </div>
+                            )
+                        })
+                    }
+                </div>
             </>
         )
     }
