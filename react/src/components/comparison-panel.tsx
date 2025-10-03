@@ -176,9 +176,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     )
 
     const normalTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
-        const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
+
+        const shouldSetMinHeight = verticalPlotSpecs.some(p => p !== undefined)
+        const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
+        const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
 
         return (
             <>
@@ -188,7 +191,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     leftSpacerWidth={leftMarginPercent}
                 />
 
-                <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
+                <div style={{ position: 'relative', minHeight: overallMinHeight }}>
                     <TableHeaderContainer>
                         <ComparisonHeaderRow
                             columnWidth={columnWidth}
@@ -202,7 +205,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             const plotSpec = horizontalPlotSpecs[rowIndex]
                             return (
                                 <div key={`TableRowContainer_${rowIndex}`}>
-                                    <TableRowContainer index={rowIndex}>
+                                    <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
                                         <Cell {...statisticNameHeaderSpecs[rowIndex]} />
                                         {rowSpecs.map((spec, colIndex) => (
                                             <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
@@ -233,9 +236,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const transposeTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
-        const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
+
+        const shouldSetMinHeight = verticalPlotSpecs.some(p => p !== undefined)
+        const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
+        const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
 
         return (
             <>
@@ -245,7 +251,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     leftSpacerWidth={leftMarginPercent}
                 />
 
-                <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
+                <div style={{ position: 'relative', minHeight: overallMinHeight }}>
                     <TableHeaderContainer>
                         <ComparisonHeaderRow
                             columnWidth={columnWidth}
@@ -260,7 +266,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             const plotSpec = horizontalPlotSpecs[rowIndex]
                             return (
                                 <div key={`TableRowContainer_${rowIndex}`}>
-                                    <TableRowContainer index={rowIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
+                                    <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
                                         <Cell {...longnameHeaderSpecs[rowIndex]} />
                                         {rowSpecs.map((spec, colIndex) => (
                                             <Cell key={`rowCells_${rowIndex}_${colIndex}`} {...spec} />
