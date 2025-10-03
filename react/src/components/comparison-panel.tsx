@@ -175,7 +175,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
-    const normalTableContents = (horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const normalTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
         const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
@@ -183,7 +183,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return (
             <>
                 <LongnameHeaderSection
-                    headerSpecs={longnameHeaderSpecs}
+                    headerSpecs={headerSpecs}
                     showBottomBar={true}
                     leftSpacerWidth={leftMarginPercent}
                 />
@@ -232,7 +232,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
-    const transposeTableContents = (horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const transposeTableContents = (headerSpecs: CellSpec[], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
         const someExpanded = expandedByStatIndex.some(e => e)
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
@@ -240,7 +240,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return (
             <>
                 <LongnameHeaderSection
-                    headerSpecs={statisticNameHeaderSpecs}
+                    headerSpecs={headerSpecs}
                     showBottomBar={false}
                     leftSpacerWidth={leftMarginPercent}
                 />
@@ -324,8 +324,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {maybeScroll(
                         <div ref={tableRef}>
                             {transpose
-                                ? transposeTableContents(plotSpecs.map(() => undefined), plotSpecs)
-                                : normalTableContents(plotSpecs, [])}
+                                ? transposeTableContents(statisticNameHeaderSpecs, plotSpecs.map(() => undefined), plotSpecs)
+                                : normalTableContents(longnameHeaderSpecs, plotSpecs, [])}
                             <ArticleWarnings />
                         </div>,
                     )}
