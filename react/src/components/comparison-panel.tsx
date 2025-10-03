@@ -25,6 +25,84 @@ import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableRowContainer, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow, LongnameHeaderSection } from './table'
 
+interface TableContentsProps {
+    headerSpecs: CellSpec[]
+    leftHeaderSpecs: CellSpec[]
+    rowSpecs: CellSpec[][]
+    horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
+    verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
+    showBottomBar: boolean
+    topLeftOverride?: string
+    leftMarginPercent: number
+    columnWidth: number
+    leftBarMargin: number
+    onlyColumns: ColumnIdentifier[]
+    perColumnExtraRight: number[]
+    transposeSettingsHeight: string
+    articles: Article[]
+    expandedColumnWidth: (i: number) => number
+}
+
+function TableContents(props: TableContentsProps): ReactNode {
+    const headerHeight = props.transposeSettingsHeight
+    const contentHeight = '379.5px'
+
+    const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
+    const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
+
+    return (
+        <>
+            <LongnameHeaderSection
+                headerSpecs={props.headerSpecs}
+                showBottomBar={props.showBottomBar}
+                leftSpacerWidth={props.leftMarginPercent}
+            />
+
+            <div style={{ position: 'relative', minHeight: overallMinHeight }}>
+                <TableHeaderContainer>
+                    <ComparisonHeaderRow
+                        columnWidth={props.columnWidth}
+                        statNameTotalWidth={100 * (props.leftMarginPercent - props.leftBarMargin)}
+                        onlyColumns={props.onlyColumns}
+                        statNameOverride={props.topLeftOverride}
+                        extraSpaceRight={props.perColumnExtraRight}
+                    />
+                </TableHeaderContainer>
+                {
+                    props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
+                        const plotSpec = props.horizontalPlotSpecs[rowIndex]
+                        return (
+                            <div key={`TableRowContainer_${rowIndex}`}>
+                                <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
+                                    <Cell {...props.leftHeaderSpecs[rowIndex]} />
+                                    {rowSpecsForItem.map((spec, colIndex) => (
+                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
+                                    ))}
+                                </TableRowContainer>
+                                {plotSpec && (
+                                    <div style={{ width: '100%', position: 'relative' }}>
+                                        <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })
+                }
+                {props.verticalPlotSpecs.map((plotSpec, statIndex) =>
+                    plotSpec
+                        ? (
+                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * props.leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + props.expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                                    <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
+                                </div>
+                            )
+                        : null,
+                )}
+            </div>
+        </>
+    )
+}
+
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
@@ -175,67 +253,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
-    const normalTableContents = (headerSpecs: CellSpec[], leftHeaderSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], showBottomBar: boolean, topLeftOverride?: string): ReactNode => {
-        const headerHeight = transposeSettingsHeight
-        const contentHeight = '379.5px'
-
-        const shouldSetMinHeight = verticalPlotSpecs.some(p => p !== undefined)
-        const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
-        const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
-
-        return (
-            <>
-                <LongnameHeaderSection
-                    headerSpecs={headerSpecs}
-                    showBottomBar={showBottomBar}
-                    leftSpacerWidth={leftMarginPercent}
-                />
-
-                <div style={{ position: 'relative', minHeight: overallMinHeight }}>
-                    <TableHeaderContainer>
-                        <ComparisonHeaderRow
-                            columnWidth={columnWidth}
-                            statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
-                            onlyColumns={onlyColumns}
-                            statNameOverride={topLeftOverride}
-                            extraSpaceRight={perColumnExtraRight}
-                        />
-                    </TableHeaderContainer>
-                    {
-                        rowSpecs.map((rowSpecsForItem, rowIndex) => {
-                            const plotSpec = horizontalPlotSpecs[rowIndex]
-                            return (
-                                <div key={`TableRowContainer_${rowIndex}`}>
-                                    <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
-                                        <Cell {...leftHeaderSpecs[rowIndex]} />
-                                        {rowSpecsForItem.map((spec, colIndex) => (
-                                            <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
-                                        ))}
-                                    </TableRowContainer>
-                                    {plotSpec && (
-                                        <div style={{ width: '100%', position: 'relative' }}>
-                                            <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        })
-                    }
-                    {verticalPlotSpecs.map((plotSpec, statIndex) =>
-                        plotSpec
-                            ? (
-                                    <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
-                                        <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
-                                    </div>
-                                )
-                            : null,
-                    )}
-
-                </div>
-            </>
-        )
-    }
-
     return (
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
@@ -271,8 +288,43 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {maybeScroll(
                         <div ref={tableRef}>
                             {transpose
-                                ? normalTableContents(statisticNameHeaderSpecs, longnameHeaderSpecs, rowSpecsByStatTransposed, plotSpecs.map(() => undefined), plotSpecs, false, 'Region')
-                                : normalTableContents(longnameHeaderSpecs, statisticNameHeaderSpecs, rowSpecsByStat, plotSpecs, [], true)}
+                                ? (
+                                        <TableContents
+                                            headerSpecs={statisticNameHeaderSpecs}
+                                            leftHeaderSpecs={longnameHeaderSpecs}
+                                            rowSpecs={rowSpecsByStatTransposed}
+                                            horizontalPlotSpecs={plotSpecs.map(() => undefined)}
+                                            verticalPlotSpecs={plotSpecs}
+                                            showBottomBar={false}
+                                            topLeftOverride="Region"
+                                            leftMarginPercent={leftMarginPercent}
+                                            columnWidth={columnWidth}
+                                            leftBarMargin={leftBarMargin}
+                                            onlyColumns={onlyColumns}
+                                            perColumnExtraRight={perColumnExtraRight}
+                                            transposeSettingsHeight={transposeSettingsHeight}
+                                            articles={props.articles}
+                                            expandedColumnWidth={expandedColumnWidth}
+                                        />
+                                    )
+                                : (
+                                        <TableContents
+                                            headerSpecs={longnameHeaderSpecs}
+                                            leftHeaderSpecs={statisticNameHeaderSpecs}
+                                            rowSpecs={rowSpecsByStat}
+                                            horizontalPlotSpecs={plotSpecs}
+                                            verticalPlotSpecs={[]}
+                                            showBottomBar={true}
+                                            leftMarginPercent={leftMarginPercent}
+                                            columnWidth={columnWidth}
+                                            leftBarMargin={leftBarMargin}
+                                            onlyColumns={onlyColumns}
+                                            perColumnExtraRight={perColumnExtraRight}
+                                            transposeSettingsHeight={transposeSettingsHeight}
+                                            articles={props.articles}
+                                            expandedColumnWidth={expandedColumnWidth}
+                                        />
+                                    )}
                             <ArticleWarnings />
                         </div>,
                     )}
