@@ -569,34 +569,43 @@ interface ComparisonLongnameCellProps {
     names: string[]
     transpose: boolean
     sharedTypeOfAllArticles: string | null | undefined
+    highlightIndex?: number
 }
 
 export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
 
+    const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
+        <ComparisonColorBar highlightIndex={props.highlightIndex} />
+    )
+
     return (
-        <div key={`heading_${props.articleIndex}`} style={{ width: `${props.width}%` }}>
-            <HeadingDisplay
-                longname={props.articles[props.articleIndex].longname}
-                includeDelete={props.articles.length > 1}
-                onDelete={() => {
-                    void navContext.navigate({
-                        kind: 'comparison',
-                        universe: currentUniverse,
-                        longnames: props.names.filter((_, index) => index !== props.articleIndex),
-                    }, { history: 'push', scroll: { kind: 'none' } })
-                }}
-                onReplace={x =>
-                    navContext.link({
-                        kind: 'comparison',
-                        universe: currentUniverse,
-                        longnames: props.names.map((value, index) => index === props.articleIndex ? x : value),
-                    }, { scroll: { kind: 'none' } })}
-                manipulationJustify={props.transpose ? 'center' : 'flex-end'}
-                sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
-            />
-        </div>
+        <>
+            {bar()}
+            <div key={`heading_${props.articleIndex}`} style={{ width: `${props.width}%` }}>
+                <HeadingDisplay
+                    longname={props.articles[props.articleIndex].longname}
+                    includeDelete={props.articles.length > 1}
+                    onDelete={() => {
+                        void navContext.navigate({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.filter((_, index) => index !== props.articleIndex),
+                        }, { history: 'push', scroll: { kind: 'none' } })
+                    }}
+                    onReplace={x =>
+                        navContext.link({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.map((value, index) => index === props.articleIndex ? x : value),
+                        }, { scroll: { kind: 'none' } })}
+                    manipulationJustify={props.transpose ? 'center' : 'flex-end'}
+                    sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+                />
+            </div>
+            {bar()}
+        </>
     )
 }
 

@@ -5,7 +5,6 @@ import React, { ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
-import { HueColors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
@@ -192,6 +191,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             names={names}
                             transpose={transpose}
                             sharedTypeOfAllArticles={sharedTypeOfAllArticles}
+                            highlightIndex={articleIndex}
                         />
                     ))}
                 </div>
@@ -275,7 +275,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {props.articles.map((_: Article, articleIndex: number) => {
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
-                                <ComparisonColorBar highlightIndex={articleIndex} />
                                 <ComparisonLongnameCell
                                     articleIndex={articleIndex}
                                     width={(leftMarginPercent - 2 * leftBarMargin) * 100}
@@ -283,8 +282,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                     names={names}
                                     transpose={transpose}
                                     sharedTypeOfAllArticles={sharedTypeOfAllArticles}
+                                    highlightIndex={articleIndex}
                                 />
-                                <ComparisonColorBar highlightIndex={articleIndex} />
                                 { dataByArticleStat[articleIndex].map((stat: ArticleRow, statIndex: number) => {
                                     return valueCells(articleIndex, statIndex)
                                 })}
