@@ -175,7 +175,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
-    const normalTableContents = (headerSpecs: CellSpec[], leftHeaderSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const normalTableContents = (headerSpecs: CellSpec[], leftHeaderSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], showBottomBar: boolean, topLeftOverride?: string): ReactNode => {
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
@@ -187,7 +187,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             <>
                 <LongnameHeaderSection
                     headerSpecs={headerSpecs}
-                    showBottomBar={true}
+                    showBottomBar={showBottomBar}
                     leftSpacerWidth={leftMarginPercent}
                 />
 
@@ -197,6 +197,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             columnWidth={columnWidth}
                             statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
                             onlyColumns={onlyColumns}
+                            statNameOverride={topLeftOverride}
                             extraSpaceRight={perColumnExtraRight}
                         />
                     </TableHeaderContainer>
@@ -235,7 +236,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         )
     }
 
-    const transposeTableContents = (headerSpecs: CellSpec[], leftHeaderSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]): ReactNode => {
+    const transposeTableContents = (headerSpecs: CellSpec[], leftHeaderSpecs: CellSpec[], rowSpecs: CellSpec[][], horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[], showBottomBar: boolean, topLeftOverride?: string): ReactNode => {
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
@@ -247,7 +248,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             <>
                 <LongnameHeaderSection
                     headerSpecs={headerSpecs}
-                    showBottomBar={false}
+                    showBottomBar={showBottomBar}
                     leftSpacerWidth={leftMarginPercent}
                 />
 
@@ -257,7 +258,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             columnWidth={columnWidth}
                             statNameTotalWidth={100 * (leftMarginPercent - leftBarMargin)}
                             onlyColumns={onlyColumns}
-                            statNameOverride="Region"
+                            statNameOverride={topLeftOverride}
                             extraSpaceRight={perColumnExtraRight}
                         />
                     </TableHeaderContainer>
@@ -330,8 +331,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {maybeScroll(
                         <div ref={tableRef}>
                             {transpose
-                                ? transposeTableContents(statisticNameHeaderSpecs, longnameHeaderSpecs, rowSpecsByStatTransposed, plotSpecs.map(() => undefined), plotSpecs)
-                                : normalTableContents(longnameHeaderSpecs, statisticNameHeaderSpecs, rowSpecsByStat, plotSpecs, [])}
+                                ? transposeTableContents(statisticNameHeaderSpecs, longnameHeaderSpecs, rowSpecsByStatTransposed, plotSpecs.map(() => undefined), plotSpecs, false, 'Region')
+                                : normalTableContents(longnameHeaderSpecs, statisticNameHeaderSpecs, rowSpecsByStat, plotSpecs, [], true)}
                             <ArticleWarnings />
                         </div>,
                     )}
