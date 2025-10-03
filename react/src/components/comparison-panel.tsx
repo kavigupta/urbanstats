@@ -118,9 +118,11 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
 
-    const heading = (articleIndex: number, width: number): ReactNode => {
+    const heading = (articleIndex: number, width: number, includeHighlight: boolean, highlightColor: string | undefined): ReactNode => {
+        const bar = (): ReactNode => includeHighlight ? <div style={{ height: barHeight, backgroundColor: highlightColor }} /> : undefined
         return (
             <div key={`heading_${articleIndex}`} style={{ width: `${width}%` }}>
+                {bar()}
                 <HeadingDisplay
                     longname={props.articles[articleIndex].longname}
                     includeDelete={props.articles.length > 1}
@@ -140,26 +142,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     manipulationJustify={transpose ? 'center' : 'flex-end'}
                     sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                 />
-            </div>
-        )
-    }
-
-    const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
-        return (
-            <div style={{ display: 'flex' }}>
-                {leftSpacerCell()}
-                {Array.from({ length: numColumns }).map(
-                    (_, i) => (
-                        <div
-                            key={`bar_${i}`}
-                            style={{
-                                width: `${expandedColumnWidth(i)}%`,
-                                height: barHeight,
-                                backgroundColor: backgroundColor(i),
-                            }}
-                        />
-                    ),
-                )}
+                {bar()}
             </div>
         )
     }
@@ -176,17 +159,20 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         ]
     }
 
-    const statName = (statIndex: number, width: number, center: boolean): ReactNode => {
+    const statName = (statIndex: number, width: number, center: boolean, includeHightlight: boolean, highlightColor: string | undefined): ReactNode => {
         // So that we show the expand if there's a least one extra
         const nameRow = dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
         return (
-            <div key={`statName_${nameRow.statpath}`} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: center ? 'center' : undefined }}>
-                <StatisticName
-                    row={nameRow}
-                    longname={names[0]}
-                    currentUniverse={currentUniverse}
-                    center={center}
-                />
+            <div key={`statName_${nameRow.statpath}`} className="serif value" style={{ width: `${width}%`, textAlign: center ? 'center' : undefined }}>
+                {includeHightlight ? <div style={{ height: barHeight, backgroundColor: highlightColor }} /> : null}
+                <div style={{ padding: '1px' }}>
+                    <StatisticName
+                        row={nameRow}
+                        longname={names[0]}
+                        currentUniverse={currentUniverse}
+                        center={center}
+                    />
+                </div>
             </div>
         )
     }
@@ -219,12 +205,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const normalTableContents = (): ReactNode => {
         return (
             <>
-                {bars(articleIndex => color(colors.hueColors, articleIndex))}
+                {/* {bars(articleIndex => color(colors.hueColors, articleIndex))} */}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
-                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth))}
+                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => heading(articleIndex, columnWidth, true, color(colors.hueColors, articleIndex)))}
                 </div>
-                {bars(articleIndex => color(colors.hueColors, articleIndex))}
+                {/* {bars(articleIndex => color(colors.hueColors, articleIndex))} */}
 
                 <TableHeaderContainer>
                     {comparisonHeaders()}
@@ -236,7 +222,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             <div key={`TableRowContainer_${statIndex}`}>
                                 <TableRowContainer index={statIndex}>
                                     <ComparisonColorBar key="color" highlightIndex={highlightArticleIndicesByStat[statIndex]} />
-                                    {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false)}
+                                    {statName(statIndex, 100 * (leftMarginPercent - leftBarMargin), false, false, undefined)}
                                     {dataByStatArticle[statIndex].map((_, articleIndex) => {
                                         return valueCells(articleIndex, statIndex)
                                     })}
@@ -263,9 +249,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
         return (
             <>
-                {bars(
+                {/* {bars(
                     statIndex => highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined,
-                )}
+                )} */}
                 <div style={{
                     display: 'flex',
                     flexDirection: 'row' }}
@@ -273,7 +259,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     {leftSpacerCell()}
                     {
                         dataByStatArticle.map((_, statIndex) => {
-                            return statName(statIndex, expandedColumnWidth(statIndex), true)
+                            return statName(statIndex, expandedColumnWidth(statIndex), true, true, highlightArticleIndicesByStat[statIndex] !== undefined ? color(colors.hueColors, highlightArticleIndicesByStat[statIndex]) : undefined)
                         })
                     }
                 </div>
@@ -288,7 +274,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         return (
                             <TableRowContainer key={`TableRowContainer_${articleIndex}`} index={articleIndex} minHeight={someExpanded ? `calc(${contentHeight} / ${props.articles.length})` : undefined}>
                                 <ComparisonColorBar highlightIndex={articleIndex} />
-                                {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100)}
+                                {heading(articleIndex, (leftMarginPercent - 2 * leftBarMargin) * 100, false, undefined)}
                                 <ComparisonColorBar highlightIndex={articleIndex} />
                                 { dataByArticleStat[articleIndex].map((stat, statIndex) => {
                                     return valueCells(articleIndex, statIndex)
