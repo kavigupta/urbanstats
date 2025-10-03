@@ -85,8 +85,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return <div style={{ width: `${leftMarginPercent * 100}%` }}></div>
     }
 
-    const transposeHistogramSpacer = (columnIndex: number): ReactNode => {
-        return transpose && expandedByStatIndex[columnIndex] ? <div key={`spacer_${columnIndex}`} style={{ width: `${columnWidth}%` }}></div> : null
+    const transposeHistogramSpacer = (columnIndex: number): number => {
+        return transpose && expandedByStatIndex[columnIndex] ? columnWidth : 0
     }
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
@@ -138,11 +138,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const comparisonHeaders = (statNameOverride?: string): ReactNode => {
         return [
             <ComparisonColorBar key="color" highlightIndex={undefined} />,
-            <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} />,
+            <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={100 * (leftMarginPercent - leftBarMargin)} statNameOverride={statNameOverride} extraSpaceRight={0} />,
             ...Array.from({ length: numColumns })
                 .map((_, columnIndex) => [
-                    <StatisticHeaderCells key={`headerCells_${columnIndex}`} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} />,
-                    transposeHistogramSpacer(columnIndex),
+                    <StatisticHeaderCells key={`headerCells_${columnIndex}`} onlyColumns={onlyColumns} simpleOrdinals={true} totalWidth={columnWidth} extraSpaceRight={transposeHistogramSpacer(columnIndex)} />,
                 ]),
         ]
     }
@@ -169,8 +168,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     }, { history: 'push', scroll: { kind: 'none' } })
                 }}
                 totalWidth={columnWidth}
+                extraSpaceRight={transposeHistogramSpacer(statIndex)}
             />,
-            transposeHistogramSpacer(statIndex),
         ]
     }
 

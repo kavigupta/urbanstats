@@ -99,7 +99,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string }): ReactNode {
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
@@ -158,11 +158,14 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     ] satisfies ColumnLayoutProps['cells']
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.totalWidth}
+                onlyColumns={props.onlyColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
+        </>
     )
 }
 
@@ -265,6 +268,7 @@ export function StatisticRowCells(props: {
     indentedName?: string
     groupHasMultipleSources?: boolean
     statParent?: ReturnType<typeof statParents.get>
+    extraSpaceRight?: number
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -277,21 +281,24 @@ export function StatisticRowCells(props: {
 
     if (props.isGroupHeader) {
         return (
-            <ColumnLayout
-                cells={[
-                    {
-                        widthPercentage: 100,
-                        columnIdentifier: 'statname',
-                        content: (
-                            <span className="serif value">
-                                <span>{props.groupName}</span>
-                            </span>
-                        ),
-                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
-                    },
-                ]}
-                totalWidth={props.totalWidth}
-            />
+            <>
+                <ColumnLayout
+                    cells={[
+                        {
+                            widthPercentage: 100,
+                            columnIdentifier: 'statname',
+                            content: (
+                                <span className="serif value">
+                                    <span>{props.groupName}</span>
+                                </span>
+                            ),
+                            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
+                        },
+                    ]}
+                    totalWidth={props.totalWidth}
+                />
+                <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
+            </>
         )
     }
 
@@ -382,12 +389,15 @@ export function StatisticRowCells(props: {
     ] satisfies ColumnLayoutProps['cells']
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-            blankColumns={props.blankColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.totalWidth}
+                onlyColumns={props.onlyColumns}
+                blankColumns={props.blankColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight}%` }} />
+        </>
     )
 }
 
