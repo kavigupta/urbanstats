@@ -166,7 +166,7 @@ export function deconstruct<T>(schema: LiteralParser<T>): LiteralParser<T> {
         parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'identifier') {
                 const type = env.get(expr.name.node)
-                if ((type?.documentation?.equivalentExpressions?.length ?? 0) > 0) {
+                if (type?.documentation?.equivalentExpressions !== undefined && type.documentation.equivalentExpressions.length > 0) {
                     for (const equivalentExpression of type.documentation.equivalentExpressions) {
                         const parsed = schema.parse(equivalentExpression, env, doEdit)
                         if (parsed !== undefined) {
