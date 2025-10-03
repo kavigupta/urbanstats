@@ -572,6 +572,28 @@ interface ComparisonLongnameCellProps {
     highlightIndex?: number
 }
 
+interface StatisticNameCellProps {
+    row: ArticleRow
+    longname: string
+    currentUniverse: string
+    width: number
+    center?: boolean
+    highlightIndex?: number
+    transpose?: boolean
+}
+
+export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps)
+    | ({ type: 'statistic-name' } & StatisticNameCellProps)
+
+export function Cell(props: CellSpec): ReactNode {
+    switch (props.type) {
+        case 'comparison-longname':
+            return <ComparisonLongnameCell {...props} />
+        case 'statistic-name':
+            return <StatisticNameCell {...props} />
+    }
+}
+
 export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
@@ -607,16 +629,6 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): Reac
             {bar()}
         </>
     )
-}
-
-interface StatisticNameCellProps {
-    row: ArticleRow
-    longname: string
-    currentUniverse: string
-    width: number
-    center?: boolean
-    highlightIndex?: number
-    transpose?: boolean
 }
 
 export function StatisticNameCell(props: StatisticNameCellProps): ReactNode {

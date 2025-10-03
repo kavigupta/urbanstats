@@ -23,7 +23,7 @@ import { PlotProps, RenderedPlot } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell, leftBarMargin, ComparisonColorBar } from './table'
+import { TableRowContainer, StatisticRowCells, TableHeaderContainer, StatisticHeaderCells, ColumnIdentifier, StatisticNameCell, ComparisonLongnameCell, leftBarMargin, ComparisonColorBar, Cell, CellSpec } from './table'
 
 const barHeight = '5px'
 
@@ -177,23 +177,24 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
     const normalTableContents = (): ReactNode => {
+        const headerSpecs = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
+            {
+                type: 'comparison-longname',
+                articleIndex,
+                width: columnWidth,
+                articles: props.articles,
+                names,
+                transpose,
+                sharedTypeOfAllArticles,
+                highlightIndex: articleIndex,
+            } satisfies CellSpec
+        ))
         return (
             <>
                 {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
                 <div style={{ display: 'flex' }}>
                     {leftSpacerCell()}
-                    {Array.from({ length: props.articles.length }).map((_, articleIndex) => (
-                        <ComparisonLongnameCell
-                            key={`heading_${articleIndex}`}
-                            articleIndex={articleIndex}
-                            width={columnWidth}
-                            articles={props.articles}
-                            names={names}
-                            transpose={transpose}
-                            sharedTypeOfAllArticles={sharedTypeOfAllArticles}
-                            highlightIndex={articleIndex}
-                        />
-                    ))}
+                    {headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
                 </div>
                 {bars(articleIndex => colorFromCycle(colors.hueColors, articleIndex))}
 
@@ -239,6 +240,18 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         const headerHeight = transposeSettingsHeight
         const contentHeight = '379.5px'
 
+        const headerSpecs = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
+            {
+                type: 'statistic-name',
+                row: rowToDisplayForStat(statIndex),
+                longname: names[0],
+                currentUniverse,
+                width: expandedColumnWidth(statIndex),
+                center: true,
+                transpose,
+            } satisfies CellSpec
+        ))
+
         return (
             <>
                 {bars(
@@ -249,21 +262,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     flexDirection: 'row' }}
                 >
                     {leftSpacerCell()}
-                    {
-                        dataByStatArticle.map((_, statIndex) => {
-                            return (
-                                <StatisticNameCell
-                                    key={`statName_${statIndex}`}
-                                    row={rowToDisplayForStat(statIndex)}
-                                    longname={names[0]}
-                                    currentUniverse={currentUniverse}
-                                    width={expandedColumnWidth(statIndex)}
-                                    center={true}
-                                    transpose={transpose}
-                                />
-                            )
-                        })
-                    }
+                    {headerSpecs.map((cellSpec, statIndex) => <Cell key={statIndex} {...cellSpec} />)}
                 </div>
 
                 <div style={{ position: 'relative', minHeight: someExpanded ? `calc(${headerHeight} + ${contentHeight})` : undefined }}>
