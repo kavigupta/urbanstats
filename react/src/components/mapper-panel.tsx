@@ -3,14 +3,17 @@ import './article.css'
 
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import stableStringify from 'json-stable-stringify'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
+import { defaultTypeEnvironment } from '../mapper/context'
 import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -23,11 +26,14 @@ import { DisplayResults } from '../urban-stats-script/Editor'
 import { getAllParseErrors, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError } from '../urban-stats-script/editor-utils'
+import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { Property } from '../utils/Property'
+import { TestUtils } from '../utils/TestUtils'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
@@ -50,7 +56,7 @@ interface DisplayedMapProps extends MapGenericProps {
     insetsCallback: (insetsToUse: Insets) => void
     height: MapHeight | undefined
     uss: UrbanStatsASTStatement | undefined
-    setErrors: (errors: EditorError[]) => void
+    setErrors?: (errors: EditorError[]) => void
     colors: Colors
 }
 
@@ -154,7 +160,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         }
         const result = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: this.versionProps.geographyKind, universe: this.versionProps.universe }, stmts })
         if (version === this.version) {
-            this.versionProps.setErrors(result.error)
+            this.versionProps.setErrors?.(result.error)
         }
         if (result.resultingValue === undefined) {
             return { shapes: [], zoomIndex: -1 }
@@ -385,10 +391,10 @@ function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }):
 interface MapComponentProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
-    mapRef: React.RefObject<DisplayedMap>
+    mapRef?: React.RefObject<DisplayedMap>
     uss: UrbanStatsASTStatement | undefined
-    setErrors: (errors: EditorError[]) => void
-    colorbarRef: React.RefObject<HTMLDivElement>
+    setErrors?: (errors: EditorError[]) => void
+    colorbarRef?: React.RefObject<HTMLDivElement>
 }
 
 interface EmpiricalRamp {
@@ -428,7 +434,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     setErrors={props.setErrors}
                     colors={useColors()}
                     insets={currentInsets}
-                    key={JSON.stringify(currentInsets)}
+                    key={stableStringify(currentInsets)}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -508,26 +514,58 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
 }
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
-    const [mapSettings, setMapSettings] = useState(props.mapSettings)
-    const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
-
-    const setMapSettingsWrapper = (newSettings: MapSettings): void => {
-        setMapSettings(newSettings)
-        const result = computeUSS(newSettings.script)
-        const errors = getAllParseErrors(result)
-        if (errors.length > 0) {
-            setErrors(errors.map(e => ({ ...e, kind: 'error' })))
-        }
-        setUSS(errors.length > 0 ? undefined : result)
+    if (props.view) {
+        return <MapComponentWrapper {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} />
     }
+
+    return <EditMapperPanel {...props} />
+}
+
+function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined }): ReactNode {
+    return (props.geographyKind === undefined || props.universe === undefined)
+        ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
+        : (
+                <MapComponent
+                    {...props}
+                    geographyKind={props.geographyKind}
+                    universe={props.universe}
+                />
+            )
+}
+
+type MapEditorMode = 'uss'
+
+function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
+    const [mapSettings, setMapSettings] = useState(props.mapSettings)
+
+    const [, setMapEditorMode] = useState<MapEditorMode>('uss')
+
+    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
+
+    const undoRedo = useUndoRedo(
+        mapSettings,
+        selectionContext.value,
+        setMapSettings,
+        (selection) => {
+            selectionContext.value = selection
+        },
+        {
+            undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
+        },
+    )
+
+    const { updateCurrentSelection, addState } = undoRedo
+
+    const setMapSettingsWrapper = useCallback((newSettings: MapSettings): void => {
+        setMapSettings(newSettings)
+        addState(newSettings, selectionContext.value)
+    }, [selectionContext, addState])
 
     useEffect(() => {
         // So that map settings are updated when the prop changes
         setMapSettingsWrapper(props.mapSettings)
-    }, [props.mapSettings])
-
-    const mapRef = useRef<DisplayedMap>(null)
-    const colorbarRef = useRef<HTMLDivElement>(null)
+        setMapEditorMode('uss')
+    }, [props.mapSettings, setMapSettingsWrapper])
 
     const jsonedSettings = JSON.stringify({
         ...mapSettings,
@@ -547,53 +585,90 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
-    const [errors, setErrors] = useState<EditorError[]>([])
-
-    const mapperPanel = (): ReactNode => {
-        return (mapSettings.geographyKind === undefined || mapSettings.universe === undefined)
-            ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
-            : (
-                    <MapComponent
-                        geographyKind={mapSettings.geographyKind}
-                        universe={mapSettings.universe}
-                        uss={uss}
-                        mapRef={mapRef}
-                        setErrors={setErrors}
-                        colorbarRef={colorbarRef}
-                    />
-                )
-    }
-
     const headerTextClass = useHeaderTextClass()
 
-    if (props.view) {
-        return mapperPanel()
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
+
+    // Update current selection when it changes
+    useEffect(() => {
+        const observer = (): void => {
+            updateCurrentSelection(selectionContext.value)
+        }
+
+        selectionContext.observers.add(observer)
+        return () => { selectionContext.observers.delete(observer) }
+    }, [selectionContext, updateCurrentSelection])
+
+    const commonProps: CommonEditorProps = {
+        mapSettings,
+        setMapSettings: setMapSettingsWrapper,
+        typeEnvironment,
+        setMapEditorMode,
     }
 
     return (
         <PageTemplate>
-            <div>
+            <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                <MapperSettings
-                    mapSettings={mapSettings}
-                    setMapSettings={setMapSettingsWrapper}
-                    errors={errors}
-                    counts={props.counts}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                    <Export
-                        mapRef={mapRef}
-                        colorbarRef={colorbarRef}
-                    />
-                    <ImportExportCode
-                        mapSettings={mapSettings}
-                        setMapSettings={setMapSettingsWrapper}
-                    />
-                </div>
-                {
-                    mapperPanel()
-                }
-            </div>
+                <USSMapEditor {...commonProps} counts={props.counts} />
+                {undoRedo.ui}
+            </SelectionContext.Provider>
         </PageTemplate>
+    )
+}
+
+interface CommonEditorProps {
+    mapSettings: MapSettings
+    setMapSettings: (s: MapSettings) => void
+    typeEnvironment: TypeEnvironment
+    setMapEditorMode: (m: MapEditorMode) => void
+}
+
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+    const [errors, setErrors] = useState<EditorError[]>([])
+
+    const mapRef = useRef<DisplayedMap>(null)
+    const colorbarRef = useRef<HTMLDivElement>(null)
+
+    const [uss, setUSS] = useState<UrbanStatsASTStatement | undefined>(undefined)
+
+    useEffect(() => {
+        const result = computeUSS(mapSettings.script)
+        const parseErrors = getAllParseErrors(result)
+        if (parseErrors.length > 0) {
+            setErrors(parseErrors.map(e => ({ ...e, kind: 'error' })))
+        }
+        setUSS(parseErrors.length > 0 ? undefined : result)
+    }, [mapSettings])
+
+    return (
+        <>
+            <MapperSettings
+                mapSettings={mapSettings}
+                setMapSettings={setMapSettings}
+                errors={errors}
+                counts={counts}
+                typeEnvironment={typeEnvironment}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                <Export
+                    mapRef={mapRef}
+                    colorbarRef={colorbarRef}
+                />
+                <ImportExportCode
+                    mapSettings={mapSettings}
+                    setMapSettings={setMapSettings}
+                />
+            </div>
+            <MapComponentWrapper
+                geographyKind={mapSettings.geographyKind}
+                universe={mapSettings.universe}
+                uss={uss}
+                mapRef={mapRef}
+                setErrors={setErrors}
+                colorbarRef={colorbarRef}
+            />
+        </>
+
     )
 }
