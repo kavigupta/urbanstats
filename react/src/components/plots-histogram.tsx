@@ -74,7 +74,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     )
 }
 
-export const transposeSettingsHeight = '30.5px'
+export const transposeSettingsHeight = 30.5
 
 function HistogramSettings(props: {
     shortnames: string[]
@@ -95,7 +95,7 @@ function HistogramSettings(props: {
                 border: transpose ? undefined : `1px solid ${colors.textMain}`,
                 display: 'flex',
                 gap: '0.5em',
-                height: transpose ? transposeSettingsHeight : undefined,
+                height: transpose ? `${transposeSettingsHeight}px` : undefined,
                 alignItems: transpose ? 'center' : undefined,
                 justifyContent: transpose ? 'center' : undefined,
             }}

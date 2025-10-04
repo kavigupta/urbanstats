@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
-import { ElectionResult } from './table'
+import { ElectionResult } from './display-stats'
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {

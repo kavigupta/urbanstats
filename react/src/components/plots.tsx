@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { ExtraStat } from './load-article'
-import { Histogram } from './plots-histogram'
+import { Histogram, transposeSettingsHeight } from './plots-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
 
 export interface PlotProps {
@@ -61,5 +61,16 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
             )
         case undefined:
             return null
+    }
+}
+
+export function extraHeaderSpaceForVertical(spec: PlotProps): number {
+    switch (spec.extraStat?.type) {
+        case 'histogram':
+            return transposeSettingsHeight
+        case 'time_series':
+            return 0
+        case undefined:
+            return 0
     }
 }

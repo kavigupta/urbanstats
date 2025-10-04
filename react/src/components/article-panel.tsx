@@ -103,7 +103,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                                 {row.showGroupHeader && (
                                     <TableRowContainer index={index}>
                                         <StatisticRowCells
-                                            totalWidth={100}
+                                            width={100}
                                             longname={article.longname}
                                             row={row}
                                             onNavigate={() => { /* No navigation for group headers */ }}
@@ -211,7 +211,7 @@ function StatisticTableRow(props: {
         <>
             <TableRowContainer index={props.index}>
                 <StatisticRowCells
-                    totalWidth={100}
+                    width={100}
                     longname={props.longname}
                     row={props.row}
                     onNavigate={(newArticle) => {

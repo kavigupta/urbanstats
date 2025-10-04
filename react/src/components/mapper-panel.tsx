@@ -38,7 +38,7 @@ import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
-import { Statistic } from './table'
+import { Statistic } from './display-stats'
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
