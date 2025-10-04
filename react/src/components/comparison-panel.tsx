@@ -198,7 +198,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
-    const widthsEach = Array.from({ length: numColumns }).map((_, i) => columnWidth)
+    const widthsEach = Array.from({ length: numColumns }).map(() => columnWidth)
     const widthRowHeader = transpose ? 100 * (leftMarginPercent - 2 * leftBarMargin) : 100 * (leftMarginPercent - leftBarMargin)
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
