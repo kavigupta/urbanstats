@@ -37,7 +37,8 @@ export function TableContents(props: TableContentsProps): ReactNode {
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
     const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
 
-    const ncols = props.rowSpecs.length === 0 ? 0 : props.rowSpecs[0].length
+    // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
+    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : props.superHeaderSpec?.headerSpecs.length ?? 1
 
     const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
 
