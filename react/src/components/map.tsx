@@ -946,12 +946,14 @@ function EditInsetsHandles(props: {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
     const pointerHandlers = (kind: DragKind): {
-        onPointerDown: (e: React.PointerEvent) => void
-        onPointerMove: (e: React.PointerEvent) => void
-        onPointerUp: (e: React.PointerEvent) => void
-        onPointerCancel: (e: React.PointerEvent) => void
+        'onPointerDown': (e: React.PointerEvent) => void
+        'onPointerMove': (e: React.PointerEvent) => void
+        'onPointerUp': (e: React.PointerEvent) => void
+        'onPointerCancel': (e: React.PointerEvent) => void
+        'data-test': string
     } => ({
-        onPointerDown: (e: React.PointerEvent) => {
+        'data-test': kind,
+        'onPointerDown': (e: React.PointerEvent) => {
             if (activeDrag.current !== undefined) {
                 return
             }
@@ -965,7 +967,7 @@ function EditInsetsHandles(props: {
             }
             thisElem.setPointerCapture(e.pointerId)
         },
-        onPointerMove: (e: React.PointerEvent) => {
+        'onPointerMove': (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
                 return
             }
@@ -1000,13 +1002,13 @@ function EditInsetsHandles(props: {
             }
             props.setFrame(newFrame)
         },
-        onPointerUp: (e: React.PointerEvent) => {
+        'onPointerUp': (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
                 return
             }
             activeDrag.current = undefined
         },
-        onPointerCancel: (e: React.PointerEvent) => {
+        'onPointerCancel': (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
                 return
             }
