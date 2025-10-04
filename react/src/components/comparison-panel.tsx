@@ -33,13 +33,12 @@ interface TableContentsProps {
     verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
     showBottomBar: boolean
     topLeftOverride?: string
-    leftMarginPercent: number
+    widthLeftHeader: number
     columnWidth: number
     leftBarMargin: number
     onlyColumns: ColumnIdentifier[]
     transposeSettingsHeight: string
     articles: Article[]
-    widthRowHeader: number
 }
 
 function TableContents(props: TableContentsProps): ReactNode {
@@ -57,7 +56,7 @@ function TableContents(props: TableContentsProps): ReactNode {
             <LongnameHeaderSection
                 headerSpecs={props.headerSpecs}
                 showBottomBar={props.showBottomBar}
-                leftSpacerWidth={props.leftMarginPercent}
+                leftSpacerWidth={props.widthLeftHeader}
                 widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
             />
 
@@ -65,7 +64,8 @@ function TableContents(props: TableContentsProps): ReactNode {
                 <TableHeaderContainer>
                     <ComparisonHeaderRow
                         columnWidth={props.columnWidth}
-                        statNameTotalWidth={100 * (props.leftMarginPercent - props.leftBarMargin)}
+                        topLeftSpec={{ type: 'comparison-top-left-header', statNameOverride: props.topLeftOverride }}
+                        topLeftWidth={props.widthLeftHeader}
                         onlyColumns={props.onlyColumns}
                         statNameOverride={props.topLeftOverride}
                         extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
@@ -77,7 +77,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                         return (
                             <div key={`TableRowContainer_${rowIndex}`}>
                                 <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
-                                    <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthRowHeader} />
+                                    <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthLeftHeader} />
                                     {rowSpecsForItem.map((spec, colIndex) => (
                                         <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.columnWidth} />
                                     ))}
@@ -94,7 +94,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) =>
                     plotSpec
                         ? (
-                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * props.leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
                                     <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                                 </div>
                             )
@@ -186,8 +186,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
-
-    const widthRowHeader = transpose ? 100 * (leftMarginPercent - 2 * leftBarMargin) : 100 * (leftMarginPercent - leftBarMargin)
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
         {
@@ -289,13 +287,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             verticalPlotSpecs={plotSpecs}
                                             showBottomBar={false}
                                             topLeftOverride="Region"
-                                            leftMarginPercent={leftMarginPercent}
+                                            widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            widthRowHeader={widthRowHeader}
                                         />
                                     )
                                 : (
@@ -306,13 +303,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             horizontalPlotSpecs={plotSpecs}
                                             verticalPlotSpecs={[]}
                                             showBottomBar={true}
-                                            leftMarginPercent={leftMarginPercent}
+                                            widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            widthRowHeader={widthRowHeader}
                                         />
                                     )}
                             <ArticleWarnings />

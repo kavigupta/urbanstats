@@ -112,7 +112,7 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
             <div style={{ display: 'flex' }}>
-                <div style={{ width: `${props.leftSpacerWidth * 100}%`, height: barHeight }} />
+                <div style={{ width: `${props.leftSpacerWidth}%`, height: barHeight }} />
                 {Array.from({ length: props.headerSpecs.length }).map(
                     (_, i) => (
                         <div
@@ -137,7 +137,7 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
         <>
             {bars(getBarColor)}
             <div style={{ display: 'flex' }}>
-                <div style={{ width: `${props.leftSpacerWidth * 100}%` }} />
+                <div style={{ width: `${props.leftSpacerWidth}%` }} />
                 {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
             </div>
             {props.showBottomBar && bars(getBarColor)}
@@ -145,24 +145,30 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
     )
 }
 
+interface ComparisonTopLeftHeaderProps {
+    statNameOverride?: string
+}
+
+export function ComparisonTopLeftHeader(props: ComparisonTopLeftHeaderProps & { width: number }): ReactNode {
+    return (
+        <>
+            <ComparisonColorBar key="color" highlightIndex={undefined} />
+            <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={props.width - leftBarMargin * 100} statNameOverride={props.statNameOverride} extraSpaceRight={0} />
+        </>
+    )
+}
+
 export function ComparisonHeaderRow(props: {
+    topLeftSpec: CellSpec
+    topLeftWidth: number
     columnWidth: number
-    statNameTotalWidth: number
     onlyColumns: ColumnIdentifier[]
     statNameOverride?: string
     extraSpaceRight: number[]
 }): ReactNode {
     return (
         <>
-            <ComparisonColorBar key="color" highlightIndex={undefined} />
-            <StatisticHeaderCells
-                key="statname"
-                onlyColumns={['statname']}
-                simpleOrdinals={true}
-                totalWidth={props.statNameTotalWidth}
-                statNameOverride={props.statNameOverride}
-                extraSpaceRight={0}
-            />
+            <Cell {...props.topLeftSpec} width={props.topLeftWidth} />
             {props.extraSpaceRight.map((_, columnIndex) => (
                 <StatisticHeaderCells
                     key={`headerCells_${columnIndex}`}
@@ -688,6 +694,7 @@ interface StatisticRowCellProps {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps)
     | ({ type: 'statistic-name' } & StatisticNameCellProps)
     | ({ type: 'statistic-row' } & StatisticRowCellProps)
+    | ({ type: 'comparison-top-left-header' } & ComparisonTopLeftHeaderProps)
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
@@ -697,12 +704,17 @@ export function Cell(props: CellSpec & { width: number }): ReactNode {
             return <StatisticNameCell {...props} width={props.width} />
         case 'statistic-row':
             return <StatisticRowCells {...props} width={props.width} />
+        case 'comparison-top-left-header':
+            return <ComparisonTopLeftHeader {...props} width={props.width} />
     }
 }
 
 export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
+
+    const haveColorbar = props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 2 * 100 * leftBarMargin : 0)
 
     const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
         <ComparisonColorBar highlightIndex={props.highlightIndex} />
@@ -711,7 +723,7 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     return (
         <>
             {bar()}
-            <div key={`heading_${props.articleIndex}`} style={{ width: `${props.width}%` }}>
+            <div key={`heading_${props.articleIndex}`} style={{ width: `${width}%` }}>
                 <HeadingDisplay
                     longname={props.articles[props.articleIndex].longname}
                     includeDelete={props.articles.length > 1}
@@ -738,12 +750,14 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
 }
 
 export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
+    const haveColorbar = !props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
     return (
         <>
-            {!props.transpose && props.highlightIndex !== undefined && (
+            {haveColorbar && (
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
-            <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${props.width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
+            <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
                 <StatisticName
                     row={props.row}
                     longname={props.longname}
