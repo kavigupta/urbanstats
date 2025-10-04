@@ -9,7 +9,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
 import { ParseError } from './parser'
-import { renderValue, USSDocumentedType, USSValue } from './types-values'
+import { renderValue, TypeEnvironment, USSValue } from './types-values'
 
 export type EditorError = ParseError & { kind: 'error' | 'warning' }
 export type EditorResult = EditorError | { kind: 'success', result: USSValue }
@@ -257,7 +257,7 @@ function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
 }
 
-export function getAutocompleteOptions(typeEnvironment: Map<string, USSDocumentedType>, tokens: AnnotatedToken[], currentIdentifer: string): string[] {
+export function getAutocompleteOptions(typeEnvironment: TypeEnvironment, tokens: AnnotatedToken[], currentIdentifer: string): string[] {
     const allIdentifiers = new Set<string>()
     for (const t of tokens) {
         if (t.token.type === 'identifier') {

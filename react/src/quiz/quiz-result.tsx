@@ -2,9 +2,9 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 
 import { GenericShareButton } from '../components/GenericShareButton'
 import { Icon } from '../components/Icon'
+import { Statistic } from '../components/display-stats'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
-import { Statistic } from '../components/display-stats'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'

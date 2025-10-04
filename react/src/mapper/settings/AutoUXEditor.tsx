@@ -2,21 +2,22 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType, USSFunctionType } from '../../urban-stats-script/types-values'
+import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
-import { Selector, Selection, classifyExpr, possibilities, getColor, labelPadding } from './Selector'
+import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
+import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
 
-function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
+function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
@@ -49,7 +50,7 @@ function ArgumentEditor(props: {
     argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
     uss: UrbanStatsASTExpression & { type: 'call', fn: UrbanStatsASTExpression & { type: 'identifier' } }
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
@@ -126,7 +127,7 @@ function ArgumentEditor(props: {
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
     type: USSType[]
@@ -377,7 +378,7 @@ export function AutoUXEditor(props: {
     )
 }
 
-function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
+function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: TypeEnvironment, blockIdent: string): UrbanStatsASTExpression {
     const varType = typeEnvironment.get(selection.name)?.type
     assert(varType !== undefined, `Variable ${selection.name} not found in type environment`)
     return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
@@ -386,7 +387,7 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
 // Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
 // Returns undefined if incompatible
 // We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
-function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
+function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
     let type
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
         const foundType: USSFunctionType = type.type
@@ -403,7 +404,7 @@ function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnviro
     return () => undefined
 }
 
-function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
+function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
     const fn = typeEnvironment.get(selection.name)
     assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
     const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
@@ -437,7 +438,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -487,7 +488,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
 function defaultForSelection(
     selection: Selection,
     current: UrbanStatsASTExpression,
-    typeEnvironment: Map<string, USSDocumentedType>,
+    typeEnvironment: TypeEnvironment,
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
@@ -523,175 +524,6 @@ function defaultForSelection(
                 type: 'objectLiteral',
                 entireLoc: emptyLocation(blockIdent),
                 properties: [],
-            }
-    }
-}
-
-function maybeParseExpr(
-    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
-    blockIdent: string,
-    type: USSType,
-    typeEnvironment: Map<string, USSDocumentedType>,
-): UrbanStatsASTExpression | undefined {
-    try {
-        return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
-            throw new Error('parsing failed')
-        }, false)
-    }
-    catch {}
-    return
-}
-
-type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpression
-
-export function parseExpr(
-    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
-    blockIdent: string,
-    types: USSType[],
-    typeEnvironment: Map<string, USSDocumentedType>,
-    fallback: Fallback,
-    preserveCustomNodes: boolean,
-): UrbanStatsASTExpression {
-    const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-    return parsed ?? fallback(unparse(expr), blockIdent, types)
-}
-
-function attemptParseExpr(
-    expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
-    blockIdent: string,
-    types: USSType[],
-    typeEnvironment: Map<string, USSDocumentedType>,
-    fallback: Fallback,
-    preserveCustomNodes: boolean,
-): UrbanStatsASTExpression | undefined {
-    switch (expr.type) {
-        case 'condition':
-        case 'binaryOperator':
-        case 'if':
-        case 'assignment':
-        case 'parseError':
-        case 'attribute':
-            return undefined
-        case 'vectorLiteral':
-            const elementTypes = types
-                .filter(t => t.type === 'vector')
-                .map(t => t.elementType)
-                .filter(t => t.type !== 'elementOfEmptyVector') satisfies USSType[]
-            if (elementTypes.length === 0) {
-                return undefined
-            }
-            return {
-                type: 'vectorLiteral',
-                entireLoc: emptyLocation(blockIdent),
-                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback, preserveCustomNodes)),
-            }
-        case 'objectLiteral':
-            const exprProps = new Set(expr.properties.map(([key]) => key))
-            const compatibleTypes = types.filter(
-                (t) => {
-                    if (t.type !== 'object') {
-                        return false
-                    }
-                    if (t.properties.size !== expr.properties.length) {
-                        return false
-                    }
-                    if (Array.from(t.properties.keys()).some(key => !exprProps.has(key))) {
-                        return false
-                    }
-                    return true
-                },
-            ) as USSObjectType[]
-            if (compatibleTypes.length === 0) {
-                return undefined
-            }
-            return {
-                type: 'objectLiteral',
-                entireLoc: emptyLocation(blockIdent),
-                properties: expr.properties.map(([key, value]) => [
-                    key,
-                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback, preserveCustomNodes),
-                ]),
-            }
-        case 'do':
-            const stmts = { type: 'statements', result: expr.statements, entireLoc: expr.entireLoc } satisfies UrbanStatsASTStatement
-            return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes) ?? fallback(unparse(stmts), blockIdent, types)
-        case 'customNode':
-            if (preserveCustomNodes) {
-                return parseNoErrorAsCustomNode(unparse(expr, { simplify: true }), blockIdent, types)
-            }
-            else {
-                return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-            }
-        case 'statements':
-            if (expr.result.length === 1) {
-                return parseExpr(expr.result[0], blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-            }
-            return undefined
-        case 'expression':
-            return parseExpr(expr.value, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-        case 'identifier':
-            const validVariableSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'variable') as { type: 'variable', name: string }[]
-            if (validVariableSelections.some(s => s.name === expr.name.node)) {
-                return { type: 'identifier', name: { node: expr.name.node, location: emptyLocation(blockIdent) } }
-            }
-            return undefined
-        case 'constant':
-            if (types.some(type => type.type === expr.value.node.type)) {
-                return { type: 'constant', value: { node: expr.value.node, location: emptyLocation(blockIdent) } }
-            }
-            return undefined
-        case 'unaryOperator':
-            if (expr.operator.node === '-' && expr.expr.type === 'constant' && expr.expr.value.node.type === 'number' && types.some(type => type.type === 'number')) {
-                return {
-                    type: 'constant',
-                    value: { location: emptyLocation(blockIdent), node: { type: 'number', value: -(expr.expr.value.node.value) } },
-                }
-            }
-            return undefined
-        case 'call':
-            const fn = expr.fn
-            if (fn.type !== 'identifier') {
-                return undefined
-            }
-            const validFunctionSelections = possibilities(types, typeEnvironment).filter(s => s.type === 'function') as { type: 'function', name: string }[]
-            if (!validFunctionSelections.some(s => s.name === fn.name.node)) {
-                return undefined
-            }
-            const tdoc = typeEnvironment.get(fn.name.node)
-            if (!tdoc || tdoc.type.type !== 'function') {
-                return undefined
-            }
-            const fnType = tdoc.type
-            let positionals = expr.args.filter(a => a.type === 'unnamed') satisfies (UrbanStatsASTArg & { type: 'unnamed' })[]
-            if (positionals.length !== fnType.posArgs.length) {
-                return undefined
-            }
-            let nameds = expr.args.filter(a => a.type === 'named') satisfies (UrbanStatsASTArg & { type: 'named' })[]
-            const names = new Set(nameds.map(a => a.name.node))
-            const needed = Object.entries(fnType.namedArgs).filter(([, a]) => a.defaultValue === undefined)
-            if (needed.some(([name]) => !names.has(name))) {
-                return undefined
-            }
-            if (fnType.posArgs.some(a => a.type !== 'concrete')) {
-                return undefined
-            }
-            positionals = positionals.map((a, i) => ({
-                type: 'unnamed',
-                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
-            }))
-            if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
-                return undefined
-            }
-            nameds = nameds.map(a => ({
-                type: 'named',
-                name: a.name,
-                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
-            }))
-            return {
-                type: 'call',
-                fn: { type: 'identifier', name: { node: fn.name.node, location: emptyLocation(blockIdent) } },
-                args: [...positionals, ...nameds],
-                entireLoc: emptyLocation(blockIdent),
             }
     }
 }
