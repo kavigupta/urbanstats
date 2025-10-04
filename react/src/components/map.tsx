@@ -240,7 +240,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     insets(): Insets {
-        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true, coordBox: [-180, -180, 180, 180] }]
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true, coordBox: [-90, -90, 90, 90] }]
     }
 
     /* Override if you want the loading spinner */
