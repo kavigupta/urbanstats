@@ -40,7 +40,6 @@ interface TableContentsProps {
     perColumnExtraRight: number[]
     transposeSettingsHeight: string
     articles: Article[]
-    expandedColumnWidth: (i: number) => number
     widthRowHeader: number
     nominalWidthsEach: number[]
 }
@@ -53,13 +52,15 @@ function TableContents(props: TableContentsProps): ReactNode {
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
     const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
 
+    const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.nominalWidthsEach[columnIndex]
+
     return (
         <>
             <LongnameHeaderSection
                 headerSpecs={props.headerSpecs}
                 showBottomBar={props.showBottomBar}
                 leftSpacerWidth={props.leftMarginPercent}
-                widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => props.expandedColumnWidth(i))}
+                widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
             />
 
             <div style={{ position: 'relative', minHeight: overallMinHeight }}>
@@ -95,7 +96,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) =>
                     plotSpec
                         ? (
-                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * props.leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + props.expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${100 * props.leftMarginPercent + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
                                     <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                                 </div>
                             )
@@ -155,10 +156,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const leftMarginPercent = transpose ? 0.24 : 0.18
     const numColumns = transpose ? dataByArticleStat[0].length : props.articles.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
-
-    const expandedColumnWidth = (columnIndex: number): number => {
-        return transpose && expandedByStatIndex[columnIndex] ? 2 * columnWidth : columnWidth
-    }
 
     const transposeHistogramSpacer = (columnIndex: number): number => {
         return transpose && expandedByStatIndex[columnIndex] ? columnWidth : 0
@@ -310,7 +307,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             perColumnExtraRight={perColumnExtraRight}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            expandedColumnWidth={expandedColumnWidth}
+                                            // expandedColumnWidth={expandedColumnWidth}
                                             widthRowHeader={widthRowHeader}
                                             nominalWidthsEach={widthsEach}
                                         />
@@ -330,7 +327,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             perColumnExtraRight={perColumnExtraRight}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            expandedColumnWidth={expandedColumnWidth}
+                                            // expandedColumnWidth={expandedColumnWidth}
                                             widthRowHeader={widthRowHeader}
                                             nominalWidthsEach={widthsEach}
                                         />
