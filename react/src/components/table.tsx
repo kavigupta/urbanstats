@@ -11,7 +11,6 @@ import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../
 import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
-import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useMobileLayout, isMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { useTranspose } from '../utils/transpose'
@@ -21,6 +20,7 @@ import { Icon } from './Icon'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { Cell, CellSpec, ComparisonLongnameCellProps, ComparisonTopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -143,10 +143,6 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
             {props.showBottomBar && bars(getBarColor)}
         </>
     )
-}
-
-interface ComparisonTopLeftHeaderProps {
-    statNameOverride?: string
 }
 
 export function ComparisonTopLeftHeader(props: ComparisonTopLeftHeaderProps & { width: number }): ReactNode {
@@ -586,7 +582,7 @@ function ManipulationButton({ color: buttonColor, onClick, text, image }: { colo
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
@@ -653,60 +649,6 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
                 : null}
         </div>
     )
-}
-
-interface ComparisonLongnameCellProps {
-    articleIndex: number
-    articles: Article[]
-    names: string[]
-    transpose: boolean
-    sharedTypeOfAllArticles: string | null | undefined
-    highlightIndex?: number
-}
-
-interface StatisticNameCellProps {
-    row: ArticleRow
-    longname: string
-    currentUniverse: string
-    center?: boolean
-    highlightIndex?: number
-    transpose?: boolean
-}
-
-interface StatisticRowCellProps {
-    longname: string
-    statisticStyle?: CSSProperties
-    row: ArticleRow
-    onlyColumns?: string[]
-    blankColumns?: string[]
-    onNavigate?: (newArticle: string) => void
-    simpleOrdinals: boolean
-    isFirstInGroup?: boolean
-    isIndented?: boolean
-    isGroupHeader?: boolean
-    groupName?: string
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    statParent?: ReturnType<typeof statParents.get>
-    extraSpaceRight?: number
-}
-
-export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps)
-    | ({ type: 'statistic-name' } & StatisticNameCellProps)
-    | ({ type: 'statistic-row' } & StatisticRowCellProps)
-    | ({ type: 'comparison-top-left-header' } & ComparisonTopLeftHeaderProps)
-
-export function Cell(props: CellSpec & { width: number }): ReactNode {
-    switch (props.type) {
-        case 'comparison-longname':
-            return <ComparisonLongnameCell {...props} width={props.width} />
-        case 'statistic-name':
-            return <StatisticNameCell {...props} width={props.width} />
-        case 'statistic-row':
-            return <StatisticRowCells {...props} width={props.width} />
-        case 'comparison-top-left-header':
-            return <ComparisonTopLeftHeader {...props} width={props.width} />
-    }
 }
 
 export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {

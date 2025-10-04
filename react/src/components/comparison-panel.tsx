@@ -19,89 +19,12 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
-import { PlotProps, RenderedPlot } from './plots'
+import { PlotProps } from './plots'
 import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { TableRowContainer, TableHeaderContainer, ColumnIdentifier, leftBarMargin, Cell, CellSpec, ComparisonHeaderRow, LongnameHeaderSection } from './table'
-
-interface TableContentsProps {
-    headerSpecs: CellSpec[]
-    leftHeaderSpecs: CellSpec[]
-    rowSpecs: CellSpec[][]
-    horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
-    verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
-    showBottomBar: boolean
-    topLeftSpec: CellSpec
-    widthLeftHeader: number
-    columnWidth: number
-    leftBarMargin: number
-    onlyColumns: ColumnIdentifier[]
-    transposeSettingsHeight: string
-}
-
-function TableContents(props: TableContentsProps): ReactNode {
-    const headerHeight = props.transposeSettingsHeight
-    const contentHeight = '379.5px'
-
-    const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
-    const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
-    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
-
-    const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
-
-    return (
-        <>
-            <LongnameHeaderSection
-                headerSpecs={props.headerSpecs}
-                showBottomBar={props.showBottomBar}
-                leftSpacerWidth={props.widthLeftHeader}
-                widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
-            />
-
-            <div style={{ position: 'relative', minHeight: overallMinHeight }}>
-                <TableHeaderContainer>
-                    <ComparisonHeaderRow
-                        columnWidth={props.columnWidth}
-                        topLeftSpec={props.topLeftSpec}
-                        topLeftWidth={props.widthLeftHeader}
-                        onlyColumns={props.onlyColumns}
-                        extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
-                    />
-                </TableHeaderContainer>
-                {
-                    props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
-                        const plotSpec = props.horizontalPlotSpecs[rowIndex]
-                        return (
-                            <div key={`TableRowContainer_${rowIndex}`}>
-                                <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
-                                    <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthLeftHeader} />
-                                    {rowSpecsForItem.map((spec, colIndex) => (
-                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.columnWidth} />
-                                    ))}
-                                </TableRowContainer>
-                                {plotSpec && (
-                                    <div style={{ width: '100%', position: 'relative' }}>
-                                        <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
-                                    </div>
-                                )}
-                            </div>
-                        )
-                    })
-                }
-                {props.verticalPlotSpecs.map((plotSpec, statIndex) =>
-                    plotSpec
-                        ? (
-                                <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
-                                    <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
-                                </div>
-                            )
-                        : null,
-                )}
-            </div>
-        </>
-    )
-}
+import { TableContents, CellSpec } from './supertable'
+import { ColumnIdentifier, leftBarMargin } from './table'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
