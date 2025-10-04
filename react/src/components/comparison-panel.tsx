@@ -32,13 +32,12 @@ interface TableContentsProps {
     horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
     verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
     showBottomBar: boolean
-    topLeftOverride?: string
+    topLeftSpec: CellSpec
     widthLeftHeader: number
     columnWidth: number
     leftBarMargin: number
     onlyColumns: ColumnIdentifier[]
     transposeSettingsHeight: string
-    articles: Article[]
 }
 
 function TableContents(props: TableContentsProps): ReactNode {
@@ -47,7 +46,7 @@ function TableContents(props: TableContentsProps): ReactNode {
 
     const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
-    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
 
     const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
 
@@ -64,10 +63,9 @@ function TableContents(props: TableContentsProps): ReactNode {
                 <TableHeaderContainer>
                     <ComparisonHeaderRow
                         columnWidth={props.columnWidth}
-                        topLeftSpec={{ type: 'comparison-top-left-header', statNameOverride: props.topLeftOverride }}
+                        topLeftSpec={props.topLeftSpec}
                         topLeftWidth={props.widthLeftHeader}
                         onlyColumns={props.onlyColumns}
-                        statNameOverride={props.topLeftOverride}
                         extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
                     />
                 </TableHeaderContainer>
@@ -243,6 +241,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             : undefined,
     )
 
+    const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
+
     return (
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
@@ -286,13 +286,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             horizontalPlotSpecs={plotSpecs.map(() => undefined)}
                                             verticalPlotSpecs={plotSpecs}
                                             showBottomBar={false}
-                                            topLeftOverride="Region"
+                                            topLeftSpec={topLeftSpec}
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                             transposeSettingsHeight={transposeSettingsHeight}
-                                            articles={props.articles}
                                         />
                                     )
                                 : (
@@ -303,12 +302,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             horizontalPlotSpecs={plotSpecs}
                                             verticalPlotSpecs={[]}
                                             showBottomBar={true}
+                                            topLeftSpec={topLeftSpec}
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                             transposeSettingsHeight={transposeSettingsHeight}
-                                            articles={props.articles}
                                         />
                                     )}
                             <ArticleWarnings />
