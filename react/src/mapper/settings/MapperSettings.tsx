@@ -1,51 +1,23 @@
-import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
-import { EditorError, useUndoRedo } from '../../urban-stats-script/editor-utils'
-import { Property } from '../../utils/Property'
-import { TestUtils } from '../../utils/TestUtils'
-import { defaultTypeEnvironment } from '../context'
+import { EditorError } from '../../urban-stats-script/editor-utils'
+import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
-import { Selection, SelectionContext } from './SelectionContext'
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: {
+export function MapperSettings({ mapSettings, setMapSettings, errors, counts, typeEnvironment }: {
     mapSettings: MapSettings
     setMapSettings: (s: MapSettings) => void
     errors: EditorError[]
     counts: CountsByUT
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const uss = mapSettings.script.uss
-
-    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
-
-    const { addState, updateCurrentSelection, ui: undoRedoUi } = useUndoRedo(
-        mapSettings,
-        selectionContext.value,
-        setMapSettings,
-        (selection) => {
-            selectionContext.value = selection
-        },
-        {
-            undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
-        },
-    )
-
-    // Update current selection when it changes
-    useEffect(() => {
-        const observer = (): void => {
-            updateCurrentSelection(selectionContext.value)
-        }
-
-        selectionContext.observers.add(observer)
-        return () => { selectionContext.observers.delete(observer) }
-    }, [selectionContext, updateCurrentSelection])
-
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
     const renderString = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
 
@@ -55,13 +27,8 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
         mapSettings.universe === undefined ? undefined : [undefined, ...articleTypes(counts, mapSettings.universe)] as Exclude<MapSettings['geographyKind'], undefined>[],
     [mapSettings.universe, counts])
 
-    const changeSettingsWithUndo = (newSettings: MapSettings): void => {
-        setMapSettings(newSettings)
-        addState(newSettings, selectionContext.value)
-    }
-
     return (
-        <SelectionContext.Provider value={selectionContext}>
+        <>
             <div style={settingNameStyle}>
                 Universe
             </div>
@@ -71,7 +38,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                 renderValue={renderString}
                 onChange={
                     (newUniverse) => {
-                        changeSettingsWithUndo({
+                        setMapSettings({
                             ...mapSettings,
                             universe: newUniverse,
                             geographyKind: newUniverse === undefined || mapSettings.geographyKind === undefined
@@ -94,7 +61,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                         renderValue={renderString}
                         onChange={
                             (newGeographyKind) => {
-                                changeSettingsWithUndo({
+                                setMapSettings({
                                     ...mapSettings,
                                     geographyKind: newGeographyKind,
                                 })
@@ -106,7 +73,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
             <TopLevelEditor
                 uss={uss}
                 setUss={(newUss) => {
-                    changeSettingsWithUndo({
+                    setMapSettings({
                         ...mapSettings,
                         script: { uss: newUss },
                     })
@@ -114,7 +81,6 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts }: 
                 typeEnvironment={typeEnvironment}
                 errors={errors}
             />
-            {undoRedoUi}
-        </SelectionContext.Provider>
+        </>
     )
 }

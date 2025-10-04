@@ -8,24 +8,25 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
-import { AutoUXEditor, parseExpr } from './AutoUXEditor'
+import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { PreambleEditor } from './PreambleEditor'
+import { parseExpr } from './parseExpr'
 import { makeStatements } from './utils'
 
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
 
-const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
 
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
-const idOutput = `${rootBlockIdent}o`
+export const idOutput = `${rootBlockIdent}o`
 
 export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
     (UrbanStatsASTStatement &
@@ -45,7 +46,7 @@ export function TopLevelEditor({
 }: {
     uss: MapUSS
     setUss: (u: MapUSS) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
 }): ReactNode {
     const subcomponent = (): ReactNode => {
@@ -140,7 +141,7 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>, preserveCustomNodes: boolean): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */

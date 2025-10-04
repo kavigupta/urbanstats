@@ -1,5 +1,6 @@
 import { Inset } from '../../components/map'
 import insets from '../../data/insets'
+import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
@@ -131,13 +132,15 @@ function computeInsetConstantName(name: string): string {
     return name
 }
 
+export function deconstruct(inset: typeof insets[keyof typeof insets][number] | Inset): UrbanStatsASTExpression {
+    const uss = `constructInset(screenBounds={ north: ${inset.topRight[1]}, east: ${inset.topRight[0]}, south: ${inset.bottomLeft[1]}, west: ${inset.bottomLeft[0]} }, mapBounds={ north: ${inset.coordBox[3]}, east: ${inset.coordBox[2]}, south: ${inset.coordBox[1]}, west: ${inset.coordBox[0]} }, mainMap=${inset.mainMap}, name="${inset.name}")`
+    return parseNoErrorAsExpression(uss, '')
+}
+
 export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(([, regionInsets]) =>
     regionInsets.map((inset) => {
         const insetName = inset.name
         const constantName = computeInsetConstantName(insetName)
-
-        const uss = `constructInset(screenBounds={ north: ${inset.topRight[1]}, east: ${inset.topRight[0]}, south: ${inset.bottomLeft[1]}, west: ${inset.bottomLeft[0]} }, mapBounds={ north: ${inset.coordBox[3]}, east: ${inset.coordBox[2]}, south: ${inset.coordBox[1]}, west: ${inset.coordBox[0]} }, mainMap=${inset.mainMap}, name="${inset.name}")`
-        const expr = parseNoErrorAsExpression(uss, '')
 
         return [
             constantName,
@@ -158,7 +161,7 @@ export const insetConsts: [string, USSValue][] = Object.entries(insets).flatMap(
                 documentation: {
                     humanReadableName: insetName,
                     category: 'inset',
-                    equivalentExpressions: [expr],
+                    equivalentExpressions: [deconstruct(inset)],
                     longDescription: `Predefined map inset for the region "${insetName}".`,
                     documentationTable: 'predefined-insets',
                 },

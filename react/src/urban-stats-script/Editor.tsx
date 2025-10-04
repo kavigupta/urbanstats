@@ -10,7 +10,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder, createDocumentationPopover } from './editor-utils'
 import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
-import { USSDocumentedType } from './types-values'
+import { TypeEnvironment, USSDocumentedType } from './types-values'
 
 interface AutocompleteState {
     kind: 'autocomplete'
@@ -34,7 +34,7 @@ export function Editor(
     { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
         uss: string
         setUss: (newScript: string) => void
-        typeEnvironment: Map<string, USSDocumentedType>
+        typeEnvironment: TypeEnvironment
         results: EditorResult[]
         placeholder?: string
         selection: Range | null

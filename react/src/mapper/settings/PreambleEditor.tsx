@@ -4,7 +4,7 @@ import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { USSDocumentedType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
 
@@ -17,7 +17,7 @@ export function PreambleEditor({
 }: {
     preamble: UrbanStatsASTExpression & { type: 'customNode' }
     setPreamble: (conditionExpr: UrbanStatsASTExpression & { type: 'customNode' }) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {

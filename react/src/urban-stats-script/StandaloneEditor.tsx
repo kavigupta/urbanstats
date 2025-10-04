@@ -9,7 +9,7 @@ import { Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
 import { EditorResult, Range, UndoRedoOptions, useUndoRedo } from './editor-utils'
 import { parse } from './parser'
-import { USSDocumentedType } from './types-values'
+import { TypeEnvironment } from './types-values'
 import { executeAsync } from './workerManager'
 
 export function StandaloneEditor(props: { ident: string, getCode: () => string, onChange?: (code: string) => void }): ReactNode {
@@ -47,7 +47,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
 }): {
         uss: string
         setUss: (newUss: string) => void
-        typeEnvironment: Map<string, USSDocumentedType>
+        typeEnvironment: TypeEnvironment
         results: EditorResult[]
         selection: Selection
         setSelection: (newSelection: Selection) => void
@@ -99,7 +99,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         [],
     )
 
-    const typeEnvironment = defaultConstants as Map<string, USSDocumentedType>
+    const typeEnvironment = defaultConstants as TypeEnvironment
 
     return {
         uss,

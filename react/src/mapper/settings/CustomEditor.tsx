@@ -4,7 +4,7 @@ import { Editor } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { ParseError, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { USSDocumentedType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
 import { SelectionContext } from './SelectionContext'
 
@@ -18,7 +18,7 @@ export function CustomEditor({
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
     setUss: (u: UrbanStatsASTExpression & { type: 'customNode' }) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
     placeholder?: string

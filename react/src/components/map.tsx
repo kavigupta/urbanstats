@@ -1,6 +1,7 @@
+import stableStringify from 'json-stable-stringify'
 import maplibregl, { setRTLTextPlugin } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { ReactNode } from 'react'
+import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
 import './map.css'
 
@@ -11,6 +12,7 @@ import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
+import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -25,17 +27,22 @@ import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox: [number, number, number, number], mainMap: boolean, name?: string }
 export type Insets = Inset[]
 export type MapHeight =
     | { type: 'fixed-height', value: number | string }
     | { type: 'aspect-ratio', value: number }
+
+export type EditSingleInset = (newInset: Partial<Inset>) => void
+export type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
+export interface EditInsets { doEdit: EditMultipleInsets, subscribeChanges: Property<Inset>[] }
 
 export interface MapGenericProps {
     height?: MapHeight
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
     insets?: Insets
+    editInsets?: EditInsets
 }
 
 export interface Shape {
@@ -105,8 +112,8 @@ class MapHandler {
         this.mainMaps = mainMaps
     }
 
-    initialize(onClick: (name: string) => void): void {
-        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick)
+    initialize(onClick: (name: string) => void, editInsets?: EditMultipleInsets): void {
+        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick, editInsets)
     }
 
     container(): HTMLElement {
@@ -153,13 +160,14 @@ function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
+    editInset?: EditSingleInset,
 ): [maplibregl.Map, Promise<void>] {
     configRTL()
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
         container: id,
-        scrollZoom: fullMap,
-        dragPan: fullMap,
+        scrollZoom: fullMap || !!editInset,
+        dragPan: fullMap || !!editInset,
         dragRotate: false,
         canvasContextAttributes: {
             preserveDrawingBuffer: true,
@@ -194,11 +202,12 @@ function createMaps(
     ids: string[],
     mainMaps: boolean[],
     onClick: (name: string) => void,
+    editInsets?: EditMultipleInsets,
 ): [maplibregl.Map[], Promise<void>] {
     const maps = []
     const ensureStyleLoadeds = []
     for (const [i, id] of ids.entries()) {
-        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i])
+        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets !== undefined ? (newInset) => { editInsets(i, newInset) } : undefined)
         maps.push(map)
         ensureStyleLoadeds.push(ensureStyleLoaded)
     }
@@ -220,6 +229,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     private attributionControl: CustomAttributionControl | undefined
     protected handler: MapHandler
     private hasZoomed = false
+    private containerRef = React.createRef<HTMLDivElement>()
 
     constructor(props: P) {
         super(props)
@@ -230,7 +240,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     insets(): Insets {
-        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true, coordBox: [-90, -90, 90, 90] }]
     }
 
     /* Override if you want the loading spinner */
@@ -242,16 +252,19 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         return (
             <>
                 <input type="hidden" data-test-loading={this.state.loading} />
-                <div style={{ position: 'relative', ...this.mapStyle() }}>
+                <div style={{ position: 'relative', ...this.mapStyle() }} ref={this.containerRef}>
                     {this.insets().map((bbox, i) => (
                         <MapBody
                             key={this.handler.ids[i]}
                             id={this.handler.ids[i]}
                             height="100%"
                             buttons={this.buttons()}
-                            bbox={bbox}
+                            bboxProp={this.props.editInsets?.subscribeChanges[i] ?? new Property(bbox)}
                             insetBoundary={i > 0}
                             visible={this.state.mapIsVisible[i]}
+                            editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.doEdit(i, newInset) } : undefined}
+                            container={this.containerRef}
+                            getMap={() => this.handler.maps?.[i]}
                         />
                     ))}
                     <LongLoad containerStyleOverride={{
@@ -376,24 +389,80 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         ]
     }
 
+    private cleanup: (() => void)[] = []
+
     override async componentDidMount(): Promise<void> {
-        this.handler.initialize((name) => { this.onClick(name) })
+        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets?.doEdit)
         const maps = await this.handler.getMaps()
         const insets = this.insets()
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
         for (const i of insets.keys()) {
             const map = maps[i]
-            const { coordBox } = insets[i]
-            if (coordBox) {
-                const bounds = new maplibregl.LngLatBounds(
-                    new maplibregl.LngLat(coordBox[0], coordBox[1]),
-                    new maplibregl.LngLat(coordBox[2], coordBox[3]),
-                )
-                map.fitBounds(bounds, { animate: false })
+            map.fitBounds(mapBoundsFromInset(insets[i]), { animate: false })
+
+            if (this.props.editInsets) {
+                const editInsets = this.props.editInsets.doEdit
+                const insetProps = this.props.editInsets.subscribeChanges
+
+                const getCoordBox = (): [number, number, number, number] => {
+                    const mapBounds = map.getBounds()
+                    const sw = mapBounds.getSouthWest()
+                    const ne = mapBounds.getNorthEast()
+                    return [sw.lng, sw.lat, ne.lng, ne.lat]
+                }
+
+                void map.once('load', () => {
+                    let lastCoordBox = getCoordBox()
+
+                    let nonUserPanZoomOcurring = false
+
+                    const panZoomHandler = (): void => {
+                        if (nonUserPanZoomOcurring) {
+                            return
+                        }
+                        const newCoordBox = getCoordBox()
+                        if (stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
+                            editInsets(i, { coordBox: newCoordBox })
+                            lastCoordBox = newCoordBox
+                        }
+                    }
+
+                    map.on('zoomend', panZoomHandler)
+                    map.on('moveend', panZoomHandler)
+
+                    const observer = (): void => {
+                        nonUserPanZoomOcurring = true
+                        let fit = false
+                        if (stableStringify(getCoordBox()) !== stableStringify(insetProps[i].value.coordBox)) {
+                            fit = true
+                        }
+                        setTimeout(() => {
+                            if (fit) {
+                                map.fitBounds(mapBoundsFromInset(insetProps[i].value), { animate: false })
+                            }
+                            setTimeout(() => {
+                                nonUserPanZoomOcurring = false
+                            }, 100)
+                        }, 100)
+                    }
+
+                    insetProps[i].observers.add(observer)
+
+                    this.cleanup.push(() => {
+                        map.off('zoomend', panZoomHandler)
+                        map.off('moveend', panZoomHandler)
+                        insetProps[i].observers.delete(observer)
+                    })
+                })
             }
         }
         this.hasZoomed = true
         await this.componentDidUpdate(this.props, this.state)
+    }
+
+    override componentWillUnmount(): void {
+        this.cleanup.forEach((cb) => { cb() })
+        this.cleanup = []
     }
 
     onClick(name: string): void {
@@ -656,7 +725,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     setUpMap(map: maplibregl.Map, shapes: [ShapeType, GeoJSON.Feature][], inset: Inset): boolean {
         function filterOverlaps(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
             const bbox = inset.coordBox
-            if (!inset.mainMap && bbox !== undefined) {
+            if (!inset.mainMap) {
                 features = features.filter((poly) => {
                     const bounds = boundingBox(poly.geometry)
                     // Check if the polygon overlaps the inset bounds
@@ -787,12 +856,35 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean }): ReactNode {
+const insetBorderWidth = 2
+
+type Frame = [number, number, number, number]
+
+function MapBody(props: {
+    id: string
+    height: number | string
+    buttons: ReactNode
+    bboxProp: Property<Inset>
+    insetBoundary: boolean
+    visible: boolean
+    editInset?: EditSingleInset
+    container: RefObject<HTMLDivElement>
+    getMap: () => maplibregl.Map | undefined
+}): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
+
+    const bbox = props.bboxProp.use()
+
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
-    const [x0, y0] = props.bbox.bottomLeft
-    const [x1, y1] = props.bbox.topRight
+    // Frame is separate so we can interactively edit it
+    const [frame, setFrame] = useState<Frame>(() => [...bbox.bottomLeft, ...bbox.topRight])
+    const [x0, y0, x1, y1] = frame
+
+    useEffect(() => {
+        setFrame([...bbox.bottomLeft, ...bbox.topRight])
+    }, [bbox])
+
     return (
         <div
             id={props.id}
@@ -802,12 +894,13 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
                 backgroundColor: isScreenshot ? 'transparent' : colors.slightlyDifferentBackground,
                 ...(props.visible ? {} : { display: 'none' }),
+                ...(props.editInset ? { overflow: 'visible' } : {}),
             }}
         >
             {/* place this on the right of the map */}
@@ -817,7 +910,118 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
             >
                 {props.buttons}
             </div>
+            { props.editInset && props.insetBoundary && (
+                <EditInsetsHandles
+                    frame={frame}
+                    setFrame={(newFrame) => {
+                        setFrame(newFrame)
+                        props.editInset!({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                    }}
+                    container={props.container}
+                />
+            ) }
         </div>
+    )
+}
+
+type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
+
+function EditInsetsHandles(props: {
+    frame: Frame
+    setFrame: (newFrame: Frame) => void
+    container: RefObject<HTMLDivElement>
+}): ReactNode {
+    const colors = useColors()
+
+    const handleStyle: (handleSize: number) => CSSProperties = handleSize => ({
+        backgroundColor: colors.slightlyDifferentBackground,
+        border: `1px solid ${colors.textMain}`,
+        position: 'absolute',
+        width: `${handleSize}px`,
+        height: `${handleSize}px`,
+        borderRadius: '2px',
+        zIndex: 1000,
+    })
+
+    const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
+
+    const pointerHandlers = (kind: DragKind): {
+        onPointerDown: (e: React.PointerEvent) => void
+        onPointerMove: (e: React.PointerEvent) => void
+        onPointerUp: (e: React.PointerEvent) => void
+        onPointerCancel: (e: React.PointerEvent) => void
+    } => ({
+        onPointerDown: (e: React.PointerEvent) => {
+            if (activeDrag.current !== undefined) {
+                return
+            }
+            const thisElem = e.target as HTMLDivElement
+            activeDrag.current = {
+                kind,
+                startX: e.clientX,
+                startY: e.clientY,
+                startFrame: props.frame,
+                pointerId: e.pointerId,
+            }
+            thisElem.setPointerCapture(e.pointerId)
+        },
+        onPointerMove: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            const drag = activeDrag.current
+            const rawMovementX = (e.clientX - drag.startX) / props.container.current!.clientWidth
+            const rawMovementY = -(e.clientY - drag.startY) / props.container.current!.clientHeight
+            const resizedFrame: Frame = [
+                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
+                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
+                Math.max(drag.startFrame[0] + 0.05, Math.min(drag.startFrame[2] + rawMovementX, 1)),
+                Math.max(drag.startFrame[1] + 0.1, Math.min(drag.startFrame[3] + rawMovementY, 1)),
+            ]
+            let newFrame: Frame
+            switch (drag.kind) {
+                case 'move':
+                    const movementX = Math.max(0 - drag.startFrame[0], Math.min(rawMovementX, 1 - drag.startFrame[2]))
+                    const movementY = Math.max(0 - drag.startFrame[1], Math.min(rawMovementY, 1 - drag.startFrame[3]))
+                    newFrame = [drag.startFrame[0] + movementX, drag.startFrame[1] + movementY, drag.startFrame[2] + movementX, drag.startFrame[3] + movementY]
+                    break
+                case 'topRight':
+                    newFrame = [drag.startFrame[0], drag.startFrame[1], resizedFrame[2], resizedFrame[3]]
+                    break
+                case 'bottomRight':
+                    newFrame = [drag.startFrame[0], resizedFrame[1], resizedFrame[2], drag.startFrame[3]]
+                    break
+                case 'bottomLeft':
+                    newFrame = [resizedFrame[0], resizedFrame[1], drag.startFrame[2], drag.startFrame[3]]
+                    break
+                case 'topLeft':
+                    newFrame = [resizedFrame[0], drag.startFrame[1], drag.startFrame[2], resizedFrame[3]]
+                    break
+            }
+            props.setFrame(newFrame)
+        },
+        onPointerUp: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+        },
+        onPointerCancel: (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+        },
+    })
+
+    return (
+        <>
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
+            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+        </>
     )
 }
 
@@ -951,4 +1155,12 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         }
         return result
     }
+}
+
+function mapBoundsFromInset(inset: Inset): maplibregl.LngLatBounds {
+    const { coordBox } = inset
+    return new maplibregl.LngLatBounds(
+        new maplibregl.LngLat(coordBox[0], coordBox[1]),
+        new maplibregl.LngLat(coordBox[2], coordBox[3]),
+    )
 }

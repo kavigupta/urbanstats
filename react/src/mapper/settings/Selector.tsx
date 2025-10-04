@@ -12,73 +12,16 @@ import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { Documentation, renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
-import { parseExpr } from './AutoUXEditor'
+import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
+import { parseExpr, possibilities, Selection } from './parseExpr'
 
 export const labelPadding = '4px'
 
-export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
-
-function shouldShowConstant(type: USSType): boolean {
-    return type.type === 'number' || type.type === 'string'
-}
-
-export function possibilities(target: USSType[], env: Map<string, USSDocumentedType>): Selection[] {
-    const results: Selection[] = []
-    // Add vector option if the type is a vector
-    if (target.some(t => t.type === 'vector')) {
-        results.push({ type: 'vector' })
-    }
-    // Add properties option if the type is an object
-    if (target.some(t => t.type === 'object')) {
-        results.push({ type: 'object' })
-    }
-    // Add custom option for non-opaque or custom-allowed types
-    if (target.some(t => t.type !== 'opaque' || t.allowCustomExpression !== false)) {
-        results.push({ type: 'custom' })
-    }
-    // Add constant option for numbers and strings
-    if (target.some(shouldShowConstant)) {
-        results.push({ type: 'constant' })
-    }
-    else {
-        const renderedTypes = target.map(renderType)
-        // Only add variables and functions if constants are not shown
-        const variables: Selection[] = []
-        const functions: Selection[] = []
-        for (const [name, type] of env) {
-            const t: USSType = type.type
-            // if (renderType(t) === renderType(target)) {
-            if (renderedTypes.includes(renderType(t))) {
-                variables.push({ type: 'variable', name })
-            }
-            else if (t.type === 'function' && t.returnType.type === 'concrete' && renderedTypes.includes(renderType(t.returnType.value))) {
-                functions.push({ type: 'function', name })
-            }
-        }
-        // Sort variables by priority (lower numbers first)
-        variables.sort((a, b) => {
-            const aPriority = a.type === 'variable' ? (env.get(a.name)?.documentation?.priority ?? 1) : 1
-            const bPriority = b.type === 'variable' ? (env.get(b.name)?.documentation?.priority ?? 1) : 1
-            return aPriority - bPriority
-        })
-        // Sort functions by priority (functions get priority 0 by default)
-        functions.sort((a, b) => {
-            const aPriority = a.type === 'function' ? (env.get(a.name)?.documentation?.priority ?? 0) : 0
-            const bPriority = b.type === 'function' ? (env.get(b.name)?.documentation?.priority ?? 0) : 0
-            return aPriority - bPriority
-        })
-        // Functions first, then variables
-        results.push(...functions)
-        results.push(...variables)
-    }
-    return results
-}
-
-function isCustomConstructor(possibility: Selection, typeEnvironment: Map<string, USSDocumentedType>): boolean {
+function isCustomConstructor(possibility: Selection, typeEnvironment: TypeEnvironment): boolean {
     return possibility.type === 'function' && typeEnvironment.get(possibility.name)?.documentation?.customConstructor === true
 }
 
@@ -86,7 +29,7 @@ export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     type: USSType[]
     blockIdent: string
     errors: EditorError[]
@@ -240,7 +183,7 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
-export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): SelectorRenderResult {
+export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -272,62 +215,28 @@ export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>,
     }
 }
 
-export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
-    switch (expr.type) {
-        case 'customNode':
-            if (expr.expr.type === 'expression') {
-                return getColor(expr.expr.value, typeEnvironment)
-            }
-            return
-        case 'identifier': {
-            const reference = typeEnvironment.get(expr.name.node)
-
-            if (reference === undefined || !('value' in reference)) {
-                return
-            }
-
-            if (reference.type.type === 'opaque' && reference.type.name === 'color') {
-                return { color: (reference.value as { value: Color }).value, kind: 'rgb' }
-            }
-
-            return
-        }
-        case 'call': {
-            const posArgs = expr.args.flatMap((arg) => {
-                if (arg.type === 'unnamed' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
-                    return [arg.value.value.node.value]
-                }
-                return []
-            })
-            const kwArg = expr.args.flatMap((arg) => {
-                if (arg.type === 'named' && arg.name.node === 'a' && arg.value.type === 'constant' && arg.value.value.node.type === 'number') {
-                    return [arg.value.value.node.value]
-                }
-                return []
-            })
-            assert(kwArg.length <= 1, 'There should be at most one "a" named argument')
-            const alpha = kwArg.length === 1 ? kwArg[0] : 1
-            if (expr.fn.type === 'identifier' && (posArgs.length === 3 || posArgs.length === 4)) {
-                switch (expr.fn.name.node) {
-                    case 'rgb':
-                        const rgbColor = rgbToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
-                        if (rgbColor === undefined) {
-                            return
-                        }
-                        return { color: rgbColor, kind: 'rgb' }
-                    case 'hsv':
-                        const hsvColor = hsvToColor(posArgs[0], posArgs[1], posArgs[2], alpha, true)
-                        if (hsvColor === undefined) {
-                            return
-                        }
-                        return { color: hsvColor, kind: 'hsv' }
-                    default:
-                        return
-                }
-            }
-        }
+const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
+    fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
+    unnamedArgs: [l.number(), l.number(), l.number()],
+    namedArgs: { a: l.optional(l.number()) },
+}))), (call) => {
+    let color: Color | undefined
+    switch (call.fn) {
+        case 'rgb':
+            color = rgbToColor(call.unnamedArgs[0], call.unnamedArgs[1], call.unnamedArgs[2], call.namedArgs.a ?? 1, true)
+            break
+        case 'hsv':
+            color = hsvToColor(call.unnamedArgs[0], call.unnamedArgs[1], call.unnamedArgs[2], call.namedArgs.a ?? 1, true)
+            break
     }
-    return
+    if (color === undefined) {
+        return undefined
+    }
+    return { color, kind: call.fn }
+})
+
+export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
+    return colorSchema.parse(expr, typeEnvironment)
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
