@@ -40,7 +40,6 @@ interface TableContentsProps {
     transposeSettingsHeight: string
     articles: Article[]
     widthRowHeader: number
-    nominalWidthsEach: number[]
 }
 
 function TableContents(props: TableContentsProps): ReactNode {
@@ -51,7 +50,7 @@ function TableContents(props: TableContentsProps): ReactNode {
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
     const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.articles.length})` : undefined
 
-    const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.nominalWidthsEach[columnIndex]
+    const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
 
     return (
         <>
@@ -69,7 +68,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                         statNameTotalWidth={100 * (props.leftMarginPercent - props.leftBarMargin)}
                         onlyColumns={props.onlyColumns}
                         statNameOverride={props.topLeftOverride}
-                        extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.nominalWidthsEach[i])}
+                        extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
                     />
                 </TableHeaderContainer>
                 {
@@ -80,7 +79,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                                 <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
                                     <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthRowHeader} />
                                     {rowSpecsForItem.map((spec, colIndex) => (
-                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.nominalWidthsEach[colIndex]} />
+                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.columnWidth} />
                                     ))}
                                 </TableRowContainer>
                                 {plotSpec && (
@@ -188,7 +187,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
-    const widthsEach = Array.from({ length: numColumns }).map(() => columnWidth)
     const widthRowHeader = transpose ? 100 * (leftMarginPercent - 2 * leftBarMargin) : 100 * (leftMarginPercent - leftBarMargin)
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
@@ -298,7 +296,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
                                             widthRowHeader={widthRowHeader}
-                                            nominalWidthsEach={widthsEach}
                                         />
                                     )
                                 : (
@@ -316,7 +313,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
                                             widthRowHeader={widthRowHeader}
-                                            nominalWidthsEach={widthsEach}
                                         />
                                     )}
                             <ArticleWarnings />
