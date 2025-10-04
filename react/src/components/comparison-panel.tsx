@@ -37,7 +37,6 @@ interface TableContentsProps {
     columnWidth: number
     leftBarMargin: number
     onlyColumns: ColumnIdentifier[]
-    perColumnExtraRight: number[]
     transposeSettingsHeight: string
     articles: Article[]
     widthRowHeader: number
@@ -70,7 +69,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                         statNameTotalWidth={100 * (props.leftMarginPercent - props.leftBarMargin)}
                         onlyColumns={props.onlyColumns}
                         statNameOverride={props.topLeftOverride}
-                        extraSpaceRight={props.perColumnExtraRight}
+                        extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.nominalWidthsEach[i])}
                     />
                 </TableHeaderContainer>
                 {
@@ -157,10 +156,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const numColumns = transpose ? dataByArticleStat[0].length : props.articles.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
-    const transposeHistogramSpacer = (columnIndex: number): number => {
-        return transpose && expandedByStatIndex[columnIndex] ? columnWidth : 0
-    }
-
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
         if (widthColumns > maxColumns) {
             return (
@@ -186,8 +181,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const navContext = useContext(Navigator.Context)
 
     const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
-
-    const perColumnExtraRight = Array.from({ length: numColumns }).map((_, i) => transposeHistogramSpacer(i))
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
@@ -240,8 +233,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     longnames: names.map((value, index) => index === articleIndex ? x : value),
                 }, { history: 'push', scroll: { kind: 'none' } })
             },
-            width: columnWidth,
-            extraSpaceRight: transposeHistogramSpacer(statIndex),
         }))
     ))
 
@@ -304,10 +295,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
-                                            perColumnExtraRight={perColumnExtraRight}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            // expandedColumnWidth={expandedColumnWidth}
                                             widthRowHeader={widthRowHeader}
                                             nominalWidthsEach={widthsEach}
                                         />
@@ -324,10 +313,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
-                                            perColumnExtraRight={perColumnExtraRight}
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
-                                            // expandedColumnWidth={expandedColumnWidth}
                                             widthRowHeader={widthRowHeader}
                                             nominalWidthsEach={widthsEach}
                                         />
