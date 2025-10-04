@@ -12,7 +12,7 @@ import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
-import { Documentation, renderType, USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { Documentation, renderType, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
 import { parseExpr } from './AutoUXEditor'
@@ -26,7 +26,7 @@ function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
 }
 
-export function possibilities(target: USSType[], env: Map<string, USSDocumentedType>): Selection[] {
+export function possibilities(target: USSType[], env: TypeEnvironment): Selection[] {
     const results: Selection[] = []
     // Add vector option if the type is a vector
     if (target.some(t => t.type === 'vector')) {
@@ -78,7 +78,7 @@ export function possibilities(target: USSType[], env: Map<string, USSDocumentedT
     return results
 }
 
-function isCustomConstructor(possibility: Selection, typeEnvironment: Map<string, USSDocumentedType>): boolean {
+function isCustomConstructor(possibility: Selection, typeEnvironment: TypeEnvironment): boolean {
     return possibility.type === 'function' && typeEnvironment.get(possibility.name)?.documentation?.customConstructor === true
 }
 
@@ -86,7 +86,7 @@ export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     type: USSType[]
     blockIdent: string
     errors: EditorError[]
@@ -240,7 +240,7 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
-export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>, selection: Selection): SelectorRenderResult {
+export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -272,7 +272,7 @@ export function renderSelection(typeEnvironment: Map<string, USSDocumentedType>,
     }
 }
 
-export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
+export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
     switch (expr.type) {
         case 'customNode':
             if (expr.expr.type === 'expression') {
