@@ -8,7 +8,7 @@ import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_t
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 
-import { isSinglePointerCell } from './table'
+import { isSinglePointerCell } from './pointer-cell'
 
 /**
  * - Query Params -> Settings

@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useState } from 'react'
 import { GridLoader, MoonLoader } from 'react-spinners'
 
-import { EditableString } from '../components/table'
+import { EditableString } from '../components/editable-field'
 import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
