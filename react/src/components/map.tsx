@@ -12,6 +12,7 @@ import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
+import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -34,13 +35,14 @@ export type MapHeight =
 
 export type EditSingleInset = (newInset: Partial<Inset>) => void
 export type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
+export interface EditInsets { doEdit: EditMultipleInsets, subscribeChanges: Property<Inset>[] }
 
 export interface MapGenericProps {
     height?: MapHeight
     basemap: Basemap
     attribution: 'none' | 'startHidden' | 'startVisible'
     insets?: Insets
-    editInsets?: EditMultipleInsets
+    editInsets?: EditInsets
 }
 
 export interface Shape {
@@ -257,10 +259,10 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                             id={this.handler.ids[i]}
                             height="100%"
                             buttons={this.buttons()}
-                            bbox={bbox}
+                            bboxProp={this.props.editInsets?.subscribeChanges[i] ?? new Property(bbox)}
                             insetBoundary={i > 0}
                             visible={this.state.mapIsVisible[i]}
-                            editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.(i, newInset) } : undefined}
+                            editInset={this.props.editInsets !== undefined ? (newInset: Partial<Inset>) => { this.props.editInsets?.doEdit(i, newInset) } : undefined}
                             container={this.containerRef}
                             getMap={() => this.handler.maps?.[i]}
                         />
@@ -390,7 +392,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     private cleanup: (() => void)[] = []
 
     override async componentDidMount(): Promise<void> {
-        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets)
+        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets?.doEdit)
         const maps = await this.handler.getMaps()
         const insets = this.insets()
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
@@ -399,7 +401,8 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
             map.fitBounds(mapBoundsFromInset(insets[i]), { animate: false })
 
             if (this.props.editInsets) {
-                const editInsets = this.props.editInsets
+                const editInsets = this.props.editInsets.doEdit
+                const insetProps = this.props.editInsets.subscribeChanges
 
                 const getCoordBox = (): [number, number, number, number] => {
                     const mapBounds = map.getBounds()
@@ -411,7 +414,12 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                 void map.once('load', () => {
                     let lastCoordBox = getCoordBox()
 
+                    let nonUserPanZoomOcurring = false
+
                     const panZoomHandler = (): void => {
+                        if (nonUserPanZoomOcurring) {
+                            return
+                        }
                         const newCoordBox = getCoordBox()
                         if (stableStringify(newCoordBox) !== stableStringify(lastCoordBox)) {
                             editInsets(i, { coordBox: newCoordBox })
@@ -422,9 +430,28 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                     map.on('zoomend', panZoomHandler)
                     map.on('moveend', panZoomHandler)
 
+                    const observer = (): void => {
+                        nonUserPanZoomOcurring = true
+                        let fit = false
+                        if (stableStringify(getCoordBox()) !== stableStringify(insetProps[i].value.coordBox)) {
+                            fit = true
+                        }
+                        setTimeout(() => {
+                            if (fit) {
+                                map.fitBounds(mapBoundsFromInset(insetProps[i].value), { animate: false })
+                            }
+                            setTimeout(() => {
+                                nonUserPanZoomOcurring = false
+                            }, 100)
+                        }, 100)
+                    }
+
+                    insetProps[i].observers.add(observer)
+
                     this.cleanup.push(() => {
                         map.off('zoomend', panZoomHandler)
                         map.off('moveend', panZoomHandler)
+                        insetProps[i].observers.delete(observer)
                     })
                 })
             }
@@ -837,7 +864,7 @@ function MapBody(props: {
     id: string
     height: number | string
     buttons: ReactNode
-    bbox: Inset
+    bboxProp: Property<Inset>
     insetBoundary: boolean
     visible: boolean
     editInset?: EditSingleInset
@@ -847,14 +874,16 @@ function MapBody(props: {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
 
+    const bbox = props.bboxProp.use()
+
     // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
     // Frame is separate so we can interactively edit it
-    const [frame, setFrame] = useState<Frame>(() => [...props.bbox.bottomLeft, ...props.bbox.topRight])
+    const [frame, setFrame] = useState<Frame>(() => [...bbox.bottomLeft, ...bbox.topRight])
     const [x0, y0, x1, y1] = frame
 
     useEffect(() => {
-        setFrame([...props.bbox.bottomLeft, ...props.bbox.topRight])
-    }, [props.bbox])
+        setFrame([...bbox.bottomLeft, ...bbox.topRight])
+    }, [bbox])
 
     return (
         <div
@@ -886,7 +915,7 @@ function MapBody(props: {
                     frame={frame}
                     setFrame={(newFrame) => {
                         setFrame(newFrame)
-                        props.editInset!({ bottomLeft: [frame[0], frame[1]], topRight: [frame[2], frame[3]] })
+                        props.editInset!({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
                     }}
                     container={props.container}
                 />

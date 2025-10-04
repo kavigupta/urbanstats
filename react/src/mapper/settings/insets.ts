@@ -2,7 +2,7 @@ import { Inset } from '../../components/map'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { deconstruct } from '../../urban-stats-script/constants/insets'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { loadInsetExpression } from '../../urban-stats-script/worker'
+import { loadInset, loadInsetExpression } from '../../urban-stats-script/worker'
 import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -56,15 +56,20 @@ const mapInsetsSchema = l.transformStmt(l.statements([
     }
 })
 
-export function canEditInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): boolean {
+export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): Inset[] | undefined {
     if (settings.script.uss.type === 'statements') {
         const parseResult = mapInsetsSchema.parse(settings.script.uss, typeEnvironment)
         if (parseResult === undefined) {
-            return false
+            return undefined
         }
-        return parseResult.currentValue !== null || settings.universe !== undefined
+        if (parseResult.currentValue !== null) {
+            return parseResult.currentValue.map(e => e.currentValue)
+        }
+        if (settings.universe !== undefined) {
+            return loadInset(settings.universe)
+        }
     }
-    return false
+    return undefined
 }
 
 export type InsetEdits = ReadonlyMap<number, Partial<Inset>>

@@ -14,7 +14,7 @@ import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
-import { canEditInsets, doEditInsets, InsetEdits } from '../mapper/settings/insets'
+import { doEditInsets, getInsets, InsetEdits } from '../mapper/settings/insets'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -44,7 +44,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditMultipleInsets } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditInsets } from './map'
 import { Statistic } from './table'
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
@@ -396,7 +396,8 @@ interface MapComponentProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors?: (errors: EditorError[]) => void
     colorbarRef?: React.RefObject<HTMLDivElement>
-    editInsets?: EditMultipleInsets
+    editInsets?: EditInsets
+    overrideInsets?: Insets
 }
 
 interface EmpiricalRamp {
@@ -435,7 +436,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    insets={currentInsets}
+                    insets={props.overrideInsets ?? currentInsets}
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
                 />
@@ -661,7 +662,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                     colorbarRef={colorbarRef}
                 />
                 {
-                    canEditInsets(mapSettings, typeEnvironment) && (
+                    getInsets(mapSettings, typeEnvironment) && (
                         <div style={{
                             display: 'flex',
                             gap: '0.5em',
@@ -698,6 +699,15 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
 
     const { addState, ui: undoRedoUi } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
+
+    const insetsProps = useMemo(() => getInsets(mapSettings, typeEnvironment)!.map(inset => new Property(inset)), [mapSettings, typeEnvironment])
+
+    useEffect(() => {
+        const baseInsets = getInsets(mapSettings, typeEnvironment)!
+        for (const [i, insetProp] of insetsProps.entries()) {
+            insetProp.value = { ...baseInsets[i], ...insetEdits.get(i) }
+        }
+    }, [insetEdits, insetsProps, mapSettings, typeEnvironment])
 
     return (
         <>
@@ -736,13 +746,16 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 geographyKind={mapSettings.geographyKind}
                 universe={mapSettings.universe}
                 uss={computeUSS(mapSettings.script)}
-                editInsets={(i, e) => {
-                    setInsetEdits((edits) => {
-                        const newEdits = new Map(edits)
-                        newEdits.set(i, { ...newEdits.get(i), ...e })
-                        addState(newEdits, undefined)
-                        return newEdits
-                    })
+                editInsets={{
+                    doEdit: (i, e) => {
+                        setInsetEdits((edits) => {
+                            const newEdits = new Map(edits)
+                            newEdits.set(i, { ...newEdits.get(i), ...e })
+                            addState(newEdits, undefined)
+                            return newEdits
+                        })
+                    },
+                    subscribeChanges: insetsProps,
                 }}
             />
             {undoRedoUi}
