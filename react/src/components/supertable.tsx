@@ -5,24 +5,27 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, ComparisonHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, LongnameHeaderSection, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
+import { ColumnIdentifier, ComparisonHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export interface PlotSpec {
     statDescription: string
     plotProps: PlotProps[]
 }
 
-export interface TableContentsProps {
+export interface SuperHeaderSpec {
     headerSpecs: CellSpec[]
+    showBottomBar: boolean
+}
+
+export interface TableContentsProps {
+    superHeaderSpec?: SuperHeaderSpec
     leftHeaderSpecs: CellSpec[]
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
-    showBottomBar: boolean
     topLeftSpec: CellSpec
     widthLeftHeader: number
     columnWidth: number
-    leftBarMargin: number
     onlyColumns: ColumnIdentifier[]
 }
 
@@ -34,16 +37,20 @@ export function TableContents(props: TableContentsProps): ReactNode {
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
     const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
 
+    const ncols = props.rowSpecs.length === 0 ? 0 : props.rowSpecs[0].length
+
     const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
 
     return (
         <>
-            <LongnameHeaderSection
-                headerSpecs={props.headerSpecs}
-                showBottomBar={props.showBottomBar}
-                leftSpacerWidth={props.widthLeftHeader}
-                widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
-            />
+            {props.superHeaderSpec !== undefined && (
+                <SuperHeaderHorizontal
+                    headerSpecs={props.superHeaderSpec.headerSpecs}
+                    showBottomBar={props.superHeaderSpec.showBottomBar}
+                    leftSpacerWidth={props.widthLeftHeader}
+                    widthsEach={Array.from({ length: props.superHeaderSpec.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
+                />
+            )}
 
             <div style={{ position: 'relative', minHeight: overallMinHeight }}>
                 <TableHeaderContainer>
@@ -52,7 +59,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         topLeftSpec={props.topLeftSpec}
                         topLeftWidth={props.widthLeftHeader}
                         onlyColumns={props.onlyColumns}
-                        extraSpaceRight={Array.from({ length: props.headerSpecs.length }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
+                        extraSpaceRight={Array.from({ length: ncols }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
                     />
                 </TableHeaderContainer>
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {

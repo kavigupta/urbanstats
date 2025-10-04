@@ -106,7 +106,7 @@ export interface LongnameHeaderSectionProps {
     leftSpacerWidth: number
 }
 
-export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactNode {
+export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactNode {
     const colors = useColors()
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {

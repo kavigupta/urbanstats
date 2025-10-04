@@ -23,7 +23,7 @@ import { PlotProps } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
-import { ColumnIdentifier, leftBarMargin } from './table'
+import { ColumnIdentifier } from './table'
 
 export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
@@ -111,7 +111,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         {
             type: 'comparison-longname',
             articleIndex,
-            // width: transpose ? (leftMarginPercent - 2 * leftBarMargin) * 100 : columnWidth,
             articles: props.articles,
             names,
             transpose,
@@ -126,7 +125,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             row: rowToDisplayForStat(statIndex),
             longname: names[0],
             currentUniverse,
-            // width: transpose ? expandedColumnWidth(statIndex) : 100 * (leftMarginPercent - leftBarMargin),
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
@@ -202,31 +200,27 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             {transpose
                                 ? (
                                         <TableContents
-                                            headerSpecs={statisticNameHeaderSpecs}
+                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false }}
                                             leftHeaderSpecs={longnameHeaderSpecs}
                                             rowSpecs={rowSpecsByStatTransposed}
                                             horizontalPlotSpecs={plotSpecs.map(() => undefined)}
                                             verticalPlotSpecs={plotSpecs}
-                                            showBottomBar={false}
                                             topLeftSpec={topLeftSpec}
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
-                                            leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                         />
                                     )
                                 : (
                                         <TableContents
-                                            headerSpecs={longnameHeaderSpecs}
+                                            superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
                                             leftHeaderSpecs={statisticNameHeaderSpecs}
                                             rowSpecs={rowSpecsByStat}
                                             horizontalPlotSpecs={plotSpecs}
                                             verticalPlotSpecs={[]}
-                                            showBottomBar={true}
                                             topLeftSpec={topLeftSpec}
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
-                                            leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
                                         />
                                     )}
