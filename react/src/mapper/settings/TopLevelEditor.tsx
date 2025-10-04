@@ -10,10 +10,11 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
-import { AutoUXEditor, parseExpr } from './AutoUXEditor'
+import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { PreambleEditor } from './PreambleEditor'
+import { parseExpr } from './parseExpr'
 import { makeStatements } from './utils'
 
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
