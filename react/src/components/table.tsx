@@ -1,5 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
-import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
+import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
@@ -7,21 +6,22 @@ import { Navigator } from '../navigation/Navigator'
 import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useSetting } from '../page_template/settings'
 import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
-import { useComparisonHeadStyle, useMobileLayout, isMobileLayout } from '../utils/responsive'
+import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { useTranspose } from '../utils/transpose'
-import { UnitType } from '../utils/unit'
 
 import { Icon } from './Icon'
+import { Percentile, Statistic } from './display-stats'
+import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
+import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell, CellSpec, ComparisonLongnameCellProps, ComparisonTopLeftHeaderProps, StatisticNameCellProps } from './supertable'
-import { classifyStatistic, getUnitDisplay } from './unit-display'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -480,17 +480,6 @@ export function StatisticRowCells(props: {
     )
 }
 
-// Reactive and non-reactive versions of the same function
-function useSinglePointerCell(): boolean {
-    const isMobile = useMobileLayout()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    return isMobile && !simpleOrdinals
-}
-
-export function isSinglePointerCell(settings: Settings): boolean {
-    return isMobileLayout() && !settings.get('simple_ordinals')
-}
-
 function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
@@ -871,47 +860,6 @@ export function TableRowContainer({ children, index, minHeight }: { children: Re
     )
 }
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit?: UnitType }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-
-    const statisticType = props.unit ?? classifyStatistic(props.statname)
-    const unitDisplay = getUnitDisplay(statisticType)
-    const { value, unit } = unitDisplay.renderValue(props.value, useImperial, temperatureUnit)
-
-    return (
-        <span style={props.style}>
-            {props.isUnit ? unit : value}
-        </span>
-    )
-}
-
-export function ElectionResult(props: { value: number }): ReactNode {
-    const colors = useColors()
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
-    }
-    const value = Math.abs(props.value) * 100
-    const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
-    const text = value.toFixed(places)
-    const party = props.value > 0 ? 'D' : 'R'
-    const partyColor = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
-    const spanStyle: CSSProperties = {
-        color: partyColor,
-        // So that on 4 digits, we overflow left
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    return (
-        <span style={spanStyle}>
-            {party}
-            +
-            {text}
-        </span>
-    )
-}
-
 function Ordinal(props: {
     ordinal: number
     total: number
@@ -966,112 +914,7 @@ function Ordinal(props: {
     )
 }
 
-function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
-    const onNewContent = (content: string): void => {
-        const number = parseInt(content)
-        if (!Number.isNaN(number) && number !== props.number) {
-            props.onNewNumber(number)
-        }
-    }
-    return (
-        <EditableString
-            content={props.number.toString()}
-            onNewContent={onNewContent}
-            style={{ minWidth: '2em', display: 'inline-block' }}
-            inputMode="decimal"
-        />
-    )
-};
-
-export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
-    /*
-     * This code is weird because the `ContentEditable` needs to use refs.
-     * See https://www.npmjs.com/package/react-contenteditable
-     */
-
-    const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const html = useRef(props.content.toString())
-    const [, setCounter] = useState(0)
-
-    // Otherwise, this component can display the wrong number when props change
-    useEffect(() => {
-        html.current = props.content.toString()
-        setCounter(count => count + 1)
-    }, [props.content])
-
-    const handleChange = (evt: ContentEditableEvent): void => {
-        html.current = evt.target.value
-    }
-
-    const handleSubmit = (): void => {
-        const content = contentEditable.current!.innerText
-        if (content !== props.content) {
-            props.onNewContent(content)
-        }
-    }
-
-    const selectAll = (): void => {
-        setTimeout(() => {
-            const range = document.createRange()
-            range.selectNodeContents(contentEditable.current!)
-            const selection = window.getSelection()
-            selection?.removeAllRanges()
-            selection?.addRange(range)
-        }, 0)
-    }
-
-    return (
-        <ContentEditable
-            className="editable_content"
-            style={props.style}
-            innerRef={contentEditable}
-            html={html.current}
-            disabled={false}
-            onChange={handleChange}
-            onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter') {
-                    handleSubmit()
-                    e.preventDefault()
-                }
-            }}
-            onBlur={handleSubmit}
-            tagName="span" // Use a custom HTML tag (uses a div by default)
-            inputMode={props.inputMode}
-            onFocus={selectAll}
-        />
-    )
-};
-
-export function Percentile(props: {
-    ordinal: number
-    total: number
-    percentileByPopulation: number
-    simpleOrdinals: boolean
-}): ReactNode {
-    const ordinal = props.ordinal
-    const total = props.total
-    if (ordinal > total) {
-        return <span></span>
-    }
-    // percentile as an integer
-    // used to be keyed by a setting, but now we always use percentile_by_population
-    const percentile = props.percentileByPopulation
-    // something like Xth percentile
-    let text = `${percentile}th percentile`
-    if (props.simpleOrdinals) {
-        text = `${percentile.toString()}%`
-    }
-    else if (percentile % 10 === 1 && percentile % 100 !== 11) {
-        text = `${percentile}st percentile`
-    }
-    else if (percentile % 10 === 2 && percentile % 100 !== 12) {
-        text = `${percentile}nd percentile`
-    }
-    else if (percentile % 10 === 3 && percentile % 100 !== 13) {
-        text = `${percentile}rd percentile`
-    }
-    return <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>{text}</div>
-}
+;
 
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
@@ -1174,19 +1017,5 @@ function PointerButtonIndex(props: {
         >
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
-    )
-}
-
-export function PointerArrow({ direction, disabled }: { direction: -1 | 1, disabled: boolean }): ReactNode {
-    const spanStyle: React.CSSProperties = {
-        transform: `scale(${direction * -1}, 1)`, // Because the right unicode arrow is weird
-        display: 'inline-block',
-        visibility: disabled ? 'hidden' : 'visible',
-    }
-
-    return (
-        <span style={spanStyle}>
-            {'◁\ufe0e'}
-        </span>
     )
 }
