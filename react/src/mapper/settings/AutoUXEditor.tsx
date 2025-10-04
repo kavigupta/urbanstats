@@ -8,7 +8,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType, USSFunctionArgType, renderType, USSObjectType, USSFunctionType } from '../../urban-stats-script/types-values'
+import { USSType, USSFunctionArgType, renderType, USSObjectType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
@@ -16,7 +16,7 @@ import { useMobileLayout } from '../../utils/responsive'
 import { CustomEditor } from './CustomEditor'
 import { Selector, Selection, classifyExpr, possibilities, getColor, labelPadding } from './Selector'
 
-function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: Map<string, USSDocumentedType>): UrbanStatsASTExpression {
+function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
         return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
     }
@@ -49,7 +49,7 @@ function ArgumentEditor(props: {
     argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
     uss: UrbanStatsASTExpression & { type: 'call', fn: UrbanStatsASTExpression & { type: 'identifier' } }
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
@@ -126,7 +126,7 @@ function ArgumentEditor(props: {
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
     setUss: (u: UrbanStatsASTExpression) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
     type: USSType[]
@@ -377,7 +377,7 @@ export function AutoUXEditor(props: {
     )
 }
 
-function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string): UrbanStatsASTExpression {
+function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: TypeEnvironment, blockIdent: string): UrbanStatsASTExpression {
     const varType = typeEnvironment.get(selection.name)?.type
     assert(varType !== undefined, `Variable ${selection.name} not found in type environment`)
     return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
@@ -386,7 +386,7 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
 // Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
 // Returns undefined if incompatible
 // We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
-function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
+function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
     let type
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
         const foundType: USSFunctionType = type.type
@@ -403,7 +403,7 @@ function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnviro
     return () => undefined
 }
 
-function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
+function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
     const fn = typeEnvironment.get(selection.name)
     assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
     const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
@@ -437,7 +437,7 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
     }
 }
 
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string, USSDocumentedType>, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -487,7 +487,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: Map<string,
 function defaultForSelection(
     selection: Selection,
     current: UrbanStatsASTExpression,
-    typeEnvironment: Map<string, USSDocumentedType>,
+    typeEnvironment: TypeEnvironment,
     blockIdent: string,
     type: USSType,
 ): UrbanStatsASTExpression {
@@ -531,7 +531,7 @@ function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
     type: USSType,
-    typeEnvironment: Map<string, USSDocumentedType>,
+    typeEnvironment: TypeEnvironment,
 ): UrbanStatsASTExpression | undefined {
     try {
         return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
@@ -548,7 +548,7 @@ export function parseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
     types: USSType[],
-    typeEnvironment: Map<string, USSDocumentedType>,
+    typeEnvironment: TypeEnvironment,
     fallback: Fallback,
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression {
@@ -560,7 +560,7 @@ function attemptParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
     types: USSType[],
-    typeEnvironment: Map<string, USSDocumentedType>,
+    typeEnvironment: TypeEnvironment,
     fallback: Fallback,
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression | undefined {

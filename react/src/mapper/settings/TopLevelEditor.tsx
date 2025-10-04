@@ -8,7 +8,7 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { USSDocumentedType, USSType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
 import { AutoUXEditor, parseExpr } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
@@ -45,7 +45,7 @@ export function TopLevelEditor({
 }: {
     uss: MapUSS
     setUss: (u: MapUSS) => void
-    typeEnvironment: Map<string, USSDocumentedType>
+    typeEnvironment: TypeEnvironment
     errors: EditorError[]
 }): ReactNode {
     const subcomponent = (): ReactNode => {
@@ -140,7 +140,7 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: Map<string, USSDocumentedType>, preserveCustomNodes: boolean): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
