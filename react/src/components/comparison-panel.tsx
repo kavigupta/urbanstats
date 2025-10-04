@@ -20,7 +20,6 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
 import { PlotProps } from './plots'
-import { transposeSettingsHeight } from './plots-histogram'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
@@ -214,7 +213,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
-                                            transposeSettingsHeight={transposeSettingsHeight}
                                         />
                                     )
                                 : (
@@ -230,7 +228,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             columnWidth={columnWidth}
                                             leftBarMargin={leftBarMargin}
                                             onlyColumns={onlyColumns}
-                                            transposeSettingsHeight={transposeSettingsHeight}
                                         />
                                     )}
                             <ArticleWarnings />

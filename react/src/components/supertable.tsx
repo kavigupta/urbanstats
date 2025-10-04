@@ -4,7 +4,7 @@ import { statParents } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
-import { PlotProps, RenderedPlot } from './plots'
+import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { ColumnIdentifier, ComparisonHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, LongnameHeaderSection, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export interface PlotSpec {
@@ -24,15 +24,14 @@ export interface TableContentsProps {
     columnWidth: number
     leftBarMargin: number
     onlyColumns: ColumnIdentifier[]
-    transposeSettingsHeight: string
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
-    const headerHeight = props.transposeSettingsHeight
+    const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
     const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
-    const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight} + ${contentHeight})` : undefined
+    const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
     const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
 
     const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
