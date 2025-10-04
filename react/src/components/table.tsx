@@ -8,6 +8,7 @@ import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
+import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
 import { isMobileLayout, useMobileLayout } from '../utils/responsive'
@@ -251,6 +252,13 @@ export function StatisticRowCells(props: {
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
+    isFirstInGroup?: boolean
+    isIndented?: boolean
+    isGroupHeader?: boolean
+    groupName?: string
+    indentedName?: string
+    groupHasMultipleSources?: boolean
+    statParent?: ReturnType<typeof statParents.get>
 }): ReactNode {
     const currentUniverse = useUniverse()
     const colors = useColors()
@@ -259,6 +267,26 @@ export function StatisticRowCells(props: {
         fontWeight: 400,
         color: colors.ordinalTextColor,
         margin: 0,
+    }
+
+    if (props.isGroupHeader) {
+        return (
+            <ColumnLayout
+                cells={[
+                    {
+                        widthPercentage: 100,
+                        columnIdentifier: 'statname',
+                        content: (
+                            <span className="serif value">
+                                <span>{props.groupName}</span>
+                            </span>
+                        ),
+                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
+                    },
+                ]}
+                totalWidth={props.totalWidth}
+            />
+        )
     }
 
     const cells = [
@@ -271,10 +299,15 @@ export function StatisticRowCells(props: {
                         row={props.row}
                         longname={props.longname}
                         currentUniverse={currentUniverse}
+                        isFirstInGroup={props.isFirstInGroup}
+                        indentedName={props.indentedName}
+                        groupHasMultipleSources={props.groupHasMultipleSources}
+                        sourceName={props.statParent?.source?.name}
+                        isIndented={props.isIndented}
                     />
                 </span>
             ),
-            style: { textAlign: 'left' },
+            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
         },
         {
             widthPercentage: 15,
@@ -433,10 +466,16 @@ export function StatisticName(props: {
     longname: string
     currentUniverse: string
     center?: boolean
+    isFirstInGroup?: boolean
+    indentedName?: string
+    groupHasMultipleSources?: boolean
+    sourceName?: string
+    isIndented?: boolean
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
@@ -453,7 +492,14 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {props.row.renderedStatname}
+            {props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname}
+            {props.groupHasMultipleSources && props.sourceName && (
+                <span>
+                    {' ['}
+                    {props.sourceName}
+                    &#93;
+                </span>
+            )}
         </a>
     )
     const screenshotMode = useScreenshotMode()
