@@ -561,10 +561,18 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         addState(newSettings, selectionContext.value)
     }, [selectionContext, addState])
 
+    const firstEffect = useRef(true)
+
     useEffect(() => {
-        // So that map settings are updated when the prop changes
-        setMapSettingsWrapper(props.mapSettings)
-        setMapEditorMode('uss')
+        if (firstEffect.current) {
+            // Otherwise we add an undo state immediately
+            firstEffect.current = false
+        }
+        else {
+            // So that map settings are updated when the prop changes
+            setMapSettingsWrapper(props.mapSettings)
+            setMapEditorMode('uss')
+        }
     }, [props.mapSettings, setMapSettingsWrapper])
 
     const jsonedSettings = JSON.stringify({
