@@ -1,4 +1,4 @@
-import { Inset, Insets } from '../components/map'
+import { Insets } from '../components/map'
 
 import { assert } from './defensive'
 
@@ -34,8 +34,7 @@ function area(coordBox: [number, number, number, number]): number {
     return Math.abs((x2 - x1) * (y2 - y1))
 }
 
-export function computeAspectRatioForInsets(ins: Insets): number {
-    const mapsWithCoordBox = ins.filter(inset => inset.coordBox !== undefined) as (Inset & { coordBox: [number, number, number, number] })[]
+export function computeAspectRatioForInsets(mapsWithCoordBox: Insets): number {
     assert(mapsWithCoordBox.length > 0, 'No insets with coordBox')
 
     const biggestMap = mapsWithCoordBox.reduce((prev, curr) => {
