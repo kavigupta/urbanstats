@@ -7,12 +7,17 @@ import { ArticleRow } from './load-article'
 import { PlotProps, RenderedPlot } from './plots'
 import { ColumnIdentifier, ComparisonHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, LongnameHeaderSection, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
+export interface PlotSpec {
+    statDescription: string
+    plotProps: PlotProps[]
+}
+
 export interface TableContentsProps {
     headerSpecs: CellSpec[]
     leftHeaderSpecs: CellSpec[]
     rowSpecs: CellSpec[][]
-    horizontalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
-    verticalPlotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[]
+    horizontalPlotSpecs: (PlotSpec | undefined)[]
+    verticalPlotSpecs: (PlotSpec | undefined)[]
     showBottomBar: boolean
     topLeftSpec: CellSpec
     widthLeftHeader: number
