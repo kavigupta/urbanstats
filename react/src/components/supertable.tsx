@@ -65,19 +65,16 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
                     const plotSpec = props.horizontalPlotSpecs[rowIndex]
                     return (
-                        <div key={`TableRowContainer_${rowIndex}`}>
-                            <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
-                                <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthLeftHeader} />
-                                {rowSpecsForItem.map((spec, colIndex) => (
-                                    <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.columnWidth} />
-                                ))}
-                            </TableRowContainer>
-                            {plotSpec && (
-                                <div style={{ width: '100%', position: 'relative' }}>
-                                    <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
-                                </div>
-                            )}
-                        </div>
+                        <SuperTableRow
+                            key={`TableRowContainer_${rowIndex}`}
+                            rowIndex={rowIndex}
+                            rowMinHeight={rowMinHeight}
+                            cellSpecs={rowSpecsForItem}
+                            plotSpec={plotSpec}
+                            leftHeaderSpec={props.leftHeaderSpecs[rowIndex]}
+                            widthLeftHeader={props.widthLeftHeader}
+                            columnWidth={props.columnWidth}
+                        />
                     )
                 })}
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
@@ -90,6 +87,32 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 )}
             </div>
         </>
+    )
+}
+
+export function SuperTableRow(props: {
+    rowIndex: number
+    leftHeaderSpec: CellSpec
+    cellSpecs: CellSpec[]
+    plotSpec?: PlotSpec
+    widthLeftHeader: number
+    columnWidth: number
+    rowMinHeight?: string
+}): ReactNode {
+    return (
+        <div>
+            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
+                <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
+                {props.cellSpecs.map((spec, colIndex) => (
+                    <Cell key={`rowCells_${colIndex}_${props.rowIndex}`} {...spec} width={props.columnWidth} />
+                ))}
+            </TableRowContainer>
+            {props.plotSpec && (
+                <div style={{ width: '100%', position: 'relative' }}>
+                    <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
+                </div>
+            )}
+        </div>
     )
 }
 
