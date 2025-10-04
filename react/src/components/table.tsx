@@ -688,13 +688,22 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
             {haveColorbar && (
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
-            <div key={`statName_${props.row.statpath}`} className="serif value" style={{ width: `${width}%`, padding: '1px', textAlign: props.center ? 'center' : undefined }}>
-                <StatisticName
-                    row={props.row}
-                    longname={props.longname}
-                    currentUniverse={props.currentUniverse}
-                    center={props.center}
-                />
+            <div
+                key={`statName_${props.row.statpath}`}
+                style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
+            >
+                <span className="serif value">
+                    <StatisticName
+                        row={props.row}
+                        longname={props.longname}
+                        currentUniverse={props.currentUniverse}
+                        center={props.center}
+                        isFirstInGroup={props.isFirstInGroup}
+                        isIndented={props.isIndented}
+                        indentedName={props.indentedName}
+                        groupHasMultipleSources={props.groupHasMultipleSources}
+                    />
+                </span>
             </div>
         </>
     )

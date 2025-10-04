@@ -144,7 +144,17 @@ export interface ComparisonLongnameCellProps {
     highlightIndex?: number
 }
 
-export interface StatisticNameCellProps {
+interface GroupInfo {
+    isFirstInGroup?: boolean
+    isIndented?: boolean
+    isGroupHeader?: boolean
+    groupName?: string
+    indentedName?: string
+    groupHasMultipleSources?: boolean
+
+}
+
+export interface StatisticNameCellProps extends GroupInfo {
     row: ArticleRow
     longname: string
     currentUniverse: string
@@ -153,7 +163,7 @@ export interface StatisticNameCellProps {
     transpose?: boolean
 }
 
-export interface StatisticRowCellProps {
+export interface StatisticRowCellProps extends GroupInfo {
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
@@ -161,12 +171,6 @@ export interface StatisticRowCellProps {
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
-    isFirstInGroup?: boolean
-    isIndented?: boolean
-    isGroupHeader?: boolean
-    groupName?: string
-    indentedName?: string
-    groupHasMultipleSources?: boolean
     statParent?: ReturnType<typeof statParents.get>
     extraSpaceRight?: number
 }

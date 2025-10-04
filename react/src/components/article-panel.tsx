@@ -12,7 +12,7 @@ import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
-import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 type ProcessedArticleRow = ArticleRow & {
@@ -64,6 +64,7 @@ import { RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
+import { Cell } from './supertable'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
@@ -207,11 +208,29 @@ function StatisticTableRow(props: {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 
+    const isMobile = useMobileLayout()
+
+    // TODO clean this up and reduce the amount of magic numbers
+    const widthLeftHeader = 100 * (simpleOrdinals ? 31 / 87 : (isMobile ? 31 / 106 : 31 / 114))
+    const columnWidth = 100 - widthLeftHeader
+
     return (
         <>
             <TableRowContainer index={props.index}>
-                <StatisticRowCells
-                    width={100}
+                <Cell
+                    type="statistic-name"
+                    width={widthLeftHeader}
+                    longname={props.longname}
+                    row={props.row}
+                    isFirstInGroup={props.isFirstInGroup}
+                    isIndented={props.isIndented}
+                    indentedName={props.indentedName}
+                    groupHasMultipleSources={props.groupHasMultipleSources}
+                    currentUniverse={currentUniverse}
+                />
+                <Cell
+                    type="statistic-row"
+                    width={columnWidth}
                     longname={props.longname}
                     row={props.row}
                     onNavigate={(newArticle) => {
@@ -227,6 +246,7 @@ function StatisticTableRow(props: {
                     indentedName={props.indentedName}
                     groupHasMultipleSources={props.groupHasMultipleSources}
                     statParent={statParents.get(props.row.statpath)}
+                    onlyColumns={['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']}
                 />
             </TableRowContainer>
             {expanded
