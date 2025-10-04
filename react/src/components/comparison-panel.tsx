@@ -41,6 +41,8 @@ interface TableContentsProps {
     transposeSettingsHeight: string
     articles: Article[]
     expandedColumnWidth: (i: number) => number
+    widthRowHeader: number
+    nominalWidthsEach: number[]
 }
 
 function TableContents(props: TableContentsProps): ReactNode {
@@ -57,6 +59,7 @@ function TableContents(props: TableContentsProps): ReactNode {
                 headerSpecs={props.headerSpecs}
                 showBottomBar={props.showBottomBar}
                 leftSpacerWidth={props.leftMarginPercent}
+                widthsEach={Array.from({ length: props.headerSpecs.length }).map((_, i) => props.expandedColumnWidth(i))}
             />
 
             <div style={{ position: 'relative', minHeight: overallMinHeight }}>
@@ -75,9 +78,9 @@ function TableContents(props: TableContentsProps): ReactNode {
                         return (
                             <div key={`TableRowContainer_${rowIndex}`}>
                                 <TableRowContainer index={rowIndex} minHeight={rowMinHeight}>
-                                    <Cell {...props.leftHeaderSpecs[rowIndex]} />
+                                    <Cell {...props.leftHeaderSpecs[rowIndex]} width={props.widthRowHeader} />
                                     {rowSpecsForItem.map((spec, colIndex) => (
-                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} />
+                                        <Cell key={`rowCells_${colIndex}_${rowIndex}`} {...spec} width={props.nominalWidthsEach[colIndex]} />
                                     ))}
                                 </TableRowContainer>
                                 {plotSpec && (
@@ -195,11 +198,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname }))
 
+    const widthsEach = Array.from({ length: numColumns }).map((_, i) => columnWidth)
+    const widthRowHeader = transpose ? 100 * (leftMarginPercent - 2 * leftBarMargin) : 100 * (leftMarginPercent - leftBarMargin)
+
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
         {
             type: 'comparison-longname',
             articleIndex,
-            width: transpose ? (leftMarginPercent - 2 * leftBarMargin) * 100 : columnWidth,
+            // width: transpose ? (leftMarginPercent - 2 * leftBarMargin) * 100 : columnWidth,
             articles: props.articles,
             names,
             transpose,
@@ -214,7 +220,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             row: rowToDisplayForStat(statIndex),
             longname: names[0],
             currentUniverse,
-            width: transpose ? expandedColumnWidth(statIndex) : 100 * (leftMarginPercent - leftBarMargin),
+            // width: transpose ? expandedColumnWidth(statIndex) : 100 * (leftMarginPercent - leftBarMargin),
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
@@ -305,6 +311,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
                                             expandedColumnWidth={expandedColumnWidth}
+                                            widthRowHeader={widthRowHeader}
+                                            nominalWidthsEach={widthsEach}
                                         />
                                     )
                                 : (
@@ -323,6 +331,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             transposeSettingsHeight={transposeSettingsHeight}
                                             articles={props.articles}
                                             expandedColumnWidth={expandedColumnWidth}
+                                            widthRowHeader={widthRowHeader}
+                                            nominalWidthsEach={widthsEach}
                                         />
                                     )}
                             <ArticleWarnings />

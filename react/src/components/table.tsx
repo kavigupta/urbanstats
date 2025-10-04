@@ -101,6 +101,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
 
 export interface LongnameHeaderSectionProps {
     headerSpecs: (CellSpec & { highlightIndex?: number })[]
+    widthsEach: number[]
     showBottomBar: boolean
     leftSpacerWidth: number
 }
@@ -117,7 +118,7 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
                         <div
                             key={`bar_${i}`}
                             style={{
-                                width: `${props.headerSpecs[i].width}%`,
+                                width: `${props.widthsEach[i]}%`,
                                 height: barHeight,
                                 backgroundColor: backgroundColor(i),
                             }}
@@ -137,7 +138,7 @@ export function LongnameHeaderSection(props: LongnameHeaderSectionProps): ReactN
             {bars(getBarColor)}
             <div style={{ display: 'flex' }}>
                 <div style={{ width: `${props.leftSpacerWidth * 100}%` }} />
-                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} />)}
+                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
             </div>
             {props.showBottomBar && bars(getBarColor)}
         </>
@@ -650,7 +651,6 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
 
 interface ComparisonLongnameCellProps {
     articleIndex: number
-    width: number
     articles: Article[]
     names: string[]
     transpose: boolean
@@ -662,14 +662,12 @@ interface StatisticNameCellProps {
     row: ArticleRow
     longname: string
     currentUniverse: string
-    width: number
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
 }
 
 interface StatisticRowCellProps {
-    width: number
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
@@ -691,18 +689,18 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     | ({ type: 'statistic-name' } & StatisticNameCellProps)
     | ({ type: 'statistic-row' } & StatisticRowCellProps)
 
-export function Cell(props: CellSpec): ReactNode {
+export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
         case 'comparison-longname':
-            return <ComparisonLongnameCell {...props} />
+            return <ComparisonLongnameCell {...props} width={props.width} />
         case 'statistic-name':
-            return <StatisticNameCell {...props} />
+            return <StatisticNameCell {...props} width={props.width} />
         case 'statistic-row':
-            return <StatisticRowCells {...props} />
+            return <StatisticRowCells {...props} width={props.width} />
     }
 }
 
-export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): ReactNode {
+export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
 
@@ -739,7 +737,7 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps): Reac
     )
 }
 
-export function StatisticNameCell(props: StatisticNameCellProps): ReactNode {
+export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
     return (
         <>
             {!props.transpose && props.highlightIndex !== undefined && (
