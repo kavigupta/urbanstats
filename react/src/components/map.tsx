@@ -780,12 +780,21 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     declare context: React.ContextType<typeof Navigator.Context>
 }
 
-function MapBody(props: { id: string, height: number | string, buttons: ReactNode, bbox: Inset, insetBoundary: boolean, visible: boolean }): ReactNode {
+const insetBorderWidth = 2
+
+function MapBody(props: {
+    id: string
+    height: number | string
+    buttons: ReactNode
+    bbox: Inset
+    insetBoundary: boolean
+    visible: boolean
+}): ReactNode {
     const colors = useColors()
     const isScreenshot = useScreenshotMode()
-    // Optionally use props.bbox.bottomLeft and props.bbox.topRight for custom placement
-    const [x0, y0] = props.bbox.bottomLeft
-    const [x1, y1] = props.bbox.topRight
+
+    const [x0, y0, x1, y1] = [...props.bbox.bottomLeft, ...props.bbox.topRight]
+
     return (
         <div
             id={props.id}
@@ -795,7 +804,7 @@ function MapBody(props: { id: string, height: number | string, buttons: ReactNod
                 width: `${(x1 - x0) * 100}%`,
                 height: `${(y1 - y0) * 100}%`,
                 position: 'absolute',
-                border: props.insetBoundary ? `2px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                border: props.insetBoundary ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: props.insetBoundary ? '0px' : `${mapBorderRadius}px`,
                 // In screenshot mode, the background is transparent so we can render this component atop the already-rendered map canvases
                 // In normal mode, the map is drawn over this normally, but is hidden during e2e testing, where we use the background color to mark map position
