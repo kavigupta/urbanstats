@@ -25,7 +25,7 @@ import { renderMap } from './screenshot-map'
 
 export const defaultMapPadding = 20
 
-export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
+export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox: [number, number, number, number], mainMap: boolean, name?: string }
 export type Insets = Inset[]
 export type MapHeight =
     | { type: 'fixed-height', value: number | string }
@@ -230,7 +230,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     insets(): Insets {
-        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true }]
+        return this.props.insets ?? [{ bottomLeft: [0, 0], topRight: [1, 1], mainMap: true, coordBox: [-90, -90, 90, 90] }]
     }
 
     /* Override if you want the loading spinner */
@@ -383,14 +383,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
         for (const i of insets.keys()) {
             const map = maps[i]
-            const { coordBox } = insets[i]
-            if (coordBox) {
-                const bounds = new maplibregl.LngLatBounds(
-                    new maplibregl.LngLat(coordBox[0], coordBox[1]),
-                    new maplibregl.LngLat(coordBox[2], coordBox[3]),
-                )
-                map.fitBounds(bounds, { animate: false })
-            }
+            map.fitBounds(mapBoundsFromInset(insets[i]), { animate: false })
         }
         this.hasZoomed = true
         await this.componentDidUpdate(this.props, this.state)
@@ -656,7 +649,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     setUpMap(map: maplibregl.Map, shapes: [ShapeType, GeoJSON.Feature][], inset: Inset): boolean {
         function filterOverlaps(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
             const bbox = inset.coordBox
-            if (!inset.mainMap && bbox !== undefined) {
+            if (!inset.mainMap) {
                 features = features.filter((poly) => {
                     const bounds = boundingBox(poly.geometry)
                     // Check if the polygon overlaps the inset bounds
@@ -960,4 +953,12 @@ class ArticleMap extends MapGeneric<ArticleMapProps> {
         }
         return result
     }
+}
+
+function mapBoundsFromInset(inset: Inset): maplibregl.LngLatBounds {
+    const { coordBox } = inset
+    return new maplibregl.LngLatBounds(
+        new maplibregl.LngLat(coordBox[0], coordBox[1]),
+        new maplibregl.LngLat(coordBox[2], coordBox[3]),
+    )
 }

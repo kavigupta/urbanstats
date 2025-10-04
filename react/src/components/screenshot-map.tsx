@@ -45,14 +45,11 @@ export async function renderMap(
     // Trigger map resize
     map.resize()
 
-    let bounds = originalBounds
-    if (inset.coordBox !== undefined) {
-        const [west, south, east, north] = inset.coordBox
-        bounds = new maplibregl.LngLatBounds(
-            new maplibregl.LngLat(west, south),
-            new maplibregl.LngLat(east, north),
-        )
-    }
+    const [west, south, east, north] = inset.coordBox
+    const bounds = new maplibregl.LngLatBounds(
+        new maplibregl.LngLat(west, south),
+        new maplibregl.LngLat(east, north),
+    )
     map.fitBounds(bounds, { animate: false, padding: 0 })
 
     // Wait for maps to re-render at high resolution
