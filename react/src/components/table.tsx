@@ -22,7 +22,7 @@ import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
-export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
 export const leftBarMargin = 0.02
 
@@ -198,16 +198,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     }
 
     const cells = [
-        {
-            columnIdentifier: 'statname',
-            widthPercentage: 31,
-            content: (
-                <span className="serif value" key="statistic">
-                    {props.statNameOverride ?? 'Statistic'}
-                </span>
-            ),
-            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
-        },
         {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
