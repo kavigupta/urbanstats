@@ -143,20 +143,15 @@ export interface ComparisonLongnameCellProps {
     highlightIndex?: number
 }
 
-interface GroupInfo {
-    isIndented?: boolean
-    groupName?: string
-    indentedName?: string
-
-}
-
-export interface StatisticNameCellProps extends GroupInfo {
+export interface StatisticNameCellProps {
     row: ArticleRow
     longname: string
     currentUniverse: string
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
+    isIndented?: boolean
+    displayName?: string
 }
 
 export interface StatisticRowCellProps {

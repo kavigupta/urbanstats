@@ -20,7 +20,7 @@ type ProcessedArticleRow = ArticleRow & {
     currentGroupId: string | undefined
     showGroupHeader: boolean
     isIndented: boolean
-    indentedName: string | undefined
+    displayName: string
 }
 
 function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
@@ -52,8 +52,7 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
             currentGroupId,
             showGroupHeader: isFirstInGroup && groupSize > 1,
             isIndented: groupSize > 1,
-            indentedName: statParent ? statParent.indentedName : undefined,
-            renderedStatname: statName,
+            displayName: statName,
         }
     })
 }
@@ -154,8 +153,8 @@ function ArticleTable(props: {
         longname: props.article.longname,
         row,
         isIndented: row.isIndented,
-        indentedName: row.indentedName,
         currentUniverse,
+        displayName: row.displayName,
     }))
 
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({

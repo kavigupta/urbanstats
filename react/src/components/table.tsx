@@ -7,7 +7,6 @@ import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting } from '../page_template/settings'
-import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
@@ -649,7 +648,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.row.renderedStatname}
+                        displayName={props.displayName ?? props.row.renderedStatname}
                     />
                 </span>
             </div>
