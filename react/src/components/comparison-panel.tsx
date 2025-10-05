@@ -17,6 +17,7 @@ import { TransposeContext } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { computeNameSpecsWithGroups } from './article-panel'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
 import { PlotProps } from './plots'
@@ -119,7 +120,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecs: CellSpec[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
+    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
         {
             type: 'statistic-name',
             row: rowToDisplayForStat(statIndex),
@@ -128,8 +129,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
-        } satisfies CellSpec
+        }
     ))
+
+    const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
     const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
         Array.from({ length: props.articles.length }).map((unused, articleIndex) => ({
@@ -215,7 +218,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 : (
                                         <TableContents
                                             superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs }}
+                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
                                             rowSpecs={rowSpecsByStat}
                                             horizontalPlotSpecs={plotSpecs}
                                             verticalPlotSpecs={[]}
