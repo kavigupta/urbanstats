@@ -145,27 +145,18 @@ async function runTest(test: string): Promise<{ status: 'timeout', timeLimitSeco
         return { status: failed === 0 ? 'success' as const : 'failure' as const, duration: Date.now() - start }
     })()
 
-    let timeoutPromise: Promise<{ status: 'timeout', timeLimitSeconds: number }> | undefined
-    const timeLimitSeconds = options.timeLimitSeconds === undefined ? undefined : options.timeLimitSeconds * (await testFileDidChange(test) ? 1 : 2)
-    if (timeLimitSeconds !== undefined) {
-        timeoutPromise = (async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000 * timeLimitSeconds))
-            let totpWait: number
-            while ((totpWait = await getTOTPWait(test)) > 0) {
-                await setTOTPWait(test, 0)
-                await new Promise(resolve => setTimeout(resolve, totpWait))
-            }
-            runner.stop()
-            return { status: 'timeout', timeLimitSeconds }
-        })()
-    }
+    const timeLimitSeconds = options.timeLimitSeconds === undefined ? 10_000 : options.timeLimitSeconds * (await testFileDidChange(test) ? 1 : 2)
 
-    const result = await Promise.race([runningTests, ...(timeoutPromise === undefined ? [] : [timeoutPromise])])
+    const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 
     const comparisonResult = await maybeCompare(test, result.status === 'success')
 
     if (result.status === 'success' && !comparisonResult) {
         return { ...result, status: 'failure' }
+    }
+
+    if (result.status === 'timeout') {
+        return { ...result, timeLimitSeconds }
     }
 
     return result
@@ -190,4 +181,18 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
     }
 
     return true
+}
+
+async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {
+    const timeoutPromise = (async () => {
+        let waited = 0
+        let timeout
+        while ((timeout = (await getTimeoutSeconds()) * 1000) > waited) {
+            const toWait = timeout - waited
+            await new Promise(resolve => setTimeout(resolve, toWait))
+            waited += toWait
+        }
+        return { status: 'timeout' as const }
+    })()
+    return await Promise.race([promise, timeoutPromise])
 }
