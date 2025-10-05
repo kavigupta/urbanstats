@@ -148,7 +148,11 @@ export function ComparisonTopLeftHeader(props: ComparisonTopLeftHeaderProps & { 
     return (
         <>
             <ComparisonColorBar key="color" highlightIndex={undefined} />
-            <StatisticHeaderCells key="statname" onlyColumns={['statname']} simpleOrdinals={true} totalWidth={props.width - leftBarMargin * 100} statNameOverride={props.statNameOverride} extraSpaceRight={0} />
+            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width - leftBarMargin * 100}%` }}>
+                <span className="serif value" key="statistic">
+                    {props.statNameOverride ?? 'Statistic'}
+                </span>
+            </div>
         </>
     )
 }
