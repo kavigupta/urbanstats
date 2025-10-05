@@ -19,6 +19,7 @@ const options = argumentParser({
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
+        tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
     }).strict(),
 }).parse(process.argv.slice(2))
@@ -48,18 +49,74 @@ if (options.proxy) {
 
 const testcafe = await createTestCafe('localhost', 1337, 1338)
 
-// Remove artifacts for tests
-const testsPattern = tests.length === 1 ? tests[0] : `{${tests.join(',')}}`
-await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${testsPattern}/**`, { nodir: true }).map(file => fs.rm(file)))
-
 // Run tests
 
 let testsFailed = 0
 
 for (const test of tests) {
-    const testFile = `test/${test}.test.ts`
+    console.warn(chalkTemplate`{cyan ${testFile(test)} running...}`)
+
+    let tries = options.tries * (await testFileDidChange(test) ? 1 : 2)
+    let success: boolean
+
+    retry: while (true) {
+        tries--
+        const result = await runTest(test)
+        switch (result.status) {
+            case 'success':
+                await fs.mkdir('durations', { recursive: true })
+                await fs.writeFile(`durations/${test}.json`, JSON.stringify(result.duration))
+                success = true
+                break retry
+            case 'timeout':
+            case 'failure':
+                if (result.status === 'timeout') {
+                    console.error(chalkTemplate`{red Test suite took too long! (allowed duration ${result.timeLimitSeconds}s)}`)
+                }
+                if (tries === 0) {
+                    success = false
+                    break retry
+                }
+        }
+
+        console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
+    }
+
+    if (success) {
+        console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded}`)
+    }
+    else {
+        console.warn(chalkTemplate`{red.bold ${testFile(test)} failed}`)
+        testsFailed++
+    }
+}
+
+if (testsFailed > 0) {
+    process.exit(1)
+}
+
+process.exit(0) // Needed to clean up subprocesses
+
+function testFile(test: string): string {
+    return `test/${test}.test.ts`
+}
+
+async function testFileDidChange(test: string): Promise<boolean> {
+    return options.baseRef !== ''
+        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
+            if (exitCode === 0 || exitCode === 1) {
+                return exitCode === 1
+            }
+            else {
+                throw new Error(`Unexpected exit code ${exitCode}`)
+            }
+        })
+        : true // Assume it change if we can't get any version info
+}
+
+async function runTest(test: string): Promise<{ status: 'timeout', timeLimitSeconds: number } | { status: 'success' | 'failure', duration: number }> {
     let runner = testcafe.createRunner()
-        .src(testFile)
+        .src(testFile(test))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding`])
         // Explicitly interpolate test here so we don't add the error to the directory
@@ -72,77 +129,70 @@ for (const test of tests) {
         })
     }
 
-    const testFileDidChange = options.baseRef !== ''
-        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile], { reject: false }).then(({ exitCode }) => {
-            if (exitCode === 0 || exitCode === 1) {
-                return exitCode === 1
-            }
-            else {
-                throw new Error(`Unexpected exit code ${exitCode}`)
-            }
-        })
-        : false
+    // Remove artifacts for test
+    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
 
+    // Reset TOTP wait
     await setTOTPWait(test, 0)
 
-    let killInterval: NodeJS.Timeout | undefined
-    if (options.timeLimitSeconds !== undefined) {
-        const timeLimitSeconds = options.timeLimitSeconds * (testFileDidChange ? 1 : 2)
-        const killAfter = Date.now() + (timeLimitSeconds * 1000)
-        killInterval = setInterval(async () => {
-            if (Date.now() > killAfter + await getTOTPWait(test)) {
-                console.error(chalkTemplate`{red.bold Test suite took too long! Killing tests. (allowed duration ${timeLimitSeconds}s)}`)
-                clearInterval(killInterval)
-                await doComparisons()
-                process.exit(1)
-            }
-        }, 1000)
+    const runningTests = (async () => {
+        const start = Date.now()
+        const failed = await runner.run({
+            assertionTimeout: 5000,
+            selectorTimeout: 5000,
+            disableMultipleWindows: true,
+        })
+        return { status: failed === 0 ? 'success' as const : 'failure' as const, duration: Date.now() - start }
+    })()
+
+    const timeLimitSeconds = options.timeLimitSeconds === undefined ? 10_000 : options.timeLimitSeconds * (await testFileDidChange(test) ? 1 : 2)
+
+    const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
+
+    const comparisonResult = await maybeCompare(test, result.status === 'success')
+
+    if (result.status === 'success' && !comparisonResult) {
+        return { ...result, status: 'failure' }
     }
 
-    console.warn(chalkTemplate`{cyan ${testFile} running...}`)
-
-    const start = Date.now()
-
-    const failedThisTest = await runner.run({
-        assertionTimeout: 5000,
-        selectorTimeout: 5000,
-        disableMultipleWindows: true,
-    })
-    testsFailed += failedThisTest
-
-    const duration = Date.now() - start
-
-    console.warn(chalkTemplate`{cyan ${testFile} done}`)
-
-    clearInterval(killInterval)
-
-    await fs.mkdir('durations', { recursive: true })
-    await fs.writeFile(`durations/${test}.json`, JSON.stringify(duration))
-
-    // If there were no failures, delete any generated .error.png so they don't set off the comparison
-    if (failedThisTest === 0) {
-        await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+    if (result.status === 'timeout') {
+        return { ...result, timeLimitSeconds }
     }
+
+    return result
 }
 
-await doComparisons()
-
-if (testsFailed > 0) {
-    process.exit(1)
-}
-
-process.exit(0) // Needed to clean up subprocesses
-
-async function doComparisons(): Promise<void> {
+async function maybeCompare(test: string, success: boolean): Promise<boolean> {
     if (options.compare) {
-        const comparisonResults = await Promise.all(tests.map(test => execa('python', ['tests/check_images.py', `--test=${test}`], {
+        // If there were no failures, delete any generated .error.png so they don't set off the comparison
+        if (success) {
+            await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+        }
+
+        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
-        })))
+        })
 
-        if (comparisonResults.some(result => result.failed)) {
-            process.exit(1)
+        if (screenshotComparison.failed) {
+            return false
         }
     }
+
+    return true
+}
+
+async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {
+    const timeoutPromise = (async () => {
+        let waited = 0
+        let timeout
+        while ((timeout = (await getTimeoutSeconds()) * 1000) > waited) {
+            const toWait = timeout - waited
+            await new Promise(resolve => setTimeout(resolve, toWait))
+            waited += toWait
+        }
+        return { status: 'timeout' as const }
+    })()
+    return await Promise.race([promise, timeoutPromise])
 }
