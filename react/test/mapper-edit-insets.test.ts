@@ -24,6 +24,13 @@ function frame(selector: string): Promise<Rect> {
     }, { dependencies: { selector, map0 } })()
 }
 
+async function drag(t: TestController, selector: string, deltaX: number, deltaY: number): Promise<void> {
+    const elementRect = await Selector(selector).boundingClientRect
+    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
+    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
+    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
+}
+
 test('move and accept', async (t) => {
     const beforeMoveFrame = { x: 0, y: 365, width: 163, height: 167 }
     const move = { x: 0, y: -200 }
@@ -34,13 +41,14 @@ test('move and accept', async (t) => {
     await t.click(Selector('button').withExactText('Edit Insets'))
     await waitForLoading(t)
     await t.expect(frame(map(4))).eql(beforeMoveFrame)
-    await t.hover(handle(4, 'move'))
-    await t.drag(handle(4, 'move'), move.x, move.y, { speed: 0.05 })
+    await drag(t, handle(4, 'move'), move.x, move.y)
     await t.expect(frame(map(4))).eql(afterMoveFrame)
     await t.expect(Selector('button:not(:disabled)').withExactText('Accept').exists).ok()
+    await t.wait(1000) // These waits are connected with the nonUserPanZoomOcurring hack
     await t.pressKey('ctrl+z')
     await t.expect(frame(map(4))).eql(beforeMoveFrame)
     await t.expect(Selector('button:disabled').withExactText('Accept').exists).ok()
+    await t.wait(1000)
     await t.pressKey('ctrl+y')
     await t.expect(frame(map(4))).eql(afterMoveFrame)
     await t.click(Selector('button:not(:disabled)').withExactText('Accept'))
@@ -48,5 +56,3 @@ test('move and accept', async (t) => {
     await waitForLoading(t)
     await t.expect(frame(map(4))).eql(afterMoveFrame)
 })
-
-// How to test bounds?

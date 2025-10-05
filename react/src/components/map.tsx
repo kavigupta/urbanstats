@@ -436,6 +436,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
                         if (stableStringify(getCoordBox()) !== stableStringify(insetProps[i].value.coordBox)) {
                             fit = true
                         }
+                        // This is a hack that should be fixed with Map2
                         setTimeout(() => {
                             if (fit) {
                                 map.fitBounds(mapBoundsFromInset(insetProps[i].value), { animate: false })
