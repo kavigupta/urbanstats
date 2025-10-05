@@ -144,7 +144,6 @@ export interface ComparisonLongnameCellProps {
 }
 
 interface GroupInfo {
-    isFirstInGroup?: boolean
     isIndented?: boolean
     groupName?: string
     indentedName?: string

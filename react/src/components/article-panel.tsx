@@ -18,7 +18,6 @@ import { NormalizeProto } from '../utils/types'
 type ProcessedArticleRow = ArticleRow & {
     statParent: ReturnType<typeof statParents.get>
     currentGroupId: string | undefined
-    isFirstInGroup: boolean
     groupSize: number
     showGroupHeader: boolean
     isIndented: boolean
@@ -47,7 +46,6 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
             ...row,
             statParent,
             currentGroupId,
-            isFirstInGroup,
             groupSize,
             showGroupHeader: isFirstInGroup && groupSize > 1,
             isIndented: groupSize > 1,
@@ -113,7 +111,6 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                                     key={row.statpath}
                                     longname={article.longname}
                                     shortname={article.shortname}
-                                    isFirstInGroup={row.isFirstInGroup}
                                     isIndented={row.isIndented}
                                     indentedName={row.indentedName}
                                     groupHasMultipleSources={row.groupHasMultipleSources}
@@ -201,7 +198,6 @@ function StatisticTableRow(props: {
     longname: string
     row: ArticleRow
     index: number
-    isFirstInGroup?: boolean
     isIndented?: boolean
     indentedName?: string
     groupHasMultipleSources?: boolean
@@ -218,7 +214,6 @@ function StatisticTableRow(props: {
         type: 'statistic-name',
         longname: props.longname,
         row: props.row,
-        isFirstInGroup: props.isFirstInGroup,
         isIndented: props.isIndented,
         indentedName: props.indentedName,
         groupHasMultipleSources: props.groupHasMultipleSources,
