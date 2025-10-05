@@ -45,7 +45,8 @@ export function TableContents(props: TableContentsProps): ReactNode {
     // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
     const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : props.superHeaderSpec?.headerSpecs.length ?? 1
 
-    const expandedColumnWidth = (columnIndex: number): number => (props.verticalPlotSpecs[columnIndex] === undefined ? 1 : 2) * props.columnWidth
+    const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
+    const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
 
     return (
         <>
@@ -54,7 +55,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                     headerSpecs={props.superHeaderSpec.headerSpecs}
                     showBottomBar={props.superHeaderSpec.showBottomBar}
                     leftSpacerWidth={props.widthLeftHeader}
-                    widthsEach={Array.from({ length: props.superHeaderSpec.headerSpecs.length }).map((_, i) => expandedColumnWidth(i))}
+                    widthsEach={columnFullWidths}
                 />
             )}
 
@@ -65,7 +66,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         topLeftSpec={props.topLeftSpec}
                         topLeftWidth={props.widthLeftHeader}
                         onlyColumns={props.onlyColumns}
-                        extraSpaceRight={Array.from({ length: ncols }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
+                        extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={props.simpleOrdinals}
                     />
                 </TableHeaderContainer>
@@ -77,6 +78,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             rowIndex={rowIndex}
                             rowMinHeight={rowMinHeight}
                             cellSpecs={rowSpecsForItem}
+                            extraSpaceRight={extraSpaceRight}
                             plotSpec={plotSpec}
                             leftHeaderSpec={props.leftHeaderSpec.leftHeaderSpecs[rowIndex]}
                             widthLeftHeader={props.widthLeftHeader}
@@ -88,7 +90,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 })}
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
-                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + expandedColumnWidth(i), props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + columnFullWidths[i], props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
                                 <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                             </div>
                         )
@@ -109,6 +111,7 @@ export function SuperTableRow(props: {
     rowMinHeight?: string
     groupName?: string
     prevGroupName?: string
+    extraSpaceRight: number[]
 }): ReactNode {
     return (
         <div>
@@ -124,7 +127,10 @@ export function SuperTableRow(props: {
             <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
-                    <Cell key={`rowCells_${colIndex}_${props.rowIndex}`} {...spec} width={props.columnWidth} />
+                    <>
+                        <Cell key={`rowCells_${colIndex}_${props.rowIndex}`} {...spec} width={props.columnWidth} />
+                        <div key={`spacer_${colIndex}_${props.rowIndex}`} style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
+                    </>
                 ))}
             </TableRowContainer>
             {props.plotSpec && (
