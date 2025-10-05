@@ -702,6 +702,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         isIndented={props.isIndented}
                         indentedName={props.indentedName}
                         groupHasMultipleSources={props.groupHasMultipleSources}
+                        sourceName={props.statParent?.source?.name}
                     />
                 </span>
             </div>

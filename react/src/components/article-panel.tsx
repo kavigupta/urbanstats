@@ -232,6 +232,7 @@ function StatisticTableRow(props: {
                     indentedName={props.indentedName}
                     groupHasMultipleSources={props.groupHasMultipleSources}
                     currentUniverse={currentUniverse}
+                    statParent={statParents.get(props.row.statpath)}
                 />
                 <Cell
                     type="statistic-row"

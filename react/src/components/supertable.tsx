@@ -161,6 +161,7 @@ export interface StatisticNameCellProps extends GroupInfo {
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
+    statParent?: ReturnType<typeof statParents.get>
 }
 
 export interface StatisticRowCellProps extends GroupInfo {
