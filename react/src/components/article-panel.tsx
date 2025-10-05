@@ -22,9 +22,8 @@ import { Map } from './map'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-// Keep grouping computation local per request
-import { CellSpec, PlotSpec, SuperTableRow, TableContents } from './supertable'
-import { ColumnIdentifier, MainHeaderRow, StatisticHeaderCells, TableHeaderContainer } from './table'
+import { CellSpec, PlotSpec, TableContents } from './supertable'
+import { ColumnIdentifier } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
