@@ -20,7 +20,7 @@ const options = argumentParser({
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
-        baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
+        baseRef: z.optional(z.string()),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -50,71 +50,85 @@ if (options.proxy) {
 const testcafe = await createTestCafe('localhost', 1337, 1338)
 
 // Run tests
+type TestResult = { status: 'timeout', timeLimitSeconds: number } | { status: 'success' | 'failure', duration: number }
 
-let testsFailed = 0
+const testHistory: { test: string, result: TestResult, retries: number }[] = []
 
 for (const test of tests) {
     console.warn(chalkTemplate`{cyan ${testFile(test)} running...}`)
 
-    let tries = options.tries * (await testFileDidChange(test) ? 1 : 2)
-    let success: boolean
+    const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
+    let retries = 0
+    let result: TestResult
 
     retry: while (true) {
-        tries--
-        const result = await runTest(test)
+        result = await runTest(test)
+        printResult({ test, result, retries })
         switch (result.status) {
             case 'success':
                 await fs.mkdir('durations', { recursive: true })
                 await fs.writeFile(`durations/${test}.json`, JSON.stringify(result.duration))
-                success = true
                 break retry
             case 'timeout':
             case 'failure':
-                if (result.status === 'timeout') {
-                    console.error(chalkTemplate`{red Test suite took too long! (allowed duration ${result.timeLimitSeconds}s)}`)
-                }
-                if (tries === 0) {
-                    success = false
+                if (retries + 1 === numTries) {
+                    console.error(chalkTemplate`{red ${testFile(test)} Out of retries}`)
                     break retry
                 }
+                console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
+                retries++
         }
-
-        console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
     }
 
-    if (success) {
-        console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded}`)
-    }
-    else {
-        console.warn(chalkTemplate`{red.bold ${testFile(test)} failed}`)
-        testsFailed++
-    }
+    testHistory.push({ test, result, retries })
 }
 
-if (testsFailed > 0) {
+testHistory.forEach(printResult)
+
+if (testHistory.some(({ result }) => result.status !== 'success')) {
     process.exit(1)
 }
 
 process.exit(0) // Needed to clean up subprocesses
+
+function printResult({ test, result, retries }: { test: string, result: TestResult, retries: number }): void {
+    switch (result.status) {
+        case 'success':
+            console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded (${retries} retries)}`)
+            break
+        case 'failure':
+            console.warn(chalkTemplate`{red.bold ${testFile(test)} failed (${retries} retries)}`)
+            break
+        case 'timeout':
+            console.error(chalkTemplate`{red ${testFile(test)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
+            break
+    }
+}
 
 function testFile(test: string): string {
     return `test/${test}.test.ts`
 }
 
 async function testFileDidChange(test: string): Promise<boolean> {
-    return options.baseRef !== ''
-        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
-            if (exitCode === 0 || exitCode === 1) {
-                return exitCode === 1
-            }
-            else {
-                throw new Error(`Unexpected exit code ${exitCode}`)
-            }
-        })
-        : true // Assume it change if we can't get any version info
+    if (options.baseRef === undefined) {
+        // No baseRef defined, we're running on local, and don't want to retry there
+        return true
+    }
+    if (options.baseRef === '') {
+        // We're running on CI with an unspecified base ref, we do want to retry there
+        return false
+    }
+    return await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
+        if (exitCode === 0 || exitCode === 1) {
+            return exitCode === 1
+        }
+        else {
+            throw new Error(`Unexpected exit code ${exitCode}`)
+        }
+    })
 }
 
-async function runTest(test: string): Promise<{ status: 'timeout', timeLimitSeconds: number } | { status: 'success' | 'failure', duration: number }> {
+async function runTest(test: string): Promise<TestResult> {
     let runner = testcafe.createRunner()
         .src(testFile(test))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295

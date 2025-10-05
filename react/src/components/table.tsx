@@ -464,6 +464,11 @@ export function StatisticName(props: {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
+    let statName = props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname
+    if (props.groupHasMultipleSources && props.sourceName) {
+        statName = `${statName} [${props.sourceName}]`
+    }
+
     const link = (
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
@@ -480,14 +485,7 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname}
-            {props.groupHasMultipleSources && props.sourceName && (
-                <span>
-                    {' ['}
-                    {props.sourceName}
-                    &#93;
-                </span>
-            )}
+            {statName}
         </a>
     )
     const screenshotMode = useScreenshotMode()
