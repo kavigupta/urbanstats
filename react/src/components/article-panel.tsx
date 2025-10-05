@@ -18,11 +18,9 @@ import { NormalizeProto } from '../utils/types'
 type ProcessedArticleRow = ArticleRow & {
     statParent: ReturnType<typeof statParents.get>
     currentGroupId: string | undefined
-    groupSize: number
     showGroupHeader: boolean
     isIndented: boolean
     indentedName: string | undefined
-    groupHasMultipleSources: boolean
 }
 
 function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
@@ -42,15 +40,20 @@ function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
         )
         const groupHasMultipleSources = groupSourcesSet.size > 1
 
+        const sourceName = statParent?.source?.name
+        let statName = groupSize > 1 ? (statParent?.indentedName ?? row.renderedStatname) : row.renderedStatname
+        if (groupHasMultipleSources && sourceName) {
+            statName = `${statName} [${sourceName}]`
+        }
+
         return {
             ...row,
             statParent,
             currentGroupId,
-            groupSize,
             showGroupHeader: isFirstInGroup && groupSize > 1,
             isIndented: groupSize > 1,
             indentedName: statParent ? statParent.indentedName : undefined,
-            groupHasMultipleSources,
+            renderedStatname: statName,
         }
     })
 }
@@ -152,7 +155,6 @@ function ArticleTable(props: {
         row,
         isIndented: row.isIndented,
         indentedName: row.indentedName,
-        groupHasMultipleSources: row.groupHasMultipleSources,
         currentUniverse,
     }))
 

@@ -634,13 +634,6 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     const haveColorbar = !props.transpose && props.highlightIndex !== undefined
     const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
 
-    const statParent = statParents.get(props.row.statpath)
-    const sourceName = statParent?.source?.name
-    let statName = props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname
-    if (props.groupHasMultipleSources && sourceName) {
-        statName = `${statName} [${sourceName}]`
-    }
-
     return (
         <>
             {haveColorbar && (
@@ -656,7 +649,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={statName}
+                        displayName={props.row.renderedStatname}
                     />
                 </span>
             </div>

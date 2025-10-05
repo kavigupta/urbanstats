@@ -147,7 +147,6 @@ interface GroupInfo {
     isIndented?: boolean
     groupName?: string
     indentedName?: string
-    groupHasMultipleSources?: boolean
 
 }
 
