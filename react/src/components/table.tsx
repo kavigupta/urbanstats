@@ -340,12 +340,6 @@ export function StatisticRowCells(props: {
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
-    isFirstInGroup?: boolean
-    isIndented?: boolean
-    groupName?: string
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    statParent?: ReturnType<typeof statParents.get>
     extraSpaceRight?: number
 }): ReactNode {
     const colors = useColors()
@@ -639,6 +633,14 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
 export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
     const haveColorbar = !props.transpose && props.highlightIndex !== undefined
     const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
+
+    const statParent = statParents.get(props.row.statpath)
+    const sourceName = statParent?.source?.name
+    let statName = props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname
+    if (props.groupHasMultipleSources && sourceName) {
+        statName = `${statName} [${sourceName}]`
+    }
+
     return (
         <>
             {haveColorbar && (
@@ -654,11 +656,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        isFirstInGroup={props.isFirstInGroup}
-                        isIndented={props.isIndented}
-                        indentedName={props.indentedName}
-                        groupHasMultipleSources={props.groupHasMultipleSources}
-                        sourceName={props.statParent?.source?.name}
+                        displayName={statName}
                     />
                 </span>
             </div>
@@ -671,20 +669,11 @@ export function StatisticName(props: {
     longname: string
     currentUniverse: string
     center?: boolean
-    isFirstInGroup?: boolean
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    sourceName?: string
-    isIndented?: boolean
+    displayName: string
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-
-    let statName = props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname
-    if (props.groupHasMultipleSources && props.sourceName) {
-        statName = `${statName} [${props.sourceName}]`
-    }
 
     const link = (
         <a
@@ -702,7 +691,7 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {statName}
+            {props.displayName}
         </a>
     )
     const screenshotMode = useScreenshotMode()
