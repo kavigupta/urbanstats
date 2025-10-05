@@ -252,11 +252,6 @@ function StatisticTableRow(props: {
                         }, { history: 'push', scroll: { kind: 'none' } })
                     }}
                     simpleOrdinals={simpleOrdinals}
-                    isFirstInGroup={props.isFirstInGroup}
-                    isIndented={props.isIndented}
-                    indentedName={props.indentedName}
-                    groupHasMultipleSources={props.groupHasMultipleSources}
-                    statParent={statParents.get(props.row.statpath)}
                     onlyColumns={['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']}
                 />
             </TableRowContainer>

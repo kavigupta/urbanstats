@@ -147,7 +147,6 @@ export interface ComparisonLongnameCellProps {
 interface GroupInfo {
     isFirstInGroup?: boolean
     isIndented?: boolean
-    isGroupHeader?: boolean
     groupName?: string
     indentedName?: string
     groupHasMultipleSources?: boolean
@@ -164,7 +163,7 @@ export interface StatisticNameCellProps extends GroupInfo {
     statParent?: ReturnType<typeof statParents.get>
 }
 
-export interface StatisticRowCellProps extends GroupInfo {
+export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
