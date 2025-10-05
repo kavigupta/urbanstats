@@ -203,7 +203,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                             {transpose
                                 ? (
                                         <TableContents
-                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false }}
+                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
                                             leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
                                             rowSpecs={rowSpecsByStatTransposed}
                                             horizontalPlotSpecs={plotSpecs.map(() => undefined)}

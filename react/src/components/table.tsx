@@ -98,14 +98,15 @@ export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export interface LongnameHeaderSectionProps {
+export interface SuperHeaderHorizontalProps {
     headerSpecs: (CellSpec & { highlightIndex?: number })[]
     widthsEach: number[]
     showBottomBar: boolean
     leftSpacerWidth: number
+    groupNames?: (string | undefined)[]
 }
 
-export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactNode {
+export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
@@ -134,6 +135,7 @@ export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactN
     }
     return (
         <>
+            {props.groupNames && <SuperHeaderGroupNames leftSpacerWidth={props.leftSpacerWidth} groupNames={props.groupNames} widthsEach={props.widthsEach} />}
             {bars(getBarColor)}
             <div style={{ display: 'flex' }}>
                 <div style={{ width: `${props.leftSpacerWidth}%` }} />
@@ -141,6 +143,30 @@ export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactN
             </div>
             {props.showBottomBar && bars(getBarColor)}
         </>
+    )
+}
+
+export function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
+    if (props.groupNames.every(groupName => groupName === undefined)) {
+        return null
+    }
+    const sizes = []
+    const names: (string | undefined)[] = []
+    for (const [idx, groupName] of props.groupNames.entries()) {
+        if (idx === 0 || groupName !== props.groupNames[idx - 1]) {
+            sizes.push(props.widthsEach[idx])
+            names.push(groupName)
+        }
+        else {
+            sizes[sizes.length - 1] += props.widthsEach[idx]
+        }
+    }
+
+    return (
+        <div style={{ display: 'flex' }} className="serif value">
+            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {sizes.map((size, idx) => <div key={idx} style={{ width: `${size}%`, textAlign: 'center' }}>{names[idx]}</div>)}
+        </div>
     )
 }
 
