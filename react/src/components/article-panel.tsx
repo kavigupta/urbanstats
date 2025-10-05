@@ -184,7 +184,7 @@ function ArticleTable(props: {
                     {groupNames[index] !== undefined && (index === 0 || groupNames[index - 1] !== groupNames[index]) && (
                         <TableRowContainer index={index}>
                             <StatisticHeader
-                                longname={props.article.longname}
+                                longname={leftHeaderSpecs[index].longname}
                                 groupName={groupNames[index]}
                             />
                         </TableRowContainer>
