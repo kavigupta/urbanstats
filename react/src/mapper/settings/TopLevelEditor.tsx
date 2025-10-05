@@ -21,12 +21,12 @@ const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } sati
 const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
 
-const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
 
 export const rootBlockIdent = 'r'
 const idPreamble = `${rootBlockIdent}p`
 const idCondition = `${rootBlockIdent}c`
-const idOutput = `${rootBlockIdent}o`
+export const idOutput = `${rootBlockIdent}o`
 
 export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
     (UrbanStatsASTStatement &

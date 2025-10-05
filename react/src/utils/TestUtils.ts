@@ -1,3 +1,5 @@
+import type maplibregl from 'maplibre-gl'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -36,6 +38,8 @@ export class TestUtils {
             localStorage.setItem('enable_auth_features', quizAuthEnabled)
         }
     }
+
+    readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
 }
 
 export interface TestWindow {
