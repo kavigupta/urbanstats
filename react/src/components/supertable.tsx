@@ -4,7 +4,7 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, ComparisonHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -54,7 +54,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
 
             <div style={{ position: 'relative', minHeight: overallMinHeight }}>
                 <TableHeaderContainer>
-                    <ComparisonHeaderRow
+                    <MainHeaderRow
                         columnWidth={props.columnWidth}
                         topLeftSpec={props.topLeftSpec}
                         topLeftWidth={props.widthLeftHeader}

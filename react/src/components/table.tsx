@@ -153,7 +153,7 @@ export function ComparisonTopLeftHeader(props: ComparisonTopLeftHeaderProps & { 
     )
 }
 
-export function ComparisonHeaderRow(props: {
+export function MainHeaderRow(props: {
     topLeftSpec: CellSpec
     topLeftWidth: number
     columnWidth: number
