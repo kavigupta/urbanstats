@@ -4,7 +4,7 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -26,6 +26,7 @@ export interface TableContentsProps {
     widthLeftHeader: number
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
+    simpleOrdinals: boolean
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
@@ -60,6 +61,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         topLeftWidth={props.widthLeftHeader}
                         onlyColumns={props.onlyColumns}
                         extraSpaceRight={Array.from({ length: ncols }).map((_, i) => expandedColumnWidth(i) - props.columnWidth)}
+                        simpleOrdinals={props.simpleOrdinals}
                     />
                 </TableHeaderContainer>
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
@@ -130,7 +132,8 @@ export function SuperTableRow(props: {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
     ({ type: 'statistic-name' } & StatisticNameCellProps) |
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
-    ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps)
+    ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
+    ({ type: 'top-left-header' } & TopLeftHeaderProps)
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
@@ -142,6 +145,8 @@ export function Cell(props: CellSpec & { width: number }): ReactNode {
             return <StatisticRowCells {...props} width={props.width} />
         case 'comparison-top-left-header':
             return <ComparisonTopLeftHeader {...props} width={props.width} />
+        case 'top-left-header':
+            return <TopLeftHeader {...props} width={props.width} />
     }
 }
 

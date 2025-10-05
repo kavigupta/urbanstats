@@ -24,7 +24,7 @@ import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 // Keep grouping computation local per request
 import { CellSpec, PlotSpec, SuperTableRow } from './supertable'
-import { StatisticHeaderCells, TableHeaderContainer } from './table'
+import { ColumnIdentifier, MainHeaderRow, StatisticHeaderCells, TableHeaderContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -154,6 +154,7 @@ function ArticleTable(props: {
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
 
+    const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
@@ -166,7 +167,7 @@ function ArticleTable(props: {
             }, { history: 'push', scroll: { kind: 'none' } })
         },
         simpleOrdinals,
-        onlyColumns: ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall'],
+        onlyColumns,
     })])
 
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
@@ -177,9 +178,20 @@ function ArticleTable(props: {
         : undefined,
     )
 
+    const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
+
     return (
         <div className="stats_table">
-            <StatisticTableHeader />
+            <TableHeaderContainer>
+                <MainHeaderRow
+                    columnWidth={columnWidth}
+                    topLeftSpec={topLeftSpec}
+                    topLeftWidth={widthLeftHeader}
+                    onlyColumns={onlyColumns}
+                    extraSpaceRight={[0]}
+                    simpleOrdinals={simpleOrdinals}
+                />
+            </TableHeaderContainer>
             {props.filteredRows.map((row, index) => (
                 <SuperTableRow
                     key={`articleRow_${index}`}
@@ -226,15 +238,6 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
             autoFocus={false}
             prioritizeArticleType={type}
         />
-    )
-}
-
-function StatisticTableHeader(): ReactNode {
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    return (
-        <TableHeaderContainer>
-            <StatisticHeaderCells simpleOrdinals={simpleOrdinals} totalWidth={100} />
-        </TableHeaderContainer>
     )
 }
 

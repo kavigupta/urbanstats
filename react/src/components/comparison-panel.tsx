@@ -209,6 +209,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             onlyColumns={onlyColumns}
+                                            simpleOrdinals={true}
                                         />
                                     )
                                 : (
@@ -222,6 +223,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                             widthLeftHeader={leftMarginPercent * 100}
                                             columnWidth={columnWidth}
                                             onlyColumns={onlyColumns}
+                                            simpleOrdinals={true}
                                         />
                                     )}
                             <ArticleWarnings />

@@ -170,6 +170,7 @@ export function MainHeaderRow(props: {
     onlyColumns: ColumnIdentifier[]
     statNameOverride?: string
     extraSpaceRight: number[]
+    simpleOrdinals: boolean
 }): ReactNode {
     return (
         <>
@@ -178,7 +179,7 @@ export function MainHeaderRow(props: {
                 <StatisticHeaderCells
                     key={`headerCells_${columnIndex}`}
                     onlyColumns={props.onlyColumns}
-                    simpleOrdinals={true}
+                    simpleOrdinals={props.simpleOrdinals}
                     totalWidth={props.columnWidth}
                     extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
                 />
