@@ -1,6 +1,5 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
-import { statParents } from '../page_template/statistic-tree'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'

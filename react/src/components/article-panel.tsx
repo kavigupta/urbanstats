@@ -60,11 +60,10 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
-import { RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { Cell } from './supertable'
+import { CellSpec, PlotSpec, SuperTableRow } from './supertable'
 import { StatisticHeaderCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
@@ -213,6 +212,55 @@ function StatisticTableRow(props: {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 
+    const { widthLeftHeader, columnWidth } = useWidths()
+
+    const leftHeaderSpec: CellSpec = {
+        type: 'statistic-name',
+        longname: props.longname,
+        row: props.row,
+        isFirstInGroup: props.isFirstInGroup,
+        isIndented: props.isIndented,
+        indentedName: props.indentedName,
+        groupHasMultipleSources: props.groupHasMultipleSources,
+        currentUniverse,
+    }
+
+    const cellSpec: CellSpec = {
+        type: 'statistic-row',
+        longname: props.longname,
+        row: props.row,
+        onNavigate: (newArticle) => {
+            void navContext.navigate({
+                kind: 'article',
+                longname: newArticle,
+                universe: currentUniverse,
+            }, { history: 'push', scroll: { kind: 'none' } })
+        },
+        simpleOrdinals,
+        onlyColumns: ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall'],
+    }
+
+    const plotSpec: PlotSpec | undefined = expanded
+        ? {
+                statDescription: props.row.renderedStatname,
+                plotProps: [{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }],
+            }
+        : undefined
+
+    return (
+        <SuperTableRow
+            rowIndex={props.index}
+            leftHeaderSpec={leftHeaderSpec}
+            cellSpecs={[cellSpec]}
+            plotSpec={plotSpec}
+            widthLeftHeader={widthLeftHeader}
+            columnWidth={columnWidth}
+        />
+    )
+}
+
+function useWidths(): { widthLeftHeader: number, columnWidth: number } {
+    const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
 
@@ -223,44 +271,5 @@ function StatisticTableRow(props: {
     const denominator = nonPointerColumns + pointerColumns + numerator
     const widthLeftHeader = 100 * (numerator / denominator)
     const columnWidth = 100 - widthLeftHeader
-
-    return (
-        <>
-            <TableRowContainer index={props.index}>
-                <Cell
-                    type="statistic-name"
-                    width={widthLeftHeader}
-                    longname={props.longname}
-                    row={props.row}
-                    isFirstInGroup={props.isFirstInGroup}
-                    isIndented={props.isIndented}
-                    indentedName={props.indentedName}
-                    groupHasMultipleSources={props.groupHasMultipleSources}
-                    currentUniverse={currentUniverse}
-                />
-                <Cell
-                    type="statistic-row"
-                    width={columnWidth}
-                    longname={props.longname}
-                    row={props.row}
-                    onNavigate={(newArticle) => {
-                        void navContext.navigate({
-                            kind: 'article',
-                            longname: newArticle,
-                            universe: currentUniverse,
-                        }, { history: 'push', scroll: { kind: 'none' } })
-                    }}
-                    simpleOrdinals={simpleOrdinals}
-                    onlyColumns={['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']}
-                />
-            </TableRowContainer>
-            {expanded
-                ? (
-                        <div style={{ width: '100%', position: 'relative' }}>
-                            <RenderedPlot statDescription={props.row.renderedStatname} plotProps={[{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }]} />
-                        </div>
-                    )
-                : null}
-        </>
-    )
+    return { widthLeftHeader, columnWidth }
 }
