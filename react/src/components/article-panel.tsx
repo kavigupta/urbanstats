@@ -62,7 +62,7 @@ import { ArticleRow } from './load-article'
 import { Map } from './map'
 import { RenderedPlot } from './plots'
 import { Related } from './related-button'
-import { ScreencapElements } from './screenshot'
+import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell } from './supertable'
 import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
@@ -209,9 +209,14 @@ function StatisticTableRow(props: {
     const navContext = useContext(Navigator.Context)
 
     const isMobile = useMobileLayout()
+    const screenshotMode = useScreenshotMode()
 
     // TODO clean this up and reduce the amount of magic numbers
-    const widthLeftHeader = 100 * (simpleOrdinals ? 31 / 87 : (isMobile ? 31 / 106 : 31 / 114))
+    const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
+    const pointerColumns = 8 * (screenshotMode ? 0 : (!simpleOrdinals && isMobile ? 1 : 2))
+    const numerator = 31
+    const denominator = nonPointerColumns + pointerColumns + numerator
+    const widthLeftHeader = 100 * (numerator / denominator)
     const columnWidth = 100 - widthLeftHeader
 
     return (
