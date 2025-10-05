@@ -15,47 +15,6 @@ import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
-type ProcessedArticleRow = ArticleRow & {
-    statParent: ReturnType<typeof statParents.get>
-    currentGroupId: string | undefined
-    showGroupHeader: boolean
-    isIndented: boolean
-    displayName: string
-}
-
-function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
-    return filteredRows.map((row, index) => {
-        const statParent = statParents.get(row.statpath)
-        const currentGroupId = statParent?.group.id
-        const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
-
-        const groupRows = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId)
-        const groupSize = groupRows.length
-
-        const groupSourcesSet = new Set(
-            groupRows
-                .map(r => statParents.get(r.statpath)?.source)
-                .filter(source => source !== null)
-                .map(source => source!.name),
-        )
-        const groupHasMultipleSources = groupSourcesSet.size > 1
-
-        const sourceName = statParent?.source?.name
-        let statName = groupSize > 1 ? (statParent?.indentedName ?? row.renderedStatname) : row.renderedStatname
-        if (groupHasMultipleSources && sourceName) {
-            statName = `${statName} [${sourceName}]`
-        }
-
-        return {
-            ...row,
-            statParent,
-            currentGroupId,
-            showGroupHeader: isFirstInGroup && groupSize > 1,
-            isIndented: groupSize > 1,
-            displayName: statName,
-        }
-    })
-}
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
@@ -133,6 +92,48 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
             </PageTemplate>
         </>
     )
+}
+
+type ProcessedArticleRow = ArticleRow & {
+    statParent: ReturnType<typeof statParents.get>
+    currentGroupId: string | undefined
+    showGroupHeader: boolean
+    isIndented: boolean
+    displayName: string
+}
+
+function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
+    return filteredRows.map((row, index) => {
+        const statParent = statParents.get(row.statpath)
+        const currentGroupId = statParent?.group.id
+        const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
+
+        const groupRows = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId)
+        const groupSize = groupRows.length
+
+        const groupSourcesSet = new Set(
+            groupRows
+                .map(r => statParents.get(r.statpath)?.source)
+                .filter(source => source !== null)
+                .map(source => source!.name),
+        )
+        const groupHasMultipleSources = groupSourcesSet.size > 1
+
+        const sourceName = statParent?.source?.name
+        let statName = groupSize > 1 ? (statParent?.indentedName ?? row.renderedStatname) : row.renderedStatname
+        if (groupHasMultipleSources && sourceName) {
+            statName = `${statName} [${sourceName}]`
+        }
+
+        return {
+            ...row,
+            statParent,
+            currentGroupId,
+            showGroupHeader: isFirstInGroup && groupSize > 1,
+            isIndented: groupSize > 1,
+            displayName: statName,
+        }
+    })
 }
 
 function ArticleTable(props: {
