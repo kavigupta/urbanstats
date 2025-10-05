@@ -23,7 +23,7 @@ import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 // Keep grouping computation local per request
-import { CellSpec, PlotSpec, SuperTableRow } from './supertable'
+import { CellSpec, PlotSpec, SuperTableRow, TableContents } from './supertable'
 import { ColumnIdentifier, MainHeaderRow, StatisticHeaderCells, TableHeaderContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
@@ -182,29 +182,17 @@ function ArticleTable(props: {
 
     return (
         <div className="stats_table">
-            <TableHeaderContainer>
-                <MainHeaderRow
-                    columnWidth={columnWidth}
-                    topLeftSpec={topLeftSpec}
-                    topLeftWidth={widthLeftHeader}
-                    onlyColumns={onlyColumns}
-                    extraSpaceRight={[0]}
-                    simpleOrdinals={simpleOrdinals}
-                />
-            </TableHeaderContainer>
-            {props.filteredRows.map((row, index) => (
-                <SuperTableRow
-                    key={`articleRow_${index}`}
-                    rowIndex={index}
-                    leftHeaderSpec={leftHeaderSpecs[index]}
-                    cellSpecs={cellSpecs[index]}
-                    plotSpec={plotSpecs[index]}
-                    widthLeftHeader={widthLeftHeader}
-                    columnWidth={columnWidth}
-                    groupName={groupNames[index]}
-                    prevGroupName={index > 0 ? groupNames[index - 1] : undefined}
-                />
-            ))}
+            <TableContents
+                leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
+                rowSpecs={cellSpecs}
+                horizontalPlotSpecs={plotSpecs}
+                verticalPlotSpecs={[]}
+                topLeftSpec={topLeftSpec}
+                widthLeftHeader={widthLeftHeader}
+                columnWidth={columnWidth}
+                onlyColumns={onlyColumns}
+                simpleOrdinals={simpleOrdinals}
+            />
             <ArticleWarnings />
         </div>
     )

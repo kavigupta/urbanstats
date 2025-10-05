@@ -201,7 +201,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 ? (
                                         <TableContents
                                             superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false }}
-                                            leftHeaderSpecs={longnameHeaderSpecs}
+                                            leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
                                             rowSpecs={rowSpecsByStatTransposed}
                                             horizontalPlotSpecs={plotSpecs.map(() => undefined)}
                                             verticalPlotSpecs={plotSpecs}
@@ -215,7 +215,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 : (
                                         <TableContents
                                             superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                            leftHeaderSpecs={statisticNameHeaderSpecs}
+                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs }}
                                             rowSpecs={rowSpecsByStat}
                                             horizontalPlotSpecs={plotSpecs}
                                             verticalPlotSpecs={[]}

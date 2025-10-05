@@ -16,9 +16,14 @@ export interface SuperHeaderSpec {
     showBottomBar: boolean
 }
 
+export interface LeftHeaderSpec {
+    leftHeaderSpecs: CellSpec[]
+    groupNames?: (string | undefined)[]
+}
+
 export interface TableContentsProps {
     superHeaderSpec?: SuperHeaderSpec
-    leftHeaderSpecs: CellSpec[]
+    leftHeaderSpec: LeftHeaderSpec
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
@@ -35,7 +40,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
 
     const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
-    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpecs.length})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpec.leftHeaderSpecs.length})` : undefined
 
     // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
     const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : props.superHeaderSpec?.headerSpecs.length ?? 1
@@ -73,9 +78,11 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             rowMinHeight={rowMinHeight}
                             cellSpecs={rowSpecsForItem}
                             plotSpec={plotSpec}
-                            leftHeaderSpec={props.leftHeaderSpecs[rowIndex]}
+                            leftHeaderSpec={props.leftHeaderSpec.leftHeaderSpecs[rowIndex]}
                             widthLeftHeader={props.widthLeftHeader}
                             columnWidth={props.columnWidth}
+                            groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
+                            prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
                         />
                     )
                 })}
