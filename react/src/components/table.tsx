@@ -98,14 +98,14 @@ export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export interface LongnameHeaderSectionProps {
+export interface SuperHeaderHorizontalProps {
     headerSpecs: (CellSpec & { highlightIndex?: number })[]
     widthsEach: number[]
     showBottomBar: boolean
     leftSpacerWidth: number
 }
 
-export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactNode {
+export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {

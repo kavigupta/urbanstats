@@ -52,8 +52,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
         <>
             {props.superHeaderSpec !== undefined && (
                 <SuperHeaderHorizontal
-                    headerSpecs={props.superHeaderSpec.headerSpecs}
-                    showBottomBar={props.superHeaderSpec.showBottomBar}
+                    {...props.superHeaderSpec}
                     leftSpacerWidth={props.widthLeftHeader}
                     widthsEach={columnFullWidths}
                 />

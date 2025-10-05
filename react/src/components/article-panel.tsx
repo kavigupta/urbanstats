@@ -96,7 +96,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
-function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
+export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
     const updatedNameSpecs: NameSpec[] = []
     const groupNames: (string | undefined)[] = []
 

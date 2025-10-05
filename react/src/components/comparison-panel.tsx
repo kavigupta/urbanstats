@@ -128,7 +128,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
-        } satisfies CellSpec
+        }
     ))
 
     const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
