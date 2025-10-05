@@ -20,7 +20,7 @@ import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { Cell, CellSpec, ComparisonLongnameCellProps, ComparisonTopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -144,16 +144,22 @@ export function SuperHeaderHorizontal(props: LongnameHeaderSectionProps): ReactN
     )
 }
 
-export function ComparisonTopLeftHeader(props: ComparisonTopLeftHeaderProps & { width: number }): ReactNode {
+export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     return (
         <>
             <ComparisonColorBar key="color" highlightIndex={undefined} />
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width - leftBarMargin * 100}%` }}>
-                <span className="serif value" key="statistic">
-                    {props.statNameOverride ?? 'Statistic'}
-                </span>
-            </div>
+            <TopLeftHeader {...props} width={props.width - leftBarMargin * 100} />
         </>
+    )
+}
+
+export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    return (
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
+            <span className="serif value" key="statistic">
+                {props.statNameOverride ?? 'Statistic'}
+            </span>
+        </div>
     )
 }
 

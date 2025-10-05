@@ -130,7 +130,7 @@ export function SuperTableRow(props: {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
     ({ type: 'statistic-name' } & StatisticNameCellProps) |
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
-    ({ type: 'comparison-top-left-header' } & ComparisonTopLeftHeaderProps)
+    ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps)
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
@@ -176,6 +176,6 @@ export interface StatisticRowCellProps {
     extraSpaceRight?: number
 }
 
-export interface ComparisonTopLeftHeaderProps {
+export interface TopLeftHeaderProps {
     statNameOverride?: string
 }
