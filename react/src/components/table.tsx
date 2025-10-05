@@ -64,7 +64,7 @@ interface ColumnLayoutProps {
 }
 
 // Lays out column content
-function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {

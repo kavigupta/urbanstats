@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -65,7 +65,7 @@ import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell } from './supertable'
-import { StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
+import { ColumnLayout, StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -103,15 +103,8 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                             <>
                                 {row.showGroupHeader && (
                                     <TableRowContainer index={index}>
-                                        <StatisticRowCells
-                                            width={100}
+                                        <StatisticHeader
                                             longname={article.longname}
-                                            row={row}
-                                            onNavigate={() => { /* No navigation for group headers */ }}
-                                            simpleOrdinals={simpleOrdinals}
-                                            isFirstInGroup={true}
-                                            isIndented={false}
-                                            isGroupHeader={true}
                                             groupName={row.statParent?.group.name}
                                         />
                                     </TableRowContainer>
@@ -161,6 +154,31 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     />
                 </div>
             </PageTemplate>
+        </>
+    )
+}
+
+export function StatisticHeader(props: {
+    longname: string
+    groupName?: string
+}): ReactNode {
+    return (
+        <>
+            <ColumnLayout
+                cells={[
+                    {
+                        widthPercentage: 100,
+                        columnIdentifier: 'statname',
+                        content: (
+                            <span className="serif value">
+                                <span>{props.groupName}</span>
+                            </span>
+                        ),
+                        style: { textAlign: 'left', paddingLeft: '1px' },
+                    },
+                ]}
+                totalWidth={100}
+            />
         </>
     )
 }
