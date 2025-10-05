@@ -6,8 +6,10 @@ import { TimeSeriesPlot } from './plots-timeseries'
 
 export interface PlotProps {
     shortname: string
+    longname: string
     extraStat?: ExtraStat
     color: string
+    sharedTypeOfAllArticles?: string
 }
 
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
@@ -33,6 +35,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                             return [
                                 {
                                     shortname: props.shortname,
+                                    longname: props.longname,
                                     histogram: props.extraStat,
                                     color: props.color,
                                     universeTotal: props.extraStat.universeTotal,
@@ -40,6 +43,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                             ]
                         },
                     )}
+                    sharedTypeOfAllArticles={plotProps[0]?.sharedTypeOfAllArticles}
                 />
             )
         case 'time_series':
