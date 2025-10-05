@@ -5,20 +5,26 @@ import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
-import { useColors } from '../page_template/colors'
+import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting } from '../page_template/settings'
-import { statParents } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { isHistoricalCD } from '../utils/is_historical'
+import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { useTranspose } from '../utils/transpose'
 
+import { Icon } from './Icon'
 import { Percentile, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
+import { SearchBox } from './search'
+import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
-export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+
+export const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
     display: 'flex',
@@ -57,7 +63,7 @@ interface ColumnLayoutProps {
 }
 
 // Lays out column content
-function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
@@ -92,7 +98,97 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string }): ReactNode {
+export interface SuperHeaderHorizontalProps {
+    headerSpecs: (CellSpec & { highlightIndex?: number })[]
+    widthsEach: number[]
+    showBottomBar: boolean
+    leftSpacerWidth: number
+}
+
+export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
+    const colors = useColors()
+    const barHeight = '5px'
+    const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
+        return (
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: `${props.leftSpacerWidth}%`, height: barHeight }} />
+                {Array.from({ length: props.headerSpecs.length }).map(
+                    (_, i) => (
+                        <div
+                            key={`bar_${i}`}
+                            style={{
+                                width: `${props.widthsEach[i]}%`,
+                                height: barHeight,
+                                backgroundColor: backgroundColor(i),
+                            }}
+                        />
+                    ),
+                )}
+            </div>
+        )
+    }
+
+    const getBarColor = (idx: number): string | undefined => {
+        const spec = props.headerSpecs[idx]
+        return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
+    }
+    return (
+        <>
+            {bars(getBarColor)}
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: `${props.leftSpacerWidth}%` }} />
+                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
+            </div>
+            {props.showBottomBar && bars(getBarColor)}
+        </>
+    )
+}
+
+export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    return (
+        <>
+            <ComparisonColorBar key="color" highlightIndex={undefined} />
+            <TopLeftHeader {...props} width={props.width - leftBarMargin * 100} />
+        </>
+    )
+}
+
+export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    return (
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
+            <span className="serif value" key="statistic">
+                {props.statNameOverride ?? 'Statistic'}
+            </span>
+        </div>
+    )
+}
+
+export function MainHeaderRow(props: {
+    topLeftSpec: CellSpec
+    topLeftWidth: number
+    columnWidth: number
+    onlyColumns: ColumnIdentifier[]
+    statNameOverride?: string
+    extraSpaceRight: number[]
+    simpleOrdinals: boolean
+}): ReactNode {
+    return (
+        <>
+            <Cell {...props.topLeftSpec} width={props.topLeftWidth} />
+            {props.extraSpaceRight.map((_, columnIndex) => (
+                <StatisticHeaderCells
+                    key={`headerCells_${columnIndex}`}
+                    onlyColumns={props.onlyColumns}
+                    simpleOrdinals={props.simpleOrdinals}
+                    totalWidth={props.columnWidth}
+                    extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
+                />
+            ))}
+        </>
+    )
+}
+
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
@@ -102,16 +198,6 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     }
 
     const cells = [
-        {
-            columnIdentifier: 'statname',
-            widthPercentage: 31,
-            content: (
-                <span className="serif value" key="statistic">
-                    {props.statNameOverride ?? 'Statistic'}
-                </span>
-            ),
-            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
-        },
         {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
@@ -151,11 +237,14 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
     ] satisfies ColumnLayoutProps['cells']
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.totalWidth}
+                onlyColumns={props.onlyColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
+        </>
     )
 }
 
@@ -243,7 +332,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
 }
 
 export function StatisticRowCells(props: {
-    totalWidth: number
+    width: number
     longname: string
     statisticStyle?: CSSProperties
     row: ArticleRow
@@ -251,15 +340,8 @@ export function StatisticRowCells(props: {
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
-    isFirstInGroup?: boolean
-    isIndented?: boolean
-    isGroupHeader?: boolean
-    groupName?: string
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    statParent?: ReturnType<typeof statParents.get>
+    extraSpaceRight?: number
 }): ReactNode {
-    const currentUniverse = useUniverse()
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
@@ -268,46 +350,7 @@ export function StatisticRowCells(props: {
         margin: 0,
     }
 
-    if (props.isGroupHeader) {
-        return (
-            <ColumnLayout
-                cells={[
-                    {
-                        widthPercentage: 100,
-                        columnIdentifier: 'statname',
-                        content: (
-                            <span className="serif value">
-                                <span>{props.groupName}</span>
-                            </span>
-                        ),
-                        style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
-                    },
-                ]}
-                totalWidth={props.totalWidth}
-            />
-        )
-    }
-
     const cells = [
-        {
-            widthPercentage: 31,
-            columnIdentifier: 'statname',
-            content: (
-                <span className="serif value">
-                    <StatisticName
-                        row={props.row}
-                        longname={props.longname}
-                        currentUniverse={currentUniverse}
-                        isFirstInGroup={props.isFirstInGroup}
-                        indentedName={props.indentedName}
-                        groupHasMultipleSources={props.groupHasMultipleSources}
-                        sourceName={props.statParent?.source?.name}
-                        isIndented={props.isIndented}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
-        },
         {
             widthPercentage: 15,
             columnIdentifier: 'statval',
@@ -375,12 +418,15 @@ export function StatisticRowCells(props: {
     ] satisfies ColumnLayoutProps['cells']
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-            blankColumns={props.blankColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.width}
+                onlyColumns={props.onlyColumns}
+                blankColumns={props.blankColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight}%` }} />
+        </>
     )
 }
 
@@ -449,25 +495,178 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
+const manipulationButtonHeight = '24px'
+
+function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
+    const isMobile = useMobileLayout()
+    const isTranspose = useTranspose()
+    const colors = useColors()
+
+    return (
+        <div
+            style={{
+                height: manipulationButtonHeight,
+                lineHeight: manipulationButtonHeight,
+                cursor: 'pointer',
+                paddingLeft: '0.5em', paddingRight: '0.5em',
+                borderRadius: '0.25em',
+                verticalAlign: 'middle',
+                backgroundColor: buttonColor,
+            }}
+            className={`serif manipulation-button-${text}`}
+            onClick={onClick}
+        >
+            {!(isMobile && isTranspose) ? text : <Icon src={image} size={manipulationButtonHeight} color={colors.textMain} />}
+        </div>
+    )
+}
+
+export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+    longname: string
+    includeDelete: boolean
+    onDelete: () => void
+    onReplace: (q: string) => ReturnType<Navigator['link']>
+    manipulationJustify: CSSProperties['justifyContent']
+    sharedTypeOfAllArticles: string | null | undefined
+}): ReactNode {
+    const colors = useColors()
+    const [isEditing, setIsEditing] = React.useState(false)
+    const currentUniverse = useUniverse()
+    const comparisonHeadStyle = useComparisonHeadStyle()
+
+    const manipulationButtons = (
+        <div style={{ height: manipulationButtonHeight }}>
+            <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
+                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" image="/replace.png" />
+                {!includeDelete
+                    ? null
+                    : (
+                            <>
+                                <div style={{ width: '5px' }} />
+                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" image="/close.png" />
+                            </>
+                        )}
+                <div style={{ width: '5px' }} />
+            </div>
+        </div>
+    )
+
+    const screenshotMode = useScreenshotMode()
+
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <div>
+            {screenshotMode ? undefined : manipulationButtons}
+            <div style={{ height: '5px' }} />
+            <a
+                className="serif"
+                {
+                    ...navContext.link({
+                        kind: 'article',
+                        longname,
+                        universe: currentUniverse,
+                    }, { scroll: { kind: 'position', top: 0 } })
+                }
+                style={{ textDecoration: 'none' }}
+            >
+                <div style={useComparisonHeadStyle()}>{longname}</div>
+            </a>
+            {isEditing
+                ? (
+                        <SearchBox
+                            autoFocus={true}
+                            style={{ ...comparisonHeadStyle, width: '100%' }}
+                            placeholder="Replacement"
+                            onChange={() => {
+                                setIsEditing(false)
+                            }}
+                            link={onReplace}
+                            prioritizeArticleType={sharedTypeOfAllArticles ?? undefined}
+                        />
+                    )
+                : null}
+        </div>
+    )
+}
+
+export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {
+    const currentUniverse = useUniverse()
+    const navContext = useContext(Navigator.Context)
+
+    const haveColorbar = props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 2 * 100 * leftBarMargin : 0)
+
+    const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
+        <ComparisonColorBar highlightIndex={props.highlightIndex} />
+    )
+
+    return (
+        <>
+            {bar()}
+            <div key={`heading_${props.articleIndex}`} style={{ width: `${width}%` }}>
+                <HeadingDisplay
+                    longname={props.articles[props.articleIndex].longname}
+                    includeDelete={props.articles.length > 1}
+                    onDelete={() => {
+                        void navContext.navigate({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.filter((_, index) => index !== props.articleIndex),
+                        }, { history: 'push', scroll: { kind: 'none' } })
+                    }}
+                    onReplace={x =>
+                        navContext.link({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.map((value, index) => index === props.articleIndex ? x : value),
+                        }, { scroll: { kind: 'none' } })}
+                    manipulationJustify={props.transpose ? 'center' : 'flex-end'}
+                    sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+                />
+            </div>
+            {bar()}
+        </>
+    )
+}
+
+export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
+    const haveColorbar = !props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
+
+    return (
+        <>
+            {haveColorbar && (
+                <ComparisonColorBar highlightIndex={props.highlightIndex} />
+            )}
+            <div
+                key={`statName_${props.row.statpath}`}
+                style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
+            >
+                <span className="serif value">
+                    <StatisticName
+                        row={props.row}
+                        longname={props.longname}
+                        currentUniverse={props.currentUniverse}
+                        center={props.center}
+                        displayName={props.displayName ?? props.row.renderedStatname}
+                    />
+                </span>
+            </div>
+        </>
+    )
+}
+
 export function StatisticName(props: {
     row: ArticleRow
     longname: string
     currentUniverse: string
     center?: boolean
-    isFirstInGroup?: boolean
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-    sourceName?: string
-    isIndented?: boolean
+    displayName: string
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
-
-    let statName = props.isIndented ? (props.indentedName ?? props.row.renderedStatname) : props.row.renderedStatname
-    if (props.groupHasMultipleSources && props.sourceName) {
-        statName = `${statName} [${props.sourceName}]`
-    }
 
     const link = (
         <a
@@ -485,7 +684,7 @@ export function StatisticName(props: {
             }
             data-test-id="statistic-link"
         >
-            {statName}
+            {props.displayName}
         </a>
     )
     const screenshotMode = useScreenshotMode()
@@ -523,6 +722,30 @@ export function StatisticName(props: {
         )
     }
     return link
+}
+
+export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+    const colors = useColors()
+
+    return (
+        <div
+            key="color"
+            style={{
+                width: `${100 * leftBarMargin}%`,
+                alignSelf: 'stretch',
+                position: 'relative',
+            }}
+        >
+            <div style={{
+                backgroundColor: highlightIndex === undefined ? colors.background : colorFromCycle(colors.hueColors, highlightIndex),
+                height: '100%',
+                width: '50%',
+                left: '25%',
+                position: 'absolute',
+            }}
+            />
+        </div>
+    )
 }
 
 function computeDisclaimerText(disclaimer: Disclaimer): string {

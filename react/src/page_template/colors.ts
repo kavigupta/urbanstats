@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { mixWithBackground } from '../utils/color'
 
-import { Colors, colorThemes, JuxtastatColors, Theme } from './color-themes'
+import { Colors, colorThemes, HueColors, JuxtastatColors, Theme } from './color-themes'
 import { useSetting } from './settings'
 
 export function useCurrentTheme(): Theme {
@@ -40,4 +40,18 @@ export function useJuxtastatColors(): JuxtastatColors {
         lifeEmoji: colorblindMode ? '/life-colorblind.png' : '/life.png',
         lifeLostEmoji: '/life-lost.png',
     }
+}
+
+export function colorFromCycle(colors: HueColors, i: number): string {
+    const colorCycle = [
+        colors.blue,
+        colors.orange,
+        colors.purple,
+        colors.red,
+        colors.grey,
+        colors.pink,
+        colors.yellow,
+        colors.green,
+    ]
+    return colorCycle[i % colorCycle.length]
 }
