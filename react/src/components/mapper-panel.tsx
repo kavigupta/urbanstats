@@ -14,6 +14,7 @@ import { Keypoints } from '../mapper/ramps'
 import { ImportExportCode } from '../mapper/settings/ImportExportCode'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
+import { doEditInsets, getInsets, InsetEdits } from '../mapper/settings/insets'
 import { MapSettings, computeUSS, Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
@@ -44,7 +45,7 @@ import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
 import { Statistic } from './display-stats'
-import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec } from './map'
+import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditInsets } from './map'
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
@@ -395,6 +396,8 @@ interface MapComponentProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors?: (errors: EditorError[]) => void
     colorbarRef?: React.RefObject<HTMLDivElement>
+    editInsets?: EditInsets
+    overrideInsets?: Insets
 }
 
 interface EmpiricalRamp {
@@ -433,8 +436,9 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     basemap={basemap}
                     setErrors={props.setErrors}
                     colors={useColors()}
-                    insets={currentInsets}
-                    key={stableStringify(currentInsets)}
+                    insets={props.overrideInsets ?? currentInsets}
+                    key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
+                    editInsets={props.editInsets}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -533,12 +537,12 @@ function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geogra
             )
 }
 
-type MapEditorMode = 'uss'
+type MapEditorMode = 'uss' | 'insets'
 
 function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
-    const [, setMapEditorMode] = useState<MapEditorMode>('uss')
+    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
@@ -551,6 +555,8 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         },
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
+            // Prevent keyboard shortcusts when in insets editing mode, since insets has its own undo stack
+            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined,
         },
     )
 
@@ -618,8 +624,8 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         <PageTemplate>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                <USSMapEditor {...commonProps} counts={props.counts} />
-                {undoRedo.ui}
+                {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
+                {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
             </SelectionContext.Provider>
         </PageTemplate>
     )
@@ -632,7 +638,7 @@ interface CommonEditorProps {
     setMapEditorMode: (m: MapEditorMode) => void
 }
 
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
 
     const mapRef = useRef<DisplayedMap>(null)
@@ -663,6 +669,20 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment }: 
                     mapRef={mapRef}
                     colorbarRef={colorbarRef}
                 />
+                {
+                    getInsets(mapSettings, typeEnvironment) && (
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.5em',
+                            margin: '0.5em 0',
+                        }}
+                        >
+                            <button onClick={() => { setMapEditorMode('insets') }}>
+                                Edit Insets
+                            </button>
+                        </div>
+                    )
+                }
                 <ImportExportCode
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
@@ -678,5 +698,75 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment }: 
             />
         </>
 
+    )
+}
+
+function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode }: CommonEditorProps): ReactNode {
+    const colors = useColors()
+
+    const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
+
+    const { addState, ui: undoRedoUi } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
+
+    const insetsProps = useMemo(() => getInsets(mapSettings, typeEnvironment)!.map(inset => new Property(inset)), [mapSettings, typeEnvironment])
+
+    useEffect(() => {
+        const baseInsets = getInsets(mapSettings, typeEnvironment)!
+        for (const [i, insetProp] of insetsProps.entries()) {
+            insetProp.value = { ...baseInsets[i], ...insetEdits.get(i) }
+        }
+    }, [insetEdits, insetsProps, mapSettings, typeEnvironment])
+
+    return (
+        <>
+            <div style={{
+                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                borderRadius: '5px',
+                padding: '10px',
+                margin: '10px 0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '0.5em',
+            }}
+            >
+                <div>
+                    <b>Editing Insets.</b>
+                    {' '}
+                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+
+                    <button onClick={() => { setMapEditorMode('uss') }}>
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
+                            setMapEditorMode('uss')
+                        }}
+                        disabled={insetEdits.size === 0}
+                    >
+                        Accept
+                    </button>
+                </div>
+            </div>
+            <MapComponentWrapper
+                geographyKind={mapSettings.geographyKind}
+                universe={mapSettings.universe}
+                uss={computeUSS(mapSettings.script)}
+                editInsets={{
+                    doEdit: (i, e) => {
+                        setInsetEdits((edits) => {
+                            const newEdits = new Map(edits)
+                            newEdits.set(i, { ...newEdits.get(i), ...e })
+                            addState(newEdits, undefined)
+                            return newEdits
+                        })
+                    },
+                    subscribeChanges: insetsProps,
+                }}
+            />
+            {undoRedoUi}
+        </>
     )
 }
