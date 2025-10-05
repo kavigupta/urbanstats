@@ -20,7 +20,7 @@ const options = argumentParser({
         compare: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
-        baseRef: z.optional(z.string()).default(''), // Since empty string if absent on cli
+        baseRef: z.optional(z.string()),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -102,16 +102,22 @@ function testFile(test: string): string {
 }
 
 async function testFileDidChange(test: string): Promise<boolean> {
-    return options.baseRef !== ''
-        ? await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
-            if (exitCode === 0 || exitCode === 1) {
-                return exitCode === 1
-            }
-            else {
-                throw new Error(`Unexpected exit code ${exitCode}`)
-            }
-        })
-        : true // Assume it change if we can't get any version info
+    if (options.baseRef === undefined) {
+        // No baseRef defined, we're running on local, and don't want to retry there
+        return true
+    }
+    if (options.baseRef === '') {
+        // We're running on CI with an unspecified base ref, we do want to retry there
+        return false
+    }
+    return await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
+        if (exitCode === 0 || exitCode === 1) {
+            return exitCode === 1
+        }
+        else {
+            throw new Error(`Unexpected exit code ${exitCode}`)
+        }
+    })
 }
 
 async function runTest(test: string): Promise<{ status: 'timeout', timeLimitSeconds: number } | { status: 'success' | 'failure', duration: number }> {
