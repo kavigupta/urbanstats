@@ -32,24 +32,32 @@ export async function clickButton(t: TestController, which: string): Promise<Tes
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
 
-let server: Promise<unknown> | undefined
 async function runForTest(): Promise<void> {
-    if (server === undefined) {
-        server = execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
+    if (!(await isServerAvailable())) {
+        console.warn('No quiz server found. Starting new quiz server...')
+        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
         process.on('exit', () => {
             execaSync('pkill', ['-f', 'urbanstats-persistent-data'])
         })
         await waitForServerToBeAvailable()
+        console.warn('Quiz server started.')
+    }
+    else {
+        console.warn('Quiz server found. Using existing quiz server.')
     }
 }
 
+async function isServerAvailable(): Promise<boolean> {
+    try {
+        await fetch('http://localhost:54579')
+        return true
+    }
+    catch {
+        return false
+    }
+}
 async function waitForServerToBeAvailable(): Promise<void> {
-    while (true) {
-        try {
-            await fetch('http://localhost:54579')
-            break
-        }
-        catch {}
+    while (!(await isServerAvailable())) {
         await new Promise(resolve => setTimeout(resolve, 100))
     }
 }
