@@ -67,3 +67,10 @@ for (const platform of ['desktop', 'mobile']) {
         }
     })
 }
+
+urbanstatsFixture('comparison with histogram in the middle of two columns transposed', `${target}/comparison.html?longnames=%5B%22District+of+Columbia%2C+USA%22%2C%22Nevada%2C+USA%22%2C%22Arizona%2C+USA%22%2C%22Utah%2C+USA%22%2C%22New+York%2C+USA%22%2C%22Washington%2C+USA%22%2C%22Idaho%2C+USA%22%2C%22Montana%2C+USA%22%5D&s=SAaYfgWFQJBoK9dB`)
+
+test('renders comparison with histogram in the middle of two columns transposed', async (t) => {
+    await screencap(t)
+    await downloadImage(t)
+})
