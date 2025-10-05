@@ -22,8 +22,9 @@ import { Map } from './map'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+// Keep grouping computation local per request
 import { CellSpec, PlotSpec, SuperTableRow } from './supertable'
-import { StatisticHeaderCells, TableHeaderContainer, TableRowContainer } from './table'
+import { StatisticHeaderCells, TableHeaderContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -180,24 +181,17 @@ function ArticleTable(props: {
         <div className="stats_table">
             <StatisticTableHeader />
             {props.filteredRows.map((row, index) => (
-                <>
-                    {groupNames[index] !== undefined && (index === 0 || groupNames[index - 1] !== groupNames[index]) && (
-                        <TableRowContainer index={index}>
-                            <StatisticHeader
-                                longname={leftHeaderSpecs[index].longname}
-                                groupName={groupNames[index]}
-                            />
-                        </TableRowContainer>
-                    )}
-                    <SuperTableRow
-                        rowIndex={index}
-                        leftHeaderSpec={leftHeaderSpecs[index]}
-                        cellSpecs={cellSpecs[index]}
-                        plotSpec={plotSpecs[index]}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={columnWidth}
-                    />
-                </>
+                <SuperTableRow
+                    key={`articleRow_${index}`}
+                    rowIndex={index}
+                    leftHeaderSpec={leftHeaderSpecs[index]}
+                    cellSpecs={cellSpecs[index]}
+                    plotSpec={plotSpecs[index]}
+                    widthLeftHeader={widthLeftHeader}
+                    columnWidth={columnWidth}
+                    groupName={groupNames[index]}
+                    prevGroupName={index > 0 ? groupNames[index - 1] : undefined}
+                />
             ))}
             <ArticleWarnings />
         </div>

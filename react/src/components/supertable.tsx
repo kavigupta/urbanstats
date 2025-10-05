@@ -98,9 +98,20 @@ export function SuperTableRow(props: {
     widthLeftHeader: number
     columnWidth: number
     rowMinHeight?: string
+    groupName?: string
+    prevGroupName?: string
 }): ReactNode {
     return (
         <div>
+            {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
+                <TableRowContainer index={props.rowIndex}>
+                    <div style={{ width: '100%', padding: '1px' }}>
+                        <span className="serif value">
+                            <span>{props.groupName}</span>
+                        </span>
+                    </div>
+                </TableRowContainer>
+            )}
             <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
