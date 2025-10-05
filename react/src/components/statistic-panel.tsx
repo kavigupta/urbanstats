@@ -14,8 +14,9 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
+import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
-import { Percentile, PointerArrow, Statistic } from './table'
+import { PointerArrow } from './pointer-cell'
 
 const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']

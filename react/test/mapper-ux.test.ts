@@ -106,6 +106,10 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
     mapper(testFn)(`undo redo ${name}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await before?.(t)
 
+        if (canUndo) {
+            await t.expect(canUndo(t)).notOk()
+        }
+
         await replaceInput(t, 'Urban Center', 'Subnational Region')
         await t.wait(2000)
         await replaceInput(t, 'Iceland', 'USA')
