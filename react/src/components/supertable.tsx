@@ -14,6 +14,7 @@ export interface PlotSpec {
 export interface SuperHeaderSpec {
     headerSpecs: CellSpec[]
     showBottomBar: boolean
+    groupNames?: (string | undefined)[]
 }
 
 export interface LeftHeaderSpec {
