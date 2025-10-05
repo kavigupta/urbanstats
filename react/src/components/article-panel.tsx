@@ -65,7 +65,7 @@ import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell } from './supertable'
-import { ColumnLayout, StatisticHeaderCells, TableHeaderContainer, TableRowContainer } from './table'
+import { StatisticHeaderCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -162,23 +162,11 @@ export function StatisticHeader(props: {
     groupName?: string
 }): ReactNode {
     return (
-        <>
-            <ColumnLayout
-                cells={[
-                    {
-                        widthPercentage: 100,
-                        columnIdentifier: 'statname',
-                        content: (
-                            <span className="serif value">
-                                <span>{props.groupName}</span>
-                            </span>
-                        ),
-                        style: { textAlign: 'left', paddingLeft: '1px' },
-                    },
-                ]}
-                totalWidth={100}
-            />
-        </>
+        <div style={{ width: '100%', padding: '1px' }}>
+            <span className="serif value">
+                <span>{props.groupName}</span>
+            </span>
+        </div>
     )
 }
 
