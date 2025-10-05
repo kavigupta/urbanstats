@@ -44,8 +44,8 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
+import { Statistic } from './display-stats'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditInsets } from './map'
-import { Statistic } from './table'
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
