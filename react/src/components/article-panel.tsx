@@ -82,6 +82,49 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const settings = useSettings(groupYearKeys())
     const filteredRows = preprocessRows(rows(settings)[0])
 
+    const colors = useColors()
+    // const [expanded] = useSetting(rowExpandedKey(props.row.statpath))
+    const expandedSettings = useSettings(filteredRows.map(row => rowExpandedKey(row.statpath)))
+    const expandedEach = filteredRows.map((row, index) => expandedSettings[rowExpandedKey(row.statpath)])
+    const currentUniverse = useUniverse()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    const navContext = useContext(Navigator.Context)
+
+    const { widthLeftHeader, columnWidth } = useWidths()
+
+    const leftHeaderSpecs: CellSpec[] = filteredRows.map(row => ({
+        type: 'statistic-name',
+        longname: article.longname,
+        row,
+        isIndented: row.isIndented,
+        indentedName: row.indentedName,
+        groupHasMultipleSources: row.groupHasMultipleSources,
+        currentUniverse,
+    }))
+
+    const cellSpecs: CellSpec[][] = filteredRows.map(row => [({
+        type: 'statistic-row',
+        longname: article.longname,
+        row,
+        onNavigate: (newArticle) => {
+            void navContext.navigate({
+                kind: 'article',
+                longname: newArticle,
+                universe: currentUniverse,
+            }, { history: 'push', scroll: { kind: 'none' } })
+        },
+        simpleOrdinals,
+        onlyColumns: ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall'],
+    })])
+
+    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
+        ? {
+                statDescription: filteredRows[index].renderedStatname,
+                plotProps: [{ ...filteredRows[index], color: colors.hueColors.blue, shortname: article.shortname }],
+            }
+        : undefined,
+    )
+
     return (
         <>
             <QuerySettingsConnection />
@@ -105,15 +148,13 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                                         />
                                     </TableRowContainer>
                                 )}
-                                <StatisticTableRow
-                                    row={row}
-                                    index={index}
-                                    key={row.statpath}
-                                    longname={article.longname}
-                                    shortname={article.shortname}
-                                    isIndented={row.isIndented}
-                                    indentedName={row.indentedName}
-                                    groupHasMultipleSources={row.groupHasMultipleSources}
+                                <SuperTableRow
+                                    rowIndex={index}
+                                    leftHeaderSpec={leftHeaderSpecs[index]}
+                                    cellSpecs={cellSpecs[index]}
+                                    plotSpec={plotSpecs[index]}
+                                    widthLeftHeader={widthLeftHeader}
+                                    columnWidth={columnWidth}
                                 />
                             </>
                         ))}
@@ -190,67 +231,6 @@ function StatisticTableHeader(): ReactNode {
         <TableHeaderContainer>
             <StatisticHeaderCells simpleOrdinals={simpleOrdinals} totalWidth={100} />
         </TableHeaderContainer>
-    )
-}
-
-function StatisticTableRow(props: {
-    shortname: string
-    longname: string
-    row: ArticleRow
-    index: number
-    isIndented?: boolean
-    indentedName?: string
-    groupHasMultipleSources?: boolean
-}): ReactNode {
-    const colors = useColors()
-    const [expanded] = useSetting(rowExpandedKey(props.row.statpath))
-    const currentUniverse = useUniverse()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    const navContext = useContext(Navigator.Context)
-
-    const { widthLeftHeader, columnWidth } = useWidths()
-
-    const leftHeaderSpec: CellSpec = {
-        type: 'statistic-name',
-        longname: props.longname,
-        row: props.row,
-        isIndented: props.isIndented,
-        indentedName: props.indentedName,
-        groupHasMultipleSources: props.groupHasMultipleSources,
-        currentUniverse,
-    }
-
-    const cellSpec: CellSpec = {
-        type: 'statistic-row',
-        longname: props.longname,
-        row: props.row,
-        onNavigate: (newArticle) => {
-            void navContext.navigate({
-                kind: 'article',
-                longname: newArticle,
-                universe: currentUniverse,
-            }, { history: 'push', scroll: { kind: 'none' } })
-        },
-        simpleOrdinals,
-        onlyColumns: ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall'],
-    }
-
-    const plotSpec: PlotSpec | undefined = expanded
-        ? {
-                statDescription: props.row.renderedStatname,
-                plotProps: [{ ...props.row, color: colors.hueColors.blue, shortname: props.shortname }],
-            }
-        : undefined
-
-    return (
-        <SuperTableRow
-            rowIndex={props.index}
-            leftHeaderSpec={leftHeaderSpec}
-            cellSpecs={[cellSpec]}
-            plotSpec={plotSpec}
-            widthLeftHeader={widthLeftHeader}
-            columnWidth={columnWidth}
-        />
     )
 }
 
