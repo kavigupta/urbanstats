@@ -66,7 +66,7 @@ for (const test of tests) {
             case 'success':
                 await fs.mkdir('durations', { recursive: true })
                 await fs.writeFile(`durations/${test}.json`, JSON.stringify(result.duration))
-                success = await maybeCompare(test, true)
+                success = true
                 break retry
             case 'timeout':
             case 'failure':
@@ -74,7 +74,6 @@ for (const test of tests) {
                     console.error(chalkTemplate`{red Test suite took too long! (allowed duration ${result.timeLimitSeconds}s)}`)
                 }
                 if (tries === 0) {
-                    await maybeCompare(test, false)
                     success = false
                     break retry
                 }
@@ -161,7 +160,15 @@ async function runTest(test: string): Promise<{ status: 'timeout', timeLimitSeco
         })()
     }
 
-    return await Promise.race([runningTests, ...(timeoutPromise === undefined ? [] : [timeoutPromise])])
+    const result = await Promise.race([runningTests, ...(timeoutPromise === undefined ? [] : [timeoutPromise])])
+
+    const comparisonResult = await maybeCompare(test, result.status === 'success')
+
+    if (result.status === 'success' && !comparisonResult) {
+        return { ...result, status: 'failure' }
+    }
+
+    return result
 }
 
 async function maybeCompare(test: string, success: boolean): Promise<boolean> {
