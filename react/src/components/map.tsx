@@ -176,6 +176,8 @@ function createMap(
         attributionControl: false,
     })
 
+    TestUtils.shared.maps.set(id, new WeakRef(map))
+
     if (fullMap) {
         map.addControl(new maplibregl.FullscreenControl(), 'top-left')
         map.on('mouseover', 'polygon', () => {

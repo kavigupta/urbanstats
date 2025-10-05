@@ -1,6 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { urlFromCode } from './mapper-utils'
+import { TestWindow } from '../src/utils/TestUtils'
+
 import { urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -11,6 +12,23 @@ function map(n: number): string {
 
 function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft'): string {
     return `${map(mapNumber)} [data-test="${pos}"]`
+}
+
+interface Bounds { n: number, e: number, s: number, w: number }
+
+function bounds(mapNumber: number): Promise<Bounds> {
+    const mapSelector = map(mapNumber)
+    return ClientFunction(() => {
+        const mapId = document.querySelector(mapSelector)!.id
+        const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
+        const latLon = mapObj.getBounds()
+        return {
+            n: Math.round(latLon.getNorth()),
+            e: Math.round(latLon.getEast()),
+            s: Math.round(latLon.getSouth()),
+            w: Math.round(latLon.getWest()),
+        }
+    }, { dependencies: { mapSelector } })()
 }
 
 interface Rect { x: number, y: number, width: number, height: number }
@@ -56,3 +74,11 @@ test('move and accept', async (t) => {
     await waitForLoading(t)
     await t.expect(frame(map(4))).eql(afterMoveFrame)
 })
+
+test('move bounds', async (t) => {
+    await waitForLoading(t)
+    await t.expect(bounds(0)).eql({ n: 50, e: -65, s: 23, w: -130 })
+    await t.drag(map(0), 100, 100)
+    await t.expect(bounds(0)).notEql({ n: 50, e: -65, s: 23, w: -130 })
+})
+// How to test bounds?
