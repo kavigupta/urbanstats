@@ -41,7 +41,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
     const settings = useSettings(groupYearKeys())
-    const filteredRows = preprocessRows(rows(settings)[0])
+    const filteredRows = rows(settings)[0]
 
     return (
         <>
@@ -94,50 +94,45 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     )
 }
 
-type ProcessedArticleRow = ArticleRow & {
-    statParent: ReturnType<typeof statParents.get>
-    currentGroupId: string | undefined
-    showGroupHeader: boolean
-    isIndented: boolean
-    displayName: string
-}
+type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
-function preprocessRows(filteredRows: ArticleRow[]): ProcessedArticleRow[] {
-    return filteredRows.map((row, index) => {
-        const statParent = statParents.get(row.statpath)
-        const currentGroupId = statParent?.group.id
-        const isFirstInGroup = index === 0 || statParents.get(filteredRows[index - 1].statpath)?.group.id !== currentGroupId
+function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
+    const updatedNameSpecs: NameSpec[] = []
+    const groupNames: (string | undefined)[] = []
 
-        const groupRows = filteredRows.filter(r => statParents.get(r.statpath)?.group.id === currentGroupId)
+    for (const spec of nameSpecs) {
+        const statParent = statParents.get(spec.row.statpath)
+
+        const groupRows = nameSpecs.filter(s => statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
         const groupSize = groupRows.length
 
         const groupSourcesSet = new Set(
             groupRows
-                .map(r => statParents.get(r.statpath)?.source)
+                .map(s => statParents.get(s.row.statpath)?.source)
                 .filter(source => source !== null)
                 .map(source => source!.name),
         )
         const groupHasMultipleSources = groupSourcesSet.size > 1
 
         const sourceName = statParent?.source?.name
-        let statName = groupSize > 1 ? (statParent?.indentedName ?? row.renderedStatname) : row.renderedStatname
+        let displayName = groupSize > 1 ? (statParent?.indentedName ?? spec.row.renderedStatname) : spec.row.renderedStatname
         if (groupHasMultipleSources && sourceName) {
-            statName = `${statName} [${sourceName}]`
+            displayName = `${displayName} [${sourceName}]`
         }
 
-        return {
-            ...row,
-            statParent,
-            currentGroupId,
-            showGroupHeader: isFirstInGroup && groupSize > 1,
+        updatedNameSpecs.push({
+            ...spec,
             isIndented: groupSize > 1,
-            displayName: statName,
-        }
-    })
+            displayName,
+        })
+        groupNames.push(groupSize > 1 ? statParent?.group.name : undefined)
+    }
+
+    return { updatedNameSpecs, groupNames }
 }
 
 function ArticleTable(props: {
-    filteredRows: ProcessedArticleRow[]
+    filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
     const colors = useColors()
@@ -149,14 +144,14 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const leftHeaderSpecs: CellSpec[] = props.filteredRows.map(row => ({
+    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
         row,
-        isIndented: row.isIndented,
         currentUniverse,
-        displayName: row.displayName,
     }))
+
+    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
 
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
@@ -186,11 +181,11 @@ function ArticleTable(props: {
             <StatisticTableHeader />
             {props.filteredRows.map((row, index) => (
                 <>
-                    {row.showGroupHeader && (
+                    {groupNames[index] !== undefined && (index === 0 || groupNames[index - 1] !== groupNames[index]) && (
                         <TableRowContainer index={index}>
                             <StatisticHeader
                                 longname={props.article.longname}
-                                groupName={row.statParent?.group.name}
+                                groupName={groupNames[index]}
                             />
                         </TableRowContainer>
                     )}
