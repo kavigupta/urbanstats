@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useContext, useRef } from 'react'
+import React, { ReactNode, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -65,7 +65,7 @@ import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { Cell } from './supertable'
-import { ColumnLayout, StatisticHeaderCells, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
+import { ColumnLayout, StatisticHeaderCells, TableHeaderContainer, TableRowContainer } from './table'
 
 export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -84,7 +84,6 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
     const settings = useSettings(groupYearKeys())
     const filteredRows = preprocessRows(rows(settings)[0])
-    const [simpleOrdinals] = useSetting('simple_ordinals')
 
     return (
         <>

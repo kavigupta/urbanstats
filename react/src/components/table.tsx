@@ -342,14 +342,12 @@ export function StatisticRowCells(props: {
     simpleOrdinals: boolean
     isFirstInGroup?: boolean
     isIndented?: boolean
-    isGroupHeader?: boolean
     groupName?: string
     indentedName?: string
     groupHasMultipleSources?: boolean
     statParent?: ReturnType<typeof statParents.get>
     extraSpaceRight?: number
 }): ReactNode {
-    const currentUniverse = useUniverse()
     const colors = useColors()
     const ordinalStyle: React.CSSProperties = {
         fontSize: '14px',
@@ -358,49 +356,7 @@ export function StatisticRowCells(props: {
         margin: 0,
     }
 
-    if (props.isGroupHeader) {
-        return (
-            <>
-                <ColumnLayout
-                    cells={[
-                        {
-                            widthPercentage: 100,
-                            columnIdentifier: 'statname',
-                            content: (
-                                <span className="serif value">
-                                    <span>{props.groupName}</span>
-                                </span>
-                            ),
-                            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
-                        },
-                    ]}
-                    totalWidth={props.width}
-                />
-                <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
-            </>
-        )
-    }
-
     const cells = [
-        {
-            widthPercentage: 31,
-            columnIdentifier: 'statname',
-            content: (
-                <span className="serif value">
-                    <StatisticName
-                        row={props.row}
-                        longname={props.longname}
-                        currentUniverse={currentUniverse}
-                        isFirstInGroup={props.isFirstInGroup}
-                        indentedName={props.indentedName}
-                        groupHasMultipleSources={props.groupHasMultipleSources}
-                        sourceName={props.statParent?.source?.name}
-                        isIndented={props.isIndented}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'left', paddingLeft: props.isIndented ? '1em' : '1px' },
-        },
         {
             widthPercentage: 15,
             columnIdentifier: 'statval',
