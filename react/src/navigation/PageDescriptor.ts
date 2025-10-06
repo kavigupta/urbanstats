@@ -180,7 +180,7 @@ export type PageData =
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
-        fromArrayMoves: (moves: { from: number, to: number }[]) => ReturnType<typeof loadPageDescriptor>
+        fromArrayMoves: (moves: { from: number, to: number }[]) => Awaited<ReturnType<typeof loadPageDescriptor>>
     }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
@@ -415,15 +415,17 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [firstArticles, countsByArticleType, panel, { partitionLongnames }] = await Promise.all([
+            const [firstArticles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
-                import('../map-partition'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
-            const fromArrayMoves = async (moves: { from: number, to: number }[]): ReturnType<typeof loadPageDescriptor> => {
-                const articles = moves.reduce((a, { from, to }) => arrayMove(a, from, to), firstArticles)
+            const fromArrayMoves = (moves: { from: number, to: number }[]): Awaited<ReturnType<typeof loadPageDescriptor>> => {
+                const articleEntires = moves.reduce((a, { from, to }) => arrayMove(a, from, to), Array.from(firstArticles.entries()))
+                const articles = articleEntires.map(([, a]) => a)
+                const articleIndices = articleEntires.map(([i]) => i)
 
                 // intersection of all the data.universes
                 const articleUniverses = articles.map(x => x.universes)
@@ -446,7 +448,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         rows: comparisonRows,
                         statPaths: comparisonStatPaths,
                         comparisonPanel: panel.ComparisonPanel,
-                        mapPartitions: await partitionLongnames(newDescriptor.longnames),
+                        mapPartitions: mapPartitions(articleIndices),
                         fromArrayMoves: newMoves => fromArrayMoves(moves.concat(newMoves)),
                     },
                     newPageDescriptor: {
@@ -464,7 +466,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 }
             }
 
-            return await fromArrayMoves([])
+            return fromArrayMoves([])
         }
         case 'statistic': {
             const statUniverse = newDescriptor.universe ?? 'world'

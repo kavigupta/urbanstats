@@ -69,34 +69,40 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
  * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
  *
  * Otherwise, weigh multiple groupings to determine the best one
+ *
+ * Returns a function that still works even if longnames order changes
  */
-export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
+export async function partitionLongnames(longnames: string[]): Promise<(longnamesOrder: number[]) => number[][]> {
     const fillThreshold = 0.1
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
-    // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
-    // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
-    // Therefore, we need to sort the bounding boxes
-    const sortedBoundingBoxes = Array.from(boundingBoxes.entries())
-        .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
-        .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
+    return (longnamesOrder) => {
+        const orderedBoundingBoxes = longnamesOrder.map(i => boundingBoxes[i])
 
-    try {
-        for (const partitions of indexPartitions(sortedBoundingBoxes.length, partition => proportionFilled(partition.map(index => sortedBoundingBoxes[index][1])) > fillThreshold)) {
+        // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
+        // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
+        // Therefore, we need to sort the bounding boxes
+        const sortedBoundingBoxes = Array.from(orderedBoundingBoxes.entries())
+            .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
+            .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
+
+        try {
+            for (const partitions of indexPartitions(sortedBoundingBoxes.length, partition => proportionFilled(partition.map(index => sortedBoundingBoxes[index][1])) > fillThreshold)) {
             // Only iterates over good partitions
 
-            // Un-sort the indices
-            // Also re-sort the partitions by the unsorted indices
-            const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
-                .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
-            return unsortedPartitions
+                // Un-sort the indices
+                // Also re-sort the partitions by the unsorted indices
+                const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
+                    .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
+                return unsortedPartitions
+            }
         }
-    }
-    catch (e) {
-        console.warn('Error partitioning maps', e)
-    }
+        catch (e) {
+            console.warn('Error partitioning maps', e)
+        }
 
-    // Give up
-    return [longnames.map((_, i) => i)]
+        // Give up
+        return [longnames.map((_, i) => i)]
+    }
 }
