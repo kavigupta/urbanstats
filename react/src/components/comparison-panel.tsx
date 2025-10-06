@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -37,17 +37,17 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<Article[]>(props.articles)
 
-    // Sensors for drag and drop
+    // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 2,
+                distance: 0,
             },
         }),
         useSensor(TouchSensor, {
             activationConstraint: {
-                delay: 200,
-                tolerance: 2,
+                delay: 50,
+                tolerance: 0,
             },
         }),
     )
@@ -231,6 +231,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     sensors={sensors}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
+                    collisionDetection={closestCenter}
                 >
                     <SortableContext items={localArticles.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
                         <div>
