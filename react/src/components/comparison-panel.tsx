@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -40,7 +40,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 5,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 5,
             },
         }),
     )
