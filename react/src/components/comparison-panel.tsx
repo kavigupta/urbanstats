@@ -1,7 +1,9 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useEffect, useMemo, useRef } from 'react'
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -31,6 +33,18 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
 
+    // State for drag overlay
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    // Sensors for drag and drop
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+    )
+
     const joinedString = props.articles.map(x => x.shortname).join(' vs ')
     const names = props.articles.map(a => a.longname)
 
@@ -39,6 +53,32 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         overallWidth: tableRef.current!.offsetWidth * 2,
         elementsToRender: [tableRef.current!, mapRef.current!],
     })
+
+    // Drag and drop handlers
+    const handleDragStart = (event: DragStartEvent): void => {
+        setActiveId(event.active.id as string)
+    }
+
+    const handleDragEnd = (event: DragEndEvent): void => {
+        const { active, over } = event
+
+        if (over && active.id !== over.id) {
+            const oldIndex = props.articles.findIndex(article => article.shortname === active.id)
+            const newIndex = props.articles.findIndex(article => article.shortname === over.id)
+
+            const newArticles = arrayMove(props.articles, oldIndex, newIndex)
+            const newLongnames = newArticles.map(a => a.longname)
+
+            // Update the URL to reflect the new order
+            void navContext.navigate({
+                kind: 'comparison',
+                universe: navContext.universe,
+                longnames: newLongnames,
+            }, { history: 'push', scroll: { kind: 'none' } })
+        }
+
+        setActiveId(null)
+    }
 
     const settings = useSettings(groupYearKeys())
 
@@ -117,6 +157,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             transpose,
             sharedTypeOfAllArticles,
             highlightIndex: articleIndex,
+            draggable: true,
+            articleId: props.articles[articleIndex].shortname,
         } satisfies CellSpec
     ))
 
@@ -170,79 +212,96 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
             <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={props.universes}>
-                <div>
-                    <div className={headerTextClass}>Comparison</div>
-                    <div className={subHeaderTextClass}>{joinedString}</div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
+                <DndContext
+                    sensors={sensors}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext items={props.articles.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
+                        <div>
+                            <div className={headerTextClass}>Comparison</div>
+                            <div className={subHeaderTextClass}>{joinedString}</div>
+                            <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    <div style={{ display: 'flex' }}>
-                        <div style={{ width: `${100 * leftMarginPercent}%` }} />
-                        <div style={{ width: `${50 * (1 - leftMarginPercent)}%`, marginRight: '1em' }}>
-                            <div className="serif" style={comparisonRightStyle}>Add another region:</div>
+                            <div style={{ display: 'flex' }}>
+                                <div style={{ width: `${100 * leftMarginPercent}%` }} />
+                                <div style={{ width: `${50 * (1 - leftMarginPercent)}%`, marginRight: '1em' }}>
+                                    <div className="serif" style={comparisonRightStyle}>Add another region:</div>
+                                </div>
+                                <div style={{ width: `${50 * (1 - leftMarginPercent)}%` }}>
+                                    <SearchBox
+                                        style={{ ...searchComparisonStyle, width: '100%' }}
+                                        placeholder="Name"
+                                        link={x =>
+                                            navContext.link({
+                                                kind: 'comparison',
+                                                universe: currentUniverse,
+                                                longnames: [...names, x],
+                                            }, { scroll: { kind: 'none' } })}
+                                        autoFocus={false}
+                                        prioritizeArticleType={sharedTypeOfAllArticles}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ marginBlockEnd: '1em' }}></div>
+
+                            {maybeScroll(
+                                <div ref={tableRef}>
+                                    {transpose
+                                        ? (
+                                                <TableContents
+                                                    superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
+                                                    leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
+                                                    rowSpecs={rowSpecsByStatTransposed}
+                                                    horizontalPlotSpecs={plotSpecs.map(() => undefined)}
+                                                    verticalPlotSpecs={plotSpecs}
+                                                    topLeftSpec={topLeftSpec}
+                                                    widthLeftHeader={leftMarginPercent * 100}
+                                                    columnWidth={columnWidth}
+                                                    onlyColumns={onlyColumns}
+                                                    simpleOrdinals={true}
+                                                />
+                                            )
+                                        : (
+                                                <TableContents
+                                                    superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
+                                                    leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
+                                                    rowSpecs={rowSpecsByStat}
+                                                    horizontalPlotSpecs={plotSpecs}
+                                                    verticalPlotSpecs={[]}
+                                                    topLeftSpec={topLeftSpec}
+                                                    widthLeftHeader={leftMarginPercent * 100}
+                                                    columnWidth={columnWidth}
+                                                    onlyColumns={onlyColumns}
+                                                    simpleOrdinals={true}
+                                                />
+                                            )}
+                                    <ArticleWarnings />
+                                </div>,
+                            )}
+                            <div className="gap"></div>
+
+                            <div ref={mapRef}>
+                                <ComparisonMultiMap
+                                    longnames={props.articles.map(x => x.longname)}
+                                    colors={props.articles.map((_, i) => colorFromCycle(colors.hueColors, i))}
+                                    basemap={{ type: 'osm' }}
+                                    mapPartitions={props.mapPartitions}
+                                />
+                            </div>
                         </div>
-                        <div style={{ width: `${50 * (1 - leftMarginPercent)}%` }}>
-                            <SearchBox
-                                style={{ ...searchComparisonStyle, width: '100%' }}
-                                placeholder="Name"
-                                link={x =>
-                                    navContext.link({
-                                        kind: 'comparison',
-                                        universe: currentUniverse,
-                                        longnames: [...names, x],
-                                    }, { scroll: { kind: 'none' } })}
-                                autoFocus={false}
-                                prioritizeArticleType={sharedTypeOfAllArticles}
-                            />
-                        </div>
-                    </div>
-
-                    <div style={{ marginBlockEnd: '1em' }}></div>
-
-                    {maybeScroll(
-                        <div ref={tableRef}>
-                            {transpose
-                                ? (
-                                        <TableContents
-                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
-                                            leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                            rowSpecs={rowSpecsByStatTransposed}
-                                            horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                            verticalPlotSpecs={plotSpecs}
-                                            topLeftSpec={topLeftSpec}
-                                            widthLeftHeader={leftMarginPercent * 100}
-                                            columnWidth={columnWidth}
-                                            onlyColumns={onlyColumns}
-                                            simpleOrdinals={true}
-                                        />
-                                    )
-                                : (
-                                        <TableContents
-                                            superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                            rowSpecs={rowSpecsByStat}
-                                            horizontalPlotSpecs={plotSpecs}
-                                            verticalPlotSpecs={[]}
-                                            topLeftSpec={topLeftSpec}
-                                            widthLeftHeader={leftMarginPercent * 100}
-                                            columnWidth={columnWidth}
-                                            onlyColumns={onlyColumns}
-                                            simpleOrdinals={true}
-                                        />
-                                    )}
-                            <ArticleWarnings />
-                        </div>,
-                    )}
-                    <div className="gap"></div>
-
-                    <div ref={mapRef}>
-                        <ComparisonMultiMap
-                            longnames={props.articles.map(x => x.longname)}
-                            colors={props.articles.map((_, i) => colorFromCycle(colors.hueColors, i))}
-                            basemap={{ type: 'osm' }}
-                            mapPartitions={props.mapPartitions}
-                        />
-                    </div>
-                </div>
+                    </SortableContext>
+                    <DragOverlay>
+                        {activeId
+                            ? (
+                                    <div style={{ opacity: 0.5, backgroundColor: colors.background, padding: '8px', borderRadius: '4px' }}>
+                                        {props.articles.find(a => a.shortname === activeId)?.longname}
+                                    </div>
+                                )
+                            : null}
+                    </DragOverlay>
+                </DndContext>
             </PageTemplate>
         </TransposeContext.Provider>
     )
