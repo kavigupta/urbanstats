@@ -1,3 +1,5 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
@@ -626,11 +628,35 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
         <ComparisonColorBar highlightIndex={props.highlightIndex} />
     )
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: props.articleId ?? 'dummy' })
+
+    let extraStyle: CSSProperties = {}
+    let extraProps: React.HTMLAttributes<HTMLDivElement> & { ref?: (node: HTMLElement | null) => void } = { }
+    if (props.draggable && props.articleId) {
+        extraStyle = {
+            transform: CSS.Transform.toString(transform),
+            transition: isDragging ? transition : 'none',
+            opacity: isDragging ? 0.5 : 1,
+            touchAction: 'none',
+        }
+        extraProps = { ref: setNodeRef, ...attributes, ...listeners }
+    }
 
     return (
         <>
             {bar()}
-            <div key={`heading_${props.articleIndex}`} style={{ width: `${width}%` }}>
+            <div
+                key={`heading_${props.articleIndex}`}
+                style={{ width: `${width}%`, ...extraStyle }}
+                {...extraProps}
+            >
                 <HeadingDisplay
                     longname={props.articles[props.articleIndex].longname}
                     includeDelete={props.articles.length > 1}

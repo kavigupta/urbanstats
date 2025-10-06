@@ -170,6 +170,8 @@ export interface ComparisonLongnameCellProps {
     transpose: boolean
     sharedTypeOfAllArticles: string | null | undefined
     highlightIndex?: number
+    draggable?: boolean
+    articleId?: string
 }
 
 export interface StatisticNameCellProps {
