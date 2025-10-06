@@ -640,7 +640,12 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     let extraStyle: CSSProperties = {}
     let extraProps: React.HTMLAttributes<HTMLDivElement> & { ref?: (node: HTMLElement | null) => void } = { }
     if (props.draggable && props.articleId) {
-        extraStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, touchAction: 'none' }
+        extraStyle = {
+            transform: CSS.Transform.toString(transform),
+            transition: isDragging ? transition : 'none',
+            opacity: isDragging ? 0.5 : 1,
+            touchAction: 'none',
+        }
         extraProps = { ref: setNodeRef, ...attributes, ...listeners }
     }
 
