@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -143,4 +143,46 @@ test('transpose-histograms', async (t) => {
     await t.click('[data-test-id=histogram_relative]')
 
     await screencap(t)
+})
+
+urbanstatsFixture('histogram add region test', comparisonPage([upperSGV, pasadena]))
+
+test('histogram-add-region-search-works', async (t) => {
+    await waitForLoading(t)
+    await t.click(Selector('.expand-toggle'))
+
+    const addButton = Selector('img[src="/add.png"]')
+    await t.click(addButton)
+    await screencap(t)
+
+    const searchBox = Selector('input[placeholder="Add region..."]')
+    await t.typeText(searchBox, 'Southwest San Gabriel Valley CCD')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+
+    await t.pressKey('enter')
+    await waitForLoading(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([upperSGV, pasadena, swSGV]))
+})
+
+urbanstatsFixture('histogram add region test starting from article', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
+
+test.only('histogram-add-region-search-works-from-article', async (t) => {
+    await waitForLoading(t)
+    await t.click(Selector('.expand-toggle'))
+
+    const addButton = Selector('img[src="/add.png"]')
+    await t.click(addButton)
+
+    const searchBox = Selector('input[placeholder="Add region..."]')
+    await t.typeText(searchBox, 'Southwest San Gabriel Valley CCD')
+
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await waitForLoading(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([pasadena, swSGV]))
 })
