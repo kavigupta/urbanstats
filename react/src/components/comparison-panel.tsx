@@ -6,6 +6,7 @@ import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalList
 import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
+import { PageData } from '../navigation/PageDescriptor'
 import { sanitize } from '../navigation/links'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
@@ -28,14 +29,13 @@ import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
+export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][], fromArrayMoves: (PageData & { kind: 'comparison' })['fromArrayMoves'] }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
 
     // State for drag overlay and articles
     const [activeId, setActiveId] = useState<string | null>(null)
-    const [localArticles, setLocalArticles] = useState<Article[]>(props.articles)
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -52,13 +52,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         }),
     )
 
-    // Sync local state with props
-    useEffect(() => {
-        setLocalArticles(props.articles)
-    }, [props.articles])
-
-    const joinedString = localArticles.map(x => x.shortname).join(' vs ')
-    const names = localArticles.map(a => a.longname)
+    const joinedString = props.articles.map(x => x.shortname).join(' vs ')
+    const names = props.articles.map(a => a.longname)
 
     const screencapElements = (): ScreencapElements => ({
         path: `${sanitize(joinedString)}.png`,
@@ -75,21 +70,18 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         const { active, over } = event
 
         if (over && active.id !== over.id) {
-            const oldIndex = localArticles.findIndex(article => article.shortname === active.id)
-            const newIndex = localArticles.findIndex(article => article.shortname === over.id)
+            const oldIndex = props.articles.findIndex(article => article.shortname === active.id)
+            const newIndex = props.articles.findIndex(article => article.shortname === over.id)
 
-            const newArticles = arrayMove(localArticles, oldIndex, newIndex)
+            const newArticles = arrayMove(props.articles, oldIndex, newIndex)
             const newLongnames = newArticles.map(a => a.longname)
-
-            // Update local state immediately for responsive UI
-            setLocalArticles(newArticles)
 
             // Update the URL to reflect the new order
             void navContext.navigate({
                 kind: 'comparison',
                 universe: navContext.universe,
                 longnames: newLongnames,
-            }, { history: 'push', scroll: { kind: 'none' } })
+            }, { history: 'push', scroll: { kind: 'none' } }, props.fromArrayMoves([{ from: oldIndex, to: newIndex }]))
         }
 
         setActiveId(null)
@@ -105,7 +97,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.disclaimer !== 'heterogenous-sources'))
 
     const includeOrdinals = (
-        localArticles.every(article => article.articleType === localArticles[0].articleType)
+        props.articles.every(article => article.articleType === props.articles[0].articleType)
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
@@ -118,7 +110,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    let widthColumns = (includeOrdinals ? 1.5 : 1) * localArticles.length + 1
+    let widthColumns = (includeOrdinals ? 1.5 : 1) * props.articles.length + 1
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
     const transpose = widthColumns > maxColumns && widthColumns > widthTransposeColumns
@@ -128,7 +120,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     }
 
     const leftMarginPercent = transpose ? 0.24 : 0.18
-    const numColumns = transpose ? dataByArticleStat[0].length : localArticles.length
+    const numColumns = transpose ? dataByArticleStat[0].length : props.articles.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
@@ -155,25 +147,25 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const navContext = useContext(Navigator.Context)
 
-    const sharedTypeOfAllArticles = localArticles.every(article => article.articleType === localArticles[0].articleType) ? localArticles[0].articleType : undefined
+    const sharedTypeOfAllArticles = props.articles.every(article => article.articleType === props.articles[0].articleType) ? props.articles[0].articleType : undefined
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: localArticles[articleIdx].shortname, longname: localArticles[articleIdx].longname, sharedTypeOfAllArticles }))
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: props.articles[articleIdx].shortname, longname: props.articles[articleIdx].longname, sharedTypeOfAllArticles }))
 
-    const longnameHeaderSpecs: CellSpec[] = Array.from({ length: localArticles.length }).map((_, articleIndex) => (
+    const longnameHeaderSpecs: CellSpec[] = Array.from({ length: props.articles.length }).map((_, articleIndex) => (
         {
             type: 'comparison-longname',
             articleIndex,
-            articles: localArticles,
+            articles: props.articles,
             names,
             transpose,
             sharedTypeOfAllArticles,
             highlightIndex: articleIndex,
             draggable: true,
-            articleId: localArticles[articleIndex].shortname,
+            articleId: props.articles[articleIndex].shortname,
         } satisfies CellSpec
     ))
 
@@ -192,7 +184,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
     const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-        Array.from({ length: localArticles.length }).map((unused, articleIndex) => ({
+        Array.from({ length: props.articles.length }).map((unused, articleIndex) => ({
             type: 'statistic-row',
             row: dataByArticleStat[articleIndex][statIndex],
             longname: names[articleIndex],
@@ -233,7 +225,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                     onDragEnd={handleDragEnd}
                     collisionDetection={closestCenter}
                 >
-                    <SortableContext items={localArticles.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
+                    <SortableContext items={props.articles.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
                         <div>
                             <div className={headerTextClass}>Comparison</div>
                             <div className={subHeaderTextClass}>{joinedString}</div>
@@ -300,8 +292,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
                             <div ref={mapRef}>
                                 <ComparisonMultiMap
-                                    longnames={localArticles.map(x => x.longname)}
-                                    colors={localArticles.map((_, i) => colorFromCycle(colors.hueColors, i))}
+                                    longnames={props.articles.map(x => x.longname)}
+                                    colors={props.articles.map((_, i) => colorFromCycle(colors.hueColors, i))}
                                     basemap={{ type: 'osm' }}
                                     mapPartitions={props.mapPartitions}
                                 />
@@ -312,7 +304,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                         {activeId
                             ? (
                                     <div style={{ opacity: 0.5, backgroundColor: colors.background, padding: '8px', borderRadius: '4px' }}>
-                                        {localArticles.find(a => a.shortname === activeId)?.longname}
+                                        {props.articles.find(a => a.shortname === activeId)?.longname}
                                     </div>
                                 )
                             : null}
