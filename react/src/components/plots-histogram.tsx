@@ -1,7 +1,8 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useCallback } from 'react'
+import React, { ReactElement, ReactNode, useCallback, useContext, useState } from 'react'
 
 // imort Observable plot
+import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
@@ -11,18 +12,20 @@ import { useTranspose } from '../utils/transpose'
 
 import { PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
+import { SearchBox } from './search'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
 
 interface HistogramProps {
     shortname: string
+    longname: string
     histogram: IHistogram
     color: string
     universeTotal: number
 }
 
-export function Histogram(props: { histograms: HistogramProps[], statDescription: string }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
     const [histogramType] = useSetting('histogram_type')
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -34,7 +37,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
         }
     }
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} />
+        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} longnames={props.histograms.map(h => h.longname)} sharedTypeOfAllArticles={props.sharedTypeOfAllArticles} />
     )
 
     const systemColors = useColors()
@@ -78,12 +81,16 @@ export const transposeSettingsHeight = 30.5
 
 function HistogramSettings(props: {
     shortnames: string[]
+    longnames: string[]
     makePlot: () => HTMLElement
+    sharedTypeOfAllArticles?: string
 }): ReactNode {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
     const colors = useColors()
     const transpose = useTranspose()
+    const navContext = useContext(Navigator.Context)
+    const [showSearchBox, setShowSearchBox] = useState(false)
 
     // dropdown for histogram type
     return (
@@ -98,6 +105,7 @@ function HistogramSettings(props: {
                 height: transpose ? `${transposeSettingsHeight}px` : undefined,
                 alignItems: transpose ? 'center' : undefined,
                 justifyContent: transpose ? 'center' : undefined,
+                position: 'relative',
             }}
         >
             <img
@@ -120,6 +128,47 @@ function HistogramSettings(props: {
                 width="20"
                 height="20"
             />
+            <div style={{ position: 'relative' }}>
+                <img
+                    src="/add.png"
+                    onClick={() => { setShowSearchBox(!showSearchBox) }}
+                    width="20"
+                    height="20"
+                    style={{ cursor: 'pointer' }}
+                />
+                {showSearchBox && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '25px',
+                            left: '0px',
+                            backgroundColor: colors.background,
+                            border: `1px solid ${colors.textMain}`,
+                            borderRadius: '4px',
+                            padding: '0.5em',
+                            zIndex: 1000,
+                            minWidth: '200px',
+                        }}
+                    >
+                        <SearchBox
+                            style={{ width: '100%' }}
+                            placeholder="Add region..."
+                            autoFocus={true}
+                            prioritizeArticleType={props.sharedTypeOfAllArticles}
+                            onChange={() => {
+                                setShowSearchBox(false)
+                            }}
+                            link={(regionName) => {
+                                return navContext.link({
+                                    kind: 'comparison',
+                                    universe: navContext.universe!,
+                                    longnames: [...props.longnames, regionName],
+                                }, { scroll: { kind: 'none' } })
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
             <select
                 value={histogramType}
                 style={{ backgroundColor: colors.background, color: colors.textMain }}

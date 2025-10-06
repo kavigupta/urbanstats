@@ -172,7 +172,7 @@ function ArticleTable(props: {
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: [{ ...props.filteredRows[index], color: colors.hueColors.blue, shortname: props.article.shortname }],
+                plotProps: [{ ...props.filteredRows[index], color: colors.hueColors.blue, shortname: props.article.shortname, longname: props.article.longname, sharedTypeOfAllArticles: props.article.articleType }], // TODO add other articles when comparison is implemented
             }
         : undefined,
     )
