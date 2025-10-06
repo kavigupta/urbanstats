@@ -628,7 +628,6 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
         <ComparisonColorBar highlightIndex={props.highlightIndex} />
     )
-    // Always call useSortable hook (React hooks must be called unconditionally)
     const {
         attributes,
         listeners,
@@ -641,16 +640,8 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     let extraStyle: CSSProperties = {}
     let extraProps: React.HTMLAttributes<HTMLDivElement> & { ref?: (node: HTMLElement | null) => void } = { }
     if (props.draggable && props.articleId) {
-        extraStyle = {
-            transform: CSS.Transform.toString(transform),
-            transition,
-            opacity: isDragging ? 0.5 : 1,
-        }
-        extraProps = {
-            ref: setNodeRef,
-            ...attributes,
-            ...listeners,
-        }
+        extraStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+        extraProps = { ref: setNodeRef, ...attributes, ...listeners }
     }
 
     return (
@@ -658,7 +649,6 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
             {bar()}
             <div
                 key={`heading_${props.articleIndex}`}
-                ref={setNodeRef}
                 style={{ width: `${width}%`, ...extraStyle }}
                 {...extraProps}
             >
