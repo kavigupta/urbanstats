@@ -4,6 +4,7 @@ import { deconstruct } from '../../urban-stats-script/constants/insets'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInset, loadInsetExpression } from '../../urban-stats-script/worker'
 import { assert } from '../../utils/defensive'
+import { Delta } from '../../utils/delta'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
@@ -30,7 +31,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
     name,
 } satisfies Inset))
 
-const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.vector(l.edit(insetSchema))] }), call => call.unnamedArgs[0])
+const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] }), call => call.unnamedArgs[0])
 
 const mapInsetsSchema = l.transformStmt(l.statements([
     l.ignore(),
@@ -63,7 +64,7 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
             return undefined
         }
         if (parseResult.currentValue !== null) {
-            return parseResult.currentValue.map(e => e.currentValue)
+            return parseResult.currentValue.currentValue
         }
         if (settings.universe !== undefined) {
             return loadInset(settings.universe)
@@ -72,7 +73,7 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     return undefined
 }
 
-export type InsetEdits = ReadonlyMap<number, Partial<Inset>>
+export type InsetEdits = Delta<Inset>[]
 
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
@@ -87,11 +88,15 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
         currentInsetsAst = loadInsetExpression(settings.universe!)
     }
 
-    for (const [index, partialInset] of edits) {
-        const insets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)!
-        currentInsetsAst = insets[index].edit(deconstruct({ ...insets[index].currentValue, ...partialInset })) as UrbanStatsASTExpression
-    }
+    const astEdits = edits.map((edit) => {
+        if ('insert' in edit) {
+            return { insert: edit.insert.map(deconstruct) }
+        }
+        return edit
+    })
 
-    const result = mapInsets.edit(currentInsetsAst)
+    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)!.edit(astEdits) as UrbanStatsASTExpression
+
+    const result = mapInsets.edit(newConstructInsets)
     return result as MapUSS
 }

@@ -3,6 +3,7 @@
  */
 
 import { parseExpr } from '../mapper/settings/parseExpr'
+import { apply, Delta } from '../utils/delta'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { noLocation } from './location'
@@ -171,6 +172,17 @@ export function call<N extends Record<string, unknown>, U extends unknown[], F>(
 export function vector<T>(schema: LiteralExprParser<T>): LiteralExprParser<T[]> {
     return {
         parse(expr, env, doEdit = e => e) {
+            return editableVector(schema).parse(expr, env, doEdit)?.currentValue
+        },
+    }
+}
+
+export function editableVector<T>(schema: LiteralExprParser<T>): LiteralExprParser<{
+    currentValue: T[]
+    edit: (edits: Delta<UrbanStatsASTExpression>[]) => UrbanStatsASTExpression | UrbanStatsASTStatement
+}> {
+    return {
+        parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'vectorLiteral') {
                 const result: T[] = []
                 for (const elem of expr.elements) {
@@ -182,7 +194,15 @@ export function vector<T>(schema: LiteralExprParser<T>): LiteralExprParser<T[]> 
                     }
                     result.push(parsed)
                 }
-                return result
+                return {
+                    currentValue: result,
+                    edit(edits) {
+                        return doEdit({
+                            ...expr,
+                            elements: apply(expr.elements, edits),
+                        })
+                    },
+                }
             }
             return
         },
