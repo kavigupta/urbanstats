@@ -1,4 +1,3 @@
-import { arrayMove } from '@dnd-kit/sortable'
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
@@ -180,7 +179,6 @@ export type PageData =
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
-        fromArrayMoves: (moves: { from: number, to: number }[]) => Awaited<ReturnType<typeof loadPageDescriptor>>
     }
     | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
@@ -415,58 +413,49 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'comparison': {
-            const [firstArticles, countsByArticleType, panel, mapPartitions] = await Promise.all([
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
                 loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
                 getCountsByArticleType(),
                 import('../components/comparison-panel'),
                 import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
             ])
 
-            const fromArrayMoves = (moves: { from: number, to: number }[]): Awaited<ReturnType<typeof loadPageDescriptor>> => {
-                const articleEntires = moves.reduce((a, { from, to }) => arrayMove(a, from, to), Array.from(firstArticles.entries()))
-                const articles = articleEntires.map(([, a]) => a)
-                const articleIndices = articleEntires.map(([i]) => i)
+            // intersection of all the data.universes
+            const articleUniverses = articles.map(x => x.universes)
+            const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
-                // intersection of all the data.universes
-                const articleUniverses = articles.map(x => x.universes)
-                const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
+            const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
 
-                const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
+            const comparisonUniverse = newDescriptor.universe !== undefined && universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverseComparison
 
-                const comparisonUniverse = newDescriptor.universe !== undefined && universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverseComparison
+            const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-                const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, countsByArticleType, comparisonUniverse)
 
-                const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, countsByArticleType, comparisonUniverse)
-
-                return {
-                    pageData: {
-                        kind: 'comparison',
-                        articles,
-                        universe: comparisonUniverse,
-                        universes,
-                        rows: comparisonRows,
-                        statPaths: comparisonStatPaths,
-                        comparisonPanel: panel.ComparisonPanel,
-                        mapPartitions: mapPartitions(articleIndices),
-                        fromArrayMoves: newMoves => fromArrayMoves(moves.concat(newMoves)),
-                    },
-                    newPageDescriptor: {
-                        ...newDescriptor,
-                        universe: displayComparisonUniverse,
-                        s: getVector(settings),
-                        longnames: articles.map(x => x.longname),
-                    },
-                    effects() {
-                        if (newDescriptor.s !== undefined) {
-                            const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
-                            applySettingsParamSettings(fromVector(newDescriptor.s, settings), settings, comparisonStatPaths, config)
-                        }
-                    },
-                }
+            return {
+                pageData: {
+                    kind: 'comparison',
+                    articles,
+                    universe: comparisonUniverse,
+                    universes,
+                    rows: comparisonRows,
+                    statPaths: comparisonStatPaths,
+                    comparisonPanel: panel.ComparisonPanel,
+                    mapPartitions,
+                },
+                newPageDescriptor: {
+                    ...newDescriptor,
+                    universe: displayComparisonUniverse,
+                    s: getVector(settings),
+                    longnames: articles.map(x => x.longname),
+                },
+                effects() {
+                    if (newDescriptor.s !== undefined) {
+                        const config = settingsConnectionConfig({ pageKind: 'comparison', statPaths: comparisonStatPaths, settings })
+                        applySettingsParamSettings(fromVector(newDescriptor.s, settings), settings, comparisonStatPaths, config)
+                    }
+                },
             }
-
-            return fromArrayMoves([])
         }
         case 'statistic': {
             const statUniverse = newDescriptor.universe ?? 'world'

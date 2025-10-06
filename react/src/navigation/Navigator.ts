@@ -141,7 +141,7 @@ export class Navigator {
         history.replaceState({ ...history.state, scrollPosition: window.scrollY }, '')
     }
 
-    async navigate(newDescriptor: PageDescriptor, options: NavigationOptions, customLoading?: Awaited<ReturnType<typeof loadPageDescriptor>>): Promise<void> {
+    async navigate(newDescriptor: PageDescriptor, options: NavigationOptions): Promise<void> {
         this.effects = [] // If we're starting another navigation, don't use previous effects
 
         // Be sure to save scroll state before modifying the history, as maybe there's still a deferred scroll write in flight
@@ -182,7 +182,7 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
-            const { pageData, newPageDescriptor, effects } = customLoading ?? await loadPageDescriptor(newDescriptor, Settings.shared)
+            const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
                 // Another load has started, don't race it
