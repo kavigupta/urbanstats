@@ -169,7 +169,7 @@ test('histogram-add-region-search-works', async (t) => {
 
 urbanstatsFixture('histogram add region test starting from article', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
 
-test.only('histogram-add-region-search-works-from-article', async (t) => {
+test('histogram-add-region-search-works-from-article', async (t) => {
     await waitForLoading(t)
     await t.click(Selector('.expand-toggle'))
 
