@@ -515,8 +515,12 @@ function AscendingVsDescending({ onClick, isAscending }: { onClick: (currentUniv
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { onClick(currentUniverse) }} id="statistic-panel-order-swap">
-                {isAscending ? '▲\ufe0e' : '▼\ufe0e'}
+                <ArrowUpOrDown direction={isAscending ? 'up' : 'down'} />
             </div>
         </div>
     )
+}
+
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' }): ReactNode {
+    return <span>{props.direction === 'up' ? '▲\ufe0e' : '▼\ufe0e'}</span>
 }
