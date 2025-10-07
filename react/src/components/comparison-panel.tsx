@@ -38,7 +38,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<{ value: Article[], propsValue: Article[] }>({ value: props.articles, propsValue: props.articles })
 
-    // State for sorting
     const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
@@ -110,37 +109,32 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const dataByArticleStat = props.rows(settings)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
-    // Handle sorting
     const handleSort = (statIndex: number): void => {
+        let newSortDirection: 'up' | 'down' | 'both'
         if (sortByStatIndex === statIndex) {
-            // Toggle direction if clicking the same stat
-            setSortDirection(sortDirection === 'up' ? 'down' : 'up')
+            newSortDirection = sortDirection === 'up' ? 'down' : 'up'
         }
         else {
-            // Set new stat and default to descending
+            newSortDirection = 'down'
             setSortByStatIndex(statIndex)
-            setSortDirection('down')
         }
 
-        // Sort the localArticles based on the selected statistic
+        setSortDirection(newSortDirection)
+
         const statData = dataByStatArticle[statIndex]
         const sortedIndices = statData
             .map((row, index) => ({ row, index }))
-            .sort((a, b) => compareArticleRows(a.row, b.row, sortDirection))
+            .sort((a, b) => compareArticleRows(a.row, b.row, newSortDirection))
             .map(item => item.index)
 
-        // Reorder localArticles based on sorted indices
         const newArticles = sortedIndices.map(index => localArticlesToUse[index])
-        const newLongnames = newArticles.map(a => a.longname)
 
-        // Update local state immediately for responsive UI
         setLocalArticles({ propsValue: props.articles, value: newArticles })
 
-        // Update the URL to reflect the new order
         void navContext.navigate({
             kind: 'comparison',
             universe: navContext.universe,
-            longnames: newLongnames,
+            longnames: newArticles.map(a => a.longname),
         }, { history: 'push', scroll: { kind: 'none' } })
     }
 
@@ -230,10 +224,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
-            onSort: () => {
-                handleSort(statIndex)
+            sortInfo: {
+                onSort: () => {
+                    handleSort(statIndex)
+                },
+                sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
             },
-            sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
         }
     ))
 

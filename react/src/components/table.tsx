@@ -704,12 +704,16 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         center={props.center}
                         displayName={props.displayName ?? props.row.renderedStatname}
                     />
-                    {props.onSort && (
-                        <span 
-                            style={{ cursor: 'pointer', fontSize: '0.8em' }}
-                            onClick={props.onSort}
+                    {props.sortInfo && (
+                        <span
+                            style={{
+                                cursor: 'pointer',
+                                height: '16px',
+                                marginLeft: props.transpose ? '0' : 'auto',
+                            }}
+                            onClick={props.sortInfo.onSort}
                         >
-                            <ArrowUpOrDown direction={props.sortDirection === 'up' ? 'up' : props.sortDirection === 'down' ? 'down' : 'both'} />
+                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} />
                         </span>
                     )}
                 </span>
