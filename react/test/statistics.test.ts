@@ -79,7 +79,7 @@ test('statistics-navigation-last-page', async (t) => {
     await t.expect(Selector('button[data-test-id="1"][disabled]').exists).ok()
 })
 
-test.only('statistics-csv-export', async (t) => {
+test('statistics-csv-export', async (t) => {
     const laterThan = Date.now()
 
     const csvButton = Selector('img').withAttribute('src', '/csv.png')
