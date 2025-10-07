@@ -525,13 +525,13 @@ export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both' }): Rea
     let image: string
     switch (props.direction) {
         case 'up':
-            image = 'sort-up.png'
+            image = '/sort-up.png'
             break
         case 'down':
-            image = 'sort-down.png'
+            image = '/sort-down.png'
             break
         case 'both':
-            image = 'sort-both.png'
+            image = '/sort-both.png'
             break
     }
     return <img src={image} alt={props.direction} style={{ width: '16px', height: '16px' }} />
