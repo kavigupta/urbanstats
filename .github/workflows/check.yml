@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            /*
+            *
             !reference_test_screenshots
       - uses: ./.github/actions/docker_image
         with:
