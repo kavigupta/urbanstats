@@ -22,7 +22,7 @@ jobs:
         name: Checkout repository
         uses: actions/checkout@v4
         with:
-          sparse-checkout: "!reference_test_screenshots"
+          filter: ""
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: Dockerfile
