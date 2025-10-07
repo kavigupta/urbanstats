@@ -26,6 +26,7 @@ jobs:
           sparse-checkout: |
             /*
             !reference_test_screenshots
+            !stored_quizzes
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: Dockerfile
