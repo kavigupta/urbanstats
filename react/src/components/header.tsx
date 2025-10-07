@@ -63,9 +63,12 @@ export function Header(props: {
                     {
                         props.hasCSV
                             ? (
-                                    <CSVButton
-                                        onClick={() => { props.exportCSV() }}
-                                    />
+                                    <>
+                                        <div className="hgap"></div>
+                                        <CSVButton
+                                            onClick={() => { props.exportCSV() }}
+                                        />
+                                    </>
                                 )
                             : undefined
                     }
