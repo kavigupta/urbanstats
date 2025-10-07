@@ -11,6 +11,7 @@ import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
+import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
@@ -125,19 +126,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         const statData = dataByStatArticle[statIndex]
         const sortedIndices = statData
             .map((row, index) => ({ row, index }))
-            .sort((a, b) => {
-                const aVal = a.row.statval
-                const bVal = b.row.statval
-
-                // Handle NaN values
-                if (isNaN(aVal) && isNaN(bVal)) return 0
-                if (isNaN(aVal)) return 1
-                if (isNaN(bVal)) return -1
-
-                const comparison = aVal - bVal
-                const newDirection = sortByStatIndex === statIndex ? (sortDirection === 'up' ? 'down' : 'up') : 'down'
-                return newDirection === 'up' ? comparison : -comparison
-            })
+            .sort((a, b) => compareArticleRows(a.row, b.row, sortDirection))
             .map(item => item.index)
 
         // Reorder localArticles based on sorted indices
