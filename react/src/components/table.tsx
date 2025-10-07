@@ -22,6 +22,7 @@ import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -695,7 +696,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 key={`statName_${props.row.statpath}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
-                <span className="serif value">
+                <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
                     <StatisticName
                         row={props.row}
                         longname={props.longname}
@@ -703,6 +704,14 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         center={props.center}
                         displayName={props.displayName ?? props.row.renderedStatname}
                     />
+                    {props.onSort && (
+                        <span 
+                            style={{ cursor: 'pointer', fontSize: '0.8em' }}
+                            onClick={props.onSort}
+                        >
+                            <ArrowUpOrDown direction={props.sortDirection === 'asc' ? 'up' : 'down'} />
+                        </span>
+                    )}
                 </span>
             </div>
         </>

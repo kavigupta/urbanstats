@@ -37,6 +37,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<{ value: Article[], propsValue: Article[] }>({ value: props.articles, propsValue: props.articles })
 
+    // State for sorting
+    const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -104,6 +108,52 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const dataByArticleStat = props.rows(settings)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+
+    // Handle sorting
+    const handleSort = (statIndex: number): void => {
+        if (sortByStatIndex === statIndex) {
+            // Toggle direction if clicking the same stat
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+        }
+        else {
+            // Set new stat and default to descending
+            setSortByStatIndex(statIndex)
+            setSortDirection('desc')
+        }
+
+        // Sort the localArticles based on the selected statistic
+        const statData = dataByStatArticle[statIndex]
+        const sortedIndices = statData
+            .map((row, index) => ({ row, index }))
+            .sort((a, b) => {
+                const aVal = a.row.statval
+                const bVal = b.row.statval
+
+                // Handle NaN values
+                if (isNaN(aVal) && isNaN(bVal)) return 0
+                if (isNaN(aVal)) return 1
+                if (isNaN(bVal)) return -1
+
+                const comparison = aVal - bVal
+                const newDirection = sortByStatIndex === statIndex ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'desc'
+                return newDirection === 'asc' ? comparison : -comparison
+            })
+            .map(item => item.index)
+
+        // Reorder localArticles based on sorted indices
+        const newArticles = sortedIndices.map(index => localArticlesToUse[index])
+        const newLongnames = newArticles.map(a => a.longname)
+
+        // Update local state immediately for responsive UI
+        setLocalArticles({ propsValue: props.articles, value: newArticles })
+
+        // Update the URL to reflect the new order
+        void navContext.navigate({
+            kind: 'comparison',
+            universe: navContext.universe,
+            longnames: newLongnames,
+        }, { history: 'push', scroll: { kind: 'none' } })
+    }
 
     const mobileLayout = useMobileLayout()
 
@@ -191,6 +241,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
+            onSort: () => {
+                handleSort(statIndex)
+            },
+            sortDirection: sortByStatIndex === statIndex ? sortDirection : null,
         }
     ))
 

@@ -183,6 +183,8 @@ export interface StatisticNameCellProps {
     transpose?: boolean
     isIndented?: boolean
     displayName?: string
+    onSort?: () => void
+    sortDirection?: 'asc' | 'desc' | null
 }
 
 export interface StatisticRowCellProps {
