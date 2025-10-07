@@ -244,7 +244,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             onSort: () => {
                 handleSort(statIndex)
             },
-            sortDirection: sortByStatIndex === statIndex ? sortDirection : null,
+            sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
         }
     ))
 

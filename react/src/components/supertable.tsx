@@ -184,7 +184,7 @@ export interface StatisticNameCellProps {
     isIndented?: boolean
     displayName?: string
     onSort?: () => void
-    sortDirection?: 'asc' | 'desc' | null
+    sortDirection?: 'asc' | 'desc' | 'both' | null
 }
 
 export interface StatisticRowCellProps {
