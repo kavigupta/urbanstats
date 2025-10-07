@@ -1,1 +1,1 @@
-export const checkString = true
+export const checkString = false
