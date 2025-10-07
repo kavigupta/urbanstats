@@ -39,7 +39,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     // State for sorting
     const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+    const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -113,12 +113,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const handleSort = (statIndex: number): void => {
         if (sortByStatIndex === statIndex) {
             // Toggle direction if clicking the same stat
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+            setSortDirection(sortDirection === 'up' ? 'down' : 'up')
         }
         else {
             // Set new stat and default to descending
             setSortByStatIndex(statIndex)
-            setSortDirection('desc')
+            setSortDirection('down')
         }
 
         // Sort the localArticles based on the selected statistic
@@ -135,8 +135,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 if (isNaN(bVal)) return -1
 
                 const comparison = aVal - bVal
-                const newDirection = sortByStatIndex === statIndex ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'desc'
-                return newDirection === 'asc' ? comparison : -comparison
+                const newDirection = sortByStatIndex === statIndex ? (sortDirection === 'up' ? 'down' : 'up') : 'down'
+                return newDirection === 'up' ? comparison : -comparison
             })
             .map(item => item.index)
 

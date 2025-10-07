@@ -709,7 +709,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                             style={{ cursor: 'pointer', fontSize: '0.8em' }}
                             onClick={props.onSort}
                         >
-                            <ArrowUpOrDown direction={props.sortDirection === 'asc' ? 'up' : props.sortDirection === 'desc' ? 'down' : 'both'} />
+                            <ArrowUpOrDown direction={props.sortDirection === 'up' ? 'up' : props.sortDirection === 'down' ? 'down' : 'both'} />
                         </span>
                     )}
                 </span>
