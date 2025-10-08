@@ -9,6 +9,11 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 
+export interface CSVExportData {
+    csvData: string[][]
+    csvFilename: string
+}
+
 export function exportToCSV(data: string[][], filename: string): void {
     // Use csv-stringify library for proper CSV generation
     const csvContent = stringify(data, {

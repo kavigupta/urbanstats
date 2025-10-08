@@ -10,7 +10,7 @@ import '@fontsource/jost/900.css'
 
 import React, { ReactNode, useEffect, useState } from 'react'
 
-import { exportToCSV } from '../components/csv-export'
+import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
 import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
@@ -23,16 +23,14 @@ import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
     screencapElements = undefined,
-    csvData = undefined,
-    csvFilename = 'data.csv',
+    csvExportData = undefined,
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
     screencapElements?: () => ScreencapElements
-    csvData?: string[][]
-    csvFilename?: string
+    csvExportData?: CSVExportData
     hasUniverseSelector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
@@ -69,14 +67,14 @@ export function PageTemplate({
     }, [hamburgerOpen, mobileLayout])
 
     const hasScreenshotButton = screencapElements !== undefined
-    const hasCSVButton = csvData !== undefined
+    const hasCSVButton = csvExportData !== undefined
 
     const exportCSV = (): void => {
-        if (csvData === undefined) {
+        if (csvExportData === undefined) {
             return
         }
         try {
-            exportToCSV(csvData, csvFilename)
+            exportToCSV(csvExportData.csvData, csvExportData.csvFilename)
         }
         catch (e) {
             console.error(e)

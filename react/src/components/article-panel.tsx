@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { generateCSVDataForArticles } from './csv-export'
+import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
@@ -46,14 +46,14 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
     const csvData = generateCSVDataForArticles([article], [filteredRows], true)
     const csvFilename = `${sanitize(article.longname)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
 
     return (
         <>
             <QuerySettingsConnection />
             <PageTemplate
                 screencapElements={screencapElements}
-                csvData={csvData}
-                csvFilename={csvFilename}
+                csvExportData={csvExportData}
                 hasUniverseSelector={true}
                 universes={article.universes}
             >

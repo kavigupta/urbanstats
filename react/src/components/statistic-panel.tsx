@@ -14,6 +14,7 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
+import { CSVExportData } from './csv-export'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
@@ -147,6 +148,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const csvData = generateStatisticsCSVData()
     const csvFilename = `${sanitize(props.joinedString)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
 
     return (
         <PageTemplate
@@ -155,8 +157,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             })}
-            csvData={csvData}
-            csvFilename={csvFilename}
+            csvExportData={csvExportData}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >
