@@ -17,6 +17,7 @@ import { CountsByUT } from './countsByArticleType'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
+import { useScreenshotMode } from './screenshot'
 
 const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -516,13 +517,19 @@ function AscendingVsDescending({ onClick, isAscending }: { onClick: (currentUniv
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { onClick(currentUniverse) }} id="statistic-panel-order-swap">
-                <ArrowUpOrDown direction={isAscending ? 'up' : 'down'} />
+                <ArrowUpOrDown direction={isAscending ? 'up' : 'down'} shouldAppearInScreenshot={true} />
             </div>
         </div>
     )
 }
 
-export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both' }): ReactNode {
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+
+    if (isScreenshot && !props.shouldAppearInScreenshot) {
+        return null
+    }
+
     let image: string
     switch (props.direction) {
         case 'up':

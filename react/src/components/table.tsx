@@ -713,7 +713,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                             }}
                             onClick={props.sortInfo.onSort}
                         >
-                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} />
+                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
                         </span>
                     )}
                 </span>
