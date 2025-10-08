@@ -448,6 +448,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
                     onCsvDataUpdate={props.onCsvDataUpdate}
+                    dropEmptyInsets={props.editInsets === undefined}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>

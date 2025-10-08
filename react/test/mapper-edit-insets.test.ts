@@ -3,6 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
+import { toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -184,6 +185,23 @@ insetsEditTest(() => test, {
 })
 
 test('edit interface', async (t) => {
+    await t.click(Selector('button').withExactText('Edit Insets'))
+    await waitForLoading(t)
+    await screencap(t)
+})
+
+const populationConditionCode = `
+condition (population > 1000000)
+cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
+`
+
+const populationConditionUrl = urlFromCode('County', 'USA', populationConditionCode)
+urbanstatsFixture(`insets with population condition`, populationConditionUrl)
+
+test('insets page with population condition', async (t) => {
+    await waitForLoading(t)
+    await toggleCustomScript(t)
+    await waitForLoading(t)
     await t.click(Selector('button').withExactText('Edit Insets'))
     await waitForLoading(t)
     await screencap(t)
