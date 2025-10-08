@@ -164,6 +164,10 @@ export interface Documentation {
      * True if this is a custom constructor that should invoke edit icons elsewhere
      */
     customConstructor?: boolean
+    /**
+     * True if thhis is a value that comes from a statistic value
+     */
+    fromStatisticColumn?: boolean
 }
 
 export interface USSDocumentedType {

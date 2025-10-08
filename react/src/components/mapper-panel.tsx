@@ -30,7 +30,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
-import { TypeEnvironment } from '../urban-stats-script/types-values'
+import { TypeEnvironment, USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
@@ -49,6 +49,87 @@ import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, Sha
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
+function processContextIntoMapping(context: Map<string, USSValue>): [string[], Map<string, number[]>] | undefined {
+    const geo = context.get('geoName')
+    if (geo === undefined) {
+        return [[], new Map<string, number[]>()]
+    }
+    assert(geo.value instanceof Array, 'geo variable is not an array')
+    const geoArray = geo.value as string[]
+    const relevantVariables = [...context.entries()].filter(([, v]) => v.documentation?.fromStatisticColumn).map(([k]) => k)
+    const variableValues = []
+    for (const varName of relevantVariables) {
+        const varValue = context.get(varName)
+        assert(varValue?.value instanceof Array, `context variable ${varName} is not an array`)
+        const varArray = varValue.value as number[]
+        variableValues.push(varArray)
+    }
+
+    const valuesEach = new Map<string, number[]>()
+    for (let i = 0; i < geoArray.length; i++) {
+        const name = geoArray[i]
+        const valuesForThis: number[] = variableValues.map(v => v[i])
+        valuesEach.set(name, valuesForThis)
+    }
+
+    return [relevantVariables, valuesEach]
+}
+
+// Function to generate CSV data from mapper results including context variables as columns
+export function generateMapperCSVData(
+    result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' },
+    mapSettings: MapSettings, context: Map<string, USSValue>,
+): string[][] {
+    // Build header row with context variables as columns (no geography names)
+    const headerRow: string[] = []
+
+    headerRow.push('Geography')
+    if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
+        headerRow.push('Value')
+    }
+    else {
+        // eslint-disable-next-line no-restricted-syntax -- column headers not colors
+        headerRow.push('Red', 'Green', 'Blue')
+    }
+
+    const geo = result.value.geo
+
+    const contextV = processContextIntoMapping(context)
+    if (contextV !== undefined) {
+        const [contextVarNames] = contextV
+        headerRow.push(...contextVarNames)
+    }
+
+    const dataRows: string[][] = []
+
+    // Generate data rows (no geography names)
+    geo.forEach((name, i) => {
+        const row: string[] = []
+
+        row.push(name)
+        if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
+            const value = result.value.data[i]
+            row.push(value.toLocaleString())
+        }
+        else {
+            const r = result.value.dataR[i]
+            const g = result.value.dataG[i]
+            const b = result.value.dataB[i]
+            row.push(r.toLocaleString(), g.toLocaleString(), b.toLocaleString())
+        }
+        if (contextV !== undefined) {
+            const [, valuesEach] = contextV
+            const contextValues = valuesEach.get(name)
+            assert(contextValues !== undefined, `Context values for geography ${name} not found`)
+            row.push(...contextValues.map(v => v.toString()))
+        }
+
+        dataRows.push(row)
+    })
+
+    return [headerRow, ...dataRows]
+}
+
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
     universe: Universe
@@ -59,6 +140,8 @@ interface DisplayedMapProps extends MapGenericProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors?: (errors: EditorError[]) => void
     colors: Colors
+    onCsvDataUpdate: (data: string[][], filename: string) => void
+    mapSettings: MapSettings
 }
 
 interface ShapesForUniverse {
@@ -108,6 +191,8 @@ interface Shapes { geographyKind: string, universe: string, shapeType: string, d
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
     private shapeType: undefined | ShapeType
+    private lastMapResult: (USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }) | undefined = undefined
+    private lastContext: Map<string, USSValue> | undefined = undefined
 
     override shouldHaveLoadingSpinner(): boolean {
         return true
@@ -189,6 +274,15 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.versionProps.basemapCallback(mapResultMain.value.basemap)
         this.versionProps.insetsCallback(mapResultMain.value.insets)
 
+        // Store the computed data for CSV export
+        this.lastMapResult = mapResultMain
+        this.lastContext = result.context
+
+        // Generate CSV data and notify parent
+        const csvData = generateMapperCSVData(mapResultMain, this.versionProps.mapSettings, this.lastContext)
+        const csvFilename = `${this.versionProps.geographyKind}-${this.versionProps.universe}-data.csv`
+        this.versionProps.onCsvDataUpdate(csvData, csvFilename)
+
         let colors: string[]
 
         if (mapResultMain.opaqueType === 'cMapRGB') {
@@ -255,6 +349,14 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
 
     override progressivelyLoadShapes(): boolean {
         return false
+    }
+
+    // Method to get CSV data for export
+    getCSVData(): string[][] | undefined {
+        if (this.lastMapResult === undefined || this.lastContext === undefined) {
+            return undefined
+        }
+        return generateMapperCSVData(this.lastMapResult, this.versionProps.mapSettings, this.lastContext)
     }
 }
 
@@ -398,6 +500,7 @@ interface MapComponentProps {
     colorbarRef?: React.RefObject<HTMLDivElement>
     editInsets?: EditInsets
     overrideInsets?: Insets
+    mapSettings: MapSettings
 }
 
 interface EmpiricalRamp {
@@ -408,7 +511,7 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
-function MapComponent(props: MapComponentProps): ReactNode {
+function MapComponent(props: MapComponentProps & { onCsvDataUpdate: (data: string[][], filename: string) => void }): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<RampToDisplay | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
@@ -439,6 +542,8 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     insets={props.overrideInsets ?? currentInsets}
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
+                    onCsvDataUpdate={props.onCsvDataUpdate}
+                    mapSettings={props.mapSettings}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -518,14 +623,39 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
 }
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
+    const [csvData, setCsvData] = useState<string[][] | undefined>(undefined)
+    const [csvFilename, setCsvFilename] = useState<string>('mapper-data.csv')
+
+    const onCsvDataUpdate = useCallback((data: string[][], filename: string) => {
+        setCsvData(data)
+        setCsvFilename(filename)
+    }, [])
+
     if (props.view) {
-        return <MapComponentWrapper {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} />
+        return (
+            <PageTemplate
+                csvData={csvData ?? []}
+                csvFilename={csvFilename}
+            >
+                <MapComponentWrapper
+                    {...props.mapSettings}
+                    uss={computeUSS(props.mapSettings.script)}
+                    onCsvDataUpdate={onCsvDataUpdate}
+                    mapSettings={props.mapSettings}
+                />
+            </PageTemplate>
+        )
     }
 
-    return <EditMapperPanel {...props} />
+    return <EditMapperPanel {...props} onCsvDataUpdate={onCsvDataUpdate} csvData={csvData} csvFilename={csvFilename} />
 }
 
-function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined }): ReactNode {
+function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & {
+    universe: MapComponentProps['universe'] | undefined
+    geographyKind: MapComponentProps['geographyKind'] | undefined
+    onCsvDataUpdate: (data: string[][], filename: string) => void
+    mapSettings: MapSettings
+}): ReactNode {
     return (props.geographyKind === undefined || props.universe === undefined)
         ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
         : (
@@ -533,13 +663,14 @@ function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geogra
                     {...props}
                     geographyKind={props.geographyKind}
                     universe={props.universe}
+                    onCsvDataUpdate={props.onCsvDataUpdate}
                 />
             )
 }
 
 type MapEditorMode = 'uss' | 'insets'
 
-function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
+function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT, onCsvDataUpdate: (data: string[][], filename: string) => void, csvData?: string[][], csvFilename: string }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
     const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
@@ -618,10 +749,11 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         setMapSettings: setMapSettingsWrapper,
         typeEnvironment,
         setMapEditorMode,
+        onCsvDataUpdate: props.onCsvDataUpdate,
     }
 
     return (
-        <PageTemplate>
+        <PageTemplate csvData={props.csvData} csvFilename={props.csvFilename}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
@@ -636,9 +768,10 @@ interface CommonEditorProps {
     setMapSettings: (s: MapSettings) => void
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
+    onCsvDataUpdate: (data: string[][], filename: string) => void
 }
 
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, onCsvDataUpdate }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
 
     const mapRef = useRef<DisplayedMap>(null)
@@ -695,6 +828,8 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                 mapRef={mapRef}
                 setErrors={setErrors}
                 colorbarRef={colorbarRef}
+                onCsvDataUpdate={onCsvDataUpdate} // No-op for edit mode
+                mapSettings={mapSettings}
             />
         </>
 
@@ -765,6 +900,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     },
                     subscribeChanges: insetsProps,
                 }}
+                onCsvDataUpdate={() => undefined} // No-op for insets editor
+                mapSettings={mapSettings}
             />
             {undoRedoUi}
         </>
