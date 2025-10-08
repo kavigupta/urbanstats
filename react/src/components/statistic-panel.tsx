@@ -14,6 +14,7 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
+import { CSVExportData } from './csv-export'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
@@ -122,6 +123,34 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
     )
 
+    const generateStatisticsCSVData = (): string[][] => {
+        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
+        const dataRows: string[][] = []
+
+        // Include all data, not just the current page
+        for (let i = 0; i < props.articleNames.length; i++) {
+            const rank = i + 1
+            const name = props.articleNames[i]
+            const value = props.data.value[i]
+            const percentile = props.data.populationPercentile[i]
+
+            const formattedValue = value.toLocaleString()
+
+            dataRows.push([
+                rank.toString(),
+                name,
+                formattedValue,
+                percentile.toFixed(1),
+            ])
+        }
+
+        return [headerRow, ...dataRows]
+    }
+
+    const csvData = generateStatisticsCSVData()
+    const csvFilename = `${sanitize(props.joinedString)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
+
     return (
         <PageTemplate
             screencapElements={() => ({
@@ -129,7 +158,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             })}
-            hasCSVButton={true}
+            csvExportData={csvExportData}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >
