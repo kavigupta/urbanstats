@@ -30,7 +30,7 @@ import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scal
 import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
-import { TypeEnvironment, USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { loadInset } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
@@ -60,8 +60,7 @@ interface DisplayedMapProps extends MapGenericProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors?: (errors: EditorError[]) => void
     colors: Colors
-    onCsvDataUpdate: (data: string[][], filename: string) => void
-    mapSettings: MapSettings
+    onCsvDataUpdate?: (data: string[][], filename: string) => void
 }
 
 interface ShapesForUniverse {
@@ -195,7 +194,7 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         // Generate CSV data and notify parent
         const csvData = generateMapperCSVData(mapResultMain, result.context)
         const csvFilename = `${this.versionProps.geographyKind}-${this.versionProps.universe}-data.csv`
-        this.versionProps.onCsvDataUpdate(csvData, csvFilename)
+        this.versionProps.onCsvDataUpdate?.(csvData, csvFilename)
 
         let colors: string[]
 
@@ -406,7 +405,7 @@ interface MapComponentProps {
     colorbarRef?: React.RefObject<HTMLDivElement>
     editInsets?: EditInsets
     overrideInsets?: Insets
-    mapSettings: MapSettings
+    onCsvDataUpdate?: (data: string[][], filename: string) => void
 }
 
 interface EmpiricalRamp {
@@ -417,7 +416,7 @@ interface EmpiricalRamp {
     unit?: UnitType
 }
 
-function MapComponent(props: MapComponentProps & { onCsvDataUpdate: (data: string[][], filename: string) => void }): ReactNode {
+function MapComponent(props: MapComponentProps & { onCsvDataUpdate?: (data: string[][], filename: string) => void }): ReactNode {
     const [empiricalRamp, setEmpiricalRamp] = useState<RampToDisplay | undefined>(undefined)
     const [basemap, setBasemap] = useState<Basemap>({ type: 'osm' })
 
@@ -449,7 +448,6 @@ function MapComponent(props: MapComponentProps & { onCsvDataUpdate: (data: strin
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
                     onCsvDataUpdate={props.onCsvDataUpdate}
-                    mapSettings={props.mapSettings}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
@@ -538,30 +536,13 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
     }, [])
 
     if (props.view) {
-        return (
-            <PageTemplate
-                csvData={csvData ?? []}
-                csvFilename={csvFilename}
-            >
-                <MapComponentWrapper
-                    {...props.mapSettings}
-                    uss={computeUSS(props.mapSettings.script)}
-                    onCsvDataUpdate={onCsvDataUpdate}
-                    mapSettings={props.mapSettings}
-                />
-            </PageTemplate>
-        )
+        return <MapComponentWrapper {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} />
     }
 
     return <EditMapperPanel {...props} onCsvDataUpdate={onCsvDataUpdate} csvData={csvData} csvFilename={csvFilename} />
 }
 
-function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & {
-    universe: MapComponentProps['universe'] | undefined
-    geographyKind: MapComponentProps['geographyKind'] | undefined
-    onCsvDataUpdate: (data: string[][], filename: string) => void
-    mapSettings: MapSettings
-}): ReactNode {
+function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined }): ReactNode {
     return (props.geographyKind === undefined || props.universe === undefined)
         ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
         : (
@@ -569,7 +550,6 @@ function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geogra
                     {...props}
                     geographyKind={props.geographyKind}
                     universe={props.universe}
-                    onCsvDataUpdate={props.onCsvDataUpdate}
                 />
             )
 }
@@ -734,8 +714,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                 mapRef={mapRef}
                 setErrors={setErrors}
                 colorbarRef={colorbarRef}
-                onCsvDataUpdate={onCsvDataUpdate} // No-op for edit mode
-                mapSettings={mapSettings}
+                onCsvDataUpdate={onCsvDataUpdate}
             />
         </>
 
@@ -806,8 +785,6 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     },
                     subscribeChanges: insetsProps,
                 }}
-                onCsvDataUpdate={() => undefined} // No-op for insets editor
-                mapSettings={mapSettings}
             />
             {undoRedoUi}
         </>
