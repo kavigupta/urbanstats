@@ -198,7 +198,7 @@ cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
 const populationConditionUrl = urlFromCode('County', 'USA', populationConditionCode)
 urbanstatsFixture(`insets with population condition`, populationConditionUrl)
 
-test.only('insets page with population condition', async (t) => {
+test('insets page with population condition', async (t) => {
     await waitForLoading(t)
     await toggleCustomScript(t)
     await waitForLoading(t)
