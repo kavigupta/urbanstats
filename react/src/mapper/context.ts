@@ -26,11 +26,15 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universe)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'geoCentroid', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
+
+    // Some variables are always loaded, regardless of whether they are used in the statements
+    // This is helpful for some operations, such as CSV export
+    const forceName = (name: string): boolean => name === 'geoName'
 
     // Load all variables in parallel
     const variablePromises = variables
-        .filter(name => ids.has(name))
+        .filter(name => ids.has(name) || forceName(name))
         .map(async (name) => {
             const va = await getVariable(name)
             if (va !== undefined) {
@@ -80,6 +84,15 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
     for (const [key, value] of defaultConstants) {
         te.set(key, value)
     }
+
+    te.set('geoName', {
+        type: { type: 'vector', elementType: { type: 'string' } },
+        documentation: {
+            humanReadableName: 'Default Universe Geography Names',
+            category: 'mapper',
+            longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
+        },
+    })
 
     te.set('geo', {
         type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
