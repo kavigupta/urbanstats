@@ -9,7 +9,11 @@ export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geo
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export type AsyncInterpretationError = EditorError[]
 
-export interface USSExecutionResult<Value extends USSValue = USSValue> { resultingValue?: Value, error: AsyncInterpretationError }
+export interface USSExecutionResult<Value extends USSValue = USSValue> {
+    resultingValue?: Value
+    error: AsyncInterpretationError
+    context: Map<string, USSValue>
+}
 
 export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
