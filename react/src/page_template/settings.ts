@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
@@ -126,7 +126,7 @@ export class Settings {
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        const [, setCounter] = useState(0)
+        const [c, setCounter] = useState(0)
         useEffect(() => {
             setCounter(counter => counter + 1) // So that if `key` changes we change our result immediately
             const observer = (): void => { setCounter(counter => counter + 1) }
@@ -136,7 +136,8 @@ export class Settings {
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
         }, [JSON.stringify(keys)])
-        return this.getMultiple(keys)
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
+        return useMemo(() => this.getMultiple(keys), [JSON.stringify(keys), c])
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K], save = true): void {

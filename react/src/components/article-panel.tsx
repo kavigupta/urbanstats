@@ -15,6 +15,7 @@ import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
+import { ArticleMap2 } from './ArticleMap2'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleRow } from './load-article'
@@ -64,12 +65,17 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     <p></p>
 
                     <div ref={mapRef}>
-                        <Map
+                        {/* <Map
                             longname={article.longname}
                             related={article.related as NormalizeProto<IRelatedButtons>[]}
                             articleType={article.articleType}
                             basemap={{ type: 'osm' }}
                             attribution="startVisible"
+                        /> */}
+                        <ArticleMap2
+                            longname={article.longname}
+                            related={article.related as NormalizeProto<IRelatedButtons>[]}
+                            articleType={article.articleType}
                         />
                     </div>
 

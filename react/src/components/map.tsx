@@ -287,14 +287,6 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
         )
     }
 
-    mapHeight(): number | string {
-        const height = this.props.height ?? { type: 'fixed-height', value: 400 }
-        if (height.type === 'aspect-ratio') {
-            return '100%'
-        }
-        return height.value
-    }
-
     mapStyle(): React.CSSProperties {
         const height = this.props.height ?? { type: 'fixed-height', value: 400 }
         if (height.type === 'aspect-ratio') {
