@@ -270,7 +270,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     return (
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
-            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={props.universes}>
+            <PageTemplate
+                screencapElements={screencapElements}
+                hasCSVButton={true}
+                hasUniverseSelector={true}
+                universes={props.universes}
+            >
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}

@@ -128,6 +128,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             })}
+            hasCSVButton={true}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >

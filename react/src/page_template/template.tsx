@@ -22,12 +22,14 @@ import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
     screencapElements = undefined,
+    hasCSVButton = false,
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
     screencapElements?: () => ScreencapElements
+    hasCSVButton?: boolean
     hasUniverseSelector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
@@ -104,6 +106,7 @@ export function PageTemplate({
                     hamburgerOpen={hamburgerOpen}
                     setHamburgerOpen={setHamburgerOpen}
                     hasScreenshot={hasScreenshotButton}
+                    hasCSV={hasCSVButton}
                     hasUniverseSelector={hasUniverseSelector}
                     allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
