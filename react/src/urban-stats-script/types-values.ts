@@ -165,9 +165,14 @@ export interface Documentation {
      */
     customConstructor?: boolean
     /**
-     * True if thhis is a value that comes from a statistic value
+     * True if the constant is derived from a statistic column. These should all have type number[]
      */
     fromStatisticColumn?: boolean
+    /**
+     * True if this should be outputted in the context returned by the worker. If this is true, the value
+     * should also be serializable to JSON.
+     */
+    includedInOutputContext?: boolean
 }
 
 export interface USSDocumentedType {

@@ -28,6 +28,8 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
 
+    // Some variables are always loaded, regardless of whether they are used in the statements
+    // This is helpful for some operations, such as CSV export
     const forceName = (name: string): boolean => name === 'geoName'
 
     // Load all variables in parallel
@@ -89,6 +91,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
             humanReadableName: 'Default Universe Geography Names',
             category: 'mapper',
             longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
+            includedInOutputContext: true,
         },
     })
 
@@ -131,6 +134,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 category: 'mapper',
                 longDescription: `Data from ${variableInfo.humanReadableName}`,
                 documentationTable: 'mapper-data-variables',
+                includedInOutputContext: true,
                 fromStatisticColumn: true,
             },
         })
@@ -154,6 +158,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 documentationTable: 'mapper-data-variables',
                 isDefault: name === 'density_pw_1km',
                 selectorRendering: { kind: 'subtitleLongDescription' },
+                includedInOutputContext: true,
                 fromStatisticColumn: true,
             },
         })

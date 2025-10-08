@@ -47,7 +47,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         return {
             resultingValue: { type: result.type, value: removeFunctions(result.value) },
             error: getWarnings(),
-            context: new Map(context.variableEntries()),
+            context: new Map([...context.variableEntries()].filter(([,v]) => v.documentation?.includedInOutputContext)),
         }
     }
     catch (error) {
