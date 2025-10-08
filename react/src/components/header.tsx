@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
+import { CSVButton } from './csv-export'
 import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
@@ -24,6 +25,7 @@ export function Header(props: {
     hasUniverseSelector: boolean
     allUniverses: readonly string[]
     hasScreenshot: boolean
+    hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
@@ -54,6 +56,16 @@ export function Header(props: {
                                     <ScreenshotButton
                                         onClick={() => { props.initiateScreenshot(currentUniverse) }}
                                     />
+                                )
+                            : undefined
+                    }
+                    {
+                        props.hasCSV
+                            ? (
+                                    <>
+                                        <div className="hgap"></div>
+                                        <CSVButton />
+                                    </>
                                 )
                             : undefined
                     }
