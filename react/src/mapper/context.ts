@@ -26,11 +26,13 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universe)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geo', 'geoCentroid', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
+
+    const forceName = (name: string): boolean => name === 'geoName'
 
     // Load all variables in parallel
     const variablePromises = variables
-        .filter(name => ids.has(name))
+        .filter(name => ids.has(name) || forceName(name))
         .map(async (name) => {
             const va = await getVariable(name)
             if (va !== undefined) {

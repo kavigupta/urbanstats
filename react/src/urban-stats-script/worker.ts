@@ -117,6 +117,9 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
+        if (name === 'geoName') {
+            return annotateType('geoName', longnames)
+        }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
         }
