@@ -28,6 +28,8 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
 
+    // Some variables are always loaded, regardless of whether they are used in the statements
+    // This is helpful for some operations, such as CSV export
     const forceName = (name: string): boolean => name === 'geoName'
 
     // Load all variables in parallel
