@@ -74,10 +74,10 @@ export function generateCSVDataForArticles(
     return [headerRow, ...dataRows]
 }
 
-function processContextIntoMapping(context: Map<string, USSValue>): [string[], Map<string, number[]>] | undefined {
+function processContextIntoMapping(context: Map<string, USSValue>): [string[], Map<string, number[]>] | [undefined, undefined] {
     const geo = context.get('geoName')
     if (geo === undefined) {
-        return [[], new Map<string, number[]>()]
+        return [undefined, undefined]
     }
     assert(geo.value instanceof Array, 'geo variable is not an array')
     const geoArray = geo.value as string[]
@@ -100,12 +100,10 @@ function processContextIntoMapping(context: Map<string, USSValue>): [string[], M
     return [relevantVariables, valuesEach]
 }
 
-// Function to generate CSV data from mapper results including context variables as columns
 export function generateMapperCSVData(
     result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' },
     context: Map<string, USSValue>,
 ): string[][] {
-    // Build header row with context variables as columns (no geography names)
     const headerRow: string[] = []
 
     headerRow.push('Geography')
@@ -119,16 +117,12 @@ export function generateMapperCSVData(
 
     const geo = result.value.geo
 
-    const contextV = processContextIntoMapping(context)
-    if (contextV !== undefined) {
-        const [contextVarNames] = contextV
+    const [contextVarNames, valuesEach] = processContextIntoMapping(context)
+    if (contextVarNames !== undefined) {
         headerRow.push(...contextVarNames)
     }
 
-    const dataRows: string[][] = []
-
-    // Generate data rows (no geography names)
-    geo.forEach((name, i) => {
+    const dataRows: string[][] = geo.map((name, i) => {
         const row: string[] = []
 
         row.push(name)
@@ -142,14 +136,13 @@ export function generateMapperCSVData(
             const b = result.value.dataB[i]
             row.push(r.toLocaleString(), g.toLocaleString(), b.toLocaleString())
         }
-        if (contextV !== undefined) {
-            const [, valuesEach] = contextV
+        if (contextVarNames !== undefined) {
             const contextValues = valuesEach.get(name)
             assert(contextValues !== undefined, `Context values for geography ${name} not found`)
             row.push(...contextValues.map(v => v.toString()))
         }
 
-        dataRows.push(row)
+        return row
     })
 
     return [headerRow, ...dataRows]
