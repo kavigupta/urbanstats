@@ -44,91 +44,11 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
+import { generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditInsets } from './map'
 
 type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
-
-function processContextIntoMapping(context: Map<string, USSValue>): [string[], Map<string, number[]>] | undefined {
-    const geo = context.get('geoName')
-    if (geo === undefined) {
-        return [[], new Map<string, number[]>()]
-    }
-    assert(geo.value instanceof Array, 'geo variable is not an array')
-    const geoArray = geo.value as string[]
-    const relevantVariables = [...context.entries()].filter(([, v]) => v.documentation?.fromStatisticColumn).map(([k]) => k)
-    const variableValues = []
-    for (const varName of relevantVariables) {
-        const varValue = context.get(varName)
-        assert(varValue?.value instanceof Array, `context variable ${varName} is not an array`)
-        const varArray = varValue.value as number[]
-        variableValues.push(varArray)
-    }
-
-    const valuesEach = new Map<string, number[]>()
-    for (let i = 0; i < geoArray.length; i++) {
-        const name = geoArray[i]
-        const valuesForThis: number[] = variableValues.map(v => v[i])
-        valuesEach.set(name, valuesForThis)
-    }
-
-    return [relevantVariables, valuesEach]
-}
-
-// Function to generate CSV data from mapper results including context variables as columns
-export function generateMapperCSVData(
-    result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' },
-    mapSettings: MapSettings, context: Map<string, USSValue>,
-): string[][] {
-    // Build header row with context variables as columns (no geography names)
-    const headerRow: string[] = []
-
-    headerRow.push('Geography')
-    if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
-        headerRow.push('Value')
-    }
-    else {
-        // eslint-disable-next-line no-restricted-syntax -- column headers not colors
-        headerRow.push('Red', 'Green', 'Blue')
-    }
-
-    const geo = result.value.geo
-
-    const contextV = processContextIntoMapping(context)
-    if (contextV !== undefined) {
-        const [contextVarNames] = contextV
-        headerRow.push(...contextVarNames)
-    }
-
-    const dataRows: string[][] = []
-
-    // Generate data rows (no geography names)
-    geo.forEach((name, i) => {
-        const row: string[] = []
-
-        row.push(name)
-        if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
-            const value = result.value.data[i]
-            row.push(value.toLocaleString())
-        }
-        else {
-            const r = result.value.dataR[i]
-            const g = result.value.dataG[i]
-            const b = result.value.dataB[i]
-            row.push(r.toLocaleString(), g.toLocaleString(), b.toLocaleString())
-        }
-        if (contextV !== undefined) {
-            const [, valuesEach] = contextV
-            const contextValues = valuesEach.get(name)
-            assert(contextValues !== undefined, `Context values for geography ${name} not found`)
-            row.push(...contextValues.map(v => v.toString()))
-        }
-
-        dataRows.push(row)
-    })
-
-    return [headerRow, ...dataRows]
-}
 
 interface DisplayedMapProps extends MapGenericProps {
     geographyKind: typeof valid_geographies[number]
@@ -191,8 +111,6 @@ interface Shapes { geographyKind: string, universe: string, shapeType: string, d
 class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     private shapes: undefined | Shapes
     private shapeType: undefined | ShapeType
-    private lastMapResult: (USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }) | undefined = undefined
-    private lastContext: Map<string, USSValue> | undefined = undefined
 
     override shouldHaveLoadingSpinner(): boolean {
         return true
@@ -274,12 +192,8 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         this.versionProps.basemapCallback(mapResultMain.value.basemap)
         this.versionProps.insetsCallback(mapResultMain.value.insets)
 
-        // Store the computed data for CSV export
-        this.lastMapResult = mapResultMain
-        this.lastContext = result.context
-
         // Generate CSV data and notify parent
-        const csvData = generateMapperCSVData(mapResultMain, this.versionProps.mapSettings, this.lastContext)
+        const csvData = generateMapperCSVData(mapResultMain, result.context)
         const csvFilename = `${this.versionProps.geographyKind}-${this.versionProps.universe}-data.csv`
         this.versionProps.onCsvDataUpdate(csvData, csvFilename)
 

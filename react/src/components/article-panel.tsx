@@ -44,8 +44,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    // Generate CSV data for the article
-    const csvData = generateCSVDataForArticles([article], [filteredRows], true) // Include ordinals for articles
+    const csvData = generateCSVDataForArticles([article], [filteredRows], true)
     const csvFilename = `${sanitize(article.longname)}.csv`
 
     return (
