@@ -121,33 +121,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
     )
 
-    const generateStatisticsCSVData = (): string[][] => {
-        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
-        const dataRows: string[][] = []
-
-        // Include all data, not just the current page
-        for (let i = 0; i < props.articleNames.length; i++) {
-            const rank = i + 1
-            const name = props.articleNames[i]
-            const value = props.data.value[i]
-            const percentile = props.data.populationPercentile[i]
-
-            const formattedValue = value.toLocaleString()
-
-            dataRows.push([
-                rank.toString(),
-                name,
-                formattedValue,
-                percentile.toFixed(1),
-            ])
-        }
-
-        return [headerRow, ...dataRows]
-    }
-
-    const csvData = generateStatisticsCSVData()
-    const csvFilename = `${sanitize(props.joinedString)}.csv`
-
     return (
         <PageTemplate
             screencapElements={() => ({
@@ -155,8 +128,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             })}
-            csvData={csvData}
-            csvFilename={csvFilename}
+            hasCSVButton={true}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >

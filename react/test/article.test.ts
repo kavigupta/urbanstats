@@ -8,8 +8,6 @@ import {
     createComparison,
     waitForPageLoaded,
     clickMapElement,
-    downloadOrCheckString,
-    waitForDownload,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -365,19 +363,4 @@ test('region on map is not clickable', async (t) => {
     const initialHistoryLength = await historyLength()
     await t.click('.maplibregl-map') // Click China
     await t.expect(historyLength()).eql(initialHistoryLength)
-})
-
-urbanstatsFixture('csv-export', `/article.html?longname=Rafael+Pena+CDP%2C+Texas%2C+USA&s=4YGF3xUkfbjxoj`)
-
-test('download-article-csv-settings-ignored', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
-
-    await downloadOrCheckString(t, csvContent, 'csv-export-california-article', 'csv', false)
 })

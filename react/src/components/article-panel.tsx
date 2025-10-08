@@ -17,7 +17,6 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { generateCSVDataForArticles } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Map } from './map'
 import { Related } from './related-button'
@@ -44,17 +43,12 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    // Generate CSV data for the article
-    const csvData = generateCSVDataForArticles([article], [filteredRows], true) // Include ordinals for articles
-    const csvFilename = `${sanitize(article.longname)}.csv`
-
     return (
         <>
             <QuerySettingsConnection />
             <PageTemplate
                 screencapElements={screencapElements}
-                csvData={csvData}
-                csvFilename={csvFilename}
+                hasCSVButton={true}
                 hasUniverseSelector={true}
                 universes={article.universes}
             >

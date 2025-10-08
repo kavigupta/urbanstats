@@ -30,6 +30,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
     let context, getWarnings
     try {
         ([context, getWarnings] = await contextForRequest(request))
+
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {

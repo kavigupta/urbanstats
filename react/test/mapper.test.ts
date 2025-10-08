@@ -1,7 +1,5 @@
-import { Selector } from 'testcafe'
-
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, urbanstatsFixture, downloadOrCheckString, waitForDownload } from './test_utils'
+import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 export function testCode(geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
@@ -95,19 +93,3 @@ cMapRGB(dataR=commute_car, dataG=commute_transit, dataB=commute_walk, label="RGB
 `
 
 testCode('County', 'USA', rgbMap, 'rgb-map')
-
-// CSV Export Test
-urbanstatsFixture('mapper-csv-export', urlFromCode('County', 'USA', 'condition(population > 100000); cMap(data=density_pw_1km / population, scale=logScale(), ramp=rampUridis, basemap=noBasemap())'))
-
-test('mapper-csv-export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
-
-    await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
-})

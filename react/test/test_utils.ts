@@ -192,7 +192,7 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     fs.copyFileSync(mrdp, dest)
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): Promise<void> {
+export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt', gzip = true): Promise<void> {
     const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}${gzip ? '.gz' : ''}`)
 
     switch (format) {
