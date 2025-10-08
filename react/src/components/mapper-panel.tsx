@@ -621,7 +621,7 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
     }
 
     return (
-        <PageTemplate>
+        <PageTemplate hasCSVButton={true}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
