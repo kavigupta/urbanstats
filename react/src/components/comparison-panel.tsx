@@ -21,6 +21,7 @@ import { TransposeContext } from '../utils/transpose'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
+import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
 import { PlotProps } from './plots'
@@ -267,12 +268,16 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
+    const csvData = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+    const csvFilename = `${sanitize(joinedString)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
+
     return (
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
             <PageTemplate
                 screencapElements={screencapElements}
-                hasCSVButton={true}
+                csvExportData={csvExportData}
                 hasUniverseSelector={true}
                 universes={props.universes}
             >

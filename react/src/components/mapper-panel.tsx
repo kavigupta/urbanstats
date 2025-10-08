@@ -44,6 +44,7 @@ import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
+import { generateMapperCSVData, CSVExportData } from './csv-export'
 import { Statistic } from './display-stats'
 import { Insets, ShapeRenderingSpec, MapGeneric, MapGenericProps, MapHeight, ShapeType, ShapeSpec, EditInsets } from './map'
 
@@ -59,6 +60,7 @@ interface DisplayedMapProps extends MapGenericProps {
     uss: UrbanStatsASTStatement | undefined
     setErrors?: (errors: EditorError[]) => void
     colors: Colors
+    onCsvDataUpdate?: (csvExportData: CSVExportData) => void
 }
 
 interface ShapesForUniverse {
@@ -188,6 +190,11 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         const names = mapResultMain.value.geo
         this.versionProps.basemapCallback(mapResultMain.value.basemap)
         this.versionProps.insetsCallback(mapResultMain.value.insets)
+
+        // Generate CSV data and notify parent
+        const csvData = generateMapperCSVData(mapResultMain, result.context)
+        const csvFilename = `${this.versionProps.geographyKind}-${this.versionProps.universe}-data.csv`
+        this.versionProps.onCsvDataUpdate?.({ csvData, csvFilename })
 
         let colors: string[]
 
@@ -398,6 +405,7 @@ interface MapComponentProps {
     colorbarRef?: React.RefObject<HTMLDivElement>
     editInsets?: EditInsets
     overrideInsets?: Insets
+    onCsvDataUpdate?: (csvExportData: CSVExportData) => void
 }
 
 interface EmpiricalRamp {
@@ -439,6 +447,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     insets={props.overrideInsets ?? currentInsets}
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
+                    onCsvDataUpdate={props.onCsvDataUpdate}
                     dropEmptyInsets={props.editInsets === undefined}
                 />
             </div>
@@ -519,14 +528,20 @@ function Export(props: { mapRef: React.RefObject<DisplayedMap>, colorbarRef: Rea
 }
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
+    const [csvExportData, setCsvExportData] = useState<CSVExportData | undefined>(undefined)
+
+    const onCsvDataUpdate = useCallback((data: CSVExportData) => {
+        setCsvExportData(data)
+    }, [])
+
     if (props.view) {
-        return <MapComponentWrapper {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} />
+        return <MapComponentWrapper {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} onCsvDataUpdate={onCsvDataUpdate} />
     }
 
-    return <EditMapperPanel {...props} />
+    return <EditMapperPanel {...props} onCsvDataUpdate={onCsvDataUpdate} csvExportData={csvExportData} />
 }
 
-function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined }): ReactNode {
+function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined, onCsvDataUpdate?: (csvExportData: CSVExportData) => void }): ReactNode {
     return (props.geographyKind === undefined || props.universe === undefined)
         ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
         : (
@@ -534,13 +549,14 @@ function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geogra
                     {...props}
                     geographyKind={props.geographyKind}
                     universe={props.universe}
+                    onCsvDataUpdate={props.onCsvDataUpdate}
                 />
             )
 }
 
 type MapEditorMode = 'uss' | 'insets'
 
-function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
+function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT, onCsvDataUpdate: (csvExportData: CSVExportData) => void, csvExportData?: CSVExportData }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
     const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
@@ -619,10 +635,11 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         setMapSettings: setMapSettingsWrapper,
         typeEnvironment,
         setMapEditorMode,
+        onCsvDataUpdate: props.onCsvDataUpdate,
     }
 
     return (
-        <PageTemplate hasCSVButton={true}>
+        <PageTemplate csvExportData={props.csvExportData}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
@@ -637,9 +654,10 @@ interface CommonEditorProps {
     setMapSettings: (s: MapSettings) => void
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
+    onCsvDataUpdate: (csvExportData: CSVExportData) => void
 }
 
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, onCsvDataUpdate }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const [errors, setErrors] = useState<EditorError[]>([])
 
     const mapRef = useRef<DisplayedMap>(null)
@@ -696,13 +714,14 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                 mapRef={mapRef}
                 setErrors={setErrors}
                 colorbarRef={colorbarRef}
+                onCsvDataUpdate={onCsvDataUpdate}
             />
         </>
 
     )
 }
 
-function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode }: CommonEditorProps): ReactNode {
+function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, onCsvDataUpdate }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
@@ -766,6 +785,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     },
                     subscribeChanges: insetsProps,
                 }}
+                onCsvDataUpdate={onCsvDataUpdate}
             />
             {undoRedoUi}
         </>

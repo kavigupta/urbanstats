@@ -27,6 +27,7 @@ export function Header(props: {
     hasScreenshot: boolean
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
+    exportCSV: () => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const currentUniverse = navContext.useUniverse()
@@ -64,7 +65,9 @@ export function Header(props: {
                             ? (
                                     <>
                                         <div className="hgap"></div>
-                                        <CSVButton />
+                                        <CSVButton
+                                            onClick={() => { props.exportCSV() }}
+                                        />
                                     </>
                                 )
                             : undefined

@@ -10,6 +10,7 @@ import '@fontsource/jost/900.css'
 
 import React, { ReactNode, useEffect, useState } from 'react'
 
+import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
 import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
@@ -22,14 +23,14 @@ import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
     screencapElements = undefined,
-    hasCSVButton = false,
+    csvExportData = undefined,
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
     screencapElements?: () => ScreencapElements
-    hasCSVButton?: boolean
+    csvExportData?: CSVExportData
     hasUniverseSelector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
@@ -66,6 +67,19 @@ export function PageTemplate({
     }, [hamburgerOpen, mobileLayout])
 
     const hasScreenshotButton = screencapElements !== undefined
+    const hasCSVButton = csvExportData !== undefined
+
+    const exportCSV = (): void => {
+        if (csvExportData === undefined) {
+            return
+        }
+        try {
+            exportToCSV(csvExportData.csvData, csvExportData.csvFilename)
+        }
+        catch (e) {
+            console.error(e)
+        }
+    }
 
     const screencap = async (currentUniverse: string | undefined): Promise<void> => {
         if (screencapElements === undefined) {
@@ -110,6 +124,7 @@ export function PageTemplate({
                     hasUniverseSelector={hasUniverseSelector}
                     allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
+                    exportCSV={exportCSV}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
@@ -145,7 +160,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '30.1.0'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '30.2.0'}
         </span>
     )
 }
@@ -153,7 +168,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-10-02'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-10-08'}
         </span>
     )
 }
