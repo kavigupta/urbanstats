@@ -23,7 +23,7 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
     const [showHistoricalCDs] = useSetting('show_historical_cds')
     const relatedCheckboxSettings = useSettings(relatedSettingsKeys(articleType))
 
-    const collection = useOrderedResolve(useMemo(async () => {
+    const collectionPromise = useMemo(async () => {
         const getRelated = (key: string): NormalizeProto<IRelatedButton>[] => {
             const element = related.filter(
                 x => x.relationshipType === key)
@@ -61,18 +61,23 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
 
         const color = colors.hueColors.blue
 
-        return {
-            collection: await shapeFeatureCollection([
-                {
-                    name: longname,
-                    fillOpacity: 0.5, weight: 1, color, fillColor: color,
-                    clickable: false,
-                },
-                ...relatedShapes,
-            ]),
-            zoomToFeature: 0,
-        }
-    }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, showHistoricalCDs]))
+        return await shapeFeatureCollection([
+            {
+                name: longname,
+                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+                clickable: false,
+            },
+            ...relatedShapes,
+        ])
+    }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, showHistoricalCDs])
+
+    const collection = useOrderedResolve(collectionPromise)
+
+    useEffect(() => {
+        void collectionPromise.then((c) => {
+            mapRef.current?.fitBounds(boundingBox(c.features[0].geometry), { animate: false, padding: defaultMapPadding })
+        })
+    }, [longname])
 
     return (
         <Map
@@ -85,7 +90,7 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
             }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
         >
-            {collection && <ShapeCollection {...collection} />}
+            {collection && <ShapeCollection collection={collection} />}
         </Map>
     )
 }
@@ -103,17 +108,10 @@ export interface Shape {
     weight?: number
 }
 
-function ShapeCollection({ collection, zoomToFeature: zoomToShape }: { collection: GeoJSON.FeatureCollection, zoomToFeature?: number }): ReactNode {
+function ShapeCollection({ collection }: { collection: GeoJSON.FeatureCollection }): ReactNode {
     const id = useId()
 
     const { current: map } = useMap()
-
-    useEffect(() => {
-        if (map === undefined || zoomToShape === undefined) {
-            return
-        }
-        map.fitBounds(extendBoxes(collection.features.map(feature => boundingBox(feature.geometry))), { padding: defaultMapPadding, animate: false })
-    }, [zoomToShape, collection, map])
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
 
