@@ -10,6 +10,7 @@ import '@fontsource/jost/900.css'
 
 import React, { ReactNode, useEffect, useState } from 'react'
 
+import { exportToCSV } from '../components/csv-export'
 import { Header } from '../components/header'
 import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
@@ -22,14 +23,16 @@ import { useColors, useJuxtastatColors } from './colors'
 
 export function PageTemplate({
     screencapElements = undefined,
-    hasCSVButton = false,
+    csvData = undefined,
+    csvFilename = 'data.csv',
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
     screencapElements?: () => ScreencapElements
-    hasCSVButton?: boolean
+    csvData?: string[][]
+    csvFilename?: string
     hasUniverseSelector?: boolean
     universes?: readonly string[]
     children?: React.ReactNode
@@ -66,6 +69,19 @@ export function PageTemplate({
     }, [hamburgerOpen, mobileLayout])
 
     const hasScreenshotButton = screencapElements !== undefined
+    const hasCSVButton = csvData !== undefined
+
+    const exportCSV = (): void => {
+        if (csvData === undefined) {
+            return
+        }
+        try {
+            exportToCSV(csvData, csvFilename)
+        }
+        catch (e) {
+            console.error(e)
+        }
+    }
 
     const screencap = async (currentUniverse: string | undefined): Promise<void> => {
         if (screencapElements === undefined) {
@@ -110,6 +126,7 @@ export function PageTemplate({
                     hasUniverseSelector={hasUniverseSelector}
                     allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
+                    exportCSV={exportCSV}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
