@@ -43,6 +43,7 @@ export interface MapGenericProps {
     attribution: 'none' | 'startHidden' | 'startVisible'
     insets?: Insets
     editInsets?: EditInsets
+    dropEmptyInsets?: boolean
 }
 
 export interface Shape {
@@ -817,7 +818,8 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
             map.addLayer(layer, labelId)
         }
 
-        return count > 0 || inset.mainMap
+        const dropEmptyInsets = this.props.dropEmptyInsets ?? true
+        return count > 0 || inset.mainMap || !dropEmptyInsets
     }
 
     /*

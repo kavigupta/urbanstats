@@ -439,6 +439,7 @@ function MapComponent(props: MapComponentProps): ReactNode {
                     insets={props.overrideInsets ?? currentInsets}
                     key={stableStringify({ currentInsets, editInsets: !!props.editInsets })}
                     editInsets={props.editInsets}
+                    dropEmptyInsets={props.editInsets === undefined}
                 />
             </div>
             <div style={{ height: '8%', width: '100%' }} ref={props.colorbarRef}>
