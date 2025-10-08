@@ -46,7 +46,12 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     return (
         <>
             <QuerySettingsConnection />
-            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={article.universes}>
+            <PageTemplate
+                screencapElements={screencapElements}
+                hasCSVButton={true}
+                hasUniverseSelector={true}
+                universes={article.universes}
+            >
                 <div>
                     <div ref={headersRef}>
                         <div className={headerTextClass}>{article.shortname}</div>
