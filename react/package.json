@@ -78,7 +78,6 @@
     "better-react-mathjax": "^2.0.3",
     "color": "^5.0.0",
     "csv-stringify": "^6.6.0",
-    "csv-writer": "^1.6.0",
     "dom-to-image-more": "^3.3.0",
     "file-saver": "^2.0.5",
     "google-protobuf": "^3.21.2",
