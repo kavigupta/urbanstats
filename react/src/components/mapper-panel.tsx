@@ -350,14 +350,6 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
     override progressivelyLoadShapes(): boolean {
         return false
     }
-
-    // Method to get CSV data for export
-    getCSVData(): string[][] | undefined {
-        if (this.lastMapResult === undefined || this.lastContext === undefined) {
-            return undefined
-        }
-        return generateMapperCSVData(this.lastMapResult, this.versionProps.mapSettings, this.lastContext)
-    }
 }
 
 function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
