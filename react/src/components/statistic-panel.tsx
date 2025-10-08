@@ -14,7 +14,6 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
-import { exportToCSV } from './csv-export'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'

@@ -30,7 +30,6 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
     let context, getWarnings
     try {
         ([context, getWarnings] = await contextForRequest(request))
-        console.log('Context for request', context.variableEntries())
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {
@@ -123,7 +122,6 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
     }
 
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
-        console.log('Getting variable', name)
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
         if (name === 'geoName') {
             return annotateType('geoName', longnames)
