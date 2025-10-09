@@ -108,6 +108,9 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
                     }, { history: 'push', scroll: { kind: 'element', element: e.target.getContainer() } })
                 }
             }}
+            canvasContextAttributes={{
+                preserveDrawingBuffer: true, // Allows screenshots
+            }}
         >
             {collection && <ShapeCollection collection={collection} id={shapeCollectionId} />}
             <FullscreenControl position="top-left" />
