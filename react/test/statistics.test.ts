@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -77,6 +77,19 @@ test('statistics-navigation-last-page', async (t) => {
     await screencap(t)
     // going right again is not available
     await t.expect(Selector('button[data-test-id="1"][disabled]').exists).ok()
+})
+
+test('statistics-csv-export', async (t) => {
+    const laterThan = Date.now()
+
+    const csvButton = Selector('img').withAttribute('src', '/csv.png')
+    await t.click(csvButton)
+
+    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
+    const fs = await import('fs')
+    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+
+    await downloadOrCheckString(t, csvContent, 'csv-export-population-statistics', 'csv', false)
 })
 
 urbanstatsFixture('statistic universe selector test', `${target}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)
@@ -157,11 +170,11 @@ test('statistic-ascending-descending-check-descending', async (t) => {
 
 test('statistic-ascending-descending-check-click', async (t) => {
     // click the button
-    // check that button "statistic-panel-order-swap" has text downwards arrow ▼
-    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▼\ufe0e')
+    // check that button "statistic-panel-order-swap" has downwards arrow image
+    await t.expect(Selector('#statistic-panel-order-swap img').getAttribute('src')).eql('/sort-down.png')
     await t.click(Selector('#statistic-panel-order-swap'))
-    // ensure the button is now ▲
-    await t.expect(Selector('#statistic-panel-order-swap').innerText).eql('▲\ufe0e')
+    // ensure the button is now up arrow
+    await t.expect(Selector('#statistic-panel-order-swap img').getAttribute('src')).eql('/sort-up.png')
     await t.wait(1000)
     // check the url
     await t.expect(getLocation())

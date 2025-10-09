@@ -11,6 +11,7 @@ import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
+import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { Article } from '../utils/protos'
@@ -20,6 +21,7 @@ import { TransposeContext } from '../utils/transpose'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
+import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
 import { PlotProps } from './plots'
@@ -36,6 +38,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     // State for drag overlay and articles
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<{ value: Article[], propsValue: Article[] }>({ value: props.articles, propsValue: props.articles })
+
+    const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
+    const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -104,6 +109,35 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const dataByArticleStat = props.rows(settings)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+
+    const handleSort = (statIndex: number): void => {
+        let newSortDirection: 'up' | 'down' | 'both'
+        if (sortByStatIndex === statIndex) {
+            newSortDirection = sortDirection === 'up' ? 'down' : 'up'
+        }
+        else {
+            newSortDirection = 'down'
+            setSortByStatIndex(statIndex)
+        }
+
+        setSortDirection(newSortDirection)
+
+        const statData = dataByStatArticle[statIndex]
+        const sortedIndices = statData
+            .map((row, index) => ({ row, index }))
+            .sort((a, b) => compareArticleRows(a.row, b.row, newSortDirection))
+            .map(item => item.index)
+
+        const newArticles = sortedIndices.map(index => localArticlesToUse[index])
+
+        setLocalArticles({ propsValue: props.articles, value: newArticles })
+
+        void navContext.navigate({
+            kind: 'comparison',
+            universe: navContext.universe,
+            longnames: newArticles.map(a => a.longname),
+        }, { history: 'push', scroll: { kind: 'none' } })
+    }
 
     const mobileLayout = useMobileLayout()
 
@@ -191,6 +225,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
+            sortInfo: {
+                onSort: () => {
+                    handleSort(statIndex)
+                },
+                sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
+            },
         }
     ))
 
@@ -228,10 +268,19 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
+    const csvData = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+    const csvFilename = `${sanitize(joinedString)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
+
     return (
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
-            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={props.universes}>
+            <PageTemplate
+                screencapElements={screencapElements}
+                csvExportData={csvExportData}
+                hasUniverseSelector={true}
+                universes={props.universes}
+            >
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}

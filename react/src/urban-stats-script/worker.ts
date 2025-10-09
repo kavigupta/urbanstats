@@ -30,7 +30,6 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
     let context, getWarnings
     try {
         ([context, getWarnings] = await contextForRequest(request))
-
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {
@@ -45,7 +44,11 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
         }
-        return { resultingValue: { type: result.type, value: removeFunctions(result.value) }, error: getWarnings() }
+        return {
+            resultingValue: { type: result.type, value: removeFunctions(result.value) },
+            error: getWarnings(),
+            context: new Map([...context.variableEntries()].filter(([,v]) => v.documentation?.includedInOutputContext)),
+        }
     }
     catch (error) {
         let interpretationError: InterpretationError
@@ -56,7 +59,10 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             console.error('Unknown interpretation error', error)
             interpretationError = new InterpretationError('Unknown interpretation error', noLocation)
         }
-        return { error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])] }
+        return {
+            error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])],
+            context: new Map(),
+        }
     }
 }
 
@@ -117,6 +123,9 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
+        if (name === 'geoName') {
+            return annotateType('geoName', longnames)
+        }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
         }
