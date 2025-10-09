@@ -1,5 +1,5 @@
 import React, { ReactNode, useContext, useEffect, useId, useMemo, useRef } from 'react'
-import Map, { FullscreenControl, Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, Layer, MapRef, Source, useMap, Map } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { boundingBox, geometry } from '../map-partition'
@@ -13,7 +13,7 @@ import { loadShapeFromPossibleSymlink as loadFeatureFromPossibleSymlink } from '
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { defaultMapPadding, Inset } from './map'
+import { defaultMapPadding } from './map'
 import { mapBorderRadius, mapBorderWidth } from './screenshot'
 
 export function ArticleMap2({ articleType, related, longname }: { articleType: string, related: NormalizeProto<IRelatedButtons>[], longname: string }): ReactNode {
@@ -182,19 +182,6 @@ async function shapeFeatureCollection(shapes: Shape[]): Promise<GeoJSON.FeatureC
         type: 'FeatureCollection',
         features,
     }
-}
-
-function filterShapesInInset(features: GeoJSON.Feature[], inset?: Inset): GeoJSON.Feature[] {
-    if (inset?.mainMap === false) {
-        const bbox = inset.coordBox
-        features = features.filter((poly) => {
-            const bounds = boundingBox(poly.geometry)
-            // Check if the polygon overlaps the inset bounds
-            return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
-                && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
-        })
-    }
-    return features
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
