@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 export class Property<T> {
     private _value: T
     readonly observers = new Set<() => void>()
+
+    readonly id = Math.random().toString(36).substring(2)
 
     constructor(value: T) {
         this._value = value
@@ -28,7 +30,8 @@ export class Property<T> {
             return () => {
                 this.observers.delete(observer)
             }
-        }, [])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Needs this as the property can change around the effect
+        }, [this])
         return this.value
     }
     /* eslint-enable react-hooks/rules-of-hooks */

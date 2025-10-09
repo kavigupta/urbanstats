@@ -8,6 +8,7 @@ import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
+import { notWaiting, promiseStream, waiting } from '../utils/promiseStream'
 import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { loadShapeFromPossibleSymlink as loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
@@ -24,7 +25,7 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
     const [showHistoricalCDs] = useSetting('show_historical_cds')
     const relatedCheckboxSettings = useSettings(relatedSettingsKeys(articleType))
 
-    const collectionPromise = useMemo(async () => {
+    const featuresStream = useMemo(() => {
         const getRelated = (key: string): NormalizeProto<IRelatedButton>[] => {
             const element = related.filter(
                 x => x.relationshipType === key)
@@ -62,7 +63,7 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
 
         const color = colors.hueColors.blue
 
-        return await shapeFeatureCollection([
+        return shapeFeatureCollection([
             {
                 name: longname,
                 fillOpacity: 0.5, weight: 1, color, fillColor: color,
@@ -72,18 +73,20 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
         ])
     }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, showHistoricalCDs])
 
-    const collection = useOrderedResolve(collectionPromise)
+    const features = featuresStream.use()
 
     useEffect(() => {
-        void collectionPromise.then((c) => {
-            mapRef.current?.fitBounds(boundingBox(c.features[0].geometry), { animate: false, padding: defaultMapPadding })
-        })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Colleciton promise purposely excluded, we should only fit when the longname changes
-    }, [longname])
+        if (features.length === 0 || features[0] === waiting) {
+            return
+        }
+        mapRef.current?.fitBounds(boundingBox(features[0].geometry), { animate: false, padding: defaultMapPadding })
+    }, [features])
 
     const navigator = useContext(Navigator.Context)
 
     const shapeCollectionId = useId()
+
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
 
     return (
         <Map
@@ -112,13 +115,11 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
         >
-            {collection && <ShapeCollection collection={collection} id={shapeCollectionId} />}
+            <ShapeCollection features={readyFeatures} id={shapeCollectionId} />
             <FullscreenControl position="top-left" />
         </Map>
     )
 }
-
-//     const collection = useOrderedResolve(useMemo(() => shapeFeatureCollection(shapes, inset), [shapes, inset]))
 
 export interface Shape {
     name: string
@@ -135,10 +136,15 @@ function shapesId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `shapes-${kind}-${id}`
 }
 
-function ShapeCollection({ collection, id }: { collection: GeoJSON.FeatureCollection, id: string }): ReactNode {
+function ShapeCollection({ features, id }: { features: GeoJSON.Feature[], id: string }): ReactNode {
     const { current: map } = useMap()
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
+
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features,
+    }), [features])
 
     return (
         <>
@@ -176,12 +182,8 @@ async function shapeGeojson(shape: Shape): Promise<GeoJSON.Feature> {
     }
 }
 
-async function shapeFeatureCollection(shapes: Shape[]): Promise<GeoJSON.FeatureCollection> {
-    const features = await Promise.all(shapes.map(shapeGeojson))
-    return {
-        type: 'FeatureCollection',
-        features,
-    }
+function shapeFeatureCollection(shapes: Shape[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
+    return promiseStream(shapes.map(shapeGeojson), { updateSpacing: 500 })
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
