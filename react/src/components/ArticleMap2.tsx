@@ -1,8 +1,9 @@
-import React, { ReactNode, useEffect, useId, useMemo, useRef } from 'react'
-import Map, { Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import React, { ReactNode, useContext, useEffect, useId, useMemo, useRef } from 'react'
+import Map, { FullscreenControl, Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
@@ -77,7 +78,12 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
         void collectionPromise.then((c) => {
             mapRef.current?.fitBounds(boundingBox(c.features[0].geometry), { animate: false, padding: defaultMapPadding })
         })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Colleciton promise purposely excluded, we should only fit when the longname changes
     }, [longname])
+
+    const navigator = useContext(Navigator.Context)
+
+    const shapeCollectionId = useId()
 
     return (
         <Map
@@ -89,8 +95,23 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
             }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
+            interactiveLayerIds={[shapesId(shapeCollectionId, 'fill')]}
+            onMouseOver={e => e.target.getCanvas().style.cursor = 'pointer'}
+            onMouseLeave={e => e.target.getCanvas().style.cursor = ''}
+            onClick={(e) => {
+                const feature = e.features?.find(f => f.properties.clickable !== false)
+                console.log(e.features)
+                if (feature !== undefined) {
+                    void navigator.navigate({
+                        kind: 'article',
+                        universe: navigator.universe,
+                        longname: feature.properties.name as string,
+                    }, { history: 'push', scroll: { kind: 'element', element: e.target.getContainer() } })
+                }
+            }}
         >
-            {collection && <ShapeCollection collection={collection} />}
+            {collection && <ShapeCollection collection={collection} id={shapeCollectionId} />}
+            <FullscreenControl position="top-left" />
         </Map>
     )
 }
@@ -108,20 +129,22 @@ export interface Shape {
     weight?: number
 }
 
-function ShapeCollection({ collection }: { collection: GeoJSON.FeatureCollection }): ReactNode {
-    const id = useId()
+function shapesId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+    return `shapes-${kind}-${id}`
+}
 
+function ShapeCollection({ collection, id }: { collection: GeoJSON.FeatureCollection, id: string }): ReactNode {
     const { current: map } = useMap()
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
 
     return (
         <>
-            <Source id={`shapes-source-${id}`} type="geojson" data={collection} />
+            <Source id={shapesId(id, 'source')} type="geojson" data={collection} />
             <Layer
-                id={`shapes-fill-layer-${id}`}
+                id={shapesId(id, 'fill')}
                 type="fill"
-                source={`shapes-source-${id}`}
+                source={shapesId(id, 'source')}
                 paint={{
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
@@ -129,9 +152,9 @@ function ShapeCollection({ collection }: { collection: GeoJSON.FeatureCollection
                 beforeId={labelId}
             />
             <Layer
-                id={`shapes-outline-${id}`}
+                id={shapesId(id, 'outline')}
                 type="line"
-                source={`shapes-source-${id}`}
+                source={shapesId(id, 'source')}
                 paint={{
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
