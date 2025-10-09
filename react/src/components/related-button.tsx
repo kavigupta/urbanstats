@@ -105,6 +105,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 paddingInlineStart: '0px',
                 listStyleType: 'none',
                 padding: `${spacing}px`,
+                paddingLeft: `${spacing}px`, // Prevents errors
                 ...(props.numGroups > 1
                     ? {
                             backgroundColor,
