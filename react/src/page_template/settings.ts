@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
