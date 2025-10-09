@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useEffect, useId, useMemo, useRef } from 
 import Map, { FullscreenControl, Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { boundingBox, extendBoxes, geometry } from '../map-partition'
+import { boundingBox, geometry } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
@@ -100,7 +100,6 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
             onMouseLeave={e => e.target.getCanvas().style.cursor = ''}
             onClick={(e) => {
                 const feature = e.features?.find(f => f.properties.clickable !== false)
-                console.log(e.features)
                 if (feature !== undefined) {
                     void navigator.navigate({
                         kind: 'article',
