@@ -173,8 +173,8 @@ function filterShapesInInset(features: GeoJSON.Feature[], inset?: Inset): GeoJSO
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
-    if (!map.loaded()) {
-        await new Promise(resolve => map.once('load', resolve))
+    if (!map.isStyleLoaded() || (map.style as unknown) === undefined) {
+        await new Promise(resolve => map.once('style.load', resolve))
     }
 
     for (const layer of map.style.stylesheet.layers) {
