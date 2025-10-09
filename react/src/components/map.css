@@ -21,3 +21,8 @@
         background-image: none;
     }
 }
+
+.maplibregl-ctrl-attrib {
+    transform: scale(0.85);
+    transform-origin: bottom right;
+}
