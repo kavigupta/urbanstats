@@ -183,7 +183,7 @@ async function shapeGeojson(shape: Shape): Promise<GeoJSON.Feature> {
 }
 
 function shapeFeatureCollection(shapes: Shape[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(shapes.map(shapeGeojson), { updateSpacing: 500 })
+    return promiseStream(shapes.map(shapeGeojson))
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
