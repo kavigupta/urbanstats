@@ -9,7 +9,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { notWaiting, waiting } from '../utils/promiseStream'
-import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
+import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
 import { CommonMaplibreMap, Shape, ShapeCollection, shapeFeatureCollection, shapesId, useZoomFirstFeature } from './map-common'
