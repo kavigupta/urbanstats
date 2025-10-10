@@ -18,7 +18,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { defaultMapPadding } from './map'
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
-export function ArticleMap2({ articleType, related, longname }: { articleType: string, related: NormalizeProto<IRelatedButtons>[], longname: string }): ReactNode {
+export function ArticleMap({ articleType, related, longname }: { articleType: string, related: NormalizeProto<IRelatedButtons>[], longname: string }): ReactNode {
     const colors = useColors()
 
     const mapRef = useRef<MapRef>(null)
