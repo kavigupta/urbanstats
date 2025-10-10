@@ -133,6 +133,7 @@ export function ArticleMap({ articleType, related, longname }: { articleType: st
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
+            RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js"
         >
             <ShapeCollection features={readyFeatures} id={id} />
             <FullscreenControl position="top-left" />
