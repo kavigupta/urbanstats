@@ -10,15 +10,12 @@ import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
 import { debugPerformance } from '../search'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
-import { randomColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
-import { isHistoricalCD } from '../utils/is_historical'
-import { Feature, IRelatedButton, IRelatedButtons } from '../utils/protos'
+import { Feature } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
@@ -1048,112 +1045,6 @@ function setBasemap(map: maplibregl.Map, basemap: Basemap): void {
         layer.setLayoutProperty('visibility', isVisible(basemap, layerspec) ? 'visible' : 'none')
     })
     map.setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
-}
-
-function clickMapElement(longname: string): void {
-    for (const map of activeMaps) {
-        if (map.state.shapeByName.has(longname)) {
-            map.onClick(longname)
-            return
-        }
-    }
-    throw new Error(`Polygon ${longname} not found in any map`)
-}
-
-// for testing
-(window as unknown as {
-    clickMapElement: (longname: string) => void
-}).clickMapElement = clickMapElement
-
-interface MapProps extends MapGenericProps {
-    longname: string
-    related: NormalizeProto<IRelatedButtons>[]
-    articleType: string
-}
-
-interface ArticleMapProps extends MapProps {
-    showHistoricalCDs: boolean
-    settings: Record<string, unknown>
-    color: string
-}
-
-// eslint-disable-next-line no-restricted-syntax -- Don't want to overwrite the JS Map
-export { MapComponent as Map }
-function MapComponent(props: MapProps): ReactNode {
-    const colors = useColors()
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
-    const relatedCheckboxSettings = useSettings(relatedSettingsKeys(props.articleType))
-    return (
-        <ArticleMap
-            {...props}
-            showHistoricalCDs={showHistoricalCDs}
-            settings={relatedCheckboxSettings}
-            color={colors.hueColors.blue}
-        />
-    )
-}
-
-class ArticleMap extends MapGeneric<ArticleMapProps> {
-    private already_fit_bounds: string | undefined = undefined
-
-    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
-        const relateds = [
-            ...this.getRelated('contained_by'),
-            ...this.getRelated('intersects'),
-            ...this.getRelated('borders'),
-            ...this.getRelated('contains'),
-            ...this.getRelated('same_geography'),
-        ]
-
-        const relatedPolygons = this.relatedPolygons(relateds)
-
-        return Promise.resolve({
-            shapes: [
-                {
-                    name: this.props.longname,
-                    spec: { type: 'polygon', style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color } },
-                    meta: {},
-                    notClickable: true,
-                },
-                ...relatedPolygons,
-            ],
-            zoomIndex: this.already_fit_bounds !== this.props.longname ? 0 : -1,
-        })
-    }
-
-    override mapDidRender(): Promise<void> {
-        this.already_fit_bounds = this.props.longname
-        return Promise.resolve()
-    }
-
-    getRelated(key: string): NormalizeProto<IRelatedButton>[] {
-        const element = this.props.related.filter(
-            x => x.relationshipType === key)
-            .map(x => x.buttons)[0]
-        return element
-    }
-
-    relatedPolygons(related: NormalizeProto<IRelatedButton>[]): Shape[] {
-        const result: Shape[] = []
-        for (let i = related.length - 1; i >= 0; i--) {
-            if (!this.props.showHistoricalCDs && isHistoricalCD(related[i].rowType)) {
-                continue
-            }
-            const key = relationshipKey(this.props.articleType, related[i].rowType)
-            if (!this.props.settings[key]) {
-                continue
-            }
-
-            const color = randomColor(related[i].longname)
-            const style = { color, weight: 1, fillColor: color, fillOpacity: 0.1 }
-            result.push({
-                name: related[i].longname,
-                spec: { type: 'polygon', style },
-                meta: {},
-            })
-        }
-        return result
-    }
 }
 
 function mapBoundsFromInset(inset: Inset): maplibregl.LngLatBounds {
