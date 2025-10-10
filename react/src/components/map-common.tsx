@@ -33,6 +33,7 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
+            RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js"
             {...props}
         />
     )
