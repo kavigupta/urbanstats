@@ -127,23 +127,24 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: true): Promise<IDataList>
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IOrderList>
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IDataList | IOrderList> {
-    const links = isData ? data_links : order_links
+async function loadOrderingProtobuf(universe: string, statpath: string, type: string): Promise<IOrderList> {
+    const links = order_links
     const key = `${universe}__${type}`
     const idx = key in links ? pullKey(links[key], statpath) : 0
-    const orderLink = isData ? orderingDataLink(universe, type, idx) : orderingLink(universe, type, idx)
-    if (isData) {
-        const dataLists = await loadProtobuf(orderLink, 'DataLists')
-        const index = dataLists.statnames.indexOf(statpath)
-        return dataLists.dataLists[index]
-    }
-    else {
-        const orderLists = await loadProtobuf(orderLink, 'OrderLists')
-        const index = orderLists.statnames.indexOf(statpath)
-        return orderLists.orderLists[index]
-    }
+    const orderLink = orderingLink(universe, type, idx)
+    const orderLists = await loadProtobuf(orderLink, 'OrderLists')
+    const index = orderLists.statnames.indexOf(statpath)
+    return orderLists.orderLists[index]
+}
+
+async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<IDataList> {
+    const links = data_links
+    const key = `${universe}__${type}`
+    const idx = key in links ? pullKey(links[key], statpath) : 0
+    const orderLink = orderingDataLink(universe, type, idx)
+    const dataLists = await loadProtobuf(orderLink, 'DataLists')
+    const index = dataLists.statnames.indexOf(statpath)
+    return dataLists.dataLists[index]
 }
 
 export interface ArticleOrderingListInternal {
@@ -154,7 +155,7 @@ export interface ArticleOrderingListInternal {
 export async function loadOrdering(universe: string, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
     const idxLink = indexLink(universe, type)
     const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
@@ -164,8 +165,8 @@ export async function loadOrdering(universe: string, statpath: string, type: str
 export async function loadDataInIndexOrder(
     universe: string, statpath: string, type: string,
 ): Promise<number[]> {
-    const dataPromise = loadOrderingProtobuf(universe, statpath, type, true)
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
+    const dataPromise = loadOrderingDataProtobuf(universe, statpath, type)
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
     const dataList = data.value
     const orderIdxs = ordering.orderIdxs
@@ -183,7 +184,7 @@ export async function loadDataInIndexOrder(
 export async function loadStatisticsPage(
     statUniverse: string, statpath: string, articleType: string,
 ): Promise<[NormalizeProto<IDataList>, string[]]> {
-    const data = loadOrderingProtobuf(statUniverse, statpath, articleType, true).then(result => result as NormalizeProto<IDataList>)
+    const data = loadOrderingDataProtobuf(statUniverse, statpath, articleType).then(result => result as NormalizeProto<IDataList>)
     const articleNames = loadOrdering(statUniverse, statpath, articleType).then(result => result.longnames)
     return [await data, await articleNames]
 }
