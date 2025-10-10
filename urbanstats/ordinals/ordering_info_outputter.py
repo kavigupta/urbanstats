@@ -102,6 +102,7 @@ def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
         ordered = ordinal_info.ordered_names(universe, "overall")
         save_article_ordering_list(ordered, path, longname_to_type)
         order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
+
     return order_backmap
 
 

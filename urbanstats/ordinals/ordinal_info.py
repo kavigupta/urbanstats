@@ -30,6 +30,10 @@ class OrdinalInfo:
     @cached_property
     def longname_to_idx(self):
         return {name: idx for idx, name in enumerate(self.longnames)}
+    
+    @property
+    def types(self):
+        return sorted({t for _, t in self.universe_type})
 
     def compute_ordinals(self, universe, typ, col):
         idx = self.universe_type_to_idx[universe, typ]

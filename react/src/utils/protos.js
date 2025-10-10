@@ -4344,6 +4344,230 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
     return ArticleOrderingList;
 })();
 
+export const ArticleUniverseList = $root.ArticleUniverseList = (() => {
+
+    /**
+     * Properties of an ArticleUniverseList.
+     * @exports IArticleUniverseList
+     * @interface IArticleUniverseList
+     * @property {Array.<IUniverses>|null} [universes] ArticleUniverseList universes
+     */
+
+    /**
+     * Constructs a new ArticleUniverseList.
+     * @exports ArticleUniverseList
+     * @classdesc Represents an ArticleUniverseList.
+     * @implements IArticleUniverseList
+     * @constructor
+     * @param {IArticleUniverseList=} [properties] Properties to set
+     */
+    function ArticleUniverseList(properties) {
+        this.universes = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ArticleUniverseList universes.
+     * @member {Array.<IUniverses>} universes
+     * @memberof ArticleUniverseList
+     * @instance
+     */
+    ArticleUniverseList.prototype.universes = $util.emptyArray;
+
+    /**
+     * Creates a new ArticleUniverseList instance using the specified properties.
+     * @function create
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {IArticleUniverseList=} [properties] Properties to set
+     * @returns {ArticleUniverseList} ArticleUniverseList instance
+     */
+    ArticleUniverseList.create = function create(properties) {
+        return new ArticleUniverseList(properties);
+    };
+
+    /**
+     * Encodes the specified ArticleUniverseList message. Does not implicitly {@link ArticleUniverseList.verify|verify} messages.
+     * @function encode
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {IArticleUniverseList} message ArticleUniverseList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ArticleUniverseList.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.universes != null && message.universes.length)
+            for (let i = 0; i < message.universes.length; ++i)
+                $root.Universes.encode(message.universes[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ArticleUniverseList message, length delimited. Does not implicitly {@link ArticleUniverseList.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {IArticleUniverseList} message ArticleUniverseList message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ArticleUniverseList.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an ArticleUniverseList message from the specified reader or buffer.
+     * @function decode
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ArticleUniverseList} ArticleUniverseList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ArticleUniverseList.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ArticleUniverseList();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 3: {
+                    if (!(message.universes && message.universes.length))
+                        message.universes = [];
+                    message.universes.push($root.Universes.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes an ArticleUniverseList message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ArticleUniverseList} ArticleUniverseList
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ArticleUniverseList.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an ArticleUniverseList message.
+     * @function verify
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ArticleUniverseList.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.universes != null && message.hasOwnProperty("universes")) {
+            if (!Array.isArray(message.universes))
+                return "universes: array expected";
+            for (let i = 0; i < message.universes.length; ++i) {
+                let error = $root.Universes.verify(message.universes[i]);
+                if (error)
+                    return "universes." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates an ArticleUniverseList message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ArticleUniverseList} ArticleUniverseList
+     */
+    ArticleUniverseList.fromObject = function fromObject(object) {
+        if (object instanceof $root.ArticleUniverseList)
+            return object;
+        let message = new $root.ArticleUniverseList();
+        if (object.universes) {
+            if (!Array.isArray(object.universes))
+                throw TypeError(".ArticleUniverseList.universes: array expected");
+            message.universes = [];
+            for (let i = 0; i < object.universes.length; ++i) {
+                if (typeof object.universes[i] !== "object")
+                    throw TypeError(".ArticleUniverseList.universes: object expected");
+                message.universes[i] = $root.Universes.fromObject(object.universes[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from an ArticleUniverseList message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {ArticleUniverseList} message ArticleUniverseList
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ArticleUniverseList.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.universes = [];
+        if (message.universes && message.universes.length) {
+            object.universes = [];
+            for (let j = 0; j < message.universes.length; ++j)
+                object.universes[j] = $root.Universes.toObject(message.universes[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ArticleUniverseList to JSON.
+     * @function toJSON
+     * @memberof ArticleUniverseList
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ArticleUniverseList.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ArticleUniverseList
+     * @function getTypeUrl
+     * @memberof ArticleUniverseList
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ArticleUniverseList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ArticleUniverseList";
+    };
+
+    return ArticleUniverseList;
+})();
+
 export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
 
     /**

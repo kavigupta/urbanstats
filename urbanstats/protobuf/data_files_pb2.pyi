@@ -235,6 +235,14 @@ class ArticleOrderingList(_message.Message):
         types: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
+class ArticleUniverseList(_message.Message):
+    __slots__ = ("universes",)
+    UNIVERSES_FIELD_NUMBER: _ClassVar[int]
+    universes: _containers.RepeatedCompositeFieldContainer[Universes]
+    def __init__(
+        self, universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...
+    ) -> None: ...
+
 class SearchIndexMetadata(_message.Message):
     __slots__ = ("type", "is_usa", "is_symlink")
     TYPE_FIELD_NUMBER: _ClassVar[int]

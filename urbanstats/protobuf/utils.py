@@ -16,6 +16,30 @@ def save_article_ordering_list(longnames, path, longname_to_type):
     write_gzip(res, path)
 
 
+def save_universes_list_by_type(longnames, longname_to_universe, path):
+    from urbanstats.website_data.create_article_gzips import universe_to_idx
+
+    utoi = universe_to_idx()
+    res = data_files_pb2.ArticleUniverseList()
+    for x in longnames:
+        universes = longname_to_universe[x]
+        universes_proto = res.universes.add()
+        for u in universes:
+            if u in utoi:
+                universes_proto.universe_idxs.append(utoi[u])
+    write_gzip(res, path)
+
+def save_universes_list_all(table, ordinals, site_folder):
+    utoi = dict(zip(table.longname, table.universes))
+    for typ in ordinals.types:
+        save_universes_list_by_type(
+            ordinals.ordered_names("world", typ),
+            utoi,
+            f"{site_folder}/index/universes_{typ}.gz",
+        )
+    
+
+
 def save_search_index(longnames, types, is_usas, path, *, symlinks):
     longname_to_index = {x: i for i, x in enumerate(longnames)}
     types, is_usas = list(types), list(is_usas)
