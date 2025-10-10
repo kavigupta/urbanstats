@@ -177,6 +177,22 @@ export async function loadOrdering(universe: string, statpath: string, type: str
     return { longnames: namesInOrder, typeIndices: typesInOrder }
 }
 
+/**
+ * Returns an array `r` where r contains numbers 0..length-1, but such that
+ * iff indices[i] < indices[j], then r[i] < r[j]
+ *
+ * I.e., it returns the argsort of the argsort of indices.
+ */
+function reindex(indices: number[]): number[] {
+    const pairs = indices.map((value, index) => ({ value, index }))
+    pairs.sort((a, b) => a.value - b.value)
+    const result = new Array<number>(indices.length)
+    for (let i = 0; i < pairs.length; i++) {
+        result[pairs[i].index] = i
+    }
+    return result
+}
+
 export async function loadDataInIndexOrder(
     universe: string, statpath: string, type: string,
 ): Promise<number[]> {
@@ -184,9 +200,9 @@ export async function loadDataInIndexOrder(
     const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
     const dataList = data.value
-    const orderIdxs = ordering.orderIdxs
     assert(Array.isArray(dataList), 'Data list must be an array')
-    assert(Array.isArray(orderIdxs), 'Order indices must be an array')
+    assert(Array.isArray(ordering.orderIdxs), 'Order indices must be an array')
+    const orderIdxs = reindex(ordering.orderIdxs)
     // unsort data list, according to order indices
     const unsortedData = new Array<number>(orderIdxs.length)
     for (let i = 0; i < orderIdxs.length; i++) {
