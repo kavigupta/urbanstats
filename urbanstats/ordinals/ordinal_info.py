@@ -30,7 +30,7 @@ class OrdinalInfo:
     @cached_property
     def longname_to_idx(self):
         return {name: idx for idx, name in enumerate(self.longnames)}
-    
+
     @property
     def types(self):
         return sorted({t for _, t in self.universe_type})
@@ -56,12 +56,9 @@ class OrdinalInfo:
         values_selected = np.array(self.by_column[col].values[:, idx][mask])[0]
         # percentiles selected: alphabetical index within ut -> percentile
         percentiles_selected = np.array(self.by_column[col].percentile[:, idx][mask])[0]
-        # ordinals selected: alphabetical index within ut -> ordinal
-        ordinals_selected = np.array(self.by_column[col].ordinal[:, idx][mask])[0]
-
-        # reordering: ordinal -> alphabetical index within ut
-        reordering = np.argsort(ordinals_selected)
-
+        # reindex: index in `full[filter for ut]` -> alphabetical index within ut
+        index_order = np.array(self.index_order[mask.toarray()[:, 0]])
+        reordering = np.argsort(index_order)
         return values_selected[reordering], percentiles_selected[reordering]
 
     def counts_by_typ_universe(self, col):
