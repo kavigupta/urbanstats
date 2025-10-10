@@ -149,7 +149,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
         const statpath = statistic_path_list[index]
 
-        const variableData = await loadDataInIndexOrder(universe, statpath, geographyKind)
+        const [variableData] = await loadDataInIndexOrder(universe, statpath, geographyKind)
         assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
         mapperCache.dataCache.set(name, variableData)
         return annotateType(name, variableData)
