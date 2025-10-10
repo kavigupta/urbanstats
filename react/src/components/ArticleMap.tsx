@@ -76,12 +76,14 @@ export function ArticleMap({ articleType, related, longname }: { articleType: st
 
     const features = featuresStream.use()
 
+    const firstFeature = features.length > 0 ? features[0] : undefined
+
     useEffect(() => {
-        if (features.length === 0 || features[0] === waiting) {
+        if (firstFeature === undefined || firstFeature === waiting) {
             return
         }
-        mapRef.current?.fitBounds(boundingBox(features[0].geometry), { animate: false, padding: defaultMapPadding })
-    }, [features])
+        mapRef.current?.fitBounds(boundingBox(firstFeature.geometry), { animate: false, padding: defaultMapPadding })
+    }, [firstFeature]) // Don't depend on all features or we keep zooming as they load
 
     const navigator = useContext(Navigator.Context)
 
