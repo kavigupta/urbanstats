@@ -7,7 +7,7 @@ import {
     getLocation,
     createComparison,
     waitForPageLoaded,
-    clickMapElement,
+    clickMapFeature,
     downloadOrCheckString,
     waitForDownload,
 } from './test_utils'
@@ -21,7 +21,7 @@ test('california-article-test', async (t) => {
 
 test('neighboring-state-test', async (t) => {
     await screencap(t)
-    await clickMapElement(t, /Arizona, USA/)
+    await clickMapFeature(/Arizona, USA/)
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Arizona%2C+USA`)
 })
@@ -317,7 +317,7 @@ test('when navigating to next media market that is two lines via map click, main
         scrollPosition: await scrollPosition(),
     }
 
-    await clickMapElement(t, /Raleigh-Durham \(Fayetteville\) NC Media Market/)
+    await clickMapFeature(/Raleigh-Durham \(Fayetteville\) NC Media Market/)
     await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
 
     const after = {
@@ -332,9 +332,9 @@ test('when navigating to next media market that is two lines via map click, main
 })
 
 test('can navigate back to original navigated shape in map', async (t) => {
-    await clickMapElement(t, /Raleigh-Durham \(Fayetteville\) NC Media Market/)
+    await clickMapFeature(/Raleigh-Durham \(Fayetteville\) NC Media Market/)
     await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
-    await clickMapElement(t, /Charlotte NC Media Market, USA/)
+    await clickMapFeature(/Charlotte NC Media Market, USA/)
     await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
 })
 

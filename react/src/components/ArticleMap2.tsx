@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useId, useMemo, useRef } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef } from 'react'
 import { FullscreenControl, Layer, MapRef, Source, useMap, Map } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -6,6 +6,7 @@ import { boundingBox, geometry } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { notWaiting, promiseStream, waiting } from '../utils/promiseStream'
@@ -84,12 +85,28 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
 
     const navigator = useContext(Navigator.Context)
 
-    const shapeCollectionId = useId()
+    const id = useId()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
 
+    const clickFeature = useCallback((name: string) => {
+        void navigator.navigate({
+            kind: 'article',
+            universe: navigator.universe,
+            longname: name,
+        }, { history: 'push', scroll: { kind: 'element', element: mapRef.current!.getContainer() } })
+    }, [navigator])
+
+    useEffect(() => {
+        TestUtils.shared.articleMaps.set(id, { clickFeature, features: readyFeatures.map(f => f.properties!.name as string) })
+        return () => {
+            TestUtils.shared.articleMaps.delete(id)
+        }
+    }, [id, clickFeature, readyFeatures])
+
     return (
         <Map
+            id={id}
             ref={mapRef}
             style={{
                 width: '100%',
@@ -98,24 +115,20 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
             }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
-            interactiveLayerIds={[shapesId(shapeCollectionId, 'fill')]}
+            interactiveLayerIds={[shapesId(id, 'fill')]}
             onMouseOver={e => e.target.getCanvas().style.cursor = 'pointer'}
             onMouseLeave={e => e.target.getCanvas().style.cursor = ''}
             onClick={(e) => {
                 const feature = e.features?.find(f => f.properties.clickable !== false)
                 if (feature !== undefined) {
-                    void navigator.navigate({
-                        kind: 'article',
-                        universe: navigator.universe,
-                        longname: feature.properties.name as string,
-                    }, { history: 'push', scroll: { kind: 'element', element: e.target.getContainer() } })
+                    clickFeature(feature.properties.name as string)
                 }
             }}
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
         >
-            <ShapeCollection features={readyFeatures} id={shapeCollectionId} />
+            <ShapeCollection features={readyFeatures} id={id} />
             <FullscreenControl position="top-left" />
         </Map>
     )
