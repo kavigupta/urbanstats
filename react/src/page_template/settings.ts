@@ -127,9 +127,9 @@ export class Settings {
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
         const stringKeys = JSON.stringify(keys)
-        const [state, setState] = useState({ counter: 0, stringKeys })
+        const [state, setState] = useState({ counter: 0, stringKeys: '' }) // Start stringKeys at '' so that we pick up changes before useEffect can bind
         useEffect(() => {
-            setState(s => s.stringKeys !== stringKeys ? { ...s, stringKeys } : s) // So that if `key` changes we change our result immediately, but also we don't set state on first effect
+            setState(s => s.stringKeys !== stringKeys ? { stringKeys, counter: s.counter + 1 } : s) // So that if `key` changes we change our result immediately, but also we don't set state on first effect
             const observer = (): void => { setState(s => ({ ...s, counter: s.counter + 1 })) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
