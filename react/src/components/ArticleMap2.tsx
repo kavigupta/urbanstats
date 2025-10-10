@@ -16,7 +16,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { defaultMapPadding } from './map'
-import { mapBorderRadius, mapBorderWidth } from './screenshot'
+import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 export function ArticleMap2({ articleType, related, longname }: { articleType: string, related: NormalizeProto<IRelatedButtons>[], longname: string }): ReactNode {
     const colors = useColors()
@@ -104,6 +104,8 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
         }
     }, [id, clickFeature, readyFeatures])
 
+    const isScreenshotMode = useScreenshotMode()
+
     return (
         <Map
             id={id}
@@ -113,6 +115,8 @@ export function ArticleMap2({ articleType, related, longname }: { articleType: s
                 height: 400,
                 borderRadius: mapBorderRadius,
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                // Background color is used for e2e tests
+                backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,
             }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
             interactiveLayerIds={[shapesId(id, 'fill')]}
