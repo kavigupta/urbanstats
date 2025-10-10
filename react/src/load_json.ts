@@ -162,6 +162,29 @@ async function loadOrderingDataProtobuf(universe: string, statpath: string, type
     return dataLists.dataLists[index]
 }
 
+export async function loadDataInIndexOrder(
+    universe: string, statpath: string, type: string,
+): Promise<[number[], number[]]> {
+    const dataPromise = loadOrderingDataProtobuf(universe, statpath, type)
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
+    const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
+    const dataList = data.value
+    const popPercentileList = data.populationPercentile
+    assert(Array.isArray(dataList), 'Data list must be an array')
+    assert(Array.isArray(popPercentileList), 'Pop percentile list must be an array')
+    assert(Array.isArray(ordering.orderIdxs), 'Order indices must be an array')
+    const orderIdxs = reindex(ordering.orderIdxs)
+    // unsort data list, according to order indices
+    const unsortedData = new Array<number>(orderIdxs.length)
+    const unsortedPopPercentile = new Array<number>(orderIdxs.length)
+    for (let i = 0; i < orderIdxs.length; i++) {
+        const idx = orderIdxs[i]
+        unsortedData[idx] = dataList[i]
+        unsortedPopPercentile[idx] = popPercentileList[i]
+    }
+    return [unsortedData, unsortedPopPercentile]
+}
+
 export interface ArticleOrderingListInternal {
     longnames: string[]
     typeIndices: number[]
@@ -191,29 +214,6 @@ function reindex(indices: number[]): number[] {
         result[pairs[i].index] = i
     }
     return result
-}
-
-export async function loadDataInIndexOrder(
-    universe: string, statpath: string, type: string,
-): Promise<[number[], number[]]> {
-    const dataPromise = loadOrderingDataProtobuf(universe, statpath, type)
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
-    const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
-    const dataList = data.value
-    const popPercentileList = data.populationPercentile
-    assert(Array.isArray(dataList), 'Data list must be an array')
-    assert(Array.isArray(popPercentileList), 'Pop percentile list must be an array')
-    assert(Array.isArray(ordering.orderIdxs), 'Order indices must be an array')
-    const orderIdxs = reindex(ordering.orderIdxs)
-    // unsort data list, according to order indices
-    const unsortedData = new Array<number>(orderIdxs.length)
-    const unsortedPopPercentile = new Array<number>(orderIdxs.length)
-    for (let i = 0; i < orderIdxs.length; i++) {
-        const idx = orderIdxs[i]
-        unsortedData[idx] = dataList[i]
-        unsortedPopPercentile[idx] = popPercentileList[i]
-    }
-    return [unsortedData, unsortedPopPercentile]
 }
 
 export async function loadStatisticsPage(
