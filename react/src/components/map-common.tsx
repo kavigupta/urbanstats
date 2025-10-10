@@ -1,5 +1,6 @@
+import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo } from 'react'
-import { Layer, Map, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, geometry } from '../map-partition'
 import { useColors } from '../page_template/colors'
@@ -127,4 +128,27 @@ async function firstLabelId(map: MapRef): Promise<string | undefined> {
         }
     }
     return undefined
+}
+
+class CustomAttributionControl extends maplibregl.AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
+
+export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
+    useControl(() => new CustomAttributionControl(startShowingAttribution))
+    return null
 }
