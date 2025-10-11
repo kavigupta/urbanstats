@@ -3,12 +3,14 @@ import { gunzipSync } from 'zlib'
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
+import universes_ordered from './data/universes_ordered'
 import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import { debugPerformance } from './search'
+import { Universe } from './universe'
 import { assert } from './utils/defensive'
 import {
     Article, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
-    Feature, IDataList, IOrderList, OrderList,
+    Feature, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
     QuizQuestionTronche,
@@ -16,6 +18,7 @@ import {
     ArticleOrderingList,
     Symlinks,
     PointSeries,
+    ArticleUniverseList,
 } from './utils/protos'
 import { NormalizeProto } from './utils/types'
 
@@ -43,7 +46,8 @@ export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Prom
 export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | undefined> {
+export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -107,6 +111,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'PointSeries') {
         return PointSeries.decode(arr)
     }
+    else if (name === 'ArticleUniverseList') {
+        return ArticleUniverseList.decode(arr)
+    }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
@@ -127,24 +134,52 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-async function loadOrderingProtobuf(universe: string, statpath: string, type: string): Promise<IOrderList> {
-    const links = order_links
-    const key = `${universe}__${type}`
-    const idx = key in links ? pullKey(links[key], statpath) : 0
-    const orderLink = orderingLink(universe, type, idx)
-    const orderLists = await loadProtobuf(orderLink, 'OrderLists')
-    const index = orderLists.statnames.indexOf(statpath)
-    return orderLists.orderLists[index]
+export async function loadUniverses(type: string): Promise<ArticleUniverseList> {
+    return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
 }
 
-async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<IDataList> {
+async function loadOrderingProtobuf(universe: string, statpath: string, type: string): Promise<IOrderList> {
+    const universeIdx = universes_ordered.indexOf(universe as Universe)
+    const links = order_links
+    const idx = type in links ? pullKey(links[type], statpath) : 0
+    const orderLink = orderingLink(type, idx)
+    const orderLists = await loadProtobuf(orderLink, 'OrderLists')
+    const index = orderLists.statnames.indexOf(statpath)
+    const res = orderLists.orderLists[index]
+    const universes = await loadUniverses(type)
+    const orderIndices = res.orderIdxs?.filter(i => universes.universes[i].universeIdxs?.includes(universeIdx))
+    return { orderIdxs: orderIndices }
+}
+
+export async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<{
+    value: number[]
+    populationPercentile: number[]
+}> {
     const links = data_links
-    const key = `${universe}__${type}`
-    const idx = key in links ? pullKey(links[key], statpath) : 0
-    const orderLink = orderingDataLink(universe, type, idx)
+    const idx = type in links ? pullKey(links[type], statpath) : 0
+    const orderLink = orderingDataLink(type, idx)
     const dataLists = await loadProtobuf(orderLink, 'DataLists')
     const index = dataLists.statnames.indexOf(statpath)
-    return dataLists.dataLists[index]
+    const res = dataLists.dataLists[index]
+    const universeIdx = universes_ordered.indexOf(universe as Universe)
+    const universes = await loadUniverses(type)
+    return {
+        value: res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
+        populationPercentile: res.populationPercentileByUniverse!.flatMap((_, i) => {
+            const universeIndex = universes.universes[i].universeIdxs!.indexOf(universeIdx)
+            if (universeIndex === -1) {
+                return []
+            }
+            return [res.populationPercentileByUniverse![i].populationPercentile![universeIndex]]
+        }),
+    }
+}
+
+export async function loadDataInIndexOrder(
+    universe: string, statpath: string, type: string,
+): Promise<[number[], number[]]> {
+    const dataPromise = await loadOrderingDataProtobuf(universe, statpath, type)
+    return [dataPromise.value, dataPromise.populationPercentile]
 }
 
 export interface ArticleOrderingListInternal {
@@ -153,7 +188,7 @@ export interface ArticleOrderingListInternal {
 }
 
 export async function loadOrdering(universe: string, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
-    const idxLink = indexLink(universe, type)
+    const idxLink = indexLink('world', type)
     const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
     const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
@@ -162,29 +197,36 @@ export async function loadOrdering(universe: string, statpath: string, type: str
     return { longnames: namesInOrder, typeIndices: typesInOrder }
 }
 
-export async function loadDataInIndexOrder(
-    universe: string, statpath: string, type: string,
-): Promise<number[]> {
-    const dataPromise = loadOrderingDataProtobuf(universe, statpath, type)
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
-    const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
-    const dataList = data.value
-    const orderIdxs = ordering.orderIdxs
-    assert(Array.isArray(dataList), 'Data list must be an array')
-    assert(Array.isArray(orderIdxs), 'Order indices must be an array')
-    // unsort data list, according to order indices
-    const unsortedData = new Array<number>(orderIdxs.length)
-    for (let i = 0; i < orderIdxs.length; i++) {
-        const idx = orderIdxs[i]
-        unsortedData[idx] = dataList[i]
+/**
+ * Returns an array `r` where r contains numbers 0..length-1, but such that
+ * iff indices[i] < indices[j], then r[i] < r[j]
+ *
+ * I.e., it returns the argsort of the argsort of indices.
+ */
+function reindex(indices: number[]): number[] {
+    const pairs = indices.map((value, index) => ({ value, index }))
+    pairs.sort((a, b) => a.value - b.value)
+    const result = new Array<number>(indices.length)
+    for (let i = 0; i < pairs.length; i++) {
+        result[pairs[i].index] = i
     }
-    return unsortedData
+    return result
 }
 
 export async function loadStatisticsPage(
     statUniverse: string, statpath: string, articleType: string,
-): Promise<[NormalizeProto<IDataList>, string[]]> {
-    const data = loadOrderingDataProtobuf(statUniverse, statpath, articleType).then(result => result as NormalizeProto<IDataList>)
-    const articleNames = loadOrdering(statUniverse, statpath, articleType).then(result => result.longnames)
-    return [await data, await articleNames]
+): Promise<[NormalizeProto<{ value: number[], populationPercentile: number[] }>, string[]]> {
+    const orderingOriginal = await loadOrderingProtobuf(statUniverse, statpath, articleType)
+    const ordering = await loadOrdering(statUniverse, statpath, articleType)
+    const orderingData = await loadOrderingDataProtobuf(statUniverse, statpath, articleType)
+    assert(Array.isArray(orderingOriginal.orderIdxs), 'Ordering original must be an array')
+    const reorder = reindex(orderingOriginal.orderIdxs)
+    const articleNames = ordering.longnames
+    return [
+        {
+            value: reorder.map(i => orderingData.value[i]),
+            populationPercentile: reorder.map(i => orderingData.populationPercentile[i]),
+        },
+        articleNames,
+    ]
 }

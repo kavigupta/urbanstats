@@ -22,6 +22,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
 from urbanstats.mapper.ramp import output_ramps
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
+from urbanstats.protobuf.utils import save_universes_list_all
 from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
@@ -237,6 +238,11 @@ def build_urbanstats(
 
         if not no_ordering:
             table = shapefile_without_ordinals()
+            save_universes_list_all(
+                table,
+                all_ordinals().ordered_names("world", "overall"),
+                site_folder,
+            )
             output_ordering(
                 site_folder,
                 all_ordinals(),

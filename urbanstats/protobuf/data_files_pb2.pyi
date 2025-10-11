@@ -235,6 +235,14 @@ class ArticleOrderingList(_message.Message):
         types: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
+class ArticleUniverseList(_message.Message):
+    __slots__ = ("universes",)
+    UNIVERSES_FIELD_NUMBER: _ClassVar[int]
+    universes: _containers.RepeatedCompositeFieldContainer[Universes]
+    def __init__(
+        self, universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...
+    ) -> None: ...
+
 class SearchIndexMetadata(_message.Message):
     __slots__ = ("type", "is_usa", "is_symlink")
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -268,16 +276,28 @@ class OrderList(_message.Message):
     order_idxs: _containers.RepeatedScalarFieldContainer[int]
     def __init__(self, order_idxs: _Optional[_Iterable[int]] = ...) -> None: ...
 
-class DataList(_message.Message):
-    __slots__ = ("value", "population_percentile")
-    VALUE_FIELD_NUMBER: _ClassVar[int]
+class PopulationPercentileByUniverse(_message.Message):
+    __slots__ = ("population_percentile",)
     POPULATION_PERCENTILE_FIELD_NUMBER: _ClassVar[int]
-    value: _containers.RepeatedScalarFieldContainer[float]
     population_percentile: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(
+        self, population_percentile: _Optional[_Iterable[int]] = ...
+    ) -> None: ...
+
+class DataList(_message.Message):
+    __slots__ = ("value", "population_percentile_by_universe")
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    POPULATION_PERCENTILE_BY_UNIVERSE_FIELD_NUMBER: _ClassVar[int]
+    value: _containers.RepeatedScalarFieldContainer[float]
+    population_percentile_by_universe: _containers.RepeatedCompositeFieldContainer[
+        PopulationPercentileByUniverse
+    ]
     def __init__(
         self,
         value: _Optional[_Iterable[float]] = ...,
-        population_percentile: _Optional[_Iterable[int]] = ...,
+        population_percentile_by_universe: _Optional[
+            _Iterable[_Union[PopulationPercentileByUniverse, _Mapping]]
+        ] = ...,
     ) -> None: ...
 
 class OrderLists(_message.Message):
