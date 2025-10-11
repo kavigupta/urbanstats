@@ -500,12 +500,12 @@ export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { 
         }
         >
             <div style={{
-                display: 'flex', backgroundColor: systemColors.background, padding: '0.5em', borderRadius: '0.5em',
+                display: 'flex', backgroundColor: systemColors.background, padding: '6px', borderRadius: '6px',
                 alignItems: 'center',
             }}
             >
                 <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
-                <div style={{ width: '0.25em' }} />
+                <div style={{ width: '3px' }} />
                 <ZoomButton color={systemColors.textMain} onClick={zoomToAll} />
                 {longnames.map((longname, i) => <ZoomButton key={i} color={colors[i]} onClick={() => { click(i) }} />)}
             </div>
