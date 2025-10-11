@@ -1,4 +1,5 @@
 import us
+
 from urbanstats.acs.load import ACSDataEntityForMultipleLevels
 from urbanstats.games.quiz_question_metadata import INCOME, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import GeoIDStatisticsACS

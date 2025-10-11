@@ -296,10 +296,14 @@ class GeoIDStatisticsACS(GeoIDStatisticsCollection):
             missing_in_acs = {
                 x
                 for x in geoid_table - geoid_acs
-                if not self.allow_missing_geoid(census_level, x, geoid_to_name[x], geoid_to_population[x])
+                if not self.allow_missing_geoid(
+                    census_level, x, geoid_to_name[x], geoid_to_population[x]
+                )
             }
             if missing_in_acs:
-                print(f"Missing in ACS: {sorted([geoid_to_name[x] for x in missing_in_acs])}")
+                print(
+                    f"Missing in ACS: {sorted([geoid_to_name[x] for x in missing_in_acs])}"
+                )
             assert not missing_in_acs
 
         array_result = np.full((len(shapefile_table), len(table.columns)), np.nan)

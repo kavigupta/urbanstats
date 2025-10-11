@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+
 import attr
 import numpy as np
 import pandas as pd
@@ -6,7 +7,7 @@ import requests
 import tqdm.auto as tqdm
 import us
 from cached_property import cached_property
-from permacache import permacache, stable_hash, drop_if_equal
+from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
@@ -25,7 +26,9 @@ def extract_block_group_geoid(geoid):
     return geoid.split("US")[1][:BLOCK_GROUP_PREFIX_COUNT]
 
 
-@permacache("population_density/acs/acs_variables", key_function=dict(year=drop_if_equal(2021)))
+@permacache(
+    "population_density/acs/acs_variables", key_function=dict(year=drop_if_equal(2021))
+)
 def acs_variables(*, year):
     url = f"https://api.census.gov/data/{year}/acs/acs5/variables.json"
 
@@ -60,7 +63,9 @@ include_county = {
 }
 
 
-@permacache("population_density/acs/query_acs_2", key_function=dict(year=drop_if_equal(2021)))
+@permacache(
+    "population_density/acs/query_acs_2", key_function=dict(year=drop_if_equal(2021))
+)
 def query_acs_for_state_direct(keys, state_fips, geography_level, *, year):
     url = f"https://api.census.gov/data/{year}/acs/acs5"
 
@@ -85,13 +90,15 @@ def query_acs_for_state_direct(keys, state_fips, geography_level, *, year):
     return response.json()
 
 
-def query_acs_for_state(keys, state_fips, geography_level,  *, year):
+def query_acs_for_state(keys, state_fips, geography_level, *, year):
     # The Census API has a limit of 50 variables per query, so we need to split
     # up the query into multiple queries.
     results = {}
     for i in range(0, len(keys), 50):
         for col_header, *col in zip(
-            *query_acs_for_state_direct(keys[i : i + 50], state_fips, geography_level, year=year)
+            *query_acs_for_state_direct(
+                keys[i : i + 50], state_fips, geography_level, year=year
+            )
         ):
             if col_header in results:
                 assert col_header in ["state", "county", "tract", "block group"]
@@ -104,7 +111,13 @@ def query_acs_for_state(keys, state_fips, geography_level,  *, year):
 
 
 def query_acs(
-    keys, categories, var_for_concept, geography_level, *, replace_negatives_with_nan, year
+    keys,
+    categories,
+    var_for_concept,
+    geography_level,
+    *,
+    replace_negatives_with_nan,
+    year,
 ):
     data = query_acs_direct(keys, geography_level, year=year)
 
@@ -127,7 +140,9 @@ def query_acs_direct(keys, geography_level, *, year):
         all_data.append(query_acs_for_state(keys, None, geography_level, year=year))
     else:
         for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
-            all_data.append(query_acs_for_state(keys, state.fips, geography_level, year=year))
+            all_data.append(
+                query_acs_for_state(keys, state.fips, geography_level, year=year)
+            )
     header = all_data[0][0]
     for data in all_data:
         assert data[0] == header

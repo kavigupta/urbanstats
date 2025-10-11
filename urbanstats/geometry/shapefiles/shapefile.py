@@ -150,7 +150,12 @@ class Shapefile:
 
     @property
     def census_levels(self):
-        return [x[1] for x in self.special_data_sources if isinstance(x, tuple) and x[0] == "census"]
+        return [
+            x[1]
+            for x in self.special_data_sources
+            if isinstance(x, tuple) and x[0] == "census"
+        ]
+
 
 def subset_mask_key(subset_name):
     return f"subset_mask_{subset_name}"
