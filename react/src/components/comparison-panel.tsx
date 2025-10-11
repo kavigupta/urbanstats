@@ -26,7 +26,7 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { CommonMaplibreMap, ShapeCollection, shapeFeatureCollection, useClickableFeatures, useZoomAllFeatures, defaultMapPadding } from './map-common'
+import { CommonMaplibreMap, ShapeCollection, shapeFeatureCollection, useClickableFeatures, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -466,10 +466,11 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
                 id={id}
                 ref={mapRef}
                 {...useClickableFeatures(mapRef, id, readyFeatures)}
-                attributionControl={attribution ? undefined : false}
+                attributionControl={false}
             >
                 <ShapeCollection features={readyFeatures} id={id} />
                 <FullscreenControl position="top-left" />
+                { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>
             <ComparisonMapButtons longnames={longnames} colors={colors} features={features} mapRef={mapRef} />
         </div>
