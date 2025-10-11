@@ -4,7 +4,7 @@ import './article.css'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
-import { FullscreenControl, MapRef, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
