@@ -5,7 +5,7 @@ import requests
 import tqdm.auto as tqdm
 import us
 from cached_property import cached_property
-from permacache import permacache, stable_hash, drop_if_equal
+from permacache import drop_if_equal, permacache, stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
