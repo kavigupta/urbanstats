@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
-import { boundingBox, geometry } from '../map-partition'
+import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
@@ -55,6 +55,16 @@ export function useZoomFirstFeature(mapRef: React.RefObject<MapRef>, features: (
         }
         mapRef.current?.fitBounds(boundingBox(firstFeature.geometry), { animate: false, padding: defaultMapPadding })
     }, [mapRef, firstFeature]) // Don't depend on all features or we keep zooming as they load
+}
+
+export function useZoomAllFeatures(mapRef: React.RefObject<MapRef>, features: (GeoJSON.Feature | typeof waiting)[], readyFeatures: GeoJSON.Feature[]): void {
+    useEffect(() => {
+        if (readyFeatures.length < features.length) {
+            return
+        }
+        // Only zoom once all features are ready
+        mapRef.current?.fitBounds(extendBoxes(readyFeatures.map(f => boundingBox(f.geometry))), { animate: false, padding: defaultMapPadding })
+    }, [mapRef, features, readyFeatures])
 }
 
 export interface Shape {
