@@ -184,17 +184,18 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        2
+        2,
+        1
     ],
     "5M Person Circle": [
         316,
-        54
+        55
     ],
     "CA Census Subdivision": [
         106,
         106,
         106,
-        52
+        53
     ],
     "CCD": [
         11,
@@ -230,7 +231,7 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        7
+        8
     ],
     "City": [
         13,
@@ -261,22 +262,22 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        6
+        7
     ],
     "County": [
         159,
         159,
-        52
+        53
     ],
     "County Cross CD": [
         137,
         137,
-        96
+        97
     ],
     "Hospital Service Area": [
         149,
         149,
-        72
+        73
     ],
     "Metropolitan Cluster": [
         11,
@@ -312,7 +313,7 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        7
+        8
     ],
     "Neighborhood": [
         31,
@@ -326,7 +327,7 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        29
+        30
     ],
     "School District": [
         38,
@@ -338,26 +339,26 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        28
+        29
     ],
     "State House District": [
         105,
         105,
         105,
-        55
+        56
     ],
     "State Senate District": [
         267,
-        103
+        104
     ],
     "Subnational Region": [
         140,
         140,
-        90
+        91
     ],
     "Urban Area": [
         195,
-        175
+        176
     ],
     "Urban Center": [
         50,
@@ -367,7 +368,7 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        20
+        21
     ],
     "ZIP": [
         13,
@@ -398,7 +399,7 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        6
+        7
     ]
 }
 export default value

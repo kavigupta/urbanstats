@@ -261,6 +261,7 @@ export default [
     "Mean low temperature in Jun/Jul/Aug",
     "Mean low temperature in Mar/Apr/May",
     "Mean low temperature in Sep/Oct/Nov",
+    "Median Household Income (USD)",
     "Native %",
     "Native % (2000)",
     "Native % (2010)",

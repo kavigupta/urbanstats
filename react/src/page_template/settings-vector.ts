@@ -425,6 +425,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__mean_low_temp', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__rainfall_4', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__snowfall_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_median_household_income', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

@@ -261,6 +261,7 @@ export default [
     "mean_low_temp_jja",
     "mean_low_temp_mam",
     "mean_low_temp_son",
+    "median_household_income",
     "native",
     "native_2000",
     "native_2010",

@@ -261,6 +261,7 @@ export default [
     "weather",
     "weather",
     "weather",
+    "income",
     "race",
     "2000",
     "2010",

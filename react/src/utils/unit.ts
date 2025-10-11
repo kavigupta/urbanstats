@@ -1,6 +1,6 @@
 export type UnitType = 'percentage' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
-    | 'contaminantLevel' | 'number'
+    | 'contaminantLevel' | 'number' | 'usd'
 
 // Validated list of all unit types - this ensures we have every value from UnitType
 export const allUnitTypes = [
@@ -18,6 +18,7 @@ export const allUnitTypes = [
     'distancePerYear',
     'contaminantLevel',
     'number',
+    'usd',
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- just to check that all unit types are covered
@@ -55,5 +56,7 @@ export function getUnitName(unitType: UnitType): string {
             return 'Contaminant Level'
         case 'number':
             return 'Number'
+        case 'usd':
+            return 'USD'
     }
 }

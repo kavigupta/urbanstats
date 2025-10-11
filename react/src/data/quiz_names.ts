@@ -261,6 +261,7 @@ export default [
     null,
     null,
     null,
+    "higher median household income",
     null,
     null,
     null,
