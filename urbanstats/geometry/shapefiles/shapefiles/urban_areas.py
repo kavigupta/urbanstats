@@ -20,9 +20,11 @@ URBAN_AREAS = Shapefile(
     path="named_region_shapefiles/tl_rd22_us_uac20.zip",
     shortname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=True),
     longname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=False),
+    additional_columns_computer={"geoid": lambda x: x.GEOID20},
     filter=lambda x: True,
     meta=dict(type="Urban Area", source="Census", type_category="Census"),
     does_overlap_self=False,
+    special_data_sources=[("census", "urban area")],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="URBA",
@@ -31,4 +33,5 @@ URBAN_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
+    metadata_columns=["geoid"],
 )

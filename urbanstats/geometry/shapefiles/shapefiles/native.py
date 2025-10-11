@@ -16,6 +16,7 @@ NATIVE_AREAS = Shapefile(
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
     longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=lambda x: not is_native_statistical_area(x),
     meta=dict(type="Native Area", source="Census", type_category="Native"),
     does_overlap_self=False,
@@ -27,12 +28,14 @@ NATIVE_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
+    metadata_columns=["geoid"],
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
     hash_key="native_statistical_areas",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
     longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=is_native_statistical_area,
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
     does_overlap_self=False,
@@ -44,12 +47,14 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
+    metadata_columns=["geoid"],
 )
 NATIVE_SUBDIVISIONS = Shapefile(
     hash_key="native_subdivisions_2",
     path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
     longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=lambda x: True,
     meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
     does_overlap_self=False,
@@ -61,6 +66,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
+    metadata_columns=["geoid"],
 )
 
 
