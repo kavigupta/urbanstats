@@ -240,7 +240,7 @@ def build_urbanstats(
             table = shapefile_without_ordinals()
             save_universes_list_all(
                 table,
-                all_ordinals().ordered_names("world", "overall"),
+                all_ordinals(),
                 site_folder,
             )
             output_ordering(
