@@ -6,7 +6,7 @@ import requests
 import tqdm.auto as tqdm
 import us
 from cached_property import cached_property
-from permacache import permacache, stable_hash
+from permacache import permacache, stable_hash, drop_if_equal
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
@@ -25,9 +25,9 @@ def extract_block_group_geoid(geoid):
     return geoid.split("US")[1][:BLOCK_GROUP_PREFIX_COUNT]
 
 
-@permacache("population_density/acs/acs_variables")
-def acs_variables():
-    url = "https://api.census.gov/data/2021/acs/acs5/variables.json"
+@permacache("population_density/acs/acs_variables", key_function=dict(year=drop_if_equal(2021)))
+def acs_variables(*, year):
+    url = f"https://api.census.gov/data/{year}/acs/acs5/variables.json"
 
     r = requests.get(url, timeout=1000)
     r.raise_for_status()
@@ -36,10 +36,10 @@ def acs_variables():
     return res["variables"]
 
 
-def for_concept(concept):
+def for_concept(concept, *, year):
     res = {
         k: v
-        for k, v in acs_variables().items()
+        for k, v in acs_variables(year=year).items()
         if "concept" in v and v["concept"] == concept
     }
     return {k: res[k] for k in sorted(res)}
@@ -60,9 +60,9 @@ include_county = {
 }
 
 
-@permacache("population_density/acs/query_acs_2")
-def query_acs_for_state_direct(keys, state_fips, geography_level):
-    url = "https://api.census.gov/data/2021/acs/acs5"
+@permacache("population_density/acs/query_acs_2", key_function=dict(year=drop_if_equal(2021)))
+def query_acs_for_state_direct(keys, state_fips, geography_level, *, year):
+    url = f"https://api.census.gov/data/{year}/acs/acs5"
 
     county_maybe = {
         "neither": "",
@@ -85,13 +85,13 @@ def query_acs_for_state_direct(keys, state_fips, geography_level):
     return response.json()
 
 
-def query_acs_for_state(keys, state_fips, geography_level):
+def query_acs_for_state(keys, state_fips, geography_level,  *, year):
     # The Census API has a limit of 50 variables per query, so we need to split
     # up the query into multiple queries.
     results = {}
     for i in range(0, len(keys), 50):
         for col_header, *col in zip(
-            *query_acs_for_state_direct(keys[i : i + 50], state_fips, geography_level)
+            *query_acs_for_state_direct(keys[i : i + 50], state_fips, geography_level, year=year)
         ):
             if col_header in results:
                 assert col_header in ["state", "county", "tract", "block group"]
@@ -104,9 +104,9 @@ def query_acs_for_state(keys, state_fips, geography_level):
 
 
 def query_acs(
-    keys, categories, var_for_concept, geography_level, *, replace_negatives_with_nan
+    keys, categories, var_for_concept, geography_level, *, replace_negatives_with_nan, year
 ):
-    data = query_acs_direct(keys, geography_level)
+    data = query_acs_direct(keys, geography_level, year=year)
 
     label_to_column = {v["label"]: k for k, v in var_for_concept.items()}
     result = {col: data[col] for col in data if col not in keys}
@@ -121,13 +121,13 @@ def query_acs(
     return pd.DataFrame(result)
 
 
-def query_acs_direct(keys, geography_level):
+def query_acs_direct(keys, geography_level, *, year):
     all_data = []
     if include_county[geography_level] == "neither":
-        all_data.append(query_acs_for_state(keys, None, geography_level))
+        all_data.append(query_acs_for_state(keys, None, geography_level, year=year))
     else:
         for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
-            all_data.append(query_acs_for_state(keys, state.fips, geography_level))
+            all_data.append(query_acs_for_state(keys, state.fips, geography_level, year=year))
     header = all_data[0][0]
     for data in all_data:
         assert data[0] == header
@@ -184,10 +184,11 @@ class ACSDataEntity:
     geography_level = attr.ib()
     _categories = attr.ib()
     replace_negatives_with_nan = attr.ib(default=False)
+    year = attr.ib(default=2021)
 
     @cached_property
     def var_for_concept(self):
-        var_for_concept = for_concept(self.concept)
+        var_for_concept = for_concept(self.concept, year=self.year)
         all_labels = set(x["label"] for x in var_for_concept.values())
         used_labels = {x for xs in self._categories.values() for x in xs}
         assert all_labels - used_labels == set(), sorted(all_labels - used_labels)
@@ -205,6 +206,7 @@ class ACSDataEntity:
             self.var_for_concept,
             self.geography_level,
             replace_negatives_with_nan=self.replace_negatives_with_nan,
+            year=self.year,
         )
 
 
@@ -215,6 +217,7 @@ class ACSDataEntityForMultipleLevels:
     geography_levels_unused = attr.ib()
     _categories = attr.ib()
     replace_negatives_with_nan = attr.ib(default=False)
+    year = attr.ib(default=2021)
 
     def __attrs_post_init__(self):
         assert set(self.geography_levels_used).isdisjoint(
@@ -244,6 +247,7 @@ class ACSDataEntityForMultipleLevels:
             geography_level,
             self._categories,
             self.replace_negatives_with_nan,
+            self.year,
         ).query()
         data = frame[list(self._categories)]
         remaining_columns = [x for x in frame if x not in data]

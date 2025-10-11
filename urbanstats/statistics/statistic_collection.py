@@ -3,7 +3,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 
-from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
+from urbanstats.acs.load import (
+    ACSDataEntityForMultipleLevels,
+    aggregated_acs_data,
+    aggregated_acs_data_us_pr,
+)
 from urbanstats.geometry.shapefiles.shapefile import (
     EmptyShapefileError,
     subset_mask_key,
@@ -241,3 +245,68 @@ class ACSUSPRStatisticsColection(USAStatistics):
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
         pass
+
+
+class GeoIDStatisticsCollection(USAStatistics):
+    def year(self):
+        return 2020
+
+    @abstractmethod
+    def compute_statistics_dictionary_for_census_level(
+        self, census_level, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        census_levels = shapefile.census_levels
+        if not census_levels:
+            return {}
+        [census_level] = census_levels
+        return self.compute_statistics_dictionary_for_census_level(
+            census_level, shapefile, existing_statistics, shapefile_table
+        )
+
+
+class GeoIDStatisticsACS(GeoIDStatisticsCollection):
+    @abstractmethod
+    def acs_data_entity_multi(self) -> ACSDataEntityForMultipleLevels:
+        pass
+
+    def allow_missing_geoid(self, census_level, geoid, name, population):
+        return False
+
+    def dependencies(self):
+        return ["population"]
+
+    def compute_statistics_dictionary_for_census_level(
+        self, census_level, shapefile, existing_statistics, shapefile_table
+    ):
+        population = existing_statistics["population"]
+        assert len(population) == len(shapefile_table)
+        geoid_to_population = dict(zip(shapefile_table["geoid"], population))
+        geoid_to_name = dict(zip(shapefile_table["geoid"], shapefile_table["longname"]))
+        entity = self.acs_data_entity_multi()
+        table = entity.query(census_level)
+        assert set(table) == set(self.name_for_each_statistic())
+        geoid_table = set(shapefile_table["geoid"])
+        geoid_acs = set(table.index)
+        if geoid_table != geoid_acs:
+            missing_in_acs = {
+                x
+                for x in geoid_table - geoid_acs
+                if not self.allow_missing_geoid(census_level, x, geoid_to_name[x], geoid_to_population[x])
+            }
+            if missing_in_acs:
+                print(f"Missing in ACS: {sorted([geoid_to_name[x] for x in missing_in_acs])}")
+            assert not missing_in_acs
+
+        array_result = np.full((len(shapefile_table), len(table.columns)), np.nan)
+        mask = shapefile_table["geoid"].isin(table.index)
+        array_result[mask] = table.loc[shapefile_table.loc[mask, "geoid"], :].to_numpy()
+        return {name: array_result[:, i] for i, name in enumerate(table.columns)}
+        import IPython
+
+        IPython.embed()
+        1 / 0

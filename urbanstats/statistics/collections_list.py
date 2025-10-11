@@ -31,6 +31,7 @@ from urbanstats.statistics.collections.housing_year_built import (
 )
 from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
+from urbanstats.statistics.collections.income_median import IncomeMedian
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.insurance_type import InsuranceTypeStatistics
@@ -84,6 +85,7 @@ statistic_collections = (
     EducationStatistics(),
     EducationGenderGapStatistics(),
     GenerationStatistics(),
+    IncomeMedian(),
     IncomePoverty(),
     IncomeFamily(),
     IncomeIndividual(),

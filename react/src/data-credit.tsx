@@ -434,6 +434,10 @@ export function DataCreditPanel(): ReactNode {
                                     We compute both individual and household income, disaggregating from the tract level to the block level
                                     using adult population as a weight for indivividual income and occupied housing units as a weight for household income.
                                 </p>
+                                <p>
+                                    Median income is directly computed from the census rather than being disaggregated. To ensure we align with the latest counties,
+                                    we use ACS 2023 instead of ACS 2021 for this statistic.
+                                </p>
                             </div>
 
                             <NRef name="transportation">Transportation</NRef>

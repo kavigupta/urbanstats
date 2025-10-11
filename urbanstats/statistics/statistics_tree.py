@@ -432,6 +432,7 @@ statistics_tree = StatisticTree(
         **just_2020_category(
             "income",
             "Income",
+            "median_household_income",
             "poverty_below_line",
             "lico_at_canada",
             "household_income_under_50k",
