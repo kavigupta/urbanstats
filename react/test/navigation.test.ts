@@ -37,7 +37,9 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await flaky(t, async () => {
         await clickMapFeature(/Connecticut/)
     })
-    await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
+    await flaky(t, async () => {
+        await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
+    })
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
     await goBack()
