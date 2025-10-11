@@ -24,7 +24,7 @@ import { NormalizeProto } from '../utils/types'
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
-export const defaultMapPadding = 20
+const defaultMapPadding = 20
 
 export interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox: [number, number, number, number], mainMap: boolean, name?: string }
 export type Insets = Inset[]
