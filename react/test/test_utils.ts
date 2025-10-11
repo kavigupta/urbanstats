@@ -391,7 +391,7 @@ export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]
 
 export function mapFeatureName(r: RegExp): Promise<string | undefined> {
     return ClientFunction(() => {
-        for (const { features } of (window as unknown as TestWindow).testUtils.articleMaps.values()) {
+        for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
             for (const feature of features) {
                 if (r.test(feature)) {
                     return feature
@@ -404,7 +404,7 @@ export function mapFeatureName(r: RegExp): Promise<string | undefined> {
 
 export async function clickMapFeature(r: RegExp): Promise<void> {
     return ClientFunction(() => {
-        for (const { features, clickFeature } of (window as unknown as TestWindow).testUtils.articleMaps.values()) {
+        for (const { features, clickFeature } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
             for (const feature of features) {
                 if (r.test(feature)) {
                     clickFeature(feature)

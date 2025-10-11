@@ -1,18 +1,16 @@
-import React, { ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef } from 'react'
+import React, { ReactNode, useId, useMemo, useRef } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
-import { TestUtils } from '../utils/TestUtils'
 import { randomColor } from '../utils/color'
 import { isHistoricalCD } from '../utils/is_historical'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
-import { CommonMaplibreMap, Shape, ShapeCollection, shapeFeatureCollection, shapesId, useZoomFirstFeature } from './map-common'
+import { CommonMaplibreMap, Shape, ShapeCollection, shapeFeatureCollection, useClickableFeatures, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
     articleType: string
@@ -25,25 +23,8 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
 
     const features = useArticleFeatures(props).use()
 
-    const navigator = useContext(Navigator.Context)
-
-    const clickFeature = useCallback((name: string) => {
-        void navigator.navigate({
-            kind: 'article',
-            universe: navigator.universe,
-            longname: name,
-        }, { history: 'push', scroll: { kind: 'element', element: mapRef.current!.getContainer() } })
-    }, [navigator])
-
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
     const id = useId()
-
-    useEffect(() => {
-        TestUtils.shared.articleMaps.set(id, { clickFeature, features: readyFeatures.map(f => f.properties!.name as string) })
-        return () => {
-            TestUtils.shared.articleMaps.delete(id)
-        }
-    }, [id, clickFeature, readyFeatures])
 
     useZoomFirstFeature(mapRef, features)
 
@@ -51,15 +32,7 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
         <CommonMaplibreMap
             id={id}
             ref={mapRef}
-            interactiveLayerIds={[shapesId(id, 'fill')]}
-            onMouseOver={e => e.target.getCanvas().style.cursor = 'pointer'}
-            onMouseLeave={e => e.target.getCanvas().style.cursor = ''}
-            onClick={(e) => {
-                const feature = e.features?.find(f => f.properties.clickable !== false)
-                if (feature !== undefined) {
-                    clickFeature(feature.properties.name as string)
-                }
-            }}
+            {...useClickableFeatures(mapRef, id, readyFeatures)}
         >
             <ShapeCollection features={readyFeatures} id={id} />
             <FullscreenControl position="top-left" />
