@@ -16,6 +16,7 @@ import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot
 
 // eslint-disable-next-line import/no-unassigned-import -- Side effect only
 import '../utils/map-rtl'
+import './map.css'
 
 export const defaultMapPadding = 20
 
