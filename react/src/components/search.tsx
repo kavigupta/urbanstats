@@ -17,6 +17,7 @@ export function SearchBox(props: {
     placeholder: string
     style: CSSProperties
     prioritizeArticleType?: string
+    onTextPresenceChange?: (hasText: boolean) => void
 }): ReactNode {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
@@ -78,6 +79,7 @@ export function SearchBox(props: {
             onBlur={() => {
                 searchWorker.current = undefined
             }}
+            onTextPresenceChange={props.onTextPresenceChange}
             autoFocus={props.autoFocus}
             placeholder={props.placeholder}
             style={props.style}
