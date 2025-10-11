@@ -10,7 +10,7 @@ import { Universe } from './universe'
 import { assert } from './utils/defensive'
 import {
     Article, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
-    Feature, IDataList, IOrderList, OrderList,
+    Feature, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
     QuizQuestionTronche,
