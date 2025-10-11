@@ -1,9 +1,11 @@
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, useEffect, useMemo } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, geometry } from '../map-partition'
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
+import { TestUtils } from '../utils/TestUtils'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
 import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
@@ -154,4 +156,35 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
 export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
     useControl(() => new CustomAttributionControl(startShowingAttribution))
     return null
+}
+
+export function useClickableFeatures(mapRef: React.RefObject<MapRef>, id: string, readyFeatures: GeoJSON.Feature[]): Partial<MapProps> {
+    const navigator = useContext(Navigator.Context)
+
+    const clickFeature = useCallback((name: string) => {
+        void navigator.navigate({
+            kind: 'article',
+            universe: navigator.universe,
+            longname: name,
+        }, { history: 'push', scroll: { kind: 'element', element: mapRef.current!.getContainer() } })
+    }, [navigator, mapRef])
+
+    useEffect(() => {
+        TestUtils.shared.clickableMaps.set(id, { clickFeature, features: readyFeatures.map(f => f.properties!.name as string) })
+        return () => {
+            TestUtils.shared.clickableMaps.delete(id)
+        }
+    }, [id, clickFeature, readyFeatures])
+
+    return {
+        interactiveLayerIds: [shapesId(id, 'fill')],
+        onMouseOver: e => e.target.getCanvas().style.cursor = 'pointer',
+        onMouseLeave: e => e.target.getCanvas().style.cursor = '',
+        onClick: (e) => {
+            const feature = e.features?.find(f => f.properties.clickable !== false)
+            if (feature !== undefined) {
+                clickFeature(feature.properties.name as string)
+            }
+        },
+    }
 }

@@ -41,7 +41,7 @@ export class TestUtils {
 
     readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
 
-    readonly articleMaps = new Map<string, {
+    readonly clickableMaps = new Map<string, {
         clickFeature: (name: string) => void
         features: string[]
     }>()
