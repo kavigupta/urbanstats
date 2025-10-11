@@ -72,6 +72,7 @@ class IncomeMedian(GeoIDStatisticsACS):
             "11717, USA",
             "11798, USA",
             "98205, USA",
+            "Laplace-Lutcher-Gramercy [Urban Area], LA, USA",
         ]:
             # idk why, but this is missing
             return True
