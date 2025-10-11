@@ -13,6 +13,8 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { defaultMapPadding } from './map'
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
+void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
+
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
 function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
