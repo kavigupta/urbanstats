@@ -117,24 +117,6 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
         setPolysOnScreen(newPolys)
     }
 
-    useEffect(() => {
-        const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
-        const lats = props.centroids.map(c => c.lat!)
-        let minLon = Math.min(...longs)
-        let minLat = Math.min(...lats)
-        let maxLon = Math.max(...longs)
-        let maxLat = Math.max(...lats)
-        const lonRange = maxLon - minLon
-        const latRange = maxLat - minLat
-        const padPct = 0.1
-        minLon -= lonRange * padPct
-        minLat -= latRange * padPct
-        maxLon += lonRange * padPct
-        maxLat += latRange * padPct
-        const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
-        mapRef.current?.fitBounds(bounds, { animate: false })
-    }, [props.centroids])
-
     const features = useMemo(() => shapeFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
         name,
         fillColor: isGuessed ? props.guessedColor : props.notGuessedColor,
@@ -156,6 +138,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             <NoSymbols />
             <FullscreenControl position="top-left" />
             <Source
+                id="centroids"
                 type="geojson"
                 data={centroidsData}
                 cluster={true}
@@ -185,6 +168,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 }}
             />
             <ShapeCollection features={readyFeatures} id={id} />
+            <FirstZoom centroids={props.centroids} />
         </CommonMaplibreMap>
     )
 }
@@ -205,6 +189,30 @@ function NoSymbols(): ReactNode {
             }
         })()
     }, [map])
+
+    return null
+}
+
+function FirstZoom(props: { centroids: SYAUMapProps['centroids'] }): ReactNode {
+    const map = useMap().current!
+
+    useEffect(() => {
+        const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
+        const lats = props.centroids.map(c => c.lat!)
+        let minLon = Math.min(...longs)
+        let minLat = Math.min(...lats)
+        let maxLon = Math.max(...longs)
+        let maxLat = Math.max(...lats)
+        const lonRange = maxLon - minLon
+        const latRange = maxLat - minLat
+        const padPct = 0.1
+        minLon -= lonRange * padPct
+        minLat -= latRange * padPct
+        maxLon += lonRange * padPct
+        maxLat += latRange * padPct
+        const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
+        map.fitBounds(bounds, { animate: false })
+    }, [props.centroids, map])
 
     return null
 }

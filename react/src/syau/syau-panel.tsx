@@ -137,7 +137,6 @@ export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYA
                 <div style={{ marginBlockEnd: '1em' }} />
             </div>
             <SYAUMap
-                // basemap={{ type: 'osm', noLabels: true }}
                 longnames={props.syauData.longnames}
                 population={props.syauData.populations}
                 populationOrdinals={props.syauData.populationOrdinals}
