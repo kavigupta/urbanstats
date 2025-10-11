@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { clickMapElement, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
+import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -35,9 +35,11 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.scroll(0, 400)
     await flaky(t, async () => {
-        await clickMapElement(t, /Connecticut/)
+        await clickMapFeature(/Connecticut/)
     })
-    await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
+    await flaky(t, async () => {
+        await t.expect(Selector('.headertext').withText(/Connecticut/).exists).ok()
+    })
     await t.expect(getScroll()).eql(400) // Does not reset scroll on map navigation
     await t.scroll(0, 500)
     await goBack()

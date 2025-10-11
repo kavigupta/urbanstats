@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
@@ -126,17 +126,19 @@ export class Settings {
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
 
     useSettings<K extends keyof SettingsDictionary>(keys: K[]): Pick<SettingsDictionary, K> {
-        const [, setCounter] = useState(0)
+        const stringKeys = JSON.stringify(keys)
+        const [state, setState] = useState({ counter: 0, stringKeys: '' }) // Start stringKeys at '' so that we pick up changes before useEffect can bind
         useEffect(() => {
-            setCounter(counter => counter + 1) // So that if `key` changes we change our result immediately
-            const observer = (): void => { setCounter(counter => counter + 1) }
+            setState(s => s.stringKeys !== stringKeys ? { stringKeys, counter: s.counter + 1 } : s) // So that if `key` changes we change our result immediately, but also we don't set state on first effect
+            const observer = (): void => { setState(s => ({ ...s, counter: s.counter + 1 })) }
             keys.forEach(key => this.settingValueObservers.get(key).add(observer))
             return () => {
                 keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
             }
         // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, [JSON.stringify(keys)])
-        return this.getMultiple(keys)
+        }, [stringKeys])
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
+        return useMemo(() => this.getMultiple(keys), [stringKeys, state.counter])
     }
 
     setSetting<K extends keyof SettingsDictionary>(key: K, newValue: SettingsDictionary[K], save = true): void {

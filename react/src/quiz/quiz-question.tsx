@@ -1,36 +1,52 @@
 import '../common.css'
 import '../components/quiz.css'
 
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useId, useMemo, useRef } from 'react'
 import { isFirefox } from 'react-device-detect'
+import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
-import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from '../components/map'
+import { CommonMaplibreMap, CustomAttributionControlComponent, ShapeCollection, shapeFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { useColors } from '../page_template/colors'
+import { notWaiting } from '../utils/promiseStream'
 import { useMobileLayout } from '../utils/responsive'
 
 import { JuxtastatLivesDisplay } from './infinite'
 import { JuxtaQuestion, QuizHistory, QuizKind, RetroQuestion, aCorrect } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
 
-interface MapProps extends MapGenericProps {
+interface MapProps {
     longname: string
     color: string
+    attribution: boolean
 }
 
-class Map extends MapGeneric<MapProps> {
-    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
-        return Promise.resolve({
-            shapes: [
-                {
-                    name: this.props.longname,
-                    spec: { type: 'polygon', style: { fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color } },
-                    meta: {},
-                    notClickable: true,
-                },
-            ],
-            zoomIndex: 0,
-        })
-    }
+function Map({ longname, color, attribution }: MapProps): ReactNode {
+    const mapRef = useRef<MapRef>(null)
+
+    const features = useMemo(() => shapeFeatureCollection(
+        [
+            {
+                name: longname,
+                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+            },
+        ],
+    ), [longname, color]).use()
+
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+    const id = useId()
+
+    useZoomFirstFeature(mapRef, features)
+
+    return (
+        <CommonMaplibreMap
+            ref={mapRef}
+            attributionControl={false}
+        >
+            <ShapeCollection features={readyFeatures} id={id} />
+            <FullscreenControl position="top-left" />
+            { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
+        </CommonMaplibreMap>
+    )
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (
@@ -187,9 +203,8 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
             getDemo={letter => (
                 <Map
                     longname={props.question[`longname_${letter}`]}
-                    basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
-                    attribution={letter === 'b' ? 'startHidden' : 'none'}
+                    attribution={letter === 'b'}
                 />
             )}
         />
