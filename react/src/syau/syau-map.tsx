@@ -1,7 +1,9 @@
-import React, { ReactNode, useEffect, useRef } from 'react'
-import { MapRef, useMap } from 'react-map-gl/maplibre'
+import maplibregl from 'maplibre-gl'
+import React, { ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap } from '../components/map-common'
+import { CommonMaplibreMap, ShapeCollection, shapeFeatureCollection } from '../components/map-common'
+import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
@@ -18,9 +20,171 @@ interface SYAUMapProps {
 }
 
 export function SYAUMap(props: SYAUMapProps): ReactNode {
+    const mapRef = useRef<MapRef>(null)
+
+    const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
+    const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, isGuessed: boolean }[]>([])
+
+    const centroidsData = {
+        type: 'FeatureCollection',
+        features: props.centroids.map((c, idx) => ({
+            type: 'Feature',
+            properties: {
+                name: props.longnames[idx],
+                population: props.population[idx],
+                populationGuessed: props.isGuessed[idx] ? props.population[idx] : 0,
+                isGuessed: props.isGuessed[idx] ? 1 : 0,
+                existence: 1,
+                populationOrdinal: props.populationOrdinals[idx],
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [c.lon!, c.lat!],
+            },
+        })),
+    } satisfies GeoJSON.FeatureCollection
+
+    const updateMarkers = (): void => {
+        const map = mapRef.current
+
+        if (map === null) {
+            return
+        }
+
+        const newMarkers = new Map<string, maplibregl.Marker>()
+        const newPolys: { name: string, isGuessed: boolean }[] = []
+
+        const oldMarkers = new Map(markersOnScreen)
+
+        const features = map.querySourceFeatures('centroids')
+
+        for (const feature of features) {
+            const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
+            const featureProps = feature.properties as (
+                        { populationGuessed: number, population: number, isGuessed: number, existence: number } &
+
+                        // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
+                        ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
+            const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
+
+            oldMarkers.get(featureId)?.remove()
+
+            let text: string
+            if (featureProps.cluster) {
+                text = `${featureProps.isGuessed}/${featureProps.existence}`
+            }
+            else {
+                newPolys.push({
+                    name: featureProps.name,
+                    isGuessed: featureProps.isGuessed === 1,
+                })
+                if (featureProps.isGuessed) {
+                    text = `#${featureProps.populationOrdinal}`
+                }
+                else {
+                    text = `?`
+                }
+            }
+            const html = circleSector(
+                props.notGuessedColor,
+                props.guessedColor,
+                circleMarkerRadius,
+                2 * Math.PI * (featureProps.populationGuessed / featureProps.population),
+                text,
+            )
+            const el = document.createElement('div')
+            el.innerHTML = html
+            el.className = 'syau-marker'
+            el.style.width = `${circleMarkerRadius * 2}px`
+            el.style.height = `${circleMarkerRadius * 2}px`
+            const marker = new maplibregl.Marker({
+                element: el,
+            }).setLngLat(coords)
+
+            newMarkers.set(featureId, marker)
+            oldMarkers.set(featureId, marker)
+            marker.addTo(map.getMap())
+        }
+        for (const [oldMarkerId, oldMarker] of oldMarkers.entries()) {
+            if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
+        }
+        setMarkersOnScreen(newMarkers)
+        newPolys.sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+        })
+        setPolysOnScreen(newPolys)
+    }
+
+    useEffect(() => {
+        const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
+        const lats = props.centroids.map(c => c.lat!)
+        let minLon = Math.min(...longs)
+        let minLat = Math.min(...lats)
+        let maxLon = Math.max(...longs)
+        let maxLat = Math.max(...lats)
+        const lonRange = maxLon - minLon
+        const latRange = maxLat - minLat
+        const padPct = 0.1
+        minLon -= lonRange * padPct
+        minLat -= latRange * padPct
+        maxLon += lonRange * padPct
+        maxLat += latRange * padPct
+        const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
+        mapRef.current?.fitBounds(bounds, { animate: false })
+    }, [props.centroids])
+
+    const features = useMemo(() => shapeFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
+        name,
+        fillColor: isGuessed ? props.guessedColor : props.notGuessedColor,
+        fillOpacity: 0.5,
+        color: isGuessed ? props.guessedColor : props.notGuessedColor,
+        weight: 2,
+    }))), [polysOnScreen, props.guessedColor, props.notGuessedColor]).use()
+
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+    const id = useId()
+
     return (
-        <CommonMaplibreMap>
+        <CommonMaplibreMap
+            ref={mapRef}
+            onMove={updateMarkers}
+            onMoveEnd={updateMarkers}
+            onData={updateMarkers}
+        >
             <NoSymbols />
+            <FullscreenControl position="top-left" />
+            <Source
+                type="geojson"
+                data={centroidsData}
+                cluster={true}
+                clusterMaxZoom={14}
+                clusterRadius={circleMarkerRadius * 2.5}
+                clusterProperties={{
+                    // keep counts of population and named status in a cluster
+                    population: ['+', ['get', 'population']],
+                    populationGuessed: ['+', ['get', 'populationGuessed']],
+                    isGuessed: ['+', ['get', 'isGuessed']],
+                    existence: ['+', ['get', 'existence']],
+                }}
+            />
+            <Layer
+                id="centroid_circle"
+                type="circle"
+                source="centroids"
+                filter={['!=', 'cluster', true]}
+                paint={{
+                    'circle-color': [
+                        'case',
+                        ['==', ['get', 'isGuessed'], 1],
+                        props.guessedColor,
+                        props.notGuessedColor,
+                    ],
+                    'circle-radius': 0,
+                }}
+            />
+            <ShapeCollection features={readyFeatures} id={id} />
         </CommonMaplibreMap>
     )
 }
