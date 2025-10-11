@@ -142,6 +142,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             ref={mapRef}
             onMove={updateMarkers}
             onData={updateMarkers}
+            style={{ height: 600 }}
         >
             <NoSymbols />
             <FullscreenControl position="top-left" />

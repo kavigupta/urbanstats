@@ -29,6 +29,11 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
     return (
         <Map
             ref={ref}
+            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            canvasContextAttributes={{
+                preserveDrawingBuffer: true, // Allows screenshots
+            }}
+            {...props}
             style={{
                 width: '100%',
                 height: 400,
@@ -36,12 +41,8 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 // Background color is used for e2e tests
                 backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,
+                ...props.style,
             }}
-            mapStyle="https://tiles.openfreemap.org/styles/bright"
-            canvasContextAttributes={{
-                preserveDrawingBuffer: true, // Allows screenshots
-            }}
-            {...props}
         />
     )
 }
