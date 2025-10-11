@@ -45,21 +45,6 @@ def for_concept(concept, *, year):
     return {k: res[k] for k in sorted(res)}
 
 
-include_county = {
-    "tract": "county",
-    "block group": "county",
-    "county subdivision": "county",
-    "county": "state",
-    "place": "state",
-    "state": "neither",
-    "zip code tabulation area": "neither",
-    "school district (elementary)": "state",
-    "combined statistical area": "neither",
-    "metropolitan statistical area/micropolitan statistical area": "neither",
-    "urban area": "neither",
-}
-
-
 @permacache(
     "population_density/acs/query_acs_2", key_function=dict(year=drop_if_equal(2021))
 )
