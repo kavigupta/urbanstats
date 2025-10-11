@@ -137,7 +137,7 @@ export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYA
                 <div style={{ marginBlockEnd: '1em' }} />
             </div>
             <SYAUMap
-                basemap={{ type: 'osm', noLabels: true }}
+                // basemap={{ type: 'osm', noLabels: true }}
                 longnames={props.syauData.longnames}
                 population={props.syauData.populations}
                 populationOrdinals={props.syauData.populationOrdinals}
@@ -146,8 +146,6 @@ export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYA
                 guessedColor={jColors.correct}
                 notGuessedColor={jColors.incorrect}
                 voroniHighlightColor={colors.hueColors.blue}
-                height={{ type: 'fixed-height', value: 600 }}
-                attribution="startVisible"
             />
             <div style={{ marginBlockEnd: '1em' }} />
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>

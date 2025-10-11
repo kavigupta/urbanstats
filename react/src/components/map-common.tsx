@@ -136,11 +136,11 @@ export function shapeFeatureCollection(shapes: Shape[]): { use: () => (GeoJSON.F
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
-    if (!map.isStyleLoaded() || (map.style as unknown) === undefined) {
-        await new Promise(resolve => map.once('style.load', resolve))
+    if (!map.loaded()) {
+        await new Promise(resolve => map.once('load', resolve))
     }
-
-    for (const layer of map.style.stylesheet.layers) {
+    for (const layerId of map.getLayersOrder()) {
+        const layer = map.getLayer(layerId)!
         if (layer.type === 'symbol' && layer.id.startsWith('label')) {
             return layer.id
         }
