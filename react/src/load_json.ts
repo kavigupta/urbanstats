@@ -151,7 +151,7 @@ async function loadOrderingProtobuf(universe: string, statpath: string, type: st
     return { orderIdxs: orderIndices }
 }
 
-async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<{
+export async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<{
     value: number[]
     populationPercentile: number[]
 }> {
@@ -179,22 +179,6 @@ export async function loadDataInIndexOrder(
     universe: string, statpath: string, type: string,
 ): Promise<[number[], number[]]> {
     const dataPromise = await loadOrderingDataProtobuf(universe, statpath, type)
-    // const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
-    // const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
-    // const dataList = data.value
-    // const popPercentileList = data.populationPercentile
-    // assert(Array.isArray(dataList), 'Data list must be an array')
-    // assert(Array.isArray(popPercentileList), 'Pop percentile list must be an array')
-    // assert(Array.isArray(ordering.orderIdxs), 'Order indices must be an array')
-    // const orderIdxs = reindex(ordering.orderIdxs)
-    // // unsort data list, according to order indices
-    // const unsortedData = new Array<number>(orderIdxs.length)
-    // const unsortedPopPercentile = new Array<number>(orderIdxs.length)
-    // for (let i = 0; i < orderIdxs.length; i++) {
-    //     const idx = orderIdxs[i]
-    //     unsortedData[idx] = dataList[i]
-    //     unsortedPopPercentile[idx] = popPercentileList[i]
-    // }
     return [dataPromise.value, dataPromise.populationPercentile]
 }
 
@@ -234,14 +218,14 @@ export async function loadStatisticsPage(
 ): Promise<[NormalizeProto<{ value: number[], populationPercentile: number[] }>, string[]]> {
     const orderingOriginal = await loadOrderingProtobuf(statUniverse, statpath, articleType)
     const ordering = await loadOrdering(statUniverse, statpath, articleType)
-    const [dataInOrder, popPercentileInOrder] = await loadDataInIndexOrder(statUniverse, statpath, articleType)
+    const orderingData = await loadOrderingDataProtobuf(statUniverse, statpath, articleType)
     assert(Array.isArray(orderingOriginal.orderIdxs), 'Ordering original must be an array')
     const reorder = reindex(orderingOriginal.orderIdxs)
     const articleNames = ordering.longnames
     return [
         {
-            value: reorder.map(i => dataInOrder[i]),
-            populationPercentile: reorder.map(i => popPercentileInOrder[i]),
+            value: reorder.map(i => orderingData.value[i]),
+            populationPercentile: reorder.map(i => orderingData.populationPercentile[i]),
         },
         articleNames,
     ]
