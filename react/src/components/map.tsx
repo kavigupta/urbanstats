@@ -1,9 +1,11 @@
 import stableStringify from 'json-stable-stringify'
-import maplibregl, { setRTLTextPlugin } from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
 import './map.css'
+// eslint-disable-next-line import/no-unassigned-import -- Side effect only
+import '../utils/map-rtl'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
@@ -144,23 +146,12 @@ class MapHandler {
     }
 }
 
-let rtlConfigured = false
-
-function configRTL(): void {
-    if (rtlConfigured) {
-        return
-    }
-    void setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
-    rtlConfigured = true
-}
-
 function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
     editInset?: EditSingleInset,
 ): [maplibregl.Map, Promise<void>] {
-    configRTL()
     const map = new maplibregl.Map({
         style: 'https://tiles.openfreemap.org/styles/bright',
         container: id,

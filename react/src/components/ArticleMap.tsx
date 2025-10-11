@@ -1,4 +1,3 @@
-import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useCallback, useContext, useEffect, useId, useMemo, useRef } from 'react'
 import { FullscreenControl, Layer, MapRef, Source, useMap, Map } from 'react-map-gl/maplibre'
 
@@ -18,8 +17,8 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { defaultMapPadding } from './map'
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
-
-void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
+// eslint-disable-next-line import/no-unassigned-import -- Side effect only
+import '../utils/map-rtl'
 
 export function ArticleMap({ articleType, related, longname }: { articleType: string, related: NormalizeProto<IRelatedButtons>[], longname: string }): ReactNode {
     const colors = useColors()
