@@ -100,6 +100,7 @@ class OrdinalInfo:
 
         index_order = np.array(self.index_order[mask_inhabited])
         reindex = np.argsort(index_order)
+        # pylint: disable=not-an-iterable
         percentiles_jagged = [percentiles_jagged[i] for i in reindex]
         return percentiles_jagged
 

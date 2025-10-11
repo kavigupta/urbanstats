@@ -17,6 +17,7 @@ def save_article_ordering_list(longnames, path, longname_to_type):
 
 
 def save_universes_list_by_type(longnames, longname_to_universe, path):
+    # pylint: disable=import-outside-toplevel,cyclic-import
     from urbanstats.website_data.create_article_gzips import universe_to_idx
 
     utoi = universe_to_idx()
