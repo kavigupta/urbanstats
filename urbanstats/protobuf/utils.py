@@ -35,7 +35,7 @@ def save_universes_list_all(table, ordinals, site_folder):
         save_universes_list_by_type(
             ordinals.ordered_names("world", typ),
             utoi,
-            f"{site_folder}/index/universes_{typ}.gz",
+            f"{site_folder}/universes/{typ}.gz",
         )
     
 

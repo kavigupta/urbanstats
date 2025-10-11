@@ -5309,6 +5309,233 @@ export const OrderList = $root.OrderList = (() => {
     return OrderList;
 })();
 
+export const PopulationPercentileByUniverse = $root.PopulationPercentileByUniverse = (() => {
+
+    /**
+     * Properties of a PopulationPercentileByUniverse.
+     * @exports IPopulationPercentileByUniverse
+     * @interface IPopulationPercentileByUniverse
+     * @property {Array.<number>|null} [populationPercentile] PopulationPercentileByUniverse populationPercentile
+     */
+
+    /**
+     * Constructs a new PopulationPercentileByUniverse.
+     * @exports PopulationPercentileByUniverse
+     * @classdesc Represents a PopulationPercentileByUniverse.
+     * @implements IPopulationPercentileByUniverse
+     * @constructor
+     * @param {IPopulationPercentileByUniverse=} [properties] Properties to set
+     */
+    function PopulationPercentileByUniverse(properties) {
+        this.populationPercentile = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * PopulationPercentileByUniverse populationPercentile.
+     * @member {Array.<number>} populationPercentile
+     * @memberof PopulationPercentileByUniverse
+     * @instance
+     */
+    PopulationPercentileByUniverse.prototype.populationPercentile = $util.emptyArray;
+
+    /**
+     * Creates a new PopulationPercentileByUniverse instance using the specified properties.
+     * @function create
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {IPopulationPercentileByUniverse=} [properties] Properties to set
+     * @returns {PopulationPercentileByUniverse} PopulationPercentileByUniverse instance
+     */
+    PopulationPercentileByUniverse.create = function create(properties) {
+        return new PopulationPercentileByUniverse(properties);
+    };
+
+    /**
+     * Encodes the specified PopulationPercentileByUniverse message. Does not implicitly {@link PopulationPercentileByUniverse.verify|verify} messages.
+     * @function encode
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {IPopulationPercentileByUniverse} message PopulationPercentileByUniverse message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    PopulationPercentileByUniverse.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.populationPercentile != null && message.populationPercentile.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.populationPercentile.length; ++i)
+                writer.int32(message.populationPercentile[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified PopulationPercentileByUniverse message, length delimited. Does not implicitly {@link PopulationPercentileByUniverse.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {IPopulationPercentileByUniverse} message PopulationPercentileByUniverse message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    PopulationPercentileByUniverse.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a PopulationPercentileByUniverse message from the specified reader or buffer.
+     * @function decode
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {PopulationPercentileByUniverse} PopulationPercentileByUniverse
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    PopulationPercentileByUniverse.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PopulationPercentileByUniverse();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.populationPercentile && message.populationPercentile.length))
+                        message.populationPercentile = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.populationPercentile.push(reader.int32());
+                    } else
+                        message.populationPercentile.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a PopulationPercentileByUniverse message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {PopulationPercentileByUniverse} PopulationPercentileByUniverse
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    PopulationPercentileByUniverse.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a PopulationPercentileByUniverse message.
+     * @function verify
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    PopulationPercentileByUniverse.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.populationPercentile != null && message.hasOwnProperty("populationPercentile")) {
+            if (!Array.isArray(message.populationPercentile))
+                return "populationPercentile: array expected";
+            for (let i = 0; i < message.populationPercentile.length; ++i)
+                if (!$util.isInteger(message.populationPercentile[i]))
+                    return "populationPercentile: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a PopulationPercentileByUniverse message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {PopulationPercentileByUniverse} PopulationPercentileByUniverse
+     */
+    PopulationPercentileByUniverse.fromObject = function fromObject(object) {
+        if (object instanceof $root.PopulationPercentileByUniverse)
+            return object;
+        let message = new $root.PopulationPercentileByUniverse();
+        if (object.populationPercentile) {
+            if (!Array.isArray(object.populationPercentile))
+                throw TypeError(".PopulationPercentileByUniverse.populationPercentile: array expected");
+            message.populationPercentile = [];
+            for (let i = 0; i < object.populationPercentile.length; ++i)
+                message.populationPercentile[i] = object.populationPercentile[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a PopulationPercentileByUniverse message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {PopulationPercentileByUniverse} message PopulationPercentileByUniverse
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    PopulationPercentileByUniverse.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.populationPercentile = [];
+        if (message.populationPercentile && message.populationPercentile.length) {
+            object.populationPercentile = [];
+            for (let j = 0; j < message.populationPercentile.length; ++j)
+                object.populationPercentile[j] = message.populationPercentile[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this PopulationPercentileByUniverse to JSON.
+     * @function toJSON
+     * @memberof PopulationPercentileByUniverse
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    PopulationPercentileByUniverse.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for PopulationPercentileByUniverse
+     * @function getTypeUrl
+     * @memberof PopulationPercentileByUniverse
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    PopulationPercentileByUniverse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/PopulationPercentileByUniverse";
+    };
+
+    return PopulationPercentileByUniverse;
+})();
+
 export const DataList = $root.DataList = (() => {
 
     /**
@@ -5316,7 +5543,7 @@ export const DataList = $root.DataList = (() => {
      * @exports IDataList
      * @interface IDataList
      * @property {Array.<number>|null} [value] DataList value
-     * @property {Array.<number>|null} [populationPercentile] DataList populationPercentile
+     * @property {Array.<IPopulationPercentileByUniverse>|null} [populationPercentileByUniverse] DataList populationPercentileByUniverse
      */
 
     /**
@@ -5329,7 +5556,7 @@ export const DataList = $root.DataList = (() => {
      */
     function DataList(properties) {
         this.value = [];
-        this.populationPercentile = [];
+        this.populationPercentileByUniverse = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -5345,12 +5572,12 @@ export const DataList = $root.DataList = (() => {
     DataList.prototype.value = $util.emptyArray;
 
     /**
-     * DataList populationPercentile.
-     * @member {Array.<number>} populationPercentile
+     * DataList populationPercentileByUniverse.
+     * @member {Array.<IPopulationPercentileByUniverse>} populationPercentileByUniverse
      * @memberof DataList
      * @instance
      */
-    DataList.prototype.populationPercentile = $util.emptyArray;
+    DataList.prototype.populationPercentileByUniverse = $util.emptyArray;
 
     /**
      * Creates a new DataList instance using the specified properties.
@@ -5382,12 +5609,9 @@ export const DataList = $root.DataList = (() => {
                 writer.float(message.value[i]);
             writer.ldelim();
         }
-        if (message.populationPercentile != null && message.populationPercentile.length) {
-            writer.uint32(/* id 2, wireType 2 =*/18).fork();
-            for (let i = 0; i < message.populationPercentile.length; ++i)
-                writer.int32(message.populationPercentile[i]);
-            writer.ldelim();
-        }
+        if (message.populationPercentileByUniverse != null && message.populationPercentileByUniverse.length)
+            for (let i = 0; i < message.populationPercentileByUniverse.length; ++i)
+                $root.PopulationPercentileByUniverse.encode(message.populationPercentileByUniverse[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
         return writer;
     };
 
@@ -5434,14 +5658,9 @@ export const DataList = $root.DataList = (() => {
                     break;
                 }
             case 2: {
-                    if (!(message.populationPercentile && message.populationPercentile.length))
-                        message.populationPercentile = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.populationPercentile.push(reader.int32());
-                    } else
-                        message.populationPercentile.push(reader.int32());
+                    if (!(message.populationPercentileByUniverse && message.populationPercentileByUniverse.length))
+                        message.populationPercentileByUniverse = [];
+                    message.populationPercentileByUniverse.push($root.PopulationPercentileByUniverse.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -5486,12 +5705,14 @@ export const DataList = $root.DataList = (() => {
                 if (typeof message.value[i] !== "number")
                     return "value: number[] expected";
         }
-        if (message.populationPercentile != null && message.hasOwnProperty("populationPercentile")) {
-            if (!Array.isArray(message.populationPercentile))
-                return "populationPercentile: array expected";
-            for (let i = 0; i < message.populationPercentile.length; ++i)
-                if (!$util.isInteger(message.populationPercentile[i]))
-                    return "populationPercentile: integer[] expected";
+        if (message.populationPercentileByUniverse != null && message.hasOwnProperty("populationPercentileByUniverse")) {
+            if (!Array.isArray(message.populationPercentileByUniverse))
+                return "populationPercentileByUniverse: array expected";
+            for (let i = 0; i < message.populationPercentileByUniverse.length; ++i) {
+                let error = $root.PopulationPercentileByUniverse.verify(message.populationPercentileByUniverse[i]);
+                if (error)
+                    return "populationPercentileByUniverse." + error;
+            }
         }
         return null;
     };
@@ -5515,12 +5736,15 @@ export const DataList = $root.DataList = (() => {
             for (let i = 0; i < object.value.length; ++i)
                 message.value[i] = Number(object.value[i]);
         }
-        if (object.populationPercentile) {
-            if (!Array.isArray(object.populationPercentile))
-                throw TypeError(".DataList.populationPercentile: array expected");
-            message.populationPercentile = [];
-            for (let i = 0; i < object.populationPercentile.length; ++i)
-                message.populationPercentile[i] = object.populationPercentile[i] | 0;
+        if (object.populationPercentileByUniverse) {
+            if (!Array.isArray(object.populationPercentileByUniverse))
+                throw TypeError(".DataList.populationPercentileByUniverse: array expected");
+            message.populationPercentileByUniverse = [];
+            for (let i = 0; i < object.populationPercentileByUniverse.length; ++i) {
+                if (typeof object.populationPercentileByUniverse[i] !== "object")
+                    throw TypeError(".DataList.populationPercentileByUniverse: object expected");
+                message.populationPercentileByUniverse[i] = $root.PopulationPercentileByUniverse.fromObject(object.populationPercentileByUniverse[i]);
+            }
         }
         return message;
     };
@@ -5540,17 +5764,17 @@ export const DataList = $root.DataList = (() => {
         let object = {};
         if (options.arrays || options.defaults) {
             object.value = [];
-            object.populationPercentile = [];
+            object.populationPercentileByUniverse = [];
         }
         if (message.value && message.value.length) {
             object.value = [];
             for (let j = 0; j < message.value.length; ++j)
                 object.value[j] = options.json && !isFinite(message.value[j]) ? String(message.value[j]) : message.value[j];
         }
-        if (message.populationPercentile && message.populationPercentile.length) {
-            object.populationPercentile = [];
-            for (let j = 0; j < message.populationPercentile.length; ++j)
-                object.populationPercentile[j] = message.populationPercentile[j];
+        if (message.populationPercentileByUniverse && message.populationPercentileByUniverse.length) {
+            object.populationPercentileByUniverse = [];
+            for (let j = 0; j < message.populationPercentileByUniverse.length; ++j)
+                object.populationPercentileByUniverse[j] = $root.PopulationPercentileByUniverse.toObject(message.populationPercentileByUniverse[j], options);
         }
         return object;
     };
