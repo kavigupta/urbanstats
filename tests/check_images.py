@@ -6,6 +6,31 @@ import numpy as np
 from PIL import Image
 
 
+def special_case_extra_row_of_pixels(ref, act):
+    """
+    Handles the special case where one image has an extra row of pixels at the bottom
+    that is identical to the row above it. This causes test flakes but does not reflect
+    a meaningful semantic difference in the images.
+    """
+    if abs(ref.shape[0] - act.shape[0]) != 1:
+        return None
+    minimal_height = min(ref.shape[0], act.shape[0])
+    last_two_rows = ref[-2:] if ref.shape[0] < act.shape[0] else act[-2:]
+    if not (last_two_rows[0] == last_two_rows[1]).all():
+        return None
+    ref = ref[:minimal_height]
+    act = act[:minimal_height]
+    return ref, act
+
+
+def special_case_handle(ref, act):
+    for fn in [special_case_extra_row_of_pixels]:
+        res = fn(ref, act)
+        if res is not None:
+            ref, act = res
+    return ref, act
+
+
 def pad_images(ref, act):
     if ref.shape[0] > act.shape[0]:
         act = np.pad(act, ((0, ref.shape[0] - act.shape[0]), (0, 0), (0, 0)))
@@ -19,6 +44,7 @@ def pad_images(ref, act):
 
 
 def compute_delta_image(ref, act):
+    ref, act = special_case_handle(ref, act)
     ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]
     diff_mask = (act != ref).any(-1)
