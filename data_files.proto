@@ -122,9 +122,13 @@ message OrderList {
     repeated int32 order_idxs = 1;
 }
 
+message PopulationPercentileByUniverse {
+    repeated int32 population_percentile = 1;
+}
+
 message DataList {
     repeated float value = 1;
-    repeated int32 population_percentile = 2;
+    repeated PopulationPercentileByUniverse population_percentile_by_universe = 2;
 }
 
 message OrderLists {

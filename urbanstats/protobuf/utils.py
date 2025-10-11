@@ -29,6 +29,7 @@ def save_universes_list_by_type(longnames, longname_to_universe, path):
                 universes_proto.universe_idxs.append(utoi[u])
     write_gzip(res, path)
 
+
 def save_universes_list_all(table, ordinals, site_folder):
     utoi = dict(zip(table.longname, table.universes))
     for typ in ordinals.types:
@@ -37,7 +38,6 @@ def save_universes_list_all(table, ordinals, site_folder):
             utoi,
             f"{site_folder}/universes/{typ}.gz",
         )
-    
 
 
 def save_search_index(longnames, types, is_usas, path, *, symlinks):
