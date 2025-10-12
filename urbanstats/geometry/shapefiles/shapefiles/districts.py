@@ -2,11 +2,18 @@ import os
 import tempfile
 import zipfile
 
+from attr import dataclass
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import us
 
 from urbanstats.compatibility.compatibility import remapping_pickle
+from urbanstats.data.wikipedia.wikidata import (
+    fetch_sparql_as_list,
+    query_sparlql,
+)
+from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -215,6 +222,7 @@ def districts(
     data_credit,
     minimum_district_length,
     does_overlap_self,
+    wikidata_sourcer=None,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
@@ -250,7 +258,77 @@ def districts(
         start_date_overall=2023,
         end_date_overall=2032,
         include_in_syau=False,
+        wikidata_sourcer=wikidata_sourcer,
     )
+
+
+@dataclass
+class CongressionalDistrictWikidataSourcer(WikidataSourcer):
+    version = 2
+
+    def columns(self):
+        return ["shortname"]
+
+    def special_case(self, shortname):
+        return {"WI-AL": "Q8027336"}.get(shortname)
+
+    # pylint: disable=arguments-differ
+    def compute_wikidata(self, shortname):
+        shortname = shortname.split(" ")[0]  # remove date
+        state, district = shortname.split("-")
+        special_case = self.special_case(shortname)
+        if special_case:
+            return special_case
+        if district == "NA":
+            return None
+        ocd = f"ocd-division/country:us/state:{state.lower()}/cd:{int(district) if district != 'AL' else 'at-large'}"
+        direct_query = query_sparlql("wdt:P8651", ocd)
+        if direct_query:
+            return direct_query
+        items = self.aka_query(shortname)
+        if items:
+            print(items)
+            [item] = items
+            return item
+        name = self.wikidata_name(state, district)
+        print(name)
+        for qname in name, name.replace("district", "seat"):
+            query = fetch_sparql_as_list(
+                f"""SELECT ?item WHERE {{ ?item rdfs:label "{qname}"@en.}}"""
+            )
+            if query:
+                [item] = query
+                return item
+        raise ValueError(f"Could not find wikidata for {shortname}")
+
+    def aka_query(self, aka):
+        q = (
+            """
+        SELECT ?item WHERE {
+        ?item skos:altLabel "%s"@en .
+        ?item wdt:P31 wd:Q17166756 .
+        }
+        """
+            % aka
+        )
+        return fetch_sparql_as_list(q)
+
+
+    def wikidata_name(self, state, district):
+        state_name = us.states.lookup(state).name
+
+        apostrophe_state_name = state_name + "'s"
+
+        # e.g., California's 1st congressional district
+        if district == "AL":
+            return f"{apostrophe_state_name} at-large congressional district"
+
+        district = int(district)
+
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(district % 10, "th")
+        if district % 100 in [11, 12, 13]:
+            suffix = "th"
+        return f"{apostrophe_state_name} {district}{suffix} congressional district"
 
 
 CONGRESSIONAL_DISTRICTS = districts(
@@ -264,6 +342,7 @@ CONGRESSIONAL_DISTRICTS = districts(
     ),
     minimum_district_length=2,
     does_overlap_self=False,
+    wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )
 
 district_shapefiles = dict(

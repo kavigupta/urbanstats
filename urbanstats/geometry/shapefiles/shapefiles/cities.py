@@ -1,14 +1,34 @@
+from dataclasses import dataclass
 import us
 
+from urbanstats.data.wikipedia.wikidata import query_sparlql
+from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
+
+
+@dataclass
+class CityWikidataSourcer(WikidataSourcer):
+    version: int = 3
+
+    def columns(self):
+        return ["geoid"]
+
+    # pylint: disable=arguments-differ
+    def compute_wikidata(self, geoid):
+        dashed = query_sparlql("wdt:P774", geoid[:2] + "-" + geoid[2:])
+        if dashed:
+            return dashed
+        return query_sparlql("wdt:P774", geoid)
+
 
 CITIES = Shapefile(
     hash_key="census_places_6",
     path="named_region_shapefiles/cb_2022_us_place_500k.zip",
     shortname_extractor=lambda x: x.NAMELSAD,
     longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=lambda x: True,
     meta=dict(type="City", source="Census", type_category="US City"),
     does_overlap_self=False,
@@ -21,4 +41,6 @@ CITIES = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
     ),
     include_in_syau=True,
+    metadata_columns=["geoid"],
+    wikidata_sourcer=CityWikidataSourcer(),
 )

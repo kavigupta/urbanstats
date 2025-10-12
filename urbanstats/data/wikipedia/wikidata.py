@@ -43,15 +43,21 @@ def wikidata_to_wikipage(wikidata_id: str) -> Optional[str]:
 
 @permacache("urbanstats/data/wikipedia/wikidata/query_sparlql")
 def query_sparlql(column, value):
-    sparql_url = "https://query.wikidata.org/sparql"
-
     query = f"""
     SELECT ?item WHERE {{
       ?item {column} "{value}" .
     }}
     LIMIT 1
     """
+    for result in fetch_sparql(query):
+        print(f"Found entity {result} for query {value}")
+        return result
 
+    return None
+
+
+def fetch_sparql(query):
+    sparql_url = "https://query.wikidata.org/sparql"
     headers = {
         "User-Agent": "urbanstats (https://github.com/kavigupta/urbanstats; contact@urbanstats.org)",
         "Accept": "application/json",
@@ -64,11 +70,14 @@ def query_sparlql(column, value):
     data = response.json()
 
     bindings = data.get("results", {}).get("bindings", [])
-    if bindings:
-        entity_uri = bindings[0].get("item", {}).get("value", "")
+    for binding in bindings:
+        entity_uri = binding.get("item", {}).get("value", "")
         if "/entity/" in entity_uri:
             entity_id = entity_uri.split("/entity/")[-1]
-            print(f"Found entity {entity_id} for query {value}")
-            return entity_id
+            yield entity_id
 
-    return None
+
+@permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
+def fetch_sparql_as_list(query):
+    return list(fetch_sparql(query))
+

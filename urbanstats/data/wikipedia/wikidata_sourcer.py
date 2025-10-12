@@ -42,7 +42,9 @@ def compute_wikidata_and_wikipedia(shapefile, sourcer: WikidataSourcer):
             table.iterrows(), total=len(table), delay=5, desc="Wikidata"
         )
     ]
-    wikipedia = [wikidata_to_wikipage(wikidata_id) for wikidata_id in wikidata]
+    wikipedia = [wikidata_to_wikipage(wikidata_id) for wikidata_id in tqdm.tqdm(
+        wikidata, total=len(wikidata), delay=5, desc="Wikipedia"
+    )]
     return wikidata, wikipedia
 
 

@@ -83,4 +83,5 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     ),
     include_in_syau=True,
     metadata_columns=["scgc"],
+    wikidata_sourcer=None,
 )

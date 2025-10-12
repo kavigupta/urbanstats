@@ -642,4 +642,5 @@ def circle_shapefile_object(country_shapefile, population):
             link="https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles",
         ),
         include_in_syau=False,
+    wikidata_sourcer=None,
     )

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
@@ -8,6 +9,26 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
+
+
+@dataclass
+class ContinentsWikidataSourcer:
+    def columns(self):
+        return ["longname"]
+
+    # pylint: disable=arguments-differ
+    def compute_wikidata(self, iso):
+        mapping = {
+            "Africa": "Q15",
+            "Antarctica": "Q51",
+            "Asia": "Q48",
+            "Europe": "Q46",
+            "North America": "Q49",
+            "Oceania": "Q55643",
+            "South America": "Q18",
+        }
+        return mapping[iso]
+
 
 CONTINENTS = Shapefile(
     hash_key="continents_9",
@@ -25,4 +46,5 @@ CONTINENTS = Shapefile(
     abbreviation="CONT",
     data_credit=COUNTRIES.data_credit,
     include_in_syau=True,
+    wikidata_sourcer=ContinentsWikidataSourcer(),
 )
