@@ -4,12 +4,12 @@ from functools import lru_cache
 
 import numpy as np
 
+from urbanstats.data.wikipedia.congressional_wikidata import (
+    CongressionalDistrictWikidataSourcer,
+)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
-from urbanstats.geometry.shapefiles.shapefiles.districts import (
-    CongressionalDistrictWikidataSourcer,
-    load_shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 decades = range(1780, 2010 + 1, 10)
