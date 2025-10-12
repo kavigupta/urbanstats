@@ -114,6 +114,16 @@ class ExtraStatistic(_message.Message):
         temperature_histogram: _Optional[_Union[TemperatureHistogram, _Mapping]] = ...,
     ) -> None: ...
 
+class Metadata(_message.Message):
+    __slots__ = ("metadata_index", "string_value")
+    METADATA_INDEX_FIELD_NUMBER: _ClassVar[int]
+    STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    metadata_index: int
+    string_value: str
+    def __init__(
+        self, metadata_index: _Optional[int] = ..., string_value: _Optional[str] = ...
+    ) -> None: ...
+
 class Article(_message.Message):
     __slots__ = (
         "shortname",
@@ -126,6 +136,7 @@ class Article(_message.Message):
         "related",
         "universes",
         "extra_stats",
+        "metadata",
     )
     SHORTNAME_FIELD_NUMBER: _ClassVar[int]
     LONGNAME_FIELD_NUMBER: _ClassVar[int]
@@ -137,6 +148,7 @@ class Article(_message.Message):
     RELATED_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     EXTRA_STATS_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
     shortname: str
     longname: str
     source: str
@@ -147,6 +159,7 @@ class Article(_message.Message):
     related: _containers.RepeatedCompositeFieldContainer[RelatedButtons]
     universes: _containers.RepeatedScalarFieldContainer[str]
     extra_stats: _containers.RepeatedCompositeFieldContainer[ExtraStatistic]
+    metadata: _containers.RepeatedCompositeFieldContainer[Metadata]
     def __init__(
         self,
         shortname: _Optional[str] = ...,
@@ -161,6 +174,7 @@ class Article(_message.Message):
         related: _Optional[_Iterable[_Union[RelatedButtons, _Mapping]]] = ...,
         universes: _Optional[_Iterable[str]] = ...,
         extra_stats: _Optional[_Iterable[_Union[ExtraStatistic, _Mapping]]] = ...,
+        metadata: _Optional[_Iterable[_Union[Metadata, _Mapping]]] = ...,
     ) -> None: ...
 
 class Coordinate(_message.Message):
