@@ -38,5 +38,6 @@ COUNTIES = Shapefile(
     ),
     include_in_syau=True,
     special_data_sources=["composed_of_counties"],
+    metadata_columns=["geoid"],
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P882", "geoid"),
 )
