@@ -49,7 +49,6 @@ SUBNATIONAL_REGIONS = Shapefile(
     path=subnational_regions,
     shortname_extractor=lambda x: x["NAME"],
     longname_extractor=lambda x: x["fullname"],
-    additional_columns_computer={"geoid": compute_geoid},
     filter=lambda x: x.COUNTRY is not None,
     additional_columns_computer={
         "geoid": compute_geoid,

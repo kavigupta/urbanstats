@@ -18,7 +18,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_38",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_39",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
@@ -36,6 +36,7 @@ def compute_statistics_for_shapefile(
     result = sf_fr[
         ["shortname", "longname", "longname_sans_date", "start_date", "end_date"]
         + sf.subset_mask_keys
+        + list(sf.metadata_columns)
     ].copy()
 
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
