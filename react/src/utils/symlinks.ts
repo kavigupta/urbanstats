@@ -27,7 +27,7 @@ export async function loadArticleFromPossibleSymlink(longname: string): Promise<
     return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(dataLink(link), 'Article', false)))
 }
 
-export async function loadShapeFromPossibleSymlink(longname: string): Promise<Feature> {
+export async function loadFeatureFromPossibleSymlink(longname: string): Promise<Feature> {
     return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(shapeLink(link), 'Feature', false)))
 }
 

@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, ShapeCollection, shapeFeatureCollection } from '../components/map-common'
+import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
@@ -125,7 +125,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
         setPolysOnScreen(newPolys)
     }
 
-    const features = useMemo(() => shapeFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
+    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
         name,
         fillColor: isGuessed ? props.guessedColor : props.notGuessedColor,
         fillOpacity: 0.5,
@@ -176,7 +176,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                     'circle-radius': 0,
                 }}
             />
-            <ShapeCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} id={id} />
             <FirstZoom centroids={props.centroids} />
         </CommonMaplibreMap>
     )

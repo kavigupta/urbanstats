@@ -18,7 +18,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { assert } from '../utils/defensive'
 import { Feature } from '../utils/protos'
-import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
+import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode, screencapElement } from './screenshot'
@@ -311,7 +311,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     }
 
     async loadPolygon(name: string): Promise<NormalizeProto<Feature>> {
-        return await loadShapeFromPossibleSymlink(name) as NormalizeProto<Feature>
+        return await loadFeatureFromPossibleSymlink(name) as NormalizeProto<Feature>
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- unimplemented

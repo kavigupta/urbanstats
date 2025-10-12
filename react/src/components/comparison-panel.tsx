@@ -26,7 +26,7 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { CommonMaplibreMap, ShapeCollection, shapeFeatureCollection, useClickableFeatures, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
+import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useClickableFeatures, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -450,7 +450,7 @@ function ComparisonMultiMap(props: { longnames: string[], colors: string[], mapP
 function ComparisonMap({ longnames, colors, attribution }: { longnames: string[], colors: string[], attribution: boolean }): ReactNode {
     const mapRef = useRef<MapRef>(null)
 
-    const features = useMemo(() => shapeFeatureCollection(longnames.map((longname, i) => ({
+    const features = useMemo(() => polygonFeatureCollection(longnames.map((longname, i) => ({
         name: longname,
         color: colors[i], fillColor: colors[i], fillOpacity: 0.5, weight: 1,
     }))), [longnames, colors]).use()
@@ -468,7 +468,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
                 {...useClickableFeatures(mapRef, id, readyFeatures)}
                 attributionControl={false}
             >
-                <ShapeCollection features={readyFeatures} id={id} />
+                <PolygonFeatureCollection features={readyFeatures} id={id} />
                 <FullscreenControl position="top-left" />
                 { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>

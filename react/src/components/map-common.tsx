@@ -9,7 +9,7 @@ import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
-import { loadShapeFromPossibleSymlink } from '../utils/symlinks'
+import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
@@ -71,7 +71,7 @@ export function useZoomAllFeatures(mapRef: React.RefObject<MapRef>, features: (G
     }, [mapRef, features, readyFeatures])
 }
 
-export interface Shape {
+export interface Polygon {
     name: string
     clickable?: boolean
 
@@ -80,13 +80,15 @@ export interface Shape {
     fillOpacity: number
     color: string
     weight?: number
+
+    meta?: Record<string, unknown>
 }
 
-export function shapesId(id: string, kind: 'source' | 'fill' | 'outline'): string {
-    return `shapes-${kind}-${id}`
+function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+    return `polygons-${kind}-${id}`
 }
 
-export function ShapeCollection({ features, id }: { features: GeoJSON.Feature[], id: string }): ReactNode {
+export function PolygonFeatureCollection({ features, id }: { features: GeoJSON.Feature[], id: string }): ReactNode {
     const { current: map } = useMap()
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
@@ -98,11 +100,11 @@ export function ShapeCollection({ features, id }: { features: GeoJSON.Feature[],
 
     return (
         <>
-            <Source id={shapesId(id, 'source')} type="geojson" data={collection} />
+            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
             <Layer
-                id={shapesId(id, 'fill')}
+                id={polygonsId(id, 'fill')}
                 type="fill"
-                source={shapesId(id, 'source')}
+                source={polygonsId(id, 'source')}
                 paint={{
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
@@ -110,9 +112,9 @@ export function ShapeCollection({ features, id }: { features: GeoJSON.Feature[],
                 beforeId={labelId}
             />
             <Layer
-                id={shapesId(id, 'outline')}
+                id={polygonsId(id, 'outline')}
                 type="line"
-                source={shapesId(id, 'source')}
+                source={polygonsId(id, 'source')}
                 paint={{
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
@@ -123,20 +125,20 @@ export function ShapeCollection({ features, id }: { features: GeoJSON.Feature[],
     )
 }
 
-async function shapeGeojson(shape: Shape): Promise<GeoJSON.Feature> {
-    const feature = await loadShapeFromPossibleSymlink(shape.name) as NormalizeProto<Feature>
+export async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
+    const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
     return {
         type: 'Feature' as const,
-        properties: shape,
+        properties: polygon,
         geometry: geometry(feature),
     }
 }
 
-export function shapeFeatureCollection(shapes: Shape[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(shapes.map(shapeGeojson))
+export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
+    return promiseStream(polygons.map(polygonGeojson))
 }
 
-async function firstLabelId(map: MapRef): Promise<string | undefined> {
+export async function firstLabelId(map: MapRef): Promise<string | undefined> {
     if (!map.loaded()) {
         await new Promise(resolve => map.once('load', resolve))
     }
@@ -191,7 +193,7 @@ export function useClickableFeatures(mapRef: React.RefObject<MapRef>, id: string
     }, [id, clickFeature, readyFeatures])
 
     return {
-        interactiveLayerIds: [shapesId(id, 'fill')],
+        interactiveLayerIds: [polygonsId(id, 'fill')],
         onMouseOver: e => e.target.getCanvas().style.cursor = 'pointer',
         onMouseLeave: e => e.target.getCanvas().style.cursor = '',
         onClick: (e) => {

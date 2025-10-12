@@ -5,7 +5,7 @@ import React, { ReactNode, useId, useMemo, useRef } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, CustomAttributionControlComponent, ShapeCollection, shapeFeatureCollection, useZoomFirstFeature } from '../components/map-common'
+import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { useColors } from '../page_template/colors'
 import { notWaiting } from '../utils/promiseStream'
 import { useMobileLayout } from '../utils/responsive'
@@ -23,7 +23,7 @@ interface MapProps {
 function Map({ longname, color, attribution }: MapProps): ReactNode {
     const mapRef = useRef<MapRef>(null)
 
-    const features = useMemo(() => shapeFeatureCollection(
+    const features = useMemo(() => polygonFeatureCollection(
         [
             {
                 name: longname,
@@ -42,7 +42,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
             ref={mapRef}
             attributionControl={false}
         >
-            <ShapeCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} id={id} />
             <FullscreenControl position="top-left" />
             { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
         </CommonMaplibreMap>

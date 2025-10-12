@@ -10,7 +10,7 @@ import { notWaiting, waiting } from '../utils/promiseStream'
 import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
-import { CommonMaplibreMap, Shape, ShapeCollection, shapeFeatureCollection, useClickableFeatures, useZoomFirstFeature } from './map-common'
+import { CommonMaplibreMap, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useClickableFeatures, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
     articleType: string
@@ -34,7 +34,7 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
             ref={mapRef}
             {...useClickableFeatures(mapRef, id, readyFeatures)}
         >
-            <ShapeCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} id={id} />
             <FullscreenControl position="top-left" />
         </CommonMaplibreMap>
     )
@@ -65,7 +65,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
         ]
 
         const relatedShapes = (() => {
-            const result: Shape[] = []
+            const result: Polygon[] = []
             for (let i = relateds.length - 1; i >= 0; i--) {
                 if (!showHistoricalCDs && isHistoricalCD(relateds[i].rowType)) {
                     continue
@@ -86,7 +86,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
 
         const color = colors.hueColors.blue
 
-        return shapeFeatureCollection([
+        return polygonFeatureCollection([
             {
                 name: longname,
                 fillOpacity: 0.5, weight: 1, color, fillColor: color,
