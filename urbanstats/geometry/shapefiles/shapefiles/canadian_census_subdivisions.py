@@ -1,5 +1,6 @@
 from permacache import permacache
 
+from urbanstats.data.wikipedia.wikidata import query_canada, wikidata_to_wikipage
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -113,6 +114,11 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     longname_extractor=lambda row: census_subdivision_name(row)
     + ", "
     + row.division_longname,
+    additional_columns_computer={
+        "scgc": lambda row: row.CSDUID,
+        "wikidata": lambda row: query_canada(row.CSDUID),
+        "wikipedia_page": lambda row: wikidata_to_wikipage(query_canada(row.CSDUID)),
+    },
     filter=lambda x: True,
     meta=dict(
         type="CA Census Subdivision",
@@ -128,4 +134,5 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip",
     ),
     include_in_syau=True,
+    metadata_columns=["scgc", "wikidata", "wikipedia_page"],
 )

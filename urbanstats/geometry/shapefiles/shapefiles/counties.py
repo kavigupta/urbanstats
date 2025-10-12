@@ -1,5 +1,9 @@
 import us
 
+from urbanstats.data.wikipedia.county_wikipedia import (
+    search_wikidata_by_fips,
+    wikidata_to_wikipage,
+)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -24,7 +28,13 @@ COUNTIES = Shapefile(
     + ", "
     + us.states.lookup(x["STATEFP"]).name
     + ", USA",
-    additional_columns_computer={"geoid": compute_geoid},
+    additional_columns_computer={
+        "geoid": compute_geoid,
+        "wikidata": lambda row: search_wikidata_by_fips(compute_geoid(row)),
+        "wikipedia_page": lambda row: wikidata_to_wikipage(
+            search_wikidata_by_fips(compute_geoid(row))
+        ),
+    },
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
     does_overlap_self=False,
