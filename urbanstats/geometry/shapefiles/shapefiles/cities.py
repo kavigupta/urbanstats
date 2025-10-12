@@ -1,8 +1,28 @@
+from dataclasses import dataclass
+
 import us
 
+from urbanstats.data.wikipedia.wikidata import query_sparlql
+from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
+
+
+@dataclass
+class CityWikidataSourcer(WikidataSourcer):
+    version: int = 3
+
+    def columns(self):
+        return ["geoid"]
+
+    # pylint: disable=arguments-differ
+    def compute_wikidata(self, geoid):
+        dashed = query_sparlql("wdt:P774", geoid[:2] + "-" + geoid[2:])
+        if dashed:
+            return dashed
+        return query_sparlql("wdt:P774", geoid)
+
 
 CITIES = Shapefile(
     hash_key="census_places_6",
@@ -24,4 +44,5 @@ CITIES = Shapefile(
     ),
     include_in_syau=True,
     metadata_columns=["geoid"],
+    wikidata_sourcer=CityWikidataSourcer(),
 )

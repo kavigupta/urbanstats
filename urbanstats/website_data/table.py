@@ -7,6 +7,7 @@ import tqdm.auto as tqdm
 from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
@@ -41,6 +42,10 @@ def compute_statistics_for_shapefile(
     result["universes"] = [
         longname_to_universes[longname] for longname in result.longname
     ]
+    if sf.wikidata_sourcer is not None:
+        wikidata, wikipedia = compute_wikidata_and_wikipedia(sf, sf.wikidata_sourcer)
+        result["wikidata"] = wikidata
+        result["wikipedia_page"] = wikipedia
 
     for k in sf.meta:
         result[k] = sf.meta[k]

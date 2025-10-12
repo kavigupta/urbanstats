@@ -1,5 +1,6 @@
 import us
 
+from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.country import subnational_regions
@@ -50,6 +51,10 @@ SUBNATIONAL_REGIONS = Shapefile(
     longname_extractor=lambda x: x["fullname"],
     additional_columns_computer={"geoid": compute_geoid},
     filter=lambda x: x.COUNTRY is not None,
+    additional_columns_computer={
+        "geoid": compute_geoid,
+        "iso": lambda x: x.ISO_CC + "-" + x.ISO_SUB if x.ISO_SUB is not None else None,
+    },
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     does_overlap_self=False,
     special_data_sources=[
@@ -86,5 +91,6 @@ SUBNATIONAL_REGIONS = Shapefile(
         ),
     ],
     include_in_syau=True,
-    metadata_columns=["geoid"],
+    metadata_columns=["geoid", "iso"],
+    wikidata_sourcer=SimpleWikidataSourcer("wdt:P300", "iso"),
 )

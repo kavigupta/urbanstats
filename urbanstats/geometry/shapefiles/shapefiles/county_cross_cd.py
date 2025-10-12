@@ -81,4 +81,5 @@ COUNTY_CROSS_CD = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
     ),
     include_in_syau=False,
+    wikidata_sourcer=None,
 )

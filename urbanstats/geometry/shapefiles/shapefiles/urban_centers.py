@@ -48,4 +48,5 @@ URBAN_CENTERS = create_urban_center_like_shapefile(
         linkText="GHSL",
         link="https://human-settlement.emergency.copernicus.eu/ghs_stat_ucdb2015mt_r2019a.php",
     ),
+    wikidata_sourcer=None,
 )

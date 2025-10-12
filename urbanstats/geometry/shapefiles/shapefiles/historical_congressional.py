@@ -4,6 +4,9 @@ from functools import lru_cache
 
 import numpy as np
 
+from urbanstats.data.wikipedia.congressional_wikidata import (
+    CongressionalDistrictWikidataSourcer,
+)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
@@ -99,6 +102,7 @@ HISTORICAL_CONGRESSIONALs = {
         start_date_overall=decade + 3 if decade != 1780 else 1789,
         end_date_overall=decade + 12,
         include_in_syau=False,
+        wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
     )
     for decade in decades
 }
@@ -131,4 +135,5 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     start_date_overall=2023,
     end_date_overall=2024,
     include_in_syau=False,
+    wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )

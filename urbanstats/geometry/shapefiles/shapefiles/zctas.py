@@ -21,4 +21,5 @@ ZCTAs = Shapefile(
     ),
     include_in_syau=False,
     metadata_columns=["geoid"],
+    wikidata_sourcer=None,
 )

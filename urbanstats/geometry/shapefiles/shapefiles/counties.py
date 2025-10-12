@@ -1,5 +1,6 @@
 import us
 
+from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -38,4 +39,5 @@ COUNTIES = Shapefile(
     include_in_syau=True,
     special_data_sources=["composed_of_counties", ("census", "county")],
     metadata_columns=["geoid"],
+    wikidata_sourcer=SimpleWikidataSourcer("wdt:P882", "geoid"),
 )

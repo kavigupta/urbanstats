@@ -44,4 +44,5 @@ USDA_COUNTY_TYPE = Shapefile(
     ),
     include_in_syau=True,
     special_data_sources=["composed_of_counties"],
+    wikidata_sourcer=None,
 )

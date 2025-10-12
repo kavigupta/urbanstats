@@ -70,4 +70,5 @@ METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
         linkText="Taylor (Elpis)",
         link="https://bsky.app/profile/elpis.bsky.social",
     ),
+    wikidata_sourcer=None,
 )

@@ -29,6 +29,7 @@ NATIVE_AREAS = Shapefile(
     ),
     include_in_syau=True,
     metadata_columns=["geoid"],
+    wikidata_sourcer=None,
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
     hash_key="native_statistical_areas",
@@ -48,6 +49,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     ),
     include_in_syau=True,
     metadata_columns=["geoid"],
+    wikidata_sourcer=None,
 )
 NATIVE_SUBDIVISIONS = Shapefile(
     hash_key="native_subdivisions_2",
@@ -67,6 +69,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
     ),
     include_in_syau=True,
     metadata_columns=["geoid"],
+    wikidata_sourcer=None,
 )
 
 

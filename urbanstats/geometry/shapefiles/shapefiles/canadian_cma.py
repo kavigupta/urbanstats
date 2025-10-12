@@ -72,6 +72,9 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     path=load_cmas,
     shortname_extractor=shortname_extractor,
     longname_extractor=longname_extractor,
+    additional_columns_computer={
+        "scgc": lambda row: row.CMAUID,
+    },
     **canadian_census_kwargs("CA CMA", "Census"),
     abbreviation="CMA",
     data_credit=dict(
@@ -79,4 +82,6 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcma000a21a_e.zip",
     ),
     include_in_syau=True,
+    metadata_columns=["scgc"],
+    wikidata_sourcer=None,
 )
