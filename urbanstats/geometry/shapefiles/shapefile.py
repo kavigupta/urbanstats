@@ -4,7 +4,6 @@ from collections import defaultdict
 import attr
 import geopandas as gpd
 import pandas as pd
-import tqdm.auto as tqdm
 
 
 @attr.s
@@ -62,8 +61,7 @@ class Shapefile:
         for subset_name, subset in self.subset_masks.items():
             subset.mutate_table(subset_name, s)
         for k, v in self.additional_columns_computer.items():
-            # s[k] = s.apply(v, axis=1)
-            s[k] = [v(s.iloc[i]) for i in tqdm.trange(len(s), delay=5)]
+            s[k] = s.apply(v, axis=1)
 
         if self.start_date is not None:
             assert self.longname_sans_date_extractor is not None
