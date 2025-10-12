@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from attr import dataclass
 from permacache import permacache
+import tqdm.auto as tqdm
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 
@@ -36,5 +37,5 @@ def compute_wikidata(shapefile, sourcer: WikidataSourcer):
     table = shapefile.load_file()
     return [
         sourcer.compute_wikidata(*[row[c] for c in sourcer.columns()])
-        for _, row in table.iterrows()
+        for _, row in tqdm.tqdm(table.iterrows(), total=len(table), delay=5)
     ]
