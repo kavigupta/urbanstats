@@ -11,6 +11,7 @@ class CCDWikidataSourcer(WikidataSourcer):
     def columns(self):
         return ["STATEFP", "COUSUBFP"]
 
+    # pylint: disable=arguments-differ
     def compute_wikidata(self, statefp, cousubfp):
         return query_sparlql("wdt:P774", f"{statefp}-{cousubfp}")
 

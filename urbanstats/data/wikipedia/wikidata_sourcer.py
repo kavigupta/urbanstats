@@ -25,6 +25,7 @@ class SimpleWikidataSourcer(WikidataSourcer):
     def columns(self):
         return [self.input_column]
 
+    # pylint: disable=arguments-differ
     def compute_wikidata(self, value):
         return query_sparlql(self.sparql_column, value)
 

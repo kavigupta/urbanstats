@@ -26,6 +26,7 @@ def wikidata_to_wikipage(wikidata_id: str) -> Optional[str]:
     response.raise_for_status()
     data = response.json()
 
+    # pylint: disable=duplicate-code
     entities = data.get("entities", {})
     if not entities:
         return None
@@ -71,7 +72,3 @@ def query_sparlql(column, value):
             return entity_id
 
     return None
-
-
-def query_canada(scgc: str) -> Optional[str]:
-    return query_sparlql("wdt:P3012", scgc)

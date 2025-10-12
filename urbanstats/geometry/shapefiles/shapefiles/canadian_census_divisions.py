@@ -1,4 +1,3 @@
-from urbanstats.data.wikipedia.wikidata import query_canada, wikidata_to_wikipage
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
