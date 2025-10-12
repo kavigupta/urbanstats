@@ -20,15 +20,28 @@ def extract_country_longname(x):
     return iso_to_country(x.ISO_CC)
 
 
-def valid_state(x):
+def extract_state(x):
     s = us.states.lookup(x)
     if s is None:
-        return False
+        return None
     if s in us.STATES + [us.states.DC, us.states.PR]:
-        return True
+        return s
     if s in [us.states.GU, us.states.AS, us.states.VI, us.states.MP]:
-        return False
+        return None
     raise ValueError(f"unrecognized state {s}")
+
+
+def valid_state(x):
+    return extract_state(x) is not None
+
+
+def compute_geoid(row):
+    if extract_country_longname(row) != "USA":
+        return None
+    st = extract_state(row.NAME)
+    if st is None:
+        return None
+    return st.fips
 
 
 SUBNATIONAL_REGIONS = Shapefile(
@@ -38,7 +51,8 @@ SUBNATIONAL_REGIONS = Shapefile(
     longname_extractor=lambda x: x["fullname"],
     filter=lambda x: x.COUNTRY is not None,
     additional_columns_computer={
-        "iso": lambda x: x.ISO_CC + "-" + x.ISO_SUB if x.ISO_SUB is not None else None
+        "geoid": compute_geoid,
+        "iso": lambda x: x.ISO_CC + "-" + x.ISO_SUB if x.ISO_SUB is not None else None,
     },
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     does_overlap_self=False,
@@ -72,6 +86,6 @@ SUBNATIONAL_REGIONS = Shapefile(
         ),
     ],
     include_in_syau=True,
-    metadata_columns=["iso"],
+    metadata_columns=["geoid", "iso"],
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P300", "iso"),
 )

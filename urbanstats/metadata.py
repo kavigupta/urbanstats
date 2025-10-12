@@ -3,4 +3,5 @@ metadata_types = {
     "scgc": "str",
     "wikidata": "str",
     "wikipedia_page": "str",
+    "iso": "str",
 }
