@@ -261,7 +261,7 @@ def districts(
 
 @dataclass
 class CongressionalDistrictWikidataSourcer(WikidataSourcer):
-    version = 2
+    version: int = 3
 
     def columns(self):
         return ["shortname"]
@@ -282,11 +282,6 @@ class CongressionalDistrictWikidataSourcer(WikidataSourcer):
         direct_query = query_sparlql("wdt:P8651", ocd)
         if direct_query:
             return direct_query
-        items = self.aka_query(shortname)
-        if items:
-            print(items)
-            [item] = items
-            return item
         name = self.wikidata_name(state, district)
         print(name)
         for qname in name, name.replace("district", "seat"):
@@ -297,18 +292,6 @@ class CongressionalDistrictWikidataSourcer(WikidataSourcer):
                 [item] = query
                 return item
         raise ValueError(f"Could not find wikidata for {shortname}")
-
-    def aka_query(self, aka):
-        q = (
-            """
-        SELECT ?item WHERE {
-        ?item skos:altLabel "%s"@en .
-        ?item wdt:P31 wd:Q17166756 .
-        }
-        """
-            % aka
-        )
-        return fetch_sparql_as_list(q)
 
     def wikidata_name(self, state, district):
         state_name = us.states.lookup(state).name
