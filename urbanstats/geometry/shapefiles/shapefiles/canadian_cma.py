@@ -1,6 +1,5 @@
 import pandas as pd
 
-from urbanstats.data.wikipedia.wikidata import query_canada, wikidata_to_wikipage
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
