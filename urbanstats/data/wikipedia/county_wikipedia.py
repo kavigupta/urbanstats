@@ -1,7 +1,7 @@
 from typing import Optional
 
-from permacache import permacache
 import tqdm.auto as tqdm
+from permacache import permacache
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql, wikidata_to_wikipage
 

@@ -1,4 +1,5 @@
 from attr import dataclass
+
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile

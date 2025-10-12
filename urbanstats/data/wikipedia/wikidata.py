@@ -1,6 +1,7 @@
 from typing import Optional
-from permacache import permacache
+
 import requests
+from permacache import permacache
 
 
 @permacache("election_data_by_county/historic_wiki/wikidata_to_wikipage")
@@ -80,4 +81,3 @@ def fetch_sparql(query):
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
 def fetch_sparql_as_list(query):
     return list(fetch_sparql(query))
-

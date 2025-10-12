@@ -12,7 +12,6 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
 
-
 CANADIAN_DISTRICTS = Shapefile(
     hash_key="canadian_districts_2",
     path=lambda: load_canadian_shapefile(

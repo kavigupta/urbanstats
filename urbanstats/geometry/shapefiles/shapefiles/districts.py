@@ -2,17 +2,14 @@ import os
 import tempfile
 import zipfile
 
-from attr import dataclass
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import us
+from attr import dataclass
 
 from urbanstats.compatibility.compatibility import remapping_pickle
-from urbanstats.data.wikipedia.wikidata import (
-    fetch_sparql_as_list,
-    query_sparlql,
-)
+from urbanstats.data.wikipedia.wikidata import fetch_sparql_as_list, query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
@@ -312,7 +309,6 @@ class CongressionalDistrictWikidataSourcer(WikidataSourcer):
             % aka
         )
         return fetch_sparql_as_list(q)
-
 
     def wikidata_name(self, state, district):
         state_name = us.states.lookup(state).name

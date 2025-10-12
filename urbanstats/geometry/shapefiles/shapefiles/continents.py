@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
+import tqdm.auto as tqdm
 from attr import dataclass
 from permacache import permacache
-import tqdm.auto as tqdm
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql, wikidata_to_wikipage
 
@@ -42,9 +42,12 @@ def compute_wikidata_and_wikipedia(shapefile, sourcer: WikidataSourcer):
             table.iterrows(), total=len(table), delay=5, desc="Wikidata"
         )
     ]
-    wikipedia = [wikidata_to_wikipage(wikidata_id) for wikidata_id in tqdm.tqdm(
-        wikidata, total=len(wikidata), delay=5, desc="Wikipedia"
-    )]
+    wikipedia = [
+        wikidata_to_wikipage(wikidata_id)
+        for wikidata_id in tqdm.tqdm(
+            wikidata, total=len(wikidata), delay=5, desc="Wikipedia"
+        )
+    ]
     return wikidata, wikipedia
 
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 import us
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql
