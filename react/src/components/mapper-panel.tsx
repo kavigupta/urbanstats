@@ -554,7 +554,7 @@ function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geogra
             )
 }
 
-type MapEditorMode = 'uss' | 'insets'
+export type MapEditorMode = 'uss' | 'insets'
 
 function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT, onCsvDataUpdate: (csvExportData: CSVExportData) => void, csvExportData?: CSVExportData }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)

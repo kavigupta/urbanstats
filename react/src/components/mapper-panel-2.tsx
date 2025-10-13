@@ -1,31 +1,41 @@
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode, useId, useMemo, useRef, useSyncExternalStore } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
-import { geometry } from '../map-partition'
+import { boundingBox, geometry } from '../map-partition'
+import { Keypoints } from '../mapper/ramps'
 import { Basemap, computeUSS, MapSettings } from '../mapper/settings/utils'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
+import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
-import { instantiate } from '../urban-stats-script/constants/scale'
+import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
+import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
+import { onWidthChange } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
+import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
+import { Statistic } from './display-stats'
 import { Inset, ShapeSpec, ShapeType } from './map'
-import { CommonMaplibreMap, firstLabelId, Polygon } from './map-common'
+import { CommonMaplibreMap, firstLabelId, insetBorderWidth, Polygon } from './map-common'
+import { MapEditorMode } from './mapper-panel'
+import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
+import { renderMap } from './screenshot-map'
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     if (props.view) {
@@ -53,11 +63,13 @@ interface MapComponentProps {
     uss: UrbanStatsASTStatement | undefined
 }
 
-async function getDisplayedMap({ mapSettings }: { mapSettings: MapSettings }): Promise<{ ui: ReactNode, exportPng?: () => void, exportGeoJSON?: () => void, exportCSV?: CSVExportData }> {
+type MapUIProps = { mode: 'view' } | { mode: 'uss' } | { mode: 'insets' }
+
+async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promise<(props: MapUIProps) => { ui: ReactNode, exportPng?: () => void, exportGeoJSON?: () => void, exportCSV?: CSVExportData }> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
-        return {
+        return () => ({
             ui: <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />,
-        }
+        })
     }
 
     const stmts = computeUSS(mapSettings.script)
@@ -65,9 +77,9 @@ async function getDisplayedMap({ mapSettings }: { mapSettings: MapSettings }): P
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
-        return {
+        return () => ({
             ui: <DisplayResults results={execResult.error} editor={false} />,
-        }
+        })
     }
 
     const mapResultMain = execResult.resultingValue.value
@@ -161,7 +173,10 @@ async function getDisplayedMap({ mapSettings }: { mapSettings: MapSettings }): P
     )
 }
 
-async function mapperFeatures({ mapResultMain, universe, geographyKind }: { mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }, universe: Universe, geographyKind: typeof valid_geographies[number] }): Promise<{ ui: React.ReactNode, geoJSON: () => string }> {
+async function mapUi({ mapResultMain, universe, geographyKind }:
+{ mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
+    universe: Universe, geographyKind: typeof valid_geographies[number]
+}): Promise<(props: MapUIProps) => { ui: ReactNode, geoJSON: () => string, png: (colors: Colors) => Promise<string> }> {
     switch (mapResultMain.opaqueType) {
         case 'pMap':
             const pMap = mapResultMain.value
@@ -184,21 +199,179 @@ async function mapperFeatures({ mapResultMain, universe, geographyKind }: { mapR
 
             // Split up by inset
 
+            // Filter by visible insets (if not in inset edit mode)
+
             // render inset maps
 
-            return {
-                ui: null,
-                geoJSON: () => exportAsGeoJSON(features),
+            // insets map component that renders insets
+
+            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+
+            const empiricalRamp: RampToDisplay = { type: 'ramp', value: { ramp: pMap.ramp, interpolations, scale, label: pMap.label, unit: pMap.unit } }
+
+            return (props) => {
+                const insetMaps = pMap.insets.flatMap((inset, i) => {
+                    const insetFeatures = filterOverlaps(inset, features)
+                    if (insetFeatures.length === 0 && props.mode !== 'insets') {
+                        return []
+                    }
+                    return [
+                        { inset, map: (
+                            <InsetMap key={i} inset={inset}>
+                                <PointFeatureCollection features={insetFeatures} />
+                            </InsetMap>
+                        ) },
+                    ]
+                })
+
+                const visibleInsets = insetMaps.map(({ inset }) => inset)
+
+                const colorbarRef = React.createRef<HTMLDivElement>()
+
+                return ({
+                    ui: (
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}
+                        >
+                            <div style={{ height: '90%', width: '100%' }}>
+                                <div style={{
+                                    width: '100%',
+                                    minHeight: '300px',
+                                    aspectRatio: computeAspectRatioForInsets(visibleInsets),
+                                    position: 'relative',
+                                }}
+                                >
+                                    {insetMaps.map(({ map }) => map)}
+                                </div>
+                            </div>
+                            <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
+                                <Colorbar
+                                    ramp={empiricalRamp}
+                                    basemap={pMap.basemap}
+                                />
+                            </div>
+                        </div>
+
+                    ),
+                    geoJSON: () => exportAsGeoJSON(features),
+                    png: colors =>
+                        exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.current, basemap: pMap.basemap })
+                    ,
+                })
             }
     }
+}
+
+async function exportAsPng({
+    colors,
+    colorbarElement,
+    insets,
+    maps,
+    basemap,
+}: {
+    colorbarElement: HTMLElement | undefined
+    colors: Colors
+    insets: Inset[]
+    maps: maplibregl.Map[]
+    basemap: Basemap
+}): Promise<string> {
+    const pixelRatio = 4
+    const width = 4096
+    const cBarPad = 40
+    const { height: colorbarHeight, width: colorbarWidth } = colorbarDimensions(colorbarElement, width * 0.8, 300 - cBarPad)
+
+    const aspectRatio = computeAspectRatioForInsets(insets)
+
+    const height = Math.round(width / aspectRatio)
+
+    const totalHeight = height + colorbarHeight + cBarPad
+
+    const params = { width, height, pixelRatio, insetBorderColor: colors.mapInsetBorderColor }
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    canvas.width = width
+    canvas.height = totalHeight
+
+    await Promise.all(maps.map(async (map, i) => {
+        const inset = insets[i]
+        await renderMap(ctx, map, inset, params)
+    }))
+
+    ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
+    ctx.fillRect(0, height, width, colorbarHeight + cBarPad) // Fill the entire colorbar area
+
+    if (colorbarElement) {
+        const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
+
+        ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
+    }
+
+    return canvas.toDataURL('image/png', 1.0)
+}
+
+function colorbarDimensions(colorbarElement: HTMLElement | undefined, maxWidth: number, maxHeight: number): { width: number, height: number } {
+    if (colorbarElement === undefined) {
+        return { width: 0, height: 0 }
+    }
+    let width = colorbarElement.offsetWidth
+    let height = colorbarElement.offsetHeight
+    {
+        // do this no matter what, to fill the space
+        const scale = maxHeight / height
+        height = maxHeight
+        width = width * scale
+    }
+    if (width > maxWidth) {
+        // rescale if it is now too wide
+        const scale = maxWidth / width
+        width = maxWidth
+        height = height * scale
+    }
+    return { width, height }
+}
+
+function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feature[] {
+    const bbox = inset.coordBox
+    if (!inset.mainMap) {
+        features = features.filter((poly) => {
+            const bounds = boundingBox(poly.geometry)
+            // Check if the polygon overlaps the inset bounds
+            return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
+                && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
+        })
+    }
+    return features
+}
+
+function InsetMap({ inset, children }: { inset: Inset, children: ReactNode }): ReactNode {
+    const colors = useColors()
+
+    return (
+        <CommonMaplibreMap style={{
+            position: 'absolute',
+            width: 'unset',
+            left: `${inset.bottomLeft[0] * 100}%`,
+            bottom: `${inset.bottomLeft[1] * 100}%`,
+            right: `${inset.topRight[0] * 100}%`,
+            border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
+        }}
+        >
+            {children}
+        </CommonMaplibreMap>
+    )
 }
 
 function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `points-${kind}-${id}`
 }
 
-function PointFeatureCollection({ features, id }: { features: GeoJSON.Feature[], id: string }): ReactNode {
+function PointFeatureCollection({ features }: { features: GeoJSON.Feature[] }): ReactNode {
     const { current: map } = useMap()
+    const id = useId()
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
 
@@ -289,5 +462,146 @@ function exportAsGeoJSON(features: GeoJSON.Feature[]): string {
             type: 'FeatureCollection',
             features,
         },
+    )
+}
+
+function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
+    switch (basemap.type) {
+        case 'osm':
+            return { }
+        case 'none':
+            return { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
+    }
+}
+
+interface EmpiricalRamp {
+    ramp: Keypoints
+    scale: ScaleInstance
+    interpolations: number[]
+    label: string
+    unit?: UnitType
+}
+
+type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
+
+function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
+    // do this as a table with 10 columns, each 10% wide and
+    // 2 rows. Top one is the colorbar, bottom one is the
+    // labels.
+    const valuesRef = useRef<HTMLDivElement>(null)
+    const shouldRotate: boolean = useSyncExternalStore(onWidthChange, () => {
+        if (valuesRef.current === null) {
+            return false
+        }
+        const current = valuesRef.current
+        const containers = current.querySelectorAll('.containerOfXticks')
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- this isn't a loop over an array
+        for (let i = 0; i < containers.length; i++) {
+            const container = containers[i] as HTMLDivElement
+            const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
+            if (contained === null) {
+                continue
+            }
+            if (contained.offsetWidth > container.offsetWidth * 0.9) {
+                return true
+            }
+        }
+        return false
+    })
+
+    const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
+
+    if (props.ramp === undefined) {
+        return <div></div>
+    }
+
+    if (props.ramp.type === 'label') {
+        return (
+            <div className="centered_text" style={colorbarStyleFromBasemap(props.basemap)}>
+                {props.ramp.value}
+            </div>
+        )
+    }
+
+    const ramp = props.ramp.value.ramp
+    const scale = props.ramp.value.scale
+    const label = props.ramp.value.label
+    const values = props.ramp.value.interpolations
+    const unit = props.ramp.value.unit
+    const style = colorbarStyleFromBasemap(props.basemap)
+
+    const createValue = (stat: number): ReactNode => {
+        return (
+            <div className="centered_text" style={style}>
+                <Statistic
+                    statname={label}
+                    value={stat}
+                    isUnit={false}
+                    unit={unit}
+                />
+                <Statistic
+                    statname={label}
+                    value={stat}
+                    isUnit={true}
+                    unit={unit}
+                />
+            </div>
+        )
+    }
+
+    const width = `${100 / values.length}%`
+
+    const valuesDivs = (rotate: boolean): ReactNode[] => values.map((x, i) => (
+        <div
+            key={i}
+            style={{
+                width,
+                // height: rotate ? '2em' : '1em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            className="containerOfXticks"
+        >
+            <div
+                style={{
+                    // transform: rotate ? 'rotate(-45deg)' : 'none',
+                    writingMode: rotate ? 'sideways-lr' : 'horizontal-tb',
+                    padding: rotate ? '0.5em' : '0',
+                    // transformOrigin: 'center',
+                    // whiteSpace: 'nowrap',
+                    // fontSize: rotate ? '0.8em' : '1em',
+                }}
+                className="containedOfXticks"
+            >
+                {createValue(x)}
+            </div>
+        </div>
+    ))
+
+    return (
+        <div style={{ ...style, position: 'relative' }}>
+            <div style={{ display: 'flex', width: '100%' }}>
+                {
+                    values.map((x, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                width, height: '1em',
+                                backgroundColor: interpolateColor(ramp, scale.forward(x), furthest),
+                                marginLeft: '1px',
+                                marginRight: '1px',
+                            }}
+                        >
+                        </div>
+                    ))
+                }
+            </div>
+            <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
+            <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
+            <div className="centered_text">
+                {label}
+            </div>
+        </div>
     )
 }

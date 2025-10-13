@@ -20,6 +20,7 @@ import '../utils/map-rtl'
 import './map.css'
 
 export const defaultMapPadding = 20
+export const insetBorderWidth = 2
 
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
 function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
