@@ -79,88 +79,9 @@ async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promis
     }
 
     const mapResultMain = execResult.resultingValue.value
-    // const shapeType: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
-    // const label = mapResultMain.value.label
-
-    // // Handle different map types
-    // let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
-    // let pointSizes: number[] | undefined
-
-    // if (mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'cMapRGB') {
-    //     // For choropleth maps, use the outline
-    //     lineStyle = mapResultMain.value.outline
-    // }
-    // else {
-    //     const maxRadius = mapResultMain.value.maxRadius
-    //     const relativeArea = mapResultMain.value.relativeArea
-    //     pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
-    // }
-
-    // const names = mapResultMain.value.geo
 
     const csvData = generateMapperCSVData(mapResultMain, execResult.context)
     const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
-
-    // let colors: string[]
-
-    // if (mapResultMain.opaqueType === 'cMapRGB') {
-    //     // For RGB maps, use the RGB values directly
-    //     const rgbMap = mapResultMain.value
-    //     colors = rgbMap.dataR.map((r, i) => doRender({
-    //         r: r * 255,
-    //         g: rgbMap.dataG[i] * 255,
-    //         b: rgbMap.dataB[i] * 255,
-    //         a: 255,
-    //     }))
-    // }
-    // else {
-    //     // For regular cMap, use ramp and scale
-    //     const cMap = mapResultMain.value
-    //     const ramp = cMap.ramp
-    //     const scale = instantiate(cMap.scale)
-    //     const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-    //     const furthest = furthestColor(ramp.map(x => x[1]))
-    //     colors = cMap.data.map(
-    //         val => interpolateColor(ramp, scale.forward(val), furthest),
-    //     )
-    // }
-    // const specs = colors.map(
-    //     // no outline, set color fill, alpha=1
-    //     (color, i): ShapeSpec => {
-    //         switch (shapeType) {
-    //             case 'polygon':
-    //                 return {
-    //                     type: 'polygon',
-    //                     style: {
-    //                         fillColor: color,
-    //                         fillOpacity: 1,
-    //                         color: doRender(lineStyle!.color),
-    //                         weight: lineStyle!.weight,
-    //                     },
-    //                 }
-    //             case 'point':
-    //                 return {
-    //                     type: 'point',
-    //                     style: {
-    //                         fillColor: color,
-    //                         fillOpacity: 1,
-    //                         radius: pointSizes![i],
-    //                     },
-    //                 }
-    //         }
-    //     },
-    // )
-    // const metas = mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'pMap'
-    //     ? mapResultMain.value.data.map((x) => { return { statistic: x } })
-    //     : mapResultMain.value.dataR.map((x, i) => { return { statistic: [x, mapResultMain.value.dataG[i], mapResultMain.value.dataB[i]] } })
-    // return {
-    //     shapes: names.map((name, i) => ({
-    //         name,
-    //         spec: specs[i],
-    //         meta: metas[i],
-    //     })),
-    //     zoomIndex: -1,
-    // }
 
     const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind })
 
@@ -217,15 +138,19 @@ async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promis
             ),
             exportGeoJSON: () => exportAsGeoJSON(features),
             exportPng: colors =>
-                exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap })
-            ,
+                exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
+            exportCSV: {
+                csvData,
+                csvFilename,
+            },
         })
     }
 }
 
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind }:
 { mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
-    universe: Universe, geographyKind: typeof valid_geographies[number]
+    universe: Universe
+    geographyKind: typeof valid_geographies[number]
 }): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[]) => ReactNode, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
@@ -300,7 +225,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             mapChildren = fs => (
                 <>
-                    <PolygonFeatureCollection features={fs} id="polys" />
+                    <PolygonFeatureCollection features={fs} clickable={true} />
                 </>
             )
 
