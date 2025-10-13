@@ -5,6 +5,7 @@ import numpy as np
 import tqdm.auto as tqdm
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
+from urbanstats.metadata import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -25,6 +26,15 @@ def isnan(x):
     return False
 
 
+def metadata_for_article(row):
+    metadata = []
+    for i, (key, metadata_type) in enumerate(metadata_types.items()):
+        if row[key] != row[key] or row[key] is None:
+            continue
+        metadata.append(metadata_type.create(i, row[key]))
+    return metadata
+
+
 def create_article_gzip(
     folder,
     row,
@@ -41,6 +51,7 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
+    data.metadata.extend(metadata_for_article(row))
     # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
     data.shortname = row.shortname

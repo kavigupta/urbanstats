@@ -20,6 +20,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.mapper.ramp import output_ramps
+from urbanstats.metadata import export_metadata_types
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 from urbanstats.protobuf.utils import save_universes_list_all
@@ -98,6 +99,9 @@ def create_react_jsons():
 
     with open("react/src/data/universes_default.ts", "w") as f:
         output_typescript(default_universes, f)
+
+    with open("react/src/data/metadata.ts", "w") as f:
+        output_typescript(export_metadata_types(), f)
 
     with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
         output_typescript(
@@ -327,6 +331,9 @@ def build_urbanstats(
     shutil.copy("icons/main/sort-down.png", f"{site_folder}/")
     shutil.copy("icons/main/sort-both.png", f"{site_folder}/")
     shutil.copy("icons/main/csv.png", f"{site_folder}/")
+    shutil.copy("icons/main/wikipedia.svg", f"{site_folder}/")
+    shutil.copy("icons/main/wikidata-light.svg", f"{site_folder}/")
+    shutil.copy("icons/main/wikidata-dark.svg", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
