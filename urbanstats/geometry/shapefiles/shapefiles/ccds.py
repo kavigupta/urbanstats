@@ -1,3 +1,5 @@
+# we want to be pretty explicit about the parameters, so its fine if there is some duplication
+# pylint: disable=duplicate-code
 from attr import dataclass
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql

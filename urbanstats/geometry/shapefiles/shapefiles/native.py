@@ -1,3 +1,5 @@
+# we want to be pretty explicit about the parameters, so its fine if there is some duplication
+# pylint: disable=duplicate-code
 import geopandas as gpd
 from permacache import permacache
 
