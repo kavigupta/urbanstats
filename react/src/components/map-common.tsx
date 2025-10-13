@@ -1,12 +1,13 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
 import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
@@ -89,7 +90,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `polygons-${kind}-${id}`
 }
 
-export function PolygonFeatureCollection({ features, id }: { features: GeoJSON.Feature[], id: string }): ReactNode {
+export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
 
     const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
@@ -98,6 +99,54 @@ export function PolygonFeatureCollection({ features, id }: { features: GeoJSON.F
         type: 'FeatureCollection',
         features,
     }), [features])
+
+    const id = useId()
+
+    const navigator = useContext(Navigator.Context)
+
+    useEffect(() => {
+        if (clickable) {
+            assert(map !== undefined, 'map is undefined')
+
+            const clickFeature = (name: string): void => {
+                void navigator.navigate({
+                    kind: 'article',
+                    universe: navigator.universe,
+                    longname: name,
+                }, { history: 'push', scroll: { kind: 'element', element: map.getContainer() } })
+            }
+
+            const overCallback = (): void => {
+                map.getCanvas().style.cursor = 'pointer'
+            }
+            const leaveCallback = (): void => {
+                map.getCanvas().style.cursor = ''
+            }
+            const clickCallback = (e: maplibregl.MapMouseEvent & {
+                features?: maplibregl.MapGeoJSONFeature[]
+            }): void => {
+                const feature = e.features?.find(f => f.properties.clickable !== false)
+                if (feature !== undefined) {
+                    clickFeature(feature.properties.name as string)
+                }
+            }
+            map.on('mouseover', polygonsId(id, 'fill'), overCallback)
+            map.on('mouseleave', polygonsId(id, 'fill'), leaveCallback)
+            map.on('click', polygonsId(id, 'fill'), clickCallback)
+
+            TestUtils.shared.clickableMaps.set(id, { clickFeature, features: features.map(f => f.properties!.name as string) })
+
+            return () => {
+                map.off('mouseover', polygonsId(id, 'fill'), overCallback)
+                map.off('mouseleave', polygonsId(id, 'fill'), leaveCallback)
+                map.off('click', polygonsId(id, 'fill'), clickCallback)
+
+                TestUtils.shared.clickableMaps.delete(id)
+            }
+        }
+
+        return () => undefined
+    }, [id, map, clickable, navigator, features])
 
     return (
         <>
@@ -173,35 +222,4 @@ class CustomAttributionControl extends maplibregl.AttributionControl {
 export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
     useControl(() => new CustomAttributionControl(startShowingAttribution))
     return null
-}
-
-export function useClickableFeatures(mapRef: React.RefObject<MapRef>, id: string, readyFeatures: GeoJSON.Feature[]): Partial<MapProps> {
-    const navigator = useContext(Navigator.Context)
-
-    const clickFeature = useCallback((name: string) => {
-        void navigator.navigate({
-            kind: 'article',
-            universe: navigator.universe,
-            longname: name,
-        }, { history: 'push', scroll: { kind: 'element', element: mapRef.current!.getContainer() } })
-    }, [navigator, mapRef])
-
-    useEffect(() => {
-        TestUtils.shared.clickableMaps.set(id, { clickFeature, features: readyFeatures.map(f => f.properties!.name as string) })
-        return () => {
-            TestUtils.shared.clickableMaps.delete(id)
-        }
-    }, [id, clickFeature, readyFeatures])
-
-    return {
-        interactiveLayerIds: [polygonsId(id, 'fill')],
-        onMouseOver: e => e.target.getCanvas().style.cursor = 'pointer',
-        onMouseLeave: e => e.target.getCanvas().style.cursor = '',
-        onClick: (e) => {
-            const feature = e.features?.find(f => f.properties.clickable !== false)
-            if (feature !== undefined) {
-                clickFeature(feature.properties.name as string)
-            }
-        },
-    }
 }

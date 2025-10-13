@@ -14,6 +14,7 @@ import { useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
+import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
@@ -30,7 +31,7 @@ import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
 import { Inset } from './map'
-import { CommonMaplibreMap, firstLabelId, insetBorderWidth, Polygon } from './map-common'
+import { CommonMaplibreMap, firstLabelId, insetBorderWidth, Polygon, PolygonFeatureCollection } from './map-common'
 import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
@@ -161,110 +162,155 @@ async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promis
     //     zoomIndex: -1,
     // }
 
-    const map = await mapUi({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind })
+    const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind })
 
-    return props => ({
-        ...map(props),
-        exportCSV: {
-            csvData,
-            csvFilename,
-        },
-    })
+    return (props) => {
+        const mapsRef: (MapRef | null)[] = []
+
+        let visibleInsetIndex = -1
+
+        const insetMaps = mapResultMain.value.insets.flatMap((inset) => {
+            const insetFeatures = filterOverlaps(inset, features)
+            if (insetFeatures.length === 0 && props.mode !== 'insets') {
+                return []
+            }
+            visibleInsetIndex++
+            return [
+                { inset, map: (
+                    <InsetMap key={visibleInsetIndex} inset={inset} ref={e => mapsRef[visibleInsetIndex] = e}>
+                        {mapChildren(insetFeatures)}
+                    </InsetMap>
+                ) },
+            ]
+        })
+
+        const visibleInsets = insetMaps.map(({ inset }) => inset)
+
+        const colorbarRef = React.createRef<HTMLDivElement>()
+
+        return ({
+            ui: (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+                >
+                    <div style={{ height: '90%', width: '100%' }}>
+                        <div style={{
+                            width: '100%',
+                            minHeight: '300px',
+                            aspectRatio: computeAspectRatioForInsets(visibleInsets),
+                            position: 'relative',
+                        }}
+                        >
+                            {insetMaps.map(({ map }) => map)}
+                        </div>
+                    </div>
+                    <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
+                        <Colorbar
+                            ramp={ramp}
+                            basemap={mapResultMain.value.basemap}
+                        />
+                    </div>
+                </div>
+
+            ),
+            exportGeoJSON: () => exportAsGeoJSON(features),
+            exportPng: colors =>
+                exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap })
+            ,
+        })
+    }
 }
 
-async function mapUi({ mapResultMain, universe, geographyKind }:
+async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind }:
 { mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
     universe: Universe, geographyKind: typeof valid_geographies[number]
-}): Promise<(props: MapUIProps) => { ui: ReactNode, exportGeoJSON: () => string, exportPng: (colors: Colors) => Promise<string> }> {
-    switch (mapResultMain.opaqueType) {
+}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[]) => ReactNode, ramp: RampToDisplay }> {
+    let ramp: RampToDisplay
+    let colors: string[]
+    switch (opaqueType) {
         case 'pMap':
-            const pMap = mapResultMain.value
-            const scale = instantiate(pMap.scale)
-            const furthest = furthestColor(pMap.ramp.map(x => x[1]))
+        case 'cMap':
+            const scale = instantiate(value.scale)
+            const furthest = furthestColor(value.ramp.map(x => x[1]))
+            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
+            colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
+            break
+        case 'cMapRGB':
+            colors = value.dataR.map((r, i) => doRender({
+                r: r * 255,
+                g: value.dataG[i] * 255,
+                b: value.dataB[i] * 255,
+                a: 255,
+            }))
+            ramp = { type: 'label', value: value.label }
+            break
+    }
 
-            const points: Point[] = Array.from(pMap.data.entries()).map(([i, dataValue]) => {
+    let features: GeoJSON.Feature[]
+    let mapChildren: (fs: GeoJSON.Feature[]) => ReactNode
+    switch (opaqueType) {
+        case 'pMap':
+            const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
                 return {
-                    name: pMap.geo[i],
-                    fillColor: interpolateColor(pMap.ramp, scale.forward(dataValue), furthest),
+                    name: value.geo[i],
+                    fillColor: colors[i],
                     fillOpacity: 1,
-                    radius: Math.sqrt(pMap.relativeArea[i]) * pMap.maxRadius,
+                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
                     meta: {
                         statistic: dataValue,
                     },
                 }
             })
 
-            const features = await pointsGeojson(geographyKind, universe, points)
+            features = await pointsGeojson(geographyKind, universe, points)
 
-            // Split up by inset
+            mapChildren = fs => (
+                <>
+                    <PointFeatureCollection features={fs} />
+                </>
+            )
+            break
+        case 'cMap':
+        case 'cMapRGB':
+            const polys: Polygon[] = Array.from(colors.entries()).map(([i, color]) => {
+                let meta
+                switch (opaqueType) {
+                    case 'cMap':
+                        meta = { statistic: value.data[i] }
+                        break
+                    case 'cMapRGB':
+                        meta = { statistic: [value.dataR[i], value.dataG[i], value.dataB[i]] }
+                        break
+                }
 
-            // Filter by visible insets (if not in inset edit mode)
+                return {
+                    name: value.geo[i],
+                    fillColor: color,
+                    fillOpacity: 1,
+                    color: doRender(value.outline.color),
+                    weight: value.outline.weight,
+                    meta,
+                }
+            })
 
-            // render inset maps
+            features = await polygonsGeojson(geographyKind, universe, polys)
 
-            // insets map component that renders insets
+            mapChildren = fs => (
+                <>
+                    <PolygonFeatureCollection features={fs} id="polys" />
+                </>
+            )
 
-            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+            break
+    }
 
-            const empiricalRamp: RampToDisplay = { type: 'ramp', value: { ramp: pMap.ramp, interpolations, scale, label: pMap.label, unit: pMap.unit } }
-
-            return (props) => {
-                const mapsRef: (MapRef | null)[] = []
-
-                let visibleInsetIndex = -1
-
-                const insetMaps = pMap.insets.flatMap((inset) => {
-                    const insetFeatures = filterOverlaps(inset, features)
-                    if (insetFeatures.length === 0 && props.mode !== 'insets') {
-                        return []
-                    }
-                    visibleInsetIndex++
-                    return [
-                        { inset, map: (
-                            <InsetMap key={visibleInsetIndex} inset={inset} ref={e => mapsRef[visibleInsetIndex] = e}>
-                                <PointFeatureCollection features={insetFeatures} />
-                            </InsetMap>
-                        ) },
-                    ]
-                })
-
-                const visibleInsets = insetMaps.map(({ inset }) => inset)
-
-                const colorbarRef = React.createRef<HTMLDivElement>()
-
-                return ({
-                    ui: (
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}
-                        >
-                            <div style={{ height: '90%', width: '100%' }}>
-                                <div style={{
-                                    width: '100%',
-                                    minHeight: '300px',
-                                    aspectRatio: computeAspectRatioForInsets(visibleInsets),
-                                    position: 'relative',
-                                }}
-                                >
-                                    {insetMaps.map(({ map }) => map)}
-                                </div>
-                            </div>
-                            <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
-                                <Colorbar
-                                    ramp={empiricalRamp}
-                                    basemap={pMap.basemap}
-                                />
-                            </div>
-                        </div>
-
-                    ),
-                    exportGeoJSON: () => exportAsGeoJSON(features),
-                    exportPng: colors =>
-                        exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: pMap.basemap })
-                    ,
-                })
-            }
+    return {
+        features,
+        mapChildren,
+        ramp,
     }
 }
 

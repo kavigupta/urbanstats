@@ -10,7 +10,7 @@ import { notWaiting, waiting } from '../utils/promiseStream'
 import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 
-import { CommonMaplibreMap, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useClickableFeatures, useZoomFirstFeature } from './map-common'
+import { CommonMaplibreMap, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
     articleType: string
@@ -32,9 +32,8 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
         <CommonMaplibreMap
             id={id}
             ref={mapRef}
-            {...useClickableFeatures(mapRef, id, readyFeatures)}
         >
-            <PolygonFeatureCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} clickable={true} />
             <FullscreenControl position="top-left" />
         </CommonMaplibreMap>
     )
