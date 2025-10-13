@@ -87,13 +87,13 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     <div style={{ marginBlockEnd: '1em' }}></div>
 
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ width: '10%', marginRight: '1em' }}>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
                             <ExternalLinks metadataProtos={article.metadata} />
                         </div>
-                        <div style={{ width: '20%', marginRight: '1em' }}>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
                             <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
-                        <div style={{ width: '70%' }}>
+                        <div style={{ flex: '1 1 auto' }}>
                             <ComparisonSearchBox longname={article.longname} type={article.articleType} />
                         </div>
                     </div>
