@@ -102,7 +102,123 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     const id = useId()
 
+    useClickable({ id, features, clickable })
+
+    return (
+        <>
+            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
+            <Layer
+                id={polygonsId(id, 'fill')}
+                type="fill"
+                source={polygonsId(id, 'source')}
+                paint={{
+                    'fill-color': ['get', 'fillColor'],
+                    'fill-opacity': ['get', 'fillOpacity'],
+                }}
+                beforeId={labelId}
+            />
+            <Layer
+                id={polygonsId(id, 'outline')}
+                type="line"
+                source={polygonsId(id, 'source')}
+                paint={{
+                    'line-color': ['get', 'color'],
+                    'line-width': ['get', 'weight'],
+                }}
+                beforeId={labelId}
+            />
+        </>
+    )
+}
+
+async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
+    const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
+    return {
+        type: 'Feature' as const,
+        properties: polygon,
+        geometry: geometry(feature),
+    }
+}
+
+export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
+    return promiseStream(polygons.map(polygonGeojson))
+}
+
+async function firstLabelId(map: MapRef): Promise<string | undefined> {
+    if (!map.loaded()) {
+        await new Promise(resolve => map.once('load', resolve))
+    }
+    for (const layerId of map.getLayersOrder()) {
+        const layer = map.getLayer(layerId)!
+        if (layer.type === 'symbol' && layer.id.startsWith('label')) {
+            return layer.id
+        }
+    }
+    return undefined
+}
+
+class CustomAttributionControl extends maplibregl.AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
+
+export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
+    useControl(() => new CustomAttributionControl(startShowingAttribution))
+    return null
+}
+
+function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+    return `points-${kind}-${id}`
+}
+
+export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
+    const { current: map } = useMap()
+    const id = useId()
+
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
+
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features,
+    }), [features])
+
+    useClickable({ id, features, clickable })
+
+    return (
+        <>
+            <Source id={pointsId(id, 'source')} type="geojson" data={collection} />
+            <Layer
+                id={pointsId(id, 'fill')}
+                type="circle"
+                source={pointsId(id, 'source')}
+                paint={{
+                    'circle-color': ['get', 'fillColor'],
+                    'circle-opacity': ['get', 'fillOpacity'],
+                    'circle-radius': ['get', 'radius'],
+                }}
+                beforeId={labelId}
+            />
+        </>
+    )
+}
+
+function useClickable({ id, clickable, features }: { id: string, clickable: boolean, features: GeoJSON.Feature[] }): void {
     const navigator = useContext(Navigator.Context)
+
+    const { current: map } = useMap()
 
     useEffect(() => {
         if (clickable) {
@@ -147,79 +263,4 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
         return () => undefined
     }, [id, map, clickable, navigator, features])
-
-    return (
-        <>
-            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
-            <Layer
-                id={polygonsId(id, 'fill')}
-                type="fill"
-                source={polygonsId(id, 'source')}
-                paint={{
-                    'fill-color': ['get', 'fillColor'],
-                    'fill-opacity': ['get', 'fillOpacity'],
-                }}
-                beforeId={labelId}
-            />
-            <Layer
-                id={polygonsId(id, 'outline')}
-                type="line"
-                source={polygonsId(id, 'source')}
-                paint={{
-                    'line-color': ['get', 'color'],
-                    'line-width': ['get', 'weight'],
-                }}
-                beforeId={labelId}
-            />
-        </>
-    )
-}
-
-export async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
-    const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
-    return {
-        type: 'Feature' as const,
-        properties: polygon,
-        geometry: geometry(feature),
-    }
-}
-
-export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(polygons.map(polygonGeojson))
-}
-
-export async function firstLabelId(map: MapRef): Promise<string | undefined> {
-    if (!map.loaded()) {
-        await new Promise(resolve => map.once('load', resolve))
-    }
-    for (const layerId of map.getLayersOrder()) {
-        const layer = map.getLayer(layerId)!
-        if (layer.type === 'symbol' && layer.id.startsWith('label')) {
-            return layer.id
-        }
-    }
-    return undefined
-}
-
-class CustomAttributionControl extends maplibregl.AttributionControl {
-    constructor(startShowingAttribution: boolean) {
-        super()
-
-        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
-        // But reduced since always compact
-        this._updateCompact = () => {
-            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
-                this._container.classList.add('maplibregl-compact')
-                if (startShowingAttribution) {
-                    this._container.setAttribute('open', '')
-                    this._container.classList.add('maplibregl-compact-show')
-                }
-            }
-        }
-    }
-}
-
-export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
-    useControl(() => new CustomAttributionControl(startShowingAttribution))
-    return null
 }

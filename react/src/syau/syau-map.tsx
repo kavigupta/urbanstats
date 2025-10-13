@@ -1,6 +1,6 @@
 import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
@@ -135,7 +135,6 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
-    const id = useId()
 
     return (
         <CommonMaplibreMap
@@ -176,7 +175,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                     'circle-radius': 0,
                 }}
             />
-            <PolygonFeatureCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} clickable={false} />
             <FirstZoom centroids={props.centroids} />
         </CommonMaplibreMap>
     )

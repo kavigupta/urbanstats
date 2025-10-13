@@ -1,5 +1,5 @@
-import React, { ReactNode, useId, useMemo, useRef, useSyncExternalStore } from 'react'
-import { Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import React, { ReactNode, useMemo, useRef, useSyncExternalStore } from 'react'
+import { MapRef } from 'react-map-gl/maplibre'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -31,7 +31,7 @@ import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
 import { Inset } from './map'
-import { CommonMaplibreMap, firstLabelId, insetBorderWidth, Polygon, PolygonFeatureCollection } from './map-common'
+import { CommonMaplibreMap, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
 import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
@@ -194,7 +194,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             mapChildren = fs => (
                 <>
-                    <PointFeatureCollection features={fs} />
+                    <PointFeatureCollection features={fs} clickable={true} />
                 </>
             )
             break
@@ -345,39 +345,6 @@ function _InsetMap({ inset, children }: { inset: Inset, children: ReactNode }, r
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 const InsetMap = React.forwardRef(_InsetMap)
-
-function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
-    return `points-${kind}-${id}`
-}
-
-function PointFeatureCollection({ features }: { features: GeoJSON.Feature[] }): ReactNode {
-    const { current: map } = useMap()
-    const id = useId()
-
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
-
-    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
-        type: 'FeatureCollection',
-        features,
-    }), [features])
-
-    return (
-        <>
-            <Source id={pointsId(id, 'source')} type="geojson" data={collection} />
-            <Layer
-                id={pointsId(id, 'fill')}
-                type="circle"
-                source={pointsId(id, 'source')}
-                paint={{
-                    'circle-color': ['get', 'fillColor'],
-                    'circle-opacity': ['get', 'fillOpacity'],
-                    'circle-radius': ['get', 'radius'],
-                }}
-                beforeId={labelId}
-            />
-        </>
-    )
-}
 
 interface Point {
     name: string

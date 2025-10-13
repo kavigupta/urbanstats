@@ -1,7 +1,7 @@
 import '../common.css'
 import '../components/quiz.css'
 
-import React, { ReactNode, useId, useMemo, useRef } from 'react'
+import React, { ReactNode, useMemo, useRef } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
@@ -33,7 +33,6 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
     ), [longname, color]).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
-    const id = useId()
 
     useZoomFirstFeature(mapRef, features)
 
@@ -42,7 +41,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
             ref={mapRef}
             attributionControl={false}
         >
-            <PolygonFeatureCollection features={readyFeatures} id={id} />
+            <PolygonFeatureCollection features={readyFeatures} clickable={false} />
             <FullscreenControl position="top-left" />
             { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
         </CommonMaplibreMap>
