@@ -5,7 +5,7 @@ import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
-import type { MapperPanel } from '../components/mapper-panel'
+import type { MapperPanel } from '../components/mapper-panel-2'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -671,7 +671,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const panel = import('../components/mapper-panel')
+            const panel = import('../components/mapper-panel-2')
             const utils = import('../mapper/settings/utils')
             const counts = getCountsByArticleType()
             return {
