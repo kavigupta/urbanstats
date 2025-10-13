@@ -1,7 +1,7 @@
 import { gzipSync } from 'zlib'
 
 import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { MapRef } from 'react-map-gl/maplibre'
+import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -364,17 +364,29 @@ function _InsetMap({ inset, children }: { inset: Inset, children: ReactNode }, r
             ref={ref}
             style={{
                 position: 'absolute',
-                width: 'unset',
                 left: `${inset.bottomLeft[0] * 100}%`,
                 bottom: `${inset.bottomLeft[1] * 100}%`,
-                right: `${inset.topRight[0] * 100}%`,
+                width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
+                height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%`,
                 border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
             }}
+            attributionControl={false}
         >
             {children}
+            <FitInset inset={inset} />
         </CommonMaplibreMap>
     )
+}
+
+function FitInset({ inset }: { inset: Inset }): ReactNode {
+    const map = useMap().current!
+
+    useEffect(() => {
+        map.fitBounds(inset.coordBox, { animate: false })
+    }, [inset, map])
+
+    return null
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
