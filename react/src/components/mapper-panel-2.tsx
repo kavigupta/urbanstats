@@ -432,7 +432,12 @@ function _InsetMap({ inset, children, editInset, container }: { inset: Inset, ch
                 attributionControl={false}
             >
                 {children}
-                <FitInset inset={inset} />
+                <HandleInsets
+                    inset={inset}
+                    setCoordBox={(newBox) => {
+                        editInset?.({ coordBox: newBox })
+                    }}
+                />
             </CommonMaplibreMap>
             { editInset && (
                 <EditInsetsHandles
@@ -450,7 +455,7 @@ function _InsetMap({ inset, children, editInset, container }: { inset: Inset, ch
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 const InsetMap = React.forwardRef(_InsetMap)
 
-function FitInset({ inset }: { inset: Inset }): ReactNode {
+function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newBox: Frame) => void }): ReactNode {
     const map = useMap().current!
 
     useEffect(() => {
@@ -463,6 +468,29 @@ function FitInset({ inset }: { inset: Inset }): ReactNode {
             map.off('resize', fit)
         }
     }, [inset, map])
+
+    useEffect(() => {
+        const getCoordBox = (): [number, number, number, number] => {
+            const mapBounds = map.getBounds()
+            const sw = mapBounds.getSouthWest()
+            const ne = mapBounds.getNorthEast()
+            return [sw.lng, sw.lat, ne.lng, ne.lat]
+        }
+
+        const moveHandler = (e: maplibregl.MapLibreEvent): void => {
+            if (e.originalEvent === undefined) {
+                // Not a user event
+                return
+            }
+            setCoordBox(getCoordBox())
+        }
+
+        map.on('moveend', moveHandler)
+
+        return () => {
+            map.off('moveend', moveHandler)
+        }
+    }, [map, setCoordBox])
 
     return null
 }
