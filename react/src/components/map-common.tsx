@@ -102,7 +102,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     const id = useId()
 
-    useClickable({ id, features, clickable })
+    useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
     return (
         <>
@@ -195,7 +195,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
         features,
     }), [features])
 
-    useClickable({ id, features, clickable })
+    useClickable({ id: pointsId(id, 'fill'), features, clickable })
 
     return (
         <>
@@ -246,16 +246,16 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
                     clickFeature(feature.properties.name as string)
                 }
             }
-            map.on('mouseover', polygonsId(id, 'fill'), overCallback)
-            map.on('mouseleave', polygonsId(id, 'fill'), leaveCallback)
-            map.on('click', polygonsId(id, 'fill'), clickCallback)
+            map.on('mouseover', id, overCallback)
+            map.on('mouseleave', id, leaveCallback)
+            map.on('click', id, clickCallback)
 
             TestUtils.shared.clickableMaps.set(id, { clickFeature, features: features.map(f => f.properties!.name as string) })
 
             return () => {
-                map.off('mouseover', polygonsId(id, 'fill'), overCallback)
-                map.off('mouseleave', polygonsId(id, 'fill'), leaveCallback)
-                map.off('click', polygonsId(id, 'fill'), clickCallback)
+                map.off('mouseover', id, overCallback)
+                map.off('mouseleave', id, leaveCallback)
+                map.off('click', id, clickCallback)
 
                 TestUtils.shared.clickableMaps.delete(id)
             }
