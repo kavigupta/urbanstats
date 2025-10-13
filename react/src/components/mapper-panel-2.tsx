@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import React, { CSSProperties, ReactNode, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import valid_geographies from '../data/mapper/used_geographies'
@@ -52,7 +52,7 @@ export type Insets = Inset[]
 
 export type EditSingleInset = (newInset: Partial<Inset>) => void
 export type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
-export interface EditInsets { doEdit: EditMultipleInsets, subscribeChanges: Property<Inset>[] }
+export interface EditInsets { doEdit: EditMultipleInsets, editedInsets: Inset[] }
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     if (props.view) {
@@ -101,7 +101,7 @@ function MapSkeleton(): ReactNode {
     )
 }
 
-type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', doEdit: EditMultipleInsets, editedInsets: Insets })
+type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
 
 interface MapGenerator {
     ui: (props: MapUIProps) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
@@ -150,22 +150,49 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
         ui: (props) => {
             const mapsRef: (MapRef | null)[] = []
 
-            let visibleInsetIndex = 0
+            const mapsContainerRef = React.createRef<HTMLDivElement>()
 
-            const insetMaps = mapResultMain.value.insets.flatMap((inset) => {
-                const insetFeatures = filterOverlaps(inset, features)
-                if (insetFeatures.length === 0 && props.mode !== 'insets') {
-                    return []
-                }
-                const i = visibleInsetIndex++
-                return [
-                    { inset, map: (
-                        <InsetMap key={i} inset={inset} ref={e => mapsRef[i] = e}>
-                            {mapChildren(insetFeatures)}
-                        </InsetMap>
-                    ) },
-                ]
-            })
+            let insetMaps
+            if (props.mode === 'insets') {
+                insetMaps = props.editInsets.editedInsets.flatMap((inset, i) => {
+                    const insetFeatures = filterOverlaps(inset, features)
+                    return [
+                        { inset, map: (
+                            <InsetMap
+                                key={i}
+                                inset={inset}
+                                ref={e => mapsRef[i] = e}
+                                container={mapsContainerRef}
+                                editInset={(newInset: Partial<Inset>) => { props.editInsets.doEdit(i, newInset) }}
+                            >
+                                {mapChildren(insetFeatures)}
+                            </InsetMap>
+                        ) },
+                    ]
+                })
+            }
+            else {
+                let visibleInsetIndex = 0
+                insetMaps = mapResultMain.value.insets.flatMap((inset) => {
+                    const insetFeatures = filterOverlaps(inset, features)
+                    if (insetFeatures.length === 0) {
+                        return []
+                    }
+                    const i = visibleInsetIndex++
+                    return [
+                        { inset, map: (
+                            <InsetMap
+                                key={i}
+                                inset={inset}
+                                ref={e => mapsRef[i] = e}
+                                container={mapsContainerRef}
+                            >
+                                {mapChildren(insetFeatures)}
+                            </InsetMap>
+                        ) },
+                    ]
+                })
+            }
 
             const visibleInsets = insetMaps.map(({ inset }) => inset)
 
@@ -181,12 +208,14 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
                     >
                         <RelativeLoader loading={props.loading} />
                         <div style={{ height: '90%', width: '100%' }}>
-                            <div style={{
-                                width: '100%',
-                                minHeight: '300px',
-                                aspectRatio: computeAspectRatioForInsets(visibleInsets),
-                                position: 'relative',
-                            }}
+                            <div
+                                ref={mapsContainerRef}
+                                style={{
+                                    width: '100%',
+                                    minHeight: '300px',
+                                    aspectRatio: computeAspectRatioForInsets(visibleInsets),
+                                    position: 'relative',
+                                }}
                             >
                                 {insetMaps.map(({ map }) => map)}
                             </div>
@@ -380,41 +409,168 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children }: { inset: Inset, children: ReactNode }, ref: React.Ref<MapRef>): ReactNode {
+function _InsetMap({ inset, children, editInset, container }: { inset: Inset, children: ReactNode, container: RefObject<HTMLDivElement>, editInset?: EditSingleInset }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
     return (
-        <CommonMaplibreMap
-            ref={ref}
-            style={{
-                position: 'absolute',
-                left: `${inset.bottomLeft[0] * 100}%`,
-                bottom: `${inset.bottomLeft[1] * 100}%`,
-                width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
-                height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%`,
-                border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
-            }}
-            attributionControl={false}
+        <div style={{ position: 'absolute',
+            left: `${inset.bottomLeft[0] * 100}%`,
+            bottom: `${inset.bottomLeft[1] * 100}%`,
+            width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
+            height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
-            {children}
-            <FitInset inset={inset} />
-        </CommonMaplibreMap>
+            <CommonMaplibreMap
+                ref={ref}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                    borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
+                    width: undefined,
+                    height: undefined,
+                }}
+                attributionControl={false}
+            >
+                {children}
+                <FitInset inset={inset} />
+            </CommonMaplibreMap>
+            { editInset && (
+                <EditInsetsHandles
+                    frame={[...inset.bottomLeft, ...inset.topRight]}
+                    setFrame={(newFrame) => {
+                        editInset({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                    }}
+                    container={container}
+                />
+            )}
+        </div>
     )
 }
+
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+const InsetMap = React.forwardRef(_InsetMap)
 
 function FitInset({ inset }: { inset: Inset }): ReactNode {
     const map = useMap().current!
 
     useEffect(() => {
-        map.fitBounds(inset.coordBox, { animate: false })
+        const fit = (): void => {
+            map.fitBounds(inset.coordBox, { animate: false })
+        }
+        fit()
+        map.on('resize', fit)
+        return () => {
+            map.off('resize', fit)
+        }
     }, [inset, map])
 
     return null
 }
 
-// eslint-disable-next-line no-restricted-syntax -- Forward Ref
-const InsetMap = React.forwardRef(_InsetMap)
+type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
+
+type Frame = [number, number, number, number]
+
+function EditInsetsHandles(props: {
+    frame: Frame
+    setFrame: (newFrame: Frame) => void
+    container: RefObject<HTMLDivElement>
+}): ReactNode {
+    const colors = useColors()
+
+    const handleStyle: (handleSize: number) => CSSProperties = handleSize => ({
+        backgroundColor: colors.slightlyDifferentBackground,
+        border: `1px solid ${colors.textMain}`,
+        position: 'absolute',
+        width: `${handleSize}px`,
+        height: `${handleSize}px`,
+        borderRadius: '2px',
+        zIndex: 1000,
+    })
+
+    const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
+
+    const pointerHandlers = (kind: DragKind): {
+        'onPointerDown': (e: React.PointerEvent) => void
+        'onPointerMove': (e: React.PointerEvent) => void
+        'onPointerUp': (e: React.PointerEvent) => void
+        'onPointerCancel': (e: React.PointerEvent) => void
+        'data-test': string
+    } => ({
+        'data-test': kind,
+        'onPointerDown': (e: React.PointerEvent) => {
+            if (activeDrag.current !== undefined) {
+                return
+            }
+            const thisElem = e.target as HTMLDivElement
+            activeDrag.current = {
+                kind,
+                startX: e.clientX,
+                startY: e.clientY,
+                startFrame: props.frame,
+                pointerId: e.pointerId,
+            }
+            thisElem.setPointerCapture(e.pointerId)
+        },
+        'onPointerMove': (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            const drag = activeDrag.current
+            const rawMovementX = (e.clientX - drag.startX) / props.container.current!.clientWidth
+            const rawMovementY = -(e.clientY - drag.startY) / props.container.current!.clientHeight
+            const resizedFrame: Frame = [
+                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
+                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
+                Math.max(drag.startFrame[0] + 0.05, Math.min(drag.startFrame[2] + rawMovementX, 1)),
+                Math.max(drag.startFrame[1] + 0.1, Math.min(drag.startFrame[3] + rawMovementY, 1)),
+            ]
+            let newFrame: Frame
+            switch (drag.kind) {
+                case 'move':
+                    const movementX = Math.max(0 - drag.startFrame[0], Math.min(rawMovementX, 1 - drag.startFrame[2]))
+                    const movementY = Math.max(0 - drag.startFrame[1], Math.min(rawMovementY, 1 - drag.startFrame[3]))
+                    newFrame = [drag.startFrame[0] + movementX, drag.startFrame[1] + movementY, drag.startFrame[2] + movementX, drag.startFrame[3] + movementY]
+                    break
+                case 'topRight':
+                    newFrame = [drag.startFrame[0], drag.startFrame[1], resizedFrame[2], resizedFrame[3]]
+                    break
+                case 'bottomRight':
+                    newFrame = [drag.startFrame[0], resizedFrame[1], resizedFrame[2], drag.startFrame[3]]
+                    break
+                case 'bottomLeft':
+                    newFrame = [resizedFrame[0], resizedFrame[1], drag.startFrame[2], drag.startFrame[3]]
+                    break
+                case 'topLeft':
+                    newFrame = [resizedFrame[0], drag.startFrame[1], drag.startFrame[2], resizedFrame[3]]
+                    break
+            }
+            props.setFrame(newFrame)
+        },
+        'onPointerUp': (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+        },
+        'onPointerCancel': (e: React.PointerEvent) => {
+            if (activeDrag.current?.pointerId !== e.pointerId) {
+                return
+            }
+            activeDrag.current = undefined
+        },
+    })
+
+    return (
+        <>
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
+            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
+            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
+            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+        </>
+    )
+}
 
 interface Point {
     name: string
@@ -782,15 +938,17 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     const ui = mapGenerator?.ui({
         loading,
         mode: 'insets',
-        doEdit: (i, e) => {
-            setInsetEdits((edits) => {
-                const newEdits = new Map(edits)
-                newEdits.set(i, { ...newEdits.get(i), ...e })
-                addState(newEdits, undefined)
-                return newEdits
-            })
+        editInsets: {
+            doEdit: (i, e) => {
+                setInsetEdits((edits) => {
+                    const newEdits = new Map(edits)
+                    newEdits.set(i, { ...newEdits.get(i), ...e })
+                    addState(newEdits, undefined)
+                    return newEdits
+                })
+            },
+            editedInsets,
         },
-        editedInsets,
     })
 
     return (
