@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Type
 
 from urbanstats.protobuf import data_files_pb2
 
@@ -12,7 +13,7 @@ class MetadataColumn(ABC):
 
 @dataclass
 class DisplayedMetadata:
-    typ: type
+    typ: Type
     name: str
 
     def create(self, idx, value):
