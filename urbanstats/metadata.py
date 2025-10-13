@@ -7,7 +7,7 @@ from urbanstats.protobuf import data_files_pb2
 
 class MetadataColumn(ABC):
     @abstractmethod
-    def create(self, value):
+    def create(self, idx, value):
         pass
 
 
