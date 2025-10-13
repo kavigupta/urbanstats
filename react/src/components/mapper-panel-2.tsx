@@ -43,7 +43,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
-import { CommonMaplibreMap, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
 import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
@@ -150,17 +150,17 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
         ui: (props) => {
             const mapsRef: (MapRef | null)[] = []
 
-            let visibleInsetIndex = -1
+            let visibleInsetIndex = 0
 
             const insetMaps = mapResultMain.value.insets.flatMap((inset) => {
                 const insetFeatures = filterOverlaps(inset, features)
                 if (insetFeatures.length === 0 && props.mode !== 'insets') {
                     return []
                 }
-                visibleInsetIndex++
+                const i = visibleInsetIndex++
                 return [
                     { inset, map: (
-                        <InsetMap key={visibleInsetIndex} inset={inset} ref={e => mapsRef[visibleInsetIndex] = e}>
+                        <InsetMap key={i} inset={inset} ref={e => mapsRef[i] = e}>
                             {mapChildren(insetFeatures)}
                         </InsetMap>
                     ) },
@@ -255,6 +255,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             mapChildren = fs => (
                 <>
                     <PointFeatureCollection features={fs} clickable={true} />
+                    <BasemapComponent basemap={value.basemap} />
                 </>
             )
             break
@@ -286,6 +287,8 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             mapChildren = fs => (
                 <>
                     <PolygonFeatureCollection features={fs} clickable={true} />
+                    <BasemapComponent basemap={value.basemap} />
+
                 </>
             )
 

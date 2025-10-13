@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
+import { Basemap, CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
@@ -143,7 +143,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             onData={updateMarkers}
             style={{ height: 600 }}
         >
-            <NoSymbols />
+            <Basemap basemap={useMemo(() => ({ type: 'osm', noLabels: true }), [])} />
             <FullscreenControl position="top-left" />
             <Source
                 id="centroids"
@@ -179,26 +179,6 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             <FirstZoom centroids={props.centroids} />
         </CommonMaplibreMap>
     )
-}
-
-function NoSymbols(): ReactNode {
-    const map = useMap().current!
-
-    useEffect(() => {
-        void (async () => {
-            if (!map.loaded()) {
-                await new Promise(resolve => map.once('load', resolve))
-            }
-            for (const layerId of map.getLayersOrder()) {
-                const layer = map.getLayer(layerId)!
-                if (layer.type === 'symbol') {
-                    layer.setLayoutProperty('visibility', 'none')
-                }
-            }
-        })()
-    }, [map])
-
-    return null
 }
 
 function FirstZoom(props: { centroids: SYAUMapProps['centroids'] }): ReactNode {

@@ -4,6 +4,7 @@ import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
+import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { TestUtils } from '../utils/TestUtils'
@@ -86,8 +87,10 @@ export interface Polygon {
     meta?: Record<string, unknown>
 }
 
+const urbanStatsLayerPrefix = 'urban-stats'
+
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
-    return `polygons-${kind}-${id}`
+    return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
 }
 
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
@@ -181,7 +184,7 @@ export function CustomAttributionControlComponent({ startShowingAttribution }: {
 }
 
 function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
-    return `points-${kind}-${id}`
+    return `${urbanStatsLayerPrefix}-points-${kind}-${id}`
 }
 
 export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
@@ -263,4 +266,66 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
 
         return () => undefined
     }, [id, map, clickable, navigator, features])
+}
+
+// eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
+const defaultBackgroundColor = '#f8f4f0'
+
+export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
+    const map = useMap().current!
+
+    useEffect(() => {
+        void (async () => {
+            if (!map.loaded()) {
+                await new Promise(resolve => map.once('load', resolve))
+            }
+            for (const layerId of map.getLayersOrder()) {
+                if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
+                    continue
+                }
+                const layer = map.getLayer(layerId)!
+                layer.setLayoutProperty('visibility', isVisible(basemap, layer) ? 'visible' : 'none')
+            }
+            map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
+        })()
+    }, [map, basemap])
+
+    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map])).result
+
+    if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
+        return (
+            <Layer
+                id="boundary_subn_overlayed"
+                type="line"
+                source="openmaptiles"
+                source-layer="boundary"
+                filter={[
+                    'all',
+                    ['<=', ['get', 'admin_level'], 4],
+                    ['!=', ['get', 'maritime'], 1],
+                    ['!=', ['get', 'disputed'], 1],
+                    ['!', ['has', 'claimed_by']],
+                ]}
+                paint={{
+                    'line-color': basemap.subnationalOutlines.color,
+                    'line-width': basemap.subnationalOutlines.weight,
+                }}
+                beforeId={labelId}
+            />
+        )
+    }
+
+    return null
+}
+
+function isVisible(basemap: Basemap, layer: { type: string }): boolean {
+    switch (basemap.type) {
+        case 'none':
+            return false
+        case 'osm':
+            if (basemap.noLabels && layer.type === 'symbol') {
+                return false
+            }
+            return true
+    }
 }
