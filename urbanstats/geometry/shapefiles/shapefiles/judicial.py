@@ -36,6 +36,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     data_credit=data_credit,
     include_in_syau=False,
     special_data_sources=["composed_of_counties"],
+    wikidata_sourcer=None,
 )
 
 
@@ -73,6 +74,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     data_credit=data_credit,
     include_in_syau=False,
     special_data_sources=["composed_of_counties"],
+    wikidata_sourcer=None,
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,

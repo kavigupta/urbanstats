@@ -2098,6 +2098,251 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
     return ExtraStatistic;
 })();
 
+export const Metadata = $root.Metadata = (() => {
+
+    /**
+     * Properties of a Metadata.
+     * @exports IMetadata
+     * @interface IMetadata
+     * @property {number|null} [metadataIndex] Metadata metadataIndex
+     * @property {string|null} [stringValue] Metadata stringValue
+     */
+
+    /**
+     * Constructs a new Metadata.
+     * @exports Metadata
+     * @classdesc Represents a Metadata.
+     * @implements IMetadata
+     * @constructor
+     * @param {IMetadata=} [properties] Properties to set
+     */
+    function Metadata(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * Metadata metadataIndex.
+     * @member {number} metadataIndex
+     * @memberof Metadata
+     * @instance
+     */
+    Metadata.prototype.metadataIndex = 0;
+
+    /**
+     * Metadata stringValue.
+     * @member {string|null|undefined} stringValue
+     * @memberof Metadata
+     * @instance
+     */
+    Metadata.prototype.stringValue = null;
+
+    // OneOf field names bound to virtual getters and setters
+    let $oneOfFields;
+
+    /**
+     * Metadata _stringValue.
+     * @member {"stringValue"|undefined} _stringValue
+     * @memberof Metadata
+     * @instance
+     */
+    Object.defineProperty(Metadata.prototype, "_stringValue", {
+        get: $util.oneOfGetter($oneOfFields = ["stringValue"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Creates a new Metadata instance using the specified properties.
+     * @function create
+     * @memberof Metadata
+     * @static
+     * @param {IMetadata=} [properties] Properties to set
+     * @returns {Metadata} Metadata instance
+     */
+    Metadata.create = function create(properties) {
+        return new Metadata(properties);
+    };
+
+    /**
+     * Encodes the specified Metadata message. Does not implicitly {@link Metadata.verify|verify} messages.
+     * @function encode
+     * @memberof Metadata
+     * @static
+     * @param {IMetadata} message Metadata message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Metadata.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.metadataIndex != null && Object.hasOwnProperty.call(message, "metadataIndex"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.metadataIndex);
+        if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.stringValue);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified Metadata message, length delimited. Does not implicitly {@link Metadata.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof Metadata
+     * @static
+     * @param {IMetadata} message Metadata message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    Metadata.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a Metadata message from the specified reader or buffer.
+     * @function decode
+     * @memberof Metadata
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {Metadata} Metadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Metadata.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.Metadata();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.metadataIndex = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.stringValue = reader.string();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a Metadata message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof Metadata
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {Metadata} Metadata
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    Metadata.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a Metadata message.
+     * @function verify
+     * @memberof Metadata
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    Metadata.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        let properties = {};
+        if (message.metadataIndex != null && message.hasOwnProperty("metadataIndex"))
+            if (!$util.isInteger(message.metadataIndex))
+                return "metadataIndex: integer expected";
+        if (message.stringValue != null && message.hasOwnProperty("stringValue")) {
+            properties._stringValue = 1;
+            if (!$util.isString(message.stringValue))
+                return "stringValue: string expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a Metadata message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof Metadata
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {Metadata} Metadata
+     */
+    Metadata.fromObject = function fromObject(object) {
+        if (object instanceof $root.Metadata)
+            return object;
+        let message = new $root.Metadata();
+        if (object.metadataIndex != null)
+            message.metadataIndex = object.metadataIndex | 0;
+        if (object.stringValue != null)
+            message.stringValue = String(object.stringValue);
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a Metadata message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof Metadata
+     * @static
+     * @param {Metadata} message Metadata
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    Metadata.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults)
+            object.metadataIndex = 0;
+        if (message.metadataIndex != null && message.hasOwnProperty("metadataIndex"))
+            object.metadataIndex = message.metadataIndex;
+        if (message.stringValue != null && message.hasOwnProperty("stringValue")) {
+            object.stringValue = message.stringValue;
+            if (options.oneofs)
+                object._stringValue = "stringValue";
+        }
+        return object;
+    };
+
+    /**
+     * Converts this Metadata to JSON.
+     * @function toJSON
+     * @memberof Metadata
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    Metadata.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Metadata
+     * @function getTypeUrl
+     * @memberof Metadata
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Metadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/Metadata";
+    };
+
+    return Metadata;
+})();
+
 export const Article = $root.Article = (() => {
 
     /**
@@ -2114,6 +2359,7 @@ export const Article = $root.Article = (() => {
      * @property {Array.<IRelatedButtons>|null} [related] Article related
      * @property {Array.<string>|null} [universes] Article universes
      * @property {Array.<IExtraStatistic>|null} [extraStats] Article extraStats
+     * @property {Array.<IMetadata>|null} [metadata] Article metadata
      */
 
     /**
@@ -2130,6 +2376,7 @@ export const Article = $root.Article = (() => {
         this.related = [];
         this.universes = [];
         this.extraStats = [];
+        this.metadata = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2217,6 +2464,14 @@ export const Article = $root.Article = (() => {
     Article.prototype.extraStats = $util.emptyArray;
 
     /**
+     * Article metadata.
+     * @member {Array.<IMetadata>} metadata
+     * @memberof Article
+     * @instance
+     */
+    Article.prototype.metadata = $util.emptyArray;
+
+    /**
      * Creates a new Article instance using the specified properties.
      * @function create
      * @memberof Article
@@ -2265,6 +2520,9 @@ export const Article = $root.Article = (() => {
         if (message.overallFirstOrLast != null && message.overallFirstOrLast.length)
             for (let i = 0; i < message.overallFirstOrLast.length; ++i)
                 $root.FirstOrLast.encode(message.overallFirstOrLast[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+        if (message.metadata != null && message.metadata.length)
+            for (let i = 0; i < message.metadata.length; ++i)
+                $root.Metadata.encode(message.metadata[i], writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
         return writer;
     };
 
@@ -2347,6 +2605,12 @@ export const Article = $root.Article = (() => {
                     if (!(message.extraStats && message.extraStats.length))
                         message.extraStats = [];
                     message.extraStats.push($root.ExtraStatistic.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 11: {
+                    if (!(message.metadata && message.metadata.length))
+                        message.metadata = [];
+                    message.metadata.push($root.Metadata.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -2442,6 +2706,15 @@ export const Article = $root.Article = (() => {
                     return "extraStats." + error;
             }
         }
+        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (!Array.isArray(message.metadata))
+                return "metadata: array expected";
+            for (let i = 0; i < message.metadata.length; ++i) {
+                let error = $root.Metadata.verify(message.metadata[i]);
+                if (error)
+                    return "metadata." + error;
+            }
+        }
         return null;
     };
 
@@ -2517,6 +2790,16 @@ export const Article = $root.Article = (() => {
                 message.extraStats[i] = $root.ExtraStatistic.fromObject(object.extraStats[i]);
             }
         }
+        if (object.metadata) {
+            if (!Array.isArray(object.metadata))
+                throw TypeError(".Article.metadata: array expected");
+            message.metadata = [];
+            for (let i = 0; i < object.metadata.length; ++i) {
+                if (typeof object.metadata[i] !== "object")
+                    throw TypeError(".Article.metadata: object expected");
+                message.metadata[i] = $root.Metadata.fromObject(object.metadata[i]);
+            }
+        }
         return message;
     };
 
@@ -2539,6 +2822,7 @@ export const Article = $root.Article = (() => {
             object.universes = [];
             object.extraStats = [];
             object.overallFirstOrLast = [];
+            object.metadata = [];
         }
         if (options.defaults) {
             object.shortname = "";
@@ -2587,6 +2871,11 @@ export const Article = $root.Article = (() => {
             object.overallFirstOrLast = [];
             for (let j = 0; j < message.overallFirstOrLast.length; ++j)
                 object.overallFirstOrLast[j] = $root.FirstOrLast.toObject(message.overallFirstOrLast[j], options);
+        }
+        if (message.metadata && message.metadata.length) {
+            object.metadata = [];
+            for (let j = 0; j < message.metadata.length; ++j)
+                object.metadata[j] = $root.Metadata.toObject(message.metadata[j], options);
         }
         return object;
     };

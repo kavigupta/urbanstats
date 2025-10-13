@@ -5,6 +5,8 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
+from urbanstats.metadata import metadata_types
+
 
 @attr.s
 class Shapefile:
@@ -30,6 +32,12 @@ class Shapefile:
     end_date_overall = attr.ib(kw_only=True, default=float("inf"))
     longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
     include_in_syau = attr.ib(kw_only=True)
+    metadata_columns = attr.ib(kw_only=True, default=())
+    wikidata_sourcer = attr.ib(kw_only=True)
+
+    def __attrs_post_init__(self):
+        assert set(self.metadata_columns) <= set(self.available_columns)
+        assert set(self.metadata_columns) <= set(metadata_types)
 
     def load_file(self):
         """

@@ -43,4 +43,5 @@ NEIGHBORHOODS = Shapefile(
         link="https://catalog.data.gov/dataset/neighborhoods-us-2017-zillow-segs",
     ),
     include_in_syau=True,
+    wikidata_sourcer=None,
 )

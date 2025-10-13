@@ -22,4 +22,5 @@ MEDIA_MARKETS = Shapefile(
         link="https://datablends.us/2021/01/14/a-useful-dma-shapefile-for-tableau-and-alteryx/",
     ),
     include_in_syau=True,
+    wikidata_sourcer=None,
 )
