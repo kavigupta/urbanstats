@@ -12,7 +12,7 @@ class MetadataColumn(ABC):
 
 
 @dataclass
-class DisplayedMetadata:
+class DisplayedMetadata(MetadataColumn):
     typ: Type
     name: str
 
@@ -25,7 +25,7 @@ class DisplayedMetadata:
 
 
 @dataclass
-class ExternalLinkMetadata:
+class ExternalLinkMetadata(MetadataColumn):
     site: str
     link_prefix: str
     normalizer: str = None
