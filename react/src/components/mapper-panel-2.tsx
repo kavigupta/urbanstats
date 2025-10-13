@@ -252,12 +252,8 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await pointsGeojson(geographyKind, universe, points)
 
-            mapChildren = fs => (
-                <>
-                    <PointFeatureCollection features={fs} clickable={true} />
-                    <BasemapComponent basemap={value.basemap} />
-                </>
-            )
+            mapChildren = fs => <PointFeatureCollection features={fs} clickable={true} />
+
             break
         case 'cMap':
         case 'cMapRGB':
@@ -284,20 +280,19 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await polygonsGeojson(geographyKind, universe, polys)
 
-            mapChildren = fs => (
-                <>
-                    <PolygonFeatureCollection features={fs} clickable={true} />
-                    <BasemapComponent basemap={value.basemap} />
-
-                </>
-            )
+            mapChildren = fs => <PolygonFeatureCollection features={fs} clickable={true} />
 
             break
     }
 
     return {
         features,
-        mapChildren,
+        mapChildren: fs => (
+            <>
+                {mapChildren(fs)}
+                <BasemapComponent basemap={value.basemap} />
+            </>
+        ),
         ramp,
     }
 }
