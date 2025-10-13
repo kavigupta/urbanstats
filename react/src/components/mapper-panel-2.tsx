@@ -1,5 +1,5 @@
 import React, { ReactNode, useId, useMemo, useRef, useSyncExternalStore } from 'react'
-import { Layer, Source, useMap } from 'react-map-gl/maplibre'
+import { Layer, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -8,15 +8,13 @@ import { boundingBox, geometry } from '../map-partition'
 import { Keypoints } from '../mapper/ramps'
 import { Basemap, computeUSS, MapSettings } from '../mapper/settings/utils'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
+import { LongLoad } from '../navigation/loading'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
-import { doRender } from '../urban-stats-script/constants/color'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -31,41 +29,38 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
-import { Inset, ShapeSpec, ShapeType } from './map'
+import { Inset } from './map'
 import { CommonMaplibreMap, firstLabelId, insetBorderWidth, Polygon } from './map-common'
-import { MapEditorMode } from './mapper-panel'
 import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     if (props.view) {
-        return <DisplayMap {...props.mapSettings} uss={computeUSS(props.mapSettings.script)} />
+        return <DisplayMap mapSettings={props.mapSettings} />
     }
 
-    return <EditMapperPanel {...props} />
+    return null // <EditMapperPanel {...props} />
 }
 
-function MapComponentWrapper(props: Omit<MapComponentProps, 'universe' | 'geographyKind'> & { universe: MapComponentProps['universe'] | undefined, geographyKind: MapComponentProps['geographyKind'] | undefined }): ReactNode {
-    return (props.geographyKind === undefined || props.universe === undefined)
-        ? <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />
-        : (
-                <MapComponent
-                    {...props}
-                    geographyKind={props.geographyKind}
-                    universe={props.universe}
-                />
-            )
-}
-
-interface MapComponentProps {
-    geographyKind: typeof valid_geographies[number]
-    universe: Universe
-    uss: UrbanStatsASTStatement | undefined
+function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
+    const generator = useMemo(() => maybeMapUi({ mapSettings }), [mapSettings])
+    const map = useOrderedResolve(generator)
+    return (
+        <>
+            {map?.({ mode: 'view' }).ui}
+            <LongLoad containerStyleOverride={{
+                transition: 'opacity 0.25s',
+                opacity: map === undefined ? 1 : 0,
+                pointerEvents: 'none',
+            }}
+            />
+        </>
+    )
 }
 
 type MapUIProps = { mode: 'view' } | { mode: 'uss' } | { mode: 'insets' }
 
-async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promise<(props: MapUIProps) => { ui: ReactNode, exportPng?: () => void, exportGeoJSON?: () => void, exportCSV?: CSVExportData }> {
+async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promise<(props: MapUIProps) => { ui: ReactNode, exportPng?: (colors: Colors) => Promise<string>, exportGeoJSON?: () => string, exportCSV?: CSVExportData }> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return () => ({
             ui: <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />,
@@ -83,80 +78,80 @@ async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promis
     }
 
     const mapResultMain = execResult.resultingValue.value
-    const shapeType: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
-    const label = mapResultMain.value.label
+    // const shapeType: ShapeType = mapResultMain.opaqueType === 'pMap' ? 'point' : 'polygon'
+    // const label = mapResultMain.value.label
 
-    // Handle different map types
-    let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
-    let pointSizes: number[] | undefined
+    // // Handle different map types
+    // let lineStyle: { color: { r: number, g: number, b: number, a: number }, weight: number } | undefined
+    // let pointSizes: number[] | undefined
 
-    if (mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'cMapRGB') {
-        // For choropleth maps, use the outline
-        lineStyle = mapResultMain.value.outline
-    }
-    else {
-        const maxRadius = mapResultMain.value.maxRadius
-        const relativeArea = mapResultMain.value.relativeArea
-        pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
-    }
+    // if (mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'cMapRGB') {
+    //     // For choropleth maps, use the outline
+    //     lineStyle = mapResultMain.value.outline
+    // }
+    // else {
+    //     const maxRadius = mapResultMain.value.maxRadius
+    //     const relativeArea = mapResultMain.value.relativeArea
+    //     pointSizes = relativeArea.map(area => Math.sqrt(area) * maxRadius)
+    // }
 
-    const names = mapResultMain.value.geo
+    // const names = mapResultMain.value.geo
 
     const csvData = generateMapperCSVData(mapResultMain, execResult.context)
     const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
 
-    let colors: string[]
+    // let colors: string[]
 
-    if (mapResultMain.opaqueType === 'cMapRGB') {
-        // For RGB maps, use the RGB values directly
-        const rgbMap = mapResultMain.value
-        colors = rgbMap.dataR.map((r, i) => doRender({
-            r: r * 255,
-            g: rgbMap.dataG[i] * 255,
-            b: rgbMap.dataB[i] * 255,
-            a: 255,
-        }))
-    }
-    else {
-        // For regular cMap, use ramp and scale
-        const cMap = mapResultMain.value
-        const ramp = cMap.ramp
-        const scale = instantiate(cMap.scale)
-        const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-        const furthest = furthestColor(ramp.map(x => x[1]))
-        colors = cMap.data.map(
-            val => interpolateColor(ramp, scale.forward(val), furthest),
-        )
-    }
-    const specs = colors.map(
-        // no outline, set color fill, alpha=1
-        (color, i): ShapeSpec => {
-            switch (shapeType) {
-                case 'polygon':
-                    return {
-                        type: 'polygon',
-                        style: {
-                            fillColor: color,
-                            fillOpacity: 1,
-                            color: doRender(lineStyle!.color),
-                            weight: lineStyle!.weight,
-                        },
-                    }
-                case 'point':
-                    return {
-                        type: 'point',
-                        style: {
-                            fillColor: color,
-                            fillOpacity: 1,
-                            radius: pointSizes![i],
-                        },
-                    }
-            }
-        },
-    )
-    const metas = mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'pMap'
-        ? mapResultMain.value.data.map((x) => { return { statistic: x } })
-        : mapResultMain.value.dataR.map((x, i) => { return { statistic: [x, mapResultMain.value.dataG[i], mapResultMain.value.dataB[i]] } })
+    // if (mapResultMain.opaqueType === 'cMapRGB') {
+    //     // For RGB maps, use the RGB values directly
+    //     const rgbMap = mapResultMain.value
+    //     colors = rgbMap.dataR.map((r, i) => doRender({
+    //         r: r * 255,
+    //         g: rgbMap.dataG[i] * 255,
+    //         b: rgbMap.dataB[i] * 255,
+    //         a: 255,
+    //     }))
+    // }
+    // else {
+    //     // For regular cMap, use ramp and scale
+    //     const cMap = mapResultMain.value
+    //     const ramp = cMap.ramp
+    //     const scale = instantiate(cMap.scale)
+    //     const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+    //     const furthest = furthestColor(ramp.map(x => x[1]))
+    //     colors = cMap.data.map(
+    //         val => interpolateColor(ramp, scale.forward(val), furthest),
+    //     )
+    // }
+    // const specs = colors.map(
+    //     // no outline, set color fill, alpha=1
+    //     (color, i): ShapeSpec => {
+    //         switch (shapeType) {
+    //             case 'polygon':
+    //                 return {
+    //                     type: 'polygon',
+    //                     style: {
+    //                         fillColor: color,
+    //                         fillOpacity: 1,
+    //                         color: doRender(lineStyle!.color),
+    //                         weight: lineStyle!.weight,
+    //                     },
+    //                 }
+    //             case 'point':
+    //                 return {
+    //                     type: 'point',
+    //                     style: {
+    //                         fillColor: color,
+    //                         fillOpacity: 1,
+    //                         radius: pointSizes![i],
+    //                     },
+    //                 }
+    //         }
+    //     },
+    // )
+    // const metas = mapResultMain.opaqueType === 'cMap' || mapResultMain.opaqueType === 'pMap'
+    //     ? mapResultMain.value.data.map((x) => { return { statistic: x } })
+    //     : mapResultMain.value.dataR.map((x, i) => { return { statistic: [x, mapResultMain.value.dataG[i], mapResultMain.value.dataB[i]] } })
     // return {
     //     shapes: names.map((name, i) => ({
     //         name,
@@ -166,17 +161,21 @@ async function maybeMapUi({ mapSettings }: { mapSettings: MapSettings }): Promis
     //     zoomIndex: -1,
     // }
 
-    return (
-        <CommonMaplibreMap>
+    const map = await mapUi({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind })
 
-        </CommonMaplibreMap>
-    )
+    return props => ({
+        ...map(props),
+        exportCSV: {
+            csvData,
+            csvFilename,
+        },
+    })
 }
 
 async function mapUi({ mapResultMain, universe, geographyKind }:
 { mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
     universe: Universe, geographyKind: typeof valid_geographies[number]
-}): Promise<(props: MapUIProps) => { ui: ReactNode, geoJSON: () => string, png: (colors: Colors) => Promise<string> }> {
+}): Promise<(props: MapUIProps) => { ui: ReactNode, exportGeoJSON: () => string, exportPng: (colors: Colors) => Promise<string> }> {
     switch (mapResultMain.opaqueType) {
         case 'pMap':
             const pMap = mapResultMain.value
@@ -210,14 +209,19 @@ async function mapUi({ mapResultMain, universe, geographyKind }:
             const empiricalRamp: RampToDisplay = { type: 'ramp', value: { ramp: pMap.ramp, interpolations, scale, label: pMap.label, unit: pMap.unit } }
 
             return (props) => {
-                const insetMaps = pMap.insets.flatMap((inset, i) => {
+                const mapsRef: (MapRef | null)[] = []
+
+                let visibleInsetIndex = -1
+
+                const insetMaps = pMap.insets.flatMap((inset) => {
                     const insetFeatures = filterOverlaps(inset, features)
                     if (insetFeatures.length === 0 && props.mode !== 'insets') {
                         return []
                     }
+                    visibleInsetIndex++
                     return [
                         { inset, map: (
-                            <InsetMap key={i} inset={inset}>
+                            <InsetMap key={visibleInsetIndex} inset={inset} ref={e => mapsRef[visibleInsetIndex] = e}>
                                 <PointFeatureCollection features={insetFeatures} />
                             </InsetMap>
                         ) },
@@ -255,9 +259,9 @@ async function mapUi({ mapResultMain, universe, geographyKind }:
                         </div>
 
                     ),
-                    geoJSON: () => exportAsGeoJSON(features),
-                    png: colors =>
-                        exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.current, basemap: pMap.basemap })
+                    exportGeoJSON: () => exportAsGeoJSON(features),
+                    exportPng: colors =>
+                        exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: pMap.basemap })
                     ,
                 })
             }
@@ -346,24 +350,30 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
     return features
 }
 
-function InsetMap({ inset, children }: { inset: Inset, children: ReactNode }): ReactNode {
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+function _InsetMap({ inset, children }: { inset: Inset, children: ReactNode }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
     return (
-        <CommonMaplibreMap style={{
-            position: 'absolute',
-            width: 'unset',
-            left: `${inset.bottomLeft[0] * 100}%`,
-            bottom: `${inset.bottomLeft[1] * 100}%`,
-            right: `${inset.topRight[0] * 100}%`,
-            border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-            borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
-        }}
+        <CommonMaplibreMap
+            ref={ref}
+            style={{
+                position: 'absolute',
+                width: 'unset',
+                left: `${inset.bottomLeft[0] * 100}%`,
+                bottom: `${inset.bottomLeft[1] * 100}%`,
+                right: `${inset.topRight[0] * 100}%`,
+                border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
+            }}
         >
             {children}
         </CommonMaplibreMap>
     )
 }
+
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+const InsetMap = React.forwardRef(_InsetMap)
 
 function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `points-${kind}-${id}`
