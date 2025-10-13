@@ -274,21 +274,27 @@ const defaultBackgroundColor = '#f8f4f0'
 export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const map = useMap().current!
 
-    useEffect(() => {
-        void (async () => {
+    const mapLoaded = useOrderedResolve(useMemo(() => {
+        return (async () => {
             if (!map.loaded()) {
                 await new Promise(resolve => map.once('load', resolve))
             }
+            return true
+        })()
+    }, [map])).result ?? false
+
+    useEffect(() => {
+        if (mapLoaded) {
             for (const layerId of map.getLayersOrder()) {
                 if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
                     continue
                 }
                 const layer = map.getLayer(layerId)!
-                layer.setLayoutProperty('visibility', isVisible(basemap, layer) ? 'visible' : 'none')
+                map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
             map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
-        })()
-    }, [map, basemap])
+        }
+    }, [map, basemap, mapLoaded])
 
     const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map])).result
 
