@@ -25,6 +25,7 @@ def isnan(x):
         return np.isnan(x)
     return False
 
+
 def metadata_for_article(row):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
@@ -32,6 +33,7 @@ def metadata_for_article(row):
             continue
         metadata.append(metadata_type.create(i, row[key]))
     return metadata
+
 
 def create_article_gzip(
     folder,
