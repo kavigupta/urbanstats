@@ -208,6 +208,7 @@ def get_shortname(district_abbrev, x, include_date=True):
     return dist_name
 
 
+# pylint: disable-next=too-many-arguments
 def districts(
     file_name,
     district_type,

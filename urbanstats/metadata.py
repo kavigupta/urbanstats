@@ -1,18 +1,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Type
 
 from urbanstats.protobuf import data_files_pb2
 
 
 class MetadataColumn(ABC):
     @abstractmethod
-    def create(self, value):
+    def create(self, idx, value):
         pass
 
 
 @dataclass
-class DisplayedMetadata:
-    typ: type
+class DisplayedMetadata(MetadataColumn):
+    typ: Type
     name: str
 
     def create(self, idx, value):
@@ -24,7 +25,7 @@ class DisplayedMetadata:
 
 
 @dataclass
-class ExternalLinkMetadata:
+class ExternalLinkMetadata(MetadataColumn):
     site: str
     link_prefix: str
     normalizer: str = None
