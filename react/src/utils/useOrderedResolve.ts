@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
 
-export function useOrderedResolve<T>(promise: Promise<T>): T | undefined {
-    const [state, setState] = useState<{ promise: Promise<T>, result: T | undefined }>({ promise, result: undefined })
+export interface ResolveState<T> {
+    promise: Promise<T>
+    result: T | undefined
+    loading: boolean
+}
+
+export function useOrderedResolve<T>(promise: Promise<T>): ResolveState<T> {
+    const [state, setState] = useState<ResolveState<T>>({ promise, result: undefined, loading: true })
 
     useEffect(() => {
-        setState({ promise, result: undefined })
+        setState(prevState => ({ promise, result: prevState.result, loading: true }))
         void promise.then(
             (result) => {
-                setState(prevState => prevState.promise === promise ? ({ promise, result }) : prevState)
+                setState(prevState => prevState.promise === promise ? ({ promise, result, loading: false }) : prevState)
             },
             () => {
-                setState(prevState => prevState.promise === promise ? ({ promise, result: undefined }) : prevState)
+                setState(prevState => prevState.promise === promise ? ({ promise, result: undefined, loading: false }) : prevState)
             },
         )
     }, [promise])
 
-    return state.result
+    return state
 }

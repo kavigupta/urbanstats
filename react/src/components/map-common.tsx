@@ -93,7 +93,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -188,7 +188,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
     const { current: map } = useMap()
     const id = useId()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]))
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',

@@ -66,18 +66,42 @@ function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
     const mapGenerator = useOrderedResolve(useMemo(() => makeMapGenerator({ mapSettings }), [mapSettings]))
     return (
         <>
-            {mapGenerator?.ui({ mode: 'view' }).node}
-            <LongLoad containerStyleOverride={{
-                transition: 'opacity 0.25s',
-                opacity: mapGenerator === undefined ? 1 : 0,
-                pointerEvents: 'none',
-            }}
-            />
+            {mapGenerator.result?.ui({ mode: 'view', loading: mapGenerator.loading }).node ?? <LongLoad />}
         </>
     )
 }
 
-type MapUIProps = { mode: 'view' } | { mode: 'uss' } | { mode: 'insets', doEdit: EditMultipleInsets, editedInsets: Insets }
+function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
+    return (
+        <LongLoad containerStyleOverride={{
+            position: 'absolute',
+            transition: 'opacity 0.25s',
+            opacity: loading ? 1 : 0,
+            pointerEvents: 'none',
+        }}
+        />
+    )
+}
+
+function MapSkeleton(): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            width: '100%',
+            height: 600,
+            pointerEvents: 'none',
+            position: 'relative',
+            backgroundColor: colors.slightlyDifferentBackground,
+            borderRadius: mapBorderRadius,
+            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+        }}
+        >
+            <RelativeLoader loading={true} />
+        </div>
+    )
+}
+
+type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', doEdit: EditMultipleInsets, editedInsets: Insets })
 
 interface MapGenerator {
     ui: (props: MapUIProps) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
@@ -152,8 +176,10 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
                     <div style={{
                         display: 'flex',
                         flexDirection: 'column',
+                        position: 'relative',
                     }}
                     >
+                        <RelativeLoader loading={props.loading} />
                         <div style={{ height: '90%', width: '100%' }}>
                             <div style={{
                                 width: '100%',
@@ -683,11 +709,12 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         setMapSettings: setMapSettingsWrapper,
         typeEnvironment,
         setMapEditorMode,
-        mapGenerator,
+        mapGenerator: mapGenerator.result,
+        loading: mapGenerator.loading,
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator?.exportCSV}>
+        <PageTemplate csvExportData={mapGenerator.result?.exportCSV}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
@@ -703,10 +730,11 @@ interface CommonEditorProps {
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
     mapGenerator: MapGenerator | undefined
+    loading: boolean
 }
 
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
-    const ui = mapGenerator?.ui({ mode: 'uss' })
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+    const ui = mapGenerator?.ui({ mode: 'uss', loading })
 
     return (
         <>
@@ -738,13 +766,13 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                     setMapSettings={setMapSettings}
                 />
             </div>
-            {ui?.node}
+            {ui?.node ?? <MapSkeleton />}
         </>
 
     )
 }
 
-function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
+function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
@@ -754,6 +782,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     const editedInsets = getInsets(mapSettings, typeEnvironment)!.map((baseInset, i) => ({ ...baseInset, ...insetEdits.get(i) }))
 
     const ui = mapGenerator?.ui({
+        loading,
         mode: 'insets',
         doEdit: (i, e) => {
             setInsetEdits((edits) => {
@@ -799,7 +828,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     </button>
                 </div>
             </div>
-            {ui?.node}
+            {ui?.node ?? <MapSkeleton />}
             {undoRedoUi}
         </>
     )
