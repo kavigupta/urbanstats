@@ -1,9 +1,8 @@
-from urbanstats.data.wikipedia.wikidata import fetch_sparql_as_list, query_sparlql
-from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
-
-
 import us
 from attr import dataclass
+
+from urbanstats.data.wikipedia.wikidata import fetch_sparql_as_list, query_sparlql
+from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 
 
 @dataclass
