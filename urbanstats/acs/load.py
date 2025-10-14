@@ -249,6 +249,7 @@ class ACSDataEntityForMultipleLevels:
             assert not (present - available), sorted(present - available)
             assert not (available - present), sorted(available - present)
 
+    # vulture: ignore -- used to make sure everything is working
     def query_each(self):
         return {level: self.query(level) for level in self.geography_levels_used}
 
