@@ -17,12 +17,12 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
-// eslint-disable-next-line import/no-unassigned-import -- Side effect only
-import '../utils/map-rtl'
 import './map.css'
 
 export const defaultMapPadding = 20
 export const insetBorderWidth = 2
+
+void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
 
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
 function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
