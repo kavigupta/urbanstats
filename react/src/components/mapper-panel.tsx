@@ -22,7 +22,7 @@ import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
-import { DisplayResults } from '../urban-stats-script/Editor'
+import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { Inset } from '../urban-stats-script/constants/insets'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
@@ -111,23 +111,29 @@ interface MapGenerator {
 async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): Promise<MapGenerator> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
-            ui: () => ({
-                node: <DisplayResults results={[{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }]} editor={false} />,
-            }),
-            errors: [],
+            ui: () => ({ node: null }),
+            errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
         }
     }
 
     const stmts = computeUSS(mapSettings.script)
+
+    const parseErrors = getAllParseErrors(stmts)
+    if (parseErrors.length > 0) {
+        return {
+            ui: () => ({ node: null }),
+            errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
+        }
+    }
 
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
         return {
             ui: () => ({
-                node: <DisplayResults results={execResult.error} editor={false} />,
+                node: null,
             }),
-            errors: [],
+            errors: execResult.error,
         }
     }
 
