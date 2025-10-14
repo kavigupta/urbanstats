@@ -447,6 +447,12 @@ export function DataCreditPanel(): ReactNode {
                                     to the block level, weighted by adult population. We consider taxi to be a form of
                                     car transportation, and consider motorcycle to be a form of bike transportation.
                                 </p>
+                                <p>
+                                    To compute median commute time, we take the most detailed data available, which is
+                                    binned in 10-15minute intervals depending on the bin, and compute an approximate median
+                                    by assuming that commute times are uniformly distributed within each bin, with the &gt;60
+                                    minute bin being assumed to be 60-120 minutes (this rarely applies anyway).
+                                </p>
                             </div>
 
                             <NRef name="health">Health</NRef>
