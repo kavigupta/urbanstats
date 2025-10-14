@@ -273,9 +273,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     fillColor: colors[i],
                     fillOpacity: 1,
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
-                    meta: {
-                        statistic: dataValue,
-                    },
+                    statistic: dataValue,
                 }
             })
 
@@ -303,7 +301,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     fillOpacity: 1,
                     color: doRender(value.outline.color),
                     weight: value.outline.weight,
-                    meta,
+                    ...meta,
                 }
             })
 
@@ -618,7 +616,7 @@ interface Point {
     fillOpacity: number
     radius: number
 
-    meta?: Record<string, unknown>
+    [meta: string]: unknown
 
 }
 
@@ -634,7 +632,7 @@ async function pointsGeojson(geographyKind: typeof valid_geographies[number], un
 
         return {
             type: 'Feature' as const,
-            properties: { ...point, ...point.meta },
+            properties: { ...point },
             geometry: {
                 type: 'Point',
                 coordinates: [centroid.lon!, centroid.lat!],
@@ -663,7 +661,7 @@ async function polygonsGeojson(geographyKind: typeof valid_geographies[number], 
     return polygons.map((polygon) => {
         return {
             type: 'Feature' as const,
-            properties: { ...polygon, ...polygon.meta },
+            properties: { ...polygon },
             geometry: geometry(features[nameToIndex.get(polygon.name)!] as NormalizeProto<Feature>),
         }
     })
@@ -675,6 +673,8 @@ function exportAsGeoJSON(features: GeoJSON.Feature[]): string {
             type: 'FeatureCollection',
             features,
         },
+        null,
+        2,
     )
 }
 

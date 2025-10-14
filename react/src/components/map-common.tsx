@@ -84,7 +84,7 @@ export interface Polygon {
     color: string
     weight?: number
 
-    meta?: Record<string, unknown>
+    [meta: string]: unknown
 }
 
 const urbanStatsLayerPrefix = 'urban-stats'
