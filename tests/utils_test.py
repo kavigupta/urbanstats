@@ -4,7 +4,12 @@ from collections import Counter
 import numpy as np
 from parameterized import parameterized
 
-from urbanstats.utils import DiscreteDistribution, compute_bins, compute_bins_slow
+from urbanstats.utils import (
+    DiscreteDistribution,
+    approximate_quantile,
+    compute_bins,
+    compute_bins_slow,
+)
 
 
 class TestComputeBinsSlowWorksAsIntended(unittest.TestCase):
@@ -117,3 +122,79 @@ class TestDsicreteDistribution(unittest.TestCase):
         self.assertAlmostEqual(samples[0] / n, 1 / 200, places=3)
         self.assertAlmostEqual(samples[1] / n, 100 / 200, places=2)
         self.assertAlmostEqual(samples[2] / n, 99 / 200, places=2)
+
+
+class TestApproximateQuantiles(unittest.TestCase):
+    def test_hits_a_bin_boundary(self):
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0), 0
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.25), 100
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.5), 250
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 1.0), 300
+        )
+
+    def test_in_between_bins(self):
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.05), 20
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.1), 40
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.15), 60
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.2), 80
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.25), 100
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.3), 130
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.35), 160
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.4), 190
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.45), 220
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.5), 250
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.55), 255
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.6), 260
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.65), 265
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.7), 270
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.75), 275
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.8), 280
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.85), 285
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.9), 290
+        )
+        self.assertEqual(
+            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.95), 295
+        )
+        self.assertEqual(approximate_quantile([0, 100, 250, 300], [25, 25, 50], 1), 300)
