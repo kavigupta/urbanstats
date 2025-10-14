@@ -1,5 +1,6 @@
 import numpy as np
 
+from urbanstats.data.life_expectancy import imhe_2019
 from urbanstats.games.quiz_question_metadata import (
     HEALTH_CDC,
     QuizQuestionDescriptor,
@@ -7,7 +8,6 @@ from urbanstats.games.quiz_question_metadata import (
 )
 from urbanstats.geometry.historical_counties.aggregation import aggregate_to_suos
 from urbanstats.statistics.statistic_collection import USAStatisticsCounties
-from urbanstats.data.life_expectancy import imhe_2019
 
 
 class IMHELifeExpectancyStatistics(USAStatisticsCounties):
