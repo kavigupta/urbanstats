@@ -1,4 +1,4 @@
-import React, { ReactNode, useId, useMemo, useRef } from 'react'
+import React, { ReactNode, useMemo, useRef } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -24,13 +24,11 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
     const features = useArticleFeatures(props).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
-    const id = useId()
 
     useZoomFirstFeature(mapRef, features)
 
     return (
         <CommonMaplibreMap
-            id={id}
             ref={mapRef}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={true} />
