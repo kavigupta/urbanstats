@@ -1,3 +1,4 @@
+import numpy as np
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.games.quiz_question_metadata import (
     COMMUTE_TIME,
@@ -6,11 +7,15 @@ from urbanstats.games.quiz_question_metadata import (
 )
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
+from urbanstats.utils import approximate_quantile
 
 
 class TransportationCommuteTimeStatistics(ACSStatisticsColection):
+    version: int = 7
+
     def name_for_each_statistic(self):
         return {
+            "transportation_commute_time_median": "Median Commute Time (min)",
             "transportation_commute_time_under_15": "Commute Time < 15 min %",
             "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
             "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
@@ -19,6 +24,7 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
 
     def varname_for_each_statistic(self):
         return {
+            "transportation_commute_time_median": "commute_time_median",
             "transportation_commute_time_under_15": "commute_time_under_15",
             "transportation_commute_time_15_to_29": "commute_time_15_to_29",
             "transportation_commute_time_30_to_59": "commute_time_30_to_59",
@@ -33,24 +39,61 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             **QuizQuestionDescriptor.several(
                 COMMUTE_TIME,
                 {
-                    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-                    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+                    "transportation_commute_time_median": "higher median commute time",
                 },
             ),
             **QuizQuestionSkip.several(
+                "transportation_commute_time_under_15",
                 "transportation_commute_time_15_to_29",
                 "transportation_commute_time_30_to_59",
+                "transportation_commute_time_over_60",
             ),
         }
 
     def mutate_acs_results(self, statistics_table):
-        fractionalize(
-            statistics_table,
+        fractionalize(statistics_table, *list(statistics_table))
+        stats_array = np.array(
+            statistics_table[
+                [
+                    "transportation_commute_time_under_10",
+                    "transportation_commute_time_10_to_14",
+                    "transportation_commute_time_15_to_19",
+                    "transportation_commute_time_20_to_24",
+                    "transportation_commute_time_25_to_29",
+                    "transportation_commute_time_30_to_34",
+                    "transportation_commute_time_35_to_44",
+                    "transportation_commute_time_45_to_59",
+                    "transportation_commute_time_over_60",
+                ]
+            ]
+        )
+        median_commute = np.array(
+            [
+                approximate_quantile([0, 10, 15, 20, 25, 30, 35, 45, 60, 120], s, 0.5)
+                for s in stats_array
+            ]
+        )
+        statistics_table["transportation_commute_time_under_15"] = statistics_table.pop(
+            "transportation_commute_time_under_10"
+        ) + statistics_table.pop("transportation_commute_time_10_to_14")
+        statistics_table["transportation_commute_time_15_to_29"] = (
+            statistics_table.pop("transportation_commute_time_15_to_19")
+            + statistics_table.pop("transportation_commute_time_20_to_24")
+            + statistics_table.pop("transportation_commute_time_25_to_29")
+        )
+        statistics_table["transportation_commute_time_30_to_59"] = (
+            statistics_table.pop("transportation_commute_time_30_to_34")
+            + statistics_table.pop("transportation_commute_time_35_to_44")
+            + statistics_table.pop("transportation_commute_time_45_to_59")
+        )
+        histo_cols = [
             "transportation_commute_time_under_15",
             "transportation_commute_time_15_to_29",
             "transportation_commute_time_30_to_59",
             "transportation_commute_time_over_60",
-        )
+        ]
+        assert set(histo_cols) == set(statistics_table)
+        statistics_table["transportation_commute_time_median"] = median_commute
 
     def acs_name(self):
         return "transportation_commute_time"
@@ -62,18 +105,28 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             "population_18",
             "block group",
             {
-                "transportation_commute_time_under_15": [
+                "transportation_commute_time_under_10": [
                     "Estimate!!Total:!!Less than 10 minutes",
+                ],
+                "transportation_commute_time_10_to_14": [
                     "Estimate!!Total:!!10 to 14 minutes",
                 ],
-                "transportation_commute_time_15_to_29": [
+                "transportation_commute_time_15_to_19": [
                     "Estimate!!Total:!!15 to 19 minutes",
+                ],
+                "transportation_commute_time_20_to_24": [
                     "Estimate!!Total:!!20 to 24 minutes",
+                ],
+                "transportation_commute_time_25_to_29": [
                     "Estimate!!Total:!!25 to 29 minutes",
                 ],
-                "transportation_commute_time_30_to_59": [
+                "transportation_commute_time_30_to_34": [
                     "Estimate!!Total:!!30 to 34 minutes",
+                ],
+                "transportation_commute_time_35_to_44": [
                     "Estimate!!Total:!!35 to 44 minutes",
+                ],
+                "transportation_commute_time_45_to_59": [
                     "Estimate!!Total:!!45 to 59 minutes",
                 ],
                 "transportation_commute_time_over_60": [
