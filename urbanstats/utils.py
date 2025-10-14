@@ -106,3 +106,24 @@ def name_points_around_center(centroids):
         if len(set(rounded_fractions)) == len(rounded_fractions):
             return [to_cardinal_direction(fraction) for fraction in rounded_fractions]
     raise RuntimeError("unreachable")
+
+
+def approximate_quantile(bins, weights, q):
+    """
+    Approximate the qth quantile of a distribution given by bins and weights.
+    In essence, weights[i] applies to the bin bins[i] to bins[i+1], and is treated
+    as being uniformly distributed in that range.
+    """
+    assert 0 <= q <= 1
+    assert len(bins) == len(weights) + 1
+    weights = np.array(weights) / np.sum(weights)
+    cumulative = np.cumsum(weights)
+    idx = np.searchsorted(cumulative, q, side="right")
+    if idx == len(weights):
+        return bins[-1]
+    prev_cumu = cumulative[idx - 1] if idx > 0 else 0
+    next_cumu = cumulative[idx]
+    prev_bin = bins[idx]
+    next_bin = bins[idx + 1]
+    frac = (q - prev_cumu) / (next_cumu - prev_cumu)
+    return prev_bin + frac * (next_bin - prev_bin)
