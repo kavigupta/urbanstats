@@ -529,6 +529,8 @@ statistics_tree = StatisticTree(
             "CHECKUP_cdc_2",
             "DENTAL_cdc_2",
             "CHOLSCREEN_cdc_2",
+            "life_expectancy_2019",
+            "performance_score_adj_2019",
         ),
         **just_2020_category(
             "climate_change",

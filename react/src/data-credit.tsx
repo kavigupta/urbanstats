@@ -471,6 +471,26 @@ export function DataCreditPanel(): ReactNode {
                                 </p>
                             </div>
 
+                            <NRef name="ihme">Life Expectancy and IHME Health Care Performance</NRef>
+                            <div>
+                                <p>
+                                    Health care system performance and life expectancy data comes from
+                                    {' '}
+                                    <FootnoteRef
+                                        id="ihme_healthcare"
+                                        description={(
+                                            <span>
+                                                Institute for Health Metrics and Evaluation (IHME). United States Health Care System Performance by County 2014-2019. Seattle, United States of America: Institute for Health Metrics and Evaluation (IHME), 2025.
+                                            </span>
+                                        )}
+                                    >
+                                        <a href="https://ghdx.healthdata.org/record/ihme-data/us-health-care-performance-county-2014-2019">IHME</a>
+                                    </FootnoteRef>
+                                    {'. '}
+                                    We use the adjusted system performance data, and use the latest year (2019).
+                                </p>
+                            </div>
+
                             <NRef name="industry_and_occupation">Industry and Occupation</NRef>
                             <div>
                                 <p>

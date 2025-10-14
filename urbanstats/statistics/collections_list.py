@@ -36,6 +36,9 @@ from urbanstats.statistics.collections.income_poverty import IncomePoverty
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.insurance_type import InsuranceTypeStatistics
 from urbanstats.statistics.collections.internet_access import InternetAccessStatistics
+from urbanstats.statistics.collections.life_expectancy import (
+    IMHELifeExpectancyStatistics,
+)
 from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
     NationalOriginBirthplaceStatistics,
@@ -114,4 +117,5 @@ statistic_collections = (
     *census_canada_same_as_us,
     *census_canada_simple,
     PollutionStatistics(),
+    IMHELifeExpectancyStatistics(),
 )
