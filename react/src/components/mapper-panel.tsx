@@ -44,7 +44,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData, generateMapperCSVData } from './csv-export'
 import { Statistic } from './display-stats'
-import { Basemap as BasemapComponent, CommonMaplibreMap, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
 import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
 import { renderMap } from './screenshot-map'
 
@@ -441,6 +441,7 @@ function _InsetMap({ inset, children, editInset, container, i }: { inset: Inset,
                     }}
                 />
                 <ExposeMapForTesting id={id} />
+                { inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>
             { editInset && (
                 <EditInsetsHandles
