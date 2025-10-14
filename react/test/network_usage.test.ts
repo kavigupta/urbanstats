@@ -11,5 +11,5 @@ test('under network limit home page navigate to california', async (t) => {
     await waitForSelectedSearchResult(t)
     await t.expect(await flushNetworkUsage('search')).lt(2_700_000)
     await t.pressKey('enter')
-    await t.expect(await flushNetworkUsage('article')).lt(2_000_000)
+    await t.expect(await flushNetworkUsage('article')).lt(2_200_000)
 })

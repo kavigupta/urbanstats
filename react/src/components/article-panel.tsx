@@ -17,6 +17,7 @@ import { NormalizeProto } from '../utils/types'
 
 import { ArticleMap } from './ArticleMap'
 import { ArticleWarnings } from './ArticleWarnings'
+import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
@@ -84,10 +85,13 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     <div style={{ marginBlockEnd: '1em' }}></div>
 
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ width: '30%', marginRight: '1em' }}>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
+                            <ExternalLinks metadataProtos={article.metadata} />
+                        </div>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
                             <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
-                        <div style={{ width: '70%' }}>
+                        <div style={{ flex: '1 1 auto' }}>
                             <ComparisonSearchBox longname={article.longname} type={article.articleType} />
                         </div>
                     </div>

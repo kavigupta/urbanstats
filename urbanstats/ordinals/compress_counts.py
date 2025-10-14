@@ -37,8 +37,8 @@ def compress_counts(counts):
 
 def mapify(lst):
     result = {}
-    for (a, b), v in lst.items():
+    for k, v in lst.items():
         if len(v) == 1:
             continue
-        result[f"{a}__{b}"] = v
+        result[k] = v
     return result

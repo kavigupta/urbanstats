@@ -1,3 +1,4 @@
+from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
@@ -22,6 +23,7 @@ COUNTRIES = Shapefile(
     path=countries,
     shortname_extractor=extract_country_longname,
     longname_extractor=extract_country_longname,
+    additional_columns_computer={"iso": lambda x: x.ISO_CC},
     filter=lambda x: iso_to_country(x.ISO_CC) is not None,
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,
@@ -43,4 +45,6 @@ COUNTRIES = Shapefile(
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.data_credit,
     include_in_syau=True,
+    metadata_columns=["iso"],
+    wikidata_sourcer=SimpleWikidataSourcer("wdt:P297", "iso"),
 )

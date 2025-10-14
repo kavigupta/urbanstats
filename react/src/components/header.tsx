@@ -31,6 +31,8 @@ export function Header(props: {
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const currentUniverse = navContext.useUniverse()
+    const [searchHasText, setSearchHasText] = useState(false)
+    const isMobile = useMobileLayout()
     return (
         <div className="top_panel">
             <TopLeft
@@ -73,7 +75,21 @@ export function Header(props: {
                             : undefined
                     }
                     <div className="hgap"></div>
-                    <div style={{ flexGrow: 1 }}>
+                    <div style={{
+                        flexGrow: 1,
+                        ...(isMobile && searchHasText
+                            ? {
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                    zIndex: 10,
+                                    backgroundColor: 'var(--background)',
+                                    padding: '0 1em',
+                                }
+                            : {}),
+                    }}
+                    >
                         <SearchBox
                             link={
                                 newLocation => navContext.link({
@@ -94,6 +110,7 @@ export function Header(props: {
                                 height: `${headerBarSize}px`,
                             }}
                             autoFocus={false}
+                            onTextPresenceChange={(hasText: boolean) => { setSearchHasText(hasText) }}
                         />
                     </div>
                 </div>

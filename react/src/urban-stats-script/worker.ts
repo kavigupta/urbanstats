@@ -3,7 +3,7 @@ import insets from '../data/insets'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { loadDataInIndexOrder, loadProtobuf } from '../load_json'
+import { loadOrderingDataProtobuf, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
 import { indexLink } from '../navigation/links'
 import { Universe } from '../universe'
@@ -148,10 +148,10 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
         const statpath = statistic_path_list[index]
 
-        const variableData = await loadDataInIndexOrder(universe, statpath, geographyKind)
-        assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
-        mapperCache.dataCache.set(name, variableData)
-        return annotateType(name, variableData)
+        const variableData = await loadOrderingDataProtobuf(universe, statpath, geographyKind)
+        assert(Array.isArray(variableData.value), `Expected variable data for ${name} to be an array`)
+        mapperCache.dataCache.set(name, variableData.value)
+        return annotateType(name, variableData.value)
     }
 
     const context = await mapperContext(request.stmts, getVariable, effects, universe)

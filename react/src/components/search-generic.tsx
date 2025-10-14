@@ -11,6 +11,7 @@ export function GenericSearchBox<T>(
         link: (inp: T) => ReturnType<Navigator['link']>
         onFocus?: () => void
         onBlur?: () => void
+        onTextPresenceChange?: (hasText: boolean) => void
         autoFocus: boolean
         placeholder: string
         style: CSSProperties | string
@@ -31,6 +32,7 @@ export function GenericSearchBox<T>(
         queryRef.current = ''
         setMatches([])
         setFocused(0)
+        props.onTextPresenceChange?.(false)
     }
 
     const searchboxDropdownItemStyle = (idx: number): CSSProperties => {
@@ -104,8 +106,10 @@ export function GenericSearchBox<T>(
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
                 onChange={(e) => {
-                    setQuery(e.target.value)
-                    queryRef.current = e.target.value
+                    const newValue = e.target.value
+                    setQuery(newValue)
+                    queryRef.current = newValue
+                    props.onTextPresenceChange?.(newValue.length > 0)
                 }}
                 value={query}
                 onFocus={props.onFocus}

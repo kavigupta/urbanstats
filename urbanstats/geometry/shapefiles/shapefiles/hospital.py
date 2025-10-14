@@ -30,6 +30,7 @@ HRRs = Shapefile(
     abbreviation="HRR",
     data_credit=data_credit,
     include_in_syau=False,
+    wikidata_sourcer=None,
 )
 HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
@@ -51,6 +52,7 @@ HSAs = Shapefile(
     abbreviation="HSA",
     data_credit=data_credit,
     include_in_syau=False,
+    wikidata_sourcer=None,
 )
 hospital_shapefiles = dict(
     hospital_referral_regions=HRRs,
