@@ -185,17 +185,19 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
+        2,
+        2,
         1
     ],
     "5M Person Circle": [
         316,
-        55
+        59
     ],
     "CA Census Subdivision": [
         106,
         106,
         106,
-        53
+        57
     ],
     "CCD": [
         11,
@@ -231,7 +233,8 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        8
+        11,
+        1
     ],
     "City": [
         13,
@@ -262,22 +265,22 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        7
+        11
     ],
     "County": [
         159,
         159,
-        53
+        57
     ],
     "County Cross CD": [
         137,
         137,
-        97
+        101
     ],
     "Hospital Service Area": [
         149,
         149,
-        73
+        77
     ],
     "Metropolitan Cluster": [
         11,
@@ -313,7 +316,8 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        8
+        11,
+        1
     ],
     "Neighborhood": [
         31,
@@ -327,7 +331,8 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        30
+        31,
+        3
     ],
     "School District": [
         38,
@@ -339,26 +344,26 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        29
+        33
     ],
     "State House District": [
         105,
         105,
         105,
-        56
+        60
     ],
     "State Senate District": [
         267,
-        104
+        108
     ],
     "Subnational Region": [
         140,
         140,
-        91
+        95
     ],
     "Urban Area": [
         195,
-        176
+        180
     ],
     "Urban Center": [
         50,
@@ -368,7 +373,7 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        21
+        25
     ],
     "ZIP": [
         13,
@@ -399,7 +404,7 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        7
+        11
     ]
 }
 export default value
