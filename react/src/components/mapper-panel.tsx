@@ -157,6 +157,7 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
                     return [
                         { inset, map: (
                             <InsetMap
+                                i={i}
                                 key={i}
                                 inset={inset}
                                 ref={e => mapsRef[i] = e}
@@ -180,6 +181,7 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
                     return [
                         { inset, map: (
                             <InsetMap
+                                i={i}
                                 key={i}
                                 inset={inset}
                                 ref={e => mapsRef[i] = e}
@@ -407,15 +409,19 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container }: { inset: Inset, children: ReactNode, container: RefObject<HTMLDivElement>, editInset?: EditSingleInset }, ref: React.Ref<MapRef>): ReactNode {
+function _InsetMap({ inset, children, editInset, container, i }: { inset: Inset, children: ReactNode, container: RefObject<HTMLDivElement>, editInset?: EditSingleInset, i: number }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
+    const id = `map-${i}`
+
     return (
-        <div style={{ position: 'absolute',
-            left: `${inset.bottomLeft[0] * 100}%`,
-            bottom: `${inset.bottomLeft[1] * 100}%`,
-            width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
-            height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
+        <div
+            id={id}
+            style={{ position: 'absolute',
+                left: `${inset.bottomLeft[0] * 100}%`,
+                bottom: `${inset.bottomLeft[1] * 100}%`,
+                width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
+                height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
             <CommonMaplibreMap
                 ref={ref}
@@ -436,6 +442,7 @@ function _InsetMap({ inset, children, editInset, container }: { inset: Inset, ch
                         editInset?.({ coordBox: newBox })
                     }}
                 />
+                <ExposeMapForTesting id={id} />
             </CommonMaplibreMap>
             { editInset && (
                 <EditInsetsHandles
@@ -490,6 +497,12 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
         }
     }, [map, setCoordBox])
 
+    return null
+}
+
+function ExposeMapForTesting({ id }: { id: string }): ReactNode {
+    const map = useMap().current!.getMap()
+    TestUtils.shared.maps.set(id, new WeakRef(map))
     return null
 }
 
