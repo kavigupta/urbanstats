@@ -1,7 +1,7 @@
 import us
 
 from urbanstats.acs.load import ACSDataEntityForMultipleLevels
-from urbanstats.games.quiz_question_metadata import INCOME, QuizQuestionDescriptor
+from urbanstats.games.quiz_question_metadata import INCOME_MEDIAN, QuizQuestionDescriptor
 from urbanstats.statistics.statistic_collection import GeoIDStatisticsACS
 
 
@@ -17,7 +17,7 @@ class IncomeMedian(GeoIDStatisticsACS):
     def quiz_question_descriptors(self):
         return {
             "median_household_income": QuizQuestionDescriptor(
-                "higher median household income", INCOME
+                "higher median household income", INCOME_MEDIAN
             )
         }
 

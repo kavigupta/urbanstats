@@ -2,7 +2,7 @@ import numpy as np
 
 from urbanstats.data.life_expectancy import imhe_2019
 from urbanstats.games.quiz_question_metadata import (
-    HEALTH_CDC,
+    HEALTH_IMHE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
@@ -43,7 +43,7 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
     def quiz_question_descriptors(self):
         return {
             "life_expectancy_2019": QuizQuestionDescriptor(
-                "life expectancy", HEALTH_CDC
+                "higher life expectancy", HEALTH_IMHE
             ),
             "performance_score_adj_2019": QuizQuestionSkip(),
         }

@@ -235,7 +235,7 @@ export default [
     null,
     null,
     "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
-    "life expectancy",
+    "higher life expectancy",
     "higher % of people who are divorced",
     null,
     null,
