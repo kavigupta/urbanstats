@@ -320,6 +320,32 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
+        case 'minutes':
+            return {
+                renderValue: (value: number) => {
+                    const hours = Math.floor(value / 60)
+                    const minutes = Math.floor(value % 60)
+
+                    if (hours > 0) {
+                        return {
+                            value: (
+                                <span>
+                                    {hours}
+                                    :
+                                    {minutes.toString().padStart(2, '0')}
+                                </span>
+                            ),
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                    else {
+                        return {
+                            value: <span>{minutes}</span>,
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                },
+            }
     }
 }
 
@@ -365,6 +391,9 @@ export function classifyStatistic(statname: string): UnitType {
     }
     if (statname.includes('(USD)')) {
         return 'usd'
+    }
+    if (statname.includes('(min)')) {
+        return 'minutes'
     }
     return 'number'
 }
