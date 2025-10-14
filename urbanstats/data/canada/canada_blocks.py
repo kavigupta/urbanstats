@@ -57,7 +57,9 @@ def load_canada_data_da(year):
     return canada
 
 
-@permacache_with_remapping_pickle("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4"
+)
 def load_canada_db_shapefile(year):
     assert year == 2021
     table_by_block = pd.read_csv(

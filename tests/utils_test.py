@@ -126,9 +126,7 @@ class TestDsicreteDistribution(unittest.TestCase):
 
 class TestApproximateQuantiles(unittest.TestCase):
     def test_hits_a_bin_boundary(self):
-        self.assertEqual(
-            approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0), 0
-        )
+        self.assertEqual(approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0), 0)
         self.assertEqual(
             approximate_quantile([0, 100, 250, 300], [25, 25, 50], 0.25), 100
         )
