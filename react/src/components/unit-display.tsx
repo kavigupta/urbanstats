@@ -271,6 +271,81 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
+        case 'usd':
+            return {
+                renderValue: (value: number) => {
+                    if (value > 1e9) {
+                        return {
+                            value: (
+                                <span>
+                                    $
+                                    {(value / 1e9).toPrecision(3)}
+                                </span>
+                            ),
+                            unit: <span>B</span>,
+                        }
+                    }
+                    if (value > 1e6) {
+                        return {
+                            value: (
+                                <span>
+                                    $
+                                    {(value / 1e6).toPrecision(3)}
+                                </span>
+                            ),
+                            unit: <span>m</span>,
+                        }
+                    }
+                    else if (value > 1e3) {
+                        return {
+                            value: (
+                                <span>
+                                    $
+                                    {(value / 1e3).toPrecision(3)}
+                                </span>
+                            ),
+                            unit: <span>k</span>,
+                        }
+                    }
+                    else {
+                        return {
+                            value: (
+                                <span>
+                                    $
+                                    {separateNumber(value.toFixed(0))}
+                                </span>
+                            ),
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                },
+            }
+        case 'minutes':
+            return {
+                renderValue: (value: number) => {
+                    const hours = Math.floor(value / 60)
+                    const minutes = Math.floor(value % 60)
+
+                    if (hours > 0) {
+                        return {
+                            value: (
+                                <span>
+                                    {hours}
+                                    :
+                                    {minutes.toString().padStart(2, '0')}
+                                </span>
+                            ),
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                    else {
+                        return {
+                            value: <span>{minutes}</span>,
+                            unit: <span>&nbsp;</span>,
+                        }
+                    }
+                },
+            }
     }
 }
 
@@ -313,6 +388,12 @@ export function classifyStatistic(statname: string): UnitType {
     }
     if (statname.includes('Pollution')) {
         return 'contaminantLevel'
+    }
+    if (statname.includes('(USD)')) {
+        return 'usd'
+    }
+    if (statname.includes('(min)')) {
+        return 'minutes'
     }
     return 'number'
 }

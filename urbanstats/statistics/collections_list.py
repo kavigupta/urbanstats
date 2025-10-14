@@ -31,10 +31,14 @@ from urbanstats.statistics.collections.housing_year_built import (
 )
 from urbanstats.statistics.collections.income_family import IncomeFamily
 from urbanstats.statistics.collections.income_individual import IncomeIndividual
+from urbanstats.statistics.collections.income_median import IncomeMedian
 from urbanstats.statistics.collections.income_poverty import IncomePoverty
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.insurance_type import InsuranceTypeStatistics
 from urbanstats.statistics.collections.internet_access import InternetAccessStatistics
+from urbanstats.statistics.collections.life_expectancy import (
+    IMHELifeExpectancyStatistics,
+)
 from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
     NationalOriginBirthplaceStatistics,
@@ -84,6 +88,7 @@ statistic_collections = (
     EducationStatistics(),
     EducationGenderGapStatistics(),
     GenerationStatistics(),
+    IncomeMedian(),
     IncomePoverty(),
     IncomeFamily(),
     IncomeIndividual(),
@@ -112,4 +117,5 @@ statistic_collections = (
     *census_canada_same_as_us,
     *census_canada_simple,
     PollutionStatistics(),
+    IMHELifeExpectancyStatistics(),
 )

@@ -56,7 +56,11 @@ SUBNATIONAL_REGIONS = Shapefile(
     },
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     does_overlap_self=False,
-    special_data_sources=["international_gridded_data", "composed_of_counties"],
+    special_data_sources=[
+        "international_gridded_data",
+        "composed_of_counties",
+        ("census", "state"),
+    ],
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
     ),

@@ -442,3 +442,16 @@ add geoids, wikidata, and wikipedia links (#1478)
 1307	shape
 1716	data
 4012	total
+
+add median income, life expectancy, median commute time
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+117	quiz_sampling_info
+125	consolidated
+647	order
+1307	shape
+1723	data
+4036	total

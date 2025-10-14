@@ -46,7 +46,11 @@ POPULATION_DENSITY = QuizQuestionCollection(
     "Population Density", 2, difficulty_multiplier=0.25
 )
 HEALTH_CDC = QuizQuestionCollection("Health CDC", difficulty_multiplier=1.5)
+HEALTH_IHME = QuizQuestionCollection(
+    "Health IHME", difficulty_multiplier=1.5, weight_entire_collection=2
+)
 INCOME = QuizQuestionCollection("Income", difficulty_multiplier=0.6)
+INCOME_MEDIAN = QuizQuestionCollection("Income Median", difficulty_multiplier=0.6)
 POVERTY = QuizQuestionCollection("Poverty", difficulty_multiplier=0.6)
 EDUCATION_LEVEL = QuizQuestionCollection("Education Level", difficulty_multiplier=0.5)
 EDUCATION_FIELD = QuizQuestionCollection("Education Field", difficulty_multiplier=0.5)
@@ -71,7 +75,9 @@ SORS = QuizQuestionCollection(
     "Sexual Orientation and Relationship Status", difficulty_multiplier=0.5
 )
 TRAFFIC_ACCIDENTS = QuizQuestionCollection("Traffic Accidents", difficulty_multiplier=3)
-COMMUTE_TIME = QuizQuestionCollection("Commute Time", difficulty_multiplier=3)
+COMMUTE_TIME = QuizQuestionCollection(
+    "Commute Time", difficulty_multiplier=3, weight_entire_collection=2
+)
 COMMUTE_MODE = QuizQuestionCollection("Commute Mode", difficulty_multiplier=3)
 VEHICLE_OWNERSHIP = QuizQuestionCollection("Vehicle Ownership", difficulty_multiplier=3)
 ELECTION = QuizQuestionCollection("Election", difficulty_multiplier=3)

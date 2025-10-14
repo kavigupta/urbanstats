@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import attr
 import numpy as np
 import pandas as pd
@@ -10,6 +12,7 @@ from permacache import drop_if_equal, permacache, stable_hash
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 TRACT_PREFIX_COUNT = 2 + 3 + 6  # state + county + tract
 BLOCK_GROUP_PREFIX_COUNT = TRACT_PREFIX_COUNT + 1  # block group
@@ -45,16 +48,43 @@ def for_concept(concept, *, year):
     return {k: res[k] for k in sorted(res)}
 
 
+include_county = {
+    "tract": "county",
+    "block group": "county",
+    "county subdivision": "county",
+    "county": "state",
+    "place": "state",
+    "state": "neither",
+    "zip code tabulation area": "neither",
+    "school district (elementary)": "state",
+    "combined statistical area": "neither",
+    "metropolitan statistical area/micropolitan statistical area": "neither",
+    "urban area": "neither",
+}
+
+
 @permacache(
     "population_density/acs/query_acs_2", key_function=dict(year=drop_if_equal(2021))
 )
 def query_acs_for_state_direct(keys, state_fips, geography_level, *, year):
     url = f"https://api.census.gov/data/{year}/acs/acs5"
+
+    county_maybe = {
+        "neither": "",
+        "state": "",
+        "county": " county:*",
+    }[include_county[geography_level]]
+    if state_fips is not None:
+        in_maybe = {"in": f"state:{state_fips}" + county_maybe}
+    else:
+        assert county_maybe == ""
+        in_maybe = {}
     params = {
         "get": ",".join(keys),
         "for": geography_level + ":*",
-        "in": f"state:{state_fips} county:*",
+        **in_maybe,
     }
+    print("URL", url + "?" + urlencode(params))
     response = requests.get(url, params=params, timeout=1000)
     response.raise_for_status()
     return response.json()
@@ -106,10 +136,13 @@ def query_acs(
 
 def query_acs_direct(keys, geography_level, *, year):
     all_data = []
-    for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
-        all_data.append(
-            query_acs_for_state(keys, state.fips, geography_level, year=year)
-        )
+    if include_county[geography_level] == "neither":
+        all_data.append(query_acs_for_state(keys, None, geography_level, year=year))
+    else:
+        for state in tqdm.tqdm(us.states.STATES + [us.states.DC, us.states.PR]):
+            all_data.append(
+                query_acs_for_state(keys, state.fips, geography_level, year=year)
+            )
     header = all_data[0][0]
     for data in all_data:
         assert data[0] == header
@@ -190,6 +223,69 @@ class ACSDataEntity:
             replace_negatives_with_nan=self.replace_negatives_with_nan,
             year=self.year,
         )
+
+
+@attr.s
+class ACSDataEntityForMultipleLevels:
+    concept = attr.ib()
+    geography_levels_used = attr.ib()
+    geography_levels_unused = attr.ib()
+    _categories = attr.ib()
+    replace_negatives_with_nan = attr.ib(default=False)
+    year = attr.ib(default=2021)
+
+    def __attrs_post_init__(self):
+        assert set(self.geography_levels_used).isdisjoint(
+            set(self.geography_levels_unused)
+        )
+        present = set(self.geography_levels_used) | set(self.geography_levels_unused)
+        available = {
+            level
+            for shapefile in shapefiles.values()
+            for level in shapefile.census_levels
+        }
+        if present != available:
+            print("Available census levels", available)
+            assert not (present - available), sorted(present - available)
+            assert not (available - present), sorted(available - present)
+
+    # vulture: ignore -- used to make sure everything is working
+    def query_each(self):
+        return {level: self.query(level) for level in self.geography_levels_used}
+
+    def query(self, geography_level):
+        if geography_level in self.geography_levels_unused:
+            return None
+        assert geography_level in self.geography_levels_used
+        frame = ACSDataEntity(
+            self.concept,
+            None,
+            geography_level,
+            self._categories,
+            self.replace_negatives_with_nan,
+            self.year,
+        ).query()
+        data = frame[list(self._categories)]
+        remaining_columns = [x for x in frame if x not in data]
+        geoid_columns = {
+            "state": ["state"],
+            "combined statistical area": ["combined statistical area"],
+            "metropolitan statistical area/micropolitan statistical area": [
+                "metropolitan statistical area/micropolitan statistical area"
+            ],
+            "urban area": ["urban area"],
+            "county": ["state", "county"],
+            "county subdivision": ["state", "county", "county subdivision"],
+            "place": ["state", "place"],
+            "zip code tabulation area": ["zip code tabulation area"],
+        }[geography_level]
+        assert set(geoid_columns) == set(remaining_columns), (
+            set(geoid_columns),
+            set(remaining_columns),
+        )
+        geoid = frame[geoid_columns].agg("".join, axis=1)
+        assert geoid.is_unique
+        return pd.concat([geoid.rename("geoid"), data], axis=1).set_index("geoid")
 
 
 @permacache_with_remapping_pickle(
