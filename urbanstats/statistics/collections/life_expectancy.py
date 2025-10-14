@@ -1,8 +1,8 @@
 import numpy as np
 
-from urbanstats.data.life_expectancy import imhe_2019
+from urbanstats.data.life_expectancy import ihme_2019
 from urbanstats.games.quiz_question_metadata import (
-    HEALTH_IMHE,
+    HEALTH_IHME,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
@@ -17,12 +17,12 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         population = np.array(existing_statistics["population"])
-        agg, doi = aggregate_to_suos(shapefile, imhe_2019)
+        agg, doi = aggregate_to_suos(shapefile, ihme_2019)
         agg = agg.copy()
         agg[doi > 0.001] = np.nan
         res = agg / (population[:, None] + 1e-9)
-        assert len(imhe_2019.data_columns) == res.shape[1]
-        res = dict(zip(imhe_2019.data_columns, res.T))
+        assert len(ihme_2019.data_columns) == res.shape[1]
+        res = dict(zip(ihme_2019.data_columns, res.T))
         return {
             "life_expectancy_2019": res["life_expectancy_to_agg"],
             "performance_score_adj_2019": res["performance_score_adj_to_agg"],
@@ -31,19 +31,19 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
     def name_for_each_statistic(self):
         return {
             "life_expectancy_2019": "Life Expectancy (2019)",
-            "performance_score_adj_2019": "IMHE Health Performance Score (2019)",
+            "performance_score_adj_2019": "IHME Health Performance Score (2019)",
         }
 
     def dependencies(self):
         return ["population"]
 
     def explanation_page_for_each_statistic(self):
-        return self.same_for_each_name("imhe")
+        return self.same_for_each_name("ihme")
 
     def quiz_question_descriptors(self):
         return {
             "life_expectancy_2019": QuizQuestionDescriptor(
-                "higher life expectancy", HEALTH_IMHE
+                "higher life expectancy", HEALTH_IHME
             ),
             "performance_score_adj_2019": QuizQuestionSkip(),
         }

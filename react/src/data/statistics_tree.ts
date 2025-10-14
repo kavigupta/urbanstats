@@ -3331,13 +3331,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "performance_score_adj_2019",
-                "name": "IMHE Health Performance Score (2019)",
+                "name": "IHME Health Performance Score (2019)",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "IMHE Health Performance Score (2019)",
+                                "name": "IHME Health Performance Score (2019)",
                                 "stats": [
                                     {
                                         "source": null,

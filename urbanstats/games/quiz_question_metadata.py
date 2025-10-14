@@ -46,8 +46,8 @@ POPULATION_DENSITY = QuizQuestionCollection(
     "Population Density", 2, difficulty_multiplier=0.25
 )
 HEALTH_CDC = QuizQuestionCollection("Health CDC", difficulty_multiplier=1.5)
-HEALTH_IMHE = QuizQuestionCollection(
-    "Health IMHE", difficulty_multiplier=1.5, weight_entire_collection=2
+HEALTH_IHME = QuizQuestionCollection(
+    "Health IHME", difficulty_multiplier=1.5, weight_entire_collection=2
 )
 INCOME = QuizQuestionCollection("Income", difficulty_multiplier=0.6)
 INCOME_MEDIAN = QuizQuestionCollection("Income Median", difficulty_multiplier=0.6)

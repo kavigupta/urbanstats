@@ -295,7 +295,7 @@ export default [
     "Other / Mixed % (2000)",
     "Other / Mixed % (2010)",
     "PW Mean % of parkland within 1km",
-    "IMHE Health Performance Score (2019)",
+    "IHME Health Performance Score (2019)",
     "PW Mean PM2.5 Pollution",
     "Population",
     "Population (2000)",

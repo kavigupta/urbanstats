@@ -1248,7 +1248,7 @@ export default {
         },
         {
             "varName": "performance_score_adj_2019",
-            "humanReadableName": "IMHE Health Performance Score (2019)",
+            "humanReadableName": "IHME Health Performance Score (2019)",
             "comesFromMultiSourceSet": false,
             "order": 178,
             "index": 296
