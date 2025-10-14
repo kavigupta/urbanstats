@@ -274,6 +274,7 @@ class GeoIDStatisticsACS(GeoIDStatisticsCollection):
     def acs_data_entity_multi(self) -> ACSDataEntityForMultipleLevels:
         pass
 
+    @abstractmethod
     def allow_missing_geoid(self, census_level, geoid, name, population):
         return False
 
@@ -310,7 +311,3 @@ class GeoIDStatisticsACS(GeoIDStatisticsCollection):
         mask = shapefile_table["geoid"].isin(table.index)
         array_result[mask] = table.loc[shapefile_table.loc[mask, "geoid"], :].to_numpy()
         return {name: array_result[:, i] for i, name in enumerate(table.columns)}
-        import IPython
-
-        IPython.embed()
-        1 / 0

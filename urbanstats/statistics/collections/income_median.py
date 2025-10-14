@@ -79,11 +79,10 @@ class IncomeMedian(GeoIDStatisticsACS):
         ]:
             # idk why, but this is missing
             return True
-        if (
-            census_level
-            == "metropolitan statistical area/micropolitan statistical area"
-            or census_level == "combined statistical area"
-        ):
+        if census_level in [
+            "metropolitan statistical area/micropolitan statistical area",
+            "combined statistical area",
+        ]:
             # a bunch of these are missing for unknown reasons
             return True
         return False
