@@ -30,12 +30,13 @@ import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
+import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
-import { ConsolidatedShapes, Feature, IFeature } from '../utils/protos'
+import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { onWidthChange, useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 import { UnitType } from '../utils/unit'
@@ -61,10 +62,10 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
 }
 
 function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
-    const mapGenerator = useOrderedResolve(useMemo(() => makeMapGenerator({ mapSettings }), [mapSettings]))
+    const mapGenerator = useMapGenerator({ mapSettings })
     return (
         <>
-            {mapGenerator.result?.ui({ mode: 'view', loading: mapGenerator.loading }).node ?? <LongLoad />}
+            {mapGenerator.generator.ui({ mode: 'view', loading: mapGenerator.loading }).node}
         </>
     )
 }
@@ -99,6 +100,43 @@ function MapSkeleton(): ReactNode {
     )
 }
 
+const mapUpdateInterval = 500
+
+function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { generator: MapGenerator, loading: boolean } {
+    const cache = useRef<MapCache>({})
+    const updateTime = useRef(Date.now())
+
+    const [currentGenerator, setCurrentGenerator] = useState<Promise<MapGenerator>>(() => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator: undefined }))
+
+    useEffect(() => {
+        const timeSinceMapUpdate = Date.now() - updateTime.current
+        if (timeSinceMapUpdate > mapUpdateInterval) {
+            updateTime.current = Date.now()
+            setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
+            return
+        }
+        else {
+            updateTime.current = Date.now()
+            const timeout = setTimeout(() => {
+                setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
+            }, mapUpdateInterval - timeSinceMapUpdate)
+            return () => {
+                clearTimeout(timeout)
+            }
+        }
+    }, [mapSettings]) // Do not change this effect list!!
+
+    const resolve = useOrderedResolve(currentGenerator)
+
+    return {
+        generator: resolve.result ?? {
+            ui: () => ({ node: <MapSkeleton /> }),
+            errors: [],
+        },
+        loading: resolve.loading,
+    }
+}
+
 type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
 
 interface MapGenerator {
@@ -108,7 +146,7 @@ interface MapGenerator {
     errors: EditorError[]
 }
 
-async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): Promise<MapGenerator> {
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator> | undefined }): Promise<MapGenerator> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
             ui: () => ({ node: null }),
@@ -116,12 +154,15 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
         }
     }
 
+    const universe = mapSettings.universe
+    const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={universe} loading={loading} /> })
+
     const stmts = computeUSS(mapSettings.script)
 
     const parseErrors = getAllParseErrors(stmts)
     if (parseErrors.length > 0) {
         return {
-            ui: () => ({ node: null }),
+            ui: (await previousGenerator)?.ui ?? emptyMap,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
         }
     }
@@ -130,9 +171,7 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 
     if (execResult.resultingValue === undefined) {
         return {
-            ui: () => ({
-                node: null,
-            }),
+            ui: (await previousGenerator)?.ui ?? emptyMap,
             errors: execResult.error,
         }
     }
@@ -142,7 +181,7 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
     const csvData = generateMapperCSVData(mapResultMain, execResult.context)
     const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
 
-    const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind })
+    const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
     return {
         errors: execResult.error,
@@ -206,34 +245,19 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 
             return {
                 node: (
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        position: 'relative',
-                    }}
-                    >
-                        <RelativeLoader loading={props.loading} />
-                        <div style={{ height: '90%', width: '100%' }}>
-                            <div
-                                ref={mapsContainerRef}
-                                style={{
-                                    width: '100%',
-                                    minHeight: '300px',
-                                    aspectRatio: computeAspectRatioForInsets(visibleInsets),
-                                    position: 'relative',
-                                }}
-                            >
-                                {insetMaps.map(({ map }) => map)}
-                            </div>
-                        </div>
-                        <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
+                    <MapLayout
+                        maps={insetMaps.map(({ map }) => map)}
+                        loading={props.loading}
+                        colorbar={(
                             <Colorbar
                                 ramp={ramp}
                                 basemap={mapResultMain.value.basemap}
                             />
-                        </div>
-                    </div>
-
+                        )}
+                        aspectRatio={computeAspectRatioForInsets(visibleInsets)}
+                        mapsContainerRef={mapsContainerRef}
+                        colorbarRef={colorbarRef}
+                    />
                 ),
                 exportPng: colors =>
                     exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
@@ -242,10 +266,70 @@ async function makeMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
     }
 }
 
-async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind }:
-{ mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, aspectRatio }: {
+    maps: ReactNode
+    colorbar: ReactNode
+    loading: boolean
+    mapsContainerRef?: React.Ref<HTMLDivElement>
+    colorbarRef?: React.Ref<HTMLDivElement>
+    aspectRatio: number
+}): ReactNode {
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+        }}
+        >
+            <RelativeLoader loading={loading} />
+            <div style={{ height: '90%', width: '100%' }}>
+                <div
+                    ref={mapsContainerRef}
+                    style={{
+                        width: '100%',
+                        minHeight: '300px',
+                        aspectRatio,
+                        position: 'relative',
+                    }}
+                >
+                    {maps}
+                </div>
+            </div>
+            <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
+                {colorbar}
+            </div>
+        </div>
+    )
+}
+
+function EmptyMapLayout({ universe, loading }: { universe: Universe, loading: boolean }): ReactNode {
+    const insets = loadInsets(universe)
+
+    return (
+        <MapLayout
+            maps={insets.map((inset, i) => (
+                <InsetMap
+                    i={i}
+                    key={i}
+                    inset={inset}
+                    container={React.createRef()}
+                >
+                    {null}
+                </InsetMap>
+            ))}
+            loading={loading}
+            colorbar={null}
+            aspectRatio={computeAspectRatioForInsets(insets)}
+        />
+    )
+}
+
+async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
+{
+    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
+    cache: MapCache
 }): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[]) => ReactNode, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
@@ -283,7 +367,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 }
             })
 
-            features = await pointsGeojson(geographyKind, universe, points)
+            features = await pointsGeojson(geographyKind, universe, points, cache)
 
             mapChildren = fs => <PointFeatureCollection features={fs} clickable={true} />
 
@@ -311,7 +395,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 }
             })
 
-            features = await polygonsGeojson(geographyKind, universe, polys)
+            features = await polygonsGeojson(geographyKind, universe, polys, cache)
 
             mapChildren = fs => <PolygonFeatureCollection features={fs} clickable={true} />
 
@@ -616,6 +700,13 @@ function EditInsetsHandles(props: {
     )
 }
 
+interface MapCache {
+    geo?: { universe: Universe, geographyKind: typeof valid_geographies[number] } & (
+        { type: 'points', centroidsByName: Map<string, ICoordinate> }
+        | { type: 'polygons', polygonsByName: Map<string, GeoJSON.Geometry> }
+    )
+}
+
 interface Point {
     name: string
 
@@ -627,15 +718,25 @@ interface Point {
 
 }
 
-async function pointsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, points: Point[]): Promise<GeoJSON.Feature[]> {
-    const idxLink = indexLink(universe, geographyKind)
-    const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
-    const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+async function pointsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, points: Point[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'points' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
+        const idxLink = indexLink(universe, geographyKind)
+        const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+        const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
 
-    const nameToIndex = new Map(articles.longnames.map((r, i) => [r, i]))
+        const centroidsByName = new Map(articles.longnames.map((r, i) => [r, centroids[i]]))
+        cache.geo = {
+            type: 'points',
+            universe,
+            geographyKind,
+            centroidsByName,
+        }
+    }
+
+    const geo = cache.geo
 
     return points.map((point) => {
-        const centroid = centroids[nameToIndex.get(point.name)!]
+        const centroid = geo.centroidsByName.get(point.name)!
 
         return {
             type: 'Feature' as const,
@@ -648,28 +749,31 @@ async function pointsGeojson(geographyKind: typeof valid_geographies[number], un
     })
 }
 
-async function polygonsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, polygons: Polygon[]): Promise<GeoJSON.Feature[]> {
-    const universeIdx = universes_ordered.indexOf(universe)
-    const shapes = (await loadProtobuf(
-        consolidatedShapeLink(geographyKind),
-        'ConsolidatedShapes',
-    )) as NormalizeProto<ConsolidatedShapes>
-    const longnames: string[] = []
-    const features: NormalizeProto<IFeature>[] = []
-    for (let i = 0; i < shapes.longnames.length; i++) {
-        if (shapes.universes[i].universeIdxs.includes(universeIdx)) {
-            longnames.push(shapes.longnames[i])
-            features.push(shapes.shapes[i])
+async function polygonsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, polygons: Polygon[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'polygons' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
+        const universeIdx = universes_ordered.indexOf(universe)
+        const shapes = (await loadProtobuf(consolidatedShapeLink(geographyKind), 'ConsolidatedShapes')) as NormalizeProto<ConsolidatedShapes>
+        const polygonsByName = new Map<string, GeoJSON.Geometry>()
+        for (let i = 0; i < shapes.longnames.length; i++) {
+            if (shapes.universes[i].universeIdxs.includes(universeIdx)) {
+                polygonsByName.set(shapes.longnames[i], geometry(shapes.shapes[i] as NormalizeProto<Feature>))
+            }
+        }
+        cache.geo = {
+            type: 'polygons',
+            universe,
+            geographyKind,
+            polygonsByName,
         }
     }
 
-    const nameToIndex = new Map(longnames.map((r, i) => [r, i]))
+    const geo = cache.geo
 
     return polygons.map((polygon) => {
         return {
             type: 'Feature' as const,
             properties: { ...polygon },
-            geometry: geometry(features[nameToIndex.get(polygon.name)!] as NormalizeProto<Feature>),
+            geometry: geo.polygonsByName.get(polygon.name)!,
         }
     })
 }
@@ -902,19 +1006,19 @@ function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }
         return () => { selectionContext.observers.delete(observer) }
     }, [selectionContext, updateCurrentSelection])
 
-    const mapGenerator = useOrderedResolve(useMemo(() => makeMapGenerator({ mapSettings }), [mapSettings]))
+    const mapGenerator = useMapGenerator({ mapSettings })
 
     const commonProps: CommonEditorProps = {
         mapSettings,
         setMapSettings: setMapSettingsWrapper,
         typeEnvironment,
         setMapEditorMode,
-        mapGenerator: mapGenerator.result,
+        mapGenerator: mapGenerator.generator,
         loading: mapGenerator.loading,
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.result?.exportCSV}>
+        <PageTemplate csvExportData={mapGenerator.generator.exportCSV}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
@@ -929,24 +1033,24 @@ interface CommonEditorProps {
     setMapSettings: (s: MapSettings) => void
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
-    mapGenerator: MapGenerator | undefined
+    mapGenerator: MapGenerator
     loading: boolean
 }
 
 function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
-    const ui = mapGenerator?.ui({ mode: 'uss', loading })
+    const ui = mapGenerator.ui({ mode: 'uss', loading })
 
     return (
         <>
             <MapperSettings
                 mapSettings={mapSettings}
                 setMapSettings={setMapSettings}
-                errors={mapGenerator?.errors ?? []}
+                errors={mapGenerator.errors}
                 counts={counts}
                 typeEnvironment={typeEnvironment}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                <Export pngExport={ui?.exportPng} geoJSONExport={mapGenerator?.exportGeoJSON} />
+                <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
                 {
                     getInsets(mapSettings, typeEnvironment) && (
                         <div style={{
@@ -966,7 +1070,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                     setMapSettings={setMapSettings}
                 />
             </div>
-            {ui?.node ?? <MapSkeleton />}
+            {ui.node}
         </>
 
     )
@@ -981,7 +1085,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     const editedInsets = getInsets(mapSettings, typeEnvironment)!.map((baseInset, i) => ({ ...baseInset, ...insetEdits.get(i) }))
 
-    const ui = mapGenerator?.ui({
+    const ui = mapGenerator.ui({
         loading,
         mode: 'insets',
         editInsets: {
@@ -1030,7 +1134,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     </button>
                 </div>
             </div>
-            {ui?.node ?? <MapSkeleton />}
+            {ui.node}
             {undoRedoUi}
         </>
     )
