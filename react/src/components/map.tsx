@@ -399,7 +399,7 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
     private cleanup: (() => void)[] = []
 
     hasFullscreenControl(): boolean {
-        return false
+        return true
     }
 
     override async componentDidMount(): Promise<void> {
