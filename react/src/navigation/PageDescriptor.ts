@@ -5,7 +5,6 @@ import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, forType, loadArticles } from '../components/load-article'
-import type { MapperPanel } from '../components/mapper-panel'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -14,6 +13,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
+import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -671,7 +671,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'mapper': {
-            const panel = import('../components/mapper-panel')
+            const panel = import('../mapper/components/MapperPanel')
             const utils = import('../mapper/settings/utils')
             const counts = getCountsByArticleType()
             return {

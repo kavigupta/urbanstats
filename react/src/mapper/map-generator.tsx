@@ -1,90 +1,46 @@
-import { gzipSync } from 'zlib'
-
-import React, { CSSProperties, ReactNode, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
+import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
+import { Basemap as BasemapComponent, CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { mapBorderRadius, mapBorderWidth, screencapElement } from '../components/screenshot'
+import { renderMap } from '../components/screenshot-map'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
-import { defaultTypeEnvironment } from '../mapper/context'
-import { Keypoints } from '../mapper/ramps'
-import { ImportExportCode } from '../mapper/settings/ImportExportCode'
-import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
-import { doEditInsets, getInsets, InsetEdits } from '../mapper/settings/insets'
-import { Basemap, computeUSS, MapSettings } from '../mapper/settings/utils'
-import { Navigator } from '../navigation/Navigator'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { LongLoad } from '../navigation/loading'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { PageTemplate } from '../page_template/template'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color'
 import { Inset } from '../urban-stats-script/constants/insets'
-import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
-import { EditorError, useUndoRedo } from '../urban-stats-script/editor-utils'
+import { instantiate } from '../urban-stats-script/constants/scale'
+import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { unparse } from '../urban-stats-script/parser'
-import { TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
+import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
-import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
-import { onWidthChange, useHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
-import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { CountsByUT } from './countsByArticleType'
-import { CSVExportData, generateMapperCSVData } from './csv-export'
-import { Statistic } from './display-stats'
-import { Basemap as BasemapComponent, CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth, PointFeatureCollection, Polygon, PolygonFeatureCollection } from './map-common'
-import { mapBorderRadius, mapBorderWidth, screencapElement } from './screenshot'
-import { renderMap } from './screenshot-map'
+import { Colorbar, RampToDisplay } from './components/Colorbar'
+import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
-export type EditSingleInset = (newInset: Partial<Inset>) => void
-export type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
-export interface EditInsets { doEdit: EditMultipleInsets, editedInsets: Inset[] }
-
-export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
-    if (props.view) {
-        return <DisplayMap mapSettings={props.mapSettings} />
-    }
-
-    return <EditMapperPanel {...props} />
-}
-
-function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
-    const mapGenerator = useMapGenerator({ mapSettings })
-    return (
-        <>
-            {mapGenerator.generator.ui({ mode: 'view', loading: mapGenerator.loading }).node}
-        </>
-    )
-}
-
-function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
-    return (
-        <LongLoad containerStyleOverride={{
-            position: 'absolute',
-            transition: 'opacity 0.25s',
-            opacity: loading ? 1 : 0,
-            pointerEvents: 'none',
-        }}
-        />
-    )
-}
+type EditSingleInset = (newInset: Partial<Inset>) => void
+type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
+interface EditInsets { doEdit: EditMultipleInsets, editedInsets: Inset[] }
 
 const mapUpdateInterval = 500
 
-function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { generator: MapGenerator, loading: boolean } {
+export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { generator: MapGenerator, loading: boolean } {
     const cache = useRef<MapCache>({})
     const updateTime = useRef(Date.now())
 
@@ -121,7 +77,7 @@ function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { gener
 
 type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
 
-interface MapGenerator {
+export interface MapGenerator {
     ui: (props: MapUIProps) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
@@ -280,6 +236,18 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, asp
                 {colorbar}
             </div>
         </div>
+    )
+}
+
+function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
+    return (
+        <LongLoad containerStyleOverride={{
+            position: 'absolute',
+            transition: 'opacity 0.25s',
+            opacity: loading ? 1 : 0,
+            pointerEvents: 'none',
+        }}
+        />
     )
 }
 
@@ -767,424 +735,5 @@ function exportAsGeoJSON(features: GeoJSON.Feature[]): string {
         },
         null,
         2,
-    )
-}
-
-function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
-    switch (basemap.type) {
-        case 'osm':
-            return { }
-        case 'none':
-            return { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
-    }
-}
-
-interface EmpiricalRamp {
-    ramp: Keypoints
-    scale: ScaleInstance
-    interpolations: number[]
-    label: string
-    unit?: UnitType
-}
-
-type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
-
-function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
-    // do this as a table with 10 columns, each 10% wide and
-    // 2 rows. Top one is the colorbar, bottom one is the
-    // labels.
-    const valuesRef = useRef<HTMLDivElement>(null)
-    const shouldRotate: boolean = useSyncExternalStore(onWidthChange, () => {
-        if (valuesRef.current === null) {
-            return false
-        }
-        const current = valuesRef.current
-        const containers = current.querySelectorAll('.containerOfXticks')
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- this isn't a loop over an array
-        for (let i = 0; i < containers.length; i++) {
-            const container = containers[i] as HTMLDivElement
-            const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
-            if (contained === null) {
-                continue
-            }
-            if (contained.offsetWidth > container.offsetWidth * 0.9) {
-                return true
-            }
-        }
-        return false
-    })
-
-    const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
-
-    if (props.ramp === undefined) {
-        return <div></div>
-    }
-
-    if (props.ramp.type === 'label') {
-        return (
-            <div className="centered_text" style={colorbarStyleFromBasemap(props.basemap)}>
-                {props.ramp.value}
-            </div>
-        )
-    }
-
-    const ramp = props.ramp.value.ramp
-    const scale = props.ramp.value.scale
-    const label = props.ramp.value.label
-    const values = props.ramp.value.interpolations
-    const unit = props.ramp.value.unit
-    const style = colorbarStyleFromBasemap(props.basemap)
-
-    const createValue = (stat: number): ReactNode => {
-        return (
-            <div className="centered_text" style={style}>
-                <Statistic
-                    statname={label}
-                    value={stat}
-                    isUnit={false}
-                    unit={unit}
-                />
-                <Statistic
-                    statname={label}
-                    value={stat}
-                    isUnit={true}
-                    unit={unit}
-                />
-            </div>
-        )
-    }
-
-    const width = `${100 / values.length}%`
-
-    const valuesDivs = (rotate: boolean): ReactNode[] => values.map((x, i) => (
-        <div
-            key={i}
-            style={{
-                width,
-                // height: rotate ? '2em' : '1em',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-            className="containerOfXticks"
-        >
-            <div
-                style={{
-                    // transform: rotate ? 'rotate(-45deg)' : 'none',
-                    writingMode: rotate ? 'sideways-lr' : 'horizontal-tb',
-                    padding: rotate ? '0.5em' : '0',
-                    // transformOrigin: 'center',
-                    // whiteSpace: 'nowrap',
-                    // fontSize: rotate ? '0.8em' : '1em',
-                }}
-                className="containedOfXticks"
-            >
-                {createValue(x)}
-            </div>
-        </div>
-    ))
-
-    return (
-        <div style={{ ...style, position: 'relative' }}>
-            <div style={{ display: 'flex', width: '100%' }}>
-                {
-                    values.map((x, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                width, height: '1em',
-                                backgroundColor: interpolateColor(ramp, scale.forward(x), furthest),
-                                marginLeft: '1px',
-                                marginRight: '1px',
-                            }}
-                        >
-                        </div>
-                    ))
-                }
-            </div>
-            <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
-            <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
-            <div className="centered_text">
-                {label}
-            </div>
-        </div>
-    )
-}
-
-export type MapEditorMode = 'uss' | 'insets'
-
-function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
-    const [mapSettings, setMapSettings] = useState(props.mapSettings)
-
-    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
-
-    const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
-
-    const undoRedo = useUndoRedo(
-        mapSettings,
-        selectionContext.value,
-        setMapSettings,
-        (selection) => {
-            selectionContext.value = selection
-        },
-        {
-            undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
-            // Prevent keyboard shortcusts when in insets editing mode, since insets has its own undo stack
-            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined,
-        },
-    )
-
-    const { updateCurrentSelection, addState } = undoRedo
-
-    const setMapSettingsWrapper = useCallback((newSettings: MapSettings): void => {
-        setMapSettings(newSettings)
-        addState(newSettings, selectionContext.value)
-    }, [selectionContext, addState])
-
-    const firstEffect = useRef(true)
-
-    useEffect(() => {
-        if (firstEffect.current) {
-            // Otherwise we add an undo state immediately
-            firstEffect.current = false
-        }
-        else {
-            // So that map settings are updated when the prop changes
-            setMapSettingsWrapper(props.mapSettings)
-            setMapEditorMode('uss')
-        }
-    }, [props.mapSettings, setMapSettingsWrapper])
-
-    const jsonedSettings = JSON.stringify({
-        ...mapSettings,
-        script: {
-            uss: unparse(mapSettings.script.uss),
-        },
-    })
-
-    const navContext = useContext(Navigator.Context)
-
-    useEffect(() => {
-        if (props.mapSettings !== mapSettings) {
-            // gzip then base64 encode
-            const encodedSettings = gzipSync(jsonedSettings).toString('base64')
-            navContext.setMapperSettings(encodedSettings)
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
-    }, [jsonedSettings, navContext])
-
-    const headerTextClass = useHeaderTextClass()
-
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
-
-    // Update current selection when it changes
-    useEffect(() => {
-        const observer = (): void => {
-            updateCurrentSelection(selectionContext.value)
-        }
-
-        selectionContext.observers.add(observer)
-        return () => { selectionContext.observers.delete(observer) }
-    }, [selectionContext, updateCurrentSelection])
-
-    const mapGenerator = useMapGenerator({ mapSettings })
-
-    const commonProps: CommonEditorProps = {
-        mapSettings,
-        setMapSettings: setMapSettingsWrapper,
-        typeEnvironment,
-        setMapEditorMode,
-        mapGenerator: mapGenerator.generator,
-        loading: mapGenerator.loading,
-    }
-
-    return (
-        <PageTemplate csvExportData={mapGenerator.generator.exportCSV}>
-            <SelectionContext.Provider value={selectionContext}>
-                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
-                {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
-                {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
-            </SelectionContext.Provider>
-        </PageTemplate>
-    )
-}
-
-interface CommonEditorProps {
-    mapSettings: MapSettings
-    setMapSettings: (s: MapSettings) => void
-    typeEnvironment: TypeEnvironment
-    setMapEditorMode: (m: MapEditorMode) => void
-    mapGenerator: MapGenerator
-    loading: boolean
-}
-
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
-    const ui = mapGenerator.ui({ mode: 'uss', loading })
-
-    return (
-        <>
-            <MapperSettings
-                mapSettings={mapSettings}
-                setMapSettings={setMapSettings}
-                errors={mapGenerator.errors}
-                counts={counts}
-                typeEnvironment={typeEnvironment}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                {
-                    getInsets(mapSettings, typeEnvironment) && (
-                        <div style={{
-                            display: 'flex',
-                            gap: '0.5em',
-                            margin: '0.5em 0',
-                        }}
-                        >
-                            <button onClick={() => { setMapEditorMode('insets') }}>
-                                Edit Insets
-                            </button>
-                        </div>
-                    )
-                }
-                <ImportExportCode
-                    mapSettings={mapSettings}
-                    setMapSettings={setMapSettings}
-                />
-            </div>
-            {ui.node}
-        </>
-
-    )
-}
-
-function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps): ReactNode {
-    const colors = useColors()
-
-    const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
-
-    const { addState, ui: undoRedoUi } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
-
-    const editedInsets = getInsets(mapSettings, typeEnvironment)!.map((baseInset, i) => ({ ...baseInset, ...insetEdits.get(i) }))
-
-    const ui = mapGenerator.ui({
-        loading,
-        mode: 'insets',
-        editInsets: {
-            doEdit: (i, e) => {
-                setInsetEdits((edits) => {
-                    const newEdits = new Map(edits)
-                    newEdits.set(i, { ...newEdits.get(i), ...e })
-                    addState(newEdits, undefined)
-                    return newEdits
-                })
-            },
-            editedInsets,
-        },
-    })
-
-    return (
-        <>
-            <div style={{
-                backgroundColor: colors.slightlyDifferentBackgroundFocused,
-                borderRadius: '5px',
-                padding: '10px',
-                margin: '10px 0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '0.5em',
-            }}
-            >
-                <div>
-                    <b>Editing Insets.</b>
-                    {' '}
-                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-
-                    <button onClick={() => { setMapEditorMode('uss') }}>
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
-                            setMapEditorMode('uss')
-                        }}
-                        disabled={insetEdits.size === 0}
-                    >
-                        Accept
-                    </button>
-                </div>
-            </div>
-            {ui.node}
-            {undoRedoUi}
-        </>
-    )
-}
-
-function saveAsFile(filename: string, data: string | Blob, type: string): void {
-    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
-function Export(props: { pngExport?: (colors: Colors) => Promise<string>, geoJSONExport?: () => string }): ReactNode {
-    const colors = useColors()
-
-    const doPngExport = async (): Promise<void> => {
-        if (props.pngExport === undefined) {
-            return
-        }
-        const pngDataUrl = await props.pngExport(colors)
-        const data = await fetch(pngDataUrl)
-        const pngData = await data.blob()
-        saveAsFile('map.png', pngData, 'image/png')
-    }
-
-    const doGeoJSONExport = (): void => {
-        if (props.geoJSONExport === undefined) {
-            return
-        }
-        saveAsFile('map.geojson', props.geoJSONExport(), 'application/geo+json')
-    }
-
-    return (
-        <div style={{
-            display: 'flex',
-            gap: '0.5em',
-            margin: '0.5em 0',
-        }}
-        >
-            <button
-                disabled={props.pngExport === undefined}
-                onClick={() => {
-                    void doPngExport()
-                }}
-            >
-                Export as PNG
-            </button>
-            <button
-                disabled={props.geoJSONExport === undefined}
-                onClick={() => {
-                    doGeoJSONExport()
-                }}
-            >
-                Export as GeoJSON
-            </button>
-            <button onClick={() => {
-                // eslint-disable-next-line no-restricted-syntax -- We're opening a new window here
-                const params = new URLSearchParams(window.location.search)
-                params.set('view', 'true')
-                // navigate to the page in a new tab
-                window.open(`?${params.toString()}`, '_blank')
-            }}
-            >
-                View as Zoomable Page
-            </button>
-        </div>
     )
 }
