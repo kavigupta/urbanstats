@@ -82,24 +82,6 @@ function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
     )
 }
 
-function MapSkeleton(): ReactNode {
-    const colors = useColors()
-    return (
-        <div style={{
-            width: '100%',
-            height: 600,
-            pointerEvents: 'none',
-            position: 'relative',
-            backgroundColor: colors.slightlyDifferentBackground,
-            borderRadius: mapBorderRadius,
-            border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-        }}
-        >
-            <RelativeLoader loading={true} />
-        </div>
-    )
-}
-
 const mapUpdateInterval = 500
 
 function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { generator: MapGenerator, loading: boolean } {
@@ -130,7 +112,7 @@ function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { gener
 
     return {
         generator: resolve.result ?? {
-            ui: () => ({ node: <MapSkeleton /> }),
+            ui: () => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={resolve.loading} /> }),
             errors: [],
         },
         loading: resolve.loading,
@@ -147,15 +129,14 @@ interface MapGenerator {
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator> | undefined }): Promise<MapGenerator> {
+    const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> })
+
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
-            ui: () => ({ node: null }),
+            ui: emptyMap,
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
         }
     }
-
-    const universe = mapSettings.universe
-    const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={universe} loading={loading} /> })
 
     const stmts = computeUSS(mapSettings.script)
 
@@ -302,8 +283,8 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, asp
     )
 }
 
-function EmptyMapLayout({ universe, loading }: { universe: Universe, loading: boolean }): ReactNode {
-    const insets = loadInsets(universe)
+function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: boolean }): ReactNode {
+    const insets = loadInsets(universe ?? 'world')
 
     return (
         <MapLayout
