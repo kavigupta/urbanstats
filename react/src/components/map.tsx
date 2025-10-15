@@ -113,8 +113,8 @@ class MapHandler {
         this.mainMaps = mainMaps
     }
 
-    initialize(onClick: (name: string) => void, editInsets?: EditMultipleInsets): void {
-        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick, editInsets)
+    initialize(onClick: (name: string) => void, editInsets: EditMultipleInsets | undefined, hasFullscreenControl: boolean): void {
+        [this.maps, this.ensureStyleLoaded] = createMaps(this.ids, this.mainMaps, onClick, editInsets, hasFullscreenControl)
     }
 
     container(): HTMLElement {
@@ -161,7 +161,8 @@ function createMap(
     id: string,
     onClick: (name: string) => void,
     fullMap: boolean,
-    editInset?: EditSingleInset,
+    editInset: EditSingleInset | undefined,
+    hasFullscreenControl: boolean,
 ): [maplibregl.Map, Promise<void>] {
     configRTL()
     const map = new maplibregl.Map({
@@ -180,7 +181,9 @@ function createMap(
     TestUtils.shared.maps.set(id, new WeakRef(map))
 
     if (fullMap) {
-        map.addControl(new maplibregl.FullscreenControl(), 'top-left')
+        if (hasFullscreenControl) {
+            map.addControl(new maplibregl.FullscreenControl(), 'top-left')
+        }
         map.on('mouseover', 'polygon', () => {
             map.getCanvas().style.cursor = 'pointer'
         })
@@ -205,12 +208,13 @@ function createMaps(
     ids: string[],
     mainMaps: boolean[],
     onClick: (name: string) => void,
-    editInsets?: EditMultipleInsets,
+    editInsets: EditMultipleInsets | undefined,
+    hasFullscreenControl: boolean,
 ): [maplibregl.Map[], Promise<void>] {
     const maps = []
     const ensureStyleLoadeds = []
     for (const [i, id] of ids.entries()) {
-        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets !== undefined ? (newInset) => { editInsets(i, newInset) } : undefined)
+        const [map, ensureStyleLoaded] = createMap(id, onClick, mainMaps[i], editInsets !== undefined ? (newInset) => { editInsets(i, newInset) } : undefined, hasFullscreenControl)
         maps.push(map)
         ensureStyleLoadeds.push(ensureStyleLoaded)
     }
@@ -394,8 +398,12 @@ export abstract class MapGeneric<P extends MapGenericProps> extends React.Compon
 
     private cleanup: (() => void)[] = []
 
+    hasFullscreenControl(): boolean {
+        return false
+    }
+
     override async componentDidMount(): Promise<void> {
-        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets?.doEdit)
+        this.handler.initialize((name) => { this.onClick(name) }, this.props.editInsets?.doEdit, this.hasFullscreenControl())
         const maps = await this.handler.getMaps()
         const insets = this.insets()
         assert(maps.length === insets.length, `Expected ${insets.length} maps, got ${maps.length}`)
