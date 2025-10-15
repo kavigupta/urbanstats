@@ -184,17 +184,20 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        2
+        2,
+        2,
+        2,
+        1
     ],
     "5M Person Circle": [
         316,
-        54
+        59
     ],
     "CA Census Subdivision": [
         106,
         106,
         106,
-        52
+        57
     ],
     "CCD": [
         11,
@@ -230,7 +233,8 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        7
+        11,
+        1
     ],
     "City": [
         13,
@@ -261,22 +265,22 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        6
+        11
     ],
     "County": [
         159,
         159,
-        52
+        57
     ],
     "County Cross CD": [
         137,
         137,
-        96
+        101
     ],
     "Hospital Service Area": [
         149,
         149,
-        72
+        77
     ],
     "Metropolitan Cluster": [
         11,
@@ -312,7 +316,8 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        7
+        11,
+        1
     ],
     "Neighborhood": [
         31,
@@ -326,7 +331,8 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        29
+        31,
+        3
     ],
     "School District": [
         38,
@@ -338,26 +344,26 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        28
+        33
     ],
     "State House District": [
         105,
         105,
         105,
-        55
+        60
     ],
     "State Senate District": [
         267,
-        103
+        108
     ],
     "Subnational Region": [
         140,
         140,
-        90
+        95
     ],
     "Urban Area": [
         195,
-        175
+        180
     ],
     "Urban Center": [
         50,
@@ -367,7 +373,7 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        20
+        25
     ],
     "ZIP": [
         13,
@@ -398,7 +404,7 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        6
+        11
     ]
 }
 export default value

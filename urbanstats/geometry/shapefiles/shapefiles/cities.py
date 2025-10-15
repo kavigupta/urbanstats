@@ -33,6 +33,7 @@ CITIES = Shapefile(
     filter=lambda x: True,
     meta=dict(type="City", source="Census", type_category="US City"),
     does_overlap_self=False,
+    special_data_sources=[("census", "place")],
     drop_dup="counties",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},

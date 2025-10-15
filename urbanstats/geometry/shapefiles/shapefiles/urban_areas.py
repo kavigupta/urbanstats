@@ -25,6 +25,7 @@ URBAN_AREAS = Shapefile(
     filter=lambda x: True,
     meta=dict(type="Urban Area", source="Census", type_category="Census"),
     does_overlap_self=False,
+    special_data_sources=[("census", "urban area")],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="URBA",

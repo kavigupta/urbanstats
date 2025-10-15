@@ -96,7 +96,7 @@ def generate_quizzes(folder):
 
     for i in range(fixed_up_to + 1):
         shutil.copy(f"stored_quizzes/juxtastat/{i}", path(i))
-    for i in tqdm.trange(fixed_up_to + 1, 365 * 3):
+    for i in tqdm.trange(fixed_up_to + 1, 2000 + 1):
         outs = full_quiz(("daily", i))
         with open(path(i), "w") as f:
             json.dump(outs, f)

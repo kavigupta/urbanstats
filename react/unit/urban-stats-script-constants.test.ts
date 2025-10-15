@@ -53,6 +53,8 @@ void test('constant listing', (): void => {
                 'unitDistancePerYear',
                 'unitContaminantLevel',
                 'unitNumber',
+                'unitUsd',
+                'unitMinutes',
             ],
             '(number; ) -> number': [
                 'abs',

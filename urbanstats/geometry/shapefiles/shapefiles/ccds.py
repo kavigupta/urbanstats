@@ -28,6 +28,7 @@ CCDs = Shapefile(
     filter=lambda x: True,
     meta=dict(type="CCD", source="Census", type_category="Census"),
     does_overlap_self=False,
+    special_data_sources=[("census", "county subdivision")],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="CCD",

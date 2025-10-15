@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+
 census_files = [
     "98-401-X2021006_English_CSV_data_Prairies.csv",
     "98-401-X2021006_English_CSV_data_Atlantic.csv",
@@ -44,7 +46,7 @@ def load_single_canada_data_da(census_file):
     return canada_census
 
 
-@permacache("urbanstats/data/canada/load_canada_data_3")
+@permacache_with_remapping_pickle("urbanstats/data/canada/load_canada_data_3")
 def load_canada_data_da(year):
     assert year == 2021
     canada = [load_single_canada_data_da(f) for f in census_files]
@@ -55,7 +57,9 @@ def load_canada_data_da(year):
     return canada
 
 
-@permacache("urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4"
+)
 def load_canada_db_shapefile(year):
     assert year == 2021
     table_by_block = pd.read_csv(
