@@ -40,11 +40,11 @@ interface EditInsets { doEdit: EditMultipleInsets, editedInsets: Inset[] }
 
 const mapUpdateInterval = 500
 
-export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): { generator: MapGenerator, loading: boolean } {
+export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
     const updateTime = useRef(Date.now())
 
-    const [currentGenerator, setCurrentGenerator] = useState<Promise<MapGenerator>>(() => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator: undefined }))
+    const [currentGenerator, setCurrentGenerator] = useState<Promise<MapGenerator<{ loading: boolean }>>>(() => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator: undefined }))
 
     useEffect(() => {
         const timeSinceMapUpdate = Date.now() - updateTime.current
@@ -64,27 +64,29 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
         }
     }, [mapSettings]) // Do not change this effect list!!
 
-    const resolve = useOrderedResolve(currentGenerator)
+    const { result, loading } = useOrderedResolve(currentGenerator)
 
-    return {
-        generator: resolve.result ?? {
-            ui: () => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={resolve.loading} /> }),
-            errors: [],
-        },
-        loading: resolve.loading,
-    }
+    return result !== undefined
+        ? {
+                ...result,
+                ui: props => result.ui({ ...props, loading }),
+            }
+        : {
+                ui: () => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
+                errors: [],
+            }
 }
 
-type MapUIProps = ({ loading: boolean }) & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
+type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
 
-export interface MapGenerator {
-    ui: (props: MapUIProps) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
+export interface MapGenerator<T = unknown> {
+    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
 }
 
-async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator> | undefined }): Promise<MapGenerator> {
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> | undefined }): Promise<MapGenerator<{ loading: boolean }>> {
     const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> })
 
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {

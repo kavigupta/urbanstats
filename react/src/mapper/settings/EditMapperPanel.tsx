@@ -105,12 +105,11 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         setMapSettings: setMapSettingsWrapper,
         typeEnvironment,
         setMapEditorMode,
-        mapGenerator: mapGenerator.generator,
-        loading: mapGenerator.loading,
+        mapGenerator,
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.generator.exportCSV}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV}>
             <SelectionContext.Provider value={selectionContext}>
                 <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
@@ -126,11 +125,10 @@ interface CommonEditorProps {
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
     mapGenerator: MapGenerator
-    loading: boolean
 }
 
-function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
-    const ui = mapGenerator.ui({ mode: 'uss', loading })
+function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
+    const ui = mapGenerator.ui({ mode: 'uss' })
 
     return (
         <>
@@ -168,7 +166,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     )
 }
 
-function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator, loading }: CommonEditorProps): ReactNode {
+function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
@@ -178,7 +176,6 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     const editedInsets = getInsets(mapSettings, typeEnvironment)!.map((baseInset, i) => ({ ...baseInset, ...insetEdits.get(i) }))
 
     const ui = mapGenerator.ui({
-        loading,
         mode: 'insets',
         editInsets: {
             doEdit: (i, e) => {

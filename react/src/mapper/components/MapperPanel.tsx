@@ -17,7 +17,7 @@ function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
     const mapGenerator = useMapGenerator({ mapSettings })
     return (
         <>
-            {mapGenerator.generator.ui({ mode: 'view', loading: mapGenerator.loading }).node}
+            {mapGenerator.ui({ mode: 'view' }).node}
         </>
     )
 }
