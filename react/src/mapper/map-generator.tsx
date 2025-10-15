@@ -98,8 +98,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const parseErrors = getAllParseErrors(stmts)
     if (parseErrors.length > 0) {
+        const prev = await previousGenerator
         return {
-            ui: (await previousGenerator)?.ui ?? emptyMap,
+            ...prev,
+            ui: prev?.ui ?? emptyMap,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
         }
     }
@@ -107,8 +109,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
+        const prev = await previousGenerator
         return {
-            ui: (await previousGenerator)?.ui ?? emptyMap,
+            ...prev,
+            ui: prev?.ui ?? emptyMap,
             errors: execResult.error,
         }
     }
