@@ -115,6 +115,10 @@ class DisplayedMap extends MapGeneric<DisplayedMapProps> {
         return true
     }
 
+    override hasFullscreenControl(): boolean {
+        return false
+    }
+
     private getShapes(): Shapes {
         if (this.shapes && this.shapes.geographyKind === this.versionProps.geographyKind && this.shapes.universe === this.versionProps.universe && this.shapes.shapeType === this.shapeType) {
             return this.shapes
