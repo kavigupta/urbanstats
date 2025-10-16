@@ -11,6 +11,7 @@ const computeNthResult = (n: number, query: string, prioritizeType: string | und
     unnormalizedPattern: query,
     maxResults: 10,
     showHistoricalCDs: false,
+    showPersonCircles: true,
     prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined,
 })[n]
 

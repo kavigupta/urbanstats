@@ -1,7 +1,6 @@
-import type_ordering_idx from '../data/type_ordering_idx'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { isHistoricalCD } from '../utils/is_historical'
+import { isHistoricalCD, isPopulationCircle } from '../utils/is_historical'
 import { SearchIndex } from '../utils/protos'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
@@ -65,14 +64,8 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
         return false
     }
-    if (isPopulationCircle(metadata.type!)) {
+    if (!Settings.shared.get('show_person_circles') && isPopulationCircle(metadata.type!)) {
         return false
     }
     return true
-}
-
-const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => name.endsWith('Person Circle')).map(([,index]) => index)
-
-function isPopulationCircle(x: number): boolean {
-    return populationCircles.includes(x)
 }

@@ -21,6 +21,7 @@ export function SearchBox(props: {
 }): ReactNode {
     const colors = useColors()
     const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const [showPersonCircles] = useSetting('show_person_circles')
 
     // Keep these in sync
     const cacheKey = useMemo(() => getIndexCacheKey(), [])
@@ -39,10 +40,11 @@ export function SearchBox(props: {
                 unnormalizedPattern: sq,
                 maxResults: 10,
                 showHistoricalCDs,
+                showPersonCircles,
                 prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined })
             return result
         }
-    }, [searchWorker, cacheKey, showHistoricalCDs, props.prioritizeArticleType])
+    }, [searchWorker, cacheKey, showHistoricalCDs, showPersonCircles, props.prioritizeArticleType])
 
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a

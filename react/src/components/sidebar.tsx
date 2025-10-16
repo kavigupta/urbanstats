@@ -136,6 +136,13 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                     <li>
                         <CheckboxSetting
+                            name="Show Person Circles"
+                            settingKey="show_person_circles"
+                            fontSize={fontSize}
+                        />
+                    </li>
+                    <li>
+                        <CheckboxSetting
                             name="Simple Ordinals"
                             settingKey="simple_ordinals"
                             fontSize={fontSize}
