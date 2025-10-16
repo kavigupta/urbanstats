@@ -64,7 +64,7 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
         return false
     }
-    if (!Settings.shared.get('show_person_circles') && isPopulationCircle(metadata.type!)) {
+    if (isPopulationCircle(metadata.type!)) {
         return false
     }
     return true
