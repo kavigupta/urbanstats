@@ -251,6 +251,7 @@ function LeftPanel({ setHamburgerOpen, hideSidebar }: { setHamburgerOpen: (open:
                         float: 'left',
                         borderRadius: '5px',
                         border: hideSidebar ? `1px solid ${colors.borderShadow}` : undefined,
+                        overflow: 'hidden', // needed so the corners aren't cut off
                     }}
         >
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />

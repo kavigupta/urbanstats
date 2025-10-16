@@ -157,8 +157,9 @@ function TopLeft(props: {
 
 function HeaderImage(): ReactNode {
     const colors = useColors()
-    const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
     const navContext = useContext(Navigator.Context)
+    const isMapper = navContext.usePageState().current.data.kind === 'mapper'
+    const path = useMobileLayout() ? '/thumbnail.png' : colors[isMapper ? 'mapperBannerURL' : 'bannerURL']
     return (
         <a
             {...navContext.link({ kind: 'index' }, { scroll: { kind: 'position', top: 0 } })}
