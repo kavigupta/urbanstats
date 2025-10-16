@@ -9,7 +9,7 @@
    id="svg5"
    inkscape:version="1.3.2 (091e20e, 2023-11-25)"
    sodipodi:docname="mapper-banner-dark.svg"
-   inkscape:export-filename="mapper-banner-dark.png"
+   inkscape:export-filename="banner-dark.png"
    inkscape:export-xdpi="149.75999"
    inkscape:export-ydpi="149.75999"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -27,9 +27,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.44017392"
-     inkscape:cx="1127.9632"
-     inkscape:cy="394.16238"
+     inkscape:zoom="0.46486736"
+     inkscape:cx="769.03656"
+     inkscape:cy="123.6912"
      inkscape:window-width="1728"
      inkscape:window-height="864"
      inkscape:window-x="0"
@@ -87,15 +87,14 @@
              id="tspan3653">Urban Stats</tspan></text>
         <text
            xml:space="preserve"
-           style="font-weight:bold;font-size:68.339px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#dddddd;fill-opacity:1;stroke:none;stroke-width:0.87675px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           x="267.78369"
-           y="199.1217"
-           id="text1362-3"
-           transform="rotate(-13.688565)"><tspan
+           style="font-weight:bold;font-size:35.2778px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#dddddd;fill-opacity:1;stroke:none;stroke-width:0.678891px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="334.6235"
+           y="120.46779"
+           id="text1362-3"><tspan
              sodipodi:role="line"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:68.339px;font-family:'Treasure Map Deadhand';-inkscape-font-specification:'Treasure Map Deadhand';fill:#800000;fill-opacity:1;stroke:none;stroke-width:0.87675px"
-             x="267.78369"
-             y="199.1217"
+             style="font-style:italic;font-variant:normal;font-weight:500;font-stretch:normal;font-size:35.2778px;font-family:'Jost*';-inkscape-font-specification:'Jost* Medium Italic';fill:#dddddd;fill-opacity:1;stroke:none;stroke-width:0.678891px"
+             x="334.6235"
+             y="120.46779"
              id="tspan3653-6">Mapper</tspan></text>
       </g>
       <image

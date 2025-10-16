@@ -231,8 +231,15 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
                             : { width: '80%', paddingLeft: '2em' })}
             >
                 {mainContent}
-                <div className="gap"></div>
-                { showFooter ? <TemplateFooter /> : null }
+
+                { showFooter
+                    ? (
+                            <>
+                                <div className="gap" />
+                                <TemplateFooter />
+                            </>
+                        )
+                    : null }
             </div>
         </div>
     )

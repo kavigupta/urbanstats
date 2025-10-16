@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
@@ -170,6 +170,26 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
 
 function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
     const mobileLayout = useMobileLayout()
+    const [height, setHeight] = useState(0)
+    const splitRef = useRef<HTMLDivElement>(null)
+    const colors = useColors()
+
+    const updateHeight = useCallback(() => {
+        if (splitRef.current) {
+            const bounds = splitRef.current.getBoundingClientRect()
+            setHeight(window.innerHeight - bounds.top - 8)
+        }
+    }, [])
+
+    // This is ultimately the simplest way to set the height
+    useLayoutEffect(() => {
+        updateHeight()
+        window.addEventListener('resize', updateHeight)
+        return () => {
+            window.removeEventListener('resize', updateHeight)
+        }
+    }, [updateHeight])
+
     if (mobileLayout) {
         return (
             <>
@@ -179,12 +199,15 @@ function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }
         )
     }
 
+    const minLeftWidth = 540
+    const leftPct = '30%'
+
     return (
-        <div style={{ display: 'flex', gap: '1em' }}>
-            <div style={{ width: '30%', overflowY: 'scroll' }}>
+        <div style={{ display: 'flex', gap: '1em', height }} ref={splitRef}>
+            <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: colors.slightlyDifferentBackground, padding: '1em' }}>
                 {left}
             </div>
-            <div style={{ width: '70%' }}>
+            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}))`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {right}
             </div>
         </div>

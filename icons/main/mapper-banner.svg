@@ -32,8 +32,8 @@
      inkscape:cy="68.316262"
      inkscape:window-width="1728"
      inkscape:window-height="974"
-     inkscape:window-x="0"
-     inkscape:window-y="38"
+     inkscape:window-x="13"
+     inkscape:window-y="242"
      inkscape:window-maximized="0"
      inkscape:current-layer="g2059"
      inkscape:showpageshadow="2"
@@ -86,15 +86,14 @@
              id="tspan3653">Urban Stats</tspan></text>
         <text
            xml:space="preserve"
-           style="font-weight:bold;font-size:68.339px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.87675px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           x="278.77567"
-           y="200.28697"
-           id="text1362-3"
-           transform="rotate(-13.688565)"><tspan
+           style="font-weight:bold;font-size:35.2778px;line-height:125%;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';letter-spacing:0px;word-spacing:0px;fill:#dddddd;fill-opacity:1;stroke:none;stroke-width:0.678891px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="334.62393"
+           y="120.46734"
+           id="text1362-3"><tspan
              sodipodi:role="line"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:68.339px;font-family:'Treasure Map Deadhand';-inkscape-font-specification:'Treasure Map Deadhand';fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.87675px"
-             x="278.77567"
-             y="200.28697"
+             style="font-style:italic;font-variant:normal;font-weight:500;font-stretch:normal;font-size:35.2778px;font-family:'Jost*';-inkscape-font-specification:'Jost* Medium Italic';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.678891px"
+             x="334.62393"
+             y="120.46734"
              id="tspan3653-6">Mapper</tspan></text>
       </g>
       <image
