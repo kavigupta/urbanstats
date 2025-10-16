@@ -35,12 +35,22 @@ export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
     }
 }
 
+const boundingBoxCache = new WeakMap<GeoJSON.Geometry, maplibregl.LngLatBounds>()
+
 export function boundingBox(geo: GeoJSON.Geometry): maplibregl.LngLatBounds {
+    let result: maplibregl.LngLatBounds | undefined
+    if ((result = boundingBoxCache.get(geo)) !== undefined) {
+        return result
+    }
+
     const bbox = geojsonExtent(geo)
-    return new maplibregl.LngLatBounds(
+    result = new maplibregl.LngLatBounds(
         new maplibregl.LngLat(bbox[0], bbox[1]),
         new maplibregl.LngLat(bbox[2], bbox[3]),
     )
+    boundingBoxCache.set(geo, result)
+
+    return result
 }
 
 export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
