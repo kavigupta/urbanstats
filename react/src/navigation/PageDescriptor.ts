@@ -196,7 +196,7 @@ export type PageData =
         url: URL
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
-    | { kind: 'initialLoad' }
+    | { kind: 'initialLoad', descriptor: PageDescriptor }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
@@ -751,5 +751,14 @@ export function pageTitle(pageData: PageData): string {
             return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
+    }
+}
+
+export function hideSidebar(pageDescriptor: PageDescriptor): boolean {
+    switch (pageDescriptor.kind) {
+        case 'mapper':
+            return true
+        default:
+            return false
     }
 }
