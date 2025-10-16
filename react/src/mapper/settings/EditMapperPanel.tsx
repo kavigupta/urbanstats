@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
@@ -12,7 +12,7 @@ import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
-import { useHeaderTextClass } from '../../utils/responsive'
+import { useHeaderTextClass, useMobileLayout } from '../../utils/responsive'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
@@ -84,8 +84,6 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
-    const headerTextClass = useHeaderTextClass()
-
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
     // Update current selection when it changes
@@ -109,9 +107,8 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} hideSidebar={true} showFooter={false}>
             <SelectionContext.Provider value={selectionContext}>
-                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
                 {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
             </SelectionContext.Provider>
@@ -131,38 +128,89 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     const ui = mapGenerator.ui({ mode: 'uss' })
 
     return (
-        <>
-            <MapperSettings
-                mapSettings={mapSettings}
-                setMapSettings={setMapSettings}
-                errors={mapGenerator.errors}
-                counts={counts}
-                typeEnvironment={typeEnvironment}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                {
-                    getInsets(mapSettings, typeEnvironment) && (
-                        <div style={{
-                            display: 'flex',
-                            gap: '0.5em',
-                            margin: '0.5em 0',
-                        }}
-                        >
-                            <button onClick={() => { setMapEditorMode('insets') }}>
-                                Edit Insets
-                            </button>
-                        </div>
-                    )
-                }
-                <ImportExportCode
+        <MaybeSplitLayout
+            left={(
+                <MapperSettings
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
+                    errors={mapGenerator.errors}
+                    counts={counts}
+                    typeEnvironment={typeEnvironment}
                 />
-            </div>
-            {ui.node}
-        </>
+            )}
+            right={(
+                <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                        <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                        {
+                            getInsets(mapSettings, typeEnvironment) && (
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '0.5em',
+                                    margin: '0.5em 0',
+                                }}
+                                >
+                                    <button onClick={() => { setMapEditorMode('insets') }}>
+                                        Edit Insets
+                                    </button>
+                                </div>
+                            )
+                        }
+                        <ImportExportCode
+                            mapSettings={mapSettings}
+                            setMapSettings={setMapSettings}
+                        />
+                    </div>
+                    {ui.node}
+                </>
+            )}
+        />
+    )
+}
 
+function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
+    const mobileLayout = useMobileLayout()
+    const [height, setHeight] = useState(0)
+    const splitRef = useRef<HTMLDivElement>(null)
+    const colors = useColors()
+
+    const updateHeight = useCallback(() => {
+        if (splitRef.current) {
+            const bounds = splitRef.current.getBoundingClientRect()
+            setHeight(window.innerHeight - bounds.top - 8)
+        }
+    }, [])
+
+    // This is ultimately the simplest way to set the height
+    useLayoutEffect(() => {
+        updateHeight()
+        window.addEventListener('resize', updateHeight)
+        return () => {
+            window.removeEventListener('resize', updateHeight)
+        }
+    }, [updateHeight])
+
+    if (mobileLayout) {
+        return (
+            <>
+                {left}
+                {right}
+            </>
+        )
+    }
+
+    const minLeftWidth = 540
+    const leftPct = '30%'
+
+    return (
+        <div style={{ display: 'flex', gap: '1em', height }} ref={splitRef}>
+            <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: colors.slightlyDifferentBackground, padding: '1em' }}>
+                {left}
+            </div>
+            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}))`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {right}
+            </div>
+        </div>
     )
 }
 
