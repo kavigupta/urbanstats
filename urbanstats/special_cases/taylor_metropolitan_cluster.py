@@ -9,7 +9,7 @@ from urbanstats.special_cases.ghsl_urban_center import (
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_2"
+    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_3"
 )
 def load_taylor_metropolitan_clusters_post_pruning(min_km2=0.5):
     tmc = load_taylor_metropolitan_clusters_pre_pruning()
@@ -22,6 +22,8 @@ def load_taylor_metropolitan_clusters_pre_pruning():
     tmc = gpd.read_file(
         "named_region_shapefiles/taylor-metropolitan-clusters/output/taylor_metropolitan_clusters.shp.zip"
     )
+    bad_names = list(tmc.name[tmc.name.apply(lambda x: "?" in x)])
+    assert not bad_names, bad_names
     subn = subnational_regions()
     tmc["index_"] = tmc.index
     table = classify_areas_by_subnational_region(subn, tmc)
