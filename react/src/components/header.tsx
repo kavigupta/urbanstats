@@ -28,6 +28,7 @@ export function Header(props: {
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
     exportCSV: () => void
+    hideSidebar: boolean
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const currentUniverse = navContext.useUniverse()
@@ -40,11 +41,12 @@ export function Header(props: {
                 setHamburgerOpen={props.setHamburgerOpen}
                 hasUniverseSelector={props.hasUniverseSelector}
                 allUniverses={props.allUniverses}
+                hideSidebar={props.hideSidebar}
             />
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!useMobileLayout() && props.hasUniverseSelector
+                    {!isMobile && props.hasUniverseSelector
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
                                     <UniverseSelector
@@ -124,6 +126,7 @@ function TopLeft(props: {
     setHamburgerOpen: (newValue: boolean) => void
     hasUniverseSelector: boolean
     allUniverses: readonly string[]
+    hideSidebar: boolean
 }): ReactNode {
     if (useMobileLayout()) {
         return (
@@ -145,6 +148,7 @@ function TopLeft(props: {
     else {
         return (
             <div className="left_panel_top" style={{ minWidth: '20%' }}>
+                {props.hideSidebar && <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />}
                 <HeaderImage />
             </div>
         )
