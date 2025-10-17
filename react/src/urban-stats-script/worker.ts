@@ -1,5 +1,4 @@
 import { emptyContext } from '../../unit/urban-stats-script-utils'
-import { Inset, Insets } from '../components/map'
 import insets from '../data/insets'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
@@ -11,7 +10,7 @@ import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 
 import { locationOfLastExpression, UrbanStatsASTExpression } from './ast'
-import { insetNameToConstantName } from './constants/insets'
+import { Inset, insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
@@ -133,7 +132,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geoCentroid', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: longname })))
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })
+            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInsets(request.descriptor.universe) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {
@@ -185,7 +184,7 @@ onmessage = async (message: MessageEvent<{ request: USSExecutionRequest, id: num
     postMessage({ result, id: message.data.id })
 }
 
-export function loadInset(universe: Universe): Insets {
+export function loadInsets(universe: Universe): Inset[] {
     const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
