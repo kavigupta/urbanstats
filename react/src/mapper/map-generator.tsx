@@ -158,6 +158,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                                     modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
                                     delete: () => { props.editInsets.delete(i) },
                                     duplicate: () => { props.editInsets.duplicate(i) },
+                                    add: props.editInsets.add,
                                 }}
                             >
                                 {mapChildren(insetFeatures)}

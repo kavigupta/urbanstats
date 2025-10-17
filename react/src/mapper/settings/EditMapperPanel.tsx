@@ -29,7 +29,7 @@ type MapEditorMode = 'uss' | 'insets'
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
-    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
+    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('insets')
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
@@ -194,8 +194,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     ...loadInsets(mapSettings.universe ?? 'world')[0],
                     bottomLeft: [0.25, 0.25],
                     topRight: [0.75, 0.75],
+                    mainMap: false,
                 }
-                addInsetEdit([editedInsets.length, editedInsets.length], [newInset])
+                addInsetEdit([editedInsets.length, editedInsets.length], [offsetInsetInBounds(newInset, editedInsets)])
             },
             modify: (i, e) => {
                 addInsetEdit([i, i + 1], [{ ...editedInsets[i], ...e }])
@@ -204,13 +205,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 addInsetEdit([i, i + 1], [])
             },
             duplicate: (i) => {
-                for (const [x, y] of [[0.1, 0.1], [-0.1, -0.1], [-0.1, 0.1], [0.1, -0.1], [0, 0]]) {
-                    const newInset = moveInset(editedInsets[i], x, y)
-                    if (inBounds(newInset)) {
-                        addInsetEdit([i + 1, i + 1], [newInset])
-                        return
-                    }
-                }
+                addInsetEdit([i + 1, i + 1], [offsetInsetInBounds(editedInsets[i], editedInsets)])
             },
             editedInsets,
         },
@@ -265,6 +260,22 @@ function moveInset(inset: Inset, x: number, y: number): Inset {
 
 function inBounds(inset: Inset): boolean {
     return inset.bottomLeft.concat(inset.topRight).every(c => c >= 0 && c <= 1)
+}
+
+function samePosition(a: Inset, b: Inset): boolean {
+    return a.bottomLeft[0] === b.bottomLeft[0] && a.bottomLeft[1] === b.bottomLeft[1] && a.topRight[0] === b.topRight[0] && a.topRight[1] === b.topRight[1]
+}
+
+function offsetInsetInBounds(inset: Inset, exclude: Inset[]): Inset {
+    for (let delta = 0; delta < 1; delta += 0.05) {
+        for (const [x, y] of [[delta, delta], [-delta, -delta], [-delta, delta], [delta, -delta]]) {
+            const newInset = moveInset(inset, x, y)
+            if (inBounds(newInset) && !exclude.some(i => samePosition(newInset, i))) {
+                return newInset
+            }
+        }
+    }
+    return inset
 }
 
 function saveAsFile(filename: string, data: string | Blob, type: string): void {

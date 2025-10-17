@@ -16,6 +16,7 @@ function _InsetMap({ inset, children, editInset, container, i }: {
         modify: (newInset: Partial<Inset>) => void
         duplicate: () => void
         delete: () => void
+        add: () => void
     }
     i: number
 }, ref: React.Ref<MapRef>): ReactNode {
@@ -63,6 +64,7 @@ function _InsetMap({ inset, children, editInset, container, i }: {
                     container={container}
                     delete={inset.mainMap ? undefined : editInset.delete}
                     duplicate={inset.mainMap ? undefined : editInset.duplicate}
+                    add={inset.mainMap ? editInset.add : undefined}
                 />
             )}
         </div>
@@ -128,6 +130,7 @@ function EditInsetsHandles(props: {
     container: RefObject<HTMLDivElement>
     delete?: () => void
     duplicate?: () => void
+    add?: () => void
 }): ReactNode {
     const colors = useColors()
 
@@ -229,6 +232,11 @@ function EditInsetsHandles(props: {
             {props.delete && (
                 <div style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
                     ❌
+                </div>
+            )}
+            {props.add && (
+                <div style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
+                    ✚
                 </div>
             )}
         </>
