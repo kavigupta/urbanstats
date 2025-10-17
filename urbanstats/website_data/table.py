@@ -108,8 +108,18 @@ def shapefile_without_ordinals():
     full = combined_shapefile()
     full = merge_population_estimates(full)
     full = sort_shapefile(full)
+    check(full.longname)
+    return full
 
-    counted = Counter(full.longname)
+
+def check(names):
+    counted = Counter(names)
     duplicates = [name for name, count in counted.items() if count > 1]
     assert not duplicates, f"Duplicate names: {duplicates}"
-    return full
+    allowed_bad_names = {
+        # tbh I don't think this is a unicode issue; I think it might just be the annotator being confused.
+        # The underlying name is I think "Umm Siado"
+        "Umm Siado?? Urban Center, Sudan"
+    }
+    bad_names = [x for x in names if "?" in x and x not in allowed_bad_names]
+    assert not bad_names, f"Possible unicode errors?: {bad_names}"

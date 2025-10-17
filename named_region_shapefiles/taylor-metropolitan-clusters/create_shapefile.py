@@ -4,6 +4,7 @@ Got the files ucls_* from Taylor via personal communication, as well as names_fu
 
 import glob
 import json
+import os
 import re
 import unicodedata
 import zipfile
@@ -614,7 +615,24 @@ def main():
     shp[[x for x in shp if x != "geometry"]].to_csv(
         "output/taylor_metropolitan_clusters.csv"
     )
-    shp.to_file("output/taylor_metropolitan_clusters.shp.zip", driver="ESRI Shapefile")
+    shp.to_file(
+        "output/taylor_metropolitan_clusters.shp.shp",
+        driver="ESRI Shapefile",
+        encoding="utf-8",
+    )
+    files_to_zip = [
+        "output/taylor_metropolitan_clusters.shp." + ext
+        for ext in ["shp", "shx", "dbf", "prj", "cpg"]
+    ]
+    zpath = "output/taylor_metropolitan_clusters.shp.zip"
+    if os.path.exists(zpath):
+        os.remove(zpath)
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as zf:
+        for f in files_to_zip:
+            zf.write(f, os.path.basename(f))
+
+    for f in files_to_zip:
+        os.remove(f)
 
 
 if __name__ == "__main__":

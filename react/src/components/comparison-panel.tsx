@@ -49,7 +49,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 0,
+                distance: 1,
             },
         }),
         useSensor(TouchSensor, {
