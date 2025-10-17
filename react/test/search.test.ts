@@ -104,18 +104,20 @@ test('when adding another article for comparison, should prioritize regions of t
     await createComparison(t, 'san jose', 'San Jose city, California, USA')
 })
 
-test('search for a MPC', async (t) => {
+test.only('search for a MPC', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Perth 10MPC')
-        .pressKey('enter')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
     // await t.expect(getLocation()).match(`${target}/article.html?longname=Perth+10MPC%2C+Australia`)
     await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
     await waitForPageLoaded(t)
     await checkTextboxes(t, ['Include Person Circles'])
     await t.click(searchField)
         .typeText(searchField, 'Perth 10MPC')
-        .pressKey('enter')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
     await t.expect(getLocation()).notMatch(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
     await screencap(t)
     await checkTextboxes(t, ['Include Person Circles'])
