@@ -380,6 +380,8 @@ export function useUndoRedo<T, S>(
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
         ui: ReactNode
+        canUndo: boolean
+        canRedo: boolean
     } {
     const undoStack = useRef<UndoRedoItem<T, S>[]>([
         { time: 0, state: initialState, selection: initialSelection },
@@ -482,6 +484,8 @@ export function useUndoRedo<T, S>(
         addState,
         updateCurrentSelection,
         ui,
+        canUndo,
+        canRedo,
     }
 }
 

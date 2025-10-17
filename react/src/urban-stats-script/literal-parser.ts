@@ -171,6 +171,17 @@ export function call<N extends Record<string, unknown>, U extends unknown[], F>(
 export function vector<T>(schema: LiteralExprParser<T>): LiteralExprParser<T[]> {
     return {
         parse(expr, env, doEdit = e => e) {
+            return editableVector(schema).parse(expr, env, doEdit)?.currentValue
+        },
+    }
+}
+
+export function editableVector<T>(schema: LiteralExprParser<T>): LiteralExprParser<{
+    currentValue: T[]
+    edit: (edits: (oldAst: UrbanStatsASTExpression[]) => UrbanStatsASTExpression[]) => UrbanStatsASTExpression | UrbanStatsASTStatement
+}> {
+    return {
+        parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'vectorLiteral') {
                 const result: T[] = []
                 for (const elem of expr.elements) {
@@ -182,7 +193,15 @@ export function vector<T>(schema: LiteralExprParser<T>): LiteralExprParser<T[]> 
                     }
                     result.push(parsed)
                 }
-                return result
+                return {
+                    currentValue: result,
+                    edit(edits) {
+                        return doEdit({
+                            ...expr,
+                            elements: edits(expr.elements),
+                        })
+                    },
+                }
             }
             return
         },
