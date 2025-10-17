@@ -4,8 +4,8 @@ import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
-import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
 import { ISearchIndexMetadata } from './utils/protos'
+import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
 
 export interface SearchResult {
     longname: string

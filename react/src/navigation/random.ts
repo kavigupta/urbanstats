@@ -1,7 +1,7 @@
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { isAllowedToBeShown } from '../utils/restricted-types'
 import { SearchIndex } from '../utils/protos'
+import { isAllowedToBeShown } from '../utils/restricted-types'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
     const [index, populations] = await Promise.all([
