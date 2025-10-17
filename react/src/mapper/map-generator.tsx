@@ -34,7 +34,12 @@ import { InsetMap } from './components/InsetMap'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
-interface EditInsets { doEdit: EditMultipleInsets, editedInsets: Inset[] }
+interface EditInsets {
+    modify: EditMultipleInsets
+    editedInsets: Inset[]
+    add: () => void
+    delete: (i: number) => void
+}
 
 const mapUpdateInterval = 500
 
@@ -148,7 +153,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                                 inset={inset}
                                 ref={e => mapsRef[i] = e}
                                 container={mapsContainerRef}
-                                editInset={(newInset: Partial<Inset>) => { props.editInsets.doEdit(i, newInset) }}
+                                editInset={(newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) }}
                             >
                                 {mapChildren(insetFeatures)}
                             </InsetMap>

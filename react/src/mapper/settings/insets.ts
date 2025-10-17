@@ -2,8 +2,8 @@ import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { deconstruct, Inset } from '../../urban-stats-script/constants/insets'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets, loadInsetExpression } from '../../urban-stats-script/worker'
+import { ArrayEdits, replace } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
-import { Delta } from '../../utils/delta'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
@@ -72,7 +72,17 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     return undefined
 }
 
-export type InsetEdits = Delta<Inset>[]
+export interface InsetEdits {
+    insets: ArrayEdits<Inset>
+    ast: ArrayEdits<UrbanStatsASTExpression>
+}
+
+export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: Inset[]): InsetEdits {
+    return {
+        insets: replace(edits.insets, [from, to], withArray),
+        ast: replace(edits.ast, [from, to], withArray.map(deconstruct)),
+    }
+}
 
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
@@ -87,14 +97,7 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
         currentInsetsAst = loadInsetExpression(settings.universe!)
     }
 
-    const astEdits = edits.map((edit) => {
-        if ('insert' in edit) {
-            return { insert: edit.insert.map(deconstruct) }
-        }
-        return edit
-    })
-
-    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)!.edit(astEdits) as UrbanStatsASTExpression
+    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)!.edit(edits.ast) as UrbanStatsASTExpression
 
     const result = mapInsets.edit(newConstructInsets)
     return result as MapUSS

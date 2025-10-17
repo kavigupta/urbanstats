@@ -7,9 +7,11 @@ import { Navigator } from '../../navigation/Navigator'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { PageTemplate } from '../../page_template/template'
+import { Inset } from '../../urban-stats-script/constants/insets'
 import { useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { loadInsets } from '../../urban-stats-script/worker'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { useHeaderTextClass } from '../../utils/responsive'
@@ -19,7 +21,7 @@ import { MapGenerator, useMapGenerator } from '../map-generator'
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits } from './insets'
+import { doEditInsets, getInsets, InsetEdits, replaceInsets } from './insets'
 import { MapSettings } from './utils'
 
 type MapEditorMode = 'uss' | 'insets'
@@ -169,22 +171,37 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
-    const [insetEdits, setInsetEdits] = useState<InsetEdits>(new Map())
+    const [insetEdits, setInsetEdits] = useState<InsetEdits>({
+        ast: a => a,
+        insets: i => i,
+    })
 
-    const { addState, ui: undoRedoUi } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
+    const { addState, ui: undoRedoUi, canUndo } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
 
-    const editedInsets = getInsets(mapSettings, typeEnvironment)!.map((baseInset, i) => ({ ...baseInset, ...insetEdits.get(i) }))
+    const editedInsets = insetEdits.insets(getInsets(mapSettings, typeEnvironment)!)
+
+    const addInsetEdit = ([from, to]: [number, number], is: Inset[]): void => {
+        const result = replaceInsets(insetEdits, [from, to], is)
+        setInsetEdits(result)
+        addState(result, undefined)
+    }
 
     const ui = mapGenerator.ui({
         mode: 'insets',
         editInsets: {
-            doEdit: (i, e) => {
-                setInsetEdits((edits) => {
-                    const newEdits = new Map(edits)
-                    newEdits.set(i, { ...newEdits.get(i), ...e })
-                    addState(newEdits, undefined)
-                    return newEdits
-                })
+            add: () => {
+                const newInset: Inset = {
+                    ...loadInsets(mapSettings.universe ?? 'world')[0],
+                    bottomLeft: [0.25, 0.25],
+                    topRight: [0.75, 0.75],
+                }
+                addInsetEdit([editedInsets.length, editedInsets.length], [newInset])
+            },
+            modify: (i, e) => {
+                addInsetEdit([i, i + 1], [{ ...editedInsets[i], ...e }])
+            },
+            delete: (i) => {
+                addInsetEdit([i, i + 1], [])
             },
             editedInsets,
         },
@@ -217,7 +234,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
                             setMapEditorMode('uss')
                         }}
-                        disabled={insetEdits.size === 0}
+                        disabled={!canUndo}
                     >
                         Accept
                     </button>
