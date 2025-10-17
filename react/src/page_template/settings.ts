@@ -32,6 +32,7 @@ export type MobileArticlePointers = 'pointer_in_class' | 'pointer_overall'
 export type SettingsDictionary = {
     [relationshipKey: RelationshipKey]: boolean | undefined
     show_historical_cds: boolean
+    show_person_circles: boolean
     simple_ordinals: boolean
     use_imperial: boolean
     histogram_type: HistogramType
@@ -87,6 +88,7 @@ export const defaultSettingsList = [
         .flatMap(({ category, sources }) => sources
             .map(({ source, is_default }) => [sourceEnabledKey({ category, name: source }), is_default] as const)),
     ['show_historical_cds', false] as const,
+    ['show_person_circles', true] as const,
     ['simple_ordinals', false] as const,
     ['use_imperial', false] as const,
     ['histogram_type', 'Line'] as const,
