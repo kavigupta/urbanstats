@@ -19,19 +19,19 @@ const mapper = (testFn: () => TestFn) => (
 
 mapper(() => test)('manipulate point map', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
-    await t.expect(await getErrors()).eql([])
+    await t.expect(getErrors()).eql([])
 })
 
 mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
-    await t.expect(await getErrors()).eql([])
+    await t.expect(getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await t.expect(getInput('Custom Insets').exists).ok() // Insets immediately deconsturct when checked
     await replaceInput(t, 'Iceland', 'Custom Inset', 1) // second one, since the first is the universe selector
     await replaceInput(t, /^-13\.4/, '-13')
-    await t.expect(await getErrors()).eql([])
+    await t.expect(getErrors()).eql([])
     await toggleCustomScript(t)
-    await t.expect(await getCodeFromMainField()).eql(
+    await t.expect(getCodeFromMainField()).eql(
         'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, insets=constructInsets([constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 66.54638908819885, east: -13, south: 63.38379679465158, west: -24.54201452954334}, mainMap=true, name="Iceland")]))\n',
     )
 })
@@ -39,10 +39,10 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await toggleCustomScript(t)
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
-        await t.expect(await getErrors()).eql([error])
+        await t.expect(getErrors()).eql([error])
         await screencap(t)
     })
 }
@@ -53,11 +53,11 @@ errorInSubfield(() => test)('semantic', 'linearScale(max=2 + "hi")', 'Invalid ty
 const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subsubfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await toggleCustomScript(t)
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await checkBox(t, /^max/)
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
-        await t.expect(await getErrors()).eql([error])
+        await t.expect(getErrors()).eql([error])
         await screencap(t)
     })
 }
@@ -215,7 +215,7 @@ mapper(() => test)('able to reload in invalid state', { code: 'customNode("");\n
 })
 
 mapper(() => test)('correct errors on initial', { code: 'customNode("");\ncondition (true)\ncMap(data=customNode("\\""), scale=linearScale(), ramp=rampUridis)' }, async (t) => {
-    await t.expect(await getErrors()).eql(['Unrecognized token: Unterminated string at 1:1']) // Error message has the 1:1 if on an editor
+    await t.expect(getErrors()).eql(['Unrecognized token: Unterminated string at 1:1']) // Error message has the 1:1 if on an editor
 })
 
 mapper(() => test)('do not re quote when selecting custom expression again', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
@@ -232,7 +232,7 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
 mapper(() => test)('selection preserved on reload', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))' }, async (t) => {
     async function checkErrors(): Promise<void> {
         await t.wait(500) // just make sure the page has settled
-        await t.expect(await getErrors()).eql(['Custom expression expected to return type number, but got string at 1:1-0'])
+        await t.expect(getErrors()).eql(['Custom expression expected to return type number, but got string at 1:1-0'])
     }
     await checkErrors()
     await toggleCustomScript(t)
