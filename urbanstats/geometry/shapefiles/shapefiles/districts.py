@@ -7,6 +7,9 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.compatibility.compatibility import remapping_pickle
+from urbanstats.data.wikipedia.congressional_wikidata import (
+    CongressionalDistrictWikidataSourcer,
+)
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -205,6 +208,7 @@ def get_shortname(district_abbrev, x, include_date=True):
     return dist_name
 
 
+# pylint: disable-next=too-many-arguments
 def districts(
     file_name,
     district_type,
@@ -215,6 +219,7 @@ def districts(
     data_credit,
     minimum_district_length,
     does_overlap_self,
+    wikidata_sourcer=None,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
@@ -250,6 +255,7 @@ def districts(
         start_date_overall=2023,
         end_date_overall=2032,
         include_in_syau=False,
+        wikidata_sourcer=wikidata_sourcer,
     )
 
 
@@ -264,6 +270,7 @@ CONGRESSIONAL_DISTRICTS = districts(
     ),
     minimum_district_length=2,
     does_overlap_self=False,
+    wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )
 
 district_shapefiles = dict(

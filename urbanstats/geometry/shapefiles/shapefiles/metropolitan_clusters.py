@@ -6,7 +6,7 @@ from urbanstats.special_cases.taylor_metropolitan_cluster import (
 )
 
 METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
-    hash_key="metropolitan_clusters_5",
+    hash_key="metropolitan_clusters_6",
     path=load_taylor_metropolitan_clusters_post_pruning,
     meta=dict(
         type="Metropolitan Cluster", source="Taylor", type_category="International City"
@@ -70,4 +70,5 @@ METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
         linkText="Taylor (Elpis)",
         link="https://bsky.app/profile/elpis.bsky.social",
     ),
+    wikidata_sourcer=None,
 )

@@ -9,6 +9,7 @@ from permacache import permacache, stable_hash
 from scipy.sparse import csc_matrix
 
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
+from urbanstats.universe.universe_list import all_universes
 
 
 @dataclass
@@ -31,6 +32,10 @@ class OrdinalInfo:
     def longname_to_idx(self):
         return {name: idx for idx, name in enumerate(self.longnames)}
 
+    @property
+    def types(self):
+        return sorted({t for _, t in self.universe_type})
+
     def compute_ordinals(self, universe, typ, col):
         idx = self.universe_type_to_idx[universe, typ]
         mask = self.universe_type_masks[:, idx]
@@ -50,15 +55,10 @@ class OrdinalInfo:
         mask = self.universe_type_masks[:, idx]
         # values selected: alphabetical index within ut -> value
         values_selected = np.array(self.by_column[col].values[:, idx][mask])[0]
-        # percentiles selected: alphabetical index within ut -> percentile
-        percentiles_selected = np.array(self.by_column[col].percentile[:, idx][mask])[0]
-        # ordinals selected: alphabetical index within ut -> ordinal
-        ordinals_selected = np.array(self.by_column[col].ordinal[:, idx][mask])[0]
-
-        # reordering: ordinal -> alphabetical index within ut
-        reordering = np.argsort(ordinals_selected)
-
-        return values_selected[reordering], percentiles_selected[reordering]
+        # reindex: index in `full[filter for ut]` -> alphabetical index within ut
+        index_order = np.array(self.index_order[mask.toarray()[:, 0]])
+        reordering = np.argsort(index_order)
+        return values_selected[reordering]
 
     def counts_by_typ_universe(self, col):
         self.universe_type_masks.eliminate_zeros()
@@ -82,6 +82,27 @@ class OrdinalInfo:
         indices = mask.indices
         ordering = np.argsort(self.index_order.iloc[indices])
         return np.array(self.longnames.iloc[indices])[ordering].tolist()
+
+    def percentiles_by_universe(self, typ, column):
+        all_u = all_universes()
+        relevant_universes = sorted(
+            {u for u, t in self.universe_type if t == typ and u in all_u},
+            key=all_u.index,
+        )
+        ut_idxs = [self.universe_type_to_idx[u, typ] for u in relevant_universes]
+        utm = self.universe_type_masks[:, ut_idxs]
+        mask_inhabited = np.array(utm.sum(1) > 0)[:, 0]
+        utm = utm[mask_inhabited]
+        percentiles = self.by_column[column].percentile[:, ut_idxs][mask_inhabited]
+        percentiles_flat = np.array(percentiles[utm])[0]
+        counts_each = np.array(utm.sum(1))[:, 0]
+        percentiles_jagged = np.split(percentiles_flat, np.cumsum(counts_each)[:-1])
+
+        index_order = np.array(self.index_order[mask_inhabited])
+        reindex = np.argsort(index_order)
+        # pylint: disable=not-an-iterable
+        percentiles_jagged = [percentiles_jagged[i] for i in reindex]
+        return percentiles_jagged
 
 
 def type_matches(table_type, t):

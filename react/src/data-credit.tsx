@@ -434,6 +434,10 @@ export function DataCreditPanel(): ReactNode {
                                     We compute both individual and household income, disaggregating from the tract level to the block level
                                     using adult population as a weight for indivividual income and occupied housing units as a weight for household income.
                                 </p>
+                                <p>
+                                    Median income is directly computed from the census rather than being disaggregated. To ensure we align with the latest counties,
+                                    we use ACS 2023 instead of ACS 2021 for this statistic.
+                                </p>
                             </div>
 
                             <NRef name="transportation">Transportation</NRef>
@@ -442,6 +446,12 @@ export function DataCreditPanel(): ReactNode {
                                     All transportation data is computed using disaggregation from the block group level
                                     to the block level, weighted by adult population. We consider taxi to be a form of
                                     car transportation, and consider motorcycle to be a form of bike transportation.
+                                </p>
+                                <p>
+                                    To compute median commute time, we take the most detailed data available, which is
+                                    binned in 10-15minute intervals depending on the bin, and compute an approximate median
+                                    by assuming that commute times are uniformly distributed within each bin, with the &gt;60
+                                    minute bin being assumed to be 60-120 minutes (this rarely applies anyway).
                                 </p>
                             </div>
 
@@ -464,6 +474,26 @@ export function DataCreditPanel(): ReactNode {
                                     {'. '}
                                     It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
                                     (I am not sure why the CDC uses 2010 tracts for 2023 data, but that&apos;s what they do). This data is inherently estimate based.
+                                </p>
+                            </div>
+
+                            <NRef name="ihme">Life Expectancy and IHME Health Care Performance</NRef>
+                            <div>
+                                <p>
+                                    Health care system performance and life expectancy data comes from
+                                    {' '}
+                                    <FootnoteRef
+                                        id="ihme_healthcare"
+                                        description={(
+                                            <span>
+                                                Institute for Health Metrics and Evaluation (IHME). United States Health Care System Performance by County 2014-2019. Seattle, United States of America: Institute for Health Metrics and Evaluation (IHME), 2025.
+                                            </span>
+                                        )}
+                                    >
+                                        <a href="https://ghdx.healthdata.org/record/ihme-data/us-health-care-performance-county-2014-2019">IHME</a>
+                                    </FootnoteRef>
+                                    {'. '}
+                                    We use the adjusted system performance data, and use the latest year (2019).
                                 </p>
                             </div>
 

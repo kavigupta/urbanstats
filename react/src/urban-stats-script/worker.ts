@@ -1,17 +1,16 @@
 import { emptyContext } from '../../unit/urban-stats-script-utils'
-import { Inset, Insets } from '../components/map'
 import insets from '../data/insets'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { loadDataInIndexOrder, loadProtobuf } from '../load_json'
+import { loadOrderingDataProtobuf, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment } from '../mapper/context'
 import { indexLink } from '../navigation/links'
 import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 
 import { locationOfLastExpression, UrbanStatsASTExpression } from './ast'
-import { insetNameToConstantName } from './constants/insets'
+import { Inset, insetNameToConstantName } from './constants/insets'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
@@ -30,7 +29,6 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
     let context, getWarnings
     try {
         ([context, getWarnings] = await contextForRequest(request))
-
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {
@@ -45,7 +43,11 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
         }
-        return { resultingValue: { type: result.type, value: removeFunctions(result.value) }, error: getWarnings() }
+        return {
+            resultingValue: { type: result.type, value: removeFunctions(result.value) },
+            error: getWarnings(),
+            context: new Map([...context.variableEntries()].filter(([,v]) => v.documentation?.includedInOutputContext)),
+        }
     }
     catch (error) {
         let interpretationError: InterpretationError
@@ -56,7 +58,10 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
             console.error('Unknown interpretation error', error)
             interpretationError = new InterpretationError('Unknown interpretation error', noLocation)
         }
-        return { error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])] }
+        return {
+            error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])],
+            context: new Map(),
+        }
     }
 }
 
@@ -117,6 +122,9 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
+        if (name === 'geoName') {
+            return annotateType('geoName', longnames)
+        }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
         }
@@ -124,7 +132,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geoCentroid', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: longname })))
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInset(request.descriptor.universe) })
+            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInsets(request.descriptor.universe) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {
@@ -140,10 +148,10 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
         const statpath = statistic_path_list[index]
 
-        const variableData = await loadDataInIndexOrder(universe, statpath, geographyKind)
-        assert(Array.isArray(variableData), `Expected variable data for ${name} to be an array`)
-        mapperCache.dataCache.set(name, variableData)
-        return annotateType(name, variableData)
+        const variableData = await loadOrderingDataProtobuf(universe, statpath, geographyKind)
+        assert(Array.isArray(variableData.value), `Expected variable data for ${name} to be an array`)
+        mapperCache.dataCache.set(name, variableData.value)
+        return annotateType(name, variableData.value)
     }
 
     const context = await mapperContext(request.stmts, getVariable, effects, universe)
@@ -176,7 +184,7 @@ onmessage = async (message: MessageEvent<{ request: USSExecutionRequest, id: num
     postMessage({ result, id: message.data.id })
 }
 
-export function loadInset(universe: Universe): Insets {
+export function loadInsets(universe: Universe): Inset[] {
     const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)

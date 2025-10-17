@@ -14,9 +14,11 @@ import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
+import { CSVExportData } from './csv-export'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
+import { useScreenshotMode } from './screenshot'
 
 const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -121,6 +123,34 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
     )
 
+    const generateStatisticsCSVData = (): string[][] => {
+        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
+        const dataRows: string[][] = []
+
+        // Include all data, not just the current page
+        for (let i = 0; i < props.articleNames.length; i++) {
+            const rank = i + 1
+            const name = props.articleNames[i]
+            const value = props.data.value[i]
+            const percentile = props.data.populationPercentile[i]
+
+            const formattedValue = value.toLocaleString()
+
+            dataRows.push([
+                rank.toString(),
+                name,
+                formattedValue,
+                percentile.toFixed(1),
+            ])
+        }
+
+        return [headerRow, ...dataRows]
+    }
+
+    const csvData = generateStatisticsCSVData()
+    const csvFilename = `${sanitize(props.joinedString)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
+
     return (
         <PageTemplate
             screencapElements={() => ({
@@ -128,6 +158,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             })}
+            csvExportData={csvExportData}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >
@@ -515,8 +546,30 @@ function AscendingVsDescending({ onClick, isAscending }: { onClick: (currentUniv
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ cursor: 'pointer' }} onClick={() => { onClick(currentUniverse) }} id="statistic-panel-order-swap">
-                {isAscending ? '▲\ufe0e' : '▼\ufe0e'}
+                <ArrowUpOrDown direction={isAscending ? 'up' : 'down'} shouldAppearInScreenshot={true} />
             </div>
         </div>
     )
+}
+
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+
+    if (isScreenshot && !props.shouldAppearInScreenshot) {
+        return null
+    }
+
+    let image: string
+    switch (props.direction) {
+        case 'up':
+            image = '/sort-up.png'
+            break
+        case 'down':
+            image = '/sort-down.png'
+            break
+        case 'both':
+            image = '/sort-both.png'
+            break
+    }
+    return <img src={image} alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }

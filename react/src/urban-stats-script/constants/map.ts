@@ -1,4 +1,3 @@
-import { Insets } from '../../components/map'
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
@@ -10,7 +9,7 @@ import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunct
 import { basemapType, outlineType } from './basemap'
 import { rgbColorExpression } from './color'
 import { Color } from './color-utils'
-import { insetsType } from './insets'
+import { Inset, insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
 
@@ -26,7 +25,7 @@ interface CommonMap {
     ramp: RampT
     label: string
     basemap: Basemap
-    insets: Insets
+    insets: Inset[]
     unit?: UnitType
 }
 
@@ -41,7 +40,7 @@ export interface CMapRGB {
     dataB: number[]
     label: string
     basemap: Basemap
-    insets: Insets
+    insets: Inset[]
     unit?: UnitType
     outline: Outline
 }
@@ -165,7 +164,7 @@ function computeCommonMap(
     const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
     const labelPassedIn = namedArgs.label as string | null
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
-    const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
+    const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
     const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
@@ -330,7 +329,7 @@ export const cMapRGB: USSValue = {
         })
         const label = namedArgs.label as string
         const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
-        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Insets }).value
+        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 

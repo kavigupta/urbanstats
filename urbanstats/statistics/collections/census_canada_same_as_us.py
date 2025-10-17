@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+import numpy as np
+
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.industry import IndustryStatistics
@@ -9,6 +11,7 @@ from urbanstats.statistics.collections.transportation_commute_time import (
 )
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
+from urbanstats.utils import approximate_quantile
 
 
 class CensusCanadaSameAsUS(CanadaStatistics):
@@ -151,7 +154,7 @@ class CensusCanadaMarriage(CensusCanadaSameAsUS):
 
 
 class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
-    version = 2
+    version: int = 3
 
     def census_tables(self) -> CensusTables:
         # pylint: disable=line-too-long
@@ -169,8 +172,10 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
                 "transportation_commute_time_over_60_canada": [
                     "  60 minutes and over",
                 ],
-                "transportation_commute_time_30_to_59_canada": [
+                "transportation_commute_time_30_to_44_canada": [
                     "  30 to 44 minutes",
+                ],
+                "transportation_commute_time_45_to_59_canada": [
                     "  45 to 59 minutes",
                 ],
                 "transportation_commute_time_under_15_canada": [
@@ -182,6 +187,43 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
 
     def us_equivalent(self):
         return TransportationCommuteTimeStatistics()
+
+    def post_process(self, statistic_table):
+        stats_array = np.array(
+            statistic_table[
+                [
+                    "transportation_commute_time_under_15_canada",
+                    "transportation_commute_time_15_to_29_canada",
+                    "transportation_commute_time_30_to_44_canada",
+                    "transportation_commute_time_45_to_59_canada",
+                    "transportation_commute_time_over_60_canada",
+                ]
+            ]
+        )
+        median_commute = np.array(
+            [
+                approximate_quantile([0, 15, 30, 45, 60, 120], s, 0.5)
+                for s in stats_array
+            ]
+        )
+        statistic_table[
+            "transportation_commute_time_30_to_59_canada"
+        ] = statistic_table.pop(
+            "transportation_commute_time_30_to_44_canada"
+        ) + statistic_table.pop(
+            "transportation_commute_time_45_to_59_canada"
+        )
+        columns = [
+            "transportation_commute_time_under_15_canada",
+            "transportation_commute_time_15_to_29_canada",
+            "transportation_commute_time_30_to_59_canada",
+            "transportation_commute_time_over_60_canada",
+        ]
+        fractionalize(statistic_table, *columns)
+        assert set(columns) == set(statistic_table)
+        statistic_table["transportation_commute_time_median_canada"] = median_commute
+        assert set(statistic_table) == set(self.name_for_each_statistic())
+        return statistic_table
 
 
 class CensusCanadaIndustry(CensusCanadaSameAsUS):

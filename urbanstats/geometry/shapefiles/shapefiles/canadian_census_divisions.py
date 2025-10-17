@@ -1,3 +1,4 @@
+from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province,
@@ -47,6 +48,7 @@ CANADIAN_CENSUS_DIVISIONS = Shapefile(
     ),
     shortname_extractor=subdivision_name,
     longname_extractor=subdivision_longname,
+    additional_columns_computer={"scgc": lambda row: row.CDUID},
     filter=lambda x: True,
     meta=dict(
         type="CA Census Division", source="StatCan", type_category="US Subdivision"
@@ -60,4 +62,6 @@ CANADIAN_CENSUS_DIVISIONS = Shapefile(
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcd_000b21a_e.zip",
     ),
     include_in_syau=True,
+    metadata_columns=["scgc"],
+    wikidata_sourcer=CANADA_WIKIDATA_SOURCER,
 )

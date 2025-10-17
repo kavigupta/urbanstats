@@ -15,10 +15,12 @@ import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
+import { ArticleMap } from './ArticleMap'
 import { ArticleWarnings } from './ArticleWarnings'
+import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { Map } from './map'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -43,10 +45,19 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
+    const csvData = generateCSVDataForArticles([article], [filteredRows], true)
+    const csvFilename = `${sanitize(article.longname)}.csv`
+    const csvExportData: CSVExportData = { csvData, csvFilename }
+
     return (
         <>
             <QuerySettingsConnection />
-            <PageTemplate screencapElements={screencapElements} hasUniverseSelector={true} universes={article.universes}>
+            <PageTemplate
+                screencapElements={screencapElements}
+                csvExportData={csvExportData}
+                hasUniverseSelector={true}
+                universes={article.universes}
+            >
                 <div>
                     <div ref={headersRef}>
                         <div className={headerTextClass}>{article.shortname}</div>
@@ -64,22 +75,23 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     <p></p>
 
                     <div ref={mapRef}>
-                        <Map
+                        <ArticleMap
                             longname={article.longname}
                             related={article.related as NormalizeProto<IRelatedButtons>[]}
                             articleType={article.articleType}
-                            basemap={{ type: 'osm' }}
-                            attribution="startVisible"
                         />
                     </div>
 
                     <div style={{ marginBlockEnd: '1em' }}></div>
 
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ width: '30%', marginRight: '1em' }}>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
+                            <ExternalLinks metadataProtos={article.metadata} />
+                        </div>
+                        <div style={{ flex: '0 0 auto', marginRight: '1em' }}>
                             <div className="serif" style={comparisonHeadStyle}>Compare to: </div>
                         </div>
-                        <div style={{ width: '70%' }}>
+                        <div style={{ flex: '1 1 auto' }}>
                             <ComparisonSearchBox longname={article.longname} type={article.articleType} />
                         </div>
                     </div>

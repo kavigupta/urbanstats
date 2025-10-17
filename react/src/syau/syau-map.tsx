@@ -1,12 +1,15 @@
-import maplibregl, { LngLatLike } from 'maplibre-gl'
+import stableStringify from 'json-stable-stringify'
+import maplibregl from 'maplibre-gl'
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { MapGeneric, MapGenericProps, MapState, ShapeRenderingSpec } from '../components/map'
-import { assert } from '../utils/defensive'
+import { Basemap, CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
+import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
 
-interface SYAUMapProps extends MapGenericProps {
+interface SYAUMapProps {
     longnames: string[]
     population: number[]
     populationOrdinals: number[]
@@ -17,56 +20,24 @@ interface SYAUMapProps extends MapGenericProps {
     voroniHighlightColor: string
 }
 
-export class SYAUMap extends MapGeneric<SYAUMapProps> {
-    private alreadyFitBounds: boolean = false
-    // private layer: L.LayerGroup | undefined = undefined
-    name_to_index: undefined | Map<string, number>
-    markersOnScreen: Record<string, maplibregl.Marker | undefined> = {}
-    polysOnScreen: { name: string, isGuessed: boolean }[] = []
-    updateAttached: boolean = false
+export function SYAUMap(props: SYAUMapProps): ReactNode {
+    const mapRef = useRef<MapRef>(null)
 
-    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
-        return Promise.resolve({
-            shapes: this.polysOnScreen.map(({ name, isGuessed }) => ({
-                name,
-                spec: {
-                    type: 'polygon',
-                    style: {
-                        fillColor: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                        fillOpacity: 0.5,
-                        color: isGuessed ? this.props.guessedColor : this.props.notGuessedColor,
-                        weight: 2,
-                    },
-                },
-                notClickable: true,
-                meta: {},
-            })),
-            zoomIndex: -1,
-        })
-    }
+    const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
+    const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, isGuessed: boolean }[]>([])
 
-    override async componentDidUpdate(prevProps: SYAUMapProps, prevState: MapState): Promise<void> {
-        if (
-            prevProps.longnames.length !== this.props.longnames.length
-            || prevProps.longnames.map((l, i) => l !== this.props.longnames[i]).some(x => x)
-        ) {
-            this.alreadyFitBounds = false
-        }
-        await super.componentDidUpdate(prevProps, prevState)
-    }
-
-    updateCentroidsSource(map: maplibregl.Map): maplibregl.GeoJSONSource {
-        const data = {
+    const centroidsData = useMemo(() => {
+        return {
             type: 'FeatureCollection',
-            features: this.props.centroids.map((c, idx) => ({
+            features: props.centroids.map((c, idx) => ({
                 type: 'Feature',
                 properties: {
-                    name: this.props.longnames[idx],
-                    population: this.props.population[idx],
-                    populationGuessed: this.props.isGuessed[idx] ? this.props.population[idx] : 0,
-                    isGuessed: this.props.isGuessed[idx] ? 1 : 0,
+                    name: props.longnames[idx],
+                    population: props.population[idx],
+                    populationGuessed: props.isGuessed[idx] ? props.population[idx] : 0,
+                    isGuessed: props.isGuessed[idx] ? 1 : 0,
                     existence: 1,
-                    populationOrdinal: this.props.populationOrdinals[idx],
+                    populationOrdinal: props.populationOrdinals[idx],
                 },
                 geometry: {
                     type: 'Point',
@@ -74,39 +45,148 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
                 },
             })),
         } satisfies GeoJSON.FeatureCollection
-        let source: maplibregl.GeoJSONSource | undefined = map.getSource('centroids')
-        if (!source) {
-            map.addSource('centroids', {
-                type: 'geojson',
-                data,
-                cluster: true,
-                clusterMaxZoom: 14,
-                clusterRadius: circleMarkerRadius * 2.5,
-                clusterProperties: {
+    }, [props.centroids, props.isGuessed, props.longnames, props.population, props.populationOrdinals])
+
+    const updateMarkers = (): void => {
+        const map = mapRef.current
+
+        if (map === null) {
+            return
+        }
+
+        const newMarkers = new Map<string, maplibregl.Marker>()
+        const newPolys: { name: string, isGuessed: boolean }[] = []
+
+        const features = map.querySourceFeatures('centroids')
+
+        for (const feature of features) {
+            const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
+            const featureProps = feature.properties as (
+                        { populationGuessed: number, population: number, isGuessed: number, existence: number } &
+
+                        // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
+                        ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
+            const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
+
+            let text: string
+            if (featureProps.cluster) {
+                text = `${featureProps.isGuessed}/${featureProps.existence}`
+            }
+            else {
+                newPolys.push({
+                    name: featureProps.name,
+                    isGuessed: featureProps.isGuessed === 1,
+                })
+                if (featureProps.isGuessed) {
+                    text = `#${featureProps.populationOrdinal}`
+                }
+                else {
+                    text = `?`
+                }
+            }
+            const html = circleSector(
+                props.notGuessedColor,
+                props.guessedColor,
+                circleMarkerRadius,
+                2 * Math.PI * (featureProps.populationGuessed / featureProps.population),
+                text,
+            )
+
+            let existingMarker
+            if ((existingMarker = markersOnScreen.get(featureId)) !== undefined) {
+                existingMarker.getElement().innerHTML = html
+                newMarkers.set(featureId, existingMarker)
+            }
+            else {
+                const el = document.createElement('div')
+                el.innerHTML = html
+                el.className = 'syau-marker'
+                el.style.width = `${circleMarkerRadius * 2}px`
+                el.style.height = `${circleMarkerRadius * 2}px`
+                const marker = new maplibregl.Marker({
+                    element: el,
+                }).setLngLat(coords)
+
+                marker.addTo(map.getMap())
+
+                newMarkers.set(featureId, marker)
+                markersOnScreen.set(featureId, marker)
+            }
+        }
+        for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
+            if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
+        }
+        setMarkersOnScreen(newMarkers)
+        newPolys.sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+        })
+        setPolysOnScreen(newPolys)
+    }
+
+    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
+        name,
+        fillColor: isGuessed ? props.guessedColor : props.notGuessedColor,
+        fillOpacity: 0.5,
+        color: isGuessed ? props.guessedColor : props.notGuessedColor,
+        weight: 2,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only want to reload these when polys actually change
+    }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
+
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+
+    return (
+        <CommonMaplibreMap
+            ref={mapRef}
+            onMove={updateMarkers}
+            onData={updateMarkers}
+            style={{ height: 600 }}
+        >
+            <Basemap basemap={useMemo(() => ({ type: 'osm', noLabels: true }), [])} />
+            <FullscreenControl position="top-left" />
+            <Source
+                id="centroids"
+                type="geojson"
+                data={centroidsData}
+                cluster={true}
+                clusterMaxZoom={14}
+                clusterRadius={circleMarkerRadius * 2.5}
+                clusterProperties={{
                     // keep counts of population and named status in a cluster
                     population: ['+', ['get', 'population']],
                     populationGuessed: ['+', ['get', 'populationGuessed']],
                     isGuessed: ['+', ['get', 'isGuessed']],
                     existence: ['+', ['get', 'existence']],
-                },
-            })
-            source = map.getSource('centroids')!
-        }
-        else {
-            if (!(source instanceof maplibregl.GeoJSONSource)) {
-                throw new Error('Source is not a GeoJSON source')
-            }
-            source.setData(data)
-        }
-        return source
-    }
+                }}
+            />
+            <Layer
+                id="centroid_circle"
+                type="circle"
+                source="centroids"
+                filter={['!=', 'cluster', true]}
+                paint={{
+                    'circle-color': [
+                        'case',
+                        ['==', ['get', 'isGuessed'], 1],
+                        props.guessedColor,
+                        props.notGuessedColor,
+                    ],
+                    'circle-radius': 0,
+                }}
+            />
+            <PolygonFeatureCollection features={readyFeatures} clickable={false} />
+            <FirstZoom centroids={props.centroids} />
+        </CommonMaplibreMap>
+    )
+}
 
-    fitBounds(map: maplibregl.Map): void {
-        if (this.alreadyFitBounds) {
-            return
-        }
-        const longs = optimizeWrapping(this.props.centroids.map(c => c.lon!))
-        const lats = this.props.centroids.map(c => c.lat!)
+function FirstZoom(props: { centroids: SYAUMapProps['centroids'] }): ReactNode {
+    const map = useMap().current!
+
+    useEffect(() => {
+        const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
+        const lats = props.centroids.map(c => c.lat!)
         let minLon = Math.min(...longs)
         let minLat = Math.min(...lats)
         let maxLon = Math.max(...longs)
@@ -120,123 +200,9 @@ export class SYAUMap extends MapGeneric<SYAUMapProps> {
         maxLat += latRange * padPct
         const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
         map.fitBounds(bounds, { animate: false })
-        this.alreadyFitBounds = true
-    }
+    }, [props.centroids, map])
 
-    updateMarkers(): void {
-        const maps = this.handler.maps
-        if (!maps) return
-        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
-        const map = maps[0]
-        const newMarkers: Record<string, maplibregl.Marker | undefined> = {}
-        const features = map.querySourceFeatures('centroids')
-
-        const oldMarkers = { ...this.markersOnScreen }
-
-        const polysOnScreen: { name: string, isGuessed: boolean }[] = []
-
-        for (const feature of features) {
-            const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
-            const props = feature.properties as (
-                { populationGuessed: number, population: number, isGuessed: number, existence: number } &
-
-                // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-                ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
-            const id = props.cluster ? props.cluster_id : props.name
-            // if (!props.cluster) continue
-            if (oldMarkers[id]) {
-                oldMarkers[id].remove()
-            }
-            let text: string
-            if (props.cluster) {
-                text = `${props.isGuessed}/${props.existence}`
-            }
-            else {
-                polysOnScreen.push({
-                    name: props.name,
-                    isGuessed: props.isGuessed === 1,
-                })
-                if (props.isGuessed) {
-                    text = `#${props.populationOrdinal}`
-                }
-                else {
-                    text = `?`
-                }
-            }
-            const html = circleSector(
-                this.props.notGuessedColor,
-                this.props.guessedColor,
-                circleMarkerRadius,
-                2 * Math.PI * (props.populationGuessed / props.population),
-                text,
-            )
-            const el = document.createElement('div')
-            el.innerHTML = html
-            el.className = 'syau-marker'
-            el.style.width = `${circleMarkerRadius * 2}px`
-            el.style.height = `${circleMarkerRadius * 2}px`
-            const marker = new maplibregl.Marker({
-                element: el,
-            }).setLngLat(coords)
-            // the assignment to markersOnScreen is necessary in case multiple of these updates are running at once
-            // might be better to simply not allow that to happen.
-            newMarkers[id] = oldMarkers[id] = marker
-            newMarkers[id].addTo(map)
-        }
-        for (const id in oldMarkers) {
-            if (!newMarkers[id]) oldMarkers[id]?.remove()
-        }
-        this.markersOnScreen = newMarkers
-        polysOnScreen.sort((a, b) => {
-            if (a.name < b.name) return -1
-            if (a.name > b.name) return 1
-            return 0
-        })
-        if (JSON.stringify(polysOnScreen) !== JSON.stringify(this.polysOnScreen)) {
-            this.polysOnScreen = polysOnScreen
-            void this.bumpVersion()
-        }
-    }
-
-    addLayersIfNeeded(map: maplibregl.Map): void {
-        if (!map.getLayer('centroid_circle')) {
-            // circle and symbol layers for rendering individual centroids (unclustered points)
-            map.addLayer({
-                id: 'centroid_circle',
-                type: 'circle',
-                source: 'centroids',
-                filter: ['!=', 'cluster', true],
-                paint: {
-                    'circle-color': [
-                        'case',
-                        ['==', ['get', 'isGuessed'], 1],
-                        this.props.guessedColor,
-                        this.props.notGuessedColor,
-                    ],
-                    'circle-radius': 0,
-                },
-            })
-        }
-    }
-
-    override async populateMap(maps: maplibregl.Map[], timeBasis: number, version: number): Promise<void> {
-        await super.populateMap(maps, timeBasis, version)
-        await this.handler.stylesheetPresent()
-
-        assert(maps.length === 1, 'SYAUMap should only be used with a single map instance')
-
-        const map = maps[0]
-
-        this.fitBounds(map)
-        const source = this.updateCentroidsSource(map)
-        this.addLayersIfNeeded(map)
-        if (!this.updateAttached) {
-            this.updateAttached = true
-            map.on('move', () => { this.updateMarkers() })
-            map.on('moveend', () => { this.updateMarkers() })
-            source.on('data', () => { this.updateMarkers() })
-        }
-    }
+    return null
 }
 
 function circleSector(color1: string, color2: string, radius: number, sizeAngle: number, text: string): string {

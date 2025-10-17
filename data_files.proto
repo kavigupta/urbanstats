@@ -49,6 +49,11 @@ message ExtraStatistic {
     optional TemperatureHistogram temperature_histogram = 3;
 }
 
+message Metadata {
+    int32 metadata_index = 1;
+    optional string string_value = 2;
+}
+
 message Article {
     string shortname = 1;
     string longname = 2;
@@ -60,6 +65,7 @@ message Article {
     repeated RelatedButtons related = 6;
     repeated string universes = 7;
     repeated ExtraStatistic extra_stats = 8;
+    repeated Metadata metadata = 11;
 }
 
 
@@ -102,6 +108,10 @@ message ArticleOrderingList {
     repeated int32 types = 2; // as in type_ordering_idx.ts
 }
 
+message ArticleUniverseList {
+    repeated Universes universes = 3;
+}
+
 message SearchIndexMetadata {
     int32 type = 1; // as in type_ordering_idx.ts
     int32 is_usa = 2; // boolean
@@ -114,12 +124,17 @@ message SearchIndex {
 }
 
 message OrderList {
+    // order_idxs[i] === the ith index into the ArticleOrderingList
     repeated int32 order_idxs = 1;
+}
+
+message PopulationPercentileByUniverse {
+    repeated int32 population_percentile = 1;
 }
 
 message DataList {
     repeated float value = 1;
-    repeated int32 population_percentile = 2;
+    repeated PopulationPercentileByUniverse population_percentile_by_universe = 2;
 }
 
 message OrderLists {

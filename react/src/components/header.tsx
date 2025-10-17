@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
+import { CSVButton } from './csv-export'
 import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
@@ -24,10 +25,14 @@ export function Header(props: {
     hasUniverseSelector: boolean
     allUniverses: readonly string[]
     hasScreenshot: boolean
+    hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
+    exportCSV: () => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const currentUniverse = navContext.useUniverse()
+    const [searchHasText, setSearchHasText] = useState(false)
+    const isMobile = useMobileLayout()
     return (
         <div className="top_panel">
             <TopLeft
@@ -57,8 +62,34 @@ export function Header(props: {
                                 )
                             : undefined
                     }
+                    {
+                        props.hasCSV
+                            ? (
+                                    <>
+                                        <div className="hgap"></div>
+                                        <CSVButton
+                                            onClick={() => { props.exportCSV() }}
+                                        />
+                                    </>
+                                )
+                            : undefined
+                    }
                     <div className="hgap"></div>
-                    <div style={{ flexGrow: 1 }}>
+                    <div style={{
+                        flexGrow: 1,
+                        ...(isMobile && searchHasText
+                            ? {
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                    zIndex: 10,
+                                    backgroundColor: 'var(--background)',
+                                    padding: '0 1em',
+                                }
+                            : {}),
+                    }}
+                    >
                         <SearchBox
                             link={
                                 newLocation => navContext.link({
@@ -79,6 +110,7 @@ export function Header(props: {
                                 height: `${headerBarSize}px`,
                             }}
                             autoFocus={false}
+                            onTextPresenceChange={(hasText: boolean) => { setSearchHasText(hasText) }}
                         />
                     </div>
                 </div>

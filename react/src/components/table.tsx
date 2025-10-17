@@ -1,3 +1,5 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
@@ -20,6 +22,7 @@ import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -626,11 +629,35 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
     const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
         <ComparisonColorBar highlightIndex={props.highlightIndex} />
     )
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: props.articleId ?? 'dummy' })
+
+    let extraStyle: CSSProperties = {}
+    let extraProps: React.HTMLAttributes<HTMLDivElement> & { ref?: (node: HTMLElement | null) => void } = { }
+    if (props.draggable && props.articleId) {
+        extraStyle = {
+            transform: CSS.Transform.toString(transform),
+            transition: isDragging ? transition : 'none',
+            opacity: isDragging ? 0.5 : 1,
+            touchAction: 'none',
+        }
+        extraProps = { ref: setNodeRef, ...attributes, ...listeners }
+    }
 
     return (
         <>
             {bar()}
-            <div key={`heading_${props.articleIndex}`} style={{ width: `${width}%` }}>
+            <div
+                key={`heading_${props.articleIndex}`}
+                style={{ width: `${width}%`, ...extraStyle }}
+                {...extraProps}
+            >
                 <HeadingDisplay
                     longname={props.articles[props.articleIndex].longname}
                     includeDelete={props.articles.length > 1}
@@ -669,7 +696,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 key={`statName_${props.row.statpath}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
-                <span className="serif value">
+                <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
                     <StatisticName
                         row={props.row}
                         longname={props.longname}
@@ -677,6 +704,18 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         center={props.center}
                         displayName={props.displayName ?? props.row.renderedStatname}
                     />
+                    {props.sortInfo && (
+                        <span
+                            style={{
+                                cursor: 'pointer',
+                                height: '16px',
+                                marginLeft: props.transpose ? '0' : 'auto',
+                            }}
+                            onClick={props.sortInfo.onSort}
+                        >
+                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
+                        </span>
+                    )}
                 </span>
             </div>
         </>

@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode } from 'react'
+import React, { CSSProperties, Fragment, ReactNode } from 'react'
 
 import { Article } from '../utils/protos'
 
@@ -127,10 +127,10 @@ export function SuperTableRow(props: {
             <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
-                    <>
-                        <Cell key={`rowCells_${colIndex}_${props.rowIndex}`} {...spec} width={props.columnWidth} />
-                        <div key={`spacer_${colIndex}_${props.rowIndex}`} style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
-                    </>
+                    <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>
+                        <Cell {...spec} width={props.columnWidth} />
+                        <div style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
+                    </Fragment>
                 ))}
             </TableRowContainer>
             {props.plotSpec && (
@@ -170,6 +170,8 @@ export interface ComparisonLongnameCellProps {
     transpose: boolean
     sharedTypeOfAllArticles: string | null | undefined
     highlightIndex?: number
+    draggable?: boolean
+    articleId?: string
 }
 
 export interface StatisticNameCellProps {
@@ -181,6 +183,10 @@ export interface StatisticNameCellProps {
     transpose?: boolean
     isIndented?: boolean
     displayName?: string
+    sortInfo?: {
+        sortDirection: 'up' | 'down' | 'both'
+        onSort: () => void
+    }
 }
 
 export interface StatisticRowCellProps {

@@ -45,17 +45,17 @@ class ProtobufOutputter:
         self.proto = self.protobuf_class()
 
 
-def output_order_files(order_info, site_folder, universe, typ):
+def output_order_files(order_info, site_folder, typ):
     outputter = ProtobufOutputter(
         data_files_pb2.OrderLists,
         "order_lists",
         site_folder,
-        lambda count: f"/order/{universe}/{typ}_{count}.gz",
+        lambda count: f"/order/{typ}_{count}.gz",
     )
 
     for statistic_column in internal_statistic_names():
         order_list = outputter.with_name(get_statistic_column_path(statistic_column))
-        for idx in order_info.compute_ordinals(universe, typ, statistic_column):
+        for idx in order_info.compute_ordinals("world", typ, statistic_column):
             order_list.order_idxs.append(idx)
         outputter.notify(order_list.ByteSize())
         outputter.flush()
@@ -63,24 +63,26 @@ def output_order_files(order_info, site_folder, universe, typ):
     return outputter.fields
 
 
-def output_data_files(order_info, site_folder, universe, typ):
+def output_data_files(order_info, site_folder, typ):
     # data_lists = data_files_pb2.DataLists()
     outputter = ProtobufOutputter(
         data_files_pb2.DataLists,
         "data_lists",
         site_folder,
-        lambda count: f"/order/{universe}/{typ}_{count}_data.gz",
+        lambda count: f"/order/{typ}_{count}_data.gz",
     )
 
     for statistic_column in internal_statistic_names():
         data_list = outputter.with_name(get_statistic_column_path(statistic_column))
-        ordered_values, ordered_percentile = order_info.compute_values_and_percentiles(
-            universe, typ, statistic_column
+        ordered_values = order_info.compute_values_and_percentiles(
+            "world", typ, statistic_column
         )
+        percs_by_u = order_info.percentiles_by_universe(typ, statistic_column)
         data_list.value.extend(ordered_values)
-        data_list.population_percentile.extend(
-            [int(x) for x in ordered_percentile * 100]
-        )
+        for pbu in percs_by_u:
+            percentile_proto = data_list.population_percentile_by_universe.add()
+            for p in pbu:
+                percentile_proto.population_percentile.append(int(p * 100))
         outputter.notify(data_list.ByteSize())
         outputter.flush()
     outputter.flush(force=True)
@@ -102,6 +104,7 @@ def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
         ordered = ordinal_info.ordered_names(universe, "overall")
         save_article_ordering_list(ordered, path, longname_to_type)
         order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
+
     return order_backmap
 
 
@@ -111,12 +114,13 @@ def output_ordering_for_universe(
     output_indices(
         ordinal_info, site_folder, universe, longname_to_type=longname_to_type
     )
+    if universe != "world":
+        return {}, {}
     order_map = {}
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
-        order_map[universe, "overall"] = output_order_files(
+        order_map["overall"] = output_order_files(
             ordinal_info,
             site_folder,
-            universe,
             "overall",
         )
     data_map = {}
@@ -124,12 +128,8 @@ def output_ordering_for_universe(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
     )
     for typ in tqdm.tqdm(typs, desc=f"ords for {universe}"):
-        order_map[universe, typ] = output_order_files(
-            ordinal_info, site_folder, universe, typ
-        )
-        data_map[universe, typ] = output_data_files(
-            ordinal_info, site_folder, universe, typ
-        )
+        order_map[typ] = output_order_files(ordinal_info, site_folder, typ)
+        data_map[typ] = output_data_files(ordinal_info, site_folder, typ)
     return order_map, data_map
 
 

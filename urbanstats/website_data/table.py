@@ -7,6 +7,7 @@ import tqdm.auto as tqdm
 from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
@@ -17,7 +18,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_37",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_39",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
@@ -35,12 +36,17 @@ def compute_statistics_for_shapefile(
     result = sf_fr[
         ["shortname", "longname", "longname_sans_date", "start_date", "end_date"]
         + sf.subset_mask_keys
+        + list(sf.metadata_columns)
     ].copy()
 
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
     result["universes"] = [
         longname_to_universes[longname] for longname in result.longname
     ]
+    if sf.wikidata_sourcer is not None:
+        wikidata, wikipedia = compute_wikidata_and_wikipedia(sf, sf.wikidata_sourcer)
+        result["wikidata"] = wikidata
+        result["wikipedia_page"] = wikipedia
 
     for k in sf.meta:
         result[k] = sf.meta[k]
@@ -102,8 +108,18 @@ def shapefile_without_ordinals():
     full = combined_shapefile()
     full = merge_population_estimates(full)
     full = sort_shapefile(full)
+    check(full.longname)
+    return full
 
-    counted = Counter(full.longname)
+
+def check(names):
+    counted = Counter(names)
     duplicates = [name for name, count in counted.items() if count > 1]
     assert not duplicates, f"Duplicate names: {duplicates}"
-    return full
+    allowed_bad_names = {
+        # tbh I don't think this is a unicode issue; I think it might just be the annotator being confused.
+        # The underlying name is I think "Umm Siado"
+        "Umm Siado?? Urban Center, Sudan"
+    }
+    bad_names = [x for x in names if "?" in x and x not in allowed_bad_names]
+    assert not bad_names, f"Possible unicode errors?: {bad_names}"

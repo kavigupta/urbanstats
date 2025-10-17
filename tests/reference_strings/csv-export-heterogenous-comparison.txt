@@ -1,0 +1,4 @@
+"Region","Population","PW Density (r=1km)","AW Density","Area","Compactness"
+"San Marino city, California, USA","12513","1718.02099609375","1278.7869873046875","9.785054206848145","0.3910594582557678"
+"Pasadena CCD [CCD], Los Angeles County, California, USA","270961","2996.617919921875","1923.0350341796875","140.9027862548828","0.3242568075656891"
+"Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA","316586","4030.3955078125","3452.557861328125","91.69607543945312","0.39170047640800476"

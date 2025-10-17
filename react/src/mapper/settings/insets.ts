@@ -1,8 +1,7 @@
-import { Inset } from '../../components/map'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { deconstruct } from '../../urban-stats-script/constants/insets'
+import { deconstruct, Inset } from '../../urban-stats-script/constants/insets'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { loadInset, loadInsetExpression } from '../../urban-stats-script/worker'
+import { loadInsets, loadInsetExpression } from '../../urban-stats-script/worker'
 import { assert } from '../../utils/defensive'
 import { Delta } from '../../utils/delta'
 
@@ -67,7 +66,7 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
             return parseResult.currentValue.currentValue
         }
         if (settings.universe !== undefined) {
-            return loadInset(settings.universe)
+            return loadInsets(settings.universe)
         }
     }
     return undefined

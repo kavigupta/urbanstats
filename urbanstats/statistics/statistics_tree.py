@@ -432,6 +432,7 @@ statistics_tree = StatisticTree(
         **just_2020_category(
             "income",
             "Income",
+            "median_household_income",
             "poverty_below_line",
             "lico_at_canada",
             "household_income_under_50k",
@@ -483,6 +484,7 @@ statistics_tree = StatisticTree(
                     "transportation_means_worked_at_home",
                 ),
                 **just_2020_with_canada(
+                    "transportation_commute_time_median",
                     "transportation_commute_time_under_15",
                     "transportation_commute_time_15_to_29",
                     "transportation_commute_time_30_to_59",
@@ -528,6 +530,8 @@ statistics_tree = StatisticTree(
             "CHECKUP_cdc_2",
             "DENTAL_cdc_2",
             "CHOLSCREEN_cdc_2",
+            "life_expectancy_2019",
+            "performance_score_adj_2019",
         ),
         **just_2020_category(
             "climate_change",

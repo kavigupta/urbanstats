@@ -3,6 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
+import { toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -55,13 +56,14 @@ async function drag(t: TestController, selector: string, deltaX: number, deltaY:
     await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
 }
 
-async function wheel(t: TestController, selector: string, deltaY: number): Promise<void> {
+async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
     return ClientFunction(() => {
         const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
         const elementRect = element.getBoundingClientRect()
-        const elementCenter = { clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
-        element.dispatchEvent(new WheelEvent('wheel', { deltaY, ...elementCenter }))
-    }, { dependencies: { selector, deltaY } })()
+        const eventLocation = { clientX: ((elementRect.left + elementRect.right) / 2) + offset.x, clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y }
+        // Magic constant simulates a scroll wheel so our events are processed properly
+        element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
+    }, { dependencies: { selector, deltaY, offset } })()
 }
 
 type MapPositions = { frame: Rect, bounds: Bounds }[]
@@ -171,19 +173,36 @@ insetsEditTest(() => test, {
 
 insetsEditTest(() => test, {
     description: 'move bounds',
-    action: t => t.drag(map(0), 50, 50, { speed: 0.1 }),
+    action: t => t.drag(map(0), 50, 50, { speed: 0.1, offsetX: 50, offsetY: 50 }),
     before: defaultUSA,
     after: [{ ...defaultUSA[0], bounds: { n: 52, e: -68, s: 26, w: -133 } }, ...defaultUSA.slice(1)],
 })
 
 insetsEditTest(() => test, {
     description: 'zoom bounds',
-    action: t => wheel(t, map(3), -1000),
+    action: t => wheel(t, map(3), -250, { x: 10, y: 10 }),
     before: defaultUSA,
-    after: [...defaultUSA.slice(0, 3), { ...defaultUSA[3], bounds: { n: 23, e: -155, s: 21, w: -160 } }, ...defaultUSA.slice(4)],
+    after: [...defaultUSA.slice(0, 3), { ...defaultUSA[3], bounds: { n: 23, e: -155, s: 20, w: -160 } }, ...defaultUSA.slice(4)],
 })
 
 test('edit interface', async (t) => {
+    await t.click(Selector('button').withExactText('Edit Insets'))
+    await waitForLoading(t)
+    await screencap(t)
+})
+
+const populationConditionCode = `
+condition (population > 1000000)
+cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
+`
+
+const populationConditionUrl = urlFromCode('County', 'USA', populationConditionCode)
+urbanstatsFixture(`insets with population condition`, populationConditionUrl)
+
+test('insets page with population condition', async (t) => {
+    await waitForLoading(t)
+    await toggleCustomScript(t)
+    await waitForLoading(t)
     await t.click(Selector('button').withExactText('Edit Insets'))
     await waitForLoading(t)
     await screencap(t)

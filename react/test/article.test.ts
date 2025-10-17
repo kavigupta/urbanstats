@@ -7,7 +7,9 @@ import {
     getLocation,
     createComparison,
     waitForPageLoaded,
-    clickMapElement,
+    clickMapFeature,
+    downloadOrCheckString,
+    waitForDownload,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -19,7 +21,7 @@ test('california-article-test', async (t) => {
 
 test('neighboring-state-test', async (t) => {
     await screencap(t)
-    await clickMapElement(t, /Arizona, USA/)
+    await clickMapFeature(/Arizona, USA/)
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Arizona%2C+USA`)
 })
@@ -315,7 +317,7 @@ test('when navigating to next media market that is two lines via map click, main
         scrollPosition: await scrollPosition(),
     }
 
-    await clickMapElement(t, /Raleigh-Durham \(Fayetteville\) NC Media Market/)
+    await clickMapFeature(/Raleigh-Durham \(Fayetteville\) NC Media Market/)
     await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
 
     const after = {
@@ -330,9 +332,9 @@ test('when navigating to next media market that is two lines via map click, main
 })
 
 test('can navigate back to original navigated shape in map', async (t) => {
-    await clickMapElement(t, /Raleigh-Durham \(Fayetteville\) NC Media Market/)
+    await clickMapFeature(/Raleigh-Durham \(Fayetteville\) NC Media Market/)
     await t.expect(Selector('div').withExactText('Raleigh-Durham (Fayetteville) NC Media Market').exists).ok()
-    await clickMapElement(t, /Charlotte NC Media Market, USA/)
+    await clickMapFeature(/Charlotte NC Media Market, USA/)
     await t.expect(Selector('div').withExactText('Charlotte NC Media Market').exists).ok()
 })
 
@@ -363,4 +365,19 @@ test('region on map is not clickable', async (t) => {
     const initialHistoryLength = await historyLength()
     await t.click('.maplibregl-map') // Click China
     await t.expect(historyLength()).eql(initialHistoryLength)
+})
+
+urbanstatsFixture('csv-export', `/article.html?longname=Rafael+Pena+CDP%2C+Texas%2C+USA&s=4YGF3xUkfbjxoj`)
+
+test('download-article-csv-settings-ignored', async (t) => {
+    const laterThan = Date.now()
+
+    const csvButton = Selector('img').withAttribute('src', '/csv.png')
+    await t.click(csvButton)
+
+    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
+    const fs = await import('fs')
+    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+
+    await downloadOrCheckString(t, csvContent, 'csv-export-california-article', 'csv', false)
 })

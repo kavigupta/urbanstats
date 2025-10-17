@@ -114,6 +114,16 @@ class ExtraStatistic(_message.Message):
         temperature_histogram: _Optional[_Union[TemperatureHistogram, _Mapping]] = ...,
     ) -> None: ...
 
+class Metadata(_message.Message):
+    __slots__ = ("metadata_index", "string_value")
+    METADATA_INDEX_FIELD_NUMBER: _ClassVar[int]
+    STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    metadata_index: int
+    string_value: str
+    def __init__(
+        self, metadata_index: _Optional[int] = ..., string_value: _Optional[str] = ...
+    ) -> None: ...
+
 class Article(_message.Message):
     __slots__ = (
         "shortname",
@@ -126,6 +136,7 @@ class Article(_message.Message):
         "related",
         "universes",
         "extra_stats",
+        "metadata",
     )
     SHORTNAME_FIELD_NUMBER: _ClassVar[int]
     LONGNAME_FIELD_NUMBER: _ClassVar[int]
@@ -137,6 +148,7 @@ class Article(_message.Message):
     RELATED_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     EXTRA_STATS_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
     shortname: str
     longname: str
     source: str
@@ -147,6 +159,7 @@ class Article(_message.Message):
     related: _containers.RepeatedCompositeFieldContainer[RelatedButtons]
     universes: _containers.RepeatedScalarFieldContainer[str]
     extra_stats: _containers.RepeatedCompositeFieldContainer[ExtraStatistic]
+    metadata: _containers.RepeatedCompositeFieldContainer[Metadata]
     def __init__(
         self,
         shortname: _Optional[str] = ...,
@@ -161,6 +174,7 @@ class Article(_message.Message):
         related: _Optional[_Iterable[_Union[RelatedButtons, _Mapping]]] = ...,
         universes: _Optional[_Iterable[str]] = ...,
         extra_stats: _Optional[_Iterable[_Union[ExtraStatistic, _Mapping]]] = ...,
+        metadata: _Optional[_Iterable[_Union[Metadata, _Mapping]]] = ...,
     ) -> None: ...
 
 class Coordinate(_message.Message):
@@ -235,6 +249,14 @@ class ArticleOrderingList(_message.Message):
         types: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
+class ArticleUniverseList(_message.Message):
+    __slots__ = ("universes",)
+    UNIVERSES_FIELD_NUMBER: _ClassVar[int]
+    universes: _containers.RepeatedCompositeFieldContainer[Universes]
+    def __init__(
+        self, universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...
+    ) -> None: ...
+
 class SearchIndexMetadata(_message.Message):
     __slots__ = ("type", "is_usa", "is_symlink")
     TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -268,16 +290,28 @@ class OrderList(_message.Message):
     order_idxs: _containers.RepeatedScalarFieldContainer[int]
     def __init__(self, order_idxs: _Optional[_Iterable[int]] = ...) -> None: ...
 
-class DataList(_message.Message):
-    __slots__ = ("value", "population_percentile")
-    VALUE_FIELD_NUMBER: _ClassVar[int]
+class PopulationPercentileByUniverse(_message.Message):
+    __slots__ = ("population_percentile",)
     POPULATION_PERCENTILE_FIELD_NUMBER: _ClassVar[int]
-    value: _containers.RepeatedScalarFieldContainer[float]
     population_percentile: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(
+        self, population_percentile: _Optional[_Iterable[int]] = ...
+    ) -> None: ...
+
+class DataList(_message.Message):
+    __slots__ = ("value", "population_percentile_by_universe")
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    POPULATION_PERCENTILE_BY_UNIVERSE_FIELD_NUMBER: _ClassVar[int]
+    value: _containers.RepeatedScalarFieldContainer[float]
+    population_percentile_by_universe: _containers.RepeatedCompositeFieldContainer[
+        PopulationPercentileByUniverse
+    ]
     def __init__(
         self,
         value: _Optional[_Iterable[float]] = ...,
-        population_percentile: _Optional[_Iterable[int]] = ...,
+        population_percentile_by_universe: _Optional[
+            _Iterable[_Union[PopulationPercentileByUniverse, _Mapping]]
+        ] = ...,
     ) -> None: ...
 
 class OrderLists(_message.Message):

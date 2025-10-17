@@ -1,3 +1,4 @@
+from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province,
@@ -22,6 +23,7 @@ CANADIAN_DISTRICTS = Shapefile(
     longname_extractor=lambda row: row.FEDENAME
     + " (Riding), "
     + pruid_to_province[row["PRUID"]],
+    additional_columns_computer={"scgc": lambda row: row.FEDUID},
     **canadian_census_kwargs("CA Riding", "Political"),
     abbreviation="RDNG",
     data_credit=dict(
@@ -29,4 +31,6 @@ CANADIAN_DISTRICTS = Shapefile(
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lfed000a21a_e.zip",
     ),
     include_in_syau=True,
+    metadata_columns=["scgc"],
+    wikidata_sourcer=SimpleWikidataSourcer("wdt:P4565", "scgc"),
 )

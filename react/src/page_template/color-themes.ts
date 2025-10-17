@@ -38,6 +38,7 @@ export interface Colors {
     hueColors: HueColors
     screenshotFooterUrl: string
     pencilIcon: string
+    wikidataURL: string
 }
 
 export interface JuxtastatColors {
@@ -79,6 +80,7 @@ export const colorThemes: Record<Theme, Colors> = {
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer.svg',
         pencilIcon: '/pencil-light.png',
+        wikidataURL: '/wikidata-light.svg',
     },
     'Dark Mode': {
         background: '#00060f',
@@ -104,6 +106,7 @@ export const colorThemes: Record<Theme, Colors> = {
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
         pencilIcon: '/pencil-dark.png',
+        wikidataURL: '/wikidata-dark.svg',
     },
 }
 /* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

@@ -4,7 +4,7 @@ import { min } from 'mathjs'
 
 import { indexPartitions } from './utils/partition'
 import { Feature } from './utils/protos'
-import { loadShapeFromPossibleSymlink } from './utils/symlinks'
+import { loadFeatureFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
 
 export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
@@ -35,12 +35,22 @@ export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
     }
 }
 
+const boundingBoxCache = new WeakMap<GeoJSON.Geometry, maplibregl.LngLatBounds>()
+
 export function boundingBox(geo: GeoJSON.Geometry): maplibregl.LngLatBounds {
+    let result: maplibregl.LngLatBounds | undefined
+    if ((result = boundingBoxCache.get(geo)) !== undefined) {
+        return result
+    }
+
     const bbox = geojsonExtent(geo)
-    return new maplibregl.LngLatBounds(
+    result = new maplibregl.LngLatBounds(
         new maplibregl.LngLat(bbox[0], bbox[1]),
         new maplibregl.LngLat(bbox[2], bbox[3]),
     )
+    boundingBoxCache.set(geo, result)
+
+    return result
 }
 
 export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
@@ -73,7 +83,7 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
 export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
     const fillThreshold = 0.1
 
-    const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadShapeFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
+    const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
     // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
     // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
