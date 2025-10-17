@@ -136,7 +136,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                     <li>
                         <CheckboxSetting
-                            name="Show Person Circles"
+                            name="Include Person Circles"
                             settingKey="show_person_circles"
                             fontSize={fontSize}
                         />
