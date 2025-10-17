@@ -317,7 +317,7 @@ def build_urbanstats(
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/add.png", f"{site_folder}/")
-    shutil.copy("icons/main/add-small.png", f"{site_folder}/")
+    shutil.copy("icons/main/add-green-small.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")

@@ -236,7 +236,7 @@ function EditInsetsHandles(props: {
             )}
             {props.add && (
                 <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
-                    <img src="/add-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
+                    <img src="/add-green-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
                 </div>
             )}
         </>

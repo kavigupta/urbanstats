@@ -27,8 +27,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="1.0832713"
-     inkscape:cx="362.32842"
-     inkscape:cy="508.18292"
+     inkscape:cx="66.926909"
+     inkscape:cy="473.10401"
      inkscape:window-width="2190"
      inkscape:window-height="1435"
      inkscape:window-x="0"
@@ -68,41 +68,44 @@
      transform="translate(-271.80194,218.23845)">
     <g
        id="g3746"
-       transform="translate(11.437301,56.437302)">
+       transform="translate(11.437301,56.437302)"
+       style="fill:#8ac35a;fill-opacity:1">
       <g
          id="g3601"
-         transform="matrix(1.1635816,0,0,1.1635816,-58.358777,-51.629483)">
+         transform="matrix(1.1635816,0,0,1.1635816,-58.358777,-51.629483)"
+         style="fill:#8ac35a;fill-opacity:1">
         <path
            id="path3386"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="m 302.65363,-98.307915 h -18.90841 a 34.295143,34.295143 0 0 0 34.29507,34.295584 v -18.9084 a 15.386747,15.386747 0 0 1 -15.38666,-15.387184 z" />
         <path
            id="path3525"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="m 318.04029,-143.18632 a 34.295143,34.295143 0 0 0 -34.29507,34.29506 h 18.90841 a 15.386747,15.386747 0 0 1 15.38666,-15.38665 z" />
         <path
            id="path3487"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="M 362.91921,-98.307915 H 344.0108 a 15.386747,15.386747 0 0 1 -15.38717,15.387184 v 18.9084 a 34.295143,34.295143 0 0 0 34.29558,-34.295584 z" />
       </g>
       <g
          id="g3601-2"
-         transform="matrix(1.1635816,0,0,1.1635816,-13.358777,-96.629483)">
+         transform="matrix(1.1635816,0,0,1.1635816,-13.358777,-96.629483)"
+         style="fill:#8ac35a;fill-opacity:1">
         <path
            id="path3386-5"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="m 302.65363,-98.307915 h -18.90841 a 34.295143,34.295143 0 0 0 34.29507,34.295584 v -18.9084 a 15.386747,15.386747 0 0 1 -15.38666,-15.387184 z" />
         <path
            id="path3525-4"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="m 318.04029,-143.18632 a 34.295143,34.295143 0 0 0 -34.29507,34.29506 h 18.90841 a 15.386747,15.386747 0 0 1 15.38666,-15.38665 z" />
         <path
            id="path3487-7"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="M 362.91921,-98.307915 H 344.0108 a 15.386747,15.386747 0 0 1 -15.38717,15.387184 v 18.9084 a 34.295143,34.295143 0 0 0 34.29558,-34.295584 z" />
         <path
            id="path3522-4"
-           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
+           style="color:#000000;overflow:visible;fill:#8ac35a;fill-opacity:1;fill-rule:evenodd;stroke-width:10;stop-color:#000000"
            d="m 328.62363,-143.18632 v 18.90841 a 15.386747,15.386747 0 0 1 15.38717,15.38665 h 18.90841 a 34.295143,34.295143 0 0 0 -34.29558,-34.29506 z" />
       </g>
     </g>
