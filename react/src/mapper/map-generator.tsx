@@ -39,6 +39,7 @@ interface EditInsets {
     editedInsets: Inset[]
     add: () => void
     delete: (i: number) => void
+    duplicate: (i: number) => void
 }
 
 const mapUpdateInterval = 500
@@ -153,7 +154,11 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                                 inset={inset}
                                 ref={e => mapsRef[i] = e}
                                 container={mapsContainerRef}
-                                editInset={(newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) }}
+                                editInset={{
+                                    modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
+                                    delete: () => { props.editInsets.delete(i) },
+                                    duplicate: () => { props.editInsets.duplicate(i) },
+                                }}
                             >
                                 {mapChildren(insetFeatures)}
                             </InsetMap>

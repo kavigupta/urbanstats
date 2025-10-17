@@ -203,6 +203,15 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
             delete: (i) => {
                 addInsetEdit([i, i + 1], [])
             },
+            duplicate: (i) => {
+                for (const [x, y] of [[0.1, 0.1], [-0.1, -0.1], [-0.1, 0.1], [0.1, -0.1], [0, 0]]) {
+                    const newInset = moveInset(editedInsets[i], x, y)
+                    if (inBounds(newInset)) {
+                        addInsetEdit([i + 1, i + 1], [newInset])
+                        return
+                    }
+                }
+            },
             editedInsets,
         },
     })
@@ -244,6 +253,18 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
             {undoRedoUi}
         </>
     )
+}
+
+function moveInset(inset: Inset, x: number, y: number): Inset {
+    return {
+        ...inset,
+        bottomLeft: [inset.bottomLeft[0] + x, inset.bottomLeft[1] + y],
+        topRight: [inset.topRight[0] + x, inset.topRight[1] + y],
+    }
+}
+
+function inBounds(inset: Inset): boolean {
+    return inset.bottomLeft.concat(inset.topRight).every(c => c >= 0 && c <= 1)
 }
 
 function saveAsFile(filename: string, data: string | Blob, type: string): void {
