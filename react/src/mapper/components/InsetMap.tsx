@@ -226,17 +226,17 @@ function EditInsetsHandles(props: {
             <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             {props.duplicate && (
                 <div data-test="duplicate" style={{ ...handleStyle(25), margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate}>
-                    ⿻
+                    <img src="/duplicate.png" alt="Duplicate" style={{ width: '100%', height: '100%' }} />
                 </div>
             )}
             {props.delete && (
                 <div data-test="delete" style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
-                    ❌
+                    <img src="/close-red-small.png" alt="Delete" style={{ width: '100%', height: '100%' }} />
                 </div>
             )}
             {props.add && (
                 <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
-                    ✚
+                    <img src="/add-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
                 </div>
             )}
         </>
