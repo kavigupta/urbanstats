@@ -4,7 +4,7 @@ import type_ordering_idx from '../data/type_ordering_idx'
 import { Navigator } from '../navigation/Navigator'
 import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { useSettings } from '../page_template/settings'
 import '../common.css'
 import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
 
@@ -20,8 +20,7 @@ export function SearchBox(props: {
     onTextPresenceChange?: (hasText: boolean) => void
 }): ReactNode {
     const colors = useColors()
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
-    const [showPersonCircles] = useSetting('show_person_circles')
+    const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
 
     // Keep these in sync
     const cacheKey = useMemo(() => getIndexCacheKey(), [])
@@ -39,12 +38,11 @@ export function SearchBox(props: {
             const result = await (await searchWorker.current)({
                 unnormalizedPattern: sq,
                 maxResults: 10,
-                showHistoricalCDs,
-                showPersonCircles,
+                showSettings,
                 prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined })
             return result
         }
-    }, [searchWorker, cacheKey, showHistoricalCDs, showPersonCircles, props.prioritizeArticleType])
+    }, [searchWorker, cacheKey, showSettings, props.prioritizeArticleType])
 
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a

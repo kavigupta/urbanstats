@@ -10,8 +10,10 @@ const search = await createIndex(undefined)
 const computeNthResult = (n: number, query: string, prioritizeType: string | undefined): SearchResult => search({
     unnormalizedPattern: query,
     maxResults: 10,
-    showHistoricalCDs: false,
-    showPersonCircles: true,
+    showSettings: {
+        show_historical_cds: false,
+        show_person_circles: true,
+    },
     prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined,
 })[n]
 

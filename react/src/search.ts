@@ -4,7 +4,7 @@ import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
-import { isHistoricalCD, isPopulationCircle } from './utils/is_historical'
+import { isAllowedToBeShown, ShowGeographySettings } from './utils/is_historical'
 import { ISearchIndexMetadata } from './utils/protos'
 
 export interface SearchResult {
@@ -105,12 +105,11 @@ function tokenize(pattern: string): string[] {
 export interface SearchParams {
     unnormalizedPattern: string
     maxResults: number
-    showHistoricalCDs: boolean
-    showPersonCircles: boolean
+    showSettings: ShowGeographySettings
     prioritizeTypeIndex?: number
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs, showPersonCircles, prioritizeTypeIndex }: SearchParams): SearchResult[] {
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex }: SearchParams): SearchResult[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -142,7 +141,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternChecks = 0
 
     entries: for (const [populationRank, entry] of searchIndex.entries.entries()) {
-        if ((!showHistoricalCDs && isHistoricalCD(entry.typeIndex)) || (!showPersonCircles && isPopulationCircle(entry.typeIndex))) {
+        if (isAllowedToBeShown(entry.typeIndex, showSettings)) {
             continue
         }
 

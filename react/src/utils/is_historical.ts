@@ -1,5 +1,10 @@
 import type_ordering_idx from '../data/type_ordering_idx'
 
+export interface ShowGeographySettings {
+    show_historical_cds: boolean
+    show_person_circles: boolean
+}
+
 const historicalCongressionals = Object.keys(type_ordering_idx).filter(
     key => key.startsWith('Congressional District ('),
 )
@@ -9,16 +14,26 @@ const historicalCongressionalsIdx = historicalCongressionals.map(
 
 const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => name.endsWith('Person Circle')).map(([,index]) => index)
 
-export function isHistoricalCD(typeOrTypeIndex: number | string): boolean {
+function isHistoricalCD(typeOrTypeIndex: number | string): boolean {
     if (typeof typeOrTypeIndex === 'string') {
         return historicalCongressionals.includes(typeOrTypeIndex)
     }
     return historicalCongressionalsIdx.includes(typeOrTypeIndex)
 }
 
-export function isPopulationCircle(typeOrTypeIndex: number | string): boolean {
+function isPopulationCircle(typeOrTypeIndex: number | string): boolean {
     if (typeof typeOrTypeIndex === 'string') {
         return Object.keys(type_ordering_idx).filter(name => name.endsWith('Person Circle')).includes(typeOrTypeIndex)
     }
     return populationCircles.includes(typeOrTypeIndex)
+}
+
+export function isAllowedToBeShown(typeOrTypeIndex: number | string, settings: ShowGeographySettings): boolean {
+    if (!settings.show_historical_cds && isHistoricalCD(typeOrTypeIndex)) {
+        return false
+    }
+    if (!settings.show_person_circles && isPopulationCircle(typeOrTypeIndex)) {
+        return false
+    }
+    return true
 }

@@ -1,6 +1,6 @@
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { isHistoricalCD, isPopulationCircle } from '../utils/is_historical'
+import { isAllowedToBeShown } from '../utils/is_historical'
 import { SearchIndex } from '../utils/protos'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
@@ -61,11 +61,8 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (metadata.isSymlink) {
         return false
     }
-    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
-        return false
-    }
-    if (isPopulationCircle(metadata.type!)) {
-        return false
-    }
-    return true
+    return isAllowedToBeShown(metadata.type!, {
+        show_historical_cds: Settings.shared.get('show_historical_cds'),
+        show_person_circles: false, // always hide person circles in search
+    })
 }

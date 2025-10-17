@@ -3,9 +3,9 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useColors } from '../page_template/colors'
-import { relatedSettingsKeys, relationshipKey, useSetting, useSettings } from '../page_template/settings'
+import { relatedSettingsKeys, relationshipKey, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
-import { isHistoricalCD } from '../utils/is_historical'
+import { isAllowedToBeShown } from '../utils/is_historical'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
@@ -40,7 +40,7 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
 function useArticleFeatures({ articleType, related, longname }: ArticleMapProps): {
     use: () => (GeoJSON.Feature | typeof waiting)[]
 } {
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const settings = useSettings(['show_historical_cds', 'show_person_circles'])
     const relatedCheckboxSettings = useSettings(relatedSettingsKeys(articleType))
 
     const colors = useColors()
@@ -64,7 +64,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
         const relatedShapes = (() => {
             const result: Polygon[] = []
             for (let i = relateds.length - 1; i >= 0; i--) {
-                if (!showHistoricalCDs && isHistoricalCD(relateds[i].rowType)) {
+                if (!isAllowedToBeShown(relateds[i].rowType, settings)) {
                     continue
                 }
                 const key = relationshipKey(articleType, relateds[i].rowType)
@@ -91,5 +91,5 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
             },
             ...relatedShapes,
         ])
-    }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, showHistoricalCDs])
+    }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, settings])
 }

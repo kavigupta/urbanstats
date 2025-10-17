@@ -6,11 +6,11 @@ import type_to_type_category from '../data/type_to_type_category'
 import { Navigator } from '../navigation/Navigator'
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { relationshipKey, useSetting } from '../page_template/settings'
+import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
 import { mixWithBackground } from '../utils/color'
-import { isHistoricalCD, isPopulationCircle } from '../utils/is_historical'
+import { isAllowedToBeShown } from '../utils/is_historical'
 import { useMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
 
@@ -207,8 +207,7 @@ function Row(props: {
 
 export function Related(props: { articleType: string, related: { relationshipType: string, buttons: Region[] }[] }): ReactNode {
     // buttons[rowType][relationshipType] = <list of buttons>
-    const [showHistoricalCds] = useSetting('show_historical_cds')
-    const [showPersonCircles] = useSetting('show_person_circles')
+    const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
     for (const relateds of props.related) {
         for (const button of relateds.buttons) {
@@ -219,7 +218,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     // get a sorted list of keys of buttons
     const buttonKeys = Array.from(buttons.keys())
         .sort((a, b) => type_ordering_idx[a] - type_ordering_idx[b])
-        .filter(buttonKey => (showHistoricalCds || !isHistoricalCD(buttonKey)) && (showPersonCircles || !isPopulationCircle(buttonKey)))
+        .filter(buttonKey => isAllowedToBeShown(buttonKey, showSettings))
 
     const elements = buttonKeys.map((key, i) => (
         <Row
