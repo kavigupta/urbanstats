@@ -204,7 +204,7 @@ insetsEditTest(() => test, {
     description: 'duplicate',
     action: t => t.click(handle(1, 'duplicate')),
     before: defaultUSA,
-    after: [...defaultUSA.slice(0, 2), { ...defaultUSA[1], frame: { ...defaultUSA[1].frame, x: 865, y: 380 } }, ...defaultUSA.slice(2)],
+    after: [...defaultUSA.slice(0, 2), { ...defaultUSA[1], frame: { ...defaultUSA[1].frame, x: 865, y: 385 } }, ...defaultUSA.slice(2)],
     customInsetsAfterEdit: 1,
 })
 
