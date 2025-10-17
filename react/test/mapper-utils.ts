@@ -48,11 +48,11 @@ export function settingsFromURL(url: string): unknown {
     return JSON.parse(gunzipSync(Buffer.from(encodedSettings, 'base64')).toString())
 }
 
-export async function getCodeFromMainField(): Promise<string> {
+export function getCodeFromMainField(): Promise<string> {
     return Selector('#test-editor-body').textContent
 }
 
-export async function getErrors(): Promise<string[]> {
+export function getErrors(): Promise<string[]> {
     return ClientFunction(() =>
         Array.from(document.querySelectorAll('#test-editor-result')).map(element => element.textContent!),
     )()
