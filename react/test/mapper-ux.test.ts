@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -27,11 +27,8 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     await t.expect(await getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await t.expect(getInput('Custom Insets').exists).ok() // Insets immediately deconsturct when checked
-    await waitForLoading(t)
     await replaceInput(t, 'Iceland', 'Custom Inset', 1) // second one, since the first is the universe selector
-    await waitForLoading(t)
     await replaceInput(t, /^-13\.4/, '-13')
-    await waitForLoading(t)
     await t.expect(await getErrors()).eql([])
     await toggleCustomScript(t)
     await t.expect(await getCodeFromMainField()).eql(
@@ -45,7 +42,6 @@ const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausin
         await t.expect(await getErrors()).eql([])
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
-        await waitForLoading(t)
         await t.expect(await getErrors()).eql([error])
         await screencap(t)
     })
@@ -61,7 +57,6 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
         await checkBox(t, /^max/)
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
-        await waitForLoading(t)
         await t.expect(await getErrors()).eql([error])
         await screencap(t)
     })
@@ -220,7 +215,6 @@ mapper(() => test)('able to reload in invalid state', { code: 'customNode("");\n
 })
 
 mapper(() => test)('correct errors on initial', { code: 'customNode("");\ncondition (true)\ncMap(data=customNode("\\""), scale=linearScale(), ramp=rampUridis)' }, async (t) => {
-    await waitForLoading(t)
     await t.expect(await getErrors()).eql(['Unrecognized token: Unterminated string at 1:1']) // Error message has the 1:1 if on an editor
 })
 
@@ -238,7 +232,6 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
 mapper(() => test)('selection preserved on reload', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))' }, async (t) => {
     async function checkErrors(): Promise<void> {
         await t.wait(500) // just make sure the page has settled
-        await waitForLoading(t)
         await t.expect(await getErrors()).eql(['Custom expression expected to return type number, but got string at 1:1-0'])
     }
     await checkErrors()

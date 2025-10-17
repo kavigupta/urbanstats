@@ -3,7 +3,7 @@ import { gunzipSync, gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
+import { target, downloadOrCheckString, waitForDownload, grabDownload } from './test_utils'
 
 export async function checkGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
@@ -25,7 +25,6 @@ export async function checkBox(t: TestController, label: RegExp): Promise<void> 
     const parent = labelEl.parent()
     const checkbox = parent.find('input[type="checkbox"]')
     await t.click(checkbox)
-    await waitForLoading(t)
 }
 
 export async function toggleCustomScript(t: TestController): Promise<void> {

@@ -4,7 +4,7 @@ import { ClientFunction, Selector } from 'testcafe'
 import { TestWindow } from '../src/utils/TestUtils'
 
 import { toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
 
@@ -94,10 +94,8 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
                 await t.expect(currentPositions).eql(positions)
             }
 
-            await waitForLoading(t)
             await check(before)
             await t.click(Selector('button').withExactText('Edit Insets'))
-            await waitForLoading(t)
             await check(before)
             await action(t)
             await check(after)
@@ -112,7 +110,6 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
             await t.wait(1000)
             await t.click(Selector('button:not(:disabled)').withExactText(confirmation))
 
-            await waitForLoading(t)
             if (confirmation === 'Accept') {
                 await check(after)
             }
@@ -187,7 +184,6 @@ insetsEditTest(() => test, {
 
 test('edit interface', async (t) => {
     await t.click(Selector('button').withExactText('Edit Insets'))
-    await waitForLoading(t)
     await screencap(t)
 })
 
@@ -200,10 +196,7 @@ const populationConditionUrl = urlFromCode('County', 'USA', populationConditionC
 urbanstatsFixture(`insets with population condition`, populationConditionUrl)
 
 test('insets page with population condition', async (t) => {
-    await waitForLoading(t)
     await toggleCustomScript(t)
-    await waitForLoading(t)
     await t.click(Selector('button').withExactText('Edit Insets'))
-    await waitForLoading(t)
     await screencap(t)
 })
