@@ -225,17 +225,17 @@ function EditInsetsHandles(props: {
             <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
             <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             {props.duplicate && (
-                <div style={{ ...handleStyle(25), margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate}>
+                <div data-test="duplicate" style={{ ...handleStyle(25), margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate}>
                     ⿻
                 </div>
             )}
             {props.delete && (
-                <div style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
+                <div data-test="delete" style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
                     ❌
                 </div>
             )}
             {props.add && (
-                <div style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
+                <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
                     ✚
                 </div>
             )}

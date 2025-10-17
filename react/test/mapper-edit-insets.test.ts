@@ -16,7 +16,7 @@ function map(n: number): string {
     return `[id^="map-${n}"]`
 }
 
-function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft'): string {
+function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add'): string {
     return `${map(mapNumber)} [data-test="${pos}"]`
 }
 
@@ -68,11 +68,12 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
 
 type MapPositions = { frame: Rect, bounds: Bounds }[]
 
-function insetsEditTest(testFn: () => TestFn, { description, action, before, after }: {
+function insetsEditTest(testFn: () => TestFn, { description, action, before, after, customInsetsAfterEdit }: {
     description: string
     action: (t: TestController) => Promise<void>
     before: MapPositions
     after: MapPositions
+    customInsetsAfterEdit: number
 }): void {
     for (const confirmation of ['Accept', 'Cancel'] as const) {
         testFn()(`${description} then ${confirmation}`, async (t) => {
@@ -115,9 +116,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
             await waitForLoading(t)
             if (confirmation === 'Accept') {
                 await check(after)
+                await t.expect(Selector('input[value="Custom Inset"]').count).eql(customInsetsAfterEdit)
             }
             else {
                 await check(before)
+                await t.expect(Selector('input[value="Custom Inset"]').count).eql(0)
             }
         })
     }
@@ -154,6 +157,7 @@ insetsEditTest(() => test, {
     action: t => drag(t, handle(4, 'move'), move.x, move.y),
     before: defaultUSA,
     after: [...defaultUSA.slice(0, 4), { frame: { ...defaultUSA[4].frame, x: defaultUSA[4].frame.x + move.x, y: defaultUSA[4].frame.y + move.y }, bounds: defaultUSA[4].bounds }],
+    customInsetsAfterEdit: 1,
 })
 
 insetsEditTest(() => test, {
@@ -169,6 +173,7 @@ insetsEditTest(() => test, {
         },
         bounds: { n: 72, e: -126, s: 51, w: -172 },
     }],
+    customInsetsAfterEdit: 1,
 })
 
 insetsEditTest(() => test, {
@@ -176,6 +181,7 @@ insetsEditTest(() => test, {
     action: t => t.drag(map(0), 50, 50, { speed: 0.1, offsetX: 50, offsetY: 50 }),
     before: defaultUSA,
     after: [{ ...defaultUSA[0], bounds: { n: 52, e: -68, s: 26, w: -133 } }, ...defaultUSA.slice(1)],
+    customInsetsAfterEdit: 1,
 })
 
 insetsEditTest(() => test, {
@@ -183,6 +189,38 @@ insetsEditTest(() => test, {
     action: t => wheel(t, map(3), -250, { x: 10, y: 10 }),
     before: defaultUSA,
     after: [...defaultUSA.slice(0, 3), { ...defaultUSA[3], bounds: { n: 23, e: -155, s: 20, w: -160 } }, ...defaultUSA.slice(4)],
+    customInsetsAfterEdit: 1,
+})
+
+insetsEditTest(() => test, {
+    description: 'delete',
+    action: t => t.click(handle(1, 'delete')),
+    before: defaultUSA,
+    after: [...defaultUSA.slice(0, 1), ...defaultUSA.slice(2)],
+    customInsetsAfterEdit: 0,
+})
+
+insetsEditTest(() => test, {
+    description: 'duplicate',
+    action: t => t.click(handle(1, 'duplicate')),
+    before: defaultUSA,
+    after: [...defaultUSA.slice(0, 2), { ...defaultUSA[1], frame: { ...defaultUSA[1].frame, x: 865, y: 380 } }, ...defaultUSA.slice(2)],
+    customInsetsAfterEdit: 1,
+})
+
+insetsEditTest(() => test, {
+    description: 'add',
+    action: t => t.click(handle(0, 'add')),
+    before: defaultUSA,
+    after: [...defaultUSA, { ...defaultUSA[0], frame: { height: 265, width: 496, x: 248, y: 135 } }],
+    customInsetsAfterEdit: 1,
+})
+
+test('no duplicate/delete on main', async (t) => {
+    await t.click(Selector('button').withExactText('Edit Insets'))
+    await waitForLoading(t)
+    await t.expect(Selector(handle(0, 'duplicate')).exists).notOk()
+    await t.expect(Selector(handle(0, 'delete')).exists).notOk()
 })
 
 test('edit interface', async (t) => {
