@@ -389,19 +389,29 @@ export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]
     return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
 }
 
-export function mapElement(r: RegExp): Selector {
-    return Selector('div').withAttribute('clickable-polygon', r)
+export function mapFeatureName(r: RegExp): Promise<string | undefined> {
+    return ClientFunction(() => {
+        for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
+            for (const feature of features) {
+                if (r.test(feature)) {
+                    return feature
+                }
+            }
+        }
+        return
+    }, { dependencies: { r } })()
 }
 
-export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
-    const element = mapElement(r)
-    const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
-    await t.eval(() => {
-        const cm = (window as unknown as {
-            clickMapElement: (longname: string) => void
-        }).clickMapElement
-        cm(clickablePolygon)
-    }, { dependencies: { clickablePolygon } })
+export async function clickMapFeature(r: RegExp): Promise<void> {
+    return ClientFunction(() => {
+        for (const { features, clickFeature } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
+            for (const feature of features) {
+                if (r.test(feature)) {
+                    clickFeature(feature)
+                }
+            }
+        }
+    }, { dependencies: { r } })()
 }
 
 export async function dataValues(): Promise<string[]> {

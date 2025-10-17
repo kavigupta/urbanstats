@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 
-import { Inset } from './map'
+import { Inset } from '../urban-stats-script/constants/insets'
 
 interface MapScreenshotParams {
     width: number
