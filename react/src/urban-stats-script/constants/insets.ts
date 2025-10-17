@@ -1,9 +1,16 @@
-import { Inset } from '../../components/map'
 import insets from '../../data/insets'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
+
+export interface Inset {
+    bottomLeft: [number, number]
+    topRight: [number, number]
+    coordBox: [number, number, number, number]
+    mainMap: boolean
+    name?: string
+}
 
 export const insetType = {
     type: 'opaque',

@@ -3,8 +3,10 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
+import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
+import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
 import { colorFromCycle, useColors } from '../page_template/colors'
@@ -14,6 +16,7 @@ import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
+import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
@@ -23,7 +26,7 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { MapGeneric, MapGenericProps, ShapeRenderingSpec } from './map'
+import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -356,7 +359,6 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                                 <ComparisonMultiMap
                                     longnames={localArticlesToUse.map(x => x.longname)}
                                     colors={localArticlesToUse.map((_, i) => colorFromCycle(colors.hueColors, i))}
-                                    basemap={{ type: 'osm' }}
                                     mapPartitions={props.mapPartitions}
                                 />
                             </div>
@@ -389,32 +391,7 @@ function getHighlightIndex(rows: ArticleRow[]): number | undefined {
     }, undefined)
 }
 
-function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
-    const partitionedLongNames = props.mapPartitions.map(partition => partition.map(longnameIndex => props.longnames[longnameIndex]))
-
-    const maps = useRef<(ComparisonMap | null)[]>([])
-
-    // Want to re-zoom the maps when the partitioning changes
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            for (const map of maps.current) {
-                if (map !== null) {
-                    try {
-                        map.zoomToAll()
-                    }
-                    catch (e) {
-                        // Sometimes this fails if the map isn't ready
-                        console.warn(e)
-                    }
-                }
-            }
-        }, 0)
-        return () => { clearTimeout(timeout) }
-    }, [partitionedLongNames])
-
-    // Will get filled up on render immediately after
-    maps.current = Array<null>(props.mapPartitions.length).fill(null)
-
+function ComparisonMultiMap(props: { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {
     /*
      If mobile, make 2 columns, if one at the end, use full width
 
@@ -457,12 +434,10 @@ function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { long
                 return (
                     <div key={partitionIndex} style={{ position: 'relative', width: `${100 / row.length}%` }}>
                         <ComparisonMap
-                            ref={map => maps.current[partitionIndex] = map}
-                            {...props}
                             longnames={partition.map(index => props.longnames[index])}
                             colors={partition.map(index => props.colors[index])}
                             attribution={
-                                partitionIndex === props.mapPartitions.length - 1 ? 'startVisible' : 'none'
+                                partitionIndex === props.mapPartitions.length - 1
                             }
                         />
                     </div>
@@ -472,63 +447,81 @@ function ComparisonMultiMap(props: Omit<MapGenericProps, 'attribution'> & { long
     ))
 }
 
-// eslint-disable-next-line prefer-function-component/prefer-function-component -- TODO: Maps don't support function components yet.
-class ComparisonMap extends MapGeneric<MapGenericProps & { longnames: string[], colors: string[] }> {
-    override buttons(): ReactNode {
-        return <ComparisonMapButtons map={this} />
-    }
+function ComparisonMap({ longnames, colors, attribution }: { longnames: string[], colors: string[], attribution: boolean }): ReactNode {
+    const mapRef = useRef<MapRef>(null)
 
-    zoomButton(i: number, buttonColor: string, onClick: () => void): ReactNode {
-        return (
-            <div
-                key={`zoomButton_${i}`}
-                style={{
-                    display: 'inline-block', width: '2em', height: '2em',
-                    backgroundColor: buttonColor, borderRadius: '50%', marginLeft: '5px', marginRight: '5px',
-                    cursor: 'pointer',
-                }}
-                onClick={onClick}
-            />
-        )
-    }
+    const features = useMemo(() => polygonFeatureCollection(longnames.map((longname, i) => ({
+        name: longname,
+        color: colors[i], fillColor: colors[i], fillOpacity: 0.5, weight: 1,
+    }))), [longnames, colors]).use()
 
-    override computeShapesToRender(): Promise<ShapeRenderingSpec> {
-        return Promise.resolve({
-            shapes: this.props.longnames.map((longname, i) => ({
-                name: longname,
-                spec: { type: 'polygon', style: { color: this.props.colors[i], fillColor: this.props.colors[i], fillOpacity: 0.5, weight: 1 } },
-                meta: {},
-            })),
-            zoomIndex: -1,
-        })
-    }
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+    const id = useId()
 
-    override mapDidRender(): Promise<void> {
-        this.zoomToAll({ animate: false })
-        return Promise.resolve()
-    }
+    useZoomAllFeatures(mapRef, features, readyFeatures)
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <CommonMaplibreMap
+                id={id}
+                ref={mapRef}
+                attributionControl={false}
+            >
+                <PolygonFeatureCollection features={readyFeatures} clickable={true} />
+                <FullscreenControl position="top-left" />
+                { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
+            </CommonMaplibreMap>
+            <ComparisonMapButtons longnames={longnames} colors={colors} features={features} mapRef={mapRef} />
+        </div>
+    )
 }
 
-export function ComparisonMapButtons(props: { map: ComparisonMap }): ReactNode {
-    const colors = useColors()
+export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: React.RefObject<MapRef> }): ReactNode {
+    const systemColors = useColors()
     const isScreenshot = useScreenshotMode()
 
     if (isScreenshot) {
         return null
     }
 
+    const click = (i: number): void => {
+        if (features[i] !== waiting) {
+            mapRef.current!.fitBounds(boundingBox(features[i].geometry), { animate: true, padding: defaultMapPadding })
+        }
+    }
+
+    const zoomToAll = (): void => {
+        mapRef.current?.fitBounds(extendBoxes(features.filter(notWaiting).map(f => boundingBox(f.geometry))), { animate: true, padding: defaultMapPadding })
+    }
+
     return (
-        <div style={{
-            display: 'flex', backgroundColor: colors.background, padding: '0.5em', borderRadius: '0.5em',
-            alignItems: 'center',
-        }}
+        <div style={
+            { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '12px' }
+        }
         >
-            <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
-            <div style={{ width: '0.25em' }} />
-            {props.map.zoomButton(-1, colors.textMain, () => { props.map.zoomToAll() })}
-            {props.map.props.longnames.map((longname, i) => {
-                return props.map.zoomButton(i, props.map.props.colors[i], () => { props.map.zoomTo(longname) })
-            })}
+            <div style={{
+                display: 'flex', backgroundColor: systemColors.background, padding: '6px', borderRadius: '6px',
+                alignItems: 'center',
+            }}
+            >
+                <span className="serif" style={{ fontSize: '15px', fontWeight: 500 }}>Zoom to:</span>
+                <div style={{ width: '3px' }} />
+                <ZoomButton color={systemColors.textMain} onClick={zoomToAll} />
+                {longnames.map((longname, i) => <ZoomButton key={i} color={colors[i]} onClick={() => { click(i) }} />)}
+            </div>
         </div>
+    )
+}
+
+function ZoomButton({ color, onClick }: { color: string, onClick: () => void }): ReactNode {
+    return (
+        <div
+            style={{
+                display: 'inline-block', width: '24px', height: '24px',
+                backgroundColor: color, borderRadius: '50%', marginLeft: '5px', marginRight: '5px',
+                cursor: 'pointer',
+            }}
+            onClick={onClick}
+        />
     )
 }

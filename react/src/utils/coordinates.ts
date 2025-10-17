@@ -1,4 +1,4 @@
-import { Insets } from '../components/map'
+import { Inset } from '../urban-stats-script/constants/insets'
 
 import { assert } from './defensive'
 
@@ -34,7 +34,7 @@ function area(coordBox: [number, number, number, number]): number {
     return Math.abs((x2 - x1) * (y2 - y1))
 }
 
-export function computeAspectRatioForInsets(mapsWithCoordBox: Insets): number {
+export function computeAspectRatioForInsets(mapsWithCoordBox: Inset[]): number {
     assert(mapsWithCoordBox.length > 0, 'No insets with coordBox')
 
     const biggestMap = mapsWithCoordBox.reduce((prev, curr) => {
