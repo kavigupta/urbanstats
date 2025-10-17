@@ -10,7 +10,7 @@ import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
 import { mixWithBackground } from '../utils/color'
-import { isAllowedToBeShown } from '../utils/is_historical'
+import { isAllowedToBeShown } from '../utils/restricted-types'
 import { useMobileLayout } from '../utils/responsive'
 import { displayType } from '../utils/text'
 

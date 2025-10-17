@@ -110,7 +110,6 @@ test('search for a MPC', async (t) => {
         .typeText(searchField, 'Perth 10MPC')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
-    // await t.expect(getLocation()).match(`${target}/article.html?longname=Perth+10MPC%2C+Australia`)
     await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
     await waitForPageLoaded(t)
     await checkTextboxes(t, ['Include Person Circles'])

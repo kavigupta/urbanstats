@@ -1,7 +1,9 @@
 import type_ordering_idx from '../data/type_ordering_idx'
 
 export interface ShowGeographySettings {
+    // eslint-disable-next-line no-restricted-syntax -- matches localStorage keys
     show_historical_cds: boolean
+    // eslint-disable-next-line no-restricted-syntax -- matches localStorage keys
     show_person_circles: boolean
 }
 
