@@ -141,7 +141,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternChecks = 0
 
     entries: for (const [populationRank, entry] of searchIndex.entries.entries()) {
-        if (isAllowedToBeShown(entry.typeIndex, showSettings)) {
+        if (!isAllowedToBeShown(entry.typeIndex, showSettings)) {
             continue
         }
 

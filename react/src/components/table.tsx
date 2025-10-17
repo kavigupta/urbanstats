@@ -975,7 +975,7 @@ function PointerButtonIndex(props: {
             const name = data.longnames[pos]
             const type = data.typeIndices[pos]
             console.log(`name=${name}`)
-            if (isAllowedToBeShown(type, showSettings)) {
+            if (!isAllowedToBeShown(type, showSettings)) {
                 pos += props.direction
                 continue
             }
