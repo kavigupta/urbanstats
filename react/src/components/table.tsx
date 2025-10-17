@@ -8,10 +8,10 @@ import { Navigator } from '../navigation/Navigator'
 import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, useSetting } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { isHistoricalCD } from '../utils/is_historical'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
+import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
 import { useTranspose } from '../utils/transpose'
 
@@ -964,7 +964,7 @@ function PointerButtonIndex(props: {
     const universe = useUniverse()
     const colors = useColors()
     const navigation = useContext(Navigator.Context)
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const onClick = async (): Promise<void> => {
         /* eslint-disable no-console -- Debugging test failure */
         console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
@@ -975,7 +975,7 @@ function PointerButtonIndex(props: {
             const name = data.longnames[pos]
             const type = data.typeIndices[pos]
             console.log(`name=${name}`)
-            if (!showHistoricalCDs && isHistoricalCD(type)) {
+            if (!isAllowedToBeShown(type, showSettings)) {
                 pos += props.direction
                 continue
             }

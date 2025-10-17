@@ -1,8 +1,7 @@
-import type_ordering_idx from '../data/type_ordering_idx'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
-import { isHistoricalCD } from '../utils/is_historical'
 import { SearchIndex } from '../utils/protos'
+import { isAllowedToBeShown } from '../utils/restricted-types'
 
 export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
     const [index, populations] = await Promise.all([
@@ -62,17 +61,8 @@ function valid(index: SearchIndex, idx: number): boolean {
     if (metadata.isSymlink) {
         return false
     }
-    if (!Settings.shared.get('show_historical_cds') && isHistoricalCD(metadata.type!)) {
-        return false
-    }
-    if (isPopulationCircle(metadata.type!)) {
-        return false
-    }
-    return true
-}
-
-const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => name.endsWith('Person Circle')).map(([,index]) => index)
-
-function isPopulationCircle(x: number): boolean {
-    return populationCircles.includes(x)
+    return isAllowedToBeShown(metadata.type!, {
+        show_historical_cds: Settings.shared.get('show_historical_cds'),
+        show_person_circles: false, // always hide person circles in search
+    })
 }

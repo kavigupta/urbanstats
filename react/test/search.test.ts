@@ -9,6 +9,7 @@ import {
     pageDescriptorKind,
     waitForSelectedSearchResult,
     createComparison,
+    checkTextboxes,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -101,4 +102,23 @@ test('on mobile, closes the sidebar when you search', async (t) => {
 
 test('when adding another article for comparison, should prioritize regions of the same type', async (t) => {
     await createComparison(t, 'san jose', 'San Jose city, California, USA')
+})
+
+test('search for a MPC', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Perth 10MPC')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
+    await waitForPageLoaded(t)
+    await checkTextboxes(t, ['Include Person Circles'])
+    await t.click(searchField)
+        .typeText(searchField, 'Perth 10MPC')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).notMatch(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
+    await screencap(t)
+    await checkTextboxes(t, ['Include Person Circles'])
+    await screencap(t)
 })
