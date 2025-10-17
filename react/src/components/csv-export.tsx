@@ -87,6 +87,7 @@ function processContextIntoMapping(context: Map<string, USSValue>): [string[], M
     assert(geo.value instanceof Array, 'geo variable is not an array')
     const geoArray = geo.value as string[]
     const relevantVariables = [...context.entries()].filter(([, v]) => v.documentation?.fromStatisticColumn).map(([k]) => k)
+    relevantVariables.sort()
     const variableValues = []
     for (const varName of relevantVariables) {
         const varValue = context.get(varName)
