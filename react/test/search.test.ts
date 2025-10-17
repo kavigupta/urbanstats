@@ -104,7 +104,7 @@ test('when adding another article for comparison, should prioritize regions of t
     await createComparison(t, 'san jose', 'San Jose city, California, USA')
 })
 
-test.only('search for a MPC', async (t) => {
+test('search for a MPC', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Perth 10MPC')
