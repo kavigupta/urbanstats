@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -18,7 +18,6 @@ async function downloadOrCheckHistogram(t: TestController, name: string, nth = 0
 urbanstatsFixture('article check and uncheck test', `${target}/article.html?longname=New+York+Urban+Center%2C+USA&universe=world`)
 
 test('histogram-article-check-uncheck', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // count the number of `histogram-svg-panel` elements
     await t.expect(Selector('.histogram-svg-panel').count).eql(0)
@@ -31,7 +30,6 @@ test('histogram-article-check-uncheck', async (t) => {
 urbanstatsFixture('article test', `${target}/article.html?longname=Germany&universe=world`)
 
 test('histogram-basic-article', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
@@ -39,7 +37,6 @@ test('histogram-basic-article', async (t) => {
 })
 
 test('histogram-basic-article-multi', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     await checkTextboxes(t, ['Other Density Metrics'])
     const count = await Selector('.expand-toggle').count
@@ -55,7 +52,6 @@ test('histogram-basic-article-multi', async (t) => {
 urbanstatsFixture('comparison test heterogenous', comparisonPage(['San Marino city, California, USA', pasadena, swSGV]))
 
 test('histogram-basic-comparison', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.expect(Selector('.expand-toggle').count).eql(1)
@@ -67,7 +63,6 @@ test('histogram-basic-comparison', async (t) => {
 urbanstatsFixture('comparison test heterogenous with nan', comparisonPage(['India', 'China', pasadena]))
 
 test('histogram-basic-comparison-nan', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.expect(Selector('.expand-toggle').count).eql(1)
@@ -79,7 +74,6 @@ test('histogram-basic-comparison-nan', async (t) => {
 urbanstatsFixture('comparison test heterogenous with nan in the middle', comparisonPage(['India', pasadena, 'China']))
 
 test('histogram-basic-comparison-nan-middle', async (t) => {
-    await waitForLoading(t) // Need to avoid a race condition between map loading and page resizing
     await t.resizeWindow(400, 800)
     // select element with class name `expand-toggle`
     await t.expect(Selector('.expand-toggle').count).eql(1)
@@ -148,7 +142,6 @@ test('transpose-histograms', async (t) => {
 urbanstatsFixture('histogram add region test', comparisonPage([upperSGV, pasadena]))
 
 test('histogram-add-region-search-works', async (t) => {
-    await waitForLoading(t)
     await t.click(Selector('.expand-toggle'))
 
     const addButton = Selector('img[src="/add.png"]')
@@ -161,7 +154,6 @@ test('histogram-add-region-search-works', async (t) => {
     await screencap(t)
 
     await t.pressKey('enter')
-    await waitForLoading(t)
 
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([upperSGV, pasadena, swSGV]))
@@ -170,7 +162,6 @@ test('histogram-add-region-search-works', async (t) => {
 urbanstatsFixture('histogram add region test starting from article', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
 
 test('histogram-add-region-search-works-from-article', async (t) => {
-    await waitForLoading(t)
     await t.click(Selector('.expand-toggle'))
 
     const addButton = Selector('img[src="/add.png"]')
@@ -181,7 +172,6 @@ test('histogram-add-region-search-works-from-article', async (t) => {
 
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
-    await waitForLoading(t)
 
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([pasadena, swSGV]))

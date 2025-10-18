@@ -11,11 +11,11 @@ function regressionTest(name: keyof typeof urls, code: string): void {
     urbanstatsFixture(name, urls[name])
 
     test(name, async (t) => {
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await downloadPNG(t)
         await toggleCustomScript(t)
-        await t.expect(await getErrors()).eql([])
-        await t.expect(await getCodeFromMainField()).eql(
+        await t.expect(getErrors()).eql([])
+        await t.expect(getCodeFromMainField()).eql(
             code,
         )
     })
