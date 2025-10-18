@@ -151,7 +151,6 @@ function EditInsetsHandles(props: {
         width: `${handleSize}px`,
         height: `${handleSize}px`,
         borderRadius: '2px',
-        zIndex: 1000,
     })
 
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
