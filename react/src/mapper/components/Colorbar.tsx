@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo, useRef, useSyncExternalStore } from 'react'
+import React, { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Statistic } from '../../components/display-stats'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
@@ -32,25 +32,26 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
     const valuesRef = useRef<HTMLDivElement>(null)
-    const shouldRotate: boolean = useSyncExternalStore(onWidthChange, () => {
-        if (valuesRef.current === null) {
-            return false
+
+    const [shouldRotate, setShouldRotate] = useState(false)
+
+    useLayoutEffect(() => {
+        const values = valuesRef.current!
+        const updateShouldRotate = (): void => {
+            setShouldRotate(
+                Array.from(values.querySelectorAll('.containerOfXticks')).some((container) => {
+                    const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
+                    return contained !== null && contained.offsetWidth > (container as HTMLDivElement).offsetWidth * 0.9
+                }),
+            )
         }
-        const current = valuesRef.current
-        const containers = current.querySelectorAll('.containerOfXticks')
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- this isn't a loop over an array
-        for (let i = 0; i < containers.length; i++) {
-            const container = containers[i] as HTMLDivElement
-            const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
-            if (contained === null) {
-                continue
-            }
-            if (contained.offsetWidth > container.offsetWidth * 0.9) {
-                return true
-            }
+        updateShouldRotate()
+        const resizeObserver = new ResizeObserver(updateShouldRotate)
+        resizeObserver.observe(values)
+        return () => {
+            resizeObserver.unobserve(values)
         }
-        return false
-    })
+    }, [])
 
     const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
 
