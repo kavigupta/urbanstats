@@ -1,9 +1,9 @@
 import fs from 'fs'
 import { gunzipSync, gzipSync } from 'zlib'
 
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
+import { target, downloadOrCheckString, waitForDownload, grabDownload } from './test_utils'
 
 export async function checkGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
@@ -25,7 +25,6 @@ export async function checkBox(t: TestController, label: RegExp): Promise<void> 
     const parent = labelEl.parent()
     const checkbox = parent.find('input[type="checkbox"]')
     await t.click(checkbox)
-    await waitForLoading(t)
 }
 
 export async function toggleCustomScript(t: TestController): Promise<void> {
@@ -49,24 +48,14 @@ export function settingsFromURL(url: string): unknown {
     return JSON.parse(gunzipSync(Buffer.from(encodedSettings, 'base64')).toString())
 }
 
-export async function getCodeFromMainField(): Promise<string> {
-    // id = test-editor-body
-    const mainField = Selector('#test-editor-body')
-    const code = await mainField.textContent
-    return code
+export function getCodeFromMainField(): Promise<string> {
+    return Selector('#test-editor-body').textContent
 }
 
-export async function getErrors(): Promise<string[]> {
-    // all divs with id = test-editor-result
-    const errorSelector = Selector('#test-editor-result')
-    const errors: string[] = []
-    for (let i = 0; i < await errorSelector.count; i++) {
-        const errorText = await errorSelector.nth(i).textContent
-        if (errorText) {
-            errors.push(errorText)
-        }
-    }
-    return errors
+export function getErrors(): Promise<string[]> {
+    return ClientFunction(() =>
+        Array.from(document.querySelectorAll('#test-editor-result')).map(element => element.textContent!),
+    )()
 }
 
 export function getInput(original: string | RegExp, nth = 0): Selector {

@@ -7,14 +7,17 @@ import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
 
-type EditSingleInset = (newInset: Partial<Inset>) => void
-
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 function _InsetMap({ inset, children, editInset, container, i }: {
     inset: Inset
     children: ReactNode
     container: RefObject<HTMLDivElement>
-    editInset?: EditSingleInset
+    editInset?: {
+        modify: (newInset: Partial<Inset>) => void
+        duplicate: () => void
+        delete: () => void
+        add: () => void
+    }
     i: number
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
@@ -46,7 +49,7 @@ function _InsetMap({ inset, children, editInset, container, i }: {
                 <HandleInsets
                     inset={inset}
                     setCoordBox={(newBox) => {
-                        editInset?.({ coordBox: newBox })
+                        editInset?.modify({ coordBox: newBox })
                     }}
                 />
                 <ExposeMapForTesting id={id} />
@@ -56,9 +59,13 @@ function _InsetMap({ inset, children, editInset, container, i }: {
                 <EditInsetsHandles
                     frame={[...inset.bottomLeft, ...inset.topRight]}
                     setFrame={(newFrame) => {
-                        editInset({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                        editInset.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
                     }}
                     container={container}
+                    delete={inset.mainMap ? undefined : editInset.delete}
+                    duplicate={inset.mainMap ? undefined : editInset.duplicate}
+                    add={inset.mainMap ? editInset.add : undefined}
+                    shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
                 />
             )}
         </div>
@@ -118,10 +125,22 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 type Frame = [number, number, number, number]
 
+function isFullScreenInset(inset: Inset): boolean {
+    const tolerance = 0.005
+    return Math.abs(inset.bottomLeft[0] - 0) < tolerance
+        && Math.abs(inset.bottomLeft[1] - 0) < tolerance
+        && Math.abs(inset.topRight[0] - 1) < tolerance
+        && Math.abs(inset.topRight[1] - 1) < tolerance
+}
+
 function EditInsetsHandles(props: {
     frame: Frame
     setFrame: (newFrame: Frame) => void
     container: RefObject<HTMLDivElement>
+    delete?: () => void
+    duplicate?: () => void
+    add?: () => void
+    shouldHaveCenterHandle: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -214,7 +233,24 @@ function EditInsetsHandles(props: {
             <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
             <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
             <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
-            <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+            {props.shouldHaveCenterHandle && (
+                <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+            )}
+            {props.duplicate && (
+                <div data-test="duplicate" style={{ ...handleStyle(25), margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate}>
+                    <img src="/duplicate.png" alt="Duplicate" style={{ width: '100%', height: '100%' }} />
+                </div>
+            )}
+            {props.delete && (
+                <div data-test="delete" style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
+                    <img src="/close-red-small.png" alt="Delete" style={{ width: '100%', height: '100%' }} />
+                </div>
+            )}
+            {props.add && (
+                <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
+                    <img src="/add-green-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
+                </div>
+            )}
         </>
     )
 }

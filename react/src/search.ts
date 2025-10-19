@@ -4,8 +4,8 @@ import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
-import { isHistoricalCD } from './utils/is_historical'
 import { ISearchIndexMetadata } from './utils/protos'
+import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
 
 export interface SearchResult {
     longname: string
@@ -105,11 +105,11 @@ function tokenize(pattern: string): string[] {
 export interface SearchParams {
     unnormalizedPattern: string
     maxResults: number
-    showHistoricalCDs: boolean
+    showSettings: ShowGeographySettings
     prioritizeTypeIndex?: number
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showHistoricalCDs, prioritizeTypeIndex }: SearchParams): SearchResult[] {
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex }: SearchParams): SearchResult[] {
     const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
@@ -141,7 +141,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternChecks = 0
 
     entries: for (const [populationRank, entry] of searchIndex.entries.entries()) {
-        if (!showHistoricalCDs && isHistoricalCD(entry.typeIndex)) {
+        if (!isAllowedToBeShown(entry.typeIndex, showSettings)) {
             continue
         }
 

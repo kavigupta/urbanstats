@@ -71,14 +71,6 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
     await safeReload(t)
 }
 
-export async function waitForLoading(t: TestController): Promise<void> {
-    // Wait for various components that need to load
-    while (await Selector('[data-test-loading=true]').exists) {
-        await t.wait(1000)
-    }
-    await t.wait(1000) // Wait for map to finish rendering
-}
-
 export async function waitForQuizLoading(t: TestController): Promise<void> {
     // Wait for various components that need to load
     while (await Selector(`[data-test-loading-quiz=true]`).exists) {
@@ -112,8 +104,6 @@ async function prepForImage(t: TestController, options: { hover: boolean, wait: 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
     })
-    // Wait for the map to finish loading
-    await waitForLoading(t)
 }
 
 let screenshotNumber = 0

@@ -317,6 +317,7 @@ def build_urbanstats(
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/add.png", f"{site_folder}/")
+    shutil.copy("icons/main/add-green-small.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")
@@ -325,6 +326,7 @@ def build_urbanstats(
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")
     shutil.copy("icons/main/replace.png", f"{site_folder}/")
     shutil.copy("icons/main/close.png", f"{site_folder}/")
+    shutil.copy("icons/main/close-red-small.png", f"{site_folder}/")
     shutil.copy("icons/main/pencil-light.png", f"{site_folder}/")
     shutil.copy("icons/main/pencil-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/sort-up.png", f"{site_folder}/")
@@ -336,6 +338,7 @@ def build_urbanstats(
     shutil.copy("icons/main/wikidata-dark.svg", f"{site_folder}/")
     shutil.copy("icons/main/mapper-banner.png", f"{site_folder}/")
     shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
+    shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")
