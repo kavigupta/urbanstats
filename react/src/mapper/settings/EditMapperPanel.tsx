@@ -15,6 +15,7 @@ import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets } from '../../urban-stats-script/worker'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
+import { mixWithBackground } from '../../utils/color'
 import { useMobileLayout } from '../../utils/responsive'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
@@ -132,6 +133,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
 
     return (
         <MaybeSplitLayout
+            error={mapGenerator.errors.some(e => e.kind === 'error')}
             left={(
                 <MapperSettings
                     mapSettings={mapSettings}
@@ -171,7 +173,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     )
 }
 
-function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
+function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
     const mobileLayout = useMobileLayout()
 
     return mobileLayout
@@ -181,10 +183,10 @@ function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }
                     {right}
                 </>
             )
-        : <SplitLayout left={left} right={right} />
+        : <SplitLayout error={error} left={left} right={right} />
 }
 
-function SplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
+function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
     const [height, setHeight] = useState(0)
     const splitRef = useRef<HTMLDivElement>(null)
     const colors = useColors()
@@ -231,7 +233,7 @@ function SplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): Re
         <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
             {left && (
                 <>
-                    <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: colors.slightlyDifferentBackground, padding: '1em' }}>
+                    <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.9 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
                         {left}
                     </div>
                     <div
@@ -334,6 +336,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         <>
             <MaybeSplitLayout
                 left={undefined}
+                error={false}
                 right={(
                     <>
                         <div style={{
