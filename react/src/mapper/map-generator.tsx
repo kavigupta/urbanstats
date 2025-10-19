@@ -1,4 +1,6 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
+import ReactDOMClient from 'react-dom/client'
 import { MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -25,6 +27,7 @@ import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
@@ -182,37 +185,35 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
             const visibleInsets = insetMaps.map(({ inset }) => inset)
 
-            const colorbarRef = React.createRef<HTMLDivElement>()
+            const colorbar = (
+                <Colorbar
+                    ramp={ramp}
+                    basemap={mapResultMain.value.basemap}
+                />
+            )
 
             return {
                 node: (
                     <MapLayout
                         maps={insetMaps.map(({ map }) => map)}
                         loading={props.loading}
-                        colorbar={(
-                            <Colorbar
-                                ramp={ramp}
-                                basemap={mapResultMain.value.basemap}
-                            />
-                        )}
+                        colorbar={colorbar}
                         aspectRatio={computeAspectRatioForInsets(visibleInsets)}
                         mapsContainerRef={mapsContainerRef}
-                        colorbarRef={colorbarRef}
                     />
                 ),
                 exportPng: colors =>
-                    exportAsPng({ colors, colorbarElement: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
+                    exportAsPng({ colors, colorbar, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
             }
         },
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, aspectRatio }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
     maps: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
-    colorbarRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
 }): ReactNode {
     return (
@@ -236,7 +237,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, asp
                     {maps}
                 </div>
             </div>
-            <div style={{ height: '8%', width: '100%' }} ref={colorbarRef}>
+            <div style={{ height: '8%', width: '100%' }}>
                 {colorbar}
             </div>
         </div>
@@ -369,12 +370,12 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
 async function exportAsPng({
     colors,
-    colorbarElement,
+    colorbar,
     insets,
     maps,
     basemap,
 }: {
-    colorbarElement: HTMLElement | undefined
+    colorbar: ReactNode
     colors: Colors
     insets: Inset[]
     maps: maplibregl.Map[]
@@ -383,13 +384,14 @@ async function exportAsPng({
     const pixelRatio = 4
     const width = 4096
     const cBarPad = 40
-    const { height: colorbarHeight, width: colorbarWidth } = colorbarDimensions(colorbarElement, width * 0.8, 300 - cBarPad)
+
+    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio, cBarPad)
 
     const aspectRatio = computeAspectRatioForInsets(insets)
 
     const height = Math.round(width / aspectRatio)
 
-    const totalHeight = height + colorbarHeight + cBarPad
+    const totalHeight = height + colorbarRender.height + cBarPad
 
     const params = { width, height, pixelRatio, insetBorderColor: colors.mapInsetBorderColor }
 
@@ -404,23 +406,44 @@ async function exportAsPng({
     }))
 
     ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
-    ctx.fillRect(0, height, width, colorbarHeight + cBarPad) // Fill the entire colorbar area
+    ctx.fillRect(0, height, width, colorbarRender.height + cBarPad) // Fill the entire colorbar area
 
-    if (colorbarElement) {
-        const colorbarCanvas = await screencapElement(colorbarElement, colorbarWidth, 1)
-
-        ctx.drawImage(colorbarCanvas, (width - colorbarWidth) / 2, height + cBarPad / 2)
-    }
+    ctx.drawImage(colorbarRender.canvas, (width - colorbarRender.width) / 2, height + cBarPad / 2, colorbarRender.width, colorbarRender.height)
 
     return canvas.toDataURL('image/png', 1.0)
 }
 
-function colorbarDimensions(colorbarElement: HTMLElement | undefined, maxWidth: number, maxHeight: number): { width: number, height: number } {
-    if (colorbarElement === undefined) {
-        return { width: 0, height: 0 }
+async function renderColorbar(colorbar: ReactNode, renderColorbarWidth: number, pixelRatio: number, cBarPad: number): Promise<{ width: number, height: number, canvas: HTMLCanvasElement }> {
+    const elem = document.createElement('div')
+    document.body.appendChild(elem)
+
+    const root = ReactDOMClient.createRoot(elem)
+
+    const colorbarElement = React.createRef<HTMLDivElement>()
+
+    ReactDOM.flushSync(() => {
+        root.render(
+            <div ref={colorbarElement} style={{ width: renderColorbarWidth / pixelRatio }}>
+                { colorbar }
+            </div>,
+        )
+    })
+
+    assert(colorbarElement.current !== null, 'Colorbar Element ref was not assigned')
+
+    const colorbarCanvas = await screencapElement(colorbarElement.current, renderColorbarWidth, 1)
+
+    root.unmount()
+
+    elem.remove()
+
+    return {
+        canvas: colorbarCanvas,
+        ...colorbarDimensions(renderColorbarWidth, 300 - cBarPad, colorbarCanvas.width, colorbarCanvas.height),
     }
-    let width = colorbarElement.offsetWidth
-    let height = colorbarElement.offsetHeight
+}
+
+function colorbarDimensions(maxWidth: number, maxHeight: number, width: number, height: number): { width: number, height: number } {
     {
         // do this no matter what, to fill the space
         const scale = maxHeight / height
