@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "longname_b": "Longueuil Ville, Longueuil Territory, Quebec, Canada",
+      "stat_a": 0.592381037344566,
+      "stat_b": 0.6192075218267292
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Winnipeg City, Division No. 11, Manitoba, Canada",
+      "longname_b": "Ottawa City, Ottawa CDR, Ontario, Canada",
+      "stat_a": 0.38339555433777406,
+      "stat_b": 0.5264432832792209
+    },
+    "a_ease": 0.3101391650099404,
+    "b_ease": 0.7150326797385621
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Jefferson County, Alabama, USA",
+      "longname_b": "Milwaukee County, Wisconsin, USA",
+      "stat_a": 0.024258690546852823,
+      "stat_b": -0.008741895150015564
+    },
+    "b": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "San Francisco-Oakland-Hayward MSA, CA, USA",
+      "longname_b": "Montgomery MSA, AL, USA",
+      "stat_a": 0.07628234035246406,
+      "stat_b": -0.022941693037045293
+    },
+    "a_ease": 0.335621139327385,
+    "b_ease": 0.7405628002745367
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Food preparation and serving related occupations %",
+      "stat_path": "occupation_food_preparation_and_serving_related_occupations",
+      "question": "higher % of workers employed as food preparers or servers!TOOLTIP cooks, waiters, bartenders, fast food workers, etc.",
+      "longname_a": "Lynchburg MSA, VA, USA",
+      "longname_b": "Trenton MSA, NJ, USA",
+      "stat_a": 0.05346818455725482,
+      "stat_b": 0.04533702380569233
+    },
+    "b": {
+      "stat_column": "Construction and extraction occupations %",
+      "stat_path": "occupation_construction_and_extraction_occupations",
+      "question": "higher % of workers employed in construction and extraction occupations!TOOLTIP carpenters, electricians, plumbers, roofers, miners, etc.",
+      "longname_a": "VA-11 (2023), USA",
+      "longname_b": "PA-02 (2023), USA",
+      "stat_a": 0.02036970641919927,
+      "stat_b": 0.047304621443209904
+    },
+    "a_ease": 0.2641221374045801,
+    "b_ease": 0.6711349419124218
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rent/Income < 20%",
+      "stat_path": "rent_burden_under_20",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Luzerne County, Pennsylvania, USA",
+      "longname_b": "Will County, Illinois, USA",
+      "stat_a": 0.3432515019680961,
+      "stat_b": 0.2544647336209497
+    },
+    "b": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "stat_path": "days_above_90_4",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Nusa Tenggara Barat, Indonesia",
+      "longname_b": "Paran\u00e1, Brazil",
+      "stat_a": 0.010052108692851775,
+      "stat_b": 0.054093608204268895
+    },
+    "a_ease": 0.683408071748879,
+    "b_ease": 0.27124183006535946
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "Winnebago County, Illinois, USA",
+      "longname_b": "Union County, New Jersey, USA",
+      "stat_a": -0.05620908697194558,
+      "stat_b": 0.022358508302190216
+    },
+    "b": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Italy",
+      "longname_b": "Ivory Coast",
+      "stat_a": 6.358970665768383,
+      "stat_b": 3.4047401543100646
+    },
+    "a_ease": 0.6534996534996536,
+    "b_ease": 0.24519549370444002
+  }
+]
