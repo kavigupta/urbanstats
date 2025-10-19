@@ -243,6 +243,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
                         minHeight: '300px',
                         aspectRatio,
                         position: 'relative',
+                        maxHeight: '100%',
                     }}
                 >
                     {maps}
