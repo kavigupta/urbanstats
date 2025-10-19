@@ -9,17 +9,17 @@ export function testCode(testFn: () => TestFn, geographyKind: string, universe: 
 
     testFn()(name, async (t) => {
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await toggleCustomScript(t)
         // now in autoux mode
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await toggleCustomScript(t)
         // now in custom mode
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await toggleCustomScript(t)
         // now in autoux mode
-        await t.expect(await getErrors()).eql([])
+        await t.expect(getErrors()).eql([])
         await safeReload(t)
         await toggleCustomScript(t)
         // back to custom mode

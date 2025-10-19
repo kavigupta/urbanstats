@@ -30,6 +30,7 @@ test('search-test-with-extra-char', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Pasadena c')
+    await t.expect(Selector('div').withText(/Pasadena city, Texas/).exists).ok()
     await screencap(t)
 })
 
@@ -37,6 +38,7 @@ test('search-test-with-special-chars', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Utt')
+    await t.expect(Selector('div').withText(/Uttar/).exists).ok()
     await screencap(t)
 })
 
@@ -44,6 +46,7 @@ test('search-test-different-first-char', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'hina')
+    await t.expect(Selector('div').withText(/China/).exists).ok()
     await screencap(t)
 })
 

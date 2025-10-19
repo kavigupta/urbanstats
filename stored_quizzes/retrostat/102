@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % of housing units built in 2010 or later",
+      "longname_a": "Grand Rapids Urban Center, USA",
+      "longname_b": "Palmdale Urban Center, USA",
+      "stat_a": 0.04618952582895882,
+      "stat_b": 0.017182443125844857
+    },
+    "b": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "Knoxville [Urban Area], TN, USA",
+      "longname_b": "Provo-Orem [Urban Area], UT, USA",
+      "stat_a": 0.03786497036504387,
+      "stat_b": 0.02333529134871008
+    },
+    "a_ease": 0.34129213483146065,
+    "b_ease": 0.7496493688639552
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Firefighting and prevention, and other protective service workers including supervisors %",
+      "stat_path": "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
+      "question": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors!TOOLTIP firefighters, fire inspectors, correctional officers, bailiffs, etc. (effectively, all protective service workers except police officers)",
+      "longname_a": "Puerto Rico, USA",
+      "longname_b": "Indiana, USA",
+      "stat_a": 0.030937580275030442,
+      "stat_b": 0.008952534403306369
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Lubbock [Urban Area], TX, USA",
+      "longname_b": "Oxnard-San Buenaventura (Ventura) [Urban Area], CA, USA",
+      "stat_a": 0.18657789235770766,
+      "stat_b": 0.10428507854799486
+    },
+    "a_ease": 0.3360488798370672,
+    "b_ease": 0.7765118317265557
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "GA-04 (2025), USA",
+      "longname_b": "PA-12 (2023), USA",
+      "stat_a": 0.028051893095328816,
+      "stat_b": 0.030730917914075898
+    },
+    "b": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "New Jersey, USA",
+      "longname_b": "Florida, USA",
+      "stat_a": 0.4536581820531862,
+      "stat_b": 0.2828776521026991
+    },
+    "a_ease": 0.3913894324853229,
+    "b_ease": 0.7954220314735336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Durham [Urban Area], NC, USA",
+      "longname_b": "Huntsville [Urban Area], AL, USA",
+      "stat_a": 0.0910696814560092,
+      "stat_b": 0.1156002732967454
+    },
+    "b": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "NY-10 (2025), USA",
+      "longname_b": "IN-07 (2023), USA",
+      "stat_a": 0.8445854234929656,
+      "stat_b": 0.8735401643632045
+    },
+    "a_ease": 0.6242977528089888,
+    "b_ease": 0.1918918918918919
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "KS-02 (2023), USA",
+      "longname_b": "KY-06 (2023), USA",
+      "stat_a": 0.40527404879874207,
+      "stat_b": 0.3108822420398293
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Orlando city, Florida, USA",
+      "longname_b": "Houston city, Texas, USA",
+      "stat_a": 0.12941010777031792,
+      "stat_b": 0.10093479239441583
+    },
+    "a_ease": 0.4157303370786517,
+    "b_ease": 0.8310502283105022
+  }
+]
