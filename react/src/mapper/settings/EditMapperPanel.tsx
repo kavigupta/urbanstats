@@ -12,7 +12,7 @@ import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
-import { useHeaderTextClass, useMobileLayout } from '../../utils/responsive'
+import { useMobileLayout } from '../../utils/responsive'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
