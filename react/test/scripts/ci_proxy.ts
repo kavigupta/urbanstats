@@ -28,9 +28,11 @@ export async function startProxy(): Promise<void> {
         repo: 'densitydb.github.io',
     })
 
+    const defaultBranchName = 'fakeRetro100'
+
     const branch = remoteBranches.find(({ name }) => name === targetBranch)
-        ?? remoteBranches.find(({ name }) => name === 'master')
-        ?? (() => { throw new Error('No master branch') })()
+        ?? remoteBranches.find(({ name }) => name === defaultBranchName)
+        ?? (() => { throw new Error(`No ${defaultBranchName} branch`) })()
 
     // This is useful for debugging in case the proxy isn't working
     console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)
