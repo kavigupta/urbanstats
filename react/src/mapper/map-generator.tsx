@@ -232,6 +232,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
+            minHeight: 0,
         }}
         >
             <RelativeLoader loading={loading} />

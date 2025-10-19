@@ -201,14 +201,16 @@ function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }
         )
     }
 
-    const minLeftWidth = 540
-    const leftPct = '30%'
+    const minLeftWidth = left ? 540 : 0
+    const leftPct = left ? '30%' : '0%'
 
     return (
         <div style={{ display: 'flex', gap: '1em', height }} ref={splitRef}>
-            <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: colors.slightlyDifferentBackground, padding: '1em' }}>
-                {left}
-            </div>
+            {left && (
+                <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: colors.slightlyDifferentBackground, padding: '1em' }}>
+                    {left}
+                </div>
+            )}
             <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}))`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {right}
             </div>
@@ -261,38 +263,45 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     return (
         <>
-            <div style={{
-                backgroundColor: colors.slightlyDifferentBackgroundFocused,
-                borderRadius: '5px',
-                padding: '10px',
-                margin: '10px 0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: '0.5em',
-            }}
-            >
-                <div>
-                    <b>Editing Insets.</b>
-                    {' '}
-                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-
-                    <button onClick={() => { setMapEditorMode('uss') }}>
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
-                            setMapEditorMode('uss')
+            <MaybeSplitLayout
+                left={undefined}
+                right={(
+                    <>
+                        <div style={{
+                            backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                            borderRadius: '5px',
+                            padding: '10px',
+                            margin: '10px 0',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            gap: '0.5em',
                         }}
-                        disabled={!canUndo}
-                    >
-                        Accept
-                    </button>
-                </div>
-            </div>
-            {ui.node}
+                        >
+                            <div>
+                                <b>Editing Insets.</b>
+                                {' '}
+                                Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                            </div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+
+                                <button onClick={() => { setMapEditorMode('uss') }}>
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
+                                        setMapEditorMode('uss')
+                                    }}
+                                    disabled={!canUndo}
+                                >
+                                    Accept
+                                </button>
+                            </div>
+                        </div>
+                        {ui.node}
+                    </>
+                )}
+            />
             {undoRedoUi}
         </>
     )
