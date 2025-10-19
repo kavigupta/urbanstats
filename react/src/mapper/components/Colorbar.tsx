@@ -1,9 +1,8 @@
-import React, { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { Statistic } from '../../components/display-stats'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { furthestColor, interpolateColor } from '../../utils/color'
-import { onWidthChange } from '../../utils/responsive'
 import { UnitType } from '../../utils/unit'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
