@@ -1,4 +1,4 @@
-import React, { CSSProperties, HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
