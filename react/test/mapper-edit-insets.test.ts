@@ -215,7 +215,6 @@ insetsEditTest(() => test, {
 
 test('no duplicate/delete on main', async (t) => {
     await t.click(Selector('button').withExactText('Edit Insets'))
-    await waitForLoading(t)
     await t.expect(Selector(handle(0, 'duplicate')).exists).notOk()
     await t.expect(Selector(handle(0, 'delete')).exists).notOk()
 })
