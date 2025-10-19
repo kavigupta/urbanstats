@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Disability %",
+      "stat_path": "DISABILITY_cdc_2",
+      "question": "higher % of adults with a disability",
+      "longname_a": "CA-45 (2023), USA",
+      "longname_b": "PA-12 (2023), USA",
+      "stat_a": 0.24215169097457992,
+      "stat_b": 0.2849421816803864
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "WI-08 (2023), USA",
+      "longname_b": "IL-04 (2023), USA",
+      "stat_a": -0.07398463868058747,
+      "stat_b": -0.01366844337241968
+    },
+    "a_ease": 0.7096774193548387,
+    "b_ease": 0.3084395871281117
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Oklahoma City MSA, OK, USA",
+      "longname_b": "York-Hanover MSA, PA, USA",
+      "stat_a": 0.027272955135593684,
+      "stat_b": 0.11275538365886713
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "stat_path": "generation_boomer",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "Contra Costa County, California, USA",
+      "longname_b": "Denver County, Colorado, USA",
+      "stat_a": 0.2271151974637978,
+      "stat_b": 0.17074746168845156
+    },
+    "a_ease": 0.298811544991511,
+    "b_ease": 0.7102206736353078
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Salt Lake City UT Media Market, USA",
+      "longname_b": "Ft. Wayne IN Media Market, USA",
+      "stat_a": 0.11254335534755572,
+      "stat_b": 0.07554032706547144
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Al \u2018A\u0305\u015fimah, Jordan",
+      "longname_b": "Wakiso, Uganda",
+      "stat_a": 18946.519135188602,
+      "stat_b": 4664.629314494482
+    },
+    "a_ease": 0.7865961199294532,
+    "b_ease": 0.37158469945355194
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "NE-01 (2023), USA",
+      "longname_b": "WY-AL (2023), USA",
+      "stat_a": 0.21574426792787246,
+      "stat_b": 0.17459366126139575
+    },
+    "b": {
+      "stat_column": "Commute Car %",
+      "stat_path": "transportation_means_car",
+      "question": "higher % of people who commute by car",
+      "longname_a": "Union County, New Jersey, USA",
+      "longname_b": "Merced County, California, USA",
+      "stat_a": 0.7445429208596889,
+      "stat_b": 0.8808431924158928
+    },
+    "a_ease": 0.4040870138431114,
+    "b_ease": 0.8224573780129336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "stat_path": "transportation_commute_time_over_60",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "London CMA, ON, Canada",
+      "longname_b": "Baton Rouge MSA, LA, USA",
+      "stat_a": 0.03992906425780709,
+      "stat_b": 0.09315644364370894
+    },
+    "b": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Halton Regional municipality, Ontario, Canada",
+      "longname_b": "Division No. 1, Newfoundland and Labrador, Canada",
+      "stat_a": 0.960724879645989,
+      "stat_b": 0.9172458722618624
+    },
+    "a_ease": 0.3983180428134557,
+    "b_ease": 0.8324225865209471
+  }
+]
