@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, RefObject, useEffect, useRef } from 'react'
+import React, { CSSProperties, HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
@@ -69,8 +69,12 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
                     duplicate={inset.mainMap ? undefined : editInset.duplicate}
                     add={inset.mainMap ? editInset.add : undefined}
                     shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
-                    moveUp={!inset.mainMap && i + 1 < numInsets ? () => { editInset.moveUp() } : undefined}
-                    moveDown={!inset.mainMap && i > 0 ? () => { editInset.moveDown() } : undefined}
+                    /*
+                    Allowing reordering on the main map in case you want to put its corner in front of an inset or something
+                    it also eliminates the weird edge case where the main map is not the 0th inset
+                    */
+                    moveUp={i + 1 < numInsets ? () => { editInset.moveUp() } : undefined}
+                    moveDown={i > 0 ? () => { editInset.moveDown() } : undefined}
                 />
             )}
         </div>
@@ -149,17 +153,6 @@ function EditInsetsHandles(props: {
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
 }): ReactNode {
-    const colors = useColors()
-
-    const handleStyle: (handleSize: number) => CSSProperties = handleSize => ({
-        backgroundColor: colors.slightlyDifferentBackground,
-        border: `1px solid ${colors.textMain}`,
-        position: 'absolute',
-        width: `${handleSize}px`,
-        height: `${handleSize}px`,
-        borderRadius: '2px',
-    })
-
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
     const pointerHandlers = (kind: DragKind): {
@@ -235,33 +228,73 @@ function EditInsetsHandles(props: {
 
     return (
         <>
-            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
-            <div style={{ ...handleStyle(15), right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
-            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
-            <div style={{ ...handleStyle(15), left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
+            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
+            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
+            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
+            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
             {props.shouldHaveCenterHandle && (
-                <div style={{ ...handleStyle(20), margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+                <Handle handleSize={20} style={{ margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
             {props.duplicate && (
-                <div data-test="duplicate" style={{ ...handleStyle(25), margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate}>
-                    <img src="/duplicate.png" alt="Duplicate" style={{ width: '100%', height: '100%' }} />
-                </div>
+                <Handle handleSize={25} style={{ margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
             )}
             {props.delete && (
-                <div data-test="delete" style={{ ...handleStyle(25), margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete}>
-                    <img src="/close-red-small.png" alt="Delete" style={{ width: '100%', height: '100%' }} />
-                </div>
+                <Handle handleSize={25} style={{ margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
             )}
             {props.add && (
-                <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
-                    <img src="/add-green-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
-                </div>
+                <Handle handleSize={25} style={{ margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
             )}
             {props.moveUp && (
-                <div data-test="moveUp" style={{ ...handleStyle(25), left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(33% - 12.5px)`, cursor: 'default' }} onClick={props.moveUp}>
-                    <img src="/sort-up.png" alt="Move Up" style={{ width: '100%', height: '100%' }} />
-                </div>
+                <Handle handleSize={25} style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - 25px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
+            )}
+            {props.moveDown && (
+                <Handle handleSize={25} style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
             )}
         </>
+    )
+}
+
+function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?: { src: string, alt: string } } & HTMLAttributes<HTMLDivElement>): ReactNode {
+    const colors = useColors()
+    const [hover, setHover] = useState(false)
+
+    const divRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const handleMouseEnter = (): void => {
+            setHover(true)
+        }
+
+        const handleMouseLeave = (): void => {
+            setHover(false)
+        }
+
+        const div = divRef.current!
+        div.addEventListener('mouseenter', handleMouseEnter)
+        div.addEventListener('mouseleave', handleMouseLeave)
+
+        return () => {
+            div.removeEventListener('mouseenter', handleMouseEnter)
+            div.removeEventListener('mouseleave', handleMouseLeave)
+        }
+    }, [])
+
+    return (
+        <div
+            ref={divRef}
+            role="button"
+            style={{
+                backgroundColor: hover ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
+                border: `1px solid ${colors.textMain}`,
+                position: 'absolute',
+                width: `${handleSize}px`,
+                height: `${handleSize}px`,
+                borderRadius: '2px',
+                ...style,
+            }}
+            {...rest}
+        >
+            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%' }} />}
+        </div>
     )
 }

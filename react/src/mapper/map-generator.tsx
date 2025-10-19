@@ -144,7 +144,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
             const mapsContainerRef = React.createRef<HTMLDivElement>()
 
-            const insetsFeatures = mapResultMain.value.insets.flatMap((inset) => {
+            const insetsFeatures = (props.mode === 'insets' ? props.editInsets.editedInsets : mapResultMain.value.insets).flatMap((inset) => {
                 const insetFeatures = filterOverlaps(inset, features)
                 if (insetFeatures.length === 0 && props.mode !== 'insets') {
                     return []
