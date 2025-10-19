@@ -8,7 +8,7 @@ import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i }: {
+function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
     inset: Inset
     children: ReactNode
     container: RefObject<HTMLDivElement>
@@ -17,8 +17,11 @@ function _InsetMap({ inset, children, editInset, container, i }: {
         duplicate: () => void
         delete: () => void
         add: () => void
+        moveUp: () => void
+        moveDown: () => void
     }
     i: number
+    numInsets: number
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -66,6 +69,8 @@ function _InsetMap({ inset, children, editInset, container, i }: {
                     duplicate={inset.mainMap ? undefined : editInset.duplicate}
                     add={inset.mainMap ? editInset.add : undefined}
                     shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
+                    moveUp={!inset.mainMap && i + 1 < numInsets ? () => { editInset.moveUp() } : undefined}
+                    moveDown={!inset.mainMap && i > 0 ? () => { editInset.moveDown() } : undefined}
                 />
             )}
         </div>
@@ -140,6 +145,8 @@ function EditInsetsHandles(props: {
     delete?: () => void
     duplicate?: () => void
     add?: () => void
+    moveUp?: () => void
+    moveDown?: () => void
     shouldHaveCenterHandle: boolean
 }): ReactNode {
     const colors = useColors()
@@ -249,6 +256,11 @@ function EditInsetsHandles(props: {
             {props.add && (
                 <div data-test="add" style={{ ...handleStyle(25), margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add}>
                     <img src="/add-green-small.png" alt="Add" style={{ width: '100%', height: '100%' }} />
+                </div>
+            )}
+            {props.moveUp && (
+                <div data-test="moveUp" style={{ ...handleStyle(25), left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(33% - 12.5px)`, cursor: 'default' }} onClick={props.moveUp}>
+                    <img src="/sort-up.png" alt="Move Up" style={{ width: '100%', height: '100%' }} />
                 </div>
             )}
         </>
