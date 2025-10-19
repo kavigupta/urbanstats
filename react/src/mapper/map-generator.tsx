@@ -223,7 +223,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, colorbarRef, asp
         }}
         >
             <RelativeLoader loading={loading} />
-            <div style={{ height: '90%', width: '100%' }}>
+            <div style={{ maxHeight: '90%', width: '100%' }}>
                 <div
                     ref={mapsContainerRef}
                     style={{
