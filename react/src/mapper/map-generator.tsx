@@ -232,7 +232,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
-            minHeight: 0,
+            minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
         }}
         >
             <RelativeLoader loading={loading} />
