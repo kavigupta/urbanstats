@@ -173,6 +173,18 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
 
 function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
     const mobileLayout = useMobileLayout()
+
+    return mobileLayout
+        ? (
+                <>
+                    {left}
+                    {right}
+                </>
+            )
+        : <SplitLayout left={left} right={right} />
+}
+
+function SplitLayout({ left, right }: { left: ReactNode, right: ReactNode }): ReactNode {
     const [height, setHeight] = useState(0)
     const splitRef = useRef<HTMLDivElement>(null)
     const colors = useColors()
@@ -207,15 +219,6 @@ function MaybeSplitLayout({ left, right }: { left: ReactNode, right: ReactNode }
             dividerRef.current.style.cursor = leftColProp === minLeftColProp() ? 'e-resize' : (leftColProp === maxLeftColProp ? 'w-resize' : 'col-resize')
         }
     })
-
-    if (mobileLayout) {
-        return (
-            <>
-                {left}
-                {right}
-            </>
-        )
-    }
 
     const minLeftWidth = left ? 540 : 0
     const leftPct = left ? `${leftColProp * 100}%` : '0%'
