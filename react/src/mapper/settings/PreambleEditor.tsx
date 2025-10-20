@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
@@ -22,6 +22,10 @@ export function PreambleEditor({
     blockIdent: string
 }): ReactNode {
     const [showPreamble, setShowPreamble] = useState(preamble.originalCode.trim() !== '')
+
+    useEffect(() => {
+        setShowPreamble(preamble.originalCode.trim() !== '')
+    }, [preamble.originalCode])
 
     return (
         <div style={{ margin: '0.5em 0' }}>

@@ -20,11 +20,15 @@ export async function downloadPNG(t: TestController): Promise<void> {
     await grabDownload(t, download, '.png') // wait for 6 seconds to ensure the download completes
 }
 
-export async function checkBox(t: TestController, label: RegExp): Promise<void> {
+export function checkSelector(label: RegExp): Selector {
     const labelEl = Selector('label').withText(label)
     const parent = labelEl.parent()
     const checkbox = parent.find('input[type="checkbox"]')
-    await t.click(checkbox)
+    return checkbox
+}
+
+export async function checkBox(t: TestController, label: RegExp): Promise<void> {
+    await t.click(checkSelector(label))
 }
 
 export async function toggleCustomScript(t: TestController): Promise<void> {
