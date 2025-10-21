@@ -16,7 +16,7 @@ function map(n: number): string {
     return `[id^="map-${n}"]`
 }
 
-function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add'): string {
+function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
     return `${map(mapNumber)} [data-test="${pos}"]`
 }
 
@@ -211,6 +211,22 @@ insetsEditTest(() => test, {
     before: defaultUSA,
     after: [...defaultUSA, { ...defaultUSA[0], frame: { height: 265, width: 496, x: 248, y: 135 } }],
     customInsetsAfterEdit: 1,
+})
+
+insetsEditTest(() => test, {
+    description: 'move down',
+    action: t => t.click(handle(3, 'moveDown')),
+    before: defaultUSA,
+    after: [...defaultUSA.slice(0, 2), defaultUSA[3], defaultUSA[2], ...defaultUSA.slice(4)],
+    customInsetsAfterEdit: 0,
+})
+
+insetsEditTest(() => test, {
+    description: 'move up',
+    action: t => t.click(handle(3, 'moveUp')),
+    before: defaultUSA,
+    after: [...defaultUSA.slice(0, 3), defaultUSA[4], defaultUSA[3], ...defaultUSA.slice(5)],
+    customInsetsAfterEdit: 0,
 })
 
 test('no duplicate/delete on main', async (t) => {

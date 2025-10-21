@@ -2,7 +2,7 @@ import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { deconstruct, Inset } from '../../urban-stats-script/constants/insets'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets, loadInsetExpression } from '../../urban-stats-script/worker'
-import { ArrayEdits, replace } from '../../utils/array-edits'
+import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -81,6 +81,13 @@ export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], w
     return {
         insets: replace(edits.insets, [from, to], withArray),
         ast: replace(edits.ast, [from, to], withArray.map(deconstruct)),
+    }
+}
+
+export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): InsetEdits {
+    return {
+        insets: swap(edits.insets, indexA, indexB),
+        ast: swap(edits.ast, indexA, indexB),
     }
 }
 
