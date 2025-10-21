@@ -148,8 +148,14 @@ export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (Geo
 }
 
 async function firstLabelId(map: MapRef): Promise<string | undefined> {
-    if (!map.loaded()) {
-        await new Promise(resolve => map.once('load', resolve))
+    while (!map.loaded()) {
+        // The events are not good, so just poll
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        if (!document.contains(map.getContainer())) {
+            // Map has been removed and will now never load
+            return undefined
+        }
     }
     for (const layerId of map.getLayersOrder()) {
         const layer = map.getLayer(layerId)!
