@@ -61,11 +61,13 @@ def _compute_difficulty_multipliers(
     diffmults[:, universe_overlap_mask(qt, excluded_universes)] = 0
     return diffmults
 
+
 def invalid_values(values):
     values = np.abs(values)
     values = values / values.max(axis=1, keepdims=True)
     values = values < 1e-3
-    return (values[:, None, :] | values[:, :, None])
+    return values[:, None, :] | values[:, :, None]
+
 
 def _compute_adjusted_difficulties(
     qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
