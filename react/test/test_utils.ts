@@ -79,6 +79,10 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
     }
 }
 
+async function waitForLoading(): Promise<void> {
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading())()
+}
+
 async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
@@ -114,6 +118,7 @@ function screenshotPath(t: TestController): string {
 }
 
 export async function screencap(t: TestController, { fullPage = true, wait = true, selector }: { fullPage?: boolean, wait?: boolean, selector?: Selector } = {}): Promise<void> {
+    await waitForLoading()
     await prepForImage(t, { hover: fullPage, wait })
     if (selector !== undefined) {
         await t.takeElementScreenshot(selector, screenshotPath(t))

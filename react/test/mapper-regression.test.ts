@@ -7,10 +7,10 @@ const urls = {
     rgbMap: '/mapper.html?settings=H4sIAAAAAAAAA42OsWrDMBCGX0UcFKTiIV4TNFQZPJR2cBO6CMrZFqmIJRnp1CSEvHuVhhqyZbv7fr7%2F7gw7E3YRp%2B%2FTq%2FUDLGEdsqcTVJC9%2FTExmcK2Hy8FpD7aiWB5hpxSoX1OFNx7GAzXoEGstO%2BDHyzZ4BmnmI0o5A2ntlF8QMJW3inOeuuy4%2FWCPbM%2BOJfJfFFEnyxVrBalsmJXr3nA6%2Bze3EnqAemA436WRuzMKDW0cn2L2eb%2Fl2ZG6u%2BMmvfP0rBiDo%2FXclkvnjRUrMNkHE7SB3WbuBBwufwCmMvBE2wBAAA%3D',
 }
 
-function regressionTest(name: keyof typeof urls, code: string): void {
+function regressionTest(testFn: () => TestFn, name: keyof typeof urls, code: string): void {
     urbanstatsFixture(name, urls[name])
 
-    test(name, async (t) => {
+    testFn()(name, async (t) => {
         await t.expect(getErrors()).eql([])
         await downloadPNG(t)
         await toggleCustomScript(t)
@@ -22,6 +22,7 @@ function regressionTest(name: keyof typeof urls, code: string): void {
 }
 
 regressionTest(
+    () => test,
     'somewhatComplicatedRegression',
     `regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 10000)
@@ -30,11 +31,13 @@ cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ra
 )
 
 regressionTest(
+    () => test,
     'densityPointMap',
     `pMap(data=density_pw_1km, scale=logScale(min=100, max=5000), ramp=rampUridis, relativeArea=population, maxRadius=20, basemap=noBasemap())\n`,
 )
 
 regressionTest(
+    () => test,
     'rgbMap',
     `cMapRGB(dataR=minimum(10 * commute_transit, 1), dataG=minimum(10 * commute_bike, 1), dataB=minimum(10 * commute_walk, 1), label="R=Commute Transit, G=Commute Bike, B=Commute Walk; maximum=10%", basemap=noBasemap())\n`,
 )
