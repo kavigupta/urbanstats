@@ -151,7 +151,7 @@ async function firstLabelId(map: MapRef): Promise<string | undefined> {
     if (!map.loaded()) {
         await Promise.any([
             map.once('load'),
-            map.once('remove'),
+            map.once('remove'), // Map might be removed while it's loading
         ])
     }
     for (const layerId of map.getLayersOrder()) {
