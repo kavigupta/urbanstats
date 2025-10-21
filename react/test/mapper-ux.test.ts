@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
-import { checkBox, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
 import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload } from './test_utils'
 
@@ -322,6 +322,21 @@ mapper(() => test)('import', { code: 'customNode("");\ncondition (true)\ncMap(da
 mapper(() => test)('disable basemap', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', universe: 'USA', geo: 'Subnational Region' }, async (t) => {
     await replaceInput(t, 'OSM Basemap', 'No Basemap')
     await downloadPNG(t)
+})
+
+mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const preamble = checkSelector(/^Preamble/)
+    await t.expect(preamble.checked).notOk()
+    await t.click(preamble)
+    await t.expect(preamble.checked).ok()
+    await typeInEditor(t, 0, 'myVar = 42', true)
+    await t.expect(preamble.checked).ok()
+    await t.pressKey('ctrl+z')
+    await t.expect(preamble.checked).notOk()
+    await t.pressKey('ctrl+y')
+    await t.expect(preamble.checked).ok()
+    await t.pressKey('ctrl+z')
+    await t.expect(preamble.checked).notOk()
 })
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
