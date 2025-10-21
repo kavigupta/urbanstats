@@ -398,9 +398,11 @@ export async function clickMapFeature(r: RegExp): Promise<void> {
             for (const feature of features) {
                 if (r.test(feature)) {
                     clickFeature(feature)
+                    return
                 }
             }
         }
+        throw new Error(`No feature clicked, none matching ${r}`)
     }, { dependencies: { r } })()
 }
 
