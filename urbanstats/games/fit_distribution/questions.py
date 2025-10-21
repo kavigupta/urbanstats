@@ -61,16 +61,23 @@ def _compute_difficulty_multipliers(
     diffmults[:, universe_overlap_mask(qt, excluded_universes)] = 0
     return diffmults
 
+def invalid_values(values):
+    values = np.abs(values)
+    values = values / values.max(axis=1, keepdims=True)
+    values = values < 1e-3
+    return (values[:, None, :] | values[:, :, None])
 
 def _compute_adjusted_difficulties(
     qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
 ):
     max_pct_diff = max(max(x) for x in diff_ranges)
     values = np.array(qt.data).T
+    invalid_mask = invalid_values(values)
     vals_a, vals_b = values[:, None], values[:, :, None]
     raw_pct_diff = (
         np.abs(vals_a - vals_b) / np.minimum(np.abs(vals_a), np.abs(vals_b)) * 100
     )
+    raw_pct_diff[invalid_mask] = np.inf
     raw_pct_diff[raw_pct_diff > max_pct_diff] = np.inf
     adj_pct_diff = raw_pct_diff / _compute_difficulty_multipliers(
         qt, col_to_difficulty, intl_difficulty, excluded_universes
