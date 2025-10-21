@@ -45,6 +45,32 @@ export class TestUtils {
         clickFeature: (name: string) => void
         features: string[]
     }>()
+
+    private loadingCounter = 0
+    private loadingCallbacks: (() => void)[] = []
+
+    startLoading(): void {
+        this.loadingCounter++
+    }
+
+    finishLoading(): void {
+        this.loadingCounter--
+        if (this.loadingCounter === 0) {
+            this.loadingCallbacks.forEach((callback) => { callback() })
+            this.loadingCallbacks = []
+        }
+    }
+
+    waitForLoading(): Promise<void> {
+        if (this.loadingCounter === 0) {
+            return Promise.resolve()
+        }
+        else {
+            return new Promise((resolve) => {
+                this.loadingCallbacks.push(resolve)
+            })
+        }
+    }
 }
 
 export interface TestWindow {
