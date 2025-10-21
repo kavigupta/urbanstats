@@ -147,13 +147,17 @@ export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (Geo
     return promiseStream(polygons.map(polygonGeojson))
 }
 
-async function firstLabelId(map: MapRef): Promise<string | undefined> {
+async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
     if (!map.loaded()) {
         await Promise.any([
             map.once('load'),
             map.once('remove'), // Map might be removed while it's loading
         ])
     }
+}
+
+async function firstLabelId(map: MapRef): Promise<string | undefined> {
+    await waitForMapLoadedOrRemoved(map)
     for (const layerId of map.getLayersOrder()) {
         const layer = map.getLayer(layerId)!
         if (layer.type === 'symbol' && layer.id.startsWith('label')) {
@@ -277,13 +281,9 @@ const defaultBackgroundColor = '#f8f4f0'
 export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const map = useMap().current!
 
-    const mapLoaded = useOrderedResolve(useMemo(() => {
-        return (async () => {
-            if (!map.loaded()) {
-                await new Promise(resolve => map.once('load', resolve))
-            }
-            return true
-        })()
+    const mapLoaded = useOrderedResolve(useMemo(async () => {
+        await waitForMapLoadedOrRemoved(map)
+        return true
     }, [map])).result ?? false
 
     useEffect(() => {
