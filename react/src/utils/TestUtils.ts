@@ -61,6 +61,7 @@ export class TestUtils {
 
     startLoading(): void {
         if (this.loadingCounter === 0 && this.isTesting) {
+            console.warn('Loading start')
             document.body.appendChild(this.loadingElement)
         }
         this.loadingCounter++
@@ -83,7 +84,10 @@ export class TestUtils {
             if (this.loadingCounter === 0) {
                 this.loadingCallbacks.forEach((callback) => { callback() })
                 this.loadingCallbacks = []
-                this.loadingElement.remove()
+                if (this.isTesting) {
+                    this.loadingElement.remove()
+                    console.warn('Loading finish')
+                }
             }
         })
     }

@@ -13,6 +13,7 @@ export function useOrderedResolve<T>(promise: Promise<T>): ResolveState<T> {
 
     useEffect(() => {
         setState(prevState => ({ promise, result: prevState.result, loading: true }))
+        TestUtils.shared.startLoading()
         void promise.then(
             (result) => {
                 setState(prevState => prevState.promise === promise ? ({ promise, result, loading: false }) : prevState)
@@ -20,17 +21,8 @@ export function useOrderedResolve<T>(promise: Promise<T>): ResolveState<T> {
             () => {
                 setState(prevState => prevState.promise === promise ? ({ promise, result: undefined, loading: false }) : prevState)
             },
-        )
+        ).finally(() => { TestUtils.shared.finishLoading() })
     }, [promise])
-
-    useEffect(() => {
-        if (state.loading) {
-            TestUtils.shared.startLoading()
-        }
-        else {
-            TestUtils.shared.finishLoading()
-        }
-    }, [state.loading])
 
     return state
 }
