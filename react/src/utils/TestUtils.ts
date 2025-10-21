@@ -67,32 +67,27 @@ export class TestUtils {
         this.loadingCounter++
     }
 
-    private eventLoopIters(iters: number, callback: () => void): void {
-        if (iters === 0) {
-            callback()
-        }
-        else {
-            setTimeout(() => {
-                this.eventLoopIters(iters - 1, callback)
-            }, 0)
+    private async eventLoopIters(iters: number): Promise<void> {
+        for (;iters > 0; iters--) {
+            await new Promise(resolve => setTimeout(resolve, 0))
         }
     }
 
-    finishLoading(): void {
-        this.eventLoopIters(10, () => {
-            this.loadingCounter--
-            if (this.loadingCounter === 0) {
-                this.loadingCallbacks.forEach((callback) => { callback() })
-                this.loadingCallbacks = []
-                if (this.isTesting) {
-                    this.loadingElement.remove()
-                    console.warn('Loading finish')
-                }
+    async finishLoading(): Promise<void> {
+        await this.eventLoopIters(10)
+        this.loadingCounter--
+        if (this.loadingCounter === 0) {
+            this.loadingCallbacks.forEach((callback) => { callback() })
+            this.loadingCallbacks = []
+            if (this.isTesting) {
+                this.loadingElement.remove()
+                console.warn('Loading finish')
             }
-        })
+        }
     }
 
-    waitForLoading(): Promise<void> {
+    async waitForLoading(): Promise<void> {
+        await this.eventLoopIters(10)
         if (this.loadingCounter === 0) {
             return Promise.resolve()
         }
