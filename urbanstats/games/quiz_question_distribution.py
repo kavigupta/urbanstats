@@ -95,7 +95,6 @@ def _test_question_nonexistence(qqp):
     Check that certain known-bad questions do not exist in the generated quiz questions.
     """
     # Issue #1512
-    1/0
     _assert_does_not_exist(
         qqp,
         "Santo Domingo Urban Center, Dominican Republic",
