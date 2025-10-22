@@ -1,83 +1,83 @@
 export default {
     "industry": [
         [
-            "Agriculture, forestry, fishing and hunting %",
+            "Employed in Agriculture, forestry, fishing and hunting %",
             "agriculture, forestry, logging, fishing, and hunting"
         ],
         [
-            "Mining, quarrying, and oil and gas extraction %",
+            "Employed in Mining, quarrying, and oil and gas extraction %",
             "mining, quarrying, and oil and gas extraction"
         ],
         [
-            "Accommodation and food services %",
+            "Employed in Accommodation and food services %",
             "hotels, restaurants, bars, caterers, food services contractors, etc."
         ],
         [
-            "Arts, entertainment, and recreation %",
+            "Employed in Arts, entertainment, and recreation %",
             "performing arts companies, sports, museums, amusement parks, gambling industries, etc."
         ],
         [
-            "Construction %",
+            "Employed in Construction %",
             "construction"
         ],
         [
-            "Educational services %",
+            "Employed in Educational services %",
             "elementary and secondary schools, colleges, universities,etc."
         ],
         [
-            "Health care and social assistance %",
+            "Employed in Health care and social assistance %",
             "hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc."
         ],
         [
-            "Finance and insurance %",
+            "Employed in Finance and insurance %",
             "banks, credit unions, insurance carriers, securities and commodity contracts, etc."
         ],
         [
-            "Real estate and rental and leasing %",
+            "Employed in Real estate and rental and leasing %",
             "real estate, rental and leasing, lessors of real estate, etc."
         ],
         [
-            "Information %",
+            "Employed in Information %",
             "publishing industries, software publishers, data processing services, broadcasting, libraries, etc."
         ],
         [
-            "Manufacturing %",
+            "Employed in Manufacturing %",
             "metal manufacturing, machinery manufacturing, cement and concrete product manufacturing, sawmills, wood product manufacturing, food and beverage manufacturing, textile mills, apparel manufacturing, paper manufacturing, printing, chemical manufacturing, plastics and rubber products manufacturing, etc."
         ],
         [
-            "Other services, except public administration %",
+            "Employed in Other services, except public administration %",
             "repair and maintenance, personal care services, beauty salons, funeral homes, religious organizations, civic and social organizations, etc."
         ],
         [
-            "Administrative and support and waste management services %",
+            "Employed in Administrative and support and waste management services %",
             "office administrative services, employment services, business support services, waste management and remediation services, etc."
         ],
         [
-            "Management of companies and enterprises %",
+            "Employed in Management of companies and enterprises %",
             "management of companies and enterprises"
         ],
         [
-            "Professional, scientific, and technical services %",
+            "Employed in Professional, scientific, and technical services %",
             "legal services, accounting services, architectural services, engineering services, computer systems design services, management consulting services, etc."
         ],
         [
-            "Public administration %",
+            "Employed in Public administration %",
             "executive offices, legislative bodies, public finance activities, public order and safety activities, etc."
         ],
         [
-            "Retail trade %",
+            "Employed in Retail trade %",
             "retailers of all kinds of goods, including stores, gas stations, florists, etc."
         ],
         [
-            "Transportation and warehousing %",
+            "Employed in Transportation and warehousing %",
             "transportation by all means, taxis, buses, sightseeing transportation, warehousing, etc."
         ],
         [
-            "Utilities %",
+            "Employed in Utilities %",
             "electrical power generation, transmission, and distribution; natural gas distribution; water, sewage, and other systems"
         ],
         [
-            "Wholesale trade %",
+            "Employed in Wholesale trade %",
             "wholesalers of all kinds of goods"
         ]
     ],
