@@ -57,7 +57,7 @@ def get_custom_quizzes():
                 "West Virginia, USA",
             ),
             custom_quiz_question(
-                "Arts, entertainment, and recreation %",
+                "Employed in Arts, entertainment, and recreation %",
                 "Carbon County, Pennsylvania, USA",
                 "Clark County, Nevada, USA",
             ),
@@ -108,7 +108,7 @@ def get_custom_quizzes():
                 "Florida, USA",
             ),
             custom_quiz_question(
-                "Agriculture, forestry, fishing and hunting %",
+                "Employed in Agriculture, forestry, fishing and hunting %",
                 "Horn Lake city, Mississippi, USA",
                 "Kill Devil Hills MSA, NC, USA",
             ),

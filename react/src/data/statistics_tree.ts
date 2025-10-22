@@ -3511,13 +3511,13 @@ export const rawStatsTree = [
         "contents": [
             {
                 "id": "industry_agriculture,_forestry,_fishing_and_hunting",
-                "name": "Agriculture, forestry, fishing and hunting %",
+                "name": "Employed in Agriculture, forestry, fishing and hunting %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Agriculture, forestry, fishing and hunting %",
+                                "name": "Employed in Agriculture, forestry, fishing and hunting %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3542,13 +3542,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_mining,_quarrying,_and_oil_and_gas_extraction",
-                "name": "Mining, quarrying, and oil and gas extraction %",
+                "name": "Employed in Mining, quarrying, and oil and gas extraction %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Mining, quarrying, and oil and gas extraction %",
+                                "name": "Employed in Mining, quarrying, and oil and gas extraction %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3573,13 +3573,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_accommodation_and_food_services",
-                "name": "Accommodation and food services %",
+                "name": "Employed in Accommodation and food services %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Accommodation and food services %",
+                                "name": "Employed in Accommodation and food services %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3604,13 +3604,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_arts,_entertainment,_and_recreation",
-                "name": "Arts, entertainment, and recreation %",
+                "name": "Employed in Arts, entertainment, and recreation %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Arts, entertainment, and recreation %",
+                                "name": "Employed in Arts, entertainment, and recreation %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3635,13 +3635,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_construction",
-                "name": "Construction %",
+                "name": "Employed in Construction %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Construction %",
+                                "name": "Employed in Construction %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3666,13 +3666,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_educational_services",
-                "name": "Educational services %",
+                "name": "Employed in Educational services %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Educational services %",
+                                "name": "Employed in Educational services %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3697,13 +3697,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_health_care_and_social_assistance",
-                "name": "Health care and social assistance %",
+                "name": "Employed in Health care and social assistance %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Health care and social assistance %",
+                                "name": "Employed in Health care and social assistance %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3728,13 +3728,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_finance_and_insurance",
-                "name": "Finance and insurance %",
+                "name": "Employed in Finance and insurance %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Finance and insurance %",
+                                "name": "Employed in Finance and insurance %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3759,13 +3759,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_real_estate_and_rental_and_leasing",
-                "name": "Real estate and rental and leasing %",
+                "name": "Employed in Real estate and rental and leasing %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Real estate and rental and leasing %",
+                                "name": "Employed in Real estate and rental and leasing %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3790,13 +3790,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_information",
-                "name": "Information %",
+                "name": "Employed in Information %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Information %",
+                                "name": "Employed in Information %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3821,13 +3821,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_manufacturing",
-                "name": "Manufacturing %",
+                "name": "Employed in Manufacturing %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Manufacturing %",
+                                "name": "Employed in Manufacturing %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3852,13 +3852,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_other_services,_except_public_administration",
-                "name": "Other services, except public administration %",
+                "name": "Employed in Other services, except public administration %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Other services, except public administration %",
+                                "name": "Employed in Other services, except public administration %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3883,13 +3883,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_administrative_and_support_and_waste_management_services",
-                "name": "Administrative and support and waste management services %",
+                "name": "Employed in Administrative and support and waste management services %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Administrative and support and waste management services %",
+                                "name": "Employed in Administrative and support and waste management services %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3914,13 +3914,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_management_of_companies_and_enterprises",
-                "name": "Management of companies and enterprises %",
+                "name": "Employed in Management of companies and enterprises %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Management of companies and enterprises %",
+                                "name": "Employed in Management of companies and enterprises %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3945,13 +3945,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_professional,_scientific,_and_technical_services",
-                "name": "Professional, scientific, and technical services %",
+                "name": "Employed in Professional, scientific, and technical services %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Professional, scientific, and technical services %",
+                                "name": "Employed in Professional, scientific, and technical services %",
                                 "stats": [
                                     {
                                         "source": {
@@ -3976,13 +3976,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_public_administration",
-                "name": "Public administration %",
+                "name": "Employed in Public administration %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Public administration %",
+                                "name": "Employed in Public administration %",
                                 "stats": [
                                     {
                                         "source": {
@@ -4007,13 +4007,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_retail_trade",
-                "name": "Retail trade %",
+                "name": "Employed in Retail trade %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Retail trade %",
+                                "name": "Employed in Retail trade %",
                                 "stats": [
                                     {
                                         "source": {
@@ -4038,13 +4038,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_transportation_and_warehousing",
-                "name": "Transportation and warehousing %",
+                "name": "Employed in Transportation and warehousing %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Transportation and warehousing %",
+                                "name": "Employed in Transportation and warehousing %",
                                 "stats": [
                                     {
                                         "source": {
@@ -4069,13 +4069,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_utilities",
-                "name": "Utilities %",
+                "name": "Employed in Utilities %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Utilities %",
+                                "name": "Employed in Utilities %",
                                 "stats": [
                                     {
                                         "source": {
@@ -4100,13 +4100,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "industry_wholesale_trade",
-                "name": "Wholesale trade %",
+                "name": "Employed in Wholesale trade %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Wholesale trade %",
+                                "name": "Employed in Wholesale trade %",
                                 "stats": [
                                     {
                                         "source": {

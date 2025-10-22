@@ -13,7 +13,10 @@ class IndustryStatistics(ACSStatisticsColection):
         )
 
     def name_for_each_statistic(self):
-        return industry.industry_display
+        return {k: "Employed in " + v for k, v in industry.industry_display.items()}
+    
+    def legacy_statistic_names(self):
+        return list(industry.industry_display.values())
 
     def varname_for_each_statistic(self):
         return {
