@@ -19,8 +19,6 @@ test('drag and drop basic reordering desktop', async (t) => {
 
     await t.dragToElement(firstHeader, secondHeader)
 
-    await t.wait(1000)
-
     await screencap(t)
 
     await t.expect(getLocationWithoutSettings())
@@ -36,8 +34,6 @@ test('drag and drop transpose mode desktop', async (t) => {
     const secondHeader = Selector('[role="button"]').nth(1)
 
     await t.dragToElement(firstHeader, secondHeader)
-
-    await t.wait(1000)
 
     await screencap(t)
 
@@ -56,7 +52,6 @@ test('drag and drop multiple reorderings', async (t) => {
     const brazilHeader = Selector('[role="button"]').nth(4)
 
     await t.dragToElement(chinaHeader, brazilHeader)
-    await t.wait(1000)
 
     await screencap(t)
 
@@ -67,7 +62,6 @@ test('drag and drop multiple reorderings', async (t) => {
     const usaHeader = Selector('[role="button"]').nth(0)
 
     await t.dragToElement(japanHeader, usaHeader)
-    await t.wait(1000)
 
     await screencap(t)
 

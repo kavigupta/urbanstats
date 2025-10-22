@@ -48,22 +48,8 @@ export class TestUtils {
 
     private loadingCounter = 0
     private loadingCallbacks: (() => void)[] = []
-    private loadingElement = ((): HTMLDivElement => {
-        const result = document.createElement('div')
-        result.textContent = 'Loading...'
-        result.style.position = 'fixed'
-        // eslint-disable-next-line no-restricted-syntax -- Test utils
-        result.style.color = '#ff0000'
-        result.style.top = '0px'
-        result.style.left = '0px'
-        return result
-    })()
 
     startLoading(): void {
-        if (this.loadingCounter === 0 && this.isTesting) {
-            console.warn('Loading start')
-            document.body.appendChild(this.loadingElement)
-        }
         this.loadingCounter++
     }
 
@@ -79,10 +65,6 @@ export class TestUtils {
         if (this.loadingCounter === 0) {
             this.loadingCallbacks.forEach((callback) => { callback() })
             this.loadingCallbacks = []
-            if (this.isTesting) {
-                this.loadingElement.remove()
-                console.warn('Loading finish')
-            }
         }
     }
 

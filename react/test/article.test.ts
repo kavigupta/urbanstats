@@ -6,10 +6,10 @@ import {
     urbanstatsFixture,
     getLocation,
     createComparison,
-    waitForPageLoaded,
     clickMapFeature,
     downloadOrCheckString,
     waitForDownload,
+    waitForLoading,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -149,65 +149,59 @@ test('create-comparison-from-article', async (t) => {
 urbanstatsFixture('lr overall', `/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya&s=D9dego8tisfjWgh`)
 
 test('lr-overall-other-stat', async (t) => {
-    try {
-        const prevOverallArea = Selector('button[data-test-id="-1"]').nth(1)
-        const nextOverallArea = Selector('button[data-test-id="1"]').nth(1)
-        const prevOverallCompactness = Selector('button[data-test-id="-1"]').nth(3)
-        const nextOverallCompactness = Selector('button[data-test-id="1"]').nth(3)
-        await t
-            .click(prevOverallArea)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=49633%2C+USA&universe=world`)
-        await waitForPageLoaded(t)
-        await t
-            .click(nextOverallArea)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
-        await waitForPageLoaded(t)
-        // check that prevOverallCompactness is disabled
-        await t.expect(prevOverallCompactness.hasAttribute('disabled')).ok()
-        // check that prevOverallCompactness does nothing when clicked
-        await t.click(prevOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
-        await waitForPageLoaded(t)
+    const prevOverallArea = Selector('button[data-test-id="-1"]').nth(1)
+    const nextOverallArea = Selector('button[data-test-id="1"]').nth(1)
+    const prevOverallCompactness = Selector('button[data-test-id="-1"]').nth(3)
+    const nextOverallCompactness = Selector('button[data-test-id="1"]').nth(3)
+    await t
+        .click(prevOverallArea)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=49633%2C+USA&universe=world`)
+    await waitForLoading()
+    await t
+        .click(nextOverallArea)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
+    await waitForLoading()
+    // check that prevOverallCompactness is disabled
+    await t.expect(prevOverallCompactness.hasAttribute('disabled')).ok()
+    // check that prevOverallCompactness does nothing when clicked
+    await t.click(prevOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
+    await waitForLoading()
 
-        await t.click(nextOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Singapore+%28Center%29+5MPC%2C+Singapore`)
-        await waitForPageLoaded(t)
-        // check that prevOverallCompactness is enabled
-        await t.expect(prevOverallCompactness.hasAttribute('disabled')).notOk()
-        await t.click(prevOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
-        await waitForPageLoaded(t)
-        // least compact region
-        await t.navigateTo('/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt&s=D9dego8tisfjWgh')
-        // check that nextOverallCompactness is disabled
-        await t.expect(nextOverallCompactness.hasAttribute('disabled')).ok()
-        // check that nextOverallCompactness does nothing when clicked
-        await t.click(nextOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
-        await waitForPageLoaded(t)
-        // check that prevOverallCompactness is enabled
-        await t.expect(prevOverallCompactness.hasAttribute('disabled')).notOk()
-        await t.click(prevOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Fiji`)
-        await waitForPageLoaded(t)
-        // check that nextOverallCompactness is enabled
-        await t.expect(nextOverallCompactness.hasAttribute('disabled')).notOk()
-        await t.click(nextOverallCompactness)
-        await t.expect(getLocationWithoutSettings())
-            .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
-        await waitForPageLoaded(t)
-    }
-    finally {
-        // eslint-disable-next-line no-console -- Debugging test failure
-        console.log(await t.getBrowserConsoleMessages())
-    }
+    await t.click(nextOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Singapore+%28Center%29+5MPC%2C+Singapore`)
+    await waitForLoading()
+    // check that prevOverallCompactness is enabled
+    await t.expect(prevOverallCompactness.hasAttribute('disabled')).notOk()
+    await t.click(prevOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Nairobi+%28Center%29+5MPC%2C+Kenya`)
+    await waitForLoading()
+    // least compact region
+    await t.navigateTo('/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt&s=D9dego8tisfjWgh')
+    // check that nextOverallCompactness is disabled
+    await t.expect(nextOverallCompactness.hasAttribute('disabled')).ok()
+    // check that nextOverallCompactness does nothing when clicked
+    await t.click(nextOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
+    await waitForLoading()
+    // check that prevOverallCompactness is enabled
+    await t.expect(prevOverallCompactness.hasAttribute('disabled')).notOk()
+    await t.click(prevOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Fiji`)
+    await waitForLoading()
+    // check that nextOverallCompactness is enabled
+    await t.expect(nextOverallCompactness.hasAttribute('disabled')).notOk()
+    await t.click(nextOverallCompactness)
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Cairo+Metropolitan+Cluster%2C+Egypt`)
+    await waitForLoading()
 })
 
 urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)

@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -231,7 +231,7 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
 
 mapper(() => test)('selection preserved on reload', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))' }, async (t) => {
     async function checkErrors(): Promise<void> {
-        await t.wait(500) // just make sure the page has settled
+        await waitForLoading()
         await t.expect(getErrors()).eql(['Custom expression expected to return type number, but got string at 1:1-0'])
     }
     await checkErrors()

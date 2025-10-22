@@ -5,7 +5,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { DefaultMap } from '../src/utils/DefaultMap'
 
-import { pageDescriptorKind, target, urbanstatsFixture, waitForPageLoaded } from './test_utils'
+import { pageDescriptorKind, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture('home page', target)
 
@@ -56,7 +56,7 @@ test('can visit sitemap links', async (t) => {
     for (const url of visitUrls) {
         console.warn(url)
         await t.navigateTo(url)
-        await waitForPageLoaded(t)
+        await waitForLoading()
         await t.expect(pageDescriptorKind()).notEql('error')
         await t.expect(Selector('[data-test-id=article-warnings]').exists).notOk()
     }

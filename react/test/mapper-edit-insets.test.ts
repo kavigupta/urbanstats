@@ -101,14 +101,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
             await action(t)
             await check(after)
             await t.expect(Selector('button:not(:disabled)').withExactText('Accept').exists).ok()
-            await t.wait(1000) // These waits are connected with the nonUserPanZoomOcurring hack
             await t.pressKey('ctrl+z')
             await check(before)
             await t.expect(Selector('button:disabled').withExactText('Accept').exists).ok()
-            await t.wait(1000)
             await t.pressKey('ctrl+y')
             await check(after)
-            await t.wait(1000)
             await t.click(Selector('button:not(:disabled)').withExactText(confirmation))
 
             if (confirmation === 'Accept') {
