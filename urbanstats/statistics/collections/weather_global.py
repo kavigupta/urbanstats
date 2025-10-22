@@ -209,7 +209,7 @@ class GlobalWeatherStatistics(GeographicStatistics):
             "high_temp_histogram": self.compute_histogram(result, "maxdaily_temp"),
             "low_temp_histogram": self.compute_histogram(result, "mindaily_temp"),
         }
-        assert set(self.name_for_each_statistic()).issubset(set(actual_result))
+        assert set(self.internal_statistic_names_list()).issubset(set(actual_result))
         return actual_result
 
     def columnize(self, lst):

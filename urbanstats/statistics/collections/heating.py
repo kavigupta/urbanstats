@@ -50,7 +50,7 @@ class HouseHeating(ACSStatisticsColection):
         }
 
     def mutate_acs_results(self, statistics_table):
-        fractionalize(statistics_table, *self.name_for_each_statistic().keys())
+        fractionalize(statistics_table, *self.internal_statistic_names_list())
 
     def acs_name(self):
         return "house_heating"

@@ -12,7 +12,7 @@ from urbanstats.statistics.utils import fractionalize
 class OccupationStatistics(ACSStatisticsColection):
     def __init__(self):
         super().__init__()
-        assert set(self.name_for_each_statistic()) == set(
+        assert set(self.internal_statistic_names_list()) == set(
             self.occupation_name_to_description()
         )
 
@@ -177,7 +177,7 @@ class OccupationStatistics(ACSStatisticsColection):
         }
 
     def mutate_acs_results(self, statistics_table):
-        fractionalize(statistics_table, *self.name_for_each_statistic())
+        fractionalize(statistics_table, *self.internal_statistic_names_list())
 
     def acs_name(self):
         return "occupation"
