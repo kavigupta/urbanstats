@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon'
 import { Statistic } from '../components/display-stats'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
+import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
@@ -527,7 +528,7 @@ export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNod
     )
 }
 
-function Value({ stat, statColumn }: { stat: number, statColumn: StatName | '%' }): ReactNode {
+function Value({ stat, statColumn }: { stat: number, statColumn: StatName | LegacyStatName | '%' }): ReactNode {
     return (
         <span>
             <Statistic

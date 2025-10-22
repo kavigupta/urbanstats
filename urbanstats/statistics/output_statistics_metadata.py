@@ -203,6 +203,20 @@ def output_statistics_metadata():
     with open("react/src/data/statistic_variables_info.ts", "w") as f:
         output_typescript(statistic_variables_info(), f)
 
+    with open("react/src/data/legacy_statistic_columns.ts", "w") as f:
+        f.write(
+            "export type LegacyStatName = never | "
+            + " | ".join(json.dumps(name) for name in all_legacy_statistic_names())
+            + ";\n"
+        )
+
+
+def all_legacy_statistic_names():
+    result = {}
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.legacy_statistic_names())
+    return result
+
 
 def export_statistics_tree(path):
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
