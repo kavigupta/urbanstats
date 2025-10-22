@@ -16,7 +16,7 @@ export async function checkGeojson(t: TestController, path: string): Promise<voi
 }
 
 export async function downloadPNG(t: TestController): Promise<void> {
-    const download = Selector('button').withExactText('Export as PNG')
+    const download = Selector('button:not(:disabled)').withExactText('Export as PNG')
     await grabDownload(t, download, '.png') // wait for 6 seconds to ensure the download completes
 }
 

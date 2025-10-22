@@ -130,8 +130,7 @@ export async function screencap(t: TestController, { fullPage = true, selector }
 
 export async function grabDownload(t: TestController, button: Selector, suffix: string): Promise<void> {
     const laterThan = new Date().getTime()
-    await t
-        .click(button)
+    await t.click(button)
     await copyMostRecentFile(t, laterThan, suffix)
 }
 
