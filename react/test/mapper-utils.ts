@@ -3,7 +3,7 @@ import { gunzipSync, gzipSync } from 'zlib'
 
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, waitForDownload, grabDownload } from './test_utils'
+import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
 
 export async function checkGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
@@ -15,6 +15,7 @@ export async function checkGeojson(t: TestController, path: string): Promise<voi
 }
 
 export async function downloadPNG(t: TestController): Promise<void> {
+    await waitForLoading()
     const download = Selector('button:not(:disabled)').withExactText('Export as PNG')
     await grabDownload(t, download, '.png') // wait for 6 seconds to ensure the download completes
 }
