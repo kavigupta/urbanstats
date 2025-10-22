@@ -167,7 +167,7 @@ test('initial load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.navigateTo(`${target}/article.html?longname=Avon+Central+School+District%2C+New+York%2C+USA`)
     await t.expect(Selector('[data-test-id=initialLoad]').exists).ok()
-    await screencap(t, { fullPage: false })
+    await screencap(t, { fullPage: false, wait: false })
     delayRequests.removeFilter()
     await t.expect(Selector('[data-test-id=initialLoad]').exists).notOk()
 })
@@ -183,7 +183,7 @@ test('quick load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
-    await screencap(t, { fullPage: false })
+    await screencap(t, { fullPage: false, wait: false })
     // one request for the article, one for the symlinks
     await t.expect(delayRequests.removeFilter()).eql(2)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
@@ -198,7 +198,7 @@ test('long load', async (t) => {
     await t.pressKey('enter')
     await t.wait(3000)
     await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
-    await screencap(t, { fullPage: false })
+    await screencap(t, { fullPage: false, wait: false })
     delayRequests.removeFilter()
     await t.expect(Selector('[data-test-id=longLoad]').exists).notOk()
 })
@@ -206,20 +206,20 @@ test('long load', async (t) => {
 test('invalid url', async (t) => {
     await t.navigateTo(`${target}/article.html`)
     await t.expect(Selector('li').withExactText('Parameter longname is Required').exists).ok()
-    await screencap(t)
+    await screencap(t, { wait: false })
 })
 
 test('loading error', async (t) => {
     await t.navigateTo(`${target}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
     await t.expect(Selector('h1').withExactText('Error Loading Page').exists).ok()
-    await screencap(t)
+    await screencap(t, { wait: false })
 })
 
 test('before main bundle loads', async (t) => {
     delayRequests.setFilter(indexFilter)
     await t.navigateTo(target)
     await t.expect(Selector('#loading').exists).ok()
-    await screencap(t, { fullPage: false })
+    await screencap(t, { wait: false, fullPage: false })
     delayRequests.removeFilter()
     await t.expect(Selector('#loading').exists).notOk()
 })

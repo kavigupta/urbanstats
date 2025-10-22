@@ -78,7 +78,17 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
     for (const confirmation of ['Accept', 'Cancel'] as const) {
         testFn()(`${description} then ${confirmation}`, async (t) => {
             const check = async (positions: MapPositions): Promise<void> => {
-                const currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
+                let currentPositions
+                for (let iter = 0; iter < 3; iter++) {
+                    currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
+                    if (stableStringify(currentPositions) !== stableStringify(positions)) {
+                        console.warn('.')
+                        await t.wait(1000)
+                    }
+                    else {
+                        break
+                    }
+                }
                 if (stableStringify(currentPositions) !== stableStringify(positions)) {
                     console.warn(currentPositions)
                 }
