@@ -1,1 +1,1 @@
-export type LegacyStatName = never | ;
+export type LegacyStatName = never;

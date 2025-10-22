@@ -205,8 +205,8 @@ def output_statistics_metadata():
 
     with open("react/src/data/legacy_statistic_columns.ts", "w") as f:
         f.write(
-            "export type LegacyStatName = never | "
-            + " | ".join(json.dumps(name) for name in all_legacy_statistic_names())
+            "export type LegacyStatName = never"
+            + "".join(" | " + json.dumps(name) for name in all_legacy_statistic_names())
             + ";\n"
         )
 
