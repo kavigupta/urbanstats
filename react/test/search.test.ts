@@ -53,10 +53,9 @@ test('search-test-different-first-char', async (t) => {
 test('search-test-arrows', async (t) => {
     await t
         .click(searchField)
-    await t.wait(1000)
     await t
         .typeText(searchField, 'Pasadena')
-    await t.wait(1000)
+    await waitForLoading()
     await t
         .pressKey('down')
         .pressKey('down')

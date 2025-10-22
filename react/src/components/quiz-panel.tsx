@@ -14,6 +14,7 @@ import { validQuizInfiniteVersions } from '../quiz/infinite'
 import { QuizDescriptor, QuizHistory, QuizModel, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
+import { TestUtils } from '../utils/TestUtils'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { buttonStyle } from './GenericShareButton'
@@ -96,13 +97,14 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
     if (!waitingForNextQuestion && missing > 0) {
         setWaitingForNextQuestion(true)
         const promises = Array.from({ length: missing }, (_, i) => props.todaysQuiz.questionByIndex(questions.length + i))
+        TestUtils.shared.startLoading()
         Promise.all(promises).then((newQuestions) => {
             setWaitingForNextQuestion(false)
             setQuestions([...questions, ...newQuestions.filter((question): question is QuizQuestion => question !== undefined)])
         }).catch((err: unknown) => {
             console.error('Error fetching questions', err)
             // setWaitingForNextQuestion(false)
-        })
+        }).finally(() => TestUtils.shared.finishLoading())
     }
 
     const setTodaysQuizHistory = (historyToday: QuizHistory[string]): void => {
@@ -224,6 +226,7 @@ export function OtherQuizzesButtons(): ReactNode {
     useEffect(() => {
         let cancel = false
 
+        TestUtils.shared.startLoading()
         void (async () => {
             const quizDatas = await Promise.all(otherQuizPages.map(pageDescriptor => loadPageDescriptor(pageDescriptor, Settings.shared)))
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Prevents races
@@ -234,7 +237,7 @@ export function OtherQuizzesButtons(): ReactNode {
                         || !q.pageData.quiz.isDone(
                             getCorrectPattern(QuizModel.shared.history.value, q.pageData.quizDescriptor.name))))
             }
-        })()
+        })().finally(() => TestUtils.shared.finishLoading())
 
         return () => { cancel = true }
     }, [otherQuizPages])
