@@ -1,4 +1,5 @@
 import { Property } from './Property'
+import { TestUtils } from './TestUtils'
 
 export const waiting = Symbol('waiting')
 
@@ -10,6 +11,9 @@ export function notWaiting<T>(x: T | typeof waiting): x is T {
 export function promiseStream<T>(promises: Promise<T>[]): Property<(T | typeof waiting)[]> {
     const values = Array.from<T | typeof waiting>({ length: promises.length }).fill(waiting)
     const result = new Property<(T | typeof waiting)[]>(Array.from(values))
+
+    TestUtils.shared.startLoading()
+    void Promise.allSettled(promises).finally(() => TestUtils.shared.finishLoading())
 
     for (const [i, promise] of promises.entries()) {
         void promise.then((value) => {

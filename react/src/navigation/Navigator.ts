@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { discordFix } from '../discord-fix'
 import { Settings } from '../page_template/settings'
 import { StatPath } from '../page_template/statistic-tree'
+import { TestUtils } from '../utils/TestUtils'
 
 import { ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
 
@@ -182,6 +183,8 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
+            TestUtils.shared.startLoading()
+
             const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
@@ -235,6 +238,9 @@ export class Navigator {
                 },
             }
             this.pageStateObservers.forEach((observer) => { observer() })
+        }
+        finally {
+            void TestUtils.shared.finishLoading()
         }
     }
 

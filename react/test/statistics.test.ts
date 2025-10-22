@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -152,7 +152,7 @@ async function getElements(): Promise<string[]> {
 }
 
 test('statistic-ascending-descending-check-descending', async (t) => {
-    await t.wait(1000)
+    await waitForLoading()
     // ensure the div with California and ensure 1 is in the div
     await t.expect(await getElements()).eql([
         'California, USA',
@@ -175,7 +175,7 @@ test('statistic-ascending-descending-check-click', async (t) => {
     await t.click(Selector('#statistic-panel-order-swap'))
     // ensure the button is now up arrow
     await t.expect(Selector('#statistic-panel-order-swap img').getAttribute('src')).eql('/sort-up.png')
-    await t.wait(1000)
+    await waitForLoading()
     // check the url
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
