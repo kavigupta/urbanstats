@@ -48,20 +48,46 @@ export class TestUtils {
 
     private loadingCounter = 0
     private loadingCallbacks: (() => void)[] = []
+    private loadingElement = ((): HTMLDivElement => {
+        const result = document.createElement('div')
+        result.textContent = 'Loading...'
+        result.style.position = 'fixed'
+        // eslint-disable-next-line no-restricted-syntax -- Test utils
+        result.style.color = '#ff0000'
+        result.style.top = '0px'
+        result.style.left = '0px'
+        return result
+    })()
 
     startLoading(): void {
+        if (this.loadingCounter === 0 && this.isTesting) {
+            console.warn('Loading start')
+            document.body.appendChild(this.loadingElement)
+        }
         this.loadingCounter++
     }
 
-    finishLoading(): void {
+    private async eventLoopIters(iters: number): Promise<void> {
+        for (;iters > 0; iters--) {
+            await new Promise(resolve => setTimeout(resolve, 0))
+        }
+    }
+
+    async finishLoading(): Promise<void> {
+        await this.eventLoopIters(10)
         this.loadingCounter--
         if (this.loadingCounter === 0) {
             this.loadingCallbacks.forEach((callback) => { callback() })
             this.loadingCallbacks = []
+            if (this.isTesting) {
+                this.loadingElement.remove()
+                console.warn('Loading finish')
+            }
         }
     }
 
-    waitForLoading(): Promise<void> {
+    async waitForLoading(): Promise<void> {
+        await this.eventLoopIters(10)
         if (this.loadingCounter === 0) {
             return Promise.resolve()
         }
