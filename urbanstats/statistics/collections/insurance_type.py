@@ -6,6 +6,11 @@ from urbanstats.games.quiz_question_metadata import (
 from urbanstats.statistics.statistic_collection import ACSStatisticsColection
 from urbanstats.statistics.utils import fractionalize
 
+INSURANCE_DENOMINATOR_EXPLANATION = (
+    "!TOOLTIP The denominator for this statistic is the the total number of adults,"
+    " including those without health insurance coverage."
+)
+
 
 class InsuranceTypeStatistics(ACSStatisticsColection):
     def name_for_each_statistic(self):
@@ -30,8 +35,10 @@ class InsuranceTypeStatistics(ACSStatisticsColection):
             HEALTH_INSURANCE,
             {
                 "insurance_coverage_none": "higher % of people who are uninsured",
-                "insurance_coverage_govt": "higher % of people who are on public insurance",
-                "insurance_coverage_private": "higher % of people who are on private insurance",
+                "insurance_coverage_govt": "higher % of people who are on public insurance"
+                + INSURANCE_DENOMINATOR_EXPLANATION,
+                "insurance_coverage_private": "higher % of people who are on private insurance"
+                + INSURANCE_DENOMINATOR_EXPLANATION,
             },
         )
 
