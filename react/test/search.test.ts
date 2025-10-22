@@ -5,11 +5,11 @@ import {
     urbanstatsFixture,
     getLocation,
     openInNewTabModifiers,
-    waitForPageLoaded,
     pageDescriptorKind,
     waitForSelectedSearchResult,
     createComparison,
     checkTextboxes,
+    waitForLoading,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -53,10 +53,9 @@ test('search-test-different-first-char', async (t) => {
 test('search-test-arrows', async (t) => {
     await t
         .click(searchField)
-    await t.wait(1000)
     await t
         .typeText(searchField, 'Pasadena')
-    await t.wait(1000)
+    await waitForLoading()
     await t
         .pressKey('down')
         .pressKey('down')
@@ -88,7 +87,7 @@ test('can visit Umm Siado', async (t) => {
         .typeText(searchField, 'Umm Siado')
     await t.click(Selector('a').withText(/Umm Siado/))
     await t.expect(getLocation()).match(/article\.html\?longname=Umm\+Siado%3F%3F\+Urban\+Center%2C\+Sudan/)
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await t.expect(pageDescriptorKind()).eql('article')
 })
 
@@ -114,7 +113,7 @@ test('search for a MPC', async (t) => {
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await checkTextboxes(t, ['Include Person Circles'])
     await t.click(searchField)
         .typeText(searchField, 'Perth 10MPC')

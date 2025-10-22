@@ -35,7 +35,7 @@ class CensusCanadaSimple(CanadaStatistics):
 
     def post_process(self, statistic_table, existing_statistics):
         del existing_statistics
-        fractionalize(statistic_table, *self.name_for_each_statistic().keys())
+        fractionalize(statistic_table, *self.internal_statistic_names_list())
         return statistic_table
 
 
@@ -330,7 +330,7 @@ class CensusCanadaEducation(CensusCanadaSimple):
         del statistic_table["education_no_canada"]
         # mutating in place. should not use .items()
         # pylint: disable=consider-iterating-dictionary
-        for column in self.name_for_each_statistic().keys():
+        for column in self.internal_statistic_names_list():
             statistic_table[column] = statistic_table[column] / total
         statistic_table["education_ugrad_canada"] += statistic_table[
             "education_grad_canada"
@@ -339,26 +339,6 @@ class CensusCanadaEducation(CensusCanadaSimple):
             "education_ugrad_canada"
         ]
         return statistic_table
-
-    # def post_process(self, statistic_table, existing_statistics):
-    #     del existing_statistics
-    #     statistic_table = statistic_table.copy()
-    #     total = (
-    #         statistic_table.education_no_canada
-    #         + statistic_table.education_high_school_canada
-    #         + statistic_table.education_ugrad_canada
-    #         + statistic_table.education_grad_canada
-    #     )
-    #     del statistic_table["education_no_canada"]
-    #     for column in self.name_for_each_statistic().keys():
-    #         statistic_table[column] = statistic_table[column] / total
-    #     statistic_table["education_ugrad_canada"] += statistic_table[
-    #         "education_grad_canada"
-    #     ]
-    #     statistic_table["education_high_school_canada"] += statistic_table[
-    #         "education_ugrad_canada"
-    #     ]
-    #     return statistic_table
 
 
 census_canada_simple = [

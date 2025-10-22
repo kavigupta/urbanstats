@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
+import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -14,7 +14,7 @@ test('two randoms mobile', async (t) => {
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
     await t.click('.hamburgermenu')
     await t.click(Selector('a').withExactText('Weighted by Population (US only)'))
-    await t.wait(5000) // Wait for random
+    await waitForLoading()
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
 })
 
@@ -104,7 +104,7 @@ test('using pointers preserves scroll', async (t) => {
     await t.hover(lastPointer)
     const scrollBefore: unknown = await t.eval(() => window.scrollY)
     await t.click(lastPointer)
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
 })
 
@@ -167,7 +167,7 @@ test('initial load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.navigateTo(`${target}/article.html?longname=Avon+Central+School+District%2C+New+York%2C+USA`)
     await t.expect(Selector('[data-test-id=initialLoad]').exists).ok()
-    await screencap(t, { fullPage: false })
+    await screencap(t, { fullPage: false, wait: false })
     delayRequests.removeFilter()
     await t.expect(Selector('[data-test-id=initialLoad]').exists).notOk()
 })

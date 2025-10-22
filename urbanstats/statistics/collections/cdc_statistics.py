@@ -144,8 +144,8 @@ class CDCStatistics(USAStatistics):
     ):
         result = {}
         cdc_table = aggregated_cdc_table(shapefile)
-        for cdc in self.name_for_each_statistic():
+        for cdc in self.internal_statistic_names_list():
             result[cdc] = cdc_table[cdc]
-        for cdc in self.name_for_each_statistic():
+        for cdc in self.internal_statistic_names_list():
             result[cdc] /= existing_statistics["population_18_2010"]
         return result

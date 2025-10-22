@@ -35,8 +35,8 @@ class CensusCanadaSameAsUS(CanadaStatistics):
 
     def varname_for_each_statistic(self):
         return {
-            f"{k}_canada": self.us_equivalent().varname_for_each_statistic()[k]
-            for k in self.us_equivalent().name_for_each_statistic()
+            f"{k}_canada": v
+            for k, v in self.us_equivalent().varname_for_each_statistic().items()
         }
 
     def quiz_question_descriptors(self):
@@ -55,7 +55,7 @@ class CensusCanadaSameAsUS(CanadaStatistics):
         return self.same_for_each_name("canadian-census-disaggregated")
 
     def post_process(self, statistic_table):
-        fractionalize(statistic_table, *self.name_for_each_statistic().keys())
+        fractionalize(statistic_table, *self.internal_statistic_names_list())
         return statistic_table
 
 
@@ -222,7 +222,7 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
         fractionalize(statistic_table, *columns)
         assert set(columns) == set(statistic_table)
         statistic_table["transportation_commute_time_median_canada"] = median_commute
-        assert set(statistic_table) == set(self.name_for_each_statistic())
+        assert set(statistic_table) == set(self.internal_statistic_names_list())
         return statistic_table
 
 

@@ -79,16 +79,13 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
     }
 }
 
-async function waitForLoading(): Promise<void> {
+export async function waitForLoading(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading())()
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
-    }
-    if (options.wait) {
-        await t.wait(1000)
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles
@@ -118,8 +115,10 @@ function screenshotPath(t: TestController): string {
 }
 
 export async function screencap(t: TestController, { fullPage = true, wait = true, selector }: { fullPage?: boolean, wait?: boolean, selector?: Selector } = {}): Promise<void> {
-    await waitForLoading()
-    await prepForImage(t, { hover: fullPage, wait })
+    if (wait) {
+        await waitForLoading()
+    }
+    await prepForImage(t, { hover: fullPage })
     if (selector !== undefined) {
         await t.takeElementScreenshot(selector, screenshotPath(t))
     }
@@ -133,9 +132,7 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
 
 export async function grabDownload(t: TestController, button: Selector, suffix: string): Promise<void> {
     const laterThan = new Date().getTime()
-    await prepForImage(t, { hover: true, wait: true })
-    await t
-        .click(button)
+    await t.click(button)
     await copyMostRecentFile(t, laterThan, suffix)
 }
 
@@ -338,12 +335,6 @@ export async function arrayFromSelector(selector: Selector): Promise<Selector[]>
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
 }
 
-export async function waitForPageLoaded(t: TestController): Promise<void> {
-    while (await Selector('#pageState_kind').value !== 'loaded') {
-        await t.wait(1000)
-    }
-}
-
 export function pageDescriptorKind(): Promise<string | undefined> {
     return Selector('#pageState_current_descriptor_kind').value
 }
@@ -351,14 +342,15 @@ export function pageDescriptorKind(): Promise<string | undefined> {
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await waitForPageLoaded(t)
+    await waitForLoading()
 }
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
 
 export async function waitForSelectedSearchResult(t: TestController): Promise<string> {
+    await waitForLoading()
     const selectedSearchResult = Selector('[data-test-id=selected-search-result]')
-    await t.expect(selectedSearchResult.exists).ok({ timeout: 10000 })
+    await t.expect(selectedSearchResult.exists).ok()
     return await selectedSearchResult.textContent
 }
 
