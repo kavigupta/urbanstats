@@ -38,7 +38,7 @@ class GlobalWeatherStatistics(GeographicStatistics):
             "days_between_40_and_90_4": "High temperature Between 40 and 90°F %",
             "days_below_40_4": "High temperature Below 40°F %",
             "days_dewpoint_70_inf_4": "Humid days (dewpt > 70°F) %",
-            "days_dewpoint_50_70_4": "Non-humid days (50°F < dewpt < 70°F) %",
+            "days_dewpoint_50_70_4": "Non-humid, Non-dry days (50°F < dewpt < 70°F) %",
             "days_dewpoint_-inf_50_4": "Dry days (dewpt < 50°F) %",
             "hours_sunny_4": "Mean sunny hours",
             "rainfall_4": "Rainfall",
@@ -56,6 +56,11 @@ class GlobalWeatherStatistics(GeographicStatistics):
             "mean_low_temp_mam": "Mean low temperature in Mar/Apr/May",
             "mean_low_temp_jja": "Mean low temperature in Jun/Jul/Aug",
             "mean_low_temp_son": "Mean low temperature in Sep/Oct/Nov",
+        }
+
+    def legacy_statistic_names(self):
+        return {
+            "Non-humid days (50°F < dewpt < 70°F) %": "Non-humid, Non-dry days (50°F < dewpt < 70°F) %",
         }
 
     def varname_for_each_statistic(self):

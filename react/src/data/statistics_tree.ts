@@ -5431,13 +5431,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "days_dewpoint_50_70_4",
-                "name": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+                                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
                                 "stats": [
                                     {
                                         "source": null,

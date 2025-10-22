@@ -2046,7 +2046,7 @@ export default {
         },
         {
             "varName": "moderate_humidity_days",
-            "humanReadableName": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+            "humanReadableName": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
             "comesFromMultiSourceSet": false,
             "order": 292,
             "index": 103

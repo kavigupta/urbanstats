@@ -102,7 +102,7 @@ export default [
     "High temperature Below 40\u00b0F %",
     "High temperature Between 40 and 90\u00b0F %",
     "Dry days (dewpt < 50\u00b0F) %",
-    "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+    "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
     "Humid days (dewpt > 70\u00b0F) %",
     "PW Density (250m) [StatCan]",
     "PW Density (500m) [StatCan]",
