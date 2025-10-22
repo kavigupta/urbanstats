@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForPageLoaded, waitForSelectedSearchResult } from './test_utils'
+import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -14,7 +14,7 @@ test('two randoms mobile', async (t) => {
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
     await t.click('.hamburgermenu')
     await t.click(Selector('a').withExactText('Weighted by Population (US only)'))
-    await t.wait(5000) // Wait for random
+    await waitForLoading()
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
 })
 
@@ -104,7 +104,7 @@ test('using pointers preserves scroll', async (t) => {
     await t.hover(lastPointer)
     const scrollBefore: unknown = await t.eval(() => window.scrollY)
     await t.click(lastPointer)
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
 })
 
@@ -183,7 +183,7 @@ test('quick load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
-    await screencap(t, { fullPage: false, wait: false })
+    await screencap(t, { fullPage: false })
     // one request for the article, one for the symlinks
     await t.expect(delayRequests.removeFilter()).eql(2)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
@@ -198,7 +198,7 @@ test('long load', async (t) => {
     await t.pressKey('enter')
     await t.wait(3000)
     await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
-    await screencap(t, { fullPage: false, wait: false })
+    await screencap(t, { fullPage: false })
     delayRequests.removeFilter()
     await t.expect(Selector('[data-test-id=longLoad]').exists).notOk()
 })
@@ -206,20 +206,20 @@ test('long load', async (t) => {
 test('invalid url', async (t) => {
     await t.navigateTo(`${target}/article.html`)
     await t.expect(Selector('li').withExactText('Parameter longname is Required').exists).ok()
-    await screencap(t, { wait: false })
+    await screencap(t)
 })
 
 test('loading error', async (t) => {
     await t.navigateTo(`${target}/article.html?longname=Kalamazoo+city%2C+Michigan%2C+US`) // Should be USA
     await t.expect(Selector('h1').withExactText('Error Loading Page').exists).ok()
-    await screencap(t, { wait: false })
+    await screencap(t)
 })
 
 test('before main bundle loads', async (t) => {
     delayRequests.setFilter(indexFilter)
     await t.navigateTo(target)
     await t.expect(Selector('#loading').exists).ok()
-    await screencap(t, { wait: false, fullPage: false })
+    await screencap(t, { fullPage: false })
     delayRequests.removeFilter()
     await t.expect(Selector('#loading').exists).notOk()
 })

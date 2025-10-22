@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { nthEditor, selectionNotPoint } from './editor_test_utils'
-import { downloadOrCheckString, urbanstatsFixture } from './test_utils'
+import { downloadOrCheckString, urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture('uss documentation', '/uss-documentation.html')
 
@@ -41,7 +41,7 @@ async function colorsOfResults(t: TestController): Promise<Set<string>> {
 }
 
 async function rightPanelText(t: TestController): Promise<string> {
-    await t.wait(1000)
+    await waitForLoading()
     await t.expect(await colorsOfResults(t)).eql(new Set(['color-g']))
     const rightPanel = Selector('.right_panel')
     return rightPanel.textContent

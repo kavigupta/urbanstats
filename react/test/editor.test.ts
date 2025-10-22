@@ -63,7 +63,6 @@ z = [3, 4, 5, 6, 7]
 test('post-reload', async (t) => {
     await checkCode(t, '2 + 3 ** 4 + 5 ** 2 * 3', '158')
     await safeReload(t)
-    await t.wait(500)
     await t.expect(result.textContent).eql('158')
 })
 

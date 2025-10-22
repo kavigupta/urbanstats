@@ -78,17 +78,7 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
     for (const confirmation of ['Accept', 'Cancel'] as const) {
         testFn()(`${description} then ${confirmation}`, async (t) => {
             const check = async (positions: MapPositions): Promise<void> => {
-                let currentPositions
-                for (let iter = 0; iter < 3; iter++) {
-                    currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
-                    if (stableStringify(currentPositions) !== stableStringify(positions)) {
-                        console.warn('.')
-                        await t.wait(1000)
-                    }
-                    else {
-                        break
-                    }
-                }
+                const currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
                 if (stableStringify(currentPositions) !== stableStringify(positions)) {
                     console.warn(currentPositions)
                 }
@@ -101,14 +91,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
             await action(t)
             await check(after)
             await t.expect(Selector('button:not(:disabled)').withExactText('Accept').exists).ok()
-            await t.wait(1000) // These waits are connected with the nonUserPanZoomOcurring hack
             await t.pressKey('ctrl+z')
             await check(before)
             await t.expect(Selector('button:disabled').withExactText('Accept').exists).ok()
-            await t.wait(1000)
             await t.pressKey('ctrl+y')
             await check(after)
-            await t.wait(1000)
             await t.click(Selector('button:not(:disabled)').withExactText(confirmation))
 
             if (confirmation === 'Accept') {

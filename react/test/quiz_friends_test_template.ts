@@ -109,7 +109,6 @@ export function quizFriendsTest(
         await t.pressKey('enter')
         await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'Alice2Ask\u00a0Alice2\u00a0to add youRemove'])
         await safeReload(t)
-        await t.wait(1000)
         await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'Alice2Ask\u00a0Alice2\u00a0to add youRemove'])
     })
 
@@ -164,7 +163,6 @@ export function quizFriendsTest(
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         // after a reload, user is not there
         await safeReload(t)
-        await t.wait(1000)
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         await addFriend(t, 'Bob3', '000000b   ')
         // duplicate error

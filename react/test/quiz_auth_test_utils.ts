@@ -6,7 +6,7 @@ import { TestWindow } from '../src/utils/TestUtils'
 
 import { quizFixture } from './quiz_test_utils'
 import { getTOTPWait, setTOTPWait } from './scripts/util'
-import { flaky, getCurrentTest, safeReload, target, waitForPageLoaded } from './test_utils'
+import { flaky, getCurrentTest, safeReload, target, waitForLoading } from './test_utils'
 
 export const email = 'urban.stats.test@gmail.com'
 
@@ -142,14 +142,14 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     while (await continueButton.exists) {
         await t.click(continueButton)
     }
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await t.expect(Selector('h1').withExactText(enableDrive ? 'Signed In!' : 'Sign In Failed').exists).ok()
     await t.eval(() => window.close = () => { console.warn('window closed') })
     await t.click(Selector('button').withExactText('Close Window'))
     const consoleMessages = await t.getBrowserConsoleMessages()
     await t.expect(consoleMessages.warn).contains('window closed')
     await t.navigateTo(`${target}/quiz.html`)
-    await waitForPageLoaded(t)
+    await waitForLoading()
     await waitForSync(t)
 }
 
@@ -160,7 +160,7 @@ export function quizAuthFixture(...args: Parameters<typeof quizFixture>): void {
         await googleSignIn(t)
         await beforeEach?.(t)
         await t.navigateTo(args[1])
-        await waitForPageLoaded(t)
+        await waitForLoading()
     }, async (t) => {
         await googleSignOut(t)
         await afterEach?.(t)

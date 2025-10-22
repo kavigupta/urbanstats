@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { dataValues, urbanstatsFixture } from './test_utils'
+import { dataValues, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const pollutionTag = 'FGeQWrY52z2nuK'
 
@@ -14,7 +14,7 @@ async function goToExtremeArticle(t: TestController): Promise<void> {
         await t.pressKey('ctrl+a delete')
         await t.typeText(editableContent, '-1')
         await t.pressKey('enter')
-        await t.wait(1000)
+        await waitForLoading()
         const lastButton = Selector('button[data-test-id="1"]').nth(-1)
         const isDisabled = await lastButton.hasAttribute('disabled')
         if (isDisabled) {
