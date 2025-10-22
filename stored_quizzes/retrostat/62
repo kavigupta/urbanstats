@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Colorado Springs MSA, CO, USA",
+      "longname_b": "Houston-The Woodlands-Sugar Land MSA, TX, USA",
+      "stat_a": 0.05274522143898013,
+      "stat_b": 0.03854474065846977
+    },
+    "b": {
+      "stat_column": "Hispanic %",
+      "stat_path": "hispanic",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Kingsport-Bristol-Bristol MSA, TN-VA, USA",
+      "longname_b": "Buffalo-Cheektowaga-Niagara Falls MSA, NY, USA",
+      "stat_a": 0.019629771712062004,
+      "stat_b": 0.05782490731869514
+    },
+    "a_ease": 0.2837055417700579,
+    "b_ease": 0.6897895557287607
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Weber County, Utah, USA",
+      "longname_b": "Cumberland County, Maine, USA",
+      "stat_a": 0.012576409680638738,
+      "stat_b": 0.05479868452479974
+    },
+    "b": {
+      "stat_column": "Mean high temp",
+      "stat_path": "mean_high_temp_4",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Las Vegas-Henderson-Paradise [Urban Area], NV, USA",
+      "longname_b": "Lakeland [Urban Area], FL, USA",
+      "stat_a": 78.2460113529194,
+      "stat_b": 82.25216341215481
+    },
+    "a_ease": 0.7033457249070632,
+    "b_ease": 0.2654275092936803
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "stat_path": "generation_boomer",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "Utah County, Utah, USA",
+      "longname_b": "Monroe County, New York, USA",
+      "stat_a": 0.11379605562540034,
+      "stat_b": 0.24089837340658676
+    },
+    "b": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "stat_path": "days_above_90_4",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Albany GA Media Market, USA",
+      "longname_b": "Baton Rouge LA Media Market, USA",
+      "stat_a": 0.19663910996951364,
+      "stat_b": 0.16628024355415252
+    },
+    "a_ease": 0.622759158222915,
+    "b_ease": 0.21554770318021202
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Will County, Illinois, USA",
+      "longname_b": "Gloucester County, New Jersey, USA",
+      "stat_a": 0.043740802963901405,
+      "stat_b": 0.059974248927038676
+    },
+    "b": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "SC-01, USA",
+      "longname_b": "MI-02, USA",
+      "stat_a": 0.17078954306611968,
+      "stat_b": 0.04222417618035959
+    },
+    "a_ease": 0.3909433962264151,
+    "b_ease": 0.7985130111524164
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Agriculture, forestry, fishing and hunting %",
+      "stat_path": "industry_agriculture,_forestry,_fishing_and_hunting",
+      "question": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries!TOOLTIP agriculture, forestry, logging, fishing, and hunting",
+      "longname_a": "Madison city, Wisconsin, USA",
+      "longname_b": "Stockton city, California, USA",
+      "stat_a": 0.0028457897827229516,
+      "stat_b": 0.042558202088430246
+    },
+    "b": {
+      "stat_column": "Smoking %",
+      "stat_path": "CSMOKING_cdc_2",
+      "question": "higher % of adults who smoke",
+      "longname_a": "GA-02, USA",
+      "longname_b": "CA-17, USA",
+      "stat_a": 0.21063438928579034,
+      "stat_b": 0.0731317943167376
+    },
+    "a_ease": 0.47094339622641507,
+    "b_ease": 0.8754716981132076
+  }
+]

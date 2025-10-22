@@ -1,30 +1,116 @@
-import json
-import os
-import matplotlib.pyplot as plt
 import matplotlib as mpl
-
+import matplotlib.pyplot as plt
 import numpy as np
+
+from ..utils import output_typescript
 
 
 def get_pyplot_ramps():
     pyplot_ramps = {}
     for ramp_name in plt.colormaps():
-        if ramp_name.endswith("_r"):
+        cat = categorize_ramp(ramp_name)
+        if cat is None:
             continue
-        if ramp_name in ["flag", "prism"]:
-            # cyclic colormaps
-            continue
-        ramp_obj = mpl.cm.get_cmap(ramp_name)
-        if isinstance(ramp_obj, mpl.colors.ListedColormap):
-            continue
-        assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
-        ramp_name = ramp_name[0].upper() + ramp_name[1:]
-        pyplot_ramps[ramp_name] = ramp_obj_to_list(ramp_obj)
 
-    pyplot_ramps = {
-        k: v for k, v in sorted(pyplot_ramps.items(), key=lambda x: x[0].lower())
-    }
+        ramp_obj = mpl.cm.get_cmap(ramp_name)
+        ramp_name_disp = capitalizeEachWord(ramp_name.replace("_", " "))
+        pyplot_ramps[ramp_name_disp] = dict(
+            ramp=ramp_obj_to_list(ramp_obj), metadata=cat
+        )
+
+    pyplot_ramps = dict(
+        sorted(
+            pyplot_ramps.items(),
+            key=lambda item: item[1]["metadata"]["priority"],
+        )
+    )
+
     return pyplot_ramps
+
+
+def capitalizeEachWord(s):
+    """
+    Capitalizes the first letter of each word in a string.
+    """
+    return " ".join(word[0].upper() + word[1:] for word in s.split())
+
+
+def categorize_ramp(ramp_name):
+    """
+    Return a ramp category, either a dict or None (which indicates that the ramp should be skipped).
+    """
+    if ramp_name.endswith("_r"):
+        return None
+    if ramp_name in ["flag", "prism", "hsv"]:
+        # cyclic colormaps
+        return None
+    if ramp_name in [
+        "PiYG",
+        "PRGn",
+        "BrBG",
+        "PuOr",
+        "RdGy",
+        "RdBu",
+        "RdYlBu",
+        "RdYlGn",
+        "Spectral",
+        "coolwarm",
+        "bwr",
+        "seismic",
+        "berlin",
+        "managua",
+        "vanimo",
+    ]:
+        # Diverging colormaps
+        return dict(priority=10, diverging=True)
+    if ramp_name in [
+        "brg",
+        "Blues",
+        "BuGn",
+        "BuPu",
+        "GnBu",
+        "Gray",
+        "Greens",
+        "Greys",
+        "OrRd",
+        "Oranges",
+        "PuBu",
+        "PuBuGn",
+        "PuRd",
+        "Purples",
+        "RdPu",
+        "Reds",
+        "YlGn",
+        "YlGnBu",
+        "YlOrBr",
+        "YlOrRd",
+        "Pink",
+        "Gray",
+        "Rainbow",
+        "Spring",
+        "Summer",
+        "Terrain",
+        "Winter",
+    ]:
+        # ramps that are unnamed (name only composed of color names)
+        return dict(priority=5, diverging=False)
+    if ramp_name in [
+        "Pastel1",
+        "Pastel2",
+        "Paired",
+        "Accent",
+        "Dark2",
+        "Set1",
+        "Set2",
+        "Set3",
+        "tab10",
+        "tab20",
+        "tab20b",
+        "tab20c",
+    ]:
+        # qualitative colormaps
+        return None
+    return dict(priority=0, diverging=False)
 
 
 def get_all_ramps():
@@ -41,14 +127,18 @@ def ramp_obj_to_list(ramp_obj):
     The float is the position in the colormap, and the tuple is the RGBA value
     at that position.
     """
-    assert isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap)
-
-    if callable(ramp_obj._segmentdata["red"]) or len(ramp_obj._segmentdata["red"]) < 10:
-        xs = np.linspace(0, 1, 50).tolist()
+    # pylint: disable=protected-access
+    if isinstance(ramp_obj, mpl.colors.LinearSegmentedColormap):
+        if callable(ramp_obj._segmentdata["red"]):
+            xs = np.linspace(0, 1, 50).tolist()
+        else:
+            xs = sorted(
+                {x for segment in ramp_obj._segmentdata.values() for x, _, _ in segment}
+            )
     else:
-        xs = sorted(
-            {x for segment in ramp_obj._segmentdata.values() for x, _, _ in segment}
-        )
+        assert isinstance(ramp_obj, mpl.colors.ListedColormap)
+        xs = np.linspace(0, 1, len(ramp_obj.colors)).tolist()
+    # pylint: disable=consider-using-f-string
     return [
         (x, "#%02x%02x%02x" % tuple(int(255 * y) for y in ramp_obj(x))[:-1]) for x in xs
     ]
@@ -69,24 +159,25 @@ def interpolate_ramp(ramp, relative_pos):
     y1, y2 = np.array(
         [[int(y[1:][a:b], 16) for a, b in [(0, 2), (2, 4), (4, 6)]] for y in [y1, y2]]
     )
+    # pylint: disable=consider-using-f-string
     return "#%02x%02x%02x" % tuple(
         ((y1 * (x2 - relative_pos) + y2 * (relative_pos - x1)) / (x2 - x1)).astype(
-            np.int
+            np.int64
         )
     )
 
 
+# vulture: ignore -- used in notebooks
 def plot_ramp(y, ramp, segments=101):
     xs = np.linspace(0, 1, segments)
     colors = [interpolate_ramp(ramp, x) for x in xs]
     plt.scatter(xs, [y for _ in colors], c=colors, s=100)
 
 
-def output_ramps():
-    mapper_folder = "react/src/data/mapper"
-    try:
-        os.makedirs(mapper_folder)
-    except FileExistsError:
-        pass
-    with open(f"{mapper_folder}/ramps.json", "w") as f:
-        json.dump(get_all_ramps(), f)
+def output_ramps(mapper_folder):
+    with open(f"{mapper_folder}/ramps.ts", "w") as f:
+        output_typescript(
+            get_all_ramps(),
+            f,
+            "Record<string, {ramp: [number, string][], metadata: {priority: number, diverging?: boolean}}>",
+        )

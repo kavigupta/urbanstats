@@ -1,3 +1,10 @@
 node_modules
 screenshots
 delta
+changed_screenshots
+videos
+.eslintcache
+coverage
+durations
+HiGHS.log
+totp_wait_time

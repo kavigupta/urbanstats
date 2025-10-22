@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "San Diego city, California, USA",
+      "longname_b": "Madison city, Wisconsin, USA",
+      "stat_a": 0.02447594494648811,
+      "stat_b": 0.020970157572600557
+    },
+    "b": {
+      "stat_column": "Smoking %",
+      "question": "higher % of adults who smoke",
+      "longname_a": "Nashville-Davidson metropolitan government (balance), Tennessee, USA",
+      "longname_b": "Stockton city, California, USA",
+      "stat_a": 0.1810980205416687,
+      "stat_b": 0.14672524894044506
+    },
+    "a_ease": 0.30257009345794394,
+    "b_ease": 0.7150573936529372
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Administrative and support and waste management services %",
+      "question": "higher % of workers employed in the administrative/support/waste management services industries!TOOLTIP office administrative services, employment services, business support services, waste management and remediation services, etc.",
+      "longname_a": "Middlesex County, New Jersey, USA",
+      "longname_b": "San Bernardino County, California, USA",
+      "stat_a": 0.03986139239765392,
+      "stat_b": 0.047839611823300966
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "California, USA",
+      "longname_b": "Indiana, USA",
+      "stat_a": 0.0058017359521568435,
+      "stat_b": -0.01632532187139071
+    },
+    "a_ease": 0.23628691983122363,
+    "b_ease": 0.6694796061884669
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Spanish at Home %",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Vermont, USA",
+      "longname_b": "Alaska, USA",
+      "stat_a": 0.011628024109914944,
+      "stat_b": 0.03450401380428609
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Poughkeepsie-Newburgh [Urban Area], NY, USA",
+      "longname_b": "Grand Rapids [Urban Area], MI, USA",
+      "stat_a": 0.16449538403222871,
+      "stat_b": 0.03270481732480928
+    },
+    "a_ease": 0.35989196488858877,
+    "b_ease": 0.7764309764309765
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Disability %",
+      "question": "higher % of adults with a disability",
+      "longname_a": "Wisconsin, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.23527377961662047,
+      "stat_b": 0.2953493811250571
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Turkey",
+      "longname_b": "Ireland",
+      "stat_a": 5843.30712890625,
+      "stat_b": 1039.88330078125
+    },
+    "a_ease": 0.3565166569257744,
+    "b_ease": 0.8196181698485846
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "question": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "NC-12, USA",
+      "longname_b": "NY-10, USA",
+      "stat_a": -0.1875543019440541,
+      "stat_b": -0.041976754042310216
+    },
+    "b": {
+      "stat_column": "Mean high temperature in summer",
+      "question": "higher mean daily high temperature in summer (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "TX-11, USA",
+      "longname_b": "CA-28, USA",
+      "stat_a": 92.95986141144722,
+      "stat_b": 86.47157247794455
+    },
+    "a_ease": 0.4483457123565159,
+    "b_ease": 0.856892523364486
+  }
+]

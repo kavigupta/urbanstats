@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in summer",
+      "stat_path": "mean_high_temp_summer_4",
+      "question": "higher mean daily high temperature in summer (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "New Mexico, USA",
+      "longname_b": "Hawaii, USA",
+      "stat_a": 86.30265923797012,
+      "stat_b": 79.23734128125706
+    },
+    "b": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Panama City FL Media Market, USA",
+      "longname_b": "Springfield MO Media Market, USA",
+      "stat_a": 0.2682640394241125,
+      "stat_b": 0.3036080188656611
+    },
+    "a_ease": 0.6945054945054945,
+    "b_ease": 0.2846832397754611
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Buffalo Urban Center, USA",
+      "longname_b": "Cape Coral Urban Center, USA",
+      "stat_a": 0.035420531700486715,
+      "stat_b": 0.13138002632757473
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "higher increase (or smaller decrease) in racial homogeneity from 2000 to 2020!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "Queens County, New York, USA",
+      "longname_b": "Providence County, Rhode Island, USA",
+      "stat_a": -0.03691060115075878,
+      "stat_b": -0.14523855289485021
+    },
+    "a_ease": 0.7951635846372689,
+    "b_ease": 0.3916256157635468
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Louisiana, USA",
+      "longname_b": "Virginia, USA",
+      "stat_a": 847.5517130987074,
+      "stat_b": 1288.68176843045
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Khartoum Urban Center, Sudan",
+      "longname_b": "Riyadh Urban Center, Saudi Arabia",
+      "stat_a": 377.4364013671875,
+      "stat_b": 622.2485961914062
+    },
+    "a_ease": 0.8203688853247795,
+    "b_ease": 0.4014778325123153
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Black %",
+      "stat_path": "black",
+      "question": "higher % of people who are Black",
+      "longname_a": "Corpus Christi city, Texas, USA",
+      "longname_b": "Wichita city, Kansas, USA",
+      "stat_a": 0.039071397559885986,
+      "stat_b": 0.10623833476485657
+    },
+    "b": {
+      "stat_column": "2BR Rent > $1500 %",
+      "stat_path": "rent_2br_over_1500",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Milwaukee [Urban Area], WI, USA",
+      "longname_b": "Baltimore [Urban Area], MD, USA",
+      "stat_a": 0.13534764007552583,
+      "stat_b": 0.456167624822149
+    },
+    "a_ease": 0.3632930513595166,
+    "b_ease": 0.8249084249084249
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "higher increase (or smaller decrease) in racial homogeneity from 2010 to 2020!TOOLTIP We define racial homogeneity as the average probability a person selecing a random person in a 250m radius will select someone of the same race",
+      "longname_a": "Buffalo city, New York, USA",
+      "longname_b": "Corpus Christi city, Texas, USA",
+      "stat_a": -0.11378632912415954,
+      "stat_b": -0.032259061008289236
+    },
+    "b": {
+      "stat_column": "Architecture and engineering occupations %",
+      "stat_path": "occupation_architecture_and_engineering_occupations",
+      "question": "higher % of workers employed as architects and engineers!TOOLTIP all kinds of engineers except software engineers, architects, surveyors, drafters, etc.",
+      "longname_a": "Richmond [Urban Area], VA, USA",
+      "longname_b": "Myrtle Beach-North Myrtle Beach [Urban Area], SC-NC, USA",
+      "stat_a": 0.016766044424187818,
+      "stat_b": 0.00844884552784265
+    },
+    "a_ease": 0.45527859237536655,
+    "b_ease": 0.8673992673992674
+  }
+]

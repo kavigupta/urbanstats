@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Kitchener City, Waterloo Regional municipality, Ontario, Canada",
+      "longname_b": "Montr\u00e9al Ville, Montr\u00e9al Territory, Quebec, Canada",
+      "stat_a": 0.06189447823588854,
+      "stat_b": 0.11616650082758893
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Tennessee, USA",
+      "longname_b": "North Dakota, USA",
+      "stat_a": 0.12212308487335927,
+      "stat_b": 0.09589237827583352
+    },
+    "a_ease": 0.28776978417266186,
+    "b_ease": 0.6935849056603773
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Baltimore [Urban Area], MD, USA",
+      "longname_b": "Temecula-Murrieta-Menifee [Urban Area], CA, USA",
+      "stat_a": 0.18789436576151106,
+      "stat_b": 0.08800008517420205
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Syracuse [Urban Area], NY, USA",
+      "longname_b": "St. Louis [Urban Area], MO-IL, USA",
+      "stat_a": 0.23732542388193284,
+      "stat_b": 0.12321605629391466
+    },
+    "a_ease": 0.7373584905660377,
+    "b_ease": 0.32449036581960344
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Tennessee, USA",
+      "longname_b": "Missouri, USA",
+      "stat_a": 0.07207925137853506,
+      "stat_b": -0.04708603839710266
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Wausau-Rhinelander WI Media Market, USA",
+      "longname_b": "Shreveport LA Media Market, USA",
+      "stat_a": 0.027661423083958685,
+      "stat_b": 0.01213819630255658
+    },
+    "a_ease": 0.7939453125,
+    "b_ease": 0.3862173419159409
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Alpha %",
+      "stat_path": "generation_genalpha",
+      "question": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+      "longname_a": "Jacksonville Urban Center, USA",
+      "longname_b": "Palmdale Urban Center, USA",
+      "stat_a": 0.13041560465132823,
+      "stat_b": 0.14662245273100566
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Akwa Ibom, Nigeria",
+      "longname_b": "Samut Prakan, Thailand",
+      "stat_a": 2305.24755859375,
+      "stat_b": 6252.318359375
+    },
+    "a_ease": 0.3710715638015903,
+    "b_ease": 0.8007547169811321
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "stat_path": "mean_dist_Active Superfund Site_updated",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Yuma AZ-El Centro CA Media Market, USA",
+      "longname_b": "Abilene-Sweetwater TX Media Market, USA",
+      "stat_a": 49.75238681280519,
+      "stat_b": 178.62344196265204
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Nashville-Davidson--Murfreesboro--Franklin MSA, TN, USA",
+      "longname_b": "Killeen-Temple MSA, TX, USA",
+      "stat_a": 0.011955912938236552,
+      "stat_b": 0.031285449296247686
+    },
+    "a_ease": 0.5950595500661667,
+    "b_ease": 0.18217909131010146
+  }
+]

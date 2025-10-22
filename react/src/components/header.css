@@ -1,0 +1,7 @@
+.hoverable_elements {
+    background-color: var(--slightly-different-background);
+}
+
+.hoverable_elements:hover {
+    background-color: var(--slightly-different-background-focused);
+}

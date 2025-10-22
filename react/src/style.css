@@ -2,6 +2,10 @@
     box-sizing: border-box;
 }
 
+body {
+    font-family: 'Jost', 'Arial', sans-serif;
+}
+
 .fill {
     display: flex;
     justify-content: center;
@@ -16,28 +20,28 @@
 
 .headertext {
     font-size: 60px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
 .headertext_mobile {
     font-size: 45px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
 .subheadertext {
     font-size: 40px;
-    font-style: italic;
+    font-weight: 200;
     margin: 0;
     padding: 0;
 }
 
 .subheadertext_mobile {
     font-size: 30px;
-    font-style: italic;
+    font-weight: 200;
     margin: 0;
     padding: 0;
 }
@@ -54,120 +58,70 @@
     padding: 0;
 }
 
-.quiztext_nested {
-    font-size: 20px;
-    margin: 0;
-    padding: 0;
-}
-
-.quiztext_mobile_nested {
-    font-size: 15px;
-    margin: 0;
-    padding: 0;
-}
-
 .value {
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 500;
     margin: 0;
     padding: 0;
 }
 
-.ordinal {
-    font-size: 14px;
-    font-style: italic;
-    color: #444;
-    margin: 0;
-    padding: 0;
+a {
+    color: var(--blue-link);
 }
 
-.description {
-    font-size: 18px;
-    font-style: italic;
-    color: #444;
-    margin-top: 24px;
-    padding: 0;
+/*
+ * Taken from the example for footnote ref:
+ * https://codesandbox.io/p/sandbox/react-a11y-footnotes-f9lpdy?file=%2Fsrc%2Fstyles.css%3A56%2C23
+ * with some modifications
+ */
+
+/**
+ * Initialiazing a `footnotes` counter on the wrapper
+ */
+body {
+    counter-reset: footnotes;
 }
 
-.tableheader {
-    border-bottom: 1pt solid black;
-    font-weight: bold;
-}
 
-.button {
-    font: bold 8pt Arial;
+/**
+ * Inline footnotes references
+ * 1. Increment the counter at each new reference
+ * 2. Reset link styles to make it appear like regular text
+ */
+[data-a11y-footnotes-ref] {
+    counter-increment: footnotes;
+    /* 1 */
     text-decoration: none;
-    color: #222;
-    padding: 2px 6px 2px 6px;
-    border-radius: 5px;
-    border-top: 1px solid #CCCCCC;
-    border-right: 1px solid #333333;
-    border-bottom: 1px solid #333333;
-    border-left: 1px solid #CCCCCC;
+    /* 2 */
+    color: var(--blue-link);
+    /* 5 */
+    cursor: default;
+    /* 2 */
+    outline: none;
+    /* 2 */
 }
 
-.button_related {
-    text-decoration: none;
-    padding: 2px 6px 2px 6px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 8pt;
-    color: #000;
-}
-
-.button_related_mobile {
-    font-size: 12pt;
-}
-
-.button_random {
-    display: block;
-    height: 100%;
-}
-
-.main_page_header {
-    font-size: 35px;
-    font-weight: bold;
-    padding: 0;
-    text-align: left;
-    vertical-align: middle;
-    margin-right: 0.2em;
-}
-
-.searchresults {
-    /* Remove default list styling */
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.searchresults li a {
-    border: 1px solid #ddd;
-    /* Add a border to all links */
-    margin-top: -1px;
-    /* Prevent double borders */
-    background-color: #f6f6f6;
-    /* Grey background color */
-    padding: 12px;
-    /* Add some padding */
-    text-decoration: none;
-    /* Remove default text underline */
-    font-size: 18px;
-    /* Increase the font-size */
-    color: black;
-    /* Add a black text color */
-    display: block;
-    /* Make it into a block element to fill the whole list */
-}
-
-.searchresults li a:hover:not(.header) {
-    background-color: #eee;
-    /* Add a hover effect to all links, except for headers */
-}
-
-.party_result_D {
-    color: #5a7dc3;
-}
-
-.party_result_R {
-    color: #f96d6d;
+/**
+   * Actual numbered references
+   * 1. Display the current state of the counter (e.g. `[1]`)
+   * 2. Align text as superscript
+   * 3. Make the number smaller (since it's superscript)
+   * 4. Slightly offset the number from the text
+   * 5. Reset link styles on the number to show it's usable
+   */
+[data-a11y-footnotes-ref]::after {
+    content: "[" counter(footnotes) "]";
+    /* 1 */
+    vertical-align: super;
+    /* 2 */
+    font-size: 0.5em;
+    /* 3 */
+    margin-left: 2px;
+    /* 4 */
+    color: var(--blue-link);
+    /* 5 */
+    text-decoration: underline;
+    /* 5 */
+    cursor: pointer;
+    /* 5 */
 }

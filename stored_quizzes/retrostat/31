@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Food preparation and serving related occupations %",
+      "question": "higher % of workers employed as food preparers or servers",
+      "longname_a": "Shreveport [Urban Area], LA, USA",
+      "longname_b": "Chicago [Urban Area], IL-IN, USA",
+      "stat_a": 0.057825088907307545,
+      "stat_b": 0.049403801388698675
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)",
+      "longname_a": "KY-05, USA",
+      "longname_b": "UT-02, USA",
+      "stat_a": 0.08252485895951564,
+      "stat_b": 0.15983304840023302
+    },
+    "a_ease": 0.34285714285714286,
+    "b_ease": 0.7439153439153439
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Mobile MSA, AL, USA",
+      "longname_b": "Richmond MSA, VA, USA",
+      "stat_a": 0.01647603999287353,
+      "stat_b": 0.038019492977752124
+    },
+    "b": {
+      "stat_column": "Undergrad %",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "MA-09, USA",
+      "longname_b": "NY-17, USA",
+      "stat_a": 0.3874567301341196,
+      "stat_b": 0.46027625207371875
+    },
+    "a_ease": 0.7587301587301587,
+    "b_ease": 0.34686513306269734
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Miami-Ft. Lauderdale FL Media Market, USA",
+      "longname_b": "Santa Barbara-Santa Maria-San Luis Obispo CA Media Market, USA",
+      "stat_a": 0.016052754041924615,
+      "stat_b": 0.04327341070646756
+    },
+    "b": {
+      "stat_column": "AW Density [GHS-POP]",
+      "question": "higher area-weighted population density",
+      "longname_a": "Lebanon",
+      "longname_b": "Sierra Leone",
+      "stat_a": 543.563873765024,
+      "stat_b": 112.0049880200407
+    },
+    "a_ease": 0.394655704008222,
+    "b_ease": 0.8094262295081968
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "McKinney-Frisco [Urban Area], TX, USA",
+      "longname_b": "Atlanta [Urban Area], GA, USA",
+      "stat_a": 0.03924675418195009,
+      "stat_b": 0.16536106410355836
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "Montgomery MSA, AL, USA",
+      "longname_b": "Lincoln MSA, NE, USA",
+      "stat_a": 633.2297329554616,
+      "stat_b": 1491.239343891711
+    },
+    "a_ease": 0.7907081641858367,
+    "b_ease": 0.31991744066047473
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Management of companies and enterprises %",
+      "question": "higher % of workers employed in the management industry",
+      "longname_a": "Jefferson County, Texas, USA",
+      "longname_b": "Marion County, Oregon, USA",
+      "stat_a": 0.00185018264623559,
+      "stat_b": 0.00044904609778941023
+    },
+    "b": {
+      "stat_column": "Households With 1+ Vehicles %",
+      "question": "higher % of households with at least 1 vehicle",
+      "longname_a": "Spartanburg County, South Carolina, USA",
+      "longname_b": "New York County, New York, USA",
+      "stat_a": 0.9483218151873496,
+      "stat_b": 0.22654855952649394
+    },
+    "a_ease": 0.5259259259259259,
+    "b_ease": 0.9500580720092915
+  }
+]

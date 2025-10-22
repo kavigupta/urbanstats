@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Oklahoma City OK Media Market, USA",
+      "longname_b": "Omaha NE Media Market, USA",
+      "stat_a": 0.33743159700053094,
+      "stat_b": 0.3601060499612018
+    },
+    "b": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Bosnia and Herzegovina",
+      "longname_b": "Rwanda",
+      "stat_a": 3312099.0,
+      "stat_b": 13134129.0
+    },
+    "a_ease": 0.3783783783783784,
+    "b_ease": 0.7836065573770492
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Work From Home %",
+      "question": "higher % of people who work from home",
+      "longname_a": "NY-12, USA",
+      "longname_b": "MI-13, USA",
+      "stat_a": 0.19643378417978416,
+      "stat_b": 0.07816026272314573
+    },
+    "b": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "AL-02, USA",
+      "longname_b": "TN-01, USA",
+      "stat_a": 0.03251478427673188,
+      "stat_b": 0.014303150862971644
+    },
+    "a_ease": 0.8021844660194175,
+    "b_ease": 0.3618143459915612
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Houston city, Texas, USA",
+      "longname_b": "Sacramento city, California, USA",
+      "stat_a": 18.930106739228346,
+      "stat_b": 13.986887433815843
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "Charleston SC Media Market, USA",
+      "longname_b": "Terre Haute IN Media Market, USA",
+      "stat_a": 0.07656718697260638,
+      "stat_b": 0.027068826394907503
+    },
+    "a_ease": 0.43757431629013077,
+    "b_ease": 0.8385922330097088
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "Portland city, Oregon, USA",
+      "longname_b": "Tucson city, Arizona, USA",
+      "stat_a": 0.047332501476569436,
+      "stat_b": 0.06343983245752356
+    },
+    "b": {
+      "stat_column": "Building and grounds cleaning and maintenance occupations %",
+      "question": "higher % of workers employed in building and grounds cleaning and maintenance occupations",
+      "longname_a": "Philadelphia PA Media Market, USA",
+      "longname_b": "Palm Springs CA Media Market, USA",
+      "stat_a": 0.031191533430142457,
+      "stat_b": 0.08040621535885788
+    },
+    "a_ease": 0.8491561181434599,
+    "b_ease": 0.43377885783718106
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Contra Costa County, California, USA",
+      "longname_b": "Jackson County, Missouri, USA",
+      "stat_a": 0.013283804656476439,
+      "stat_b": 0.045135007159551876
+    },
+    "b": {
+      "stat_column": "Undergrad %",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "LA-01, USA",
+      "longname_b": "TX-18, USA",
+      "stat_a": 0.30899949314500946,
+      "stat_b": 0.24825328683114015
+    },
+    "a_ease": 0.6054644808743169,
+    "b_ease": 0.14527027027027026
+  }
+]

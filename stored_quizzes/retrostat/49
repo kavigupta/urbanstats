@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "question": "higher % of people who are divorced",
+      "longname_a": "South Dakota, USA",
+      "longname_b": "Illinois, USA",
+      "stat_a": 0.10841948340032966,
+      "stat_b": 0.09771951322174113
+    },
+    "b": {
+      "stat_column": "Mean high temperature in spring",
+      "question": "higher mean daily high temperature in spring (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Washoe County, Nevada, USA",
+      "longname_b": "Brevard County, Florida, USA",
+      "stat_a": 64.90128100824646,
+      "stat_b": 80.04962970654383
+    },
+    "a_ease": 0.26282390269698575,
+    "b_ease": 0.6809750927397986
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Yemen",
+      "longname_b": "Tunisia",
+      "stat_a": 3804.778076171875,
+      "stat_b": 2004.1090087890625
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Laredo city, Texas, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.26575264207507987,
+      "stat_b": 0.16277689864176778
+    },
+    "a_ease": 0.3853211009174312,
+    "b_ease": 0.7959183673469388
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent < $750 %",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Long Beach city, California, USA",
+      "longname_b": "Boston city, Massachusetts, USA",
+      "stat_a": 0.03253542466030249,
+      "stat_b": 0.1748264361477328
+    },
+    "b": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Essex County, Massachusetts, USA",
+      "longname_b": "DuPage County, Illinois, USA",
+      "stat_a": 0.43790163052592207,
+      "stat_b": 0.5013227398995351
+    },
+    "a_ease": 0.585635359116022,
+    "b_ease": 0.18191902384914033
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Miami city, Florida, USA",
+      "longname_b": "Louisville/Jefferson County metro government (balance), Kentucky, USA",
+      "stat_a": 5.3338067692011055,
+      "stat_b": 18.27449470648462
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Chesterfield County, Virginia, USA",
+      "longname_b": "Lee County, Florida, USA",
+      "stat_a": 0.07787004093352418,
+      "stat_b": 0.18120678064794715
+    },
+    "a_ease": 0.3826305852737571,
+    "b_ease": 0.8131592164741336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "San Diego-Carlsbad MSA, CA, USA",
+      "longname_b": "Gainesville MSA, FL, USA",
+      "stat_a": 0.1534916403856541,
+      "stat_b": 0.1996163358488173
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Missoula MT Media Market, USA",
+      "longname_b": "Sioux Falls (Mitchell) SD Media Market, USA",
+      "stat_a": 0.01985631675802406,
+      "stat_b": 0.0041774563932183515
+    },
+    "a_ease": 0.16803020767778476,
+    "b_ease": 0.5694189602446483
+  }
+]

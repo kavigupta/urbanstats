@@ -1,4 +1,5 @@
 import json
+
 import numpy as np
 from permacache import permacache, stable_hash
 
@@ -7,7 +8,7 @@ from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
-generate_until = 17
+generate_until = 103
 
 
 def week_for_day(day):
@@ -39,7 +40,7 @@ def get_quiz_data_for_retroweek(retrostat_week):
     for problem in means.index:
         if week_for_day(problem) != questions_week_for_retrostat(retrostat_week):
             continue
-        with open(f"quiz_old/{problem}") as f:
+        with open(f"stored_quizzes/juxtastat/{problem}") as f:
             quiz_qns = json.load(f)
         for qcol, q in zip(questions, quiz_qns):
             qdata.append(
@@ -94,14 +95,13 @@ def generate_retrostat(retrostat_week):
                 "b_ease": qdata[j]["ease"],
             }
         )
-        qdata = [x for idx, x in enumerate(qdata) if idx != i and idx != j]
+        qdata = [x for idx, x in enumerate(qdata) if idx not in [i, j]]
     return out
 
 
 def generate_retrostats(folder):
     for retrostat_week in range(0, fixed_up_to + 1):
-        print(retrostat_week)
-        with open(f"retrostat_old/{retrostat_week}", "r") as f:
+        with open(f"stored_quizzes/retrostat/{retrostat_week}", "r") as f:
             out = json.load(f)
         output_retrostat(folder, retrostat_week, out)
     for retrostat_week in range(fixed_up_to + 1, generate_until + 1):

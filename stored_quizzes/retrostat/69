@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "San Antonio-New Braunfels MSA, TX, USA",
+      "longname_b": "San Francisco-Oakland-Hayward MSA, CA, USA",
+      "stat_a": 0.2552205628784867,
+      "stat_b": 0.657061005051252
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Milwaukee city, Wisconsin, USA",
+      "longname_b": "St. Paul city, Minnesota, USA",
+      "stat_a": 0.08808542138571361,
+      "stat_b": 0.16864982708641865
+    },
+    "a_ease": 0.327940261356565,
+    "b_ease": 0.7398141529664046
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Management occupations %",
+      "stat_path": "occupation_management_occupations",
+      "question": "higher % of workers employed as managers!TOOLTIP a variety of roles titled 'managers'",
+      "longname_a": "Sioux Falls (Mitchell) SD Media Market, USA",
+      "longname_b": "Birmingham (Anniston & Tuscaloosa) AL Media Market, USA",
+      "stat_a": 0.124370317402721,
+      "stat_b": 0.09410724373384677
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "CT-03, USA",
+      "longname_b": "PA-16, USA",
+      "stat_a": 0.06816259902220816,
+      "stat_b": 0.07523868101743858
+    },
+    "a_ease": 0.3249211356466877,
+    "b_ease": 0.7423771001866832
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born outside US %",
+      "stat_path": "birthplace_non_us",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "Fayetteville-Springdale-Rogers [Urban Area], AR-MO, USA",
+      "longname_b": "Canton [Urban Area], OH, USA",
+      "stat_a": 0.1354855028869396,
+      "stat_b": 0.024693580999302016
+    },
+    "b": {
+      "stat_column": "Fair or poor self-rated health status %",
+      "stat_path": "GHLTH_cdc_2",
+      "question": "higher % of adults with a fair or poor self-rated health status",
+      "longname_a": "VT-00, USA",
+      "longname_b": "NY-14, USA",
+      "stat_a": 0.1245775944892598,
+      "stat_b": 0.19946996934047043
+    },
+    "a_ease": 0.35881346263548203,
+    "b_ease": 0.7665390924002187
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "longname_b": "Lexington KY Media Market, USA",
+      "stat_a": 0.23925642076727524,
+      "stat_b": 0.2883152509949651
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "North Port-Sarasota-Bradenton MSA, FL, USA",
+      "longname_b": "Santa Rosa MSA, CA, USA",
+      "stat_a": 993.1517586450142,
+      "stat_b": 1605.3059012829835
+    },
+    "a_ease": 0.7886304909560724,
+    "b_ease": 0.3836734693877551
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Kanpur Urban Center, India",
+      "longname_b": "Tashkent Urban Center, Uzbekistan",
+      "stat_a": 125.98583221435547,
+      "stat_b": 414.7870788574219
+    },
+    "b": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Gatineau Territory, Quebec, Canada",
+      "longname_b": "Toronto CDR, Ontario, Canada",
+      "stat_a": 0.5307616751495673,
+      "stat_b": 0.6057062623057122
+    },
+    "a_ease": 0.6619013581129378,
+    "b_ease": 0.2197922361946419
+  }
+]

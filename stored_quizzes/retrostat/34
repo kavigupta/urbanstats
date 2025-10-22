@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)",
+      "longname_a": "QuincyIl-Hannibal MO-Keokuk IA Media Market, USA",
+      "longname_b": "Charleston-Huntington WV Media Market, USA",
+      "stat_a": 0.1613648225917614,
+      "stat_b": 0.10191191745882101
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Oxnard-Thousand Oaks-Ventura MSA, CA, USA",
+      "longname_b": "Chattanooga MSA, TN-GA, USA",
+      "stat_a": 0.1821231096247478,
+      "stat_b": 0.4240131461436788
+    },
+    "a_ease": 0.7061224489795919,
+    "b_ease": 0.2822222222222222
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)",
+      "longname_a": "Maputo (City), Mozambique",
+      "longname_b": "Megh\u0101laya, India",
+      "stat_a": 6622.75732421875,
+      "stat_b": 1371.72998046875
+    },
+    "b": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Tennessee, USA",
+      "longname_b": "South Dakota, USA",
+      "stat_a": 0.0838579130065465,
+      "stat_b": 0.07646518504194263
+    },
+    "a_ease": 0.31343283582089554,
+    "b_ease": 0.7443120260021668
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Alabama, USA",
+      "longname_b": "Wyoming, USA",
+      "stat_a": 0.0017907920565404232,
+      "stat_b": 0.01014513324580391
+    },
+    "b": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "Round Lake Beach-McHenry-Grayslake [Urban Area], IL-WI, USA",
+      "longname_b": "Sacramento [Urban Area], CA, USA",
+      "stat_a": 0.03130979433612771,
+      "stat_b": 0.07871806384200701
+    },
+    "a_ease": 0.20236686390532543,
+    "b_ease": 0.6749729144095341
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "1BR Rent < $750 %",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "CO-05, USA",
+      "longname_b": "MA-01, USA",
+      "stat_a": 0.14500125645362658,
+      "stat_b": 0.4667180769980205
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "question": "higher % change in population from 2010 to 2020",
+      "longname_a": "Chandler city, Arizona, USA",
+      "longname_b": "Fort Wayne city, Indiana, USA",
+      "stat_a": 0.16843842573000423,
+      "stat_b": 0.03846517082077395
+    },
+    "a_ease": 0.4431946006749156,
+    "b_ease": 0.8644444444444445
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Austin TX Media Market, USA",
+      "longname_b": "Lansing MI Media Market, USA",
+      "stat_a": 0.23591259865774702,
+      "stat_b": 0.22877396409994089
+    },
+    "b": {
+      "stat_column": "Arts, design, entertainment, sports, and media occupations %",
+      "question": "higher % of workers employed in arts, design, entertainment, sports, and media occupations",
+      "longname_a": "Pinal County, Arizona, USA",
+      "longname_b": "Sacramento County, California, USA",
+      "stat_a": 0.009924703096701194,
+      "stat_b": 0.019181536815559206
+    },
+    "a_ease": 0.47919010123734535,
+    "b_ease": 0.8987626546681665
+  }
+]

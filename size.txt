@@ -112,3 +112,346 @@ add international data
 687     data
 1082    shape
 2072    total
+
+current status 2024-03-10
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+330     order
+737     data
+1130    shape
+2220    total
+
+
+adding values and population_percentiles to order/
+
+3       index
+5       quiz
+5       scripts
+7       consolidated
+7       quiz_sample_info
+440     order
+737     data
+1130    shape
+2330    total
+
+adding ordering by subregion
+
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+37      scripts
+1130    shape
+1347    data
+3007    order
+5548    total
+
+get rid of states as a separate entity from subnational regions
+
+1       about.html
+1       article.html
+1       banner.png
+1       CNAME
+1       comparison.html
+1       data-credit.html
+1       index.html
+1       mapper.html
+1       quiz.html
+1       r
+1       random.html
+1       retrostat
+1       screenshot_footer.svg
+1       screenshot.png
+1       share.png
+1       statistic.html
+1       styles
+1       thumbnail.png
+2       icons
+5       index
+5       quiz
+8       consolidated
+12      quiz_sample_info
+36      scripts
+1091    shape
+1347    data
+2937    order
+5439    total
+
+add ghsl cities
+
+5       index
+5       quiz
+8       consolidated
+18      quiz_sample_info
+37      scripts
+1123    shape
+1380    data
+3031    order
+5606    total
+
+make ordering integer based rather than string based
+
+5       quiz
+8       consolidated
+17      index
+18      quiz_sample_info
+37      scripts
+1123    shape
+1380    data
+2207    order
+4794    total
+
+more universes
+
+5       quiz
+8       consolidated
+18      quiz_sample_info
+23      index
+58      scripts
+1126    shape
+1380    data
+3485    order
+6104    total
+
+compress the order/ folder
+
+5       quiz
+8       consolidated
+18      quiz_sample_info
+23      index
+65      scripts
+1042    order
+1126    shape
+1380    data
+3667    total
+
+add 2010s and health data
+
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4006    total
+
+add priority to index
+
+4       icons
+5       quiz
+9       consolidated
+18      quiz_sample_info
+23      index
+80      scripts
+1126    shape
+1337    order
+1408    data
+4007    total
+
+add heating data
+
+9       consolidated
+18      quiz_sample_info
+19      scripts
+27      index
+1148    shape
+1391    order
+1458    data
+4077    total
+
+pre-histograms
+
+9	consolidated
+19	scripts
+25	quiz_sample_info
+28	index
+1153	shape
+1392	order
+1463	data
+4095	total
+
+post-histograms
+
+9       consolidated
+19      scripts
+25      quiz_sample_info
+28      index
+1153    shape
+1392    order
+1573    data
+4205    total
+
+added segregation data
+
+10	consolidated
+23	scripts
+25	quiz_sample_info
+28	index
+1154	shape
+1510	order
+1834	data
+4591	total
+
+added traffic accident data
+
+11      consolidated
+25      quiz_sample_info
+27      scripts
+28      index
+1154    shape
+1718    order
+2048    data
+5017    total
+
+added elevation and hilliness data
+
+11      consolidated
+28      index
+49      scripts
+1146    shape
+1724    order
+2183    data
+5148    total
+
+add canada
+
+5	quiz
+11	consolidated
+27	scripts
+30	index
+1219	shape
+1967	order
+2244	data
+5506	total
+
+use integers for percentiles and don't save overall ordinal
+
+5       quiz
+11      consolidated
+30      index
+1219    shape
+1328    order
+1457    data
+4053    total
+
+add in a sitemap and a full page index
+
+5       quiz
+11      consolidated
+19      sitemaps
+27      scripts
+32      index
+1219    shape
+1328    order
+1457    data
+4100    total
+
+bunch of changes up to and including 3 arcseconds
+
+15	consolidated
+16	scripts
+20	sitemaps
+26	centroids
+32	index
+75	quiz_sampling_info
+1133	shape
+1360	order
+1471	data
+4155	total
+
+add more radii (#1053)
+
+16      consolidated
+16      scripts
+20      sitemaps
+26      centroids
+32      index
+75      quiz_sampling_info
+1133    shape
+1508    order
+1512    data
+4343    total
+
+add taylor metropolitan clusters
+
+16      consolidated
+16      scripts
+21      sitemaps
+29      centroids
+37      index
+86      quiz_sampling_info
+1307    shape
+1629    order
+1668    data
+4815    total
+
+mapper changes
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+
+add weather data internationally + histograms
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+
+clean up the ordinals (#1467)
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+107	quiz_sampling_info
+125	consolidated
+641	order
+1307	shape
+1713	data
+4009	total
+
+add geoids, wikidata, and wikipedia links (#1478)
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+107	quiz_sampling_info
+125	consolidated
+641	order
+1307	shape
+1716	data
+4012	total
+
+add median income, life expectancy, median commute time
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+117	quiz_sampling_info
+125	consolidated
+647	order
+1307	shape
+1723	data
+4036	total

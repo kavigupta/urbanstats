@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "Asheville [Urban Area], NC, USA",
+      "longname_b": "Dayton [Urban Area], OH, USA",
+      "stat_a": 0.2596649000175224,
+      "stat_b": 0.23268951586574996
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Oklahoma, USA",
+      "longname_b": "Puerto Rico, USA",
+      "stat_a": 0.1318597449777951,
+      "stat_b": 0.4922661863913004
+    },
+    "a_ease": 0.30603448275862066,
+    "b_ease": 0.7112068965517241
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to EPA superfund sites (higher population-weighted mean distance)?",
+      "longname_a": "PA-05, USA",
+      "longname_b": "MI-13, USA",
+      "stat_a": 5.6384171298989285,
+      "stat_b": 24.30974517869091
+    },
+    "b": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)",
+      "longname_a": "Urban Honolulu CDP, Hawaii, USA",
+      "longname_b": "Los Angeles city, California, USA",
+      "stat_a": 74.58520150365291,
+      "stat_b": 65.26525509192732
+    },
+    "a_ease": 0.3637702503681885,
+    "b_ease": 0.7651296829971181
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Omaha [Urban Area], NE-IA, USA",
+      "longname_b": "New York-Jersey City-Newark [Urban Area], NY-NJ, USA",
+      "stat_a": 0.057745711629669544,
+      "stat_b": 0.06745120431134372
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Chico-Redding CA Media Market, USA",
+      "longname_b": "Mobile AL-Pensacola (Ft. Walton Beach) FL Media Market, USA",
+      "stat_a": 0.014120414763198873,
+      "stat_b": 0.007793687140500438
+    },
+    "a_ease": 0.20457796852646637,
+    "b_ease": 0.6139240506329114
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Gloucester County, New Jersey, USA",
+      "longname_b": "Anchorage Municipality, Alaska, USA",
+      "stat_a": 0.06069688247665604,
+      "stat_b": 0.13428920128612112
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Los Angeles CA Media Market, USA",
+      "longname_b": "Myrtle Beach-Florence SC Media Market, USA",
+      "stat_a": 0.15129813831548622,
+      "stat_b": 0.36653146853121243
+    },
+    "a_ease": 0.7982832618025751,
+    "b_ease": 0.3547486033519553
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Illinois, USA",
+      "longname_b": "Massachusetts, USA",
+      "stat_a": 0.05830024206648749,
+      "stat_b": 0.07183720245578253
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "Stark County, Ohio, USA",
+      "longname_b": "Fresno County, California, USA",
+      "stat_a": 0.05344215258544069,
+      "stat_b": 0.03725045208382018
+    },
+    "a_ease": 0.8097982708933718,
+    "b_ease": 0.34195402298850575
+  }
+]

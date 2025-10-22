@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density!TOOLTIP Area-weighted density is the total population divided by the total area.",
+      "longname_a": "Merced MSA, CA, USA",
+      "longname_b": "Lexington-Fayette MSA, KY, USA",
+      "stat_a": 54.87104874025367,
+      "stat_b": 134.45493602654628
+    },
+    "b": {
+      "stat_column": "Gen Alpha %",
+      "question": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+      "longname_a": "Baltimore city, Maryland, USA",
+      "longname_b": "Milwaukee city, Wisconsin, USA",
+      "stat_a": 0.11672473734185376,
+      "stat_b": 0.14666044930161226
+    },
+    "a_ease": 0.7737174982431483,
+    "b_ease": 0.36472241742796907
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Transportation occupations %",
+      "question": "higher % of workers employed in transportation occupations!TOOLTIP truck drivers, bus drivers, taxi drivers, pilots, flight attendants, sailors, etc.",
+      "longname_a": "NY-12, USA",
+      "longname_b": "NC-09, USA",
+      "stat_a": 0.0080248382417182,
+      "stat_b": 0.04131167508660266
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "McKinney-Frisco [Urban Area], TX, USA",
+      "longname_b": "Temecula-Murrieta-Menifee [Urban Area], CA, USA",
+      "stat_a": 0.0391225095320975,
+      "stat_b": 0.20427353384634855
+    },
+    "a_ease": 0.1908548707753479,
+    "b_ease": 0.6048492791612058
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Dallas-Fort Worth-Arlington MSA, TX, USA",
+      "longname_b": "Ogden-Clearfield MSA, UT, USA",
+      "stat_a": 25.09597796682481,
+      "stat_b": 9.643998664630038
+    },
+    "b": {
+      "stat_column": "Educational services %",
+      "question": "higher % of workers employed in the educational services industry",
+      "longname_a": "San Jose [Urban Area], CA, USA",
+      "longname_b": "Palm Bay-Melbourne [Urban Area], FL, USA",
+      "stat_a": 0.08586482242173665,
+      "stat_b": 0.07477362210804651
+    },
+    "a_ease": 0.40357852882703776,
+    "b_ease": 0.8159630606860159
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density [GHS-POP]",
+      "question": "higher area-weighted population density",
+      "longname_a": "Bengaluru Urban Center, India",
+      "longname_b": "Paris Urban Center, France",
+      "stat_a": 21031.652261978714,
+      "stat_b": 5924.5663050757885
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Xinjiang Uygur Zizhiqu, China",
+      "longname_b": "Bayern, Germany",
+      "stat_a": 3653.846923828125,
+      "stat_b": 1336.5626220703125
+    },
+    "a_ease": 0.8662659654395192,
+    "b_ease": 0.4497540407589599
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high heat index",
+      "question": "higher mean daily high heat index (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Baltimore County, Maryland, USA",
+      "longname_b": "Onondaga County, New York, USA",
+      "stat_a": 63.88039333078004,
+      "stat_b": 55.20227701912014
+    },
+    "b": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density!TOOLTIP Area-weighted density is the total population divided by the total area.",
+      "longname_a": "MO-04, USA",
+      "longname_b": "OR-04, USA",
+      "stat_a": 20.256581398306718,
+      "stat_b": 21.5363834775672
+    },
+    "a_ease": 0.8762409000661814,
+    "b_ease": 0.4745098039215686
+  }
+]

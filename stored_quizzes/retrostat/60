@@ -1,0 +1,113 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Toronto CDR, Ontario, Canada",
+      "longname_b": "Longueuil Territory, Quebec, Canada",
+      "stat_a": 135.0189214302311,
+      "stat_b": 25.182876114717434
+    },
+    "b": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Minneapolis-St. Paul [Urban Area], MN, USA",
+      "longname_b": "Bradenton-Sarasota-Venice [Urban Area], FL, USA",
+      "stat_a": 3.300323239558868e-05,
+      "stat_b": 0.00012014247665500754
+    },
+    "a_ease": 0.30290205562273276,
+    "b_ease": 0.71
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "New Hampshire, USA",
+      "longname_b": "South Carolina, USA",
+      "stat_a": 0.07248792902994214,
+      "stat_b": 0.13304476948576696
+    },
+    "b": {
+      "stat_column": "Health care and social assistance %",
+      "stat_path": "industry_health_care_and_social_assistance",
+      "question": "higher % of workers employed in the health care and social assistance industry!TOOLTIP hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc.",
+      "longname_a": "Albany GA Media Market, USA",
+      "longname_b": "Denver CO Media Market, USA",
+      "stat_a": 0.1371504422671701,
+      "stat_b": 0.11714936859230883
+    },
+    "a_ease": 0.7137707281903388,
+    "b_ease": 0.29443772672309554
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Alpha %",
+      "question": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+      "longname_a": "Sioux Falls MSA, SD, USA",
+      "longname_b": "Las Vegas-Henderson-Paradise MSA, NV, USA",
+      "stat_a": 0.14783381177178917,
+      "stat_b": 0.12425422618536579
+    },
+    "b": {
+      "stat_column": "Mean high temperature in winter",
+      "stat_path": "mean_high_temp_winter_4",
+      "question": "higher mean daily high temperature in winter (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "McKinney-Frisco [Urban Area], TX, USA",
+      "longname_b": "Daytona Beach-Palm Coast-Port Orange [Urban Area], FL, USA",
+      "stat_a": 59.97571425783371,
+      "stat_b": 69.82031210096895
+    },
+    "a_ease": 0.34130146082337315,
+    "b_ease": 0.7805320435308344
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016 Presidential Election",
+      "question": "!FULL Which voted more for Clinton in the 2016 presidential election?",
+      "longname_a": "Gilbert town, Arizona, USA",
+      "longname_b": "Cleveland city, Ohio, USA",
+      "stat_a": -0.1914875854692495,
+      "stat_b": 0.6901772879545546
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Visalia-Porterville MSA, CA, USA",
+      "longname_b": "Provo-Orem MSA, UT, USA",
+      "stat_a": 0.010622059167728163,
+      "stat_b": 0.027373692010703346
+    },
+    "a_ease": 0.8560933448573897,
+    "b_ease": 0.4546553808948005
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Seattle city, Washington, USA",
+      "longname_b": "Cincinnati city, Ohio, USA",
+      "stat_a": 53.947584353188255,
+      "stat_b": 58.101930542588825
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Colorado, USA",
+      "longname_b": "Puerto Rico, USA",
+      "stat_a": 0.06627230674074452,
+      "stat_b": 0.28855850134642697
+    },
+    "a_ease": 0.6132344552196235,
+    "b_ease": 0.9153567110036276
+  }
+]

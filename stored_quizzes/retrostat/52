@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "ID-01, USA",
+      "longname_b": "WA-03, USA",
+      "stat_a": 919553.0,
+      "stat_b": 769308.0
+    },
+    "b": {
+      "stat_column": "COPD %",
+      "question": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
+      "longname_a": "Gloucester County, New Jersey, USA",
+      "longname_b": "Sarasota County, Florida, USA",
+      "stat_a": 0.05757501818818089,
+      "stat_b": 0.07570033914847675
+    },
+    "a_ease": 0.24765581908439052,
+    "b_ease": 0.6598951507208388
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "Roanoke MSA, VA, USA",
+      "longname_b": "Aguadilla-Isabela MSA, PR, USA",
+      "stat_a": 0.7269015374132276,
+      "stat_b": 0.3226912949617174
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Nevada, USA",
+      "longname_b": "Colorado, USA",
+      "stat_a": 175.03962141982475,
+      "stat_b": 34.12330837163643
+    },
+    "a_ease": 0.8025372311086597,
+    "b_ease": 0.35855728429985856
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Life, physical, and social science occupations %",
+      "question": "higher % of workers employed in life, physical, and social science occupations!TOOLTIP biological scientists, chemists, physicists, geologists, food scientists, economists, phychologists, urban planners, sociologists, scientific technicians, etc.",
+      "longname_a": "Fort Wayne [Urban Area], IN, USA",
+      "longname_b": "Virginia Beach-Norfolk [Urban Area], VA, USA",
+      "stat_a": 0.004957465381245349,
+      "stat_b": 0.008259247522011947
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Bronx County, New York, USA",
+      "longname_b": "Santa Barbara County, California, USA",
+      "stat_a": 0.08601886099666224,
+      "stat_b": 0.4091517976745444
+    },
+    "a_ease": 0.8326530612244898,
+    "b_ease": 0.3351235230934479
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Tennessee, USA",
+      "stat_a": 0.0732667425284248,
+      "stat_b": 0.012285198404652574
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "Montgomery [Urban Area], AL, USA",
+      "longname_b": "Daytona Beach-Palm Coast-Port Orange [Urban Area], FL, USA",
+      "stat_a": 0.20792986249237036,
+      "stat_b": 0.3283762398444644
+    },
+    "a_ease": 0.45197438633938103,
+    "b_ease": 0.8742415885273028
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Independent living disability %",
+      "question": "higher % of adults with an independent living disability",
+      "longname_a": "Irvine city, California, USA",
+      "longname_b": "Cleveland city, Ohio, USA",
+      "stat_a": 0.046504241060686284,
+      "stat_b": 0.14081257228356903
+    },
+    "b": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Moscow Urban Center, Russian Federation",
+      "longname_b": "Dalian Urban Center, China",
+      "stat_a": 14706271.0,
+      "stat_b": 3632920.25
+    },
+    "a_ease": 0.8378378378378378,
+    "b_ease": 0.33029001074113856
+  }
+]

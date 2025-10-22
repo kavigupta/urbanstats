@@ -24,7 +24,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    min-width: 20%;
 }
 
 .right_panel_top {
@@ -63,14 +62,30 @@
 }
 
 .serif {
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-family: 'Jost', 'Arial', sans-serif;
+}
+
+button, select {
+    font-family: 'Jost', 'Arial', sans-serif;
+    background-color: var(--slightly-different-background);
+    border-radius: 5px;
+    color: var(--text-main);
+    border: 1px solid var(--ordinal-text-color);
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--slightly-different-background-focused);
+}
+
+button:disabled {
+    color: var(--ordinal-text-color);
+    border: 1px solid var(--border-non-shadow);
 }
 
 .centered_text {
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-family: 'Jost', 'Arial', sans-serif;
     text-align: center;
 }
-
 
 .h1 {
     font-size: 1.5em;
@@ -78,10 +93,6 @@
 
 .h2 {
     font-size: 1em;
-}
-
-.highlighted_header {
-    background-color: #d4b5e2;
 }
 
 @keyframes spin {
@@ -92,4 +103,25 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+.checkbox-setting label {
+    position: relative;
+    vertical-align: middle;
+}
+
+input[type=checkbox] {
+    vertical-align: middle;
+}
+
+input[type=text] {
+    background-color: var(--background);
+    border-radius: 5px;
+    color: var(--text-main);
+    border: 1px solid var(--ordinal-text-color);
+    font-family: 'Jost', 'Arial', sans-serif;
+}
+
+.syau-searchbox::placeholder {
+    color: var(--text-main)
 }

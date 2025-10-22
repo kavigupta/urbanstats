@@ -1,5 +1,5 @@
-from permacache import permacache, drop_if_equal
 import overpy
+from permacache import drop_if_equal, permacache
 
 from .to_geopandas import frame_for_result
 

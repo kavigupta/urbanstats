@@ -1,0 +1,57 @@
+/* c8 ignore start */
+import os from 'node:os'
+import { run } from 'node:test'
+import { spec } from 'node:test/reporters'
+
+import { globSync } from 'glob'
+import { z } from 'zod'
+import { argumentParser } from 'zodcli'
+
+import { startProxy } from '../../test/scripts/ci_proxy'
+import { booleanArgument } from '../../test/scripts/util'
+
+const options = argumentParser({
+    options: z.object({
+        proxy: booleanArgument({ defaultValue: false }),
+        test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:unit -- --test='unit/*.test.ts'`) }),
+        parallel: z.string().transform(string => parseInt(string)).default(os.cpus().length.toString()),
+        only: booleanArgument({ defaultValue: false }),
+    }).strict(),
+}).parse(process.argv.slice(2))
+
+const testFiles = globSync(options.test)
+
+if (testFiles.length === 0) {
+    console.error(`No test files found for ${options.test}`)
+    process.exit(1)
+}
+
+console.warn(`Using --parallel=${options.parallel}`)
+
+if (options.proxy) {
+    await startProxy()
+}
+
+const testStream = run({
+    files: testFiles,
+    concurrency: options.parallel,
+    isolation: 'process',
+    only: options.only,
+})
+
+testStream.compose(spec).pipe(process.stdout)
+
+testStream.on('test:summary', (event) => {
+    if (event.file === undefined) {
+        // Use a timeout so that we print the summary before exiting
+        setTimeout(() => {
+            if (event.success) {
+                process.exit(0)
+            }
+            else {
+                process.exit(1)
+            }
+        }, 0)
+    }
+})
+/* c8 ignore end */

@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Spanish at Home %",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Terre Haute IN Media Market, USA",
+      "longname_b": "Portland OR Media Market, USA",
+      "stat_a": 0.017601451618904352,
+      "stat_b": 0.09160509098323982
+    },
+    "b": {
+      "stat_column": "Mean high temperature in spring",
+      "question": "higher mean daily high temperature in spring (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "La Crosse-Eau Claire WI Media Market, USA",
+      "longname_b": "Springfield-Holyoke MA Media Market, USA",
+      "stat_a": 64.38724491471612,
+      "stat_b": 64.12977670484052
+    },
+    "a_ease": 0.676147382029735,
+    "b_ease": 0.266984505363528
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Architecture and engineering occupations %",
+      "question": "higher % of workers employed as architects and engineers!TOOLTIP all kinds of engineers except software engineers, architects, surveyors, drafters, etc.",
+      "longname_a": "Pierce County, Washington, USA",
+      "longname_b": "Williamson County, Texas, USA",
+      "stat_a": 0.0159240976560021,
+      "stat_b": 0.033605175723208
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "question": "higher % of people who are renters",
+      "longname_a": "Albany-Schenectady [Urban Area], NY, USA",
+      "longname_b": "Peoria [Urban Area], IL, USA",
+      "stat_a": 0.4209452664725473,
+      "stat_b": 0.32493461900011866
+    },
+    "a_ease": 0.3230035756853397,
+    "b_ease": 0.7607758620689655
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Current asthma %",
+      "question": "higher % of adults with asthma",
+      "longname_a": "Detroit city, Michigan, USA",
+      "longname_b": "Fresno city, California, USA",
+      "stat_a": 0.14527447371618987,
+      "stat_b": 0.10556192217966015
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "FL-01, USA",
+      "longname_b": "NY-13, USA",
+      "stat_a": 0.5911681311585862,
+      "stat_b": 0.5090396561624528
+    },
+    "a_ease": 0.8075288403157256,
+    "b_ease": 0.39186900056465274
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "TX-11, USA",
+      "longname_b": "FL-21, USA",
+      "stat_a": 0.4163397341263442,
+      "stat_b": 0.28146061831557023
+    },
+    "b": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Gauteng, South Africa",
+      "longname_b": "Coahuila de Zaragoza, Mexico",
+      "stat_a": 15486628.0,
+      "stat_b": 2988643.25
+    },
+    "a_ease": 0.43387470997679817,
+    "b_ease": 0.8372799028536734
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health technologists and technicians %",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "SC-02, USA",
+      "longname_b": "NY-10, USA",
+      "stat_a": 0.022053373296482513,
+      "stat_b": 0.0073480307989875725
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "question": "higher % units built pre-1970",
+      "longname_a": "Maryland, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.3918624674171123,
+      "stat_b": 0.3501081839341516
+    },
+    "a_ease": 0.22107304460245636,
+    "b_ease": 0.7613046701260193
+  }
+]

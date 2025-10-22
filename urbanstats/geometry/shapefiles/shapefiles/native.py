@@ -1,0 +1,88 @@
+# we want to be pretty explicit about the parameters, so its fine if there is some duplication
+# pylint: disable=duplicate-code
+import geopandas as gpd
+from permacache import permacache
+
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.universe.universe_provider.constants import us_domestic_provider
+
+
+def is_native_statistical_area(row):
+    x = ce_to_name()[row.AIANNHCE]
+    return "OTSA" in x or "SDTSA" in x or "ANVSA" in x or "TDSA" in x
+
+
+NATIVE_AREAS = Shapefile(
+    hash_key="native_areas_2",
+    path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+    shortname_extractor=lambda x: f"{x.NAMELSAD}",
+    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    filter=lambda x: not is_native_statistical_area(x),
+    meta=dict(type="Native Area", source="Census", type_category="Native"),
+    does_overlap_self=False,
+    universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
+    abbreviation="NAAR",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
+    include_in_syau=True,
+    metadata_columns=["geoid"],
+    wikidata_sourcer=None,
+)
+NATIVE_STATISTICAL_AREAS = Shapefile(
+    hash_key="native_statistical_areas",
+    path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+    shortname_extractor=lambda x: f"{x.NAMELSAD}",
+    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    filter=is_native_statistical_area,
+    meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
+    does_overlap_self=False,
+    universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
+    abbreviation="NASA",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
+    include_in_syau=True,
+    metadata_columns=["geoid"],
+    wikidata_sourcer=None,
+)
+NATIVE_SUBDIVISIONS = Shapefile(
+    hash_key="native_subdivisions_2",
+    path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
+    shortname_extractor=lambda x: f"{x.NAMELSAD}",
+    longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
+    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    filter=lambda x: True,
+    meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
+    does_overlap_self=False,
+    universe_provider=us_domestic_provider(),
+    subset_masks={"USA": SelfSubset()},
+    abbreviation="NASD",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
+    include_in_syau=True,
+    metadata_columns=["geoid"],
+    wikidata_sourcer=None,
+)
+
+
+@permacache("population_density/ce_to_name")
+def ce_to_name():
+    table = gpd.read_file("named_region_shapefiles/cb_2022_us_aiannh_500k.zip")
+    return dict(zip(table.AIANNHCE, table.NAMELSAD))
+
+
+native_shapefiles = dict(
+    native_areas=NATIVE_AREAS,
+    native_statistical_areas=NATIVE_STATISTICAL_AREAS,
+    native_subdivisions=NATIVE_SUBDIVISIONS,
+)

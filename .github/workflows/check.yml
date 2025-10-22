@@ -1,0 +1,222 @@
+name: check
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+env:
+  # This is used in ci_proxy, do not remove. It is necessary so that
+  # we can test against non-production data
+  URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  FORCE_COLOR: 1
+jobs:
+  build-and-push-common-image:
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: ./.github/actions/docker_image
+        with:
+          dockerfile: Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: image
+
+  build-and-push-e2e-image:
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: ./.github/actions/docker_image
+        with:
+          dockerfile: react/test/Dockerfile
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: image
+
+  lint:
+    runs-on: ubuntu-22.04
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - name: allow all directories
+        # This is needed because git complains about git repositories outside the user directory
+        run: git config --global --add safe.directory '*'
+      - name: Lint with pylint
+        run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
+        if: "!cancelled()" # Runs even if other steps fail
+      - name: Lint with vulture
+        run: python ./scripts/vulture.py
+        if: "!cancelled()"
+      - name: format
+        run: ./scripts/format-python.sh
+        if: "!cancelled()"
+      - name: check if there are any changes
+        # if there are, print the diff and exit with an error
+        # this is needed because isort and black disagree on the formatting of some files, so we run both and check
+        # if there's a difference
+        run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
+        if: "!cancelled()"
+      - name: typecheck
+        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
+        if: "!cancelled()"
+      - run: npm run lint:ci
+        working-directory: react
+        if: "!cancelled()"
+
+  build-frontend:
+    runs-on: ubuntu-22.04
+    needs: build-and-push-common-image
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+
+  list-e2e-tests:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
+      - id: set-matrix
+        run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
+        working-directory: react
+
+  e2e:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-and-push-e2e-image
+      - build-frontend
+      - list-e2e-tests
+    container:
+      image: ${{ needs.build-and-push-e2e-image.outputs.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: allow all directories
+        # This is needed because git complains about git repositories outside the user directory
+        run: git config --global --add safe.directory '*'
+      - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
+        if: ${{ github.base_ref != '' }}
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: react/test/density-db
+      - name: Run tests
+        run: |
+          npm run test:e2e -- \
+            --proxy=true \
+            --browser=chromium \
+            --test=test/${{ matrix.test-file }}.test.ts \
+            --headless=true \
+            --compare=true \
+            --time-limit-seconds=600 \
+            --base-ref=${{ github.base_ref }}
+        working-directory: react
+        env:
+          URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
+          URBAN_STATS_TEST_TOTP: ${{ secrets.URBAN_STATS_TEST_TOTP }}
+      - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
+        with:
+          name: delta-${{ matrix.test-file }}
+          path: react/delta
+      - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
+        with:
+          name: changed_screenshots-${{ matrix.test-file }}
+          path: react/changed_screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: durations-${{ matrix.test-file }}
+          path: react/durations
+
+  merge-screenshots:
+    runs-on: ubuntu-22.04
+    needs: [e2e]
+    if: "!cancelled()"
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: delta
+          pattern: "delta-*"
+        continue-on-error: true
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: changed_screenshots
+          pattern: "changed_screenshots-*"
+        continue-on-error: true
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: combined
+          pattern: "{delta,changed_screenshots}"
+          separate-directories: true
+        continue-on-error: true
+
+  merge-and-save-durations:
+    runs-on: ubuntu-22.04
+    needs: [e2e]
+    if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "durations-*"
+          path: react/durations
+          merge-multiple: true
+      - run: |
+          npx tsx test/scripts/save-durations.ts
+        working-directory: react
+        env:
+          FINE_GRAINED_TOKEN_FOR_VARIABLES: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
+
+  run-unit-tests:
+    runs-on: ubuntu-22.04
+    needs: [build-and-push-common-image]
+    container:
+      image: ${{ needs.build-and-push-common-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
+      - name: Run js tests
+        run: |
+          npm run test:unit:ci -- \
+            --proxy=true \
+            --test='unit/*.test.ts'
+        working-directory: react
+        if: "!cancelled()" # Runs even if other steps fail
+      - name: Test python
+        run: python -m pytest tests
+        if: "!cancelled()"
+      - name: Test urbanstats persistent
+        working-directory: urbanstats-persistent-data
+        run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
+        if: "!cancelled()"

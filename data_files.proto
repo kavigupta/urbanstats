@@ -4,9 +4,16 @@ syntax = "proto3";
 
 message StatisticRow {
     float statval = 1;
-    int32 ordinal = 2;
-    int32 overall_ordinal = 3;
-    float percentile_by_population = 4;
+    repeated int32 ordinal_by_universe = 2;
+    repeated int32 percentile_by_population_by_universe = 4;
+}
+
+message FirstOrLast {
+    // index into article.rows
+    int32 article_row_idx = 1;
+    // index into article.universes
+    int32 article_universes_idx = 2;
+    bool is_first = 3;
 }
 
 message RelatedButton {
@@ -20,13 +27,45 @@ message RelatedButtons {
     repeated RelatedButton buttons = 2;
 }
 
+message Histogram {
+    float bin_min = 1;
+    float bin_size = 2;
+    // the counts are normalized to sum to 2**16
+    repeated int32 counts = 3;
+}
+
+message TimeSeries {
+    repeated float values = 1;
+}
+
+message TemperatureHistogram {
+    // the counts are normalized to sum to 2**16
+    repeated int32 counts = 4;
+}
+
+message ExtraStatistic {
+    optional Histogram histogram = 1;
+    optional TimeSeries timeseries = 2;
+    optional TemperatureHistogram temperature_histogram = 3;
+}
+
+message Metadata {
+    int32 metadata_index = 1;
+    optional string string_value = 2;
+}
+
 message Article {
     string shortname = 1;
     string longname = 2;
     string source = 3;
     string article_type = 4;
+    bytes statistic_indices_packed = 9;
     repeated StatisticRow rows = 5;
+    repeated FirstOrLast overall_first_or_last = 10;
     repeated RelatedButtons related = 6;
+    repeated string universes = 7;
+    repeated ExtraStatistic extra_stats = 8;
+    repeated Metadata metadata = 11;
 }
 
 
@@ -54,27 +93,108 @@ message Feature {
         Polygon polygon = 1;
         MultiPolygon multipolygon = 2;
     }
+    repeated int32 zones = 3;
+    float center_lon = 4;
+}
+
+message PointSeries {
+    repeated Coordinate coords = 1;
 }
 
 // string lists
 
-message StringList {
+message ArticleOrderingList {
+    repeated string longnames = 1;
+    repeated int32 types = 2; // as in type_ordering_idx.ts
+}
+
+message ArticleUniverseList {
+    repeated Universes universes = 3;
+}
+
+message SearchIndexMetadata {
+    int32 type = 1; // as in type_ordering_idx.ts
+    int32 is_usa = 2; // boolean
+    int32 is_symlink = 3; // boolean
+}
+
+message SearchIndex {
     repeated string elements = 1;
+    repeated SearchIndexMetadata metadata = 2;
+}
+
+message OrderList {
+    // order_idxs[i] === the ith index into the ArticleOrderingList
+    repeated int32 order_idxs = 1;
+}
+
+message PopulationPercentileByUniverse {
+    repeated int32 population_percentile = 1;
+}
+
+message DataList {
+    repeated float value = 1;
+    repeated PopulationPercentileByUniverse population_percentile_by_universe = 2;
+}
+
+message OrderLists {
+    repeated string statnames = 1;
+    repeated OrderList order_lists = 2;
+}
+
+message DataLists {
+    repeated string statnames = 1;
+    repeated DataList data_lists = 2;
 }
 
 // unified result
 
-message AllStats {
-    repeated float stats = 1;
+message Universes {
+    // indexes into universes_ordered.ts
+    repeated int32 universe_idxs = 1;
 }
 
 message ConsolidatedShapes {
     repeated string longnames = 1;
+    repeated Universes universes = 3;
     repeated Feature shapes = 2;
 }
 
-message ConsolidatedStatistics {
-    repeated string longnames = 1;
-    repeated string shortnames = 2;
-    repeated AllStats stats = 3;
+// quiz sampling data
+
+message QuizDataForStat {
+    repeated float stats = 1;
+}
+
+message QuizFullData {
+    repeated QuizDataForStat stats = 1;
+}
+
+message QuizQuestionTronche {
+    repeated int32 geography_a = 1;
+    repeated int32 geography_b = 2;
+    repeated int32 stat = 3;
+    // probability within tronche
+    int32 neg_log_prob_x10_basis = 4;
+    repeated int32 neg_log_prob_x10_minus_basis = 5;
+}
+
+message CountsByColumnCompressed {
+    repeated int32 count = 1;
+    repeated int32 count_repeat = 2;
+}
+
+message CountsByArticleType {
+    repeated string article_type = 1;
+    repeated CountsByColumnCompressed counts = 2;
+}
+
+message CountsByArticleUniverseAndType {
+    repeated string universe = 1;
+    repeated CountsByArticleType counts_by_type = 2;
+}
+
+message Symlinks {
+    repeated string link_name = 1;
+    repeated string target_name = 2;
 }

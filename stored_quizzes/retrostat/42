@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in winter",
+      "question": "higher mean daily high temperature in winter (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "San Francisco city, California, USA",
+      "longname_b": "Gilbert town, Arizona, USA",
+      "stat_a": 57.810281226657004,
+      "stat_b": 70.02836470415954
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Wisconsin, USA",
+      "longname_b": "Oklahoma, USA",
+      "stat_a": 0.1649474168376966,
+      "stat_b": 0.3996841153415151
+    },
+    "a_ease": 0.7788184438040345,
+    "b_ease": 0.36115214180206795
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "TX-23, USA",
+      "longname_b": "IL-04, USA",
+      "stat_a": 766987.0,
+      "stat_b": 753677.0
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Reno [Urban Area], NV-CA, USA",
+      "longname_b": "Asheville [Urban Area], NC, USA",
+      "stat_a": 0.15005211264407084,
+      "stat_b": 0.1753118174148547
+    },
+    "a_ease": 0.21505376344086022,
+    "b_ease": 0.6354466858789626
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "McAllen-Edinburg-Mission MSA, TX, USA",
+      "longname_b": "Lafayette MSA, LA, USA",
+      "stat_a": 0.05944441798059671,
+      "stat_b": 0.22517690867094506
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "WI-05, USA",
+      "longname_b": "IL-06, USA",
+      "stat_a": 0.2698737962540947,
+      "stat_b": 0.2232543989072615
+    },
+    "a_ease": 0.4325889164598842,
+    "b_ease": 0.8353028064992615
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Accommodation and food services %",
+      "question": "higher % of workers employed in the accommodation and food services industry!TOOLTIP hotels, restaurants, bars, caterers, food services contractors, etc.",
+      "longname_a": "NY-12, USA",
+      "longname_b": "NC-05, USA",
+      "stat_a": 0.02612885445377318,
+      "stat_b": 0.07118062392840024
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "9th Circuit, USA",
+      "longname_b": "7th Circuit, USA",
+      "stat_a": 0.08645877874004952,
+      "stat_b": 0.019575782773311158
+    },
+    "a_ease": 0.164804469273743,
+    "b_ease": 0.5856079404466501
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Michigan, USA",
+      "longname_b": "Colorado, USA",
+      "stat_a": 10075930.0,
+      "stat_b": 5773714.0
+    },
+    "b": {
+      "stat_column": "2BR Rent < $750 %",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Madison WI Media Market, USA",
+      "longname_b": "Burlington VT-Plattsburgh NY Media Market, USA",
+      "stat_a": 0.131617289946576,
+      "stat_b": 0.15031755367911012
+    },
+    "a_ease": 0.8443804034582133,
+    "b_ease": 0.43166666666666664
+  }
+]

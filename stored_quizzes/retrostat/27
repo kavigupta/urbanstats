@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)",
+      "longname_a": "Greensboro city, North Carolina, USA",
+      "longname_b": "Louisville/Jefferson County metro government (balance), Kentucky, USA",
+      "stat_a": 63.71780237232927,
+      "stat_b": 60.02954523649006
+    },
+    "b": {
+      "stat_column": "Law enforcement workers including supervisors %",
+      "question": "higher % of workers employed as law enforcement workers including supervisors",
+      "longname_a": "DC Circuit, USA",
+      "longname_b": "2nd Circuit, USA",
+      "stat_a": 0.006545605458077179,
+      "stat_b": 0.012499689963131243
+    },
+    "a_ease": 0.7137724550898203,
+    "b_ease": 0.30970149253731344
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Lexington-Fayette [Urban Area], KY, USA",
+      "longname_b": "San Jose [Urban Area], CA, USA",
+      "stat_a": 0.15634119734141422,
+      "stat_b": 0.1074227730100059
+    },
+    "b": {
+      "stat_column": "Information %",
+      "question": "higher % of workers employed in the information industry",
+      "longname_a": "Boulder MSA, CO, USA",
+      "longname_b": "Las Vegas-Henderson-Paradise MSA, NV, USA",
+      "stat_a": 0.0336163255215503,
+      "stat_b": 0.015570058570009688
+    },
+    "a_ease": 0.24339360222531292,
+    "b_ease": 0.6675938803894298
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Corpus Christi city, Texas, USA",
+      "longname_b": "Lexington-Fayette urban county, Kentucky, USA",
+      "stat_a": 0.07649872680449235,
+      "stat_b": 0.15519648361369512
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "OR-06, USA",
+      "longname_b": "MI-07, USA",
+      "stat_a": 0.1156602799373188,
+      "stat_b": 0.10620223525379147
+    },
+    "a_ease": 0.7053789731051344,
+    "b_ease": 0.21557719054242003
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Cook County, Illinois, USA",
+      "longname_b": "Lorain County, Ohio, USA",
+      "stat_a": 0.5286440738961937,
+      "stat_b": 1.5748301655601722
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Mississippi, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.07428816271487262,
+      "stat_b": 0.04528178215883312
+    },
+    "a_ease": 0.8679706601466992,
+    "b_ease": 0.46311475409836067
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Only English at Home %",
+      "question": "higher % of people who only speak english at home",
+      "longname_a": "FL-06, USA",
+      "longname_b": "TX-15, USA",
+      "stat_a": 0.8816141071537534,
+      "stat_b": 0.31271636232433647
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "question": "higher % of people who are boomers",
+      "longname_a": "Provo-Orem MSA, UT, USA",
+      "longname_b": "Madison MSA, WI, USA",
+      "stat_a": 0.11466814564950228,
+      "stat_b": 0.21473196680237092
+    },
+    "a_ease": 0.8826754385964912,
+    "b_ease": 0.4600409836065574
+  }
+]

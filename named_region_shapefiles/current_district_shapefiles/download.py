@@ -1,12 +1,12 @@
 import os
 import pickle
-import requests
-import tqdm
-import us
 import subprocess
 
 import geopandas as gpd
 import pandas as pd
+import requests
+import tqdm
+import us
 
 metadata = [
     ("CD", "cd118", "STATEFP20", "CD118FP"),
@@ -35,10 +35,6 @@ def download():
                 f.write(resp.content)
 
 
-def num_digits(x):
-    return len(str(x - 1))
-
-
 def path(fips, suffix):
     return f"shapefiles/tl_rd22_{fips}_{suffix}.zip"
 
@@ -63,7 +59,7 @@ def combine_shapefiles(suffix, state_column, number_column):
 
 
 def main():
-    subprocess.run(["mkdir", "-p", "shapefiles"])
+    subprocess.run(["mkdir", "-p", "shapefiles"], check=True)
     download()
     for _, suffix, state_column, number_column in metadata:
         combine_shapefiles(suffix, state_column, number_column)

@@ -1,7 +1,9 @@
 import ast
+import json
 import os
-import shutil
+import subprocess
 
+import requests
 
 current = __file__
 fixed_py_file = os.path.join(os.path.dirname(current), "fixed.py")
@@ -29,22 +31,40 @@ def save_fixed_py(fixed):
         for key, value in fixed.items():
             f.write(f"{key} = {value}\n")
 
+    subprocess.check_call(f"python -m black {fixed_py_file}", shell=True)
 
-def copy_up_to(site_folder, key, new_up_to):
+
+def copy_up_to(key, new_up_to, folder=None):
     source_folder = {
         "juxtastat": "quiz",
         "retrostat": "retrostat",
     }[key]
     dest_folder = {
-        "juxtastat": "quiz_old",
-        "retrostat": "retrostat_old",
+        "juxtastat": "stored_quizzes/juxtastat",
+        "retrostat": "stored_quizzes/retrostat",
     }[key]
     fixed_py = load_fixed_py()
     for retrostat_week in range(fixed_py[key], new_up_to + 1):
-        source = os.path.join(site_folder, source_folder, str(retrostat_week))
+        source = os.path.join(
+            "https://urbanstats.org", source_folder, str(retrostat_week)
+        )
         dest = os.path.join(dest_folder, str(retrostat_week))
         print(f"Copying {source} to {dest}")
-        shutil.copyfile(source, dest)
+        response = requests.get(source, timeout=10)
+        if response.status_code == 200:
+            data = response.content
+        else:
+            print(f"Failed to get {source}")
+            print("finding locally")
+            assert folder is not None, "Must provide folder"
+            source = os.path.join(folder, source_folder, str(retrostat_week))
+            with open(source, "rb") as f:
+                data = f.read()
+        assert data, f"Somehow, {source} is empty"
+        # check that it's valid json
+        _ = json.loads(data.decode("utf-8"))
+        with open(dest, "wb") as f:
+            f.write(data)
     fixed_py[key] = new_up_to
     save_fixed_py(fixed_py)
     os.system(f"git add {dest_folder} {fixed_py_file}")

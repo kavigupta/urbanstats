@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "question": "higher % change in population-weighted density (r=1km) from 2010 to 2020",
+      "longname_a": "Youngstown OH Media Market, USA",
+      "longname_b": "Panama City FL Media Market, USA",
+      "stat_a": -0.05703365498800087,
+      "stat_b": -0.04910750146897444
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Anchorage MSA, AK, USA",
+      "longname_b": "Los Angeles-Long Beach-Anaheim MSA, CA, USA",
+      "stat_a": 0.5106051028467999,
+      "stat_b": 0.14976513631700694
+    },
+    "a_ease": 0.7370325693606755,
+    "b_ease": 0.3208685162846803
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Puerto Rico, USA",
+      "longname_b": "Delaware, USA",
+      "stat_a": 0.005946995696135396,
+      "stat_b": 0.02558781535848038
+    },
+    "b": {
+      "stat_column": "1BR Rent < $750 %",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "Rockland County, New York, USA",
+      "longname_b": "Broward County, Florida, USA",
+      "stat_a": 0.19172314643663996,
+      "stat_b": 0.06463845557183487
+    },
+    "a_ease": 0.7605790645879733,
+    "b_ease": 0.3512304250559284
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mobility disability %",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "Madison city, Wisconsin, USA",
+      "longname_b": "Philadelphia city, Pennsylvania, USA",
+      "stat_a": 0.0710910431045709,
+      "stat_b": 0.16121957055167316
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "NJ-09, USA",
+      "longname_b": "TN-09, USA",
+      "stat_a": 0.16153918811146645,
+      "stat_b": 0.28487586996243114
+    },
+    "a_ease": 0.6996381182147166,
+    "b_ease": 0.267538644470868
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "question": "higher population",
+      "longname_a": "Portland-South Portland MSA, ME, USA",
+      "longname_b": "Beaumont-Port Arthur MSA, TX, USA",
+      "stat_a": 551661.0,
+      "stat_b": 409782.0
+    },
+    "b": {
+      "stat_column": "Mining, quarrying, and oil and gas extraction %",
+      "question": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
+      "longname_a": "Santa Rosa [Urban Area], CA, USA",
+      "longname_b": "Reno [Urban Area], NV-CA, USA",
+      "stat_a": 0.0008810106798294726,
+      "stat_b": 0.0032401120959391237
+    },
+    "a_ease": 0.40979955456570155,
+    "b_ease": 0.8361303060217177
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vision disability %",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Pennsylvania, USA",
+      "longname_b": "Tennessee, USA",
+      "stat_a": 0.049927864739242274,
+      "stat_b": 0.05736731818905911
+    },
+    "b": {
+      "stat_column": "1BR Rent > $1500 %",
+      "question": "higher % of units with 1br rent over $1500",
+      "longname_a": "Riverside-San Bernardino [Urban Area], CA, USA",
+      "longname_b": "Minneapolis-St. Paul [Urban Area], MN, USA",
+      "stat_a": 0.25361928084339047,
+      "stat_b": 0.1722185855164947
+    },
+    "a_ease": 0.47058823529411764,
+    "b_ease": 0.8745198463508322
+  }
+]

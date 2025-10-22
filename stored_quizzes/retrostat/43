@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Morocco",
+      "longname_b": "Singapore",
+      "stat_a": 37202028.0,
+      "stat_b": 5907874.0
+    },
+    "b": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Nevada, USA",
+      "longname_b": "Georgia, USA",
+      "stat_a": 0.08696188087808389,
+      "stat_b": 0.12276996330332601
+    },
+    "a_ease": 0.3328690807799443,
+    "b_ease": 0.7388797364085667
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Burundi",
+      "longname_b": "Panama",
+      "stat_a": 12205093.0,
+      "stat_b": 4283006.5
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kollam Urban Center, India",
+      "longname_b": "Kinshasa Urban Center, Congo, The Democratic Republic of the",
+      "stat_a": 6094.6064453125,
+      "stat_b": 34140.31640625
+    },
+    "a_ease": 0.6907983761840325,
+    "b_ease": 0.26512322628827484
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Electricity heating %",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Rapid City SD Media Market, USA",
+      "longname_b": "New York NY Media Market, USA",
+      "stat_a": 0.3044517708755085,
+      "stat_b": 0.1291148235202608
+    },
+    "b": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Flint MSA, MI, USA",
+      "longname_b": "Rockford MSA, IL, USA",
+      "stat_a": 0.13433215632855705,
+      "stat_b": 0.1120732496636057
+    },
+    "a_ease": 0.36002785515320335,
+    "b_ease": 0.765496639283047
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Myrtle Beach-Conway-North Myrtle Beach MSA, SC-NC, USA",
+      "longname_b": "San Jose-Sunnyvale-Santa Clara MSA, CA, USA",
+      "stat_a": 3.260348115543924,
+      "stat_b": 0.6831940860819118
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Oklahoma City city, Oklahoma, USA",
+      "longname_b": "Laredo city, Texas, USA",
+      "stat_a": 0.38848880427740995,
+      "stat_b": 0.8391483937552625
+    },
+    "a_ease": 0.7966573816155988,
+    "b_ease": 0.36709886547811993
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Toledo OH Media Market, USA",
+      "longname_b": "West Palm Beach-Fort Pierce FL Media Market, USA",
+      "stat_a": 0.9218976958205103,
+      "stat_b": 0.895510853978171
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Rochester MN-Mason CityIa-Austin MN Media Market, USA",
+      "longname_b": "Los Angeles CA Media Market, USA",
+      "stat_a": 10.243492716298055,
+      "stat_b": 3.5322906136469308
+    },
+    "a_ease": 0.3525018670649739,
+    "b_ease": 0.8039538714991763
+  }
+]

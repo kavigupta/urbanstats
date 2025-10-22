@@ -1,21 +1,4 @@
-.value_numeric {
-    text-align: right;
-}
-
 .value_unit {
     text-align: left;
     padding-right: 1em;
-}
-
-.oddrow {
-    background-color: #f8f8f8;
-}
-
-.editable_number {
-    min-width: 2em;
-}
-
-.statname_no_link {
-    text-decoration: none;
-    color: black;
 }

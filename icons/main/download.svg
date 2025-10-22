@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="160mm"
+   height="160mm"
+   viewBox="0 0 159.99999 160.00001"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="download.svg"
+   inkscape:export-filename="screenshot.png"
+   inkscape:export-xdpi="127"
+   inkscape:export-ydpi="127"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.61266502"
+     inkscape:cx="-32.644266"
+     inkscape:cy="407.23722"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <defs
+     id="defs2">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="61.003862 : 44.612156 : 1"
+       inkscape:vp_y="0 : 663.24883 : 0"
+       inkscape:vp_z="200.2861 : 44.612156 : 1"
+       inkscape:persp3d-origin="130.64504 : 11.781346 : 1"
+       id="perspective240" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="103.97237 : 40.653577 : 1"
+       inkscape:vp_y="0 : 454.17892 : 0"
+       inkscape:vp_z="199.34991 : 40.653577 : 1"
+       inkscape:persp3d-origin="151.66113 : 18.171725 : 1"
+       id="perspective240-3" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="125.34217 : 44.620416 : 1"
+       inkscape:vp_y="0 : 752.10365 : 0"
+       inkscape:vp_z="193.09662 : 51.972526 : 1"
+       inkscape:persp3d-origin="167.05562 : 11.547226 : 1"
+       id="perspective240-3-9" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-271.80194,218.23845)">
+    <g
+       id="g3949"
+       transform="translate(-14.318162,1.970182)">
+      <rect
+         style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.408709;stop-color:#000000"
+         id="rect866"
+         width="148.89951"
+         height="17.026581"
+         x="291.67035"
+         y="-81.640656"
+         ry="5.6934867" />
+      <g
+         id="g3542"
+         transform="matrix(0.77765741,0,0,0.77765741,92.190448,28.647157)">
+        <rect
+           style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.525564;stop-color:#000000"
+           id="rect866-3"
+           width="158.77895"
+           height="21.894712"
+           x="-314.34195"
+           y="-363.19714"
+           ry="7.3213305"
+           transform="rotate(90)" />
+        <g
+           id="g3536"
+           transform="translate(-131.22439)">
+          <rect
+             style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.525564;stop-color:#000000"
+             id="rect866-3-6"
+             width="83.609543"
+             height="21.894714"
+             x="-525.70996"
+             y="-241.35715"
+             ry="7.3213305"
+             transform="rotate(135)" />
+          <rect
+             style="color:#000000;overflow:visible;fill:#8686bf;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.525564;stop-color:#000000"
+             id="rect866-3-6-7"
+             width="83.609543"
+             height="21.894714"
+             x="158.02579"
+             y="442.37857"
+             ry="7.3213305"
+             transform="matrix(0.70710678,0.70710678,0.70710678,-0.70710678,0,0)" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

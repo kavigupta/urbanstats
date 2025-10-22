@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Denver CO Media Market, USA",
+      "longname_b": "New Orleans LA Media Market, USA",
+      "stat_a": 0.14044866151992988,
+      "stat_b": 0.26004593093234973
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Kern County, California, USA",
+      "longname_b": "Essex County, Massachusetts, USA",
+      "stat_a": 0.05065792331995544,
+      "stat_b": 0.07007987870964935
+    },
+    "a_ease": 0.741248097412481,
+    "b_ease": 0.33202614379084966
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Calgary City, Division No. 6, Alberta, Canada",
+      "longname_b": "Toronto City, Toronto CDR, Ontario, Canada",
+      "stat_a": 0.1883211528986693,
+      "stat_b": 0.26460976423566784
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "NC-02 (2025), USA",
+      "longname_b": "NM-03 (2023), USA",
+      "stat_a": 0.1768914211664466,
+      "stat_b": 0.07160544285605631
+    },
+    "a_ease": 0.28334714167357083,
+    "b_ease": 0.7152542372881356
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "NJ-11 (2023), USA",
+      "longname_b": "SC-07 (2023), USA",
+      "stat_a": 0.5932347085571835,
+      "stat_b": 0.19927747401061585
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "stat_path": "generation_boomer",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "Windsor Population Center, ON, Canada",
+      "longname_b": "Savannah [Urban Area], GA, USA",
+      "stat_a": 0.2457095477836651,
+      "stat_b": 0.20730761510390225
+    },
+    "a_ease": 0.8131661442006269,
+    "b_ease": 0.3877381938690969
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "FL-07 (2023), USA",
+      "longname_b": "WI-05 (2023), USA",
+      "stat_a": 0.1197287610168416,
+      "stat_b": 0.3576452670837091
+    },
+    "b": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Montr\u00e9al Territory, Quebec, Canada",
+      "longname_b": "Halton Regional municipality, Ontario, Canada",
+      "stat_a": 0.646552108395151,
+      "stat_b": 0.5132782272247622
+    },
+    "a_ease": 0.8216949152542373,
+    "b_ease": 0.3610406091370558
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Harrisburg-Lancaster-Lebanon-York PA Media Market, USA",
+      "longname_b": "Harlingen-Weslaco-Brownsville-Mcallen TX Media Market, USA",
+      "stat_a": 0.08900673876660813,
+      "stat_b": 0.42983415073568415
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Milwaukee County, Wisconsin, USA",
+      "longname_b": "Palm Beach County, Florida, USA",
+      "stat_a": 0.4916655233449676,
+      "stat_b": 0.24726958127531076
+    },
+    "a_ease": 0.8989229494614748,
+    "b_ease": 0.4855403348554033
+  }
+]

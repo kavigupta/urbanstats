@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="88.797974mm"
+   height="79.419998mm"
+   viewBox="0 0 88.797971 79.420003"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="life-lost.svg"
+   inkscape:export-filename="life-lost.png"
+   inkscape:export-xdpi="149.75999"
+   inkscape:export-ydpi="149.75999"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.0467672"
+     inkscape:cx="22.927734"
+     inkscape:cy="-74.992797"
+     inkscape:window-width="2186"
+     inkscape:window-height="1440"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <defs
+     id="defs2">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="61.003867 : -35.967849 : 1"
+       inkscape:vp_y="0 : 663.24885 : 0"
+       inkscape:vp_z="200.28612 : -35.967849 : 1"
+       inkscape:persp3d-origin="130.64505 : -68.79866 : 1"
+       id="perspective240" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="103.97238 : -39.926429 : 1"
+       inkscape:vp_y="0 : 454.17892 : 0"
+       inkscape:vp_z="199.34993 : -39.926429 : 1"
+       inkscape:persp3d-origin="151.66114 : -62.408281 : 1"
+       id="perspective240-3" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="125.34218 : -35.959589 : 1"
+       inkscape:vp_y="0 : 752.10367 : 0"
+       inkscape:vp_z="193.09664 : -28.607479 : 1"
+       inkscape:persp3d-origin="167.05564 : -69.03278 : 1"
+       id="perspective240-3-9" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-169.39652,-42.538363)">
+    <path
+       id="rect1197"
+       style="color:#000000;overflow:visible;opacity:1;fill:#4e525a;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.472869;stop-color:#000000"
+       d="m 194.24206,42.538424 c -2.15674,-0.0048 -4.33158,0.271821 -6.47042,0.84491 -4.20354,1.126215 -8.03625,3.339554 -11.11353,6.416661 -3.0771,3.077275 -5.28993,6.90998 -6.41614,11.11353 -2.29259,8.555364 0.15322,17.683798 6.41614,23.946856 l 0.0196,-0.01964 2.09651,2.096513 v 5.15e-4 l 35.02111,35.020591 35.02112,-35.021106 2.09651,-2.096513 0.0196,0.01964 c 6.26294,-6.262914 8.70901,-15.391019 6.41667,-23.946338 -1.12623,-4.203543 -3.33905,-8.036777 -6.41615,-11.114048 -3.07728,-3.077109 -6.91051,-5.289929 -11.11405,-6.416145 -8.55537,-2.292588 -17.68379,0.153217 -23.94685,6.416145 l 0.0196,0.01964 -2.0965,2.096512 -2.09651,-2.096512 0.0196,-0.01964 c -4.69717,-4.697199 -11.00624,-7.247152 -17.47644,-7.261571 z" />
+    <image
+       preserveAspectRatio="none"
+       inkscape:svg-dpi="96"
+       width="97.312164"
+       height="64.700417"
+       xlink:href="../../palettes.svg"
+       id="image3148"
+       x="200.4451"
+       y="-71.137451" />
+  </g>
+</svg>

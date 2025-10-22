@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "question": "higher % of days with wind speed over 10mph (population weighted)",
+      "longname_a": "Santa Clarita [Urban Area], CA, USA",
+      "longname_b": "Columbia [Urban Area], SC, USA",
+      "stat_a": 0.004850063629373651,
+      "stat_b": 0.08122561337427965
+    },
+    "b": {
+      "stat_column": "AW Density [GHS-POP]",
+      "question": "higher area-weighted population density",
+      "longname_a": "Turkey",
+      "longname_b": "Congo, The Democratic Republic of the",
+      "stat_a": 107.11656996254047,
+      "stat_b": 39.892169286877284
+    },
+    "a_ease": 0.35286284953395475,
+    "b_ease": 0.7563249001331558
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "MI-13, USA",
+      "longname_b": "CT-04, USA",
+      "stat_a": 0.07935558687917235,
+      "stat_b": 0.23063592149199988
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "FL-18, USA",
+      "longname_b": "CA-15, USA",
+      "stat_a": 0.11483890722491888,
+      "stat_b": 0.3971876950111122
+    },
+    "a_ease": 0.40476190476190477,
+    "b_ease": 0.8091482649842271
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Oklahoma City [Urban Area], OK, USA",
+      "longname_b": "Greenville [Urban Area], SC, USA",
+      "stat_a": 0.039293436875175614,
+      "stat_b": 0.021199625068750307
+    },
+    "b": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "Austin city, Texas, USA",
+      "longname_b": "Henderson city, Nevada, USA",
+      "stat_a": 0.03324152023712179,
+      "stat_b": 0.07937982979494904
+    },
+    "a_ease": 0.42902208201892744,
+    "b_ease": 0.8509316770186336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in fall",
+      "question": "higher mean daily high temperature in fall (population weighted)",
+      "longname_a": "Hamilton County, Ohio, USA",
+      "longname_b": "Camden County, New Jersey, USA",
+      "stat_a": 58.001697296503124,
+      "stat_b": 59.34051398386095
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Michigan, USA",
+      "longname_b": "Connecticut, USA",
+      "stat_a": 0.13299468934063347,
+      "stat_b": 0.10031623846773832
+    },
+    "a_ease": 0.493411420204978,
+    "b_ease": 0.9047619047619048
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "California, USA",
+      "longname_b": "South Carolina, USA",
+      "stat_a": 0.16253145165881405,
+      "stat_b": 0.08495117569362919
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "St. Paul city, Minnesota, USA",
+      "longname_b": "Indianapolis city (balance), Indiana, USA",
+      "stat_a": 0.5369684247796563,
+      "stat_b": 0.5897946150346951
+    },
+    "a_ease": 0.9542586750788643,
+    "b_ease": 0.5486018641810919
+  }
+]

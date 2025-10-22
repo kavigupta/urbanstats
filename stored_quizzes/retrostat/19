@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Louisiana, USA",
+      "longname_b": "Rhode Island, USA",
+      "stat_a": 0.06925004895073666,
+      "stat_b": 0.16595250921295018
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "San Joaquin County, California, USA",
+      "longname_b": "St. Clair County, Illinois, USA",
+      "stat_a": 0.43852807813044997,
+      "stat_b": 0.5806407420186317
+    },
+    "a_ease": 0.3011889035667107,
+    "b_ease": 0.7065693430656934
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "question": "higher % of people who are gen z",
+      "longname_a": "Santa Rosa MSA, CA, USA",
+      "longname_b": "College Station-Bryan MSA, TX, USA",
+      "stat_a": 0.17352462599638285,
+      "stat_b": 0.3214015458115134
+    },
+    "b": {
+      "stat_column": "High School %",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Boise City [Urban Area], ID, USA",
+      "longname_b": "Asheville [Urban Area], NC, USA",
+      "stat_a": 0.9549478093538379,
+      "stat_b": 0.9254710749610424
+    },
+    "a_ease": 0.7386861313868613,
+    "b_ease": 0.29326287978863935
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "1BR Rent < $750 %",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "IL-09, USA",
+      "longname_b": "CA-40, USA",
+      "stat_a": 0.15660782615001728,
+      "stat_b": 0.06322044521461832
+    },
+    "b": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "Fort Wayne city, Indiana, USA",
+      "longname_b": "Stockton city, California, USA",
+      "stat_a": 0.14991985630975252,
+      "stat_b": 0.11896506566557329
+    },
+    "a_ease": 0.8464730290456431,
+    "b_ease": 0.444311377245509
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Chicago [Urban Area], IL-IN, USA",
+      "longname_b": "Stockton [Urban Area], CA, USA",
+      "stat_a": 0.15954971647361252,
+      "stat_b": 0.05355318374443348
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Gilbert town, Arizona, USA",
+      "longname_b": "Fresno city, California, USA",
+      "stat_a": 0.02233017873815841,
+      "stat_b": 0.12558281442578853
+    },
+    "a_ease": 0.8481751824817518,
+    "b_ease": 0.4306569343065693
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "question": "higher % of people who are gen z",
+      "longname_a": "KS-01, USA",
+      "longname_b": "CA-11, USA",
+      "stat_a": 0.2384470698773122,
+      "stat_b": 0.12182118423232219
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "question": "higher % of people who are Asian",
+      "longname_a": "CT-04, USA",
+      "longname_b": "MD-08, USA",
+      "stat_a": 0.05502163787855888,
+      "stat_b": 0.1403567211516901
+    },
+    "a_ease": 0.1699438202247191,
+    "b_ease": 0.6262773722627737
+  }
+]

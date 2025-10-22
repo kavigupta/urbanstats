@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Santa Ana city, California, USA",
+      "longname_b": "Buffalo city, New York, USA",
+      "stat_a": 0.12467048726187392,
+      "stat_b": 0.27561998609376986
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "4th Circuit, USA",
+      "longname_b": "1st Circuit, USA",
+      "stat_a": 0.3686930675072999,
+      "stat_b": 0.4203995562275613
+    },
+    "a_ease": 0.6186915887850467,
+    "b_ease": 0.21562809099901087
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Worcester MSA, MA-CT, USA",
+      "longname_b": "Salem MSA, OR, USA",
+      "stat_a": 0.03465867860049333,
+      "stat_b": 0.1125973835072762
+    },
+    "b": {
+      "stat_column": "AW Density [GHS-POP]",
+      "question": "higher area-weighted population density",
+      "longname_a": "Surat Urban Center, India",
+      "longname_b": "Wenzhou Urban Center, China",
+      "stat_a": 28640.117611711383,
+      "stat_b": 6553.083047952441
+    },
+    "a_ease": 0.7884310618066561,
+    "b_ease": 0.38161838161838163
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)",
+      "longname_a": "Tampa-St. Petersburg [Urban Area], FL, USA",
+      "longname_b": "Birmingham [Urban Area], AL, USA",
+      "stat_a": 0.08820890159865423,
+      "stat_b": 0.1108682840477611
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Alabama, USA",
+      "longname_b": "Louisiana, USA",
+      "stat_a": 0.0017907920565404232,
+      "stat_b": 0.005144738238110682
+    },
+    "a_ease": 0.3271484375,
+    "b_ease": 0.7785046728971963
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Units per Adult",
+      "question": "higher number of housing units per adult",
+      "longname_a": "New Orleans-Metairie MSA, LA, USA",
+      "longname_b": "Washington-Arlington-Alexandria MSA, DC-VA-MD-WV, USA",
+      "stat_a": 0.5776829151237453,
+      "stat_b": 0.5060090725491477
+    },
+    "b": {
+      "stat_column": "Black %",
+      "question": "higher % of people who are Black",
+      "longname_a": "Memphis city, Tennessee, USA",
+      "longname_b": "Louisville/Jefferson County metro government (balance), Kentucky, USA",
+      "stat_a": 0.6134408406344662,
+      "stat_b": 0.1728725055891364
+    },
+    "a_ease": 0.41544117647058826,
+    "b_ease": 0.8204656862745098
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rainfall",
+      "question": "higher rainfall (population weighted)",
+      "longname_a": "Fort Wayne MSA, IN, USA",
+      "longname_b": "Roanoke MSA, VA, USA",
+      "stat_a": 0.8982552905987818,
+      "stat_b": 0.9843972840244619
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Allentown-Bethlehem-Easton MSA, PA-NJ, USA",
+      "longname_b": "Eugene MSA, OR, USA",
+      "stat_a": 0.10442557806884324,
+      "stat_b": 0.1645831153184627
+    },
+    "a_ease": 0.8051948051948052,
+    "b_ease": 0.302020202020202
+  }
+]

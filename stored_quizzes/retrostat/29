@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income < $50k %",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "Cleveland city, Ohio, USA",
+      "longname_b": "Charlotte city, North Carolina, USA",
+      "stat_a": 0.8097525265209995,
+      "stat_b": 0.6192509695529399
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Brevard County, Florida, USA",
+      "longname_b": "Bexar County, Texas, USA",
+      "stat_a": 0.011552212590849693,
+      "stat_b": 0.02796379911717882
+    },
+    "a_ease": 0.7005917159763314,
+    "b_ease": 0.2911392405063291
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Tampa-St. Petersburg [Urban Area], FL, USA",
+      "longname_b": "Durham [Urban Area], NC, USA",
+      "stat_a": 0.01274969745936131,
+      "stat_b": 0.02988704585513848
+    },
+    "b": {
+      "stat_column": "High School %",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "CA-12, USA",
+      "longname_b": "OH-14, USA",
+      "stat_a": 0.8800786409812807,
+      "stat_b": 0.9112126277246733
+    },
+    "a_ease": 0.6317606444188723,
+    "b_ease": 0.1940828402366864
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "MI-11, USA",
+      "longname_b": "NJ-12, USA",
+      "stat_a": 0.05329513337321808,
+      "stat_b": 0.21481587616303685
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "MI-05, USA",
+      "longname_b": "AZ-06, USA",
+      "stat_a": 0.046008007381530186,
+      "stat_b": 0.062249634774463825
+    },
+    "a_ease": 0.8638743455497382,
+    "b_ease": 0.45748502994011975
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent > $1500 %",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Berks County, Pennsylvania, USA",
+      "longname_b": "Providence County, Rhode Island, USA",
+      "stat_a": 0.09122349102773246,
+      "stat_b": 0.1943814446375113
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "San Francisco-Oakland [Urban Area], CA, USA",
+      "longname_b": "San Antonio [Urban Area], TX, USA",
+      "stat_a": 0.3313515566460928,
+      "stat_b": 0.12907613445191038
+    },
+    "a_ease": 0.9266272189349113,
+    "b_ease": 0.4988730277986476
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km) [GHS-POP]",
+      "question": "higher population-weighted density (r=4km)",
+      "longname_a": "Australia",
+      "longname_b": "Egypt",
+      "stat_a": 1465.5975341796875,
+      "stat_b": 11156.419921875
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "question": "higher % of people who work from home",
+      "longname_a": "Louisville/Jefferson County [Urban Area], KY-IN, USA",
+      "longname_b": "Toledo [Urban Area], OH-MI, USA",
+      "stat_a": 0.08956016540546471,
+      "stat_b": 0.056972554372197934
+    },
+    "a_ease": 0.9410994764397905,
+    "b_ease": 0.5386631716906947
+  }
+]

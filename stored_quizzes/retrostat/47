@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Canton [Urban Area], OH, USA",
+      "longname_b": "Myrtle Beach-North Myrtle Beach [Urban Area], SC-NC, USA",
+      "stat_a": 0.06772161899817151,
+      "stat_b": 0.30994267539095594
+    },
+    "b": {
+      "stat_column": "Born outside US %",
+      "question": "higher % of people who were born outside the US",
+      "longname_a": "UT-01, USA",
+      "longname_b": "WI-02, USA",
+      "stat_a": 0.06143262055598615,
+      "stat_b": 0.07233336600534186
+    },
+    "a_ease": 0.2680047225501771,
+    "b_ease": 0.6868402533427164
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "San Francisco city, California, USA",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 0.15645999993132348,
+      "stat_b": 0.29853558398648644
+    },
+    "b": {
+      "stat_column": "Diagnosed diabetes %",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "Madison city, Wisconsin, USA",
+      "longname_b": "Cleveland city, Ohio, USA",
+      "stat_a": 0.05853856491730695,
+      "stat_b": 0.17679306687144497
+    },
+    "a_ease": 0.33489618218352313,
+    "b_ease": 0.7536945812807881
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Idaho, USA",
+      "longname_b": "Indiana, USA",
+      "stat_a": 0.1301757484342936,
+      "stat_b": 0.08167249475648763
+    },
+    "b": {
+      "stat_column": "Born in state of residence %",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "Hamilton County, Indiana, USA",
+      "longname_b": "Rockingham County, New Hampshire, USA",
+      "stat_a": 0.583494332818135,
+      "stat_b": 0.2888432575553242
+    },
+    "a_ease": 0.24708624708624707,
+    "b_ease": 0.7113341204250295
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Binge drinking among adults %",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Lexington-Fayette [Urban Area], KY, USA",
+      "longname_b": "Grand Rapids [Urban Area], MI, USA",
+      "stat_a": 0.1653912543814285,
+      "stat_b": 0.18184444466294827
+    },
+    "b": {
+      "stat_column": "Gen Z %",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Utah, USA",
+      "stat_a": 0.20050099042779562,
+      "stat_b": 0.24673868978173344
+    },
+    "a_ease": 0.5358024691358024,
+    "b_ease": 0.943067649028801
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time > 60 min %",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Little Rock-North Little Rock-Conway MSA, AR, USA",
+      "longname_b": "Cedar Rapids MSA, IA, USA",
+      "stat_a": 0.04361225205849968,
+      "stat_b": 0.03511557319635769
+    },
+    "b": {
+      "stat_column": "2016 Presidential Election",
+      "question": "!FULL Which voted more for Clinton in the 2016 presidential election?",
+      "longname_a": "North Dakota, USA",
+      "longname_b": "Oregon, USA",
+      "stat_a": -0.35729179844828013,
+      "stat_b": 0.10981769545359568
+    },
+    "a_ease": 0.5495867768595041,
+    "b_ease": 0.961629279811098
+  }
+]

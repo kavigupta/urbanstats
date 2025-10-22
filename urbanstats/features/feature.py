@@ -1,8 +1,6 @@
 import attr
-import pandas as pd
 import geopandas as gpd
-
-from .within_distance import shapefile_points_to_radius
+import pandas as pd
 
 
 @attr.s
@@ -11,9 +9,6 @@ class Feature:
     name = attr.ib()
     radius_km = attr.ib()
     load_fn = attr.ib()
-
-    def load_as_shapefile(self):
-        return shapefile_points_to_radius(self.radius_km, self.load_fn())
 
     def within_distance_column_name(self):
         return (
@@ -48,17 +43,6 @@ def load_airports():
         | (file["type"] == "medium_airport") & (file.scheduled_ == "yes")
     ]
     return file[["geometry"]]
-
-
-def load_buses():
-    from ..osm.buses import national_stops
-
-    s = national_stops().copy()
-    s.geometry = s.geometry.centroid
-    s = s[~s.geometry.is_empty]
-    s = s.set_crs("epsg:4326")
-    # s = s[["geometry"]]
-    return s
 
 
 def load_schools():

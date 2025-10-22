@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Car %",
+      "question": "higher % of people who commute by car",
+      "longname_a": "Santa Cruz-Watsonville MSA, CA, USA",
+      "longname_b": "Augusta-Richmond County MSA, GA-SC, USA",
+      "stat_a": 0.7507725803840051,
+      "stat_b": 0.9046487626317001
+    },
+    "b": {
+      "stat_column": "Law enforcement workers including supervisors %",
+      "question": "higher % of workers employed as law enforcement workers including supervisors",
+      "longname_a": "Ponce MSA, PR, USA",
+      "longname_b": "Madison MSA, WI, USA",
+      "stat_a": 0.034073628173950446,
+      "stat_b": 0.00641587620017955
+    },
+    "a_ease": 0.6821793416572077,
+    "b_ease": 0.28182807399347115
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "AW Density",
+      "question": "higher area-weighted density",
+      "longname_a": "New Hampshire, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 57.30025412234838,
+      "stat_b": 23.981660507648684
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)",
+      "longname_a": "Canton [Urban Area], OH, USA",
+      "longname_b": "Birmingham [Urban Area], AL, USA",
+      "stat_a": 971.3995099650228,
+      "stat_b": 822.1967226343413
+    },
+    "a_ease": 0.7764857881136951,
+    "b_ease": 0.33989071038251367
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "TX-13, USA",
+      "longname_b": "FL-20, USA",
+      "stat_a": 0.2548467180860283,
+      "stat_b": 0.2041303876489288
+    },
+    "b": {
+      "stat_column": "Rainfall",
+      "question": "higher rainfall (population weighted)",
+      "longname_a": "Detroit MI Media Market, USA",
+      "longname_b": "Hattiesburg-Laurel MS Media Market, USA",
+      "stat_a": 0.788327556730439,
+      "stat_b": 1.285691914669505
+    },
+    "a_ease": 0.19739478957915832,
+    "b_ease": 0.5981838819523269
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)",
+      "longname_a": "Spartanburg County, South Carolina, USA",
+      "longname_b": "McLennan County, Texas, USA",
+      "stat_a": 5.421608062777691,
+      "stat_b": 6.228181670446718
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Louisiana, USA",
+      "longname_b": "Wyoming, USA",
+      "stat_a": 0.17904557566552365,
+      "stat_b": 0.5378285623117329
+    },
+    "a_ease": 0.9160206718346253,
+    "b_ease": 0.5135699373695198
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Silent %",
+      "question": "higher % of people who are silent generation",
+      "longname_a": "CA-27, USA",
+      "longname_b": "FL-13, USA",
+      "stat_a": 0.04558324484206185,
+      "stat_b": 0.11992183051561191
+    },
+    "b": {
+      "stat_column": "Community and social service occupations %",
+      "question": "higher % of workers employed in community and social service occupations",
+      "longname_a": "Bristol County, Massachusetts, USA",
+      "longname_b": "Harris County, Texas, USA",
+      "stat_a": 0.023375891985472547,
+      "stat_b": 0.012536552248334153
+    },
+    "a_ease": 0.9183895538628944,
+    "b_ease": 0.5073068893528184
+  }
+]

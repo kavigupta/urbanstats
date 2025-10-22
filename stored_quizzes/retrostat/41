@@ -1,0 +1,107 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "question": "higher % units built in 2010s+",
+      "longname_a": "Concord-Walnut Creek [Urban Area], CA, USA",
+      "longname_b": "Lansing [Urban Area], MI, USA",
+      "stat_a": 0.0399688486592426,
+      "stat_b": 0.04864018924125044
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Hillsborough County, Florida, USA",
+      "longname_b": "Kitsap County, Washington, USA",
+      "stat_a": 0.05999177139856745,
+      "stat_b": 0.26550361161250624
+    },
+    "a_ease": 0.3415802075019952,
+    "b_ease": 0.7422186751795691
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Luzerne County, Pennsylvania, USA",
+      "longname_b": "Brown County, Wisconsin, USA",
+      "stat_a": 1274.3036862210067,
+      "stat_b": 972.4113053963272
+    },
+    "b": {
+      "stat_column": "Vision disability %",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Anchorage Municipality, Alaska, USA",
+      "longname_b": "Cameron County, Texas, USA",
+      "stat_a": 0.0393820882380202,
+      "stat_b": 0.11888478440142142
+    },
+    "a_ease": 0.26161790017211706,
+    "b_ease": 0.6634538152610442
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Pennsylvania, USA",
+      "longname_b": "Cavite, Philippines",
+      "stat_a": 13063799.0,
+      "stat_b": 4238916.0
+    },
+    "b": {
+      "stat_column": "Individual Income > $100k %",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Cumberland County, Maine, USA",
+      "longname_b": "DuPage County, Illinois, USA",
+      "stat_a": 0.13400863823155765,
+      "stat_b": 0.20373183130290864
+    },
+    "a_ease": 0.26422155688622756,
+    "b_ease": 0.6722689075630253
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "question": "higher % of units that are vacant",
+      "longname_a": "Allegheny County, Pennsylvania, USA",
+      "longname_b": "Solano County, California, USA",
+      "stat_a": 0.08476308037872583,
+      "stat_b": 0.03890467706837138
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Middlesex County, New Jersey, USA",
+      "longname_b": "Hampden County, Massachusetts, USA",
+      "stat_a": 0.27069327218617356,
+      "stat_b": 0.23753964386111462
+    },
+    "a_ease": 0.7018900343642611,
+    "b_ease": 0.2936
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population [GHS-POP]",
+      "question": "higher population",
+      "longname_a": "Samut Prakan, Thailand",
+      "longname_b": "Ontario, Canada",
+      "stat_a": 2527649.75,
+      "stat_b": 14331965.0
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Terre Haute IN Media Market, USA",
+      "longname_b": "Tallahassee FL-Thomasville GA Media Market, USA",
+      "stat_a": 90.36351143348195,
+      "stat_b": 29.837269828229832
+    },
+    "a_ease": 0.36233040702314445,
+    "b_ease": 0.767757382282522
+  }
+]
