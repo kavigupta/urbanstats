@@ -27,9 +27,9 @@ class StatisticCollection(ABC):
 
     def internal_statistic_names_list(self):
         return list(self.name_for_each_statistic())
-    
+
     def legacy_statistic_names(self):
-        return []
+        return {}
 
     @abstractmethod
     def name_for_each_statistic(self):

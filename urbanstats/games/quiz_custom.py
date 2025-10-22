@@ -4,6 +4,7 @@ import numpy as np
 
 from urbanstats.games.quiz_columns import get_quiz_stats, stat_to_quiz_name
 from urbanstats.statistics.output_statistics_metadata import (
+    all_legacy_statistic_names,
     statistic_internal_to_display_name,
 )
 from urbanstats.website_data.table import shapefile_without_ordinals
@@ -14,11 +15,17 @@ def shapefile():
     return shapefile_without_ordinals().set_index("longname")
 
 
+def backmap_stat_column_name():
+    results = {v: k for k, v in statistic_internal_to_display_name().items()}
+    legacy = all_legacy_statistic_names()
+    for k, v in legacy.items():
+        results[k] = results[v]
+    return results
+
+
 def custom_quiz_question(stat_column_name, longname_a, longname_b):
     t = shapefile()
-    stat_column_internal = {
-        v: k for k, v in statistic_internal_to_display_name().items()
-    }[stat_column_name]
+    stat_column_internal = backmap_stat_column_name()[stat_column_name]
     stat_column_question = stat_to_quiz_name()[stat_column_internal]
     stat_column_internal_original = stat_column_internal
     return dict(
@@ -57,7 +64,7 @@ def get_custom_quizzes():
                 "West Virginia, USA",
             ),
             custom_quiz_question(
-                "Employed in Arts, entertainment, and recreation %",
+                "Arts, entertainment, and recreation %",
                 "Carbon County, Pennsylvania, USA",
                 "Clark County, Nevada, USA",
             ),
@@ -108,7 +115,7 @@ def get_custom_quizzes():
                 "Florida, USA",
             ),
             custom_quiz_question(
-                "Employed in Agriculture, forestry, fishing and hunting %",
+                "Agriculture, forestry, fishing and hunting %",
                 "Horn Lake city, Mississippi, USA",
                 "Kill Devil Hills MSA, NC, USA",
             ),

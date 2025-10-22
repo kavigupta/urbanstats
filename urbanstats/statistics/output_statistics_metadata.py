@@ -212,9 +212,9 @@ def output_statistics_metadata():
 
 
 def all_legacy_statistic_names():
-    result = []
+    result = {}
     for statistic_collection in statistic_collections:
-        result.extend(statistic_collection.legacy_statistic_names())
+        result.update(statistic_collection.legacy_statistic_names())
     return result
 
 
