@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon'
 import { Statistic } from '../components/display-stats'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { CheckboxSetting } from '../components/sidebar'
+import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
@@ -21,7 +22,6 @@ import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
 import { AudienceStatistics, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
-import { LegacyStatName } from '../data/legacy_statistic_columns'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
 
