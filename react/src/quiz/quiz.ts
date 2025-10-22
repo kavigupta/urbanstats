@@ -18,6 +18,7 @@ export type QuizKindWithTime = 'juxtastat' | 'retrostat'
 
 /* eslint-disable no-restricted-syntax -- Data from server */
 // stat_path is optional for backwards compatibility
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- legacy stat names can be empty
 export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: StatName | LegacyStatName | '%', stat_path?: StatPath };
 export interface JuxtaQuestion extends JuxtaQuestionJSON { kind: 'juxtastat' }
 export interface RetroQuestionJSON { a_ease: number, b_ease: number, a: JuxtaQuestionJSON, b: JuxtaQuestionJSON };
