@@ -7,6 +7,7 @@ import { useColors } from '../page_template/colors'
 import { useSettings } from '../page_template/settings'
 import '../common.css'
 import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
+import { TestUtils } from '../utils/TestUtils'
 
 import { GenericSearchBox } from './search-generic'
 
@@ -35,11 +36,13 @@ export function SearchBox(props: {
             if (searchWorker.current === undefined) {
                 searchWorker.current = cacheKey.then(createSearchWorker)
             }
+            TestUtils.shared.startLoading()
             const result = await (await searchWorker.current)({
                 unnormalizedPattern: sq,
                 maxResults: 10,
                 showSettings,
                 prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined })
+            void TestUtils.shared.finishLoading()
             return result
         }
     }, [searchWorker, cacheKey, showSettings, props.prioritizeArticleType])

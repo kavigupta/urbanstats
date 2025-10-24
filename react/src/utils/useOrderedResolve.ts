@@ -21,7 +21,7 @@ export function useOrderedResolve<T>(promise: Promise<T>): ResolveState<T> {
             () => {
                 setState(prevState => prevState.promise === promise ? ({ promise, result: undefined, loading: false }) : prevState)
             },
-        ).finally(() => { TestUtils.shared.finishLoading() })
+        ).finally(() => { void TestUtils.shared.finishLoading() })
     }, [promise])
 
     return state

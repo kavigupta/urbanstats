@@ -101,7 +101,7 @@ class CensusForPreviousYear(USAStatistics):
         return self.same_for_each_name(str(self.year()))
 
     def quiz_question_descriptors(self):
-        return {k: QuizQuestionSkip() for k in self.name_for_each_statistic()}
+        return {k: QuizQuestionSkip() for k in self.internal_statistic_names_list()}
 
     def dependencies(self):
         return ["area"]
@@ -270,7 +270,7 @@ class Census2020(CensusForPreviousYear):
     def explanation_page_for_each_statistic(self):
         return {
             k: self.explanation_page_for_statistic(k)
-            for k in self.name_for_each_statistic()
+            for k in self.internal_statistic_names_list()
         }
 
     def quiz_question_descriptors(self):

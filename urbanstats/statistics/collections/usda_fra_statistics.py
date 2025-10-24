@@ -60,7 +60,7 @@ class USDAFRAStatistics(USAStatistics):
         for column in t.columns:
             statistics_table[column] = t[column]
 
-        for cdc in self.name_for_each_statistic():
+        for cdc in self.internal_statistic_names_list():
             statistics_table[cdc] /= existing_statistics["population_2010"]
             # not having access to grocery stores -> having access to grocery stores
             statistics_table[cdc] = 1 - statistics_table[cdc]

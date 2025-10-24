@@ -43,6 +43,8 @@ interface EditInsets {
     add: () => void
     delete: (i: number) => void
     duplicate: (i: number) => void
+    moveUp: (i: number) => void
+    moveDown: (i: number) => void
 }
 
 const mapUpdateInterval = 500
@@ -145,56 +147,43 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
             const mapsContainerRef = React.createRef<HTMLDivElement>()
 
-            let insetMaps
-            if (props.mode === 'insets') {
-                insetMaps = props.editInsets.editedInsets.flatMap((inset, i) => {
-                    const insetFeatures = filterOverlaps(inset, features)
-                    return [
-                        { inset, map: (
-                            <InsetMap
-                                i={i}
-                                key={i}
-                                inset={inset}
-                                ref={e => mapsRef[i] = e}
-                                container={mapsContainerRef}
-                                editInset={{
+            const insetsFeatures = (props.mode === 'insets' ? props.editInsets.editedInsets : mapResultMain.value.insets).flatMap((inset) => {
+                const insetFeatures = filterOverlaps(inset, features)
+                if (insetFeatures.length === 0 && props.mode !== 'insets') {
+                    return []
+                }
+                return [{
+                    inset,
+                    insetFeatures,
+                }]
+            })
+
+            const insetMaps = insetsFeatures.map(({ inset, insetFeatures }, i, insets) => {
+                return (
+                    <InsetMap
+                        i={i}
+                        key={i}
+                        inset={inset}
+                        ref={e => mapsRef[i] = e}
+                        container={mapsContainerRef}
+                        numInsets={insets.length}
+                        editInset={props.mode === 'insets'
+                            ? {
                                     modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
                                     delete: () => { props.editInsets.delete(i) },
                                     duplicate: () => { props.editInsets.duplicate(i) },
                                     add: props.editInsets.add,
-                                }}
-                            >
-                                {mapChildren(insetFeatures)}
-                            </InsetMap>
-                        ) },
-                    ]
-                })
-            }
-            else {
-                let visibleInsetIndex = 0
-                insetMaps = mapResultMain.value.insets.flatMap((inset) => {
-                    const insetFeatures = filterOverlaps(inset, features)
-                    if (insetFeatures.length === 0) {
-                        return []
-                    }
-                    const i = visibleInsetIndex++
-                    return [
-                        { inset, map: (
-                            <InsetMap
-                                i={i}
-                                key={i}
-                                inset={inset}
-                                ref={e => mapsRef[i] = e}
-                                container={mapsContainerRef}
-                            >
-                                {mapChildren(insetFeatures)}
-                            </InsetMap>
-                        ) },
-                    ]
-                })
-            }
+                                    moveUp: () => { props.editInsets.moveUp(i) },
+                                    moveDown: () => { props.editInsets.moveDown(i) },
+                                }
+                            : undefined}
+                    >
+                        {mapChildren(insetFeatures)}
+                    </InsetMap>
+                )
+            })
 
-            const visibleInsets = insetMaps.map(({ inset }) => inset)
+            const visibleInsets = insetsFeatures.map(({ inset }) => inset)
 
             const colorbar = (
                 <Colorbar
@@ -206,7 +195,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             return {
                 node: (
                     <MapLayout
-                        maps={insetMaps.map(({ map }) => map)}
+                        maps={insetMaps}
                         loading={props.loading}
                         colorbar={colorbar}
                         aspectRatio={computeAspectRatioForInsets(visibleInsets)}
@@ -280,6 +269,7 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     key={i}
                     inset={inset}
                     container={React.createRef()}
+                    numInsets={insets.length}
                 >
                     {null}
                 </InsetMap>
@@ -397,8 +387,9 @@ async function exportAsPng({
     const pixelRatio = 4
     const width = 4096
     const cBarPad = 40
+    const colorbarScale = 1.5
 
-    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio, cBarPad)
+    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio / colorbarScale, cBarPad)
 
     const aspectRatio = computeAspectRatioForInsets(insets)
 

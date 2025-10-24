@@ -75,7 +75,7 @@ def collections_index(qqp):
 
 
 def quiz_question_weights(tables_by_type):
-    return train_quiz_question_weights(
+    result = train_quiz_question_weights(
         tables_by_type,
         col_to_difficulty=stat_to_difficulty(),
         intl_difficulty=INTERNATIONAL_DIFFICULTY_MULTIPLIER,
@@ -86,3 +86,39 @@ def quiz_question_weights(tables_by_type):
             set(default_universes) | set(universe_by_universe_type()["continent"])
         ),
     )
+    _test_question_nonexistence(result["qqp"])
+    return result
+
+
+def _test_question_nonexistence(qqp):
+    """
+    Check that certain known-bad questions do not exist in the generated quiz questions.
+    """
+    # Issue #1512
+    _assert_does_not_exist(
+        qqp,
+        "Santo Domingo Urban Center, Dominican Republic",
+        "Faisalabad Urban Center, Pakistan",
+        "days_below_40_4",
+    )
+
+
+def _assert_does_not_exist(qqp, geo_a, geo_b, stat):
+    geo_a_i = qqp.all_geographies.index(geo_a)
+    geo_b_i = qqp.all_geographies.index(geo_b)
+    stat_i = qqp.all_stats.index(stat)
+    for i, vqq in enumerate(qqp.questions_by_number, 1):
+        mask = (
+            (vqq.geography_index_a == geo_a_i)
+            & (vqq.geography_index_b == geo_b_i)
+            & (vqq.stat_indices == stat_i)
+        )
+        mask |= (
+            (vqq.geography_index_a == geo_b_i)
+            & (vqq.geography_index_b == geo_a_i)
+            & (vqq.stat_indices == stat_i)
+        )
+        if mask.any():
+            raise RuntimeError(
+                f"Question with geos {geo_a} and {geo_b} and stat {stat} found at index {i}"
+            )

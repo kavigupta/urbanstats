@@ -17,13 +17,16 @@ from urbanstats.geometry.shapefiles.shapefile import (
 class StatisticCollection(ABC):
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
-        all_columns = set(self.name_for_each_statistic())
+        all_columns = set(self.internal_statistic_names_list())
         extra_quiz_questions = quiz_questions - all_columns
         assert not extra_quiz_questions, f"Extra quiz questions: {extra_quiz_questions}"
         missing_quiz_questions = all_columns - quiz_questions
         assert (
             not missing_quiz_questions
         ), f"Missing quiz questions: {missing_quiz_questions}"
+
+    def internal_statistic_names_list(self):
+        return list(self.name_for_each_statistic())
 
     @abstractmethod
     def name_for_each_statistic(self):
@@ -59,7 +62,7 @@ class StatisticCollection(ABC):
         """
 
     def same_for_each_name(self, value):
-        return {name: value for name in self.name_for_each_statistic()}
+        return {name: value for name in self.internal_statistic_names_list()}
 
     def extra_stats(self):
         return {}
@@ -205,7 +208,7 @@ class ACSStatisticsColection(USAStatistics):
                 result[column] = acs_data[column]
         result = pd.DataFrame(result)
         self.mutate_acs_results(result)
-        return {name: result[name] for name in self.name_for_each_statistic()}
+        return {name: result[name] for name in self.internal_statistic_names_list()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
@@ -240,7 +243,7 @@ class ACSUSPRStatisticsColection(USAStatistics):
                 result[column] = acs_data[column]
         result = pd.DataFrame(result)
         self.mutate_acs_results(result)
-        return {name: result[name] for name in self.name_for_each_statistic()}
+        return {name: result[name] for name in self.internal_statistic_names_list()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
@@ -290,7 +293,7 @@ class GeoIDStatisticsACS(GeoIDStatisticsCollection):
         geoid_to_name = dict(zip(shapefile_table["geoid"], shapefile_table["longname"]))
         entity = self.acs_data_entity_multi()
         table = entity.query(census_level)
-        assert set(table) == set(self.name_for_each_statistic())
+        assert set(table) == set(self.internal_statistic_names_list())
         geoid_table = set(shapefile_table["geoid"])
         geoid_acs = set(table.index)
         if geoid_table != geoid_acs:

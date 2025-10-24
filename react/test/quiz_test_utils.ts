@@ -14,7 +14,6 @@ export async function quizScreencap(t: TestController): Promise<void> {
             elem.remove()
         }
     })
-    await t.wait(1000)
     await screencap(t)
 }
 

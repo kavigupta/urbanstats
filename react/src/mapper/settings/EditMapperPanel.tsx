@@ -16,6 +16,7 @@ import { loadInsets } from '../../urban-stats-script/worker'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
+import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
@@ -23,7 +24,7 @@ import { MapGenerator, useMapGenerator } from '../map-generator'
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, replaceInsets } from './insets'
+import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './insets'
 import { MapSettings } from './utils'
 
 type MapEditorMode = 'uss' | 'insets'
@@ -301,10 +302,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     const editedInsets = insetEdits.insets(getInsets(mapSettings, typeEnvironment)!)
 
-    const addInsetEdit = ([from, to]: [number, number], is: Inset[]): void => {
-        const result = replaceInsets(insetEdits, [from, to], is)
-        setInsetEdits(result)
-        addState(result, undefined)
+    const addInsetEdit = (edits: InsetEdits): void => {
+        setInsetEdits(edits)
+        addState(edits, undefined)
     }
 
     const ui = mapGenerator.ui({
@@ -317,16 +317,24 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     topRight: [0.75, 0.75],
                     mainMap: false,
                 }
-                addInsetEdit([editedInsets.length, editedInsets.length], [offsetInsetInBounds(newInset, editedInsets)])
+                addInsetEdit(replaceInsets(insetEdits, [editedInsets.length, editedInsets.length], [offsetInsetInBounds(newInset, editedInsets)]))
             },
             modify: (i, e) => {
-                addInsetEdit([i, i + 1], [{ ...editedInsets[i], ...e }])
+                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], [{ ...editedInsets[i], ...e }]))
             },
             delete: (i) => {
-                addInsetEdit([i, i + 1], [])
+                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], []))
             },
             duplicate: (i) => {
-                addInsetEdit([i + 1, i + 1], [offsetInsetInBounds(editedInsets[i], editedInsets)])
+                addInsetEdit(replaceInsets(insetEdits, [i + 1, i + 1], [offsetInsetInBounds(editedInsets[i], editedInsets)]))
+            },
+            moveUp: (i) => {
+                assert(i + 1 < editedInsets.length, `Cannot move inset ${i} up, already top`)
+                addInsetEdit(swapInsets(insetEdits, i, i + 1))
+            },
+            moveDown: (i) => {
+                assert(i > 0, `Cannot move inset ${i} down, already bottom`)
+                addInsetEdit(swapInsets(insetEdits, i, i - 1))
             },
             editedInsets,
         },

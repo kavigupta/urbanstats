@@ -296,6 +296,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
                 map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
             map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
+            map.getMap().setPaintProperty('background', 'background-color-transition', { duration: 0, delay: 0 })
         }
     }, [map, basemap, mapLoaded])
 

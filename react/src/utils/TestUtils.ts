@@ -53,7 +53,14 @@ export class TestUtils {
         this.loadingCounter++
     }
 
-    finishLoading(): void {
+    private async eventLoopIters(iters: number): Promise<void> {
+        for (;iters > 0; iters--) {
+            await new Promise(resolve => setTimeout(resolve, 0))
+        }
+    }
+
+    async finishLoading(): Promise<void> {
+        await this.eventLoopIters(10)
         this.loadingCounter--
         if (this.loadingCounter === 0) {
             this.loadingCallbacks.forEach((callback) => { callback() })
@@ -61,7 +68,8 @@ export class TestUtils {
         }
     }
 
-    waitForLoading(): Promise<void> {
+    async waitForLoading(): Promise<void> {
+        await this.eventLoopIters(10)
         if (this.loadingCounter === 0) {
             return Promise.resolve()
         }

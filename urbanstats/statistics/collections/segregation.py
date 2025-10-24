@@ -65,7 +65,7 @@ class SegregationStatistics(USAStatistics):
             **QuizQuestionSkip.several(
                 *[
                     x
-                    for x in self.name_for_each_statistic()
+                    for x in self.internal_statistic_names_list()
                     if
                     # too hard to explain succinctly in a tooltip
                     not x.startswith("homogeneity")
