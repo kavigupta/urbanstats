@@ -255,7 +255,7 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
                 : {
                         width: '20%',
                         float: 'left',
-                        borderRadius: '5px',
+                        borderRadius: hideSidebarDesktop ? '5px' : undefined,
                         border: hideSidebarDesktop ? `1px solid ${colors.borderShadow}` : undefined,
                         overflow: 'hidden', // needed so the corners aren't cut off
                     }}
