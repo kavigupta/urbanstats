@@ -66,7 +66,7 @@ export class Navigator {
             this.pageState = {
                 kind: 'loading',
                 loading: { descriptor },
-                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad', descriptor } },
+                current: { descriptor: { kind: 'initialLoad', url, descriptor }, data: { kind: 'initialLoad', descriptor } },
                 loadStartTime: Date.now(),
             }
             void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: { kind: 'none' } })

@@ -8,7 +8,7 @@ import { PageTemplate } from '../page_template/template'
 import { Universe } from '../universe'
 
 import { Navigator } from './Navigator'
-import { hideSidebar, PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
+import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
 import { InitialLoad, SubsequentLoad } from './loading'
 
 export function Router(): ReactNode {
@@ -177,7 +177,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <ErrorScreen data={pageData} />
         case 'initialLoad':
             return (
-                <PageTemplate showFooter={false} hideSidebar={hideSidebar(pageData.descriptor)}>
+                <PageTemplate showFooter={false}>
                     <InitialLoad />
                 </PageTemplate>
             )

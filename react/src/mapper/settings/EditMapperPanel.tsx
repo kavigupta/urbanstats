@@ -112,7 +112,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} hideSidebar={true} showFooter={false}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
             <SelectionContext.Provider value={selectionContext}>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
                 {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}

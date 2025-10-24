@@ -110,7 +110,6 @@ export const colorThemes: Record<Theme, Colors> = {
         pencilIcon: '/pencil-dark.png',
         wikidataURL: '/wikidata-dark.svg',
         mapperBannerURL: '/mapper-banner-dark.png',
-
     },
 }
 /* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

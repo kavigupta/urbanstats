@@ -20,6 +20,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 
 import { useColors, useJuxtastatColors } from './colors'
+import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
     screencapElements = undefined,
@@ -28,7 +29,6 @@ export function PageTemplate({
     universes = [],
     children,
     showFooter = true,
-    hideSidebar = false,
 }: {
     screencapElements?: () => ScreencapElements
     csvExportData?: CSVExportData
@@ -36,13 +36,13 @@ export function PageTemplate({
     universes?: readonly string[]
     children?: React.ReactNode
     showFooter?: boolean
-    hideSidebar?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const [screenshotMode, setScreenshotMode] = useState(false)
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
+    const hideSidebarDesktop = useHideSidebarDesktop()
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
@@ -63,10 +63,10 @@ export function PageTemplate({
     }, [colors, juxtaColors])
 
     useEffect(() => {
-        if (!(mobileLayout || hideSidebar) && hamburgerOpen) {
+        if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {
             setHamburgerOpen(false)
         }
-    }, [hamburgerOpen, mobileLayout, hideSidebar])
+    }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
     const hasScreenshotButton = screencapElements !== undefined
     const hasCSVButton = csvExportData !== undefined
@@ -116,7 +116,7 @@ export function PageTemplate({
                         ? { paddingLeft: '1em', paddingRight: '1em' }
                         : {
                                 position: 'relative',
-                                maxWidth: hideSidebar ? undefined : '80em',
+                                maxWidth: hideSidebarDesktop ? undefined : '80em',
                                 marginLeft: 'auto',
                                 marginRight: 'auto',
                             }),
@@ -135,7 +135,6 @@ export function PageTemplate({
                     allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
                     exportCSV={exportCSV}
-                    hideSidebar={hideSidebar}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <BodyPanel
@@ -143,7 +142,6 @@ export function PageTemplate({
                     mainContent={children}
                     showFooter={showFooter}
                     setHamburgerOpen={setHamburgerOpen}
-                    hideSidebar={hideSidebar}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -202,17 +200,17 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, hideSidebar }: {
+function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: {
     hamburgerOpen: boolean
     mainContent: React.ReactNode
     showFooter: boolean
     setHamburgerOpen: (open: boolean) => void
-    hideSidebar: boolean
 }): ReactNode {
     const mobileLayout = useMobileLayout()
+    const hideSidebarDesktop = useHideSidebarDesktop()
 
-    if (hamburgerOpen && !hideSidebar) {
-        return <LeftPanel setHamburgerOpen={setHamburgerOpen} hideSidebar={hideSidebar} />
+    if (hamburgerOpen && !hideSidebarDesktop) {
+        return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
         <div style={{
@@ -221,12 +219,12 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
             display: 'flex',
         }}
         >
-            {(!mobileLayout && (!hideSidebar || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} hideSidebar={hideSidebar} /> : undefined }
+            {(!mobileLayout && (!hideSidebarDesktop || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
             <div
                 className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}
                 style={mobileLayout
                     ? { width: '100%' }
-                    : (hideSidebar
+                    : (hideSidebarDesktop
                             ? { width: '100%', paddingLeft: '1em', paddingRight: '1em' }
                             : { width: '80%', paddingLeft: '2em' })}
             >
@@ -245,9 +243,10 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
     )
 }
 
-function LeftPanel({ setHamburgerOpen, hideSidebar }: { setHamburgerOpen: (open: boolean) => void, hideSidebar: boolean }): ReactNode {
+function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
     const mobileLayout = useMobileLayout()
     const colors = useColors()
+    const hideSidebarDesktop = useHideSidebarDesktop()
     const sidebar = (
         <div
             className="left_panel"
@@ -257,14 +256,14 @@ function LeftPanel({ setHamburgerOpen, hideSidebar }: { setHamburgerOpen: (open:
                         width: '20%',
                         float: 'left',
                         borderRadius: '5px',
-                        border: hideSidebar ? `1px solid ${colors.borderShadow}` : undefined,
+                        border: hideSidebarDesktop ? `1px solid ${colors.borderShadow}` : undefined,
                         overflow: 'hidden', // needed so the corners aren't cut off
                     }}
         >
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
-    if (!mobileLayout && hideSidebar) {
+    if (!mobileLayout && hideSidebarDesktop) {
         return (
             <div
                 style={{

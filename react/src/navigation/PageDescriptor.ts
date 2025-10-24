@@ -165,7 +165,7 @@ export const pageDescriptorSchema = z.union([
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
 export type ExceptionalPageDescriptor = PageDescriptor
-    | { kind: 'initialLoad', url: URL }
+    | { kind: 'initialLoad', url: URL, descriptor: PageDescriptor }
     | { kind: 'error', url: URL }
 
 export type PageData =
@@ -754,11 +754,24 @@ export function pageTitle(pageData: PageData): string {
     }
 }
 
-export function hideSidebar(pageDescriptor: PageDescriptor): boolean {
-    switch (pageDescriptor.kind) {
+export function hideSidebarDesktop(page: PageData | PageDescriptor): boolean {
+    switch (page.kind) {
+        case 'initialLoad':
+            return hideSidebarDesktop(page.descriptor)
         case 'mapper':
             return true
         default:
             return false
+    }
+}
+
+export function headerLogoKey(page: PageData | PageDescriptor): 'bannerURL' | 'mapperBannerURL' {
+    switch (page.kind) {
+        case 'initialLoad':
+            return headerLogoKey(page.descriptor)
+        case 'mapper':
+            return 'mapperBannerURL'
+        default:
+            return 'bannerURL'
     }
 }
