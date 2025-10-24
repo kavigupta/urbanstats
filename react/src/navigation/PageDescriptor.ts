@@ -753,25 +753,3 @@ export function pageTitle(pageData: PageData): string {
             return 'Error'
     }
 }
-
-export function hideSidebarDesktop(page: PageData | PageDescriptor): boolean {
-    switch (page.kind) {
-        case 'initialLoad':
-            return hideSidebarDesktop(page.descriptor)
-        case 'mapper':
-            return true
-        default:
-            return false
-    }
-}
-
-export function headerLogoKey(page: PageData | PageDescriptor): 'bannerURL' | 'mapperBannerURL' {
-    switch (page.kind) {
-        case 'initialLoad':
-            return headerLogoKey(page.descriptor)
-        case 'mapper':
-            return 'mapperBannerURL'
-        default:
-            return 'bannerURL'
-    }
-}
