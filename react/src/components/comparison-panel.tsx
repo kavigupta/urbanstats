@@ -153,7 +153,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const maxColumns = mobileLayout ? 4 : 6
+    const maxColumns = mobileLayout ? 3 : 6
 
     const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
