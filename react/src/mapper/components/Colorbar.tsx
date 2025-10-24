@@ -50,7 +50,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         return () => {
             resizeObserver.unobserve(values)
         }
-    }, [])
+    }, [props.ramp])
 
     const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
 
