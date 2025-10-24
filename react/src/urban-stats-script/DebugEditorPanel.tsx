@@ -1,73 +1,39 @@
-import React, { ReactNode, useEffect } from 'react'
+import { Delta, Range } from 'quill'
+import React, { ReactNode, useState } from 'react'
 
+import { QuillEditor } from '../components/QuillEditor'
 import { PageTemplate } from '../page_template/template'
-import { TestUtils } from '../utils/TestUtils'
 
-import { Editor } from './Editor'
-import { useStandaloneEditorState } from './StandaloneEditor'
-import { Range } from './editor-utils'
-
-type Selections = [Range | null, Range | null]
+import { useUndoRedo } from './editor-utils'
 
 /**
  * This panel used for developing + debugging editor functionality.
  */
 export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
-    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi } = useStandaloneEditorState<Selections>({
-        ident: 'editor-panel',
-        getCode: () => localStorage.getItem('editor-code') ?? '',
-        onChange: (newScript) => { localStorage.setItem('editor-code', newScript) },
-        getSelection: () => [null, null],
-        undoRedoOptions: {
-            undoChunking: props.undoChunking,
-        },
-    })
+    const [content, setContent] = useState(() => new Delta().insert('Hello, World!'))
+    const [selection, setSelection] = useState<Range | null>(null)
 
-    useEffect(() => {
-        const listener = (e: KeyboardEvent): void => {
-            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
-            // TestCafe doesn't send `e.code`, so we need to use `toLowerCase` otherwise the char is capitalized on Mac
-            if (e.key.toLowerCase() === 's' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
-                e.preventDefault()
-                setSelection([selection[1], selection[0]])
-            }
-            if (e.key.toLowerCase() === 'd' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
-                e.preventDefault()
-                setSelection([null, null])
-            }
-        }
-        window.addEventListener('keydown', listener)
-        return () => { window.removeEventListener('keydown', listener) }
-    })
+    const { addState, updateCurrentSelection } = useUndoRedo<Delta, Range | null>(content, null, setContent, setSelection, props)
 
     return (
         <PageTemplate>
-            {/* Most props to the editors are purposely not memoized for testing purposes. */}
-            <div id="test-editor-panel">
-                <Editor
-                    uss={uss}
-                    setUss={setUss}
-                    typeEnvironment={typeEnvironment}
-                    results={results}
-                    placeholder="Enter Urban Stats Script"
-                    selection={selection[0]}
-                    setSelection={(newSelection) => {
-                        setSelection([newSelection, selection[1]])
-                    }}
-                />
-                <Editor
-                    uss={uss}
-                    setUss={setUss}
-                    typeEnvironment={typeEnvironment}
-                    results={results}
-                    placeholder="Enter Urban Stats Script"
-                    selection={selection[1]}
-                    setSelection={(newSelection) => {
-                        setSelection([selection[0], newSelection])
-                    }}
-                />
-                {undoRedoUi}
-            </div>
+            <QuillEditor
+                editable={true}
+                content={content}
+                selection={selection}
+                onSelectionChange={(range) => {
+                    setSelection(range)
+                    // We need this setTimeout since Quill calls the selection events before any text events
+                    // This way, if we get a combined text and selection event, we update the new stack item instead of the old one
+                    setTimeout(() => {
+                        updateCurrentSelection(range)
+                    })
+                }}
+                onTextChange={(text) => {
+                    setContent(text)
+                    addState(text, selection)
+                }}
+            />
         </PageTemplate>
     )
 }

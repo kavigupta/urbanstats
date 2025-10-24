@@ -90,6 +90,7 @@
     "openapi-fetch": "^0.14.0",
     "prng": "^0.0.1",
     "protobufjs": "^7.2.4",
+    "quill": "^2.0.3",
     "react": "^18.2.0",
     "react-a11y-footnotes": "^0.7.0",
     "react-contenteditable": "^3.3.7",
