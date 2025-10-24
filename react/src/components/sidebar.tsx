@@ -50,6 +50,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 backgroundColor: colors.slightlyDifferentBackground,
                 padding: '2rem',
                 fontSize,
+                borderRadius: '5px',
             }}
         >
             <div className="sidebar-section">
