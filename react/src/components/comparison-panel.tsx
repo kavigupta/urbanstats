@@ -173,11 +173,13 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
+    const scrollColumnsDivisor = mobileLayout ? 3.5 : 5.3
+
     const maybeScroll = (contents: React.ReactNode): ReactNode => {
         if (widthColumns > maxColumns) {
             return (
                 <div style={{ overflowX: 'scroll' }}>
-                    <div style={{ width: `${100 * widthColumns / (maxColumns - 0.7)}%` }}>
+                    <div style={{ width: `${100 * widthColumns / scrollColumnsDivisor}%` }}>
                         {contents}
                     </div>
                 </div>
