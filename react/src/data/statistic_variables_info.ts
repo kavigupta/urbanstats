@@ -1304,280 +1304,280 @@ export default {
         },
         {
             "varName": "industry_agriculture_forestry_fishing_us_census",
-            "humanReadableName": "Agriculture, forestry, fishing and hunting % [US Census]",
+            "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 186,
             "index": 188
         },
         {
             "varName": "industry_agriculture_forestry_fishing_statcan",
-            "humanReadableName": "Agriculture, forestry, fishing and hunting % [StatCan]",
+            "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 187,
             "index": 189
         },
         {
             "varName": "industry_mining_oil_gas_us_census",
-            "humanReadableName": "Mining, quarrying, and oil and gas extraction % [US Census]",
+            "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 188,
             "index": 206
         },
         {
             "varName": "industry_mining_oil_gas_statcan",
-            "humanReadableName": "Mining, quarrying, and oil and gas extraction % [StatCan]",
+            "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 189,
             "index": 207
         },
         {
             "varName": "industry_accommodation_food_us_census",
-            "humanReadableName": "Accommodation and food services % [US Census]",
+            "humanReadableName": "Employed in Accommodation and food services % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 190,
             "index": 184
         },
         {
             "varName": "industry_accommodation_food_statcan",
-            "humanReadableName": "Accommodation and food services % [StatCan]",
+            "humanReadableName": "Employed in Accommodation and food services % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 191,
             "index": 185
         },
         {
             "varName": "industry_arts_entertainment_us_census",
-            "humanReadableName": "Arts, entertainment, and recreation % [US Census]",
+            "humanReadableName": "Employed in Arts, entertainment, and recreation % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 192,
             "index": 190
         },
         {
             "varName": "industry_arts_entertainment_statcan",
-            "humanReadableName": "Arts, entertainment, and recreation % [StatCan]",
+            "humanReadableName": "Employed in Arts, entertainment, and recreation % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 193,
             "index": 191
         },
         {
             "varName": "industry_construction_us_census",
-            "humanReadableName": "Construction % [US Census]",
+            "humanReadableName": "Employed in Construction % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 194,
             "index": 192
         },
         {
             "varName": "industry_construction_statcan",
-            "humanReadableName": "Construction % [StatCan]",
+            "humanReadableName": "Employed in Construction % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 195,
             "index": 193
         },
         {
             "varName": "industry_education_us_census",
-            "humanReadableName": "Educational services % [US Census]",
+            "humanReadableName": "Employed in Educational services % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 196,
             "index": 194
         },
         {
             "varName": "industry_education_statcan",
-            "humanReadableName": "Educational services % [StatCan]",
+            "humanReadableName": "Employed in Educational services % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 197,
             "index": 195
         },
         {
             "varName": "industry_healthcare_social_us_census",
-            "humanReadableName": "Health care and social assistance % [US Census]",
+            "humanReadableName": "Employed in Health care and social assistance % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 198,
             "index": 198
         },
         {
             "varName": "industry_healthcare_social_statcan",
-            "humanReadableName": "Health care and social assistance % [StatCan]",
+            "humanReadableName": "Employed in Health care and social assistance % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 199,
             "index": 199
         },
         {
             "varName": "industry_finance_insurance_us_census",
-            "humanReadableName": "Finance and insurance % [US Census]",
+            "humanReadableName": "Employed in Finance and insurance % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 200,
             "index": 196
         },
         {
             "varName": "industry_finance_insurance_statcan",
-            "humanReadableName": "Finance and insurance % [StatCan]",
+            "humanReadableName": "Employed in Finance and insurance % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 201,
             "index": 197
         },
         {
             "varName": "industry_real_estate_rental_us_census",
-            "humanReadableName": "Real estate and rental and leasing % [US Census]",
+            "humanReadableName": "Employed in Real estate and rental and leasing % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 202,
             "index": 214
         },
         {
             "varName": "industry_real_estate_rental_statcan",
-            "humanReadableName": "Real estate and rental and leasing % [StatCan]",
+            "humanReadableName": "Employed in Real estate and rental and leasing % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 203,
             "index": 215
         },
         {
             "varName": "industry_information_us_census",
-            "humanReadableName": "Information % [US Census]",
+            "humanReadableName": "Employed in Information % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 204,
             "index": 200
         },
         {
             "varName": "industry_information_statcan",
-            "humanReadableName": "Information % [StatCan]",
+            "humanReadableName": "Employed in Information % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 205,
             "index": 201
         },
         {
             "varName": "industry_manufacturing_us_census",
-            "humanReadableName": "Manufacturing % [US Census]",
+            "humanReadableName": "Employed in Manufacturing % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 206,
             "index": 204
         },
         {
             "varName": "industry_manufacturing_statcan",
-            "humanReadableName": "Manufacturing % [StatCan]",
+            "humanReadableName": "Employed in Manufacturing % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 207,
             "index": 205
         },
         {
             "varName": "industry_other_services_us_census",
-            "humanReadableName": "Other services, except public administration % [US Census]",
+            "humanReadableName": "Employed in Other services, except public administration % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 208,
             "index": 208
         },
         {
             "varName": "industry_other_services_statcan",
-            "humanReadableName": "Other services, except public administration % [StatCan]",
+            "humanReadableName": "Employed in Other services, except public administration % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 209,
             "index": 209
         },
         {
             "varName": "industry_admin_support_waste_mgmt_us_census",
-            "humanReadableName": "Administrative and support and waste management services % [US Census]",
+            "humanReadableName": "Employed in Administrative and support and waste management services % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 210,
             "index": 186
         },
         {
             "varName": "industry_admin_support_waste_mgmt_statcan",
-            "humanReadableName": "Administrative and support and waste management services % [StatCan]",
+            "humanReadableName": "Employed in Administrative and support and waste management services % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 211,
             "index": 187
         },
         {
             "varName": "industry_management_us_census",
-            "humanReadableName": "Management of companies and enterprises % [US Census]",
+            "humanReadableName": "Employed in Management of companies and enterprises % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 212,
             "index": 202
         },
         {
             "varName": "industry_management_statcan",
-            "humanReadableName": "Management of companies and enterprises % [StatCan]",
+            "humanReadableName": "Employed in Management of companies and enterprises % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 213,
             "index": 203
         },
         {
             "varName": "industry_professional_scientific_technical_us_census",
-            "humanReadableName": "Professional, scientific, and technical services % [US Census]",
+            "humanReadableName": "Employed in Professional, scientific, and technical services % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 214,
             "index": 210
         },
         {
             "varName": "industry_professional_scientific_technical_statcan",
-            "humanReadableName": "Professional, scientific, and technical services % [StatCan]",
+            "humanReadableName": "Employed in Professional, scientific, and technical services % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 215,
             "index": 211
         },
         {
             "varName": "industry_public_admin_us_census",
-            "humanReadableName": "Public administration % [US Census]",
+            "humanReadableName": "Employed in Public administration % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 216,
             "index": 212
         },
         {
             "varName": "industry_public_admin_statcan",
-            "humanReadableName": "Public administration % [StatCan]",
+            "humanReadableName": "Employed in Public administration % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 217,
             "index": 213
         },
         {
             "varName": "industry_retail_trade_us_census",
-            "humanReadableName": "Retail trade % [US Census]",
+            "humanReadableName": "Employed in Retail trade % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 218,
             "index": 216
         },
         {
             "varName": "industry_retail_trade_statcan",
-            "humanReadableName": "Retail trade % [StatCan]",
+            "humanReadableName": "Employed in Retail trade % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 219,
             "index": 217
         },
         {
             "varName": "industry_transportation_warehousing_us_census",
-            "humanReadableName": "Transportation and warehousing % [US Census]",
+            "humanReadableName": "Employed in Transportation and warehousing % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 220,
             "index": 218
         },
         {
             "varName": "industry_transportation_warehousing_statcan",
-            "humanReadableName": "Transportation and warehousing % [StatCan]",
+            "humanReadableName": "Employed in Transportation and warehousing % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 221,
             "index": 219
         },
         {
             "varName": "industry_utilities_us_census",
-            "humanReadableName": "Utilities % [US Census]",
+            "humanReadableName": "Employed in Utilities % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 222,
             "index": 220
         },
         {
             "varName": "industry_utilities_statcan",
-            "humanReadableName": "Utilities % [StatCan]",
+            "humanReadableName": "Employed in Utilities % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 223,
             "index": 221
         },
         {
             "varName": "industry_wholesale_trade_us_census",
-            "humanReadableName": "Wholesale trade % [US Census]",
+            "humanReadableName": "Employed in Wholesale trade % [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 224,
             "index": 222
         },
         {
             "varName": "industry_wholesale_trade_statcan",
-            "humanReadableName": "Wholesale trade % [StatCan]",
+            "humanReadableName": "Employed in Wholesale trade % [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 225,
             "index": 223
@@ -2046,7 +2046,7 @@ export default {
         },
         {
             "varName": "moderate_humidity_days",
-            "humanReadableName": "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %",
+            "humanReadableName": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
             "comesFromMultiSourceSet": false,
             "order": 292,
             "index": 103
@@ -2777,7 +2777,7 @@ export default {
                     "industry_agriculture_forestry_fishing_us_census",
                     "industry_agriculture_forestry_fishing_statcan"
                 ],
-                "humanReadableName": "Agriculture, forestry, fishing and hunting %"
+                "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting %"
             }
         ],
         [
@@ -2787,7 +2787,7 @@ export default {
                     "industry_mining_oil_gas_us_census",
                     "industry_mining_oil_gas_statcan"
                 ],
-                "humanReadableName": "Mining, quarrying, and oil and gas extraction %"
+                "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction %"
             }
         ],
         [
@@ -2797,7 +2797,7 @@ export default {
                     "industry_accommodation_food_us_census",
                     "industry_accommodation_food_statcan"
                 ],
-                "humanReadableName": "Accommodation and food services %"
+                "humanReadableName": "Employed in Accommodation and food services %"
             }
         ],
         [
@@ -2807,7 +2807,7 @@ export default {
                     "industry_arts_entertainment_us_census",
                     "industry_arts_entertainment_statcan"
                 ],
-                "humanReadableName": "Arts, entertainment, and recreation %"
+                "humanReadableName": "Employed in Arts, entertainment, and recreation %"
             }
         ],
         [
@@ -2817,7 +2817,7 @@ export default {
                     "industry_construction_us_census",
                     "industry_construction_statcan"
                 ],
-                "humanReadableName": "Construction %"
+                "humanReadableName": "Employed in Construction %"
             }
         ],
         [
@@ -2827,7 +2827,7 @@ export default {
                     "industry_education_us_census",
                     "industry_education_statcan"
                 ],
-                "humanReadableName": "Educational services %"
+                "humanReadableName": "Employed in Educational services %"
             }
         ],
         [
@@ -2837,7 +2837,7 @@ export default {
                     "industry_healthcare_social_us_census",
                     "industry_healthcare_social_statcan"
                 ],
-                "humanReadableName": "Health care and social assistance %"
+                "humanReadableName": "Employed in Health care and social assistance %"
             }
         ],
         [
@@ -2847,7 +2847,7 @@ export default {
                     "industry_finance_insurance_us_census",
                     "industry_finance_insurance_statcan"
                 ],
-                "humanReadableName": "Finance and insurance %"
+                "humanReadableName": "Employed in Finance and insurance %"
             }
         ],
         [
@@ -2857,7 +2857,7 @@ export default {
                     "industry_real_estate_rental_us_census",
                     "industry_real_estate_rental_statcan"
                 ],
-                "humanReadableName": "Real estate and rental and leasing %"
+                "humanReadableName": "Employed in Real estate and rental and leasing %"
             }
         ],
         [
@@ -2867,7 +2867,7 @@ export default {
                     "industry_information_us_census",
                     "industry_information_statcan"
                 ],
-                "humanReadableName": "Information %"
+                "humanReadableName": "Employed in Information %"
             }
         ],
         [
@@ -2877,7 +2877,7 @@ export default {
                     "industry_manufacturing_us_census",
                     "industry_manufacturing_statcan"
                 ],
-                "humanReadableName": "Manufacturing %"
+                "humanReadableName": "Employed in Manufacturing %"
             }
         ],
         [
@@ -2887,7 +2887,7 @@ export default {
                     "industry_other_services_us_census",
                     "industry_other_services_statcan"
                 ],
-                "humanReadableName": "Other services, except public administration %"
+                "humanReadableName": "Employed in Other services, except public administration %"
             }
         ],
         [
@@ -2897,7 +2897,7 @@ export default {
                     "industry_admin_support_waste_mgmt_us_census",
                     "industry_admin_support_waste_mgmt_statcan"
                 ],
-                "humanReadableName": "Administrative and support and waste management services %"
+                "humanReadableName": "Employed in Administrative and support and waste management services %"
             }
         ],
         [
@@ -2907,7 +2907,7 @@ export default {
                     "industry_management_us_census",
                     "industry_management_statcan"
                 ],
-                "humanReadableName": "Management of companies and enterprises %"
+                "humanReadableName": "Employed in Management of companies and enterprises %"
             }
         ],
         [
@@ -2917,7 +2917,7 @@ export default {
                     "industry_professional_scientific_technical_us_census",
                     "industry_professional_scientific_technical_statcan"
                 ],
-                "humanReadableName": "Professional, scientific, and technical services %"
+                "humanReadableName": "Employed in Professional, scientific, and technical services %"
             }
         ],
         [
@@ -2927,7 +2927,7 @@ export default {
                     "industry_public_admin_us_census",
                     "industry_public_admin_statcan"
                 ],
-                "humanReadableName": "Public administration %"
+                "humanReadableName": "Employed in Public administration %"
             }
         ],
         [
@@ -2937,7 +2937,7 @@ export default {
                     "industry_retail_trade_us_census",
                     "industry_retail_trade_statcan"
                 ],
-                "humanReadableName": "Retail trade %"
+                "humanReadableName": "Employed in Retail trade %"
             }
         ],
         [
@@ -2947,7 +2947,7 @@ export default {
                     "industry_transportation_warehousing_us_census",
                     "industry_transportation_warehousing_statcan"
                 ],
-                "humanReadableName": "Transportation and warehousing %"
+                "humanReadableName": "Employed in Transportation and warehousing %"
             }
         ],
         [
@@ -2957,7 +2957,7 @@ export default {
                     "industry_utilities_us_census",
                     "industry_utilities_statcan"
                 ],
-                "humanReadableName": "Utilities %"
+                "humanReadableName": "Employed in Utilities %"
             }
         ],
         [
@@ -2967,7 +2967,7 @@ export default {
                     "industry_wholesale_trade_us_census",
                     "industry_wholesale_trade_statcan"
                 ],
-                "humanReadableName": "Wholesale trade %"
+                "humanReadableName": "Employed in Wholesale trade %"
             }
         ],
         [

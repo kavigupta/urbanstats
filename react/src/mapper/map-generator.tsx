@@ -443,7 +443,7 @@ async function renderColorbar(colorbar: ReactNode, renderColorbarWidth: number, 
 
     return {
         canvas: colorbarCanvas,
-        ...colorbarDimensions(renderColorbarWidth, 300 - cBarPad, colorbarCanvas.width, colorbarCanvas.height),
+        ...colorbarDimensions(renderColorbarWidth, 500 - cBarPad, colorbarCanvas.width, colorbarCanvas.height),
     }
 }
 
