@@ -9,6 +9,8 @@ from urbanstats.statistics.statistic_collection import GeoIDStatisticsACS
 
 
 class IncomeMedian(GeoIDStatisticsACS):
+    version: int = 2
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 
@@ -31,7 +33,7 @@ class IncomeMedian(GeoIDStatisticsACS):
 
     def acs_data_entity_multi(self):
         return ACSDataEntityForMultipleLevels(
-            "Median Family Income in the Past 12 Months (in 2023 Inflation-Adjusted Dollars)",
+            "Median Household Income in the Past 12 Months (in 2023 Inflation-Adjusted Dollars)",
             [
                 "state",
                 "combined statistical area",
@@ -45,7 +47,7 @@ class IncomeMedian(GeoIDStatisticsACS):
             [],
             {
                 "median_household_income": [
-                    "Estimate!!Median family income in the past 12 months (in 2023 inflation-adjusted dollars)",
+                    "Estimate!!Median household income in the past 12 months (in 2023 inflation-adjusted dollars)",
                 ]
             },
             replace_negatives_with_nan=True,
