@@ -1,8 +1,77 @@
+import katex from 'katex'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
-import Quill, { Delta, EmitterSource, Range } from 'quill'
+import Quill, { Delta, EmitterSource, Parchment, Range } from 'quill'
+import Block from 'quill/blots/block'
 import React, { ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
 
+import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
+
+// Needed for formula module
+(window as { katex: unknown }).katex = katex
+
+const fonts = [
+    { family: 'jost' },
+    { family: 'times new roman', displaySize: 10 },
+]
+
+const fontAttributor = Quill.import('attributors/style/font') as Parchment.Attributor
+fontAttributor.whitelist = fonts.map(f => f.family)
+Quill.register(fontAttributor, true)
+
+function FontStyles(): ReactNode {
+    return (
+        <style>
+            {fonts.map(({ family, displaySize }) => {
+                const capitalizedFont = family.replaceAll(/\b\w/g, char => char.toUpperCase())
+                return `/* Set dropdown font-families */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="${family}"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="${family}"]::before{
+  font-family: "${family}";
+  content: "${capitalizedFont}";
+  ${displaySize !== undefined ? `font-size: ${displaySize}px;` : ''}
+}
+/* Set effect font-families */
+.ql-font-${family} {
+  font-family: "${family}";
+}`
+            })}
+        </style>
+    )
+}
+
+const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
+sizeAttributor.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px', '96px']
+Quill.register(sizeAttributor, true)
+
+function SizeStyles(): ReactNode {
+    return (
+        <style>
+            { `.ql-snow .ql-picker.ql-size .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.ql-size .ql-picker-item[data-value]::before {
+  content: attr(data-value) !important;
+}`}
+        </style>
+    )
+}
+
+function DefaultStyle(): ReactNode {
+    return (
+        <style>
+            {` .ql-editor { font-family: jost; font-size: 16px; }`}
+        </style>
+    )
+}
+
+// Sets the default style
+class DefaultBlock extends Block {
+    static override create(): HTMLElement {
+        const node = super.create()
+        node.setAttribute('style', 'font-family: jost; font-size: 16px;') // Example customization
+        return node
+    }
+}
+Quill.register(DefaultBlock)
 
 export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange }: {
     editable: boolean
@@ -33,25 +102,20 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                 history: {
                     maxStack: 0,
                 },
+                formula: true,
                 toolbar: editable && [
-                    ['bold', 'italic', 'underline', 'strike'], // toggled buttons
-                    ['blockquote', 'code-block'],
-                    ['link', 'image', 'video', 'formula'],
+                    [{ font: fontAttributor.whitelist }, { size: sizeAttributor.whitelist }],
 
-                    [{ header: 1 }, { header: 2 }], // custom button values
+                    ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+
+                    [{ align: [] }],
+                    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+
                     [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
                     [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-                    [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
-                    [{ direction: 'rtl' }], // text direction
 
-                    [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-                    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-                    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-                    [{ font: [] }],
-                    [{ align: [] }],
-
-                    ['clean'], // remove formatting button
+                    ['blockquote', 'code-block'],
+                    ['link', 'image', 'formula'],
                 ],
             },
         })
@@ -95,5 +159,12 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
         quillRef.current?.setSelection(selection, 'api')
     }, [selection])
 
-    return <div ref={containerRef}></div>
+    return (
+        <>
+            <div ref={containerRef}></div>
+            <FontStyles />
+            <SizeStyles />
+            <DefaultStyle />
+        </>
+    )
 }
