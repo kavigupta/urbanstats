@@ -385,9 +385,9 @@ async function exportAsPng({
     const pixelRatio = 4
     const width = 4096
     const cBarPad = 40
-    const colorbarScale = 1.5
+    const colorbarScale = 0.75
 
-    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio / colorbarScale, cBarPad)
+    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio * colorbarScale, cBarPad)
 
     const aspectRatio = computeAspectRatioForInsets(insets)
 
