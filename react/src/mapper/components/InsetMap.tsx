@@ -142,7 +142,7 @@ function isFullScreenInset(inset: Inset): boolean {
         && Math.abs(inset.topRight[1] - 1) < tolerance
 }
 
-function EditInsetsHandles(props: {
+export function EditInsetsHandles(props: {
     frame: Frame
     setFrame: (newFrame: Frame) => void
     container: RefObject<HTMLDivElement>

@@ -2,7 +2,7 @@ import katex from 'katex'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, EmitterSource, Parchment, Range } from 'quill'
 import Block from 'quill/blots/block'
-import React, { ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
 
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
@@ -73,13 +73,17 @@ class DefaultBlock extends Block {
 }
 Quill.register(DefaultBlock)
 
-export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange }: {
+export interface QuillEditorProps {
     editable: boolean
     content: Delta
     selection: Range | null
     onTextChange: (delta: Delta) => void
     onSelectionChange: (range: Range | null) => void
-}): ReactNode {
+    containerStyle?: CSSProperties
+    backgroundColor?: string
+}
+
+export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange, containerStyle, backgroundColor }: QuillEditorProps): ReactNode {
     const quillRef = useRef<Quill>()
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -158,9 +162,20 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
         quillRef.current?.setSelection(selection, 'api')
     }, [selection])
 
+    useEffect(() => {
+        const editor = containerRef.current?.querySelector<HTMLDivElement>('.ql-editor')
+        if (editor) {
+            editor.style.backgroundColor = backgroundColor ?? ''
+        }
+        const toolbar = containerRef.current?.querySelector<HTMLDivElement>('.ql-toolbar')
+        if (toolbar) {
+            toolbar.style.backgroundColor = backgroundColor ? `${backgroundColor}aa` : ''
+        }
+    })
+
     return (
         <>
-            <div ref={containerRef}></div>
+            <div ref={containerRef} style={containerStyle}></div>
             <FontStyles />
             <SizeStyles />
             <DefaultStyle />
