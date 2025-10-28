@@ -5,6 +5,8 @@ export interface Label {
     topRight: [number, number]
     text: AttributedText
     backgroundColor: string
+    borderColor: string
+    borderWidth: number
 }
 
 export type AttributedText = TextSegment[]

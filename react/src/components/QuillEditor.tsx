@@ -2,10 +2,11 @@ import katex from 'katex'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, EmitterSource, Parchment, Range } from 'quill'
 import Block from 'quill/blots/block'
-import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
+import { createPortal } from 'react-dom'
 
 // Needed for formula module
 (window as { katex: unknown }).katex = katex
@@ -47,10 +48,11 @@ Quill.register(sizeAttributor, true)
 function SizeStyles(): ReactNode {
     return (
         <style>
-            { `.ql-snow .ql-picker.ql-size .ql-picker-label[data-value]::before,
-.ql-snow .ql-picker.ql-size .ql-picker-item[data-value]::before {
+            {['size', 'borderWidth'].map(control => `.ql-snow .ql-picker.ql-${control} .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.ql-${control} .ql-picker-item[data-value]::before {
   content: attr(data-value) !important;
-}`}
+}
+.ql-picker.ql-${control} { width: 60px !important }`)}
         </style>
     )
 }
@@ -81,14 +83,18 @@ export interface QuillEditorProps {
     onSelectionChange: (range: Range | null) => void
     containerStyle?: CSSProperties
     backgroundColor?: string
+    border?: { color: string, width: number }
+    customControls?: ReactNode
 }
 
-export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange, containerStyle, backgroundColor }: QuillEditorProps): ReactNode {
+export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange, containerStyle, backgroundColor, border, customControls }: QuillEditorProps): ReactNode {
     const quillRef = useRef<Quill>()
 
     const containerRef = useRef<HTMLDivElement>(null)
     const onTextChangeRef = useRef(onTextChange)
     const onSelectionChangeRef = useRef(onSelectionChange)
+
+    const [customControlsContainer, setCustomControlsContainer] = useState<Element | null>(null)
 
     useLayoutEffect(() => {
         onTextChangeRef.current = onTextChange
@@ -106,20 +112,26 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                 history: {
                     maxStack: 0, // We use our own undo manager
                 },
-                toolbar: editable && [
-                    [{ font: fontAttributor.whitelist }, { size: sizeAttributor.whitelist }],
+                toolbar: editable && {
+                    container: [
+                        [{ font: fontAttributor.whitelist }, { size: sizeAttributor.whitelist }],
 
-                    ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+                        ['bold', 'italic', 'underline', 'strike'], // toggled buttons
 
-                    [{ align: [] }],
-                    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+                        [{ align: [] }],
+                        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
 
-                    [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
-                    [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+                        ['link', 'image', 'formula'],
 
-                    ['blockquote', 'code-block'],
-                    ['link', 'image', 'formula'],
-                ],
+                        [], // This is a reference point to put custom controls
+                        [{ borderWidth: ['0px', '1px', '2px', '3px', '4px', '5px'] }],
+                    ],
+                    handlers: {
+                        borderWidth: (width: string) => {
+                            console.log(Number(width.slice(0, width.length - 2)))
+                        },
+                    },
+                },
             },
         })
 
@@ -148,9 +160,12 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
 
         quill.enable(editable)
 
+        setCustomControlsContainer(container.querySelector('.ql-formats:not(:has(*))'))
+
         return () => {
             quillRef.current = undefined
             container.innerHTML = ''
+            setCustomControlsContainer(null)
         }
     }, [editable])
 
@@ -171,6 +186,10 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
         if (toolbar) {
             toolbar.style.backgroundColor = backgroundColor ? `${backgroundColor}aa` : ''
         }
+        const container = containerRef.current?.querySelector<HTMLDivElement>('.ql-container')
+        if (container) {
+            container.style.border = border ? `${border.width}px solid ${border.color}` : ''
+        }
     })
 
     return (
@@ -179,6 +198,7 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
             <FontStyles />
             <SizeStyles />
             <DefaultStyle />
+            {customControlsContainer ? createPortal(customControls, customControlsContainer) : null}
         </>
     )
 }

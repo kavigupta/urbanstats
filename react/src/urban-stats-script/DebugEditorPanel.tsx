@@ -1,25 +1,28 @@
-import { Delta, Range } from 'quill'
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { QuillEditor } from '../components/QuillEditor'
+import { CheckboxSettingCustom } from '../components/sidebar'
 import { MapLabel, Selection, SelectionContext } from '../mapper/components/MapLabel'
-import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
 import { Label } from './constants/label'
 import { useUndoRedo } from './editor-utils'
 
+const newLabel: Label = {
+    bottomLeft: [0.25, 0.25],
+    topRight: [0.75, 0.75],
+    text: [{ string: 'Hello, World!', attributes: {} }],
+    backgroundColor: '#ffffff',
+    borderColor: '#000',
+    borderWidth: 1,
+}
+
 /**
  * This panel used for developing + debugging editor functionality.
  */
 export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
-    const [content, setContent] = useState<Label[]>(() => [{
-        bottomLeft: [0.25, 0.25],
-        topRight: [0.75, 0.75],
-        text: [{ string: 'Hello, World!', attributes: {} }],
-        backgroundColor: '#ffffff',
-    }])
+    const [edit, setEdit] = useState(true)
+    const [content, setContent] = useState<Label[]>(() => [newLabel])
 
     const selectionProperty = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
@@ -43,8 +46,14 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
 
     const containerRef = useRef<HTMLDivElement>(null)
 
+    const updateContent = (newContent: Label[]): void => {
+        setContent(newContent)
+        addState(newContent, selectionProperty.value)
+    }
+
     return (
         <PageTemplate>
+            <CheckboxSettingCustom name="edit" checked={edit} onChange={setEdit} />
             <SelectionContext.Provider value={selectionProperty}>
                 <div
                     style={{
@@ -62,28 +71,28 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                             numLabels={content.length}
                             label={label}
                             container={containerRef}
-                            editLabel={{
-                                modify(newLabel) {
-                                    const newContent = content.map((l, j) => j === i ? { ...l, ...newLabel } : l)
-                                    setContent(newContent)
-                                    addState(newContent, selectionProperty.value)
-                                },
-                                duplicate() {
-
-                                },
-                                delete() {
-
-                                },
-                                add() {
-
-                                },
-                                moveUp() {
-
-                                },
-                                moveDown() {
-
-                                },
-                            }}
+                            editLabel={edit
+                                ? {
+                                        modify(n) {
+                                            updateContent(content.map((l, j) => j === i ? { ...l, ...n } : l))
+                                        },
+                                        duplicate() {
+                                            updateContent(content.flatMap((l, j) => j === i ? [l, l] : [l]))
+                                        },
+                                        delete() {
+                                            updateContent(content.filter((l, j) => j !== i))
+                                        },
+                                        add() {
+                                            updateContent(content.concat([newLabel]))
+                                        },
+                                        moveUp() {
+                                            updateContent(content.slice(0, i).concat([content[i + 1], content[i]]).concat(content.slice(i + 2)))
+                                        },
+                                        moveDown() {
+                                            updateContent(content.slice(0, i - 1).concat([content[i], content[i - 1]]).concat(content.slice(i + 1)))
+                                        },
+                                    }
+                                : undefined}
                         />
                     ))}
                 </div>

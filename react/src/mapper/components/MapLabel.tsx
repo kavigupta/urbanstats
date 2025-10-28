@@ -1,5 +1,6 @@
 import { Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 import { QuillEditor } from '../../components/QuillEditor'
 import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
@@ -36,13 +37,16 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
         }
 
         const observer = new ResizeObserver(() => {
-            setToolbarHeight(toolbar.offsetHeight)
+            flushSync(() => {
+                setToolbarHeight(toolbar.offsetHeight)
+            })
         })
         setToolbarHeight(toolbar.offsetHeight)
         observer.observe(toolbar)
         return () => {
             observer.unobserve(toolbar)
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only needs to change when the toolbar appears/disappears
     }, [!!editLabel])
 
     return (
@@ -71,6 +75,13 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 }}
                 containerStyle={{ transform: editLabel ? `translateY(-${toolbarHeight}px)` : undefined, width: '100%', height: '100%' }}
                 backgroundColor={label.backgroundColor}
+                border={{ width: label.borderWidth, color: label.borderColor }}
+                customControls={(
+                    <>
+                        <QuillColorPicker label="bg" color={label.backgroundColor} setColor={newColor => editLabel?.modify({ backgroundColor: newColor })} />
+                        <QuillColorPicker label="border" color={label.borderColor} setColor={newColor => editLabel?.modify({ borderColor: newColor })} />
+                    </>
+                )}
             />
             { editLabel && (
                 <EditInsetsHandles
@@ -102,3 +113,21 @@ export interface Selection {
 
 // eslint-disable-next-line no-restricted-syntax -- React context
 export const SelectionContext = createContext(new Property<Selection | undefined>(undefined))
+
+function QuillColorPicker({ color, setColor, label }: { color: string, setColor: (c: string) => void, label: string }): ReactNode {
+    return (
+        <span className="ql-picker">
+            <span className="ql-picker-label serif" onClick={(e) => { (e.target as HTMLSpanElement).querySelector('input')!.click() }}>
+                {`${label} `}
+                <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => {
+                        setColor(e.target.value)
+                    }}
+                    style={{ width: '20px', height: '20px' }}
+                />
+            </span>
+        </span>
+    )
+}
