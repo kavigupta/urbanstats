@@ -100,9 +100,8 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
             theme: 'snow',
             modules: {
                 history: {
-                    maxStack: 0,
+                    maxStack: 0, // We use our own undo manager
                 },
-                formula: true,
                 toolbar: editable && [
                     [{ font: fontAttributor.whitelist }, { size: sizeAttributor.whitelist }],
 
