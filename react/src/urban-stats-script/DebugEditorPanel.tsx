@@ -30,7 +30,11 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
     // Update current selection when it changes
     useEffect(() => {
         const observer = (): void => {
-            updateCurrentSelection(selectionProperty.value)
+            // We need this setTimeout since Quill calls the selection events before any text events
+            // This way, if we get a combined text and selection event, we update the new stack item instead of the old one
+            setTimeout(() => {
+                updateCurrentSelection(selectionProperty.value)
+            })
         }
 
         selectionProperty.observers.add(observer)
