@@ -2,7 +2,7 @@
 import Quill, { Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useContext, useEffect, useId, useRef, useState } from 'react'
 
-import { QuillEditor } from '../../components/QuillEditor'
+import { defaults, QuillEditor } from '../../components/QuillEditor'
 import { colorThemes } from '../../page_template/color-themes'
 import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
 import { Property } from '../../utils/Property'
@@ -32,7 +32,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const quillRef = useRef<Quill>()
 
-    const [format, setFormat] = useState<Record<string, unknown>>({})
+    const [format, setFormat] = useState<{ size?: string, color?: string }>({})
 
     useEffect(() => {
         const quill = quillRef.current!
@@ -90,10 +90,14 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             >
                 <span className="ql-formats">
                     <FontSelect />
-                    <select className="ql-size">
-                        {sizes.map(size => <option key={size} value={size} />)}
-                    </select>
-                    <SizeStyle className="ql-size" />
+                    <NumberButton
+                        label={null}
+                        value={parsePx(format.size ?? `${defaults.size}px`) ?? defaults.size}
+                        setValue={(v) => {
+                            quillRef.current?.format('size', `${v}px`, 'user')
+                        }}
+                        min={5}
+                    />
                 </span>
                 <span className="ql-formats">
                     <button className="ql-bold"></button>
@@ -105,7 +109,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     <select className="ql-align"></select>
                 </span>
                 <span className="ql-formats">
-                    <ColorButton label={<span style={{ fontSize: '20px' }}>𝑨</span>} color={format.color as (string | undefined) ?? colorThemes['Light Mode'].textMain} setColor={c => quillRef.current?.format('color', c, 'user')} />
+                    <ColorButton label={<span style={{ fontSize: '20px' }}>𝑨</span>} color={format.color ?? defaults.color} setColor={c => quillRef.current?.format('color', c, 'user')} />
                 </span>
                 <span className="ql-formats">
                     <button className="ql-link"></button>
@@ -149,6 +153,17 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
     )
 }
 
+function parsePx(string: string): number | undefined {
+    let match
+    if ((match = /([0-9]+)px/.exec(string)) !== null) {
+        const result = parseInt(match[1])
+        if (isFinite(result)) {
+            return result
+        }
+    }
+    return
+}
+
 export interface Selection {
     index: number
     range: Range
@@ -166,10 +181,8 @@ const fontAttributor = Quill.import('attributors/style/font') as Parchment.Attri
 fontAttributor.whitelist = fonts.map(f => f.family)
 Quill.register(fontAttributor, true)
 
-const sizes = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px', '96px']
-
 const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
-sizeAttributor.whitelist = sizes
+sizeAttributor.whitelist = undefined
 Quill.register(sizeAttributor, true)
 
 function SizeStyle({ className }: { className: string }): ReactNode {
@@ -207,6 +220,31 @@ function ColorButton({ label, color, setColor }: { label: ReactNode, color: stri
                     width: '25px',
                 }}
             />
+        </button>
+    )
+}
+
+function NumberButton({ label, value, setValue, min }: { label: ReactNode, value: number, setValue: (v: number) => void, min: number }): ReactNode {
+    return (
+        <button
+            style={{ display: 'flex', gap: '2px', alignItems: 'center', width: 'fit-content' }}
+            tabIndex={-1}
+        >
+            <span style={{ pointerEvents: 'none', color: colorThemes['Light Mode'].textMain }}>{label}</span>
+            <span
+                style={{
+                    border: 0,
+                    padding: 0,
+                    height: '125%',
+                    width: '50px',
+                }}
+            >
+                {value}
+            </span>
+            <div>
+                <div role="button">▲</div>
+                <div role="button">▼</div>
+            </div>
         </button>
     )
 }
