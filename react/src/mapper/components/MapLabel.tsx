@@ -1,12 +1,11 @@
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
-import Color from 'color'
 import Quill, { Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useContext, useEffect, useId, useRef, useState } from 'react'
 
 import { QuillEditor } from '../../components/QuillEditor'
+import { colorThemes } from '../../page_template/color-themes'
 import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
 import { Property } from '../../utils/Property'
-import { BetterSelector } from '../settings/BetterSelector'
 
 import { EditInsetsHandles } from './InsetMap'
 
@@ -90,14 +89,11 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 }}
             >
                 <span className="ql-formats">
-                    <select className="ql-font">
-                        {fonts.map(({ family }) => <option key={family} value={family} />)}
-                    </select>
-                    <FontStyles />
+                    <FontSelect />
                     <select className="ql-size">
                         {sizes.map(size => <option key={size} value={size} />)}
                     </select>
-                    <SizeStyles />
+                    <SizeStyle className="ql-size" />
                 </span>
                 <span className="ql-formats">
                     <button className="ql-bold"></button>
@@ -109,7 +105,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     <select className="ql-align"></select>
                 </span>
                 <span className="ql-formats">
-                    <ColorButton label={<span style={{ fontSize: '20px' }}>𝑨</span>} color={format.color as (string | undefined) ?? '#000000'} setColor={c => quillRef.current?.format('color', c, 'user')} />
+                    <ColorButton label={<span style={{ fontSize: '20px' }}>𝑨</span>} color={format.color as (string | undefined) ?? colorThemes['Light Mode'].textMain} setColor={c => quillRef.current?.format('color', c, 'user')} />
                 </span>
                 <span className="ql-formats">
                     <button className="ql-link"></button>
@@ -121,17 +117,12 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 </span>
                 <span className="ql-formats">
                     <ColorButton label={<span style={{ fontSize: '12px' }}>border</span>} color={label.borderColor} setColor={c => editLabel?.modify({ borderColor: c })} />
-                    <select
-                        className="borderWidth"
-                        value={label.borderWidth}
-                        onChange={(e) => {
-                            editLabel?.modify({ borderWidth: Number(e.target.value.slice(0, e.target.value.length - 2)) })
+                    <BorderWidthSelect
+                        borderWidth={label.borderWidth}
+                        setBorderWidth={(newWidth) => {
+                            editLabel?.modify({ borderWidth: newWidth })
                         }}
-                    >
-                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                            <option key={n} value={`${n}px`} />
-                        ))}
-                    </select>
+                    />
                 </span>
             </div>
 
@@ -175,6 +166,62 @@ const fontAttributor = Quill.import('attributors/style/font') as Parchment.Attri
 fontAttributor.whitelist = fonts.map(f => f.family)
 Quill.register(fontAttributor, true)
 
+const sizes = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px', '96px']
+
+const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
+sizeAttributor.whitelist = sizes
+Quill.register(sizeAttributor, true)
+
+function SizeStyle({ className }: { className: string }): ReactNode {
+    return (
+        <style>
+            {`.ql-snow .ql-picker.${className} .ql-picker-label[data-value]::before,
+.ql-snow .ql-picker.${className} .ql-picker-item[data-value]::before {
+  content: attr(data-value) !important;
+}
+.ql-picker.${className} { width: 60px !important }`}
+        </style>
+    )
+}
+
+function ColorButton({ label, color, setColor }: { label: ReactNode, color: string, setColor: (c: string) => void }): ReactNode {
+    return (
+        <button
+            style={{ display: 'flex', gap: '2px', alignItems: 'center', width: 'fit-content' }}
+            onClick={(e) => {
+                (e.target as Element).querySelector('input')?.click()
+            }}
+            tabIndex={-1}
+        >
+            <span style={{ pointerEvents: 'none', color: colorThemes['Light Mode'].textMain }}>{label}</span>
+            <input
+                type="color"
+                value={color}
+                onChange={(e) => {
+                    setColor(e.target.value)
+                }}
+                style={{
+                    border: 0,
+                    padding: 0,
+                    height: '125%',
+                    width: '25px',
+                }}
+            />
+        </button>
+    )
+}
+
+function FontSelect(): ReactNode {
+    return (
+        <>
+            <select className="ql-font">
+                {fonts.map(({ family }) => <option key={family} value={family} />)}
+            </select>
+            <FontStyles />
+        </>
+    )
+}
+
 function FontStyles(): ReactNode {
     return (
         <style>
@@ -196,47 +243,21 @@ function FontStyles(): ReactNode {
     )
 }
 
-const sizes = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px', '96px']
-
-const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
-sizeAttributor.whitelist = sizes
-Quill.register(sizeAttributor, true)
-
-function SizeStyles(): ReactNode {
+function BorderWidthSelect({ borderWidth, setBorderWidth }: { borderWidth: number, setBorderWidth: (w: number) => void }): ReactNode {
     return (
-        <style>
-            {['ql-size', 'borderWidth'].map(control => `.ql-snow .ql-picker.${control} .ql-picker-label[data-value]::before,
-.ql-snow .ql-picker.${control} .ql-picker-item[data-value]::before {
-  content: attr(data-value) !important;
-}
-.ql-picker.ql-${control} { width: 60px !important }`)}
-        </style>
-    )
-}
-
-function ColorButton({ label, color, setColor }: { label: ReactNode, color: string, setColor: (c: string) => void }): ReactNode {
-    return (
-        <button
-            style={{ display: 'flex', gap: '2px', alignItems: 'center', width: 'fit-content' }}
-            onClick={(e) => {
-                (e.target as Element).querySelector('input')?.click()
-            }}
-            tabIndex={-1}
-        >
-            <span style={{ pointerEvents: 'none' }}>{label}</span>
-            <input
-                type="color"
-                value={color}
+        <>
+            <select
+                className="borderWidth"
+                value={borderWidth}
                 onChange={(e) => {
-                    setColor(e.target.value)
+                    setBorderWidth(Number(e.target.value.slice(0, e.target.value.length - 2)))
                 }}
-                style={{
-                    border: 0,
-                    padding: 0,
-                    height: '125%',
-                    width: '25px',
-                }}
-            />
-        </button>
+            >
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                    <option key={n} value={`${n}px`} />
+                ))}
+            </select>
+            <SizeStyle className="borderWidth" />
+        </>
     )
 }

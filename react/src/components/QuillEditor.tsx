@@ -6,6 +6,7 @@ import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } f
 
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
+import { colorThemes } from '../page_template/color-themes'
 
 // Needed for formula module
 (window as { katex: unknown }).katex = katex
@@ -14,7 +15,7 @@ function DefaultStyle(): ReactNode {
     return (
         <style>
             {`
-.ql-editor { font-family: jost; font-size: 16px; }
+.ql-editor { font-family: jost; font-size: 16px; color: ${colorThemes['Light Mode'].textMain} }
 .ql-container.ql-snow { border: none; }
 .ql-toolbar.ql-snow { border: none; }
 `}

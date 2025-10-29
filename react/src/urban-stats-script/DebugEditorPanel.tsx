@@ -2,6 +2,8 @@ import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
 import { MapLabel, Selection, SelectionContext } from '../mapper/components/MapLabel'
+import { colorThemes } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
@@ -12,8 +14,8 @@ const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
     text: [{ string: 'Hello, World!', attributes: {} }],
-    backgroundColor: '#ffffff',
-    borderColor: '#000',
+    backgroundColor: colorThemes['Light Mode'].background,
+    borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,
 }
 
@@ -51,6 +53,8 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
         addState(newContent, selectionProperty.value)
     }
 
+    const colors = useColors()
+
     return (
         <PageTemplate>
             <CheckboxSettingCustom name="edit" checked={edit} onChange={setEdit} />
@@ -59,7 +63,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                     style={{
                         width: '1000px',
                         height: '1000px',
-                        backgroundColor: '#ed7777ff',
+                        backgroundColor: colors.hueColors.red,
                         position: 'relative',
                     }}
                     ref={containerRef}
