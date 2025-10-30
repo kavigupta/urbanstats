@@ -2,6 +2,7 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
 
 import { useColors } from '../../page_template/colors'
+import { IFrameInput } from '../../utils/IFrameInput'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 
@@ -45,12 +46,13 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     )
 }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
     onEdit?: () => void
+    iframe?: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -134,9 +136,12 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax -- Dynamic tag name
+    const InputElem = iframe ? IFrameInput : 'input'
+
     return (
         <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-            <input
+            <InputElem
                 ref={inputRef}
                 type="text"
                 value={searchValue}

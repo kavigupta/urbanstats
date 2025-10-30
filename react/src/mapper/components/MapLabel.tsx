@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Parchment, Range } from 'quill'
-import React, { createContext, ReactNode, RefObject, useContext, useEffect, useId, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
+import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
 
 import { QuillEditor } from '../../components/QuillEditor'
 import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
@@ -86,7 +85,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     width: '100%',
                 }}
             >
-                <IFrameInput />
             </div>
 
             { editLabel && (
@@ -110,36 +108,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             )}
         </div>
     )
-}
-
-// Should make this a drop in replacement for normal input and then use it in BetterSelector
-
-function IFrameInput(): ReactNode {
-    const frameRef = useRef<HTMLIFrameElement>(null)
-    const [frameDoc, setFrameDoc] = useState<Document | undefined>()
-
-    useEffect(() => {
-        const doc = frameRef.current!.contentWindow!.document
-        doc.body.style.margin = '0px'
-        setFrameDoc(doc)
-    }, [])
-
-    return (
-        <iframe ref={frameRef} style={{ border: 'none', width: '100px', height: '25px' }}>
-            {frameDoc && createPortal(<input type="text" />, frameDoc.body)}
-        </iframe>
-    )
-}
-
-function parsePx(string: string): number | undefined {
-    let match
-    if ((match = /([0-9]+)px/.exec(string)) !== null) {
-        const result = parseInt(match[1])
-        if (isFinite(result)) {
-            return result
-        }
-    }
-    return
 }
 
 export interface Selection {
