@@ -35,7 +35,10 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
     const [shouldRotate, setShouldRotate] = useState(false)
 
     useLayoutEffect(() => {
-        const values = valuesRef.current!
+        const values = valuesRef.current
+        if (values === null) {
+            return
+        }
         const updateShouldRotate = (): void => {
             setShouldRotate(
                 Array.from(values.querySelectorAll('.containerOfXticks')).some((container) => {

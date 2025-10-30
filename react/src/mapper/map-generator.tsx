@@ -387,15 +387,15 @@ async function exportAsPng({
     const pixelRatio = 4
     const width = 4096
     const cBarPad = 40
-    const colorbarScale = 1.5
+    const colorbarScale = 0.75
 
-    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio / colorbarScale, cBarPad)
+    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio * colorbarScale, cBarPad)
 
     const aspectRatio = computeAspectRatioForInsets(insets)
 
     const height = Math.round(width / aspectRatio)
 
-    const totalHeight = height + colorbarRender.height + cBarPad
+    const totalHeight = height + (colorbarRender.height > 0 ? colorbarRender.height + cBarPad : 0)
 
     const params = { width, height, pixelRatio, insetBorderColor: colors.mapInsetBorderColor }
 
@@ -409,10 +409,11 @@ async function exportAsPng({
         await renderMap(ctx, map, inset, params)
     }))
 
-    ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
-    ctx.fillRect(0, height, width, colorbarRender.height + cBarPad) // Fill the entire colorbar area
-
-    ctx.drawImage(colorbarRender.canvas, (width - colorbarRender.width) / 2, height + cBarPad / 2, colorbarRender.width, colorbarRender.height)
+    if (colorbarRender.height > 0) {
+        ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
+        ctx.fillRect(0, height, width, colorbarRender.height + cBarPad) // Fill the entire colorbar area
+        ctx.drawImage(colorbarRender.canvas, (width - colorbarRender.width) / 2, height + cBarPad / 2, colorbarRender.width, colorbarRender.height)
+    }
 
     return canvas.toDataURL('image/png', 1.0)
 }
