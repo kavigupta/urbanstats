@@ -1,9 +1,9 @@
-// eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
-import Quill, { Parchment, Range } from 'quill'
-import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, RefObject, useContext, useRef } from 'react'
 
-import { QuillEditor } from '../../components/QuillEditor'
-import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
+import { RichTextEditor } from '../../components/RichTextEditor'
+import { Label } from '../../urban-stats-script/constants/label'
+import { Range } from '../../urban-stats-script/editor-utils'
+import { getAttribute, setAttribute } from '../../utils/AttributedText'
 import { Property } from '../../utils/Property'
 
 import { EditInsetsHandles } from './InsetMap'
@@ -27,26 +27,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
-    const quillRef = useRef<Quill>()
-
-    const [format, setFormat] = useState<{ size?: string, color?: string }>({})
-
-    useEffect(() => {
-        const quill = quillRef.current!
-        const listener = (): void => {
-            const currentSelection = quill.getSelection(false)
-            if (currentSelection !== null) {
-                const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
-                setFormat(currentFormat)
-            }
-        }
-        listener()
-        quill.on('editor-change', listener)
-        return () => {
-            quill.off('editor-change', listener)
-        }
-    }, [quillRef])
-
     return (
         <div
             style={{ position: 'absolute',
@@ -56,24 +36,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 height: `${(label.topRight[1] - label.bottomLeft[1]) * 100}%` }}
             ref={divRef}
         >
-            <QuillEditor
-                quillRef={quillRef}
-                editable={!!editLabel}
-                content={toQuillDelta(label.text)}
-                onTextChange={(delta) => {
-                    editLabel!.modify({ text: fromQuillDelta(delta) })
-                }}
-                selection={selection?.index === i ? selection.range : null}
-                onSelectionChange={(range) => {
-                    if (range !== null) {
-                        selectionProperty.value = { index: i, range }
-                    }
-                    else if (selectionProperty.value?.index === i) {
-                        selectionProperty.value = undefined
-                    }
-                }}
-                containerStyle={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}` }}
-            />
             <div
                 style={{
                     position: 'absolute',
@@ -85,8 +47,32 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     width: '100%',
                 }}
             >
+                <input
+                    type="color"
+                    value={getAttribute(label.text, selection?.index === i ? selection.range : null, 'color')}
+                    onChange={(e) => {
+                        if (selection?.index === i) {
+                            editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })
+                        }
+                    }}
+                    disabled={selection?.index !== i}
+                />
             </div>
-
+            <RichTextEditor
+                style={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}`, padding: '0.5em' }}
+                text={label.text}
+                setText={(newText) => { editLabel!.modify({ text: newText }) }}
+                selection={selection?.index === i ? selection.range : null}
+                setSelection={(range) => {
+                    if (range !== null) {
+                        selectionProperty.value = { index: i, range }
+                    }
+                    else if (selectionProperty.value?.index === i) {
+                        selectionProperty.value = undefined
+                    }
+                }}
+                editable={!!editLabel}
+            />
             { editLabel && (
                 <EditInsetsHandles
                     frame={[...label.bottomLeft, ...label.topRight]}
@@ -117,11 +103,3 @@ export interface Selection {
 
 // eslint-disable-next-line no-restricted-syntax -- React context
 export const SelectionContext = createContext(new Property<Selection | undefined>(undefined))
-
-const fontAttributor = Quill.import('attributors/style/font') as Parchment.Attributor
-fontAttributor.whitelist = undefined
-Quill.register(fontAttributor, true)
-
-const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
-sizeAttributor.whitelist = undefined
-Quill.register(sizeAttributor, true)

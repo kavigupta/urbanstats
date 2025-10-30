@@ -253,7 +253,7 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
     }
 }
 
-function styleToString(style: Record<string, string>): string {
+export function styleToString(style: Record<string, string>): string {
     return Object.entries(style).map(([key, value]) => `${key}:${value};`).join('')
 }
 
