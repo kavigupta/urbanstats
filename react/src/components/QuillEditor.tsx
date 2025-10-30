@@ -46,11 +46,10 @@ export interface QuillEditorProps {
     onTextChange: (delta: Delta) => void
     onSelectionChange: (range: Range | null) => void
     containerStyle?: CSSProperties
-    toolbar: string | false
     quillRef: React.MutableRefObject<Quill | undefined>
 }
 
-export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange, containerStyle, toolbar, quillRef }: QuillEditorProps): ReactNode {
+export function QuillEditor({ editable, content, selection, onTextChange, onSelectionChange, containerStyle, quillRef }: QuillEditorProps): ReactNode {
     const containerRef = useRef<HTMLDivElement>(null)
     const onTextChangeRef = useRef(onTextChange)
     const onSelectionChangeRef = useRef(onSelectionChange)
@@ -71,7 +70,7 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                 history: {
                     maxStack: 0, // We use our own undo manager
                 },
-                toolbar,
+                toolbar: false,
             },
         })
 
