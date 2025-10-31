@@ -98,6 +98,9 @@ export function nodeContent(node: Node): string {
         }
         return Array.from(node.childNodes).map(nodeContent).join('')
     }
+    else if (node instanceof HTMLDivElement) {
+        return '\n'
+    }
     else {
         return node.textContent ?? ''
     }

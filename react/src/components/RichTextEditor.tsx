@@ -1,11 +1,12 @@
 import '@fontsource/inconsolata/500.css'
 
+import stableStringify from 'json-stable-stringify'
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { colorThemes } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { getRange, Range, setRange, styleToString } from '../urban-stats-script/editor-utils'
-import { AttributedText, concat } from '../utils/AttributedText'
+import { AttributedText, defaultAttributes, TextSegment } from '../utils/AttributedText'
 import { TestUtils } from '../utils/TestUtils'
 
 interface Script {
@@ -13,24 +14,46 @@ interface Script {
 }
 
 function makeScript(text: AttributedText): Script {
-    if (text.length === 0) {
-        throw new Error('text length 0 unsupported')
-    }
-    const last = text[text.length - 1]
-    if (!last.string.endsWith('\n')) {
-        text = [...text.slice(0, text.length - 1), { ...last, string: `${last.string}\n` }]
-    }
+    // if (text.length === 0) {
+    //     return {
+    //         text: [
+    //             {
+    //                 string: '\n',
+    //                 attributes: defaultAttributes,
+    //             },
+    //         ],
+    //     }
+    // }
+    // const last = text[text.length - 1]
+    // if (!last.string.endsWith('\n')) {
+    //     text = [...text.slice(0, text.length - 1), { ...last, string: `${last.string}\n` }]
+    // }
     return { text }
 }
 
 function renderText(script: Script): Node[] {
-    return script.text.map((segment) => {
-        const span = document.createElement('span')
-        span.textContent = segment.string
-        span.style.color = segment.attributes.color
-        span.style.fontSize = `${segment.attributes.fontSize.pixels}px`
-        return span
-    })
+    console.log(script.text)
+    let line = document.createElement('div')
+    const result: Node[] = [line]
+    for (const segment of script.text) {
+        segment.string.split('\n').forEach((textLine, index, textLines) => {
+            const span = document.createElement('span')
+            span.style.color = segment.attributes.color
+            span.style.fontSize = `${segment.attributes.fontSize.pixels}px`
+            span.appendChild(document.createTextNode(textLine))
+            if (index === 0) {
+                line.appendChild(span)
+            }
+            else {
+                line.appendChild(document.createElement('br'))
+                line = document.createElement('div')
+                result.push(line)
+                line.appendChild(span)
+            }
+        })
+    }
+    line.appendChild(document.createElement('br'))
+    return result
 }
 
 export function createPlaceholder(): HTMLElement {
@@ -52,40 +75,101 @@ export function createPlaceholder(): HTMLElement {
     return result
 }
 
-function nodeContent(node: Node): AttributedText {
-    if (node instanceof HTMLSpanElement) {
-        if (!node.isContentEditable) {
-            return []
+function nodeContent(editor: HTMLDivElement): AttributedText {
+    const result: AttributedText = []
+    let deferred: { string: string, attributes: Partial<TextSegment['attributes']> }[] = []
+
+    let last: TextSegment | undefined
+
+    const push = (segment: TextSegment): void => {
+        if (last && stableStringify(last.attributes) === stableStringify(segment.attributes)) {
+            last.string += segment.string
         }
-        return [
-            {
-                string: node.textContent ?? '',
+        else {
+            result.push(segment)
+            last = segment
+        }
+    }
+
+    const helper = (node: Node): void => {
+        console.log(node)
+        if ('isContentEditable' in node && !node.isContentEditable) {
+            return
+        }
+        const style = 'style' in node ? node.style as HTMLElement['style'] : undefined
+        const color = style && (style.color === '' ? undefined : style.color)
+        const fontSize = style && parseFontSize(style.fontSize)
+
+        let nodeText = ''
+        if (node instanceof HTMLBRElement) {
+            nodeText = '\n'
+        }
+        else if (node.nodeType === Node.TEXT_NODE) {
+            nodeText = node.textContent ?? ''
+        }
+
+        if (last === undefined && (color === undefined || fontSize === undefined)) {
+            deferred.push({
+                string: nodeText,
                 attributes: {
-                    color: node.style.color,
-                    fontSize: parseFontSize(node.style.fontSize),
+                    color,
+                    fontSize,
                 },
-            },
-        ]
-    }
-    if (node instanceof HTMLElement) {
-        if (!node.isContentEditable) {
-            return []
+            })
         }
-        return concat(Array.from(node.childNodes).map(nodeContent))
+        else {
+            for (const defer of deferred) {
+                push({
+                    string: defer.string,
+                    attributes: {
+                        color: defer.attributes.color ?? color ?? last!.attributes.color,
+                        fontSize: defer.attributes.fontSize ?? fontSize ?? last!.attributes.fontSize,
+                    },
+                })
+            }
+            deferred = []
+            push({
+                string: nodeText,
+                attributes: {
+                    color: color ?? last!.attributes.color,
+                    fontSize: fontSize ?? last!.attributes.fontSize,
+                },
+            })
+        }
+
+        for (const child of Array.from(node.childNodes)) {
+            helper(child)
+        }
     }
-    else {
-        throw new Error(`unknown node ${node.nodeType}`)
+
+    for (const node of Array.from(editor.childNodes)) {
+        helper(node)
     }
+    if (deferred.length > 0) {
+        for (const defer of deferred) {
+            push({
+                string: defer.string,
+                attributes: {
+                    color: defer.attributes.color ?? defaultAttributes.color,
+                    fontSize: defer.attributes.fontSize ?? defaultAttributes.fontSize,
+                },
+            })
+        }
+    }
+    if (result.length > 0 && result[result.length - 1].string.endsWith('\n')) {
+        result[result.length - 1].string = result[result.length - 1].string.slice(0, result[result.length - 1].string.length - 1)
+    }
+    return result
 }
 
-function parseFontSize(string: string): { pixels: number } {
+function parseFontSize(string: string): { pixels: number } | undefined {
     if (string.endsWith('px')) {
         const pixels = parseFloat(string.slice(0, string.length - 2))
         if (isFinite(pixels)) {
             return { pixels }
         }
     }
-    throw new Error(`Invalid font size ${string}`)
+    return undefined
 }
 
 export function RichTextEditor(
@@ -109,9 +193,9 @@ export function RichTextEditor(
 
     const renderScript = useCallback((newScript: Script) => {
         const fragment = renderText(newScript)
-        if (newScript.text.length === 1 && newScript.text[0].string === '\n' && editable) {
-            fragment.push(createPlaceholder())
-        }
+        // if (newScript.text.length === 1 && newScript.text[0].string === '\n' && editable) {
+        //     fragment.push(createPlaceholder())
+        // }
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
@@ -173,7 +257,7 @@ export function RichTextEditor(
                 caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
             }}
             ref={editorRef}
-            contentEditable={editable ? 'plaintext-only' : 'false'}
+            contentEditable={editable ? 'true' : 'false'}
             spellCheck="false"
         />
     )

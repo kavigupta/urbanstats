@@ -1,3 +1,4 @@
+import Color from 'color'
 import React, { createContext, ReactNode, RefObject, useContext, useRef } from 'react'
 
 import { RichTextEditor } from '../../components/RichTextEditor'
@@ -27,6 +28,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
+    const colorValue = Color(getAttribute(label.text, selection?.index === i ? selection.range : null, 'color')).hex()
+
     return (
         <div
             style={{ position: 'absolute',
@@ -49,7 +52,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             >
                 <input
                     type="color"
-                    value={getAttribute(label.text, selection?.index === i ? selection.range : null, 'color')}
+                    value={colorValue}
                     onChange={(e) => {
                         if (selection?.index === i) {
                             editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })
