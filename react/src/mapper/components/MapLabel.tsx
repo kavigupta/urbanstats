@@ -44,74 +44,76 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 height: `${(label.topRight[1] - label.bottomLeft[1]) * 100}%` }}
             ref={divRef}
         >
-            <div
-                style={{
-                    position: 'absolute',
-                    bottom: '100%',
-                    backgroundColor: `${label.backgroundColor}aa`,
-                    border: `${label.borderWidth}px solid ${label.borderColor}`,
-                    borderRadius: '5px 5px 0 0',
-                    height: '50px',
-                    width: '100%',
-                    display: 'flex',
-                }}
-            >
-                {/* Color Picker */}
-                <IFrameInput
-                    type="color"
-                    value={Color(currentAttributes.color).hex()}
-                    onChange={(e) => {
-                        if (selection?.index === i) {
-                            editLabel?.modify({ text: setAttributes(label.text, selection.range, { color: e.target.value }) })
-                        }
+            {editLabel && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        backgroundColor: `${label.backgroundColor}aa`,
+                        border: `${label.borderWidth}px solid ${label.borderColor}`,
+                        borderRadius: '5px 5px 0 0',
+                        height: '50px',
+                        width: '100%',
+                        display: 'flex',
                     }}
-                    disabled={selection?.index !== i}
-                    onFocus={() => {
-                        // Don't allow stealing focus
-                        window.focus()
-                    }}
-                />
-
-                {/* Font Size Picker */}
-                <IFrameInput
-                    type="number"
-                    value={currentAttributes.fontSize.pixels}
-                    onChange={(e) => {
-                        if (selection?.index === i) {
-                            editLabel?.modify({ text: setAttributes(label.text, selection.range, { fontSize: { pixels: Number(e.target.value) } }) })
-                        }
-                    }}
-                    disabled={selection?.index !== i}
-                />
-
-                {/* Font Family Picker */}
-                <div style={{ width: '200px' }}>
-                    <BetterSelector
-                        iframe
-                        value={currentAttributes.fontFamily}
-                        onChange={(fontFamily) => {
+                >
+                    {/* Color Picker */}
+                    <IFrameInput
+                        type="color"
+                        value={Color(currentAttributes.color).hex()}
+                        onChange={(e) => {
                             if (selection?.index === i) {
-                                editLabel?.modify({ text: setAttributes(label.text, selection.range, { fontFamily }) })
-                                window.focus()
+                                editLabel.modify({ text: setAttributes(label.text, selection.range, { color: e.target.value }) })
                             }
                         }}
-                        possibleValues={['Jost', 'Times New Roman']}
-                        renderValue={v => ({
-                            text: v,
-                            node: highlighted => (
-                                <div style={{
-                                    fontFamily: v,
-                                    padding: '8px 12px',
-                                    backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
-                                }}
-                                >
-                                    {v}
-                                </div>
-                            ) })}
-                        inputStyle={{ fontFamily: currentAttributes.fontFamily }}
+                        disabled={selection?.index !== i}
+                        onFocus={() => {
+                        // Don't allow stealing focus
+                            window.focus()
+                        }}
                     />
+
+                    {/* Font Size Picker */}
+                    <IFrameInput
+                        type="number"
+                        value={currentAttributes.fontSize.pixels}
+                        onChange={(e) => {
+                            if (selection?.index === i) {
+                                editLabel.modify({ text: setAttributes(label.text, selection.range, { fontSize: { pixels: Number(e.target.value) } }) })
+                            }
+                        }}
+                        disabled={selection?.index !== i}
+                    />
+
+                    {/* Font Family Picker */}
+                    <div style={{ width: '200px' }}>
+                        <BetterSelector
+                            iframe
+                            value={currentAttributes.fontFamily}
+                            onChange={(fontFamily) => {
+                                if (selection?.index === i) {
+                                    editLabel.modify({ text: setAttributes(label.text, selection.range, { fontFamily }) })
+                                    window.focus()
+                                }
+                            }}
+                            possibleValues={['Jost', 'Times New Roman']}
+                            renderValue={v => ({
+                                text: v,
+                                node: highlighted => (
+                                    <div style={{
+                                        fontFamily: v,
+                                        padding: '8px 12px',
+                                        backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
+                                    }}
+                                    >
+                                        {v}
+                                    </div>
+                                ) })}
+                            inputStyle={{ fontFamily: currentAttributes.fontFamily }}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
             <RichTextEditor
                 style={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}`, padding: '0.5em' }}
                 text={label.text}

@@ -112,7 +112,7 @@ export function RichTextEditor(
 
     const colors = useColors()
 
-    const editorRef = useRef<HTMLDivElement | null>(null)
+    const editorRef = useRef<HTMLPreElement | null>(null)
 
     const renderScript = useCallback((newScript: Script) => {
         const fragment = renderText(newScript)
@@ -174,10 +174,11 @@ export function RichTextEditor(
     }, [colors, editScript, setText, setSelection])
 
     return (
-        <div
+        <pre
             style={{
                 ...style,
                 caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
+                margin: 0,
             }}
             ref={editorRef}
             contentEditable={editable ? 'plaintext-only' : 'false'}
