@@ -79,6 +79,10 @@ export function replaceSelection(range: Range, replacementLength: number): Range
     return { start: range.start, end: replacementLength + range.start }
 }
 
+export function getString(text: AttributedText): string {
+    return text.reduce((s, t) => s + t.string, '')
+}
+
 export function getAttributes(text: AttributedText, range: Range | null): TextSegment['attributes'] {
     if (text.length === 0) {
         throw new Error('getting attribute of empty text')
@@ -99,6 +103,10 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
 }
 
 export function setAttributes(text: AttributedText, range: Range, values: Partial<TextSegment['attributes']>): AttributedText {
+    // So that newlines don't get isolated
+    if (range.end < length(text) && getString(slice(text, { start: range.end, end: range.end + 1 })) === '\n') {
+        range = { start: range.start, end: range.end + 1 }
+    }
     return concat([
         slice(text, { start: 0, end: range.start }),
         slice(text, range).map(segment => ({ ...segment, attributes: { ...segment.attributes, ...values } })),
