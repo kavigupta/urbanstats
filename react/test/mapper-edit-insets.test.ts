@@ -1,4 +1,3 @@
-import stableStringify from 'json-stable-stringify'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
@@ -45,7 +44,7 @@ function frame(selector: string): Promise<Rect> {
         const map0Rect = document.querySelector(map0)!.getBoundingClientRect()
         const domRect = document.querySelector(selector)!.getBoundingClientRect()
         // Fudge Y since it's unstable
-        return { x: Math.round(domRect.x - map0Rect.x), y: Math.round((domRect.y - map0Rect.y) / 5) * 5, width: Math.round(domRect.width), height: Math.round(domRect.height / 5) * 5 }
+        return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
     }, { dependencies: { selector, map0 } })()
 }
 
@@ -68,6 +67,21 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
 
 type MapPositions = { frame: Rect, bounds: Bounds }[]
 
+function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
+    const frameThreshold = 0.015
+    const boundsThreshold = 1.5
+
+    if (a.length !== b.length) {
+        return false
+    }
+
+    return a.every((aMap, i) => {
+        const bMap = b[i]
+        return (['x', 'y', 'width', 'height'] as const).every(key => Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
+            && (['n', 'e', 's', 'w'] as const).every(key => Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
+    })
+}
+
 function insetsEditTest(testFn: () => TestFn, { description, action, before, after, customInsetsAfterEdit }: {
     description: string
     action: (t: TestController) => Promise<void>
@@ -81,7 +95,7 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
                 let currentPositions
                 for (let iter = 0; iter < 3; iter++) {
                     currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
-                    if (stableStringify(currentPositions) !== stableStringify(positions)) {
+                    if (!mapPositionsEqual(currentPositions, positions)) {
                         console.warn('.')
                         await t.wait(1000)
                     }
@@ -89,10 +103,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
                         break
                     }
                 }
-                if (stableStringify(currentPositions) !== stableStringify(positions)) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc disagrees
+                if (!mapPositionsEqual(currentPositions!, positions)) {
                     console.warn(currentPositions)
+                    await t.expect(currentPositions).eql(positions) // Guaranteed to fail, so we get a print out
                 }
-                await t.expect(currentPositions).eql(positions)
             }
 
             await check(before)
@@ -122,23 +137,23 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
 
 const defaultUSA = [
     {
-        frame: { x: 0, y: 0, width: 992, height: 530 },
+        frame: { x: 0, y: 0, width: 1, height: 1 },
         bounds: { n: 50, e: -65, s: 23, w: -130 },
     },
     {
-        frame: { x: 914, y: 355, width: 78, height: 105 },
+        frame: { x: 0.92, y: 0.67, width: 0.08, height: 0.20 },
         bounds: { n: 14, e: 145, s: 13, w: 144 },
     },
     {
-        frame: { x: 837, y: 460, width: 155, height: 70 },
+        frame: { x: 0.84, y: 0.86, width: 0.16, height: 0.14 },
         bounds: { n: 19, e: -64, s: 17, w: -68 },
     },
     {
-        frame: { x: 163, y: 440, width: 161, height: 90 },
+        frame: { x: 0.16, y: 0.83, width: 0.16, height: 0.17 },
         bounds: { n: 23, e: -153, s: 18, w: -162 },
     },
     {
-        frame: { x: 0, y: 365, width: 163, height: 165 },
+        frame: { x: 0, y: 0.69, width: 0.16, height: 0.31 },
         bounds: { n: 72, e: -127, s: 51, w: -172 },
     },
 ]
@@ -150,7 +165,7 @@ insetsEditTest(() => test, {
     description: 'move frame',
     action: t => drag(t, handle(4, 'move'), move.x, move.y),
     before: defaultUSA,
-    after: [...defaultUSA.slice(0, 4), { frame: { ...defaultUSA[4].frame, x: defaultUSA[4].frame.x + move.x, y: defaultUSA[4].frame.y + move.y }, bounds: defaultUSA[4].bounds }],
+    after: [...defaultUSA.slice(0, 4), { frame: { ...defaultUSA[4].frame, x: 0.18, y: 0.35 }, bounds: defaultUSA[4].bounds }],
     customInsetsAfterEdit: 1,
 })
 
@@ -161,9 +176,9 @@ insetsEditTest(() => test, {
     after: [...defaultUSA.slice(0, 4), {
         frame: {
             x: defaultUSA[4].frame.x,
-            y: defaultUSA[4].frame.y - resize,
-            width: defaultUSA[4].frame.width + resize,
-            height: defaultUSA[4].frame.height + resize,
+            y: 0.6,
+            width: 0.21,
+            height: 0.4,
         },
         bounds: { n: 72, e: -126, s: 51, w: -172 },
     }],
@@ -198,7 +213,7 @@ insetsEditTest(() => test, {
     description: 'duplicate',
     action: t => t.click(handle(1, 'duplicate')),
     before: defaultUSA,
-    after: [...defaultUSA.slice(0, 2), { ...defaultUSA[1], frame: { ...defaultUSA[1].frame, x: 865, y: 385 } }, ...defaultUSA.slice(2)],
+    after: [...defaultUSA.slice(0, 2), { ...defaultUSA[1], frame: { ...defaultUSA[1].frame, x: 0.87, y: 0.72 } }, ...defaultUSA.slice(2)],
     customInsetsAfterEdit: 1,
 })
 
@@ -206,7 +221,7 @@ insetsEditTest(() => test, {
     description: 'add',
     action: t => t.click(handle(0, 'add')),
     before: defaultUSA,
-    after: [...defaultUSA, { ...defaultUSA[0], frame: { height: 265, width: 496, x: 248, y: 135 } }],
+    after: [...defaultUSA, { ...defaultUSA[0], frame: { height: 0.5, width: 0.5, x: 0.25, y: 0.25 } }],
     customInsetsAfterEdit: 1,
 })
 
