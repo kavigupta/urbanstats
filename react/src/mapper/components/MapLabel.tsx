@@ -4,6 +4,7 @@ import { RichTextEditor } from '../../components/RichTextEditor'
 import { Label } from '../../urban-stats-script/constants/label'
 import { Range } from '../../urban-stats-script/editor-utils'
 import { getAttribute, setAttribute } from '../../utils/AttributedText'
+import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 
 import { EditInsetsHandles } from './InsetMap'
@@ -47,7 +48,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     width: '100%',
                 }}
             >
-                <input
+                <IFrameInput
                     type="color"
                     value={getAttribute(label.text, selection?.index === i ? selection.range : null, 'color')}
                     onChange={(e) => {
@@ -56,6 +57,10 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         }
                     }}
                     disabled={selection?.index !== i}
+                    onFocus={(e) => {
+                        // Don't allow stealin focus
+                        e.target.ownerDocument.defaultView?.parent.focus()
+                    }}
                 />
             </div>
             <RichTextEditor
