@@ -44,6 +44,7 @@ export type SettingsDictionary = {
     mobile_article_pointers: MobileArticlePointers
     juxtastatCompactEmoji: boolean
     syauRequireEnter: boolean
+    mapperSettingsColumnProp: number
 }
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
@@ -101,6 +102,7 @@ export const defaultSettingsList = [
     ['mobile_article_pointers', 'pointer_in_class'],
     ['juxtastatCompactEmoji', false],
     ['syauRequireEnter', false],
+    ['mapperSettingsColumnProp', 0.3],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings
