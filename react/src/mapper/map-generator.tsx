@@ -229,11 +229,10 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
                 <div
                     ref={mapsContainerRef}
                     style={{
-                        width: '100%',
-                        minHeight: '300px',
                         aspectRatio,
                         position: 'relative',
                         maxHeight: '100%',
+                        margin: 'auto',
                     }}
                 >
                     {maps}
