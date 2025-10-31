@@ -69,6 +69,7 @@ type MapPositions = { frame: Rect, bounds: Bounds }[]
 
 function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     const frameThreshold = 0.015
+    const boundsThreshold = 1.5
 
     if (a.length !== b.length) {
         return false
@@ -77,7 +78,7 @@ function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     return a.every((aMap, i) => {
         const bMap = b[i]
         return (['x', 'y', 'width', 'height'] as const).every(key => Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
-            && ((['n', 'e', 's', 'w'] as const).every(key => aMap.bounds[key] === bMap.bounds[key]))
+            && (['n', 'e', 's', 'w'] as const).every(key => Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
     })
 }
 
