@@ -122,6 +122,10 @@ input[type=text] {
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
+input[type=text]:disabled {
+    opacity: 0.5;
+}
+
 .syau-searchbox::placeholder {
     color: var(--text-main)
 }

@@ -110,6 +110,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                     </div>
                                 ) })}
                             inputStyle={{ fontFamily: currentAttributes.fontFamily }}
+                            disabled={selection?.index !== i}
                         />
                     </div>
                 </div>

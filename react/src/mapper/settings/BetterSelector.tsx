@@ -46,7 +46,7 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     )
 }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false, inputStyle }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false, inputStyle, disabled = false }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
@@ -54,6 +54,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     onEdit?: () => void
     iframe?: boolean
     inputStyle?: CSSProperties
+    disabled?: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -178,6 +179,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     fontSize: '14px',
                     ...inputStyle,
                 }}
+                disabled={disabled}
             />
             {onEdit && <PencilButton onEdit={onEdit} />}
             {isOpen && sortedOptions.length > 0 && (
