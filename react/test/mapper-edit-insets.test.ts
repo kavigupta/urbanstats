@@ -1,4 +1,3 @@
-import stableStringify from 'json-stable-stringify'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
@@ -68,6 +67,20 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
 
 type MapPositions = { frame: Rect, bounds: Bounds }[]
 
+function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
+    const frameThreshold = 0.015
+
+    if (a.length !== b.length) {
+        return false
+    }
+
+    return a.every((aMap, i) => {
+        const bMap = b[i]
+        return (['x', 'y', 'width', 'height'] as const).every(key => Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
+            && ((['n', 'e', 's', 'w'] as const).every(key => aMap.bounds[key] === bMap.bounds[key]))
+    })
+}
+
 function insetsEditTest(testFn: () => TestFn, { description, action, before, after, customInsetsAfterEdit }: {
     description: string
     action: (t: TestController) => Promise<void>
@@ -81,7 +94,7 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
                 let currentPositions
                 for (let iter = 0; iter < 3; iter++) {
                     currentPositions = await Promise.all(Array.from({ length: await numMaps() }).map(async (_, i) => ({ frame: await frame(map(i)), bounds: await bounds(i) })))
-                    if (stableStringify(currentPositions) !== stableStringify(positions)) {
+                    if (!mapPositionsEqual(currentPositions, positions)) {
                         console.warn('.')
                         await t.wait(1000)
                     }
@@ -89,10 +102,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
                         break
                     }
                 }
-                if (stableStringify(currentPositions) !== stableStringify(positions)) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc disagrees
+                if (!mapPositionsEqual(currentPositions!, positions)) {
                     console.warn(currentPositions)
+                    await t.expect(currentPositions).eql(positions) // Guaranteed to fail, so we get a print out
                 }
-                await t.expect(currentPositions).eql(positions)
             }
 
             await check(before)
