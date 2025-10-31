@@ -9,6 +9,7 @@ export interface TextSegment {
     attributes: {
         color: string
         fontSize: { pixels: number }
+        fontFamily: string
     }
 }
 
@@ -83,7 +84,7 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
         throw new Error('getting attribute of empty text')
     }
 
-    if (range === null) {
+    if (range === null || range.end === length(text)) {
         return text[text.length - 1].attributes
     }
 
@@ -97,10 +98,10 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
     throw new Error(`range end ${range.end} out of range of text length ${length(text)}`)
 }
 
-export function setAttribute<K extends keyof TextSegment['attributes']>(text: AttributedText, range: Range, attribute: K, value: TextSegment['attributes'][K]): AttributedText {
+export function setAttributes(text: AttributedText, range: Range, values: Partial<TextSegment['attributes']>): AttributedText {
     return concat([
         slice(text, { start: 0, end: range.start }),
-        slice(text, range).map(segment => ({ ...segment, attributes: { ...segment.attributes, [attribute]: value } })),
+        slice(text, range).map(segment => ({ ...segment, attributes: { ...segment.attributes, ...values } })),
         slice(text, { start: range.end, end: length(text) }),
     ])
 }

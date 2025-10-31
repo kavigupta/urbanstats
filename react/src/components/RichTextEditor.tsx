@@ -29,6 +29,7 @@ function renderText(script: Script): Node[] {
         span.textContent = segment.string
         span.style.color = segment.attributes.color
         span.style.fontSize = `${segment.attributes.fontSize.pixels}px`
+        span.style.fontFamily = segment.attributes.fontFamily
         return span
     })
 }
@@ -63,6 +64,7 @@ function nodeContent(node: Node, requireContentEditable: boolean): AttributedTex
                 attributes: {
                     color: node.style.color,
                     fontSize: parseFontSize(node.style.fontSize),
+                    fontFamily: parseFontFamily(node.style.fontFamily),
                 },
             },
         ]
@@ -86,6 +88,11 @@ function parseFontSize(string: string): { pixels: number } {
         }
     }
     throw new Error(`Invalid font size ${string}`)
+}
+
+function parseFontFamily(stirng: string): string {
+    // contenteditable sometiems puts quotes, we should remove them
+    return stirng.replace(/(^")|("$)/g, '')
 }
 
 export function RichTextEditor(

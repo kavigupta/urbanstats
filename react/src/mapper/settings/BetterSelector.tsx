@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
+import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties } from 'react'
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
@@ -46,13 +46,14 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     )
 }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false, inputStyle }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
     onEdit?: () => void
     iframe?: boolean
+    inputStyle?: CSSProperties
 }): ReactNode {
     const colors = useColors()
 
@@ -175,6 +176,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     border: `1px solid ${colors.ordinalTextColor}`,
                     borderRadius: '4px',
                     fontSize: '14px',
+                    ...inputStyle,
                 }}
             />
             {onEdit && <PencilButton onEdit={onEdit} />}

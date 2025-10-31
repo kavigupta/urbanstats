@@ -2,11 +2,13 @@ import Color from 'color'
 import React, { createContext, ReactNode, RefObject, useContext, useRef } from 'react'
 
 import { RichTextEditor } from '../../components/RichTextEditor'
+import { useColors } from '../../page_template/colors'
 import { Label } from '../../urban-stats-script/constants/label'
 import { Range } from '../../urban-stats-script/editor-utils'
-import { getAttributes, setAttribute } from '../../utils/AttributedText'
+import { getAttributes, setAttributes } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
+import { BetterSelector } from '../settings/BetterSelector'
 
 import { EditInsetsHandles } from './InsetMap'
 
@@ -31,6 +33,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const currentAttributes = getAttributes(label.text, selection?.index === i ? selection.range : null)
 
+    const colors = useColors()
+
     return (
         <div
             style={{ position: 'absolute',
@@ -49,6 +53,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     borderRadius: '5px 5px 0 0',
                     height: '50px',
                     width: '100%',
+                    display: 'flex',
                 }}
             >
                 {/* Color Picker */}
@@ -57,7 +62,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     value={Color(currentAttributes.color).hex()}
                     onChange={(e) => {
                         if (selection?.index === i) {
-                            editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })
+                            editLabel?.modify({ text: setAttributes(label.text, selection.range, { color: e.target.value }) })
                         }
                     }}
                     disabled={selection?.index !== i}
@@ -73,11 +78,39 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     value={currentAttributes.fontSize.pixels}
                     onChange={(e) => {
                         if (selection?.index === i) {
-                            editLabel?.modify({ text: setAttribute(label.text, selection.range, 'fontSize', { pixels: Number(e.target.value) }) })
+                            editLabel?.modify({ text: setAttributes(label.text, selection.range, { fontSize: { pixels: Number(e.target.value) } }) })
                         }
                     }}
                     disabled={selection?.index !== i}
                 />
+
+                {/* Font Family Picker */}
+                <div style={{ width: '200px' }}>
+                    <BetterSelector
+                        iframe
+                        value={currentAttributes.fontFamily}
+                        onChange={(fontFamily) => {
+                            if (selection?.index === i) {
+                                editLabel?.modify({ text: setAttributes(label.text, selection.range, { fontFamily }) })
+                                window.focus()
+                            }
+                        }}
+                        possibleValues={['Jost', 'Times New Roman']}
+                        renderValue={v => ({
+                            text: v,
+                            node: highlighted => (
+                                <div style={{
+                                    fontFamily: v,
+                                    padding: '8px 12px',
+                                    backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
+                                }}
+                                >
+                                    {v}
+                                </div>
+                            ) })}
+                        inputStyle={{ fontFamily: currentAttributes.fontFamily }}
+                    />
+                </div>
             </div>
             <RichTextEditor
                 style={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}`, padding: '0.5em' }}
