@@ -1,4 +1,5 @@
-import { colorThemes } from '../page_template/color-themes'
+import stableStringify from 'json-stable-stringify'
+
 import { Range } from '../urban-stats-script/editor-utils'
 
 export type AttributedText = TextSegment[]
@@ -11,18 +12,28 @@ export interface TextSegment {
     }
 }
 
+export function concat(texts: AttributedText[]): AttributedText {
+    const result: AttributedText = []
+    for (const text of texts) {
+        for (const segment of text) {
+            if (result.length > 0 && stableStringify(result[result.length - 1].attributes) === stableStringify(segment.attributes)) {
+                result[result.length - 1].string = result[result.length - 1].string + segment.string
+            }
+            else {
+                result.push(segment)
+            }
+        }
+    }
+    return result
+}
+
 export function length(text: AttributedText): number {
     return text.reduce((l, t) => l + t.string.length, 0)
 }
 
-export const defaultAttributes: TextSegment['attributes'] = {
-    color: colorThemes['Light Mode'].textMain,
-    fontSize: { pixels: 16 },
-}
-
 export function getAttribute<K extends keyof TextSegment['attributes']>(text: AttributedText, range: Range | null, attribute: K): TextSegment['attributes'][K] {
     if (text.length === 0) {
-        return defaultAttributes[attribute]
+        throw new Error('getting attribute of empty text')
     }
     if (range === null) {
         return text[text.length - 1].attributes[attribute]
