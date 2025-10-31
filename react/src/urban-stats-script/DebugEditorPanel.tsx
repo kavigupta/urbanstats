@@ -13,7 +13,10 @@ import { useUndoRedo } from './editor-utils'
 const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
-    text: [{ string: 'Hello, World!', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { pixels: 16 } } }],
+    text: [
+        { string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { pixels: 16 } } },
+        { string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { pixels: 16 } } },
+    ],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,

@@ -1,3 +1,4 @@
+import Color from 'color'
 import React, { createContext, ReactNode, RefObject, useContext, useRef } from 'react'
 
 import { RichTextEditor } from '../../components/RichTextEditor'
@@ -50,7 +51,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             >
                 <IFrameInput
                     type="color"
-                    value={getAttributes(label.text, selection?.index === i ? selection.range : null).color}
+                    value={Color(getAttributes(label.text, selection?.index === i ? selection.range : null).color).hex()}
                     onChange={(e) => {
                         if (selection?.index === i) {
                             editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })

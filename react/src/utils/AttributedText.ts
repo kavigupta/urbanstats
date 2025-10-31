@@ -82,6 +82,7 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
     if (text.length === 0) {
         throw new Error('getting attribute of empty text')
     }
+
     if (range === null) {
         return text[text.length - 1].attributes
     }
