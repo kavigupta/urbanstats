@@ -90,7 +90,7 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
     let i = 0
     for (const segment of text) {
         i += segment.string.length
-        if (i >= range.start) {
+        if (i > range.start) {
             return segment.attributes
         }
     }

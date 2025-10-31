@@ -29,6 +29,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
+    const currentAttributes = getAttributes(label.text, selection?.index === i ? selection.range : null)
+
     return (
         <div
             style={{ position: 'absolute',
@@ -49,9 +51,10 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     width: '100%',
                 }}
             >
+                {/* Color Picker */}
                 <IFrameInput
                     type="color"
-                    value={Color(getAttributes(label.text, selection?.index === i ? selection.range : null).color).hex()}
+                    value={Color(currentAttributes.color).hex()}
                     onChange={(e) => {
                         if (selection?.index === i) {
                             editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })
@@ -62,6 +65,18 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         // Don't allow stealing focus
                         window.focus()
                     }}
+                />
+
+                {/* Font Size Picker */}
+                <IFrameInput
+                    type="number"
+                    value={currentAttributes.fontSize.pixels}
+                    onChange={(e) => {
+                        if (selection?.index === i) {
+                            editLabel?.modify({ text: setAttribute(label.text, selection.range, 'fontSize', { pixels: Number(e.target.value) }) })
+                        }
+                    }}
+                    disabled={selection?.index !== i}
                 />
             </div>
             <RichTextEditor
