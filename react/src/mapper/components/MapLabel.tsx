@@ -3,7 +3,7 @@ import React, { createContext, ReactNode, RefObject, useContext, useRef } from '
 import { RichTextEditor } from '../../components/RichTextEditor'
 import { Label } from '../../urban-stats-script/constants/label'
 import { Range } from '../../urban-stats-script/editor-utils'
-import { getAttribute, setAttribute } from '../../utils/AttributedText'
+import { getAttributes, setAttribute } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 
@@ -50,16 +50,16 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             >
                 <IFrameInput
                     type="color"
-                    value={getAttribute(label.text, selection?.index === i ? selection.range : null, 'color')}
+                    value={getAttributes(label.text, selection?.index === i ? selection.range : null).color}
                     onChange={(e) => {
                         if (selection?.index === i) {
                             editLabel?.modify({ text: setAttribute(label.text, selection.range, 'color', e.target.value) })
                         }
                     }}
                     disabled={selection?.index !== i}
-                    onFocus={(e) => {
-                        // Don't allow stealin focus
-                        e.target.ownerDocument.defaultView?.parent.focus()
+                    onFocus={() => {
+                        // Don't allow stealing focus
+                        window.focus()
                     }}
                 />
             </div>

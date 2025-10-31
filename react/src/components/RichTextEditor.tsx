@@ -5,7 +5,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRe
 import { colorThemes } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { getRange, Range, setRange, styleToString } from '../urban-stats-script/editor-utils'
-import { AttributedText, concat } from '../utils/AttributedText'
+import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection } from '../utils/AttributedText'
 import { TestUtils } from '../utils/TestUtils'
 
 interface Script {
@@ -52,9 +52,9 @@ export function createPlaceholder(): HTMLElement {
     return result
 }
 
-function nodeContent(node: Node): AttributedText {
+function nodeContent(node: Node, requireContentEditable: boolean): AttributedText {
     if (node instanceof HTMLSpanElement) {
-        if (!node.isContentEditable) {
+        if (requireContentEditable && !node.isContentEditable) {
             return []
         }
         return [
@@ -68,10 +68,10 @@ function nodeContent(node: Node): AttributedText {
         ]
     }
     if (node instanceof HTMLElement) {
-        if (!node.isContentEditable) {
+        if (requireContentEditable && !node.isContentEditable) {
             return []
         }
-        return concat(Array.from(node.childNodes).map(nodeContent))
+        return concat(Array.from(node.childNodes).map(child => nodeContent(child, requireContentEditable)))
     }
     else {
         throw new Error(`unknown node ${node.nodeType}`)
@@ -158,7 +158,7 @@ export function RichTextEditor(
         const editor = editorRef.current!
         const listener = (): void => {
             const range = getRange(editor)
-            const newScript = makeScript(nodeContent(editor))
+            const newScript = makeScript(nodeContent(editor, true))
             setText(newScript.text)
             setSelection(range)
         }
@@ -175,6 +175,37 @@ export function RichTextEditor(
             ref={editorRef}
             contentEditable={editable ? 'plaintext-only' : 'false'}
             spellCheck="false"
+            onPaste={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+
+                if (selection === null) {
+                    console.warn('Pasting with no selection. (How did this happen?)')
+                    return
+                }
+
+                let pastedText: AttributedText | undefined
+
+                if (e.clipboardData.types.includes('text/html')) {
+                    const html = e.clipboardData.getData('text/html')
+                    try {
+                        const fragment = new DOMParser().parseFromString(html, 'text/html')
+                        pastedText = nodeContent(fragment.body, false)
+                    }
+                    catch {
+                        console.warn('Parsing HTML for paste failed')
+                    }
+                }
+
+                if (pastedText === undefined && e.clipboardData.types.includes('text/plain')) {
+                    const plain = e.clipboardData.getData('text/plain')
+                    pastedText = [{ string: plain, attributes: getAttributes(script.text, selection) }]
+                }
+
+                if (pastedText !== undefined) {
+                    editScript(replaceRange(script.text, selection, pastedText), replaceSelection(selection, length(pastedText)))
+                }
+            }}
         />
     )
 }

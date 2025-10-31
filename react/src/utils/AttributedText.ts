@@ -31,52 +31,29 @@ export function length(text: AttributedText): number {
     return text.reduce((l, t) => l + t.string.length, 0)
 }
 
-export function getAttribute<K extends keyof TextSegment['attributes']>(text: AttributedText, range: Range | null, attribute: K): TextSegment['attributes'][K] {
-    if (text.length === 0) {
-        throw new Error('getting attribute of empty text')
-    }
-    if (range === null) {
-        return text[text.length - 1].attributes[attribute]
-    }
-
-    let i = 0
-    for (const segment of text) {
-        i += segment.string.length
-        if (i >= range.end) {
-            return segment.attributes[attribute]
-        }
-    }
-    throw new Error(`range end ${range.end} out of range of text length ${length(text)} when getting attribute ${attribute}`)
-}
-
-export function setAttribute<K extends keyof TextSegment['attributes']>(text: AttributedText, range: Range, attribute: K, value: TextSegment['attributes'][K]): AttributedText {
+export function slice(text: AttributedText, range: Range): AttributedText {
     let i = 0
     const result: AttributedText = []
     for (const segment of text) {
         const segmentRange = { start: i, end: i + segment.string.length }
         if (range.start >= segmentRange.end || range.end <= segmentRange.start) {
             // no intersection
-            result.push(segment)
         }
         else if (range.start <= segmentRange.start && range.end >= segmentRange.end) {
-            // we change the whole segment
-            result.push({ string: segment.string, attributes: { ...segment.attributes, [attribute]: value } })
+            // whole segment is in range
+            result.push(segment)
         }
         else if (range.start <= segmentRange.start && range.end < segmentRange.end) {
             // we just get the beginning range of the segment
-            result.push({ string: segment.string.slice(0, range.end - i), attributes: { ...segment.attributes, [attribute]: value } })
-            result.push({ string: segment.string.slice(range.end - i), attributes: segment.attributes })
+            result.push({ string: segment.string.slice(0, range.end - i), attributes: segment.attributes })
         }
         else if (range.start > segmentRange.start && range.end >= segmentRange.end) {
             // we just get the end of the segment
-            result.push({ string: segment.string.slice(0, range.start - i), attributes: segment.attributes })
-            result.push({ string: segment.string.slice(range.start - i), attributes: { ...segment.attributes, [attribute]: value } })
+            result.push({ string: segment.string.slice(range.start - i), attributes: segment.attributes })
         }
         else if (range.start > segmentRange.start && range.end < segmentRange.end) {
             // we're clipping the middle of the segment
-            result.push({ string: segment.string.slice(0, range.start - i), attributes: segment.attributes })
-            result.push({ string: segment.string.slice(range.start - i, range.end - i), attributes: { ...segment.attributes, [attribute]: value } })
-            result.push({ string: segment.string.slice(range.end - i), attributes: segment.attributes })
+            result.push({ string: segment.string.slice(range.start - i, range.end - i), attributes: segment.attributes })
         }
         else {
             throw new Error(`unhandled case ${JSON.stringify(range)} ${JSON.stringify(segmentRange)}`)
@@ -84,4 +61,45 @@ export function setAttribute<K extends keyof TextSegment['attributes']>(text: At
         i += segment.string.length
     }
     return result
+}
+
+export function replaceRange(dest: AttributedText, range: Range, src: AttributedText): AttributedText {
+    return concat([
+        slice(dest, { start: 0, end: range.start }),
+        src,
+        slice(dest, { start: range.end, end: length(dest) }),
+    ])
+}
+
+export function replaceSelection(range: Range, replacementLength: number): Range {
+    if (range.start === range.end) {
+        return { start: range.start + replacementLength, end: range.end + replacementLength }
+    }
+    return { start: range.start, end: replacementLength + range.start }
+}
+
+export function getAttributes(text: AttributedText, range: Range | null): TextSegment['attributes'] {
+    if (text.length === 0) {
+        throw new Error('getting attribute of empty text')
+    }
+    if (range === null) {
+        return text[text.length - 1].attributes
+    }
+
+    let i = 0
+    for (const segment of text) {
+        i += segment.string.length
+        if (i >= range.start) {
+            return segment.attributes
+        }
+    }
+    throw new Error(`range end ${range.end} out of range of text length ${length(text)}`)
+}
+
+export function setAttribute<K extends keyof TextSegment['attributes']>(text: AttributedText, range: Range, attribute: K, value: TextSegment['attributes'][K]): AttributedText {
+    return concat([
+        slice(text, { start: 0, end: range.start }),
+        slice(text, range).map(segment => ({ ...segment, attributes: { ...segment.attributes, [attribute]: value } })),
+        slice(text, { start: range.end, end: length(text) }),
+    ])
 }
