@@ -95,6 +95,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         }}
                         disabled={selection?.index !== i}
                         onFocus={refocus}
+                        onBlur={() => {
+                            setTimeout(refocus, 100)
+                        }}
                     />
 
                     {/* Font Size Picker */}
