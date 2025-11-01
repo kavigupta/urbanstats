@@ -129,12 +129,34 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     {/* Bold */}
                     <IFrameInput
                         type="button"
-                        value="𝐁"
+                        value="B"
                         onClick={() => {
                             maybeModifyAttributes({ fontWeight: cursorAttributes.fontWeight === 'normal' ? 'bold' : 'normal' })
                         }}
                         disabled={selection?.index !== i}
-                        style={{ color: cursorAttributes.fontWeight === 'bold' ? colors.hueColors.blue : colors.textMain }}
+                        style={{ fontWeight: cursorAttributes.fontWeight }}
+                    />
+
+                    {/* Italic */}
+                    <IFrameInput
+                        type="button"
+                        value="I"
+                        onClick={() => {
+                            maybeModifyAttributes({ fontStyle: cursorAttributes.fontStyle === 'normal' ? 'italic' : 'normal' })
+                        }}
+                        disabled={selection?.index !== i}
+                        style={{ fontStyle: cursorAttributes.fontStyle }}
+                    />
+
+                    {/* Underline */}
+                    <IFrameInput
+                        type="button"
+                        value="U"
+                        onClick={() => {
+                            maybeModifyAttributes({ textDecoration: cursorAttributes.textDecoration === 'none' ? 'underline' : 'none' })
+                        }}
+                        disabled={selection?.index !== i}
+                        style={{ textDecoration: cursorAttributes.textDecoration }}
                     />
                 </div>
             )}
