@@ -30,16 +30,20 @@ function renderText(script: Script, mjPromise: MathJaxSubscriberProps | undefine
                 break
             case 'formula':
                 assert(mjPromise?.version === 3, 'MathJax 3 context must be present to render formulas')
-                span.textContent = `\\(${segment.formula}\\)`
+                const mathSpan = document.createElement('span')
+                mathSpan.textContent = `\\(${segment.formula}\\)`
                 void mjPromise.promise.then(mathJax =>
                     mathJax.startup.promise.then(() => {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
-                        mathJax.typesetClear([span])
+                        mathJax.typesetClear([mathSpan])
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
-                        mathJax.typesetPromise([span])
+                        mathJax.typesetPromise([mathSpan])
                     }),
                 )
-                span.contentEditable = 'false'
+                mathSpan.contentEditable = 'false'
+                span.appendChild(mathSpan)
+                span.appendChild(document.createTextNode('\u200b')) // So that we register as one character long
+                span.setAttribute('data-formula', segment.formula)
                 break
         }
         span.style.color = segment.attributes.color
@@ -71,24 +75,37 @@ export function createPlaceholder(colors: Colors): HTMLElement {
     return result
 }
 
+function getStyle(span: HTMLSpanElement): StringAttributes {
+    return {
+        color: span.style.color,
+        fontSize: parseFontSize(span.style.fontSize),
+        fontFamily: parseFontFamily(span.style.fontFamily),
+        fontStyle: stringAttributeSchemas.fontStyle.parse(span.style.fontStyle),
+        fontWeight: stringAttributeSchemas.fontWeight.parse(span.style.fontWeight),
+        textDecoration: stringAttributeSchemas.textDecoration.parse(span.style.textDecoration),
+    }
+}
+
 function nodeContent(node: Node, requireContentEditable: boolean): AttributedText {
     if (node instanceof HTMLSpanElement) {
         if (requireContentEditable && !node.isContentEditable) {
-            // TODO: Read back formulas
             return []
+        }
+        let formula
+        if ((formula = node.getAttribute('data-formula'))) {
+            return [
+                {
+                    kind: 'formula',
+                    formula,
+                    attributes: getStyle(node),
+                },
+            ]
         }
         return [
             {
                 kind: 'string',
                 string: node.textContent ?? '',
-                attributes: {
-                    color: node.style.color,
-                    fontSize: parseFontSize(node.style.fontSize),
-                    fontFamily: parseFontFamily(node.style.fontFamily),
-                    fontStyle: stringAttributeSchemas.fontStyle.parse(node.style.fontStyle),
-                    fontWeight: stringAttributeSchemas.fontWeight.parse(node.style.fontWeight),
-                    textDecoration: stringAttributeSchemas.textDecoration.parse(node.style.textDecoration),
-                },
+                attributes: getStyle(node),
             },
         ]
     }

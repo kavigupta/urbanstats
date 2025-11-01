@@ -16,7 +16,8 @@ const newLabel: Label = {
     topRight: [0.75, 0.75],
     text: [
         { kind: 'string', string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
-        { kind: 'string', string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Times New Roman', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
+        { kind: 'formula', formula: 'x^2', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
+        { kind: 'string', string: '\nHello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Times New Roman', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
     ],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
