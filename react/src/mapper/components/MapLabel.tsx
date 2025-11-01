@@ -5,7 +5,7 @@ import { RichTextEditor } from '../../components/RichTextEditor'
 import { useColors } from '../../page_template/colors'
 import { Label } from '../../urban-stats-script/constants/label'
 import { Range } from '../../urban-stats-script/editor-utils'
-import { getAttributes, setAttributes, TextAttributes } from '../../utils/AttributedText'
+import { concat, getAttributes, length, setAttributes, slice, StringAttributes } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 import { BetterSelector } from '../settings/BetterSelector'
@@ -31,7 +31,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
-    const getCursorAttributes = useCallback((): TextAttributes => {
+    const getCursorAttributes = useCallback((): StringAttributes => {
         return getAttributes(label.text, selection?.index === i ? selection.range : null)
     }, [label.text, selection, i])
 
@@ -43,7 +43,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const colors = useColors()
 
-    const maybeModifyAttributes = (newAttribs: Partial<TextAttributes>): void => {
+    const maybeModifyAttributes = (newAttribs: Partial<StringAttributes>): void => {
         if (editLabel && selection?.index === i) {
             if (selection.range.start !== selection.range.end) {
                 editLabel.modify({ text: setAttributes(label.text, selection.range, newAttribs) })
@@ -95,7 +95,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         type="number"
                         value={cursorAttributes.fontSize.pixels}
                         onChange={(e) => {
-                            maybeModifyAttributes({ fontSize: { pixels: Number(e.target.value) } })
+                            maybeModifyAttributes({ fontSize: { kind: 'pixels', pixels: Number(e.target.value) } })
                         }}
                         disabled={selection?.index !== i}
                     />
@@ -154,6 +154,28 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         value="U"
                         onClick={() => {
                             maybeModifyAttributes({ textDecoration: cursorAttributes.textDecoration === 'none' ? 'underline' : 'none' })
+                        }}
+                        disabled={selection?.index !== i}
+                        style={{ textDecoration: cursorAttributes.textDecoration }}
+                    />
+
+                    {/* Formula */}
+                    <IFrameInput
+                        type="button"
+                        value="Formula"
+                        onClick={() => {
+                            if (selection?.index === i) {
+                                const formula = prompt('Enter formula')
+                                if (formula) {
+                                    editLabel.modify({
+                                        text: concat([
+                                            slice(label.text, { start: 0, end: selection.range.start }),
+                                            [{ kind: 'formula', formula, attributes: getAttributes(label.text, selection.range) }],
+                                            slice(label.text, { start: selection.range.end, end: length(label.text) }),
+                                        ]),
+                                    })
+                                }
+                            }
                         }}
                         disabled={selection?.index !== i}
                         style={{ textDecoration: cursorAttributes.textDecoration }}

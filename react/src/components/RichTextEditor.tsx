@@ -1,32 +1,47 @@
 import '@fontsource/inconsolata/500.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
+import { MathJaxBaseContext, MathJaxSubscriberProps } from 'better-react-mathjax'
+import React, { CSSProperties, ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { getRange, Range, setRange, styleToString } from '../urban-stats-script/editor-utils'
-import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection, setAttributes, TextAttributes, textAttributeSchemas } from '../utils/AttributedText'
+import { AttributedText, charAt, concat, getAttributes, length, replaceRange, replaceSelection, setAttributes, StringAttributes, stringAttributeSchemas } from '../utils/AttributedText'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 
 interface Script {
     text: AttributedText
 }
 
 function makeScript(text: AttributedText): Script {
-    if (text.length === 0) {
-        throw new Error('text length 0 unsupported')
-    }
-    const last = text[text.length - 1]
-    if (!last.string.endsWith('\n')) {
-        text = [...text.slice(0, text.length - 1), { ...last, string: `${last.string}\n` }]
+    if (charAt(text, length(text) - 1) !== '\n') {
+        text = concat([text, [{ kind: 'string', attributes: getAttributes(text, null), string: '\n' }]])
     }
     return { text }
 }
 
-function renderText(script: Script): Node[] {
+function renderText(script: Script, mjPromise: MathJaxSubscriberProps | undefined): Node[] {
     return script.text.map((segment) => {
         const span = document.createElement('span')
-        span.textContent = segment.string
+        switch (segment.kind) {
+            case 'string':
+                span.textContent = segment.string
+                break
+            case 'formula':
+                assert(mjPromise?.version === 3, 'MathJax 3 context must be present to render formulas')
+                span.textContent = `\\(${segment.formula}\\)`
+                void mjPromise.promise.then(mathJax =>
+                    mathJax.startup.promise.then(() => {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
+                        mathJax.typesetClear([span])
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
+                        mathJax.typesetPromise([span])
+                    }),
+                )
+                span.contentEditable = 'false'
+                break
+        }
         span.style.color = segment.attributes.color
         span.style.fontSize = `${segment.attributes.fontSize.pixels}px`
         span.style.fontFamily = segment.attributes.fontFamily
@@ -59,18 +74,20 @@ export function createPlaceholder(colors: Colors): HTMLElement {
 function nodeContent(node: Node, requireContentEditable: boolean): AttributedText {
     if (node instanceof HTMLSpanElement) {
         if (requireContentEditable && !node.isContentEditable) {
+            // TODO: Read back formulas
             return []
         }
         return [
             {
+                kind: 'string',
                 string: node.textContent ?? '',
                 attributes: {
                     color: node.style.color,
                     fontSize: parseFontSize(node.style.fontSize),
                     fontFamily: parseFontFamily(node.style.fontFamily),
-                    fontStyle: textAttributeSchemas.fontStyle.parse(node.style.fontStyle),
-                    fontWeight: textAttributeSchemas.fontWeight.parse(node.style.fontWeight),
-                    textDecoration: textAttributeSchemas.textDecoration.parse(node.style.textDecoration),
+                    fontStyle: stringAttributeSchemas.fontStyle.parse(node.style.fontStyle),
+                    fontWeight: stringAttributeSchemas.fontWeight.parse(node.style.fontWeight),
+                    textDecoration: stringAttributeSchemas.textDecoration.parse(node.style.textDecoration),
                 },
             },
         ]
@@ -86,11 +103,11 @@ function nodeContent(node: Node, requireContentEditable: boolean): AttributedTex
     }
 }
 
-function parseFontSize(string: string): { pixels: number } {
+function parseFontSize(string: string): { kind: 'pixels', pixels: number } {
     if (string.endsWith('px')) {
         const pixels = parseFloat(string.slice(0, string.length - 2))
         if (isFinite(pixels)) {
-            return { pixels }
+            return { kind: 'pixels', pixels }
         }
     }
     throw new Error(`Invalid font size ${string}`)
@@ -109,7 +126,7 @@ export function RichTextEditor(
         setSelection: (newRange: Range | null) => void
         editable: boolean
         style: CSSProperties
-        cursorAttributes: TextAttributes
+        cursorAttributes: StringAttributes
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -121,15 +138,17 @@ export function RichTextEditor(
 
     const editorRef = useRef<HTMLPreElement | null>(null)
 
+    const mjPromise = useContext(MathJaxBaseContext)
+
     const renderScript = useCallback((newScript: Script) => {
-        const fragment = renderText(newScript)
-        if (newScript.text.length === 1 && newScript.text[0].string === '\n' && editable) {
+        const fragment = renderText(newScript, mjPromise)
+        if (newScript.text.length === 1 && charAt(newScript.text, 0) === '\n' && editable) {
             fragment.push(createPlaceholder(colors))
         }
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
-    }, [editable, colors])
+    }, [editable, colors, mjPromise])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)
@@ -219,7 +238,7 @@ export function RichTextEditor(
 
                 if (pastedText === undefined && e.clipboardData.types.includes('text/plain')) {
                     const plain = e.clipboardData.getData('text/plain')
-                    pastedText = [{ string: plain, attributes: getAttributes(script.text, selection) }]
+                    pastedText = [{ kind: 'string', string: plain, attributes: getAttributes(script.text, selection) }]
                 }
 
                 if (pastedText !== undefined) {

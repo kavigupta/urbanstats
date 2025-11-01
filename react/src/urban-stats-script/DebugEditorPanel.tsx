@@ -1,3 +1,4 @@
+import { MathJaxContext } from 'better-react-mathjax'
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
@@ -14,8 +15,8 @@ const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
     text: [
-        { string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
-        { string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { pixels: 16 }, fontFamily: 'Times New Roman', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
+        { kind: 'string', string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
+        { kind: 'string', string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Times New Roman', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
     ],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
@@ -58,12 +59,43 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
 
     const colors = useColors()
 
+    const labels = content.map((label, i) => (
+        <MapLabel
+            key={i}
+            i={i}
+            numLabels={content.length}
+            label={label}
+            container={containerRef}
+            editLabel={edit
+                ? {
+                        modify(n) {
+                            updateContent(content.map((l, j) => j === i ? { ...l, ...n } : l))
+                        },
+                        duplicate() {
+                            updateContent(content.flatMap((l, j) => j === i ? [l, l] : [l]))
+                        },
+                        delete() {
+                            updateContent(content.filter((l, j) => j !== i))
+                        },
+                        add() {
+                            updateContent(content.concat([newLabel]))
+                        },
+                        moveUp() {
+                            updateContent(content.slice(0, i).concat([content[i + 1], content[i]]).concat(content.slice(i + 2)))
+                        },
+                        moveDown() {
+                            updateContent(content.slice(0, i - 1).concat([content[i], content[i - 1]]).concat(content.slice(i + 1)))
+                        },
+                    }
+                : undefined}
+        />
+    ))
+
     return (
         <PageTemplate>
             <CheckboxSettingCustom name="edit" checked={edit} onChange={setEdit} />
             <SelectionContext.Provider value={selectionProperty}>
                 <ThemeContext.Provider value="Light Mode">
-
                     <div
                         style={{
                             width: '1000px',
@@ -73,37 +105,13 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                         }}
                         ref={containerRef}
                     >
-                        {content.map((label, i) => (
-                            <MapLabel
-                                key={i}
-                                i={i}
-                                numLabels={content.length}
-                                label={label}
-                                container={containerRef}
-                                editLabel={edit
-                                    ? {
-                                            modify(n) {
-                                                updateContent(content.map((l, j) => j === i ? { ...l, ...n } : l))
-                                            },
-                                            duplicate() {
-                                                updateContent(content.flatMap((l, j) => j === i ? [l, l] : [l]))
-                                            },
-                                            delete() {
-                                                updateContent(content.filter((l, j) => j !== i))
-                                            },
-                                            add() {
-                                                updateContent(content.concat([newLabel]))
-                                            },
-                                            moveUp() {
-                                                updateContent(content.slice(0, i).concat([content[i + 1], content[i]]).concat(content.slice(i + 2)))
-                                            },
-                                            moveDown() {
-                                                updateContent(content.slice(0, i - 1).concat([content[i], content[i - 1]]).concat(content.slice(i + 1)))
-                                            },
-                                        }
-                                    : undefined}
-                            />
-                        ))}
+                        {content.some(label => label.text.some(s => s.kind === 'formula'))
+                            ? (
+                                    <MathJaxContext>
+                                        {labels}
+                                    </MathJaxContext>
+                                )
+                            : labels}
                     </div>
                 </ThemeContext.Provider>
             </SelectionContext.Provider>

@@ -94,6 +94,7 @@ export function renderCode(
 export function nodeContent(node: Node): string {
     if (node instanceof HTMLElement) {
         if (!node.isContentEditable) {
+            // TODO: Handle length
             return ''
         }
         return Array.from(node.childNodes).map(nodeContent).join('')

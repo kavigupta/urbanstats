@@ -3,35 +3,62 @@ import { z } from 'zod'
 
 import { Range } from '../urban-stats-script/editor-utils'
 
+import { assert } from './defensive'
+
 export type AttributedText = TextSegment[]
 
-export interface TextSegment {
+export type TextSegment = { kind: 'formula', formula: string, attributes: StringAttributes } | {
+    kind: 'string'
     string: string
-    attributes: TextAttributes
+    attributes: StringAttributes
 }
 
-export const textAttributeSchemas = {
+export const stringAttributeSchemas = {
     color: z.string(),
-    fontSize: z.object({ pixels: z.number() }).strict(),
+    fontSize: z.object({ kind: z.literal('pixels'), pixels: z.number() }).strict(),
     fontFamily: z.string(),
     fontWeight: z.enum(['normal', 'bold']),
     fontStyle: z.enum(['normal', 'italic']),
     textDecoration: z.enum(['none', 'underline']),
 }
 
-export const textAttributesSchema = z.object(textAttributeSchemas).strict()
+export const stringAttributesSchema = z.object(stringAttributeSchemas).strict()
 
-export type TextAttributes = z.infer<typeof textAttributesSchema>
+export type StringAttributes = z.infer<typeof stringAttributesSchema>
+
+export function segmentLength(segment: TextSegment): number {
+    switch (segment.kind) {
+        case 'formula':
+            return 1
+        case 'string':
+            return segment.string.length
+    }
+}
+
+function maybeMergeSegments(a: TextSegment, b: TextSegment): TextSegment | undefined {
+    if (a.kind !== 'string' || b.kind !== 'string') {
+        return undefined
+    }
+    if (stableStringify(a.attributes) === stableStringify(b.attributes)) {
+        return {
+            kind: 'string',
+            string: a.string + b.string,
+            attributes: a.attributes,
+        }
+    }
+    return undefined
+}
 
 export function concat(texts: AttributedText[]): AttributedText {
     const result: AttributedText = []
     for (const text of texts) {
         for (const segment of text) {
-            if (segment.string.length === 0) {
+            if (segmentLength(segment) === 0) {
                 continue
             }
-            if (result.length > 0 && stableStringify(result[result.length - 1].attributes) === stableStringify(segment.attributes)) {
-                result[result.length - 1].string = result[result.length - 1].string + segment.string
+            let merged
+            if (result.length > 0 && (merged = maybeMergeSegments(result[result.length - 1], segment)) !== undefined) {
+                result[result.length - 1] = merged
             }
             else {
                 result.push(segment)
@@ -42,14 +69,14 @@ export function concat(texts: AttributedText[]): AttributedText {
 }
 
 export function length(text: AttributedText): number {
-    return text.reduce((l, t) => l + t.string.length, 0)
+    return text.reduce((l, t) => l + segmentLength(t), 0)
 }
 
 export function slice(text: AttributedText, range: Range): AttributedText {
     let i = 0
     const result: AttributedText = []
     for (const segment of text) {
-        const segmentRange = { start: i, end: i + segment.string.length }
+        const segmentRange = { start: i, end: i + segmentLength(segment) }
         if (range.start >= segmentRange.end || range.end <= segmentRange.start) {
             // no intersection
         }
@@ -58,21 +85,24 @@ export function slice(text: AttributedText, range: Range): AttributedText {
             result.push(segment)
         }
         else if (range.start <= segmentRange.start && range.end < segmentRange.end) {
+            assert(segment.kind === 'string', 'other segments should have length 1')
             // we just get the beginning range of the segment
-            result.push({ string: segment.string.slice(0, range.end - i), attributes: segment.attributes })
+            result.push({ kind: 'string', string: segment.string.slice(0, range.end - i), attributes: segment.attributes })
         }
         else if (range.start > segmentRange.start && range.end >= segmentRange.end) {
+            assert(segment.kind === 'string', 'other segments should have length 1')
             // we just get the end of the segment
-            result.push({ string: segment.string.slice(range.start - i), attributes: segment.attributes })
+            result.push({ kind: 'string', string: segment.string.slice(range.start - i), attributes: segment.attributes })
         }
         else if (range.start > segmentRange.start && range.end < segmentRange.end) {
+            assert(segment.kind === 'string', 'other segments should have length 1')
             // we're clipping the middle of the segment
-            result.push({ string: segment.string.slice(range.start - i, range.end - i), attributes: segment.attributes })
+            result.push({ kind: 'string', string: segment.string.slice(range.start - i, range.end - i), attributes: segment.attributes })
         }
         else {
             throw new Error(`unhandled case ${JSON.stringify(range)} ${JSON.stringify(segmentRange)}`)
         }
-        i += segment.string.length
+        i += segmentLength(segment)
     }
     return result
 }
@@ -92,11 +122,23 @@ export function replaceSelection(range: Range, replacementLength: number): Range
     return { start: range.start, end: replacementLength + range.start }
 }
 
-export function getString(text: AttributedText): string {
-    return text.reduce((s, t) => s + t.string, '')
+export function charAt(text: AttributedText, i: number): string | undefined {
+    assert(i >= 0 && i < length(text), 'cannot get character outside of text length')
+    let segmentIdx = 0
+    while (i - segmentLength(text[segmentIdx]) >= 0) {
+        i -= segmentLength(text[segmentIdx])
+        segmentIdx++
+    }
+    const segment = text[segmentIdx]
+    switch (segment.kind) {
+        case 'string':
+            return segment.string.charAt(i)
+        case 'formula':
+            return undefined
+    }
 }
 
-export function getAttributes(text: AttributedText, range: Range | null): TextAttributes {
+export function getAttributes(text: AttributedText, range: Range | null): StringAttributes {
     if (text.length === 0) {
         throw new Error('getting attribute of empty text')
     }
@@ -106,13 +148,13 @@ export function getAttributes(text: AttributedText, range: Range | null): TextAt
     }
 
     const selectSegmentEnding: (segmentEnd: number) => boolean
-    = range.start === range.end && (range.start === 0 || getString(text).charAt(range.start - 1) !== '\n')
+    = range.start === range.end && (range.start === 0 || charAt(text, range.start - 1) !== '\n')
         ? segmentEnd => segmentEnd >= range.start
         : segmentEnd => segmentEnd > range.start
 
     let i = 0
     for (const segment of text) {
-        i += segment.string.length
+        i += segmentLength(segment)
         if (selectSegmentEnding(i)) {
             return segment.attributes
         }
@@ -120,9 +162,9 @@ export function getAttributes(text: AttributedText, range: Range | null): TextAt
     throw new Error(`range end ${range.end} out of range of text length ${length(text)}`)
 }
 
-export function setAttributes(text: AttributedText, range: Range, values: Partial<TextAttributes>): AttributedText {
+export function setAttributes(text: AttributedText, range: Range, values: Partial<StringAttributes>): AttributedText {
     // So that newlines don't get isolated
-    if (range.end < length(text) && getString(slice(text, { start: range.end, end: range.end + 1 })) === '\n') {
+    if (range.end < length(text) && charAt(text, range.end) === '\n') {
         range = { start: range.start, end: range.end + 1 }
     }
     return concat([
