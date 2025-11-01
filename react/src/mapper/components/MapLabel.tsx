@@ -8,6 +8,7 @@ import { Range, setRange } from '../../urban-stats-script/editor-utils'
 import { concat, getAttributes, length, setAttributes, slice, StringAttributes } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
+import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
 import { EditInsetsHandles } from './InsetMap'
@@ -97,20 +98,40 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     />
 
                     {/* Font Size Picker */}
-                    <IFrameInput
-                        type="number"
-                        value={cursorAttributes.fontSize.pixels}
-                        onChange={(e) => {
-                            maybeModifyAttributes({ fontSize: { kind: 'pixels', pixels: Number(e.target.value) } })
-                        }}
-                        disabled={selection?.index !== i}
-                        onBlur={refocus}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                (e.target as HTMLInputElement).blur()
-                            }
-                        }}
-                    />
+                    <div style={{ width: '50px' }}>
+                        <BetterDatalist
+                            iframe
+                            value={cursorAttributes.fontSize}
+                            onChange={(fontSize) => {
+                                maybeModifyAttributes({ fontSize })
+                            }}
+                            parse={(v) => {
+                                const result = parseFloat(v)
+                                if (isFinite(result)) {
+                                    return { kind: 'pixels' as const, pixels: result }
+                                }
+                                return cannotParse
+                            }}
+                            possibleValues={[8, 10, 12, 14, 16, 20, 24, 36].map(n => ({ kind: 'pixels' as const, pixels: n }))}
+                            renderValue={v => ({
+                                text: v.pixels.toString(),
+                                node: highlighted => (
+                                    <div style={{
+                                        fontSize: `${v.pixels}px`,
+                                        fontFamily: cursorAttributes.fontFamily,
+                                        padding: '8px 12px',
+                                        backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
+                                        color: colors.textMain,
+                                    }}
+                                    >
+                                        {v.pixels.toString()}
+                                    </div>
+                                ) })}
+                            inputStyle={{ fontFamily: cursorAttributes.fontFamily }}
+                            disabled={selection?.index !== i}
+                            onBlur={refocus}
+                        />
+                    </div>
 
                     {/* Font Family Picker */}
                     <div style={{ width: '200px' }}>
