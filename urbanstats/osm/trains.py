@@ -1,10 +1,10 @@
+from bisect import bisect_right
 from collections import defaultdict
-from collections.abc import Set
 import datetime
 import io
 import json
 import os
-from typing import Dict, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 import zipfile
 import numpy as np
 from permacache import permacache
@@ -12,6 +12,8 @@ import requests
 
 import pandas as pd
 import tqdm.auto as tqdm
+
+from urbanstats.geometry.ellipse import Ellipse
 
 from .query import query_to_geopandas
 
@@ -179,6 +181,8 @@ def pull_file_from_gtfs(gtfs, filename):
         raise ValueError(f"Multiple matching files for {filename}: {matching_keys}")
     if len(matching_keys) == 0:
         return None
+    if gtfs[matching_keys[0]] is None:
+        return None
     pulled = gtfs[matching_keys[0]].copy()
     pulled.columns = [c.strip() for c in pulled.columns]
     return pulled
@@ -316,3 +320,411 @@ def date_range_from_joined_calendar(
     if not all_dates:
         return None, None
     return min(all_dates), max(all_dates)
+
+
+def reverse_joined_calendar(
+    joined_calendar: Dict[str, Set[datetime.date]],
+) -> Dict[datetime.date, Set[str]]:
+    date_to_service_ids: Dict[datetime.date, Set[str]] = defaultdict(set)
+    for service_id, dates in joined_calendar.items():
+        for date in dates:
+            date_to_service_ids[date].add(service_id)
+    return date_to_service_ids
+
+
+def most_covered_period_of_length(
+    start_ends: List[Tuple[datetime.date, datetime.date]], length: datetime.timedelta
+) -> Tuple[int, datetime.date, datetime.date]:
+    """
+    Given a list of (start_date, end_date) tuples, finds the longest continuous period.
+    """
+    all_dates = sorted({x for start, end in start_ends for x in (start, end)})
+    date_to_idx = {date: idx for idx, date in enumerate(all_dates)}
+    # non-cumulative count of active services.
+    # +3 if 3 services start at this date,
+    # -2 if 5 services end at this date, but 3 start at this date.
+    non_cumulative_counts = [0] * (len(all_dates))
+    for start, end in start_ends:
+        start_idx = date_to_idx[start]
+        end_idx = date_to_idx[end]
+        non_cumulative_counts[start_idx] += 1
+        non_cumulative_counts[end_idx] -= 1
+    cumulative_counts = np.cumsum(non_cumulative_counts)
+    assert cumulative_counts[-1] == 0
+    cumulative_counts = cumulative_counts[:-1]
+    # sliding window to find longest period with non-zero cumulative_counts
+    best_count = 0
+    best_start = None
+    for start_idx, start_date in enumerate(all_dates):
+        end_date = start_date + length
+        end_idx = bisect_right(all_dates, end_date) - 1
+        count = cumulative_counts[start_idx:end_idx].max() if end_idx > start_idx else 0
+        if count > best_count:
+            best_count = count
+            best_start = start_date
+    if best_start is None:
+        return 0, None, None
+    return best_count, best_start, best_start + length
+
+
+def duplicate_and_shift_calendar(
+    start: datetime.date,
+    end: datetime.date,
+    start_common: datetime.date,
+    end_common: datetime.date,
+) -> Optional[Tuple[datetime.date, datetime.date]]:
+    """
+    Returns the usable subrange of the original calendar that can be
+    used to map the common period.
+    """
+    num_days_common = (end_common - start_common).days + 1
+    num_days_original = (end - start).days + 1
+    if num_days_original < 7:
+        return None
+    num_days_to_pull = min(num_days_original, num_days_common)
+    assert num_days_common % 7 == 0, "Common period must be a multiple of 7 days."
+    if start > start_common:
+        day_offset = (start_common - start).days % 7
+        return [
+            start
+            + datetime.timedelta(days=index_from_start(num_days_to_pull, i, day_offset))
+            for i in range(num_days_common)
+        ]
+    elif end < end_common:
+        day_offset = (end_common - end).days % 7
+        return [
+            end
+            - datetime.timedelta(
+                days=index_from_start(num_days_to_pull, i, (-day_offset) % 7)
+            )
+            for i in range(num_days_common - 1, -1, -1)
+        ]
+    else:
+        return [
+            start_common + datetime.timedelta(days=i) for i in range(num_days_common)
+        ]
+
+
+def index_from_start(num_days: int, index: int, modulo_7_offset: int) -> int:
+    location = index + modulo_7_offset
+    while location >= num_days:
+        location -= num_days // 7 * 7
+    assert 0 <= location
+    return location
+
+
+@permacache("urbanstats/osm/trains/standardize_calendars_3", multiprocess_safe=True)
+def standardize_calendars():
+    dates = {}
+    for res in all_gtfs_info():
+        r = res["gtfs_result"]()
+        if r["status"] == "failure":
+            continue
+        dates[res["feed"]["id"]] = joined_calendar_dates(r["content"])
+    time_extrema = {k: date_range_from_joined_calendar(x) for k, x in dates.items()}
+    time_extrema = {k: x for k, x in time_extrema.items() if x[0] is not None}
+    _, start_common, end_common = most_covered_period_of_length(
+        time_extrema.values(), datetime.timedelta(days=27)
+    )
+    date_remap = {
+        k: duplicate_and_shift_calendar(start, end, start_common, end_common)
+        for k, (start, end) in time_extrema.items()
+    }
+    date_remap = {k: v for k, v in date_remap.items() if v is not None}
+    services = {}
+    for k in tqdm.tqdm(date_remap):
+        reversed_calendar = reverse_joined_calendar(dates[k])
+        services[k] = [reversed_calendar[x] for x in date_remap[k]]
+    day_to_standardized_service_ids, agency_mappings = standardize_service_ids(services)
+    return day_to_standardized_service_ids, agency_mappings, start_common, end_common
+
+
+def standardize_service_ids(
+    services: List[Set[str]],
+) -> Tuple[List[Set[int]], Dict[str, Dict[str, int]]]:
+    """
+    Given a list of sets of service IDs (one set per agency),
+    standardizes the service IDs across agencies.
+
+    :param services: List of sets of service IDs (one set per agency)
+    :return: A tuple containing:
+        - day_to_standardized_service_ids: A dictionary mapping each day index to a set of standardized service IDs
+        - agency_mappings: A dictionary from an agency key to a dictionary mapping original service IDs to standardized service IDs for each agency
+    """
+    standardized_service_id = 0
+    agency_mappings: Dict[str, Dict[str, int]] = {}
+    day_to_standardized_service_ids: List[Set[int]] = []
+
+    for agency_id, agency_services in services.items():
+        service_id_mapping: Dict[str, int] = {}
+        for day_services in agency_services:
+            standardized_ids_for_day: Set[int] = set()
+            for service_id in sorted(day_services, key=repr):
+                if service_id not in service_id_mapping:
+                    service_id_mapping[service_id] = standardized_service_id
+                    standardized_service_id += 1
+                standardized_ids_for_day.add(service_id_mapping[service_id])
+            day_to_standardized_service_ids.append(standardized_ids_for_day)
+        agency_mappings[agency_id] = service_id_mapping
+
+    return day_to_standardized_service_ids, agency_mappings
+
+
+def compute_trip_stop_times(
+    gtfs, remap_services, remap_stops
+) -> List[Tuple[str, List[Tuple[str, datetime.time]]]]:
+    """
+    Computes the stop times for each trip in the GTFS data.
+    Returns a list of (service_id, List of (stop_id, time)) tuples.
+    """
+    stop_times = pull_file_from_gtfs(gtfs, "stop_times.txt")
+    if stop_times is None:
+        return []
+
+    trip_stop_times: Dict[str, List[datetime.time]] = defaultdict(list)
+
+    for trip_id, arrival_time, departure_time, stop_id in zip(
+        stop_times["trip_id"],
+        stop_times["arrival_time"],
+        stop_times["departure_time"],
+        stop_times["stop_id"],
+    ):
+        time = (parse_time(arrival_time) + parse_time(departure_time)) / 2
+        trip_stop_times[trip_id].append((time, remap_stops[stop_id]))
+
+    trip_id_to_service_id = {}
+    trips = pull_file_from_gtfs(gtfs, "trips.txt")
+    if trips is not None:
+        for trip_id, service_id in zip(trips["trip_id"], trips["service_id"]):
+            trip_id_to_service_id[trip_id] = service_id
+    return [
+        (
+            remap_services[trip_id_to_service_id[trip_id]],
+            stop_times_list,
+        )
+        for trip_id, stop_times_list in trip_stop_times.items()
+        if trip_id_to_service_id[trip_id] in remap_services
+    ]
+
+
+def parse_time(time_str: str) -> datetime.timedelta:
+    """
+    Parses a time string in HH:MM:SS format and returns timedelta object since midnight
+    Handles times that exceed 24 hours by being > 24. This should be added to the schedule
+    in the agency's local time.
+    """
+    assert isinstance(time_str, str), f"Expected string, got {type(time_str)}"
+    h, m, s = map(int, time_str.split(":"))
+    return datetime.timedelta(hours=h, minutes=m, seconds=s)
+
+
+def is_route_type(route_type) -> bool:
+    if not isinstance(route_type, (int, float, np.integer, np.floating)):
+        return False
+    if int(route_type) != route_type:
+        return False
+    route_type = int(route_type)
+    if 0 <= route_type <= 12:
+        return True
+    if route_type // 100 in {1, 2, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17}:
+        return True
+    return False
+
+
+def is_bus_or_ferry_route_type(route_type) -> bool:
+    assert is_route_type(route_type), route_type
+    if route_type in {3, 4}:  # bus or ferry
+        return True
+    if route_type // 100 in {
+        2,  # 2xx=coach
+        7,  # 7xx=bus
+        10,  # 10xx=water transport
+        11,  # 11xx=air
+        12,  # 12xx=ferry
+        13,  # 13xx=aerial lift
+        15,  # 15xx=taxi
+        17,  # 17xx=misc (the only subcategory is horse carriage)
+    }:
+        return True
+    return False
+
+
+def valid_routes(gtfs, invalid_route_types) -> Set[str]:
+    routes = pull_file_from_gtfs(gtfs, "routes.txt")
+    if routes is None:
+        return set()
+    valid_routes_set = set()
+    for route_id, route_type in zip(routes["route_id"], routes["route_type"]):
+        if route_type == route_type and not invalid_route_types(route_type):
+            valid_routes_set.add(route_id)
+    return valid_routes_set
+
+
+def valid_trips(gtfs, invalid_route_types) -> Set[str]:
+    valid_routes_set = valid_routes(gtfs, invalid_route_types)
+    trips = pull_file_from_gtfs(gtfs, "trips.txt")
+    assert trips is not None, "trips.txt is missing"
+    valid_trips_set = set()
+    for trip_id, route_id in zip(trips["trip_id"], trips["route_id"]):
+        if route_id in valid_routes_set:
+            valid_trips_set.add(trip_id)
+    return valid_trips_set
+
+
+def stops_covered_by_valid_trips(gtfs, invalid_route_types) -> Set[str]:
+    valid_trips_set = valid_trips(gtfs, invalid_route_types)
+    stop_times = pull_file_from_gtfs(gtfs, "stop_times.txt")
+    assert stop_times is not None, "stop_times.txt is missing"
+    covered_stops = set()
+    for trip_id, stop_id in zip(stop_times["trip_id"], stop_times["stop_id"]):
+        if trip_id in valid_trips_set:
+            covered_stops.add(stop_id)
+    return covered_stops
+
+
+def pull_stops_for_gtfs(gtfs, invalid_route_types) -> Tuple[pd.DataFrame, Dict[str, str]]:
+    stops = pull_file_from_gtfs(gtfs, "stops.txt")
+    assert stops is not None, "stops.txt is missing"
+    covered_stops = stops_covered_by_valid_trips(gtfs, invalid_route_types)
+    referenced_stops = stops[stops["stop_id"].isin(covered_stops)].copy()
+    remap = {}
+    if "parent_station" in referenced_stops.columns:
+        with_parent, without_parent = (
+            referenced_stops[~referenced_stops.parent_station.isna()].copy(),
+            referenced_stops[referenced_stops.parent_station.isna()].copy(),
+        )
+        original, parent = with_parent["stop_id"], with_parent["parent_station"]
+        remap = dict(zip(original, parent))
+        referenced_stops = pd.concat([
+            without_parent,
+            stops[stops.stop_id.isin(parent.unique())],
+        ])
+    return referenced_stops, remap
+
+def pull_stops_for_gtfs_arrays(gtfs, invalid_route_types, start_idx) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, int]]:
+    stops, remap_parent = pull_stops_for_gtfs(gtfs, invalid_route_types)
+    names, lats, lons = [], [], []
+    remap = {}
+    for stop_id, stop_name, stop_lat, stop_lon in zip(
+        stops["stop_id"], stops["stop_name"], stops["stop_lat"], stops["stop_lon"]
+    ):
+        stop_lat, stop_lon = parse_float(stop_lat), parse_float(stop_lon)
+        if (
+            stop_lat is None
+            or stop_lon is None
+            or np.isnan(stop_lat)
+            or np.isnan(stop_lon)
+        ):
+            continue
+        names.append(stop_name)
+        lats.append(stop_lat)
+        lons.append(stop_lon)
+        remap[stop_id] = start_idx + len(names) - 1
+    for stop_id, parent_station in remap_parent.items():
+        remap[stop_id] = remap[parent_station]
+    return (
+        np.array(names),
+        np.array(lats),
+        np.array(lons),
+        remap,
+    )
+
+def standardized_stops():
+    all_stops = []
+    remap_by_agency = {}
+    for res in all_gtfs_info():
+        r = res["gtfs_result"]()
+        if r["status"] != "success":
+            continue
+        gtfs = r["content"]
+        stops = pull_file_from_gtfs(gtfs, "stops.txt")
+        if stops is None:
+            continue
+        if "parent_station" in stops.columns:
+            without_parent = stops[stops.parent_station.isna()].copy()
+            with_parent = stops[~stops.parent_station.isna()].copy()
+        else:
+            without_parent = stops
+            with_parent = {"stop_id": [], "parent_station": []}
+        remap = {}
+        for stop_id, stop_name, stop_lat, stop_lon in zip(
+            without_parent["stop_id"],
+            without_parent["stop_name"],
+            without_parent["stop_lat"],
+            without_parent["stop_lon"],
+        ):
+            stop_lat, stop_lon = parse_float(stop_lat), parse_float(stop_lon)
+            if (
+                stop_lat is None
+                or stop_lon is None
+                or np.isnan(stop_lat)
+                or np.isnan(stop_lon)
+            ):
+                continue
+            all_stops.append((stop_name, stop_lat, stop_lon))
+            remap[stop_id] = len(all_stops) - 1
+        for stop_id, parent_station in zip(
+            with_parent["stop_id"], with_parent["parent_station"]
+        ):
+            remap[stop_id] = remap[parent_station]
+        remap_by_agency[res["feed"]["id"]] = remap
+    names, lats, lons = zip(*all_stops)
+    names, lats, lons = np.array(names), np.array(lats), np.array(lons)
+    return names, lats, lons, remap_by_agency
+
+
+def compute_stop_graph_within_radius(
+    radius_in_km: float, lon: np.ndarray, lat: np.ndarray
+) -> List[Tuple[int, int]]:
+    indices = np.argsort(lat)
+    lats_in_order = lat[indices]
+    lons_in_order = lon[indices]
+    edges = []
+    for i in tqdm.trange(len(lat), desc="Computing stop graph"):
+        ellipse = Ellipse(radius_in_km, lats_in_order[i], lons_in_order[i])
+        # only look behind, since the graph is undirected
+        start_i = np.searchsorted(
+            lats_in_order,
+            lats_in_order[i] - ellipse.lat_radius,
+            side="right",
+        )
+        end_i = i
+        if end_i == start_i:
+            continue
+        lat_selected, lon_selected = (
+            lats_in_order[start_i:end_i],
+            lons_in_order[start_i:end_i],
+        )
+        ellipse_mask = ((lat_selected - lats_in_order[i]) / ellipse.lat_radius) ** 2 + (
+            (lon_selected - lons_in_order[i]) / ellipse.lon_radius
+        ) ** 2 < 1
+        for j in np.where(ellipse_mask)[0]:
+            edges.append((indices[i], indices[start_i + j]))
+    return edges
+
+
+def connected_components(
+    edges: List[Tuple[int, int]], num_nodes: int
+) -> List[Set[int]]:
+    parent = list(range(num_nodes))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(x, y):
+        rootX = find(x)
+        rootY = find(y)
+        if rootX != rootY:
+            parent[rootY] = rootX
+
+    for u, v in edges:
+        union(u, v)
+
+    components: Dict[int, Set[int]] = defaultdict(set)
+    for i in range(num_nodes):
+        components[find(i)].add(i)
+
+    return list(components.values())
