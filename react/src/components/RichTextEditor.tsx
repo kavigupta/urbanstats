@@ -5,7 +5,7 @@ import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRe
 import { colorThemes } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { getRange, Range, setRange, styleToString } from '../urban-stats-script/editor-utils'
-import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection } from '../utils/AttributedText'
+import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection, setAttributes, TextAttributes } from '../utils/AttributedText'
 import { TestUtils } from '../utils/TestUtils'
 
 interface Script {
@@ -96,13 +96,14 @@ function parseFontFamily(stirng: string): string {
 }
 
 export function RichTextEditor(
-    { text, setText, selection, setSelection, editable, style }: {
+    { text, setText, selection, setSelection, editable, style, cursorAttributes }: {
         text: AttributedText
         setText: (newText: AttributedText) => void
         selection: Range | null
         setSelection: (newRange: Range | null) => void
         editable: boolean
         style: CSSProperties
+        cursorAttributes: TextAttributes
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -163,15 +164,20 @@ export function RichTextEditor(
 
     useEffect(() => {
         const editor = editorRef.current!
-        const listener = (): void => {
+        const listener = (e: Event): void => {
+            const eventData = (e as InputEvent).data
             const range = getRange(editor)
-            const newScript = makeScript(nodeContent(editor, true))
+            let newText = nodeContent(editor, true)
+            if (range !== null && eventData !== null) {
+                newText = setAttributes(newText, { start: range.start - eventData.length, end: range.end }, cursorAttributes)
+            }
+            const newScript = makeScript(newText)
             setText(newScript.text)
             setSelection(range)
         }
         editor.addEventListener('input', listener)
         return () => { editor.removeEventListener('input', listener) }
-    }, [colors, editScript, setText, setSelection])
+    }, [colors, editScript, setText, setSelection, cursorAttributes])
 
     return (
         <pre

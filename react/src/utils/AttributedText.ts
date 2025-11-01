@@ -6,17 +6,22 @@ export type AttributedText = TextSegment[]
 
 export interface TextSegment {
     string: string
-    attributes: {
-        color: string
-        fontSize: { pixels: number }
-        fontFamily: string
-    }
+    attributes: TextAttributes
+}
+
+export interface TextAttributes {
+    color: string
+    fontSize: { pixels: number }
+    fontFamily: string
 }
 
 export function concat(texts: AttributedText[]): AttributedText {
     const result: AttributedText = []
     for (const text of texts) {
         for (const segment of text) {
+            if (segment.string.length === 0) {
+                continue
+            }
             if (result.length > 0 && stableStringify(result[result.length - 1].attributes) === stableStringify(segment.attributes)) {
                 result[result.length - 1].string = result[result.length - 1].string + segment.string
             }
@@ -83,7 +88,7 @@ export function getString(text: AttributedText): string {
     return text.reduce((s, t) => s + t.string, '')
 }
 
-export function getAttributes(text: AttributedText, range: Range | null): TextSegment['attributes'] {
+export function getAttributes(text: AttributedText, range: Range | null): TextAttributes {
     if (text.length === 0) {
         throw new Error('getting attribute of empty text')
     }
@@ -92,17 +97,22 @@ export function getAttributes(text: AttributedText, range: Range | null): TextSe
         return text[text.length - 1].attributes
     }
 
+    const selectSegmentEnding: (segmentEnd: number) => boolean
+    = range.start === range.end && (range.start === 0 || getString(text).charAt(range.start - 1) !== '\n')
+        ? segmentEnd => segmentEnd >= range.start
+        : segmentEnd => segmentEnd > range.start
+
     let i = 0
     for (const segment of text) {
         i += segment.string.length
-        if (i > range.start) {
+        if (selectSegmentEnding(i)) {
             return segment.attributes
         }
     }
     throw new Error(`range end ${range.end} out of range of text length ${length(text)}`)
 }
 
-export function setAttributes(text: AttributedText, range: Range, values: Partial<TextSegment['attributes']>): AttributedText {
+export function setAttributes(text: AttributedText, range: Range, values: Partial<TextAttributes>): AttributedText {
     // So that newlines don't get isolated
     if (range.end < length(text) && getString(slice(text, { start: range.end, end: range.end + 1 })) === '\n') {
         range = { start: range.start, end: range.end + 1 }

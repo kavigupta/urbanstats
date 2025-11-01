@@ -1,11 +1,11 @@
 import Color from 'color'
-import React, { createContext, ReactNode, RefObject, useContext, useRef } from 'react'
+import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { RichTextEditor } from '../../components/RichTextEditor'
 import { useColors } from '../../page_template/colors'
 import { Label } from '../../urban-stats-script/constants/label'
 import { Range } from '../../urban-stats-script/editor-utils'
-import { getAttributes, setAttributes } from '../../utils/AttributedText'
+import { getAttributes, setAttributes, TextAttributes } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 import { BetterSelector } from '../settings/BetterSelector'
@@ -31,9 +31,28 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
-    const currentAttributes = getAttributes(label.text, selection?.index === i ? selection.range : null)
+    const getCursorAttributes = useCallback((): TextAttributes => {
+        return getAttributes(label.text, selection?.index === i ? selection.range : null)
+    }, [label.text, selection, i])
+
+    const [cursorAttributes, setCursorAttributes] = useState(getCursorAttributes)
+
+    useEffect(() => {
+        setCursorAttributes(getCursorAttributes)
+    }, [getCursorAttributes])
 
     const colors = useColors()
+
+    const maybeModifyAttributes = (newAttribs: Partial<TextAttributes>): void => {
+        if (editLabel && selection?.index === i) {
+            if (selection.range.start !== selection.range.end) {
+                editLabel.modify({ text: setAttributes(label.text, selection.range, newAttribs) })
+            }
+            else {
+                setCursorAttributes(a => ({ ...a, ...newAttribs }))
+            }
+        }
+    }
 
     return (
         <div
@@ -60,11 +79,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     {/* Color Picker */}
                     <IFrameInput
                         type="color"
-                        value={Color(currentAttributes.color).hex()}
+                        value={Color(cursorAttributes.color).hex()}
                         onChange={(e) => {
-                            if (selection?.index === i) {
-                                editLabel.modify({ text: setAttributes(label.text, selection.range, { color: e.target.value }) })
-                            }
+                            maybeModifyAttributes({ color: e.target.value })
                         }}
                         disabled={selection?.index !== i}
                         onFocus={() => {
@@ -76,11 +93,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     {/* Font Size Picker */}
                     <IFrameInput
                         type="number"
-                        value={currentAttributes.fontSize.pixels}
+                        value={cursorAttributes.fontSize.pixels}
                         onChange={(e) => {
-                            if (selection?.index === i) {
-                                editLabel.modify({ text: setAttributes(label.text, selection.range, { fontSize: { pixels: Number(e.target.value) } }) })
-                            }
+                            maybeModifyAttributes({ fontSize: { pixels: Number(e.target.value) } })
                         }}
                         disabled={selection?.index !== i}
                     />
@@ -89,12 +104,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     <div style={{ width: '200px' }}>
                         <BetterSelector
                             iframe
-                            value={currentAttributes.fontFamily}
+                            value={cursorAttributes.fontFamily}
                             onChange={(fontFamily) => {
-                                if (selection?.index === i) {
-                                    editLabel.modify({ text: setAttributes(label.text, selection.range, { fontFamily }) })
-                                    window.focus()
-                                }
+                                maybeModifyAttributes({ fontFamily })
                             }}
                             possibleValues={['Jost', 'Times New Roman']}
                             renderValue={v => ({
@@ -109,7 +121,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         {v}
                                     </div>
                                 ) })}
-                            inputStyle={{ fontFamily: currentAttributes.fontFamily }}
+                            inputStyle={{ fontFamily: cursorAttributes.fontFamily }}
                             disabled={selection?.index !== i}
                         />
                     </div>
@@ -129,6 +141,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     }
                 }}
                 editable={!!editLabel}
+                cursorAttributes={cursorAttributes}
             />
             { editLabel && (
                 <EditInsetsHandles
