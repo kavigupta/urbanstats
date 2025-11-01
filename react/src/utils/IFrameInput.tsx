@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
+import { useStyleDocument } from '../page_template/colors'
+
 // eslint-disable-next-line no-restricted-syntax -- Forward ref
 export const IFrameInput = React.forwardRef(IFrameInputRef)
 
@@ -16,13 +18,16 @@ function IFrameInputRef(props: React.DetailedHTMLProps<React.InputHTMLAttributes
             doc.head.appendChild(style.cloneNode(true))
         }
 
-        doc.documentElement.style.cssText = document.documentElement.style.cssText
-
-        doc.body.style.cssText = document.body.style.cssText
         doc.body.style.margin = '0px'
         doc.body.style.backgroundColor = 'transparent'
         setFrameDoc(doc)
     }, [])
+
+    const styleDocument = useStyleDocument()
+
+    useEffect(() => {
+        styleDocument(frameRef.current!.contentWindow!.document)
+    }, [styleDocument])
 
     const [frame, setFrame] = useState({ left: 0, top: 0, width: 0, height: 0 })
 

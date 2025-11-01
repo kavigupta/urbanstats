@@ -2,10 +2,10 @@ import '@fontsource/inconsolata/500.css'
 
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { colorThemes } from '../page_template/color-themes'
+import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { getRange, Range, setRange, styleToString } from '../urban-stats-script/editor-utils'
-import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection, setAttributes, TextAttributes } from '../utils/AttributedText'
+import { AttributedText, concat, getAttributes, length, replaceRange, replaceSelection, setAttributes, TextAttributes, textAttributeSchemas } from '../utils/AttributedText'
 import { TestUtils } from '../utils/TestUtils'
 
 interface Script {
@@ -30,16 +30,19 @@ function renderText(script: Script): Node[] {
         span.style.color = segment.attributes.color
         span.style.fontSize = `${segment.attributes.fontSize.pixels}px`
         span.style.fontFamily = segment.attributes.fontFamily
+        span.style.fontWeight = segment.attributes.fontWeight
+        span.style.fontStyle = segment.attributes.fontStyle
+        span.style.textDecoration = segment.attributes.textDecoration
         return span
     })
 }
 
-export function createPlaceholder(): HTMLElement {
+export function createPlaceholder(colors: Colors): HTMLElement {
     const style = {
         'position': 'absolute',
         'user-select': 'none',
         'white-space': 'pre',
-        'color': colorThemes['Light Mode'].hueColors.grey,
+        'color': colors.hueColors.grey,
         'pointer-events': 'none',
         'top': '0.5em',
     }
@@ -65,6 +68,9 @@ function nodeContent(node: Node, requireContentEditable: boolean): AttributedTex
                     color: node.style.color,
                     fontSize: parseFontSize(node.style.fontSize),
                     fontFamily: parseFontFamily(node.style.fontFamily),
+                    fontStyle: textAttributeSchemas.fontStyle.parse(node.style.fontStyle),
+                    fontWeight: textAttributeSchemas.fontWeight.parse(node.style.fontWeight),
+                    textDecoration: textAttributeSchemas.textDecoration.parse(node.style.textDecoration),
                 },
             },
         ]
@@ -118,12 +124,12 @@ export function RichTextEditor(
     const renderScript = useCallback((newScript: Script) => {
         const fragment = renderText(newScript)
         if (newScript.text.length === 1 && newScript.text[0].string === '\n' && editable) {
-            fragment.push(createPlaceholder())
+            fragment.push(createPlaceholder(colors))
         }
         const editor = editorRef.current!
         editor.replaceChildren(...fragment)
         // Usually you want to set the selection after this, since it has been reset
-    }, [editable])
+    }, [editable, colors])
 
     const lastRenderScript = useRef<typeof renderScript>(renderScript)
     const lastScript = useRef<Script | undefined>(undefined)

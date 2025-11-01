@@ -1,4 +1,5 @@
 import stableStringify from 'json-stable-stringify'
+import { z } from 'zod'
 
 import { Range } from '../urban-stats-script/editor-utils'
 
@@ -9,11 +10,18 @@ export interface TextSegment {
     attributes: TextAttributes
 }
 
-export interface TextAttributes {
-    color: string
-    fontSize: { pixels: number }
-    fontFamily: string
+export const textAttributeSchemas = {
+    color: z.string(),
+    fontSize: z.object({ pixels: z.number() }).strict(),
+    fontFamily: z.string(),
+    fontWeight: z.enum(['normal', 'bold']),
+    fontStyle: z.enum(['normal', 'italic']),
+    textDecoration: z.enum(['none', 'underline']),
 }
+
+export const textAttributesSchema = z.object(textAttributeSchemas).strict()
+
+export type TextAttributes = z.infer<typeof textAttributesSchema>
 
 export function concat(texts: AttributedText[]): AttributedText {
     const result: AttributedText = []

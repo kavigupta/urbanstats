@@ -42,7 +42,7 @@
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
-button, select {
+button, select, input[type=button] {
     font-family: 'Jost', 'Arial', sans-serif;
     background-color: var(--slightly-different-background);
     border-radius: 5px;
@@ -50,11 +50,11 @@ button, select {
     border: 1px solid var(--ordinal-text-color);
 }
 
-button:hover:not(:disabled) {
+button:hover:not(:disabled), input[type=button]:hover:not(:disabled) {
     background-color: var(--slightly-different-background-focused);
 }
 
-button:disabled {
+button:disabled, input[type=button]:disabled {
     color: var(--ordinal-text-color);
     border: 1px solid var(--border-non-shadow);
 }

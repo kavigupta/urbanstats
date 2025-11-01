@@ -85,7 +85,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         }}
                         disabled={selection?.index !== i}
                         onFocus={() => {
-                        // Don't allow stealing focus
+                            // Don't allow stealing focus
                             window.focus()
                         }}
                     />
@@ -125,6 +125,17 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             disabled={selection?.index !== i}
                         />
                     </div>
+
+                    {/* Bold */}
+                    <IFrameInput
+                        type="button"
+                        value="𝐁"
+                        onClick={() => {
+                            maybeModifyAttributes({ fontWeight: cursorAttributes.fontWeight === 'normal' ? 'bold' : 'normal' })
+                        }}
+                        disabled={selection?.index !== i}
+                        style={{ color: cursorAttributes.fontWeight === 'bold' ? colors.hueColors.blue : colors.textMain }}
+                    />
                 </div>
             )}
             <RichTextEditor
