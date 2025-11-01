@@ -30,20 +30,18 @@ function renderText(script: Script, mjPromise: MathJaxSubscriberProps | undefine
                 break
             case 'formula':
                 assert(mjPromise?.version === 3, 'MathJax 3 context must be present to render formulas')
-                const mathSpan = document.createElement('span')
-                mathSpan.textContent = `\\(${segment.formula}\\)`
+                span.textContent = `\\(${segment.formula}\\)`
                 void mjPromise.promise.then(mathJax =>
                     mathJax.startup.promise.then(() => {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
-                        mathJax.typesetClear([mathSpan])
+                        mathJax.typesetClear([span])
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Mathjax
-                        mathJax.typesetPromise([mathSpan])
+                        mathJax.typesetPromise([span])
                     }),
                 )
-                mathSpan.contentEditable = 'false'
-                span.appendChild(mathSpan)
-                span.appendChild(document.createTextNode('\u200b')) // So that we register as one character long
+                span.contentEditable = 'false'
                 span.setAttribute('data-formula', segment.formula)
+                span.setAttribute('data-content', ' ')
                 break
         }
         span.style.color = segment.attributes.color
@@ -88,18 +86,20 @@ function getStyle(span: HTMLSpanElement): StringAttributes {
 
 function nodeContent(node: Node, requireContentEditable: boolean): AttributedText {
     if (node instanceof HTMLSpanElement) {
-        if (requireContentEditable && !node.isContentEditable) {
-            return []
-        }
-        let formula
-        if ((formula = node.getAttribute('data-formula'))) {
-            return [
-                {
-                    kind: 'formula',
-                    formula,
-                    attributes: getStyle(node),
-                },
-            ]
+        if (!node.isContentEditable) {
+            let formula
+            if ((formula = node.getAttribute('data-formula'))) {
+                return [
+                    {
+                        kind: 'formula',
+                        formula,
+                        attributes: getStyle(node),
+                    },
+                ]
+            }
+            if (requireContentEditable) {
+                return []
+            }
         }
         return [
             {
@@ -136,7 +136,7 @@ function parseFontFamily(stirng: string): string {
 }
 
 export function RichTextEditor(
-    { text, setText, selection, setSelection, editable, style, cursorAttributes }: {
+    { text, setText, selection, setSelection, editable, style, cursorAttributes, eRef }: {
         text: AttributedText
         setText: (newText: AttributedText) => void
         selection: Range | null
@@ -144,10 +144,13 @@ export function RichTextEditor(
         editable: boolean
         style: CSSProperties
         cursorAttributes: StringAttributes
+        eRef?: React.MutableRefObject<HTMLPreElement | null>
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
     setSelectionRef.current = setSelection
+    const selectionRef = useRef(selection)
+    selectionRef.current = selection
 
     const script = useMemo(() => makeScript(text), [text])
 
@@ -196,7 +199,9 @@ export function RichTextEditor(
             // These events are often spurious
 
             const range = getRange(editorRef.current!)
-            setSelectionRef.current(range)
+            if (range?.start !== selectionRef.current?.start || range?.end !== selectionRef.current?.end) {
+                setSelectionRef.current(range)
+            }
         }
         document.addEventListener('selectionchange', listener)
         return () => {
@@ -228,7 +233,12 @@ export function RichTextEditor(
                 caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
                 margin: 0,
             }}
-            ref={editorRef}
+            ref={(e) => {
+                editorRef.current = e
+                if (eRef !== undefined) {
+                    eRef.current = e
+                }
+            }}
             contentEditable={editable ? 'plaintext-only' : 'false'}
             spellCheck="false"
             onPaste={(e) => {

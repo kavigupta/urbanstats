@@ -4,7 +4,7 @@ import React, { createContext, ReactNode, RefObject, useCallback, useContext, us
 import { RichTextEditor } from '../../components/RichTextEditor'
 import { useColors } from '../../page_template/colors'
 import { Label } from '../../urban-stats-script/constants/label'
-import { Range } from '../../urban-stats-script/editor-utils'
+import { Range, setRange } from '../../urban-stats-script/editor-utils'
 import { concat, getAttributes, length, setAttributes, slice, StringAttributes } from '../../utils/AttributedText'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
@@ -43,6 +43,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const colors = useColors()
 
+    const editorRef = useRef<HTMLPreElement>(null)
+
     const maybeModifyAttributes = (newAttribs: Partial<StringAttributes>): void => {
         if (editLabel && selection?.index === i) {
             if (selection.range.start !== selection.range.end) {
@@ -51,6 +53,13 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             else {
                 setCursorAttributes(a => ({ ...a, ...newAttribs }))
             }
+        }
+    }
+
+    const refocus = (): void => {
+        if (selection?.index === i) {
+            editorRef.current!.focus()
+            setRange(editorRef.current!, selection.range)
         }
     }
 
@@ -84,10 +93,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             maybeModifyAttributes({ color: e.target.value })
                         }}
                         disabled={selection?.index !== i}
-                        onFocus={() => {
-                            // Don't allow stealing focus
-                            window.focus()
-                        }}
+                        onFocus={refocus}
                     />
 
                     {/* Font Size Picker */}
@@ -98,6 +104,12 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             maybeModifyAttributes({ fontSize: { kind: 'pixels', pixels: Number(e.target.value) } })
                         }}
                         disabled={selection?.index !== i}
+                        onBlur={refocus}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                (e.target as HTMLInputElement).blur()
+                            }
+                        }}
                     />
 
                     {/* Font Family Picker */}
@@ -116,6 +128,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         fontFamily: v,
                                         padding: '8px 12px',
                                         backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
+                                        color: colors.textMain,
                                     }}
                                     >
                                         {v}
@@ -123,6 +136,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                 ) })}
                             inputStyle={{ fontFamily: cursorAttributes.fontFamily }}
                             disabled={selection?.index !== i}
+                            onBlur={refocus}
                         />
                     </div>
 
@@ -132,6 +146,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         value="B"
                         onClick={() => {
                             maybeModifyAttributes({ fontWeight: cursorAttributes.fontWeight === 'normal' ? 'bold' : 'normal' })
+                            refocus()
                         }}
                         disabled={selection?.index !== i}
                         style={{ fontWeight: cursorAttributes.fontWeight }}
@@ -143,6 +158,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         value="I"
                         onClick={() => {
                             maybeModifyAttributes({ fontStyle: cursorAttributes.fontStyle === 'normal' ? 'italic' : 'normal' })
+                            refocus()
                         }}
                         disabled={selection?.index !== i}
                         style={{ fontStyle: cursorAttributes.fontStyle }}
@@ -154,6 +170,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         value="U"
                         onClick={() => {
                             maybeModifyAttributes({ textDecoration: cursorAttributes.textDecoration === 'none' ? 'underline' : 'none' })
+                            refocus()
                         }}
                         disabled={selection?.index !== i}
                         style={{ textDecoration: cursorAttributes.textDecoration }}
@@ -175,10 +192,10 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         ]),
                                     })
                                 }
+                                refocus()
                             }
                         }}
                         disabled={selection?.index !== i}
-                        style={{ textDecoration: cursorAttributes.textDecoration }}
                     />
                 </div>
             )}
@@ -197,6 +214,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                 }}
                 editable={!!editLabel}
                 cursorAttributes={cursorAttributes}
+                eRef={editorRef}
             />
             { editLabel && (
                 <EditInsetsHandles
