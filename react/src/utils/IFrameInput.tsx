@@ -2,7 +2,7 @@ import stableStringify from 'json-stable-stringify'
 import React, { useRef, useState, useEffect, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
-import { useStyleDocument } from '../page_template/colors'
+import { useStyleElement } from '../page_template/colors'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward ref
 export const IFrameInput = React.forwardRef(IFrameInputRef)
@@ -21,15 +21,15 @@ function IFrameInputRef(props: React.DetailedHTMLProps<React.InputHTMLAttributes
         setFrameDoc(doc)
     }, [])
 
-    const styleDocument = useStyleDocument()
+    const styleElement = useStyleElement()
 
     useEffect(() => {
         const doc = frameRef.current!.contentWindow!.document
 
-        styleDocument(doc)
+        styleElement(doc.documentElement)
         doc.body.style.margin = '0px'
         doc.body.style.backgroundColor = 'transparent'
-    }, [styleDocument])
+    }, [styleElement])
 
     const [frame, setFrame] = useState({ left: 0, top: 0, width: 0, height: 0 })
 

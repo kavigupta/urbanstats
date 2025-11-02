@@ -2,8 +2,9 @@ import { Delta } from 'quill'
 import { z } from 'zod'
 
 import { colorThemes } from '../../page_template/color-themes'
+import { NormalizeProto } from '../../utils/types'
 
-export const defaultAttributes = {
+export const defaultAttributes: NormalizeProto<LabelTextOp>['attributes'] = {
     size: `16px`,
     font: 'Jost',
     color: colorThemes['Light Mode'].textMain,
@@ -12,7 +13,8 @@ export const defaultAttributes = {
     underline: false,
     list: false,
     indent: 0,
-} satisfies LabelTextOp['attributes']
+    align: '',
+}
 
 export interface Label {
     bottomLeft: [number, number]
@@ -40,6 +42,7 @@ const labelTextOpSchema = z.object({
         underline: z.optional(z.boolean()),
         list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal(false)])),
         indent: z.optional(z.number()),
+        align: z.optional(z.enum(['', 'center', 'right', 'justify'])),
     })),
 })
 

@@ -1,14 +1,13 @@
 import Color from 'color'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Parchment, Range } from 'quill'
-import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { fromQuillDelta, Label, toQuillDelta, defaultAttributes, LabelTextOp } from '../../urban-stats-script/constants/label'
+import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
-import { NormalizeProto } from '../../utils/types'
 import { BetterDatalist } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
@@ -42,23 +41,25 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
     }
     const quillRef = useRef<Quill>()
 
-    const [format, setFormat] = useState<NormalizeProto<LabelTextOp>['attributes']>(defaultAttributes)
+    const [format, setFormat] = useState(defaultAttributes)
+
+    const updateFormat = useCallback(() => {
+        const quill = quillRef.current!
+        const currentSelection = quill.getSelection(false)
+        if (currentSelection !== null) {
+            const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
+            setFormat({ ...defaultAttributes, ...currentFormat })
+        }
+    }, [])
 
     useEffect(() => {
         const quill = quillRef.current!
-        const listener = (): void => {
-            const currentSelection = quill.getSelection(false)
-            if (currentSelection !== null) {
-                const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
-                setFormat({ ...defaultAttributes, ...currentFormat })
-            }
-        }
-        listener()
-        quill.on('editor-change', listener)
+        updateFormat()
+        quill.on('editor-change', updateFormat)
         return () => {
-            quill.off('editor-change', listener)
+            quill.off('editor-change', updateFormat)
         }
-    }, [quillRef])
+    }, [updateFormat])
 
     return (
         <div
@@ -94,6 +95,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             value={format.font}
                             onChange={(fontFamily) => {
                                 quillRef.current!.format('font', fontFamily, 'user')
+                                updateFormat()
                             }}
                             possibleValues={['Jost', 'Times New Roman']}
                             renderValue={v => ({
@@ -123,6 +125,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                     fontSize = `${fontSize}px`
                                 }
                                 quillRef.current!.format('size', fontSize, 'user')
+                                updateFormat()
                             }}
                             parse={(v) => {
                                 return v
@@ -149,61 +152,83 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     </div>
 
                     <div style={{ display: 'flex' }}>
-                        {/* Bold */}
-                        <IFrameInput
-                            type="button"
-                            value="B"
-                            onClick={() => {
-                                quillRef.current!.format('bold', !format.bold, 'user')
-                                refocus()
-                            }}
-                            disabled={selection?.index !== i}
-                            style={{ fontWeight: format.bold ? 'bold' : 'normal', width: '24px' }}
-                        />
-
-                        {/* Italic */}
-                        <IFrameInput
-                            type="button"
-                            value="I"
-                            onClick={() => {
-                                quillRef.current!.format('italic', !format.italic, 'user')
-                                refocus()
-                            }}
-                            disabled={selection?.index !== i}
-                            style={{ fontStyle: format.italic ? 'italic' : 'normal', width: '24px' }}
-                        />
-
-                        {/* Underline */}
-                        <IFrameInput
-                            type="button"
-                            value="U"
-                            onClick={() => {
-                                quillRef.current!.format('underline', !format.underline, 'user')
-                                refocus()
-                            }}
-                            disabled={selection?.index !== i}
-                            style={{ textDecoration: format.underline ? 'underline' : 'none', width: '24px' }}
-                        />
+                        {([
+                            { display: 'B', key: 'bold', style: { fontWeight: 'bold ' } },
+                            { display: 'I', key: 'italic', style: { fontStyle: 'italic' } },
+                            { display: 'U', key: 'underline', style: { textDecoration: 'underline' } },
+                        ] as const).map(({ display, key, style }) => {
+                            return (
+                                <button
+                                    key={key}
+                                    onClick={() => {
+                                        quillRef.current!.format(key, !format[key], 'user')
+                                        updateFormat()
+                                        refocus()
+                                    }}
+                                    disabled={selection?.index !== i}
+                                    style={{
+                                        ...style,
+                                        width: '24px',
+                                        backgroundColor: format[key] ? colors.hueColors.blue : undefined,
+                                        color: format[key] ? colors.buttonTextWhite : undefined }}
+                                >
+                                    {display}
+                                </button>
+                            )
+                        })}
                     </div>
 
                     {/* Color Picker */}
-                    <div style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Text</div>
-                        <IFrameInput
+                        <input
                             type="color"
                             value={Color(format.color).hex()}
                             onChange={(e) => {
                                 quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
+                                updateFormat()
                             }}
                             disabled={selection?.index !== i}
                             onFocus={refocus}
                         />
                     </div>
 
+                    <div style={{ display: 'flex' }}>
+                        {([
+                            '',
+                            'center',
+                            'right',
+                            'justify',
+                        ] as const).map((value) => {
+                            return (
+                                <button
+                                    key={value}
+                                    onClick={() => {
+                                        quillRef.current!.format('align', value, 'user')
+                                        updateFormat()
+                                        refocus()
+                                    }}
+                                    disabled={selection?.index !== i}
+                                    style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        padding: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: format.align === value ? colors.hueColors.blue : undefined,
+                                    }}
+                                >
+                                    {alignIcon(value, format.align === value ? colors.buttonTextWhite : colors.textMain)}
+                                </button>
+                            )
+                        })}
+                    </div>
+
                     {/* Background Color Picker */}
-                    <div style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Background</div>
-                        <IFrameInput
+                        <input
                             type="color"
                             value={Color(label.backgroundColor).hex()}
                             onChange={(e) => {
@@ -213,9 +238,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     </div>
 
                     {/* Formula */}
-                    <IFrameInput
-                        type="button"
-                        value="x²"
+                    <button
                         onClick={() => {
                             if (selection?.index === i) {
                                 const formula = prompt('Enter formula')
@@ -228,7 +251,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             }
                         }}
                         disabled={selection?.index !== i}
-                    />
+                    >
+                        x²
+                    </button>
                 </div>
             )}
             <QuillEditor
@@ -283,3 +308,19 @@ Quill.register(fontAttributor, true)
 const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
 sizeAttributor.whitelist = undefined
 Quill.register(sizeAttributor, true)
+
+function alignIcon(kind: '' | 'center' | 'right' | 'justify', color: string): ReactNode {
+    // From https://fonts.google.com/icons
+    const paths = {
+        '': <path d="M120-120v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Z" />,
+        'center': <path d="M120-120v-80h720v80H120Zm160-160v-80h400v80H280ZM120-440v-80h720v80H120Zm160-160v-80h400v80H280ZM120-760v-80h720v80H120Z" />,
+        'right': <path d="M120-760v-80h720v80H120Zm240 160v-80h480v80H360ZM120-440v-80h720v80H120Zm240 160v-80h480v80H360ZM120-120v-80h720v80H120Z" />,
+        'justify': <path d="M120-120v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Z" />,
+    } as const
+
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill={color}>
+            {paths[kind]}
+        </svg>
+    )
+}

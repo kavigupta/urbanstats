@@ -19,7 +19,7 @@ import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 
-import { useColors, useStyleDocument } from './colors'
+import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
@@ -43,10 +43,12 @@ export function PageTemplate({
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
-    const styleDocument = useStyleDocument()
+    const styleElement = useStyleElement()
     useEffect(() => {
-        styleDocument(document)
-    }, [styleDocument])
+        styleElement(document.documentElement)
+        document.body.style.backgroundColor = colors.background
+        document.body.style.color = colors.textMain
+    }, [styleElement, colors.background, colors.textMain])
 
     useEffect(() => {
         if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {

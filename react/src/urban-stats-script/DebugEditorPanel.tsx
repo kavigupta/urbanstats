@@ -3,17 +3,17 @@ import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { CheckboxSettingCustom } from '../components/sidebar'
 import { MapLabel, Selection, SelectionContext } from '../mapper/components/MapLabel'
 import { colorThemes } from '../page_template/color-themes'
-import { ThemeContext, useColors } from '../page_template/colors'
+import { OverrideTheme, useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
-import { Label } from './constants/label'
+import { defaultAttributes, Label } from './constants/label'
 import { useUndoRedo } from './editor-utils'
 
 const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
-    text: [],
+    text: [{ insert: '', attributes: defaultAttributes }],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,
@@ -91,7 +91,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
         <PageTemplate>
             <CheckboxSettingCustom name="edit" checked={edit} onChange={setEdit} />
             <SelectionContext.Provider value={selectionProperty}>
-                <ThemeContext.Provider value="Light Mode">
+                <OverrideTheme theme="Light Mode">
                     <div
                         style={{
                             width: '1000px',
@@ -103,7 +103,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                     >
                         {labels}
                     </div>
-                </ThemeContext.Provider>
+                </OverrideTheme>
             </SelectionContext.Provider>
         </PageTemplate>
     )
