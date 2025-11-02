@@ -44,10 +44,10 @@ class InfiniteResult(PositiveResult):
 
 
 class FriendSummaryStats(PositiveResult):
-    meanScore: float # vulture: ignore -- used by the client
-    numPlays: int # vulture: ignore -- used by the client
-    currentStreak: int # vulture: ignore -- used by the client
-    maxStreak: int # vulture: ignore -- used by the client
+    meanScore: float  # vulture: ignore -- used by the client
+    numPlays: int  # vulture: ignore -- used by the client
+    currentStreak: int  # vulture: ignore -- used by the client
+    maxStreak: int  # vulture: ignore -- used by the client
 
 
 def todays_score_for(
@@ -248,7 +248,9 @@ def compute_streaks(scores: list[int], problem_ids: list[int]) -> tuple[int, int
     return max_streak, current_streak
 
 
-def extract_scores_and_problem_ids(quiz_kind: QuizKind, rows: list[tuple[str, int]]) -> tuple[list[int], list[int]]:
+def extract_scores_and_problem_ids(
+    quiz_kind: QuizKind, rows: list[tuple[str, int]]
+) -> tuple[list[int], list[int]]:
     scores = []
     problem_ids = []
     for row in rows:
@@ -263,5 +265,5 @@ def extract_scores_and_problem_ids(quiz_kind: QuizKind, rows: list[tuple[str, in
             assert problem_id.startswith("W")
             problem_ids.append(int(problem_id[1:]))
 
-    problem_ids, scores = zip(*sorted(zip(problem_ids, scores))) # type: ignore
+    problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))  # type: ignore
     return scores, problem_ids
