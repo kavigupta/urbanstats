@@ -7,13 +7,13 @@ import { ThemeContext, useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
-import { Label } from './constants/label'
+import { defaultAttributes, Label } from './constants/label'
 import { useUndoRedo } from './editor-utils'
 
 const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
-    text: [{ string: 'Hello, World!', attributes: {} }],
+    text: [{ insert: 'Hello, World!', attributes: defaultAttributes }],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,

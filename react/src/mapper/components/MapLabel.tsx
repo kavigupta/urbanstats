@@ -3,9 +3,9 @@ import Color from 'color'
 import Quill, { Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
 
-import { defaults, QuillEditor } from '../../components/QuillEditor'
+import { QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
+import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 import { BetterDatalist } from '../settings/BetterDatalist'
@@ -41,7 +41,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
     }
     const quillRef = useRef<Quill>()
 
-    const [format, setFormat] = useState(defaults)
+    const [format, setFormat] = useState(defaultAttributes)
 
     useEffect(() => {
         const quill = quillRef.current!
@@ -49,7 +49,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
             const currentSelection = quill.getSelection(false)
             if (currentSelection !== null) {
                 const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
-                setFormat({ ...defaults, ...currentFormat })
+                setFormat({ ...defaultAttributes, ...currentFormat })
             }
         }
         listener()
@@ -197,6 +197,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                 const formula = prompt('Enter formula')
                                 if (formula) {
                                     quillRef.current!.insertEmbed(selection.range.index, 'formula', formula, 'user')
+                                    quillRef.current!.insertText(selection.range.index + 1, ' ', 'user')
+                                    quillRef.current!.setSelection(selection.range.index + 2, 'user')
                                 }
                                 refocus()
                             }

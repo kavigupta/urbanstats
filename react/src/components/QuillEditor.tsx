@@ -6,26 +6,17 @@ import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } f
 
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
-import { colorThemes } from '../page_template/color-themes'
+import { defaultAttributes } from '../urban-stats-script/constants/label'
 
 // Needed for formula module
 (window as { katex: unknown }).katex = katex
 
-export const defaults = {
-    size: `16px`,
-    font: 'Jost',
-    color: colorThemes['Light Mode'].textMain,
-    bold: false,
-    italic: false,
-    underline: false,
-}
-
-const defaultStyle = `font-family: ${defaults.font};
-    font-size: ${defaults.size};
-    color: ${defaults.color};
-    font-weight: ${defaults.bold ? 'bold' : 'normal'};
-    font-style: ${defaults.italic ? 'italic' : 'normal'};
-    text-decoration: ${defaults.underline ? 'underline' : 'none'};`
+const defaultStyle = `font-family: ${defaultAttributes.font};
+    font-size: ${defaultAttributes.size};
+    color: ${defaultAttributes.color};
+    font-weight: ${defaultAttributes.bold ? 'bold' : 'normal'};
+    font-style: ${defaultAttributes.italic ? 'italic' : 'normal'};
+    text-decoration: ${defaultAttributes.underline ? 'underline' : 'none'};`
 
 function DefaultStyle(): ReactNode {
     return (
