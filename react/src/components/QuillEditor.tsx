@@ -27,6 +27,9 @@ function DefaultStyle(): ReactNode {
 }
 .ql-container.ql-snow { border: none; }
 .ql-toolbar.ql-snow { border: none; }
+.ql-editor li[data-list=bullet] > .ql-ui:before {
+    content: '●';
+}
 `}
         </style>
     )
