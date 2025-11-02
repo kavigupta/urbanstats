@@ -367,6 +367,8 @@ function MeanStatisticsRow(props: {
     const friendName = props.friendScore.name ?? 'Unknown'
     const colors = useColors()
 
+    console.log('index', props.index, 'name', friendName)
+
     return (
         <div
             style={{
@@ -374,7 +376,7 @@ function MeanStatisticsRow(props: {
                 flexDirection: 'row',
                 height: scoreCorrectHeight,
                 alignItems: 'center',
-                backgroundColor: props.index % 2 === 1 ? undefined : colors.slightlyDifferentBackground,
+                backgroundColor: props.index % 2 !== 0 ? undefined : colors.slightlyDifferentBackground,
             }}
         >
             <div style={{ width: '25%' }}>
