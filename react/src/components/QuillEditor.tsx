@@ -6,10 +6,24 @@ import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } f
 
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
-import { defaultAttributes } from '../urban-stats-script/constants/label'
+import { colorThemes } from '../page_template/color-themes'
+import { RichTextOp } from '../urban-stats-script/constants/rich-text'
+import { NormalizeProto } from '../utils/types'
 
 // Needed for formula module
 (window as { katex: unknown }).katex = katex
+
+export const defaultAttributes: NormalizeProto<RichTextOp>['attributes'] = {
+    size: `16px`,
+    font: 'Jost',
+    color: colorThemes['Light Mode'].textMain,
+    bold: false,
+    italic: false,
+    underline: false,
+    list: false,
+    indent: 0,
+    align: '',
+}
 
 const defaultStyle = `font-family: ${defaultAttributes.font};
     font-size: ${defaultAttributes.size};

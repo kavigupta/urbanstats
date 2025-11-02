@@ -1,16 +1,16 @@
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
-import { MapLabel, Selection, SelectionContext } from '../mapper/components/MapLabel'
+import { MapLabelComponent, Selection, SelectionContext } from '../mapper/components/MapLabel'
 import { colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
-import { Label } from './constants/label'
+import { MapLabel } from './constants/map-label'
 import { useUndoRedo } from './editor-utils'
 
-const newLabel: Label = {
+const newLabel: MapLabel = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
     text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
@@ -24,11 +24,11 @@ const newLabel: Label = {
  */
 export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
     const [edit, setEdit] = useState(true)
-    const [content, setContent] = useState<Label[]>(() => [newLabel])
+    const [content, setContent] = useState<MapLabel[]>(() => [newLabel])
 
     const selectionProperty = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
-    const { addState, updateCurrentSelection } = useUndoRedo<Label[], Selection | undefined>(content, undefined, setContent, (newSelection) => {
+    const { addState, updateCurrentSelection } = useUndoRedo<MapLabel[], Selection | undefined>(content, undefined, setContent, (newSelection) => {
         selectionProperty.value = newSelection
     }, props)
 
@@ -48,7 +48,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
 
     const containerRef = useRef<HTMLDivElement>(null)
 
-    const updateContent = (newContent: Label[]): void => {
+    const updateContent = (newContent: MapLabel[]): void => {
         setContent(newContent)
         addState(newContent, selectionProperty.value)
     }
@@ -56,7 +56,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
     const colors = useColors()
 
     const labels = content.map((label, i) => (
-        <MapLabel
+        <MapLabelComponent
             key={i}
             i={i}
             numLabels={content.length}

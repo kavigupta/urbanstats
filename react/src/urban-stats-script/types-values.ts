@@ -4,6 +4,7 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTExpression } from './ast'
 import { Color, hexToColor } from './constants/color-utils'
 import { CMap, CMapRGB, Outline, PMap } from './constants/map'
+import { MapLabel } from './constants/map-label'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
 import { Context } from './context'
@@ -29,6 +30,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
     | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
     | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
+    | { type: 'opaque', opaqueType: 'mapLabel', value: MapLabel }
 
 interface USSNumberType {
     type: 'number'
@@ -366,6 +368,7 @@ export function renderValue(input: USSValue): string {
                     case 'geoFeatureHandle':
                     case 'geoCentroidHandle':
                     case 'unit':
+                    case 'mapLabel':
                         return `[${opaqueValue.opaqueType} object]`
                     case 'color':
                         const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }

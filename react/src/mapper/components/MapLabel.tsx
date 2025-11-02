@@ -3,9 +3,10 @@ import Color from 'color'
 import Quill, { Delta, Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-import { QuillEditor } from '../../components/QuillEditor'
+import { QuillEditor, defaultAttributes } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
+import { MapLabel } from '../../urban-stats-script/constants/map-label'
+import { fromQuillDelta, toQuillDelta } from '../../urban-stats-script/constants/rich-text'
 import { Property } from '../../utils/Property'
 import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
@@ -14,11 +15,11 @@ import { EditInsetsHandles } from './InsetMap'
 
 const toolbarHeight = '30px'
 
-export function MapLabel({ label, container, editLabel, i, numLabels }: {
-    label: Label
+export function MapLabelComponent({ label, container, editLabel, i, numLabels }: {
+    label: MapLabel
     container: RefObject<HTMLDivElement>
     editLabel?: {
-        modify: (newLabel: Partial<Label>) => void
+        modify: (newLabel: Partial<MapLabel>) => void
         duplicate: () => void
         delete: () => void
         add: () => void

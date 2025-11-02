@@ -1,33 +1,9 @@
 import { Delta } from 'quill'
 import { z } from 'zod'
 
-import { colorThemes } from '../../page_template/color-themes'
-import { NormalizeProto } from '../../utils/types'
+export type RichText = RichTextOp[]
 
-export const defaultAttributes: NormalizeProto<LabelTextOp>['attributes'] = {
-    size: `16px`,
-    font: 'Jost',
-    color: colorThemes['Light Mode'].textMain,
-    bold: false,
-    italic: false,
-    underline: false,
-    list: false,
-    indent: 0,
-    align: '',
-}
-
-export interface Label {
-    bottomLeft: [number, number]
-    topRight: [number, number]
-    text: LabelText
-    backgroundColor: string
-    borderColor: string
-    borderWidth: number
-}
-
-export type LabelText = LabelTextOp[]
-
-const labelTextOpSchema = z.object({
+const richTextOpSchema = z.object({
     insert: z.union([
         z.string(),
         z.object({ formula: z.string() }),
@@ -46,15 +22,15 @@ const labelTextOpSchema = z.object({
     })),
 })
 
-export type LabelTextOp = z.infer<typeof labelTextOpSchema>
+export type RichTextOp = z.infer<typeof richTextOpSchema>
 
-export function toQuillDelta(text: LabelText): Delta {
+export function toQuillDelta(text: RichText): Delta {
     return new Delta(text)
 }
 
-export function fromQuillDelta(delta: Delta): LabelText {
+export function fromQuillDelta(delta: Delta): RichText {
     return delta.ops.flatMap((op) => {
-        const { success, data } = labelTextOpSchema.safeParse(op)
+        const { success, data } = richTextOpSchema.safeParse(op)
         if (!success) {
             console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
             return []
