@@ -13,10 +13,7 @@ import { defaultAttributes } from '../urban-stats-script/constants/label'
 
 const defaultStyle = `font-family: ${defaultAttributes.font};
     font-size: ${defaultAttributes.size};
-    color: ${defaultAttributes.color};
-    font-weight: ${defaultAttributes.bold ? 'bold' : 'normal'};
-    font-style: ${defaultAttributes.italic ? 'italic' : 'normal'};
-    text-decoration: ${defaultAttributes.underline ? 'underline' : 'none'};`
+    color: ${defaultAttributes.color};`
 
 function DefaultStyle(): ReactNode {
     return (
@@ -78,6 +75,7 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                 },
                 toolbar: false,
             },
+            placeholder: 'Enter text here...',
         })
 
         quillRef.current = quill
