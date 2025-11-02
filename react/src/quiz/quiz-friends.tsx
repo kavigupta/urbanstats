@@ -18,6 +18,7 @@ export type ResultToDisplayForFriends = { corrects: CorrectPattern | null } | { 
 
 type FriendResponse = { result: ResultToDisplayForFriends, friends: true } | { friends: false }
 type FriendScore = { name?: string } & FriendResponse
+type FriendSummaryStats = { friends: true, meanScore: number, numPlays: number, currentStreak: number, maxStreak: number } | { friends: false }
 
 async function juxtaRetroResponse(
     quizDescriptor: QuizDescriptorWithTime,
@@ -58,17 +59,27 @@ async function infiniteResponse(
     return friendScoresResponse.results.map(x => x.friends ? { friends: true, result: x } : { friends: false })
 }
 
+export interface UserStatistics {
+    meanScore: number
+    numPlays: number
+    currentStreak: number
+    maxStreak: number
+}
+
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
     quizDescriptor: QuizDescriptorWithStats
     myResult: ResultToDisplayForFriends
+    userStatistics?: UserStatistics
 }): ReactNode {
     const colors = useColors()
 
     const [friendScores, setFriendScores] = useState([] as FriendScore[])
+    const [friendSummaryStats, setFriendSummaryStats] = useState([] as FriendSummaryStats[])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
+    const [viewMode, setViewMode] = useState<'today' | 'stats'>('today')
 
     const user = QuizModel.shared.uniquePersistentId.use()
     const secureID = QuizModel.shared.uniqueSecureId.use()
@@ -92,6 +103,25 @@ export function QuizFriendsPanel(props: {
                 setFriendScores(friendScoresResponse.map(
                     (x, idx) => ({ name: quizIDtoName[requesters[idx]], ...x }),
                 ))
+
+                // Fetch summary stats for non-infinite quiz kinds
+                if (props.quizDescriptor.kind !== 'infinite') {
+                    const { data: summaryStatsResponse } = await persistentClient.POST('/juxtastat/friend_summary_stats', {
+                        params: {
+                            header: QuizModel.shared.userHeaders(),
+                        },
+                        body: {
+                            requesters,
+                            quiz_kind: props.quizDescriptor.kind,
+                        },
+                    })
+                    setFriendSummaryStats(
+                        (summaryStatsResponse?.results ?? []) as FriendSummaryStats[],
+                    )
+                }
+                else {
+                    setFriendSummaryStats([])
+                }
             }
             catch {
                 setError('Network Error')
@@ -109,33 +139,87 @@ export function QuizFriendsPanel(props: {
             <div style={{ margin: 'auto', width: '100%' }}>
                 <div className="quiz_summary">Friends</div>
             </div>
+            {props.quizDescriptor.kind !== 'infinite'
+                ? (
+                        <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+                    )
+                : null}
             <>
-                {props.quizDescriptor.kind === 'infinite' ? <InfiniteHeader /> : undefined}
-                <PlayerScore result={props.myResult} otherResults={allResults} />
-
+                {props.quizDescriptor.kind === 'infinite' && viewMode === 'today' ? <InfiniteHeader /> : undefined}
+                {viewMode === 'today' ? <PlayerScore result={props.myResult} otherResults={allResults} /> : null}
+                {viewMode === 'stats'
+                    ? (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    height: scoreCorrectHeight,
+                                    alignItems: 'center',
+                                    borderBottom: `2px solid ${colors.background}`,
+                                    marginBottom: '0.5em',
+                                }}
+                            >
+                                <div style={{ width: '25%' }}>Friend</div>
+                                <div style={{ width: '20%', textAlign: 'center' }}>Mean Score</div>
+                                <div style={{ width: '15%', textAlign: 'center' }}>Plays</div>
+                                <div style={{ width: '20%', textAlign: 'center' }}>Current/Max Streak</div>
+                                <div style={{ width: '20%', textAlign: 'right' }} />
+                            </div>
+                        )
+                    : null}
+                {viewMode === 'stats' && props.userStatistics !== undefined
+                    ? (
+                            <UserStatisticsRow
+                                meanScore={props.userStatistics.meanScore}
+                                numPlays={props.userStatistics.numPlays}
+                                currentStreak={props.userStatistics.currentStreak}
+                                maxStreak={props.userStatistics.maxStreak}
+                            />
+                        )
+                    : null}
                 {
-                    friendScores.map((friendScore, idx) => (
-                        <FriendScore
-                            key={idx}
-                            index={idx}
-                            friendScore={friendScore}
-                            removeFriend={async () => {
-                                await persistentClient.POST('/juxtastat/unfriend', {
-                                    params: {
-                                        header: QuizModel.shared.userHeaders(),
-                                    },
-                                    body: {
-                                        requestee: props.quizFriends[idx][1],
-                                    },
-                                })
-                                const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
-                                props.setQuizFriends(newQuizFriends)
-                            }}
-                            quizFriends={props.quizFriends}
-                            setQuizFriends={props.setQuizFriends}
-                            otherResults={allResults}
-                        />
-                    ),
+                    friendScores.map((friendScore, idx) => {
+                        const removeFriend = async (): Promise<void> => {
+                            await persistentClient.POST('/juxtastat/unfriend', {
+                                params: {
+                                    header: QuizModel.shared.userHeaders(),
+                                },
+                                body: {
+                                    requestee: props.quizFriends[idx][1],
+                                },
+                            })
+                            const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
+                            props.setQuizFriends(newQuizFriends)
+                        }
+
+                        return viewMode === 'today'
+                            ? (
+                                    <FriendScoreRow
+                                        key={idx}
+                                        index={idx}
+                                        friendScore={friendScore}
+                                        quizFriends={props.quizFriends}
+                                        setQuizFriends={props.setQuizFriends}
+                                        otherResults={allResults}
+                                        removeFriend={removeFriend}
+                                    />
+                                )
+                            : (
+                                    friendSummaryStats[idx]?.friends
+                                        ? (
+                                                <MeanStatisticsRow
+                                                    key={idx}
+                                                    index={idx}
+                                                    friendScore={friendScore}
+                                                    summaryStats={friendSummaryStats[idx]}
+                                                    quizFriends={props.quizFriends}
+                                                    setQuizFriends={props.setQuizFriends}
+                                                    removeFriend={removeFriend}
+                                                />
+                                            )
+                                        : null
+                                )
+                    },
                     )
                 }
             </>
@@ -157,6 +241,52 @@ export function QuizFriendsPanel(props: {
                 <WithError content={content} error={error} />
             </div>
             {isLoading ? <MoonLoader size={spinnerSize} color={colors.textMain} cssOverride={spinnerStyle} /> : null}
+        </div>
+    )
+}
+
+function ViewModeButton(props: {
+    mode: 'today' | 'stats'
+    currentMode: 'today' | 'stats'
+    onClick: () => void
+    label: string
+}): ReactNode {
+    const colors = useColors()
+    const isSelected = props.currentMode === props.mode
+    return (
+        <button
+            onClick={props.onClick}
+            style={{
+                backgroundColor: isSelected ? colors.hueColors.blue : colors.slightlyDifferentBackground,
+                color: isSelected ? colors.buttonTextWhite : colors.textMain,
+                border: `1px solid ${isSelected ? colors.hueColors.blue : colors.textMain}`,
+                padding: '0.5em 1em',
+                cursor: 'pointer',
+            }}
+        >
+            {props.label}
+        </button>
+    )
+}
+
+function ViewModeToggle(props: {
+    viewMode: 'today' | 'stats'
+    setViewMode: (mode: 'today' | 'stats') => void
+}): ReactNode {
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5em', marginBottom: '1em' }}>
+            <ViewModeButton
+                mode="today"
+                currentMode={props.viewMode}
+                onClick={() => { props.setViewMode('today') }}
+                label="Today&apos;s Board"
+            />
+            <ViewModeButton
+                mode="stats"
+                currentMode={props.viewMode}
+                onClick={() => { props.setViewMode('stats') }}
+                label="Mean Statistics"
+            />
         </div>
     )
 }
@@ -224,13 +354,111 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
     )
 }
 
-function FriendScore(props: {
+function UserStatisticsRow(props: {
+    meanScore: number
+    numPlays: number
+    currentStreak: number
+    maxStreak: number
+}): ReactNode {
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'row',
+                height: scoreCorrectHeight,
+                alignItems: 'center',
+            }}
+        >
+            <div style={{ width: '25%' }}>You</div>
+            <div style={{ width: '20%', textAlign: 'center' }}>
+                {props.numPlays > 0 ? props.meanScore.toFixed(2) : '-'}
+            </div>
+            <div style={{ width: '15%', textAlign: 'center' }}>
+                {props.numPlays}
+            </div>
+            <div style={{ width: '20%', textAlign: 'center' }}>
+                {props.numPlays > 0
+                    ? (
+                            <>
+                                {props.currentStreak}
+                                /
+                                {props.maxStreak}
+                            </>
+                        )
+                    : '-'}
+            </div>
+            <div style={{ width: '20%', textAlign: 'right' }} />
+        </div>
+    )
+}
+
+function MeanStatisticsRow(props: {
     index: number
     friendScore: FriendScore
+    summaryStats: FriendSummaryStats
+    quizFriends: QuizFriends
+    setQuizFriends: (quizFriends: QuizFriends) => void
     removeFriend: () => Promise<void>
+}): ReactNode {
+    const friendName = props.friendScore.name ?? 'Unknown'
+
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'row',
+                height: scoreCorrectHeight,
+                alignItems: 'center',
+            }}
+        >
+            <div style={{ width: '25%' }}>
+                <EditableString
+                    content={friendName}
+                    onNewContent={(name) => {
+                        const newQuizFriends = [...props.quizFriends]
+                        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
+                        props.setQuizFriends(newQuizFriends)
+                    }}
+                    style={{ width: '100%', height: '100%' }}
+                    inputMode="text"
+                />
+            </div>
+            <div style={{ width: '20%', textAlign: 'center' }}>
+                {props.summaryStats.friends ? props.summaryStats.meanScore.toFixed(2) : '-'}
+            </div>
+            <div style={{ width: '15%', textAlign: 'center' }}>
+                {props.summaryStats.friends ? props.summaryStats.numPlays : '-'}
+            </div>
+            <div style={{ width: '20%', textAlign: 'center' }}>
+                {props.summaryStats.friends
+                    ? (
+                            <>
+                                {props.summaryStats.currentStreak}
+                                /
+                                {props.summaryStats.maxStreak}
+                            </>
+                        )
+                    : '-'}
+            </div>
+            <div style={{ width: '20%', textAlign: 'right' }}>
+                <button
+                    onClick={() => { void props.removeFriend() }}
+                    style={{ fontSize: '0.8em', padding: '0.2em 0.5em' }}
+                >
+                    Remove
+                </button>
+            </div>
+        </div>
+    )
+}
+
+function FriendScoreRow(props: {
+    index: number
+    friendScore: FriendScore
     quizFriends: QuizFriends
     setQuizFriends: (x: QuizFriends) => void
     otherResults: ResultToDisplayForFriends[]
+    removeFriend: () => Promise<void>
 }): ReactNode {
     const colors = useColors()
 
@@ -266,31 +494,33 @@ function FriendScore(props: {
     }
 
     const row = (
-        <div
-            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
-            className="testing-friends-section"
-        >
-            <div style={{ width: '25%' }}>
-                <EditableString
-                    content={props.friendScore.name ?? 'Unknown'}
-                    onNewContent={renameFriend}
-                    style={{ width: '100%', height: '100%' }}
-                    inputMode="text"
-                />
-            </div>
-            <div style={{ width: '50%' }}>
-                <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
-            </div>
-            <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
-                <button
-                    onClick={removeFriend}
-                    style={{ marginLeft: '1em' }}
-                    disabled={loading}
-                >
-                    Remove
-                </button>
-                {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
+        <div>
+            <div
+                style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
+                className="testing-friends-section"
+            >
+                <div style={{ width: '25%' }}>
+                    <EditableString
+                        content={props.friendScore.name ?? 'Unknown'}
+                        onNewContent={renameFriend}
+                        style={{ width: '100%', height: '100%' }}
+                        inputMode="text"
+                    />
+                </div>
+                <div style={{ width: '50%' }}>
+                    <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
+                </div>
+                <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
+                    <button
+                        onClick={removeFriend}
+                        style={{ marginLeft: '1em' }}
+                        disabled={loading}
+                    >
+                        Remove
+                    </button>
+                    {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
 
+                </div>
             </div>
         </div>
     )

@@ -43,6 +43,13 @@ class InfiniteResult(PositiveResult):
     maxScoreVersion: t.Optional[int]  # vulture: ignore -- used by the client
 
 
+class FriendSummaryStats(PositiveResult):
+    meanScore: float
+    numPlays: int
+    currentStreak: int
+    maxStreak: int
+
+
 def todays_score_for(
     req: AuthenticatedRequest,
     requesters: t.List[int | str],
@@ -158,4 +165,93 @@ def _infinite_results(
         maxScore=max_score,
         maxScoreSeed=max_score_seed,
         maxScoreVersion=max_score_version,
+    )
+
+
+def friend_summary_stats(
+    req: AuthenticatedRequest,
+    requesters: t.List[int | str],
+    quiz_kind: QuizKind,
+) -> t.List[NegativeResult | FriendSummaryStats]:
+    """
+    For each `requester` returns summary statistics (mean score, # plays, current/max streak)
+    if `(requester, requestee)` is a friend pair.
+    """
+    return _compute_friend_results(
+        req,
+        requesters,
+        compute_fn=lambda c, for_users: _compute_summary_stats(quiz_kind, c, for_users),
+    )
+
+
+def _compute_summary_stats(
+    quiz_kind: QuizKind, c: sqlite3.Cursor, for_users: t.Set[int]
+) -> FriendSummaryStats:
+    """
+    Calculate mean score, number of plays, current streak, and max streak for a friend.
+    """
+    table = table_for_quiz_kind[quiz_kind]
+    problem_column = problem_id_for_quiz_kind[quiz_kind]
+
+    # Get all stats for this user, ordered by day/week
+    c.execute(
+        (
+            f"SELECT {problem_column}, corrects FROM {table} "
+            f"WHERE user IN {sqlTuple(len(for_users))} "
+            f"ORDER BY {problem_column} ASC"
+        ),
+        list(for_users),
+    )
+    rows = c.fetchall()
+
+    if len(rows) == 0:
+        return FriendSummaryStats(
+            friends=True,
+            meanScore=0.0,
+            numPlays=0,
+            currentStreak=0,
+            maxStreak=0,
+        )
+
+    # Convert to scores (number of correct answers) and track problem identifiers
+    scores = []
+    problem_ids = []
+    for row in rows:
+        problem_id = row[0]
+        corrects = stats.bitvector_to_corrects(row[1])
+        score = sum(1 for c in corrects if c)
+        scores.append(score)
+        if quiz_kind == "juxtastat":
+            problem_ids.append(int(problem_id))
+        else:
+            assert quiz_kind == "retrostat"
+            assert problem_id.startswith("W")
+            problem_ids.append(int(problem_id[1:]))
+            problem_ids.append(problem_id)
+
+    problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))
+
+    # Calculate statistics
+    num_plays = len(scores)
+    mean_score = sum(scores) / num_plays if num_plays > 0 else 0.0
+
+    # Calculate streaks (3+ required, missing games break the streak)
+    max_streaks = [0] * len(scores)
+    for i in range(len(scores)):
+        if scores[i] >= 3:
+            if i > 0 and problem_ids[i] - problem_ids[i - 1] == 1:
+                max_streaks[i] = max_streaks[i - 1] + 1
+            else:
+                max_streaks[i] = 1
+        else:
+            max_streaks[i] = 0
+    max_streak = max(max_streaks) if max_streaks else 0
+    current_streak = max_streaks[-1] if max_streaks else 0
+
+    return FriendSummaryStats(
+        friends=True,
+        meanScore=round(mean_score, 2),
+        numPlays=num_plays,
+        currentStreak=current_streak,
+        maxStreak=max_streak,
     )
