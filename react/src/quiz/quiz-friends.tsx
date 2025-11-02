@@ -206,19 +206,15 @@ export function QuizFriendsPanel(props: {
                                     />
                                 )
                             : (
-                                    friendSummaryStats[idx]?.friends
-                                        ? (
-                                                <MeanStatisticsRow
-                                                    key={idx}
-                                                    index={idx}
-                                                    friendScore={friendScore}
-                                                    summaryStats={friendSummaryStats[idx]}
-                                                    quizFriends={props.quizFriends}
-                                                    setQuizFriends={props.setQuizFriends}
-                                                    removeFriend={removeFriend}
-                                                />
-                                            )
-                                        : null
+                                    <MeanStatisticsRow
+                                        key={idx}
+                                        index={idx}
+                                        friendScore={friendScore}
+                                        summaryStats={friendSummaryStats[idx]}
+                                        quizFriends={props.quizFriends}
+                                        setQuizFriends={props.setQuizFriends}
+                                        removeFriend={removeFriend}
+                                    />
                                 )
                     },
                     )
@@ -358,12 +354,13 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
 function MeanStatisticsRow(props: {
     index: number
     friendScore: FriendScore
-    summaryStats: FriendSummaryStats
+    summaryStats?: FriendSummaryStats
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
     removeFriend?: () => Promise<void>
 }): ReactNode {
     const friendName = props.friendScore.name ?? 'Unknown'
+    const colors = useColors()
 
     return (
         <div
@@ -372,6 +369,7 @@ function MeanStatisticsRow(props: {
                 flexDirection: 'row',
                 height: scoreCorrectHeight,
                 alignItems: 'center',
+                backgroundColor: props.index % 2 === 1 ? undefined : colors.slightlyDifferentBackground,
             }}
         >
             <div style={{ width: '25%' }}>
@@ -393,13 +391,13 @@ function MeanStatisticsRow(props: {
                         )}
             </div>
             <div style={{ width: '20%', textAlign: 'center' }}>
-                {props.summaryStats.friends ? props.summaryStats.meanScore.toFixed(2) : '-'}
+                {props.summaryStats?.friends ? props.summaryStats.meanScore.toFixed(2) : '-'}
             </div>
             <div style={{ width: '15%', textAlign: 'center' }}>
-                {props.summaryStats.friends ? props.summaryStats.numPlays : '-'}
+                {props.summaryStats?.friends ? props.summaryStats.numPlays : '-'}
             </div>
             <div style={{ width: '20%', textAlign: 'center' }}>
-                {props.summaryStats.friends
+                {props.summaryStats?.friends
                     ? (
                             <>
                                 {props.summaryStats.currentStreak}
