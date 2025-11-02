@@ -6,7 +6,6 @@ import React, { createContext, ReactNode, RefObject, useCallback, useContext, us
 import { QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
 import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
-import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
 import { BetterDatalist } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
@@ -156,7 +155,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             { display: 'B', key: 'bold', style: { fontWeight: 'bold ' } },
                             { display: 'I', key: 'italic', style: { fontStyle: 'italic' } },
                             { display: 'U', key: 'underline', style: { textDecoration: 'underline' } },
-                        ] as const).map(({ display, key, style }) => {
+                        ] as const).map(({ display, key, style }, buttonIndex, { length }) => {
                             return (
                                 <button
                                     key={key}
@@ -169,8 +168,13 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                     style={{
                                         ...style,
                                         width: '24px',
+                                        height: '24px',
                                         backgroundColor: format[key] ? colors.hueColors.blue : undefined,
-                                        color: format[key] ? colors.buttonTextWhite : undefined }}
+                                        color: format[key] ? colors.buttonTextWhite : undefined,
+                                        fontFamily: format.font,
+                                        borderRadius: buttonIndex === 0 ? '5px 0 0 5px' : (buttonIndex === length - 1) ? '0 5px 5px 0' : 0,
+                                        borderLeftWidth: buttonIndex > 0 ? 0 : undefined,
+                                    }}
                                 >
                                     {display}
                                 </button>
@@ -199,7 +203,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             'center',
                             'right',
                             'justify',
-                        ] as const).map((value) => {
+                        ] as const).map((value, buttonIndex, { length }) => {
                             return (
                                 <button
                                     key={value}
@@ -217,6 +221,8 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         backgroundColor: format.align === value ? colors.hueColors.blue : undefined,
+                                        borderRadius: buttonIndex === 0 ? '5px 0 0 5px' : (buttonIndex === length - 1) ? '0 5px 5px 0' : 0,
+                                        borderLeftWidth: buttonIndex > 0 ? 0 : undefined,
                                     }}
                                 >
                                     {alignIcon(value, format.align === value ? colors.buttonTextWhite : colors.textMain)}
