@@ -20,6 +20,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 
 import { useColors, useJuxtastatColors } from './colors'
+import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
     screencapElements = undefined,
@@ -41,6 +42,7 @@ export function PageTemplate({
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
+    const hideSidebarDesktop = useHideSidebarDesktop()
 
     useEffect(() => {
         document.body.style.backgroundColor = colors.background
@@ -61,10 +63,10 @@ export function PageTemplate({
     }, [colors, juxtaColors])
 
     useEffect(() => {
-        if (!mobileLayout && hamburgerOpen) {
+        if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {
             setHamburgerOpen(false)
         }
-    }, [hamburgerOpen, mobileLayout])
+    }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
     const hasScreenshotButton = screencapElements !== undefined
     const hasCSVButton = csvExportData !== undefined
@@ -110,6 +112,14 @@ export function PageTemplate({
             <div
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
                 style={{
+                    ...(mobileLayout
+                        ? { paddingLeft: '1em', paddingRight: '1em' }
+                        : {
+                                position: 'relative',
+                                maxWidth: hideSidebarDesktop ? undefined : '80em',
+                                marginLeft: 'auto',
+                                marginRight: 'auto',
+                            }),
                     backgroundColor: colors.background,
                     // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
                     // since desktop browsers don't respect meta[name=viewport]
@@ -160,7 +170,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.5'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.6'}
         </span>
     )
 }
@@ -168,7 +178,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-10-22'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-10-25'}
         </span>
     )
 }
@@ -190,30 +200,87 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: { hamburgerOpen: boolean, mainContent: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
+function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: {
+    hamburgerOpen: boolean
+    mainContent: React.ReactNode
+    showFooter: boolean
+    setHamburgerOpen: (open: boolean) => void
+}): ReactNode {
     const mobileLayout = useMobileLayout()
+    const hideSidebarDesktop = useHideSidebarDesktop()
 
-    if (hamburgerOpen) {
+    if (hamburgerOpen && !hideSidebarDesktop) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
-        <div className="body_panel">
-            {mobileLayout ? undefined : <LeftPanel setHamburgerOpen={setHamburgerOpen} />}
-            <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
+        <div style={{
+            position: 'relative',
+            width: '100%',
+            display: 'flex',
+        }}
+        >
+            {(!mobileLayout && (!hideSidebarDesktop || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
+            <div
+                className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}
+                style={mobileLayout
+                    ? { width: '100%' }
+                    : (hideSidebarDesktop
+                            ? { width: '100%', paddingLeft: '1em', paddingRight: '1em' }
+                            : { width: '80%', paddingLeft: '2em' })}
+            >
                 {mainContent}
-                <div className="gap"></div>
-                { showFooter ? <TemplateFooter /> : null }
+
+                { showFooter
+                    ? (
+                            <>
+                                <div className="gap" />
+                                <TemplateFooter />
+                            </>
+                        )
+                    : null }
             </div>
         </div>
     )
 }
 
 function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
-    return (
-        <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
+    const mobileLayout = useMobileLayout()
+    const colors = useColors()
+    const hideSidebarDesktop = useHideSidebarDesktop()
+    const sidebar = (
+        <div
+            className="left_panel"
+            style={mobileLayout
+                ? {}
+                : {
+                        width: '20%',
+                        float: 'left',
+                        borderRadius: hideSidebarDesktop ? '5px' : undefined,
+                        border: hideSidebarDesktop ? `1px solid ${colors.borderShadow}` : undefined,
+                        overflow: 'hidden', // needed so the corners aren't cut off
+                    }}
+        >
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
+    if (!mobileLayout && hideSidebarDesktop) {
+        return (
+            <div
+                style={{
+                    position: 'absolute',
+                    zIndex: 100,
+                    left: 0,
+                    right: 0,
+                    height: '100%',
+                    backgroundColor: `${colors.background}99`,
+                }}
+                onClick={() => { setHamburgerOpen(false) }}
+            >
+                {sidebar}
+            </div>
+        )
+    }
+    return sidebar
 }
 
 function Support(): ReactNode {

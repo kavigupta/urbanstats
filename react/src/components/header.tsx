@@ -6,6 +6,7 @@ import flag_dimensions from '../data/flag_dimensions'
 import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
+import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
 import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -44,7 +45,7 @@ export function Header(props: {
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!useMobileLayout() && props.hasUniverseSelector
+                    {!isMobile && props.hasUniverseSelector
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
                                     <UniverseSelector
@@ -125,6 +126,7 @@ function TopLeft(props: {
     hasUniverseSelector: boolean
     allUniverses: readonly string[]
 }): ReactNode {
+    const hideSidebarDesktop = useHideSidebarDesktop()
     if (useMobileLayout()) {
         return (
             <div className="left_panel_top" style={{ minWidth: '28%' }}>
@@ -145,6 +147,7 @@ function TopLeft(props: {
     else {
         return (
             <div className="left_panel_top" style={{ minWidth: '20%' }}>
+                {hideSidebarDesktop && <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />}
                 <HeaderImage />
             </div>
         )
@@ -153,8 +156,9 @@ function TopLeft(props: {
 
 function HeaderImage(): ReactNode {
     const colors = useColors()
-    const path = useMobileLayout() ? '/thumbnail.png' : colors.bannerURL
     const navContext = useContext(Navigator.Context)
+    const bannerKey = useHeaderLogoKey()
+    const path = useMobileLayout() ? '/thumbnail.png' : colors[bannerKey]
     return (
         <a
             {...navContext.link({ kind: 'index' }, { scroll: { kind: 'position', top: 0 } })}
