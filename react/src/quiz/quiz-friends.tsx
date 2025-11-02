@@ -367,8 +367,6 @@ function MeanStatisticsRow(props: {
     const friendName = props.friendScore.name ?? 'Unknown'
     const colors = useColors()
 
-    console.log('index', props.index, 'name', friendName)
-
     return (
         <div
             style={{

@@ -83,7 +83,7 @@ def infinite_results(
     )
 
 
-Result = t.TypeVar("Result", Corrects, InfiniteResult)
+Result = t.TypeVar("Result", Corrects, InfiniteResult, FriendSummaryStats)
 
 
 def _compute_friend_results(
@@ -248,7 +248,7 @@ def compute_streaks(scores: list[int], problem_ids: list[int]) -> tuple[int, int
     return max_streak, current_streak
 
 
-def extract_scores_and_problem_ids(quiz_kind, rows):
+def extract_scores_and_problem_ids(quiz_kind: QuizKind, rows: list[tuple[str, int]]) -> tuple[list[int], list[int]]:
     scores = []
     problem_ids = []
     for row in rows:
@@ -262,7 +262,6 @@ def extract_scores_and_problem_ids(quiz_kind, rows):
             assert quiz_kind == "retrostat"
             assert problem_id.startswith("W")
             problem_ids.append(int(problem_id[1:]))
-            problem_ids.append(problem_id)
 
-    problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))
+    problem_ids, scores = zip(*sorted(zip(problem_ids, scores))) # type: ignore
     return scores, problem_ids
