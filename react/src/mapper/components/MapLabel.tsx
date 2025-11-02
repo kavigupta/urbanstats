@@ -86,7 +86,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         display: 'flex',
                         alignItems: 'center',
                         padding: '5px',
-                        flexWrap: 'wrap',
+                        flexWrap: 'wrap-reverse',
                         gap: '5px',
                         minWidth: 'fit-content',
                         minHeight: 'fit-content',
