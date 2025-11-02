@@ -12,21 +12,25 @@ export const defaultAttributes = {
     underline: false,
     list: false,
     indent: 0,
-} satisfies USSOp['attributes']
+} satisfies LabelTextOp['attributes']
 
 export interface Label {
     bottomLeft: [number, number]
     topRight: [number, number]
-    text: AttributedText
+    text: LabelText
     backgroundColor: string
     borderColor: string
     borderWidth: number
 }
 
-export type AttributedText = USSOp[]
+export type LabelText = LabelTextOp[]
 
-const ussOpSchema = z.object({
-    insert: z.union([z.string(), z.object({ formula: z.string() })]),
+const labelTextOpSchema = z.object({
+    insert: z.union([
+        z.string(),
+        z.object({ formula: z.string() }),
+        z.object({ image: z.string().startsWith('data:') }), // Require data: prefix, otherwise loading remote images is a security problem
+    ]),
     attributes: z.optional(z.object({
         size: z.optional(z.string()),
         font: z.optional(z.string()),
@@ -39,15 +43,15 @@ const ussOpSchema = z.object({
     })),
 })
 
-type USSOp = z.infer<typeof ussOpSchema>
+export type LabelTextOp = z.infer<typeof labelTextOpSchema>
 
-export function toQuillDelta(text: AttributedText): Delta {
+export function toQuillDelta(text: LabelText): Delta {
     return new Delta(text)
 }
 
-export function fromQuillDelta(delta: Delta): AttributedText {
+export function fromQuillDelta(delta: Delta): LabelText {
     return delta.ops.flatMap((op) => {
-        const { success, data } = ussOpSchema.safeParse(op)
+        const { success, data } = labelTextOpSchema.safeParse(op)
         if (!success) {
             console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
             return []

@@ -5,9 +5,10 @@ import React, { createContext, ReactNode, RefObject, useContext, useEffect, useR
 
 import { QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
+import { fromQuillDelta, Label, toQuillDelta, defaultAttributes, LabelTextOp } from '../../urban-stats-script/constants/label'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
+import { NormalizeProto } from '../../utils/types'
 import { BetterDatalist } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
@@ -41,7 +42,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
     }
     const quillRef = useRef<Quill>()
 
-    const [format, setFormat] = useState(defaultAttributes)
+    const [format, setFormat] = useState<NormalizeProto<LabelTextOp>['attributes']>(defaultAttributes)
 
     useEffect(() => {
         const quill = quillRef.current!
@@ -186,15 +187,30 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     </div>
 
                     {/* Color Picker */}
-                    <IFrameInput
-                        type="color"
-                        value={Color(format.color).hex()}
-                        onChange={(e) => {
-                            quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
-                        }}
-                        disabled={selection?.index !== i}
-                        onFocus={refocus} // Since the picker doesn't always blur
-                    />
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Text</div>
+                        <IFrameInput
+                            type="color"
+                            value={Color(format.color).hex()}
+                            onChange={(e) => {
+                                quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
+                            }}
+                            disabled={selection?.index !== i}
+                            onFocus={refocus}
+                        />
+                    </div>
+
+                    {/* Background Color Picker */}
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Background</div>
+                        <IFrameInput
+                            type="color"
+                            value={Color(label.backgroundColor).hex()}
+                            onChange={(e) => {
+                                editLabel.modify({ backgroundColor: Color(e.target.value).hex() })
+                            }}
+                        />
+                    </div>
 
                     {/* Formula */}
                     <IFrameInput
