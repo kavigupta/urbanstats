@@ -93,7 +93,7 @@ export function BetterDatalist<T>({ value, onChange, parse, possibleValues, rend
     const InputElem = iframe ? IFrameInput : 'input'
 
     return (
-        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: 0.5, display: 'flex', alignItems: 'center', minWidth: '50px' }}>
             <InputElem
                 ref={inputRef}
                 type="text"
@@ -124,7 +124,7 @@ export function BetterDatalist<T>({ value, onChange, parse, possibleValues, rend
                 }}
                 placeholder="Search options..."
                 style={{
-                    flex: 1,
+                    width: '100%',
                     padding: `${labelPadding} 8px`,
                     border: `1px solid ${parse(searchValue) === cannotParse ? colors.hueColors.red : colors.ordinalTextColor}`,
                     borderRadius: '4px',

@@ -76,28 +76,51 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         backgroundColor: `${label.backgroundColor}aa`,
                         border: `${label.borderWidth}px solid ${label.borderColor}`,
                         borderRadius: '5px 5px 0 0',
-                        height: '50px',
                         width: '100%',
                         display: 'flex',
+                        alignItems: 'center',
+                        padding: '5px',
+                        flexWrap: 'wrap',
+                        gap: '5px',
+                        minWidth: 'fit-content',
+                        minHeight: 'fit-content',
                     }}
                 >
-                    {/* Color Picker */}
-                    <IFrameInput
-                        type="color"
-                        value={Color(format.color).hex()}
-                        onChange={(e) => {
-                            quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
-                        }}
-                        disabled={selection?.index !== i}
-                        onFocus={refocus} // Since the picker doesn't always blur
-                    />
+                    <div style={{ display: 'flex' }}>
+                        {/* Font Family Picker */}
+                        <BetterSelector
+                            iframe
+                            value={format.font}
+                            onChange={(fontFamily) => {
+                                quillRef.current!.format('font', fontFamily, 'user')
+                            }}
+                            possibleValues={['Jost', 'Times New Roman']}
+                            renderValue={v => ({
+                                text: v,
+                                node: highlighted => (
+                                    <div style={{
+                                        fontFamily: v,
+                                        padding: '8px 12px',
+                                        backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
+                                        color: colors.textMain,
+                                    }}
+                                    >
+                                        {v}
+                                    </div>
+                                ) })}
+                            inputStyle={{ fontFamily: format.font }}
+                            disabled={selection?.index !== i}
+                            onBlur={refocus}
+                        />
 
-                    {/* Font Size Picker */}
-                    <div style={{ width: '50px' }}>
+                        {/* Font Size Picker */}
                         <BetterDatalist
                             iframe
                             value={format.size}
                             onChange={(fontSize) => {
+                                if (/^[0-9]+$/.test(fontSize)) {
+                                    fontSize = `${fontSize}px`
+                                }
                                 quillRef.current!.format('size', fontSize, 'user')
                             }}
                             parse={(v) => {
@@ -124,74 +147,59 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         />
                     </div>
 
-                    {/* Font Family Picker */}
-                    <div style={{ width: '200px' }}>
-                        <BetterSelector
-                            iframe
-                            value={format.font}
-                            onChange={(fontFamily) => {
-                                quillRef.current!.format('font', fontFamily, 'user')
+                    <div style={{ display: 'flex' }}>
+                        {/* Bold */}
+                        <IFrameInput
+                            type="button"
+                            value="B"
+                            onClick={() => {
+                                quillRef.current!.format('bold', !format.bold, 'user')
+                                refocus()
                             }}
-                            possibleValues={['Jost', 'Times New Roman']}
-                            renderValue={v => ({
-                                text: v,
-                                node: highlighted => (
-                                    <div style={{
-                                        fontFamily: v,
-                                        padding: '8px 12px',
-                                        backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
-                                        color: colors.textMain,
-                                    }}
-                                    >
-                                        {v}
-                                    </div>
-                                ) })}
-                            inputStyle={{ fontFamily: format.font }}
                             disabled={selection?.index !== i}
-                            onBlur={refocus}
+                            style={{ fontWeight: format.bold ? 'bold' : 'normal', width: '24px' }}
+                        />
+
+                        {/* Italic */}
+                        <IFrameInput
+                            type="button"
+                            value="I"
+                            onClick={() => {
+                                quillRef.current!.format('italic', !format.italic, 'user')
+                                refocus()
+                            }}
+                            disabled={selection?.index !== i}
+                            style={{ fontStyle: format.italic ? 'italic' : 'normal', width: '24px' }}
+                        />
+
+                        {/* Underline */}
+                        <IFrameInput
+                            type="button"
+                            value="U"
+                            onClick={() => {
+                                quillRef.current!.format('underline', !format.underline, 'user')
+                                refocus()
+                            }}
+                            disabled={selection?.index !== i}
+                            style={{ textDecoration: format.underline ? 'underline' : 'none', width: '24px' }}
                         />
                     </div>
 
-                    {/* Bold */}
+                    {/* Color Picker */}
                     <IFrameInput
-                        type="button"
-                        value="B"
-                        onClick={() => {
-                            quillRef.current!.format('bold', !format.bold, 'user')
-                            refocus()
+                        type="color"
+                        value={Color(format.color).hex()}
+                        onChange={(e) => {
+                            quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
                         }}
                         disabled={selection?.index !== i}
-                        style={{ fontWeight: format.bold ? 'bold' : 'normal' }}
-                    />
-
-                    {/* Italic */}
-                    <IFrameInput
-                        type="button"
-                        value="I"
-                        onClick={() => {
-                            quillRef.current!.format('italic', !format.italic, 'user')
-                            refocus()
-                        }}
-                        disabled={selection?.index !== i}
-                        style={{ fontStyle: format.italic ? 'italic' : 'normal' }}
-                    />
-
-                    {/* Underline */}
-                    <IFrameInput
-                        type="button"
-                        value="U"
-                        onClick={() => {
-                            quillRef.current!.format('underline', !format.underline, 'user')
-                            refocus()
-                        }}
-                        disabled={selection?.index !== i}
-                        style={{ textDecoration: format.underline ? 'underline' : 'none' }}
+                        onFocus={refocus} // Since the picker doesn't always blur
                     />
 
                     {/* Formula */}
                     <IFrameInput
                         type="button"
-                        value="Formula"
+                        value="x²"
                         onClick={() => {
                             if (selection?.index === i) {
                                 const formula = prompt('Enter formula')

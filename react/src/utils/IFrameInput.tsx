@@ -1,3 +1,4 @@
+import stableStringify from 'json-stable-stringify'
 import React, { useRef, useState, useEffect, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -17,16 +18,17 @@ function IFrameInputRef(props: React.DetailedHTMLProps<React.InputHTMLAttributes
         for (const style of Array.from(document.head.querySelectorAll('style'))) {
             doc.head.appendChild(style.cloneNode(true))
         }
-
-        doc.body.style.margin = '0px'
-        doc.body.style.backgroundColor = 'transparent'
         setFrameDoc(doc)
     }, [])
 
     const styleDocument = useStyleDocument()
 
     useEffect(() => {
-        styleDocument(frameRef.current!.contentWindow!.document)
+        const doc = frameRef.current!.contentWindow!.document
+
+        styleDocument(doc)
+        doc.body.style.margin = '0px'
+        doc.body.style.backgroundColor = 'transparent'
     }, [styleDocument])
 
     const [frame, setFrame] = useState({ left: 0, top: 0, width: 0, height: 0 })
@@ -36,13 +38,23 @@ function IFrameInputRef(props: React.DetailedHTMLProps<React.InputHTMLAttributes
     useEffect(() => {
         const layoutInput = layoutInputRef.current!
         const updateFrame = (): void => {
-            setFrame({ left: layoutInput.offsetLeft, top: layoutInput.offsetTop, width: layoutInput.offsetWidth, height: layoutInput.offsetHeight })
+            setFrame((f) => {
+                const newFrame = { left: layoutInput.offsetLeft, top: layoutInput.offsetTop, width: layoutInput.offsetWidth, height: layoutInput.offsetHeight }
+                if (stableStringify(f) === stableStringify(newFrame)) {
+                    return f
+                }
+                return newFrame
+            })
         }
         updateFrame()
-        const observer = new IntersectionObserver(updateFrame)
-        observer.observe(layoutInput)
+        const resizeObserver = new ResizeObserver(updateFrame)
+        let ancestor: HTMLElement | null = layoutInput
+        while (ancestor !== null) {
+            resizeObserver.observe(ancestor)
+            ancestor = ancestor.parentElement
+        }
         return () => {
-            observer.disconnect()
+            resizeObserver.disconnect()
         }
     }, [])
 
