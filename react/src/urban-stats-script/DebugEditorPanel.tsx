@@ -1,4 +1,3 @@
-import { MathJaxContext } from 'better-react-mathjax'
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CheckboxSettingCustom } from '../components/sidebar'
@@ -14,11 +13,7 @@ import { useUndoRedo } from './editor-utils'
 const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
-    text: [
-        { kind: 'string', string: 'Hello, World!\n', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
-        { kind: 'formula', formula: 'x^2', attributes: { color: colorThemes['Light Mode'].textMain, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Jost', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
-        { kind: 'string', string: '\nHello, World!\n', attributes: { color: colorThemes['Light Mode'].hueColors.green, fontSize: { kind: 'pixels', pixels: 16 }, fontFamily: 'Times New Roman', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none' } },
-    ],
+    text: [{ string: 'Hello, World!', attributes: {} }],
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,
@@ -106,13 +101,7 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
                         }}
                         ref={containerRef}
                     >
-                        {content.some(label => label.text.some(s => s.kind === 'formula'))
-                            ? (
-                                    <MathJaxContext>
-                                        {labels}
-                                    </MathJaxContext>
-                                )
-                            : labels}
+                        {labels}
                     </div>
                 </ThemeContext.Provider>
             </SelectionContext.Provider>

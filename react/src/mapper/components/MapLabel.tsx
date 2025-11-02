@@ -1,14 +1,14 @@
 import Color from 'color'
-import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
+// eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
+import Quill, { Parchment, Range } from 'quill'
+import React, { createContext, ReactNode, RefObject, useContext, useEffect, useRef, useState } from 'react'
 
-import { RichTextEditor } from '../../components/RichTextEditor'
+import { defaults, QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { Label } from '../../urban-stats-script/constants/label'
-import { Range, setRange } from '../../urban-stats-script/editor-utils'
-import { concat, getAttributes, length, setAttributes, slice, StringAttributes } from '../../utils/AttributedText'
+import { fromQuillDelta, Label, toQuillDelta } from '../../urban-stats-script/constants/label'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { Property } from '../../utils/Property'
-import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
+import { BetterDatalist } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
 import { EditInsetsHandles } from './InsetMap'
@@ -32,37 +32,33 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
     const divRef = useRef<HTMLDivElement>(null)
 
-    const getCursorAttributes = useCallback((): StringAttributes => {
-        return getAttributes(label.text, selection?.index === i ? selection.range : null)
-    }, [label.text, selection, i])
-
-    const [cursorAttributes, setCursorAttributes] = useState(getCursorAttributes)
-
-    useEffect(() => {
-        setCursorAttributes(getCursorAttributes)
-    }, [getCursorAttributes])
-
     const colors = useColors()
-
-    const editorRef = useRef<HTMLPreElement>(null)
-
-    const maybeModifyAttributes = (newAttribs: Partial<StringAttributes>): void => {
-        if (editLabel && selection?.index === i) {
-            if (selection.range.start !== selection.range.end) {
-                editLabel.modify({ text: setAttributes(label.text, selection.range, newAttribs) })
-            }
-            else {
-                setCursorAttributes(a => ({ ...a, ...newAttribs }))
-            }
-        }
-    }
 
     const refocus = (): void => {
         if (selection?.index === i) {
-            editorRef.current!.focus()
-            setRange(editorRef.current!, selection.range)
+            quillRef.current!.focus()
+            quillRef.current!.setSelection(selection.range)
         }
     }
+    const quillRef = useRef<Quill>()
+
+    const [format, setFormat] = useState(defaults)
+
+    useEffect(() => {
+        const quill = quillRef.current!
+        const listener = (): void => {
+            const currentSelection = quill.getSelection(false)
+            if (currentSelection !== null) {
+                const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
+                setFormat({ ...defaults, ...currentFormat })
+            }
+        }
+        listener()
+        quill.on('editor-change', listener)
+        return () => {
+            quill.off('editor-change', listener)
+        }
+    }, [quillRef])
 
     return (
         <div
@@ -89,9 +85,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     {/* Color Picker */}
                     <IFrameInput
                         type="color"
-                        value={Color(cursorAttributes.color).hex()}
+                        value={Color(format.color).hex()}
                         onChange={(e) => {
-                            maybeModifyAttributes({ color: e.target.value })
+                            quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
                         }}
                         disabled={selection?.index !== i}
                         onFocus={refocus}
@@ -104,33 +100,29 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     <div style={{ width: '50px' }}>
                         <BetterDatalist
                             iframe
-                            value={cursorAttributes.fontSize}
+                            value={format.size}
                             onChange={(fontSize) => {
-                                maybeModifyAttributes({ fontSize })
+                                quillRef.current!.format('size', fontSize, 'user')
                             }}
                             parse={(v) => {
-                                const result = parseFloat(v)
-                                if (isFinite(result)) {
-                                    return { kind: 'pixels' as const, pixels: result }
-                                }
-                                return cannotParse
+                                return v
                             }}
-                            possibleValues={[8, 10, 12, 14, 16, 20, 24, 36].map(n => ({ kind: 'pixels' as const, pixels: n }))}
+                            possibleValues={[8, 10, 12, 14, 16, 20, 24, 36].map(n => `${n}px`)}
                             renderValue={v => ({
-                                text: v.pixels.toString(),
+                                text: v,
                                 node: highlighted => (
                                     <div style={{
-                                        fontSize: `${v.pixels}px`,
-                                        fontFamily: cursorAttributes.fontFamily,
+                                        fontSize: v,
+                                        fontFamily: format.font,
                                         padding: '8px 12px',
                                         backgroundColor: highlighted ? colors.slightlyDifferentBackgroundFocused : undefined,
                                         color: colors.textMain,
                                     }}
                                     >
-                                        {v.pixels.toString()}
+                                        {v}
                                     </div>
                                 ) })}
-                            inputStyle={{ fontFamily: cursorAttributes.fontFamily }}
+                            inputStyle={{ fontFamily: format.font }}
                             disabled={selection?.index !== i}
                             onBlur={refocus}
                         />
@@ -140,9 +132,9 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     <div style={{ width: '200px' }}>
                         <BetterSelector
                             iframe
-                            value={cursorAttributes.fontFamily}
+                            value={format.font}
                             onChange={(fontFamily) => {
-                                maybeModifyAttributes({ fontFamily })
+                                quillRef.current!.format('font', fontFamily, 'user')
                             }}
                             possibleValues={['Jost', 'Times New Roman']}
                             renderValue={v => ({
@@ -158,7 +150,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         {v}
                                     </div>
                                 ) })}
-                            inputStyle={{ fontFamily: cursorAttributes.fontFamily }}
+                            inputStyle={{ fontFamily: format.font }}
                             disabled={selection?.index !== i}
                             onBlur={refocus}
                         />
@@ -169,11 +161,11 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         type="button"
                         value="B"
                         onClick={() => {
-                            maybeModifyAttributes({ fontWeight: cursorAttributes.fontWeight === 'normal' ? 'bold' : 'normal' })
+                            quillRef.current!.format('bold', !format.bold, 'user')
                             refocus()
                         }}
                         disabled={selection?.index !== i}
-                        style={{ fontWeight: cursorAttributes.fontWeight }}
+                        style={{ fontWeight: format.bold ? 'bold' : 'normal' }}
                     />
 
                     {/* Italic */}
@@ -181,11 +173,11 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         type="button"
                         value="I"
                         onClick={() => {
-                            maybeModifyAttributes({ fontStyle: cursorAttributes.fontStyle === 'normal' ? 'italic' : 'normal' })
+                            quillRef.current!.format('italic', !format.italic, 'user')
                             refocus()
                         }}
                         disabled={selection?.index !== i}
-                        style={{ fontStyle: cursorAttributes.fontStyle }}
+                        style={{ fontStyle: format.italic ? 'italic' : 'normal' }}
                     />
 
                     {/* Underline */}
@@ -193,11 +185,11 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         type="button"
                         value="U"
                         onClick={() => {
-                            maybeModifyAttributes({ textDecoration: cursorAttributes.textDecoration === 'none' ? 'underline' : 'none' })
+                            quillRef.current!.format('underline', !format.underline, 'user')
                             refocus()
                         }}
                         disabled={selection?.index !== i}
-                        style={{ textDecoration: cursorAttributes.textDecoration }}
+                        style={{ textDecoration: format.underline ? 'underline' : 'none' }}
                     />
 
                     {/* Formula */}
@@ -208,13 +200,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             if (selection?.index === i) {
                                 const formula = prompt('Enter formula')
                                 if (formula) {
-                                    editLabel.modify({
-                                        text: concat([
-                                            slice(label.text, { start: 0, end: selection.range.start }),
-                                            [{ kind: 'formula', formula, attributes: getAttributes(label.text, selection.range) }],
-                                            slice(label.text, { start: selection.range.end, end: length(label.text) }),
-                                        ]),
-                                    })
+                                    quillRef.current!.insertEmbed(selection.range.index, 'formula', formula, 'user')
                                 }
                                 refocus()
                             }
@@ -223,12 +209,15 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     />
                 </div>
             )}
-            <RichTextEditor
-                style={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}`, padding: '0.5em' }}
-                text={label.text}
-                setText={(newText) => { editLabel!.modify({ text: newText }) }}
+            <QuillEditor
+                quillRef={quillRef}
+                editable={!!editLabel}
+                content={toQuillDelta(label.text)}
+                onTextChange={(delta) => {
+                    editLabel!.modify({ text: fromQuillDelta(delta) })
+                }}
                 selection={selection?.index === i ? selection.range : null}
-                setSelection={(range) => {
+                onSelectionChange={(range) => {
                     if (range !== null) {
                         selectionProperty.value = { index: i, range }
                     }
@@ -236,9 +225,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         selectionProperty.value = undefined
                     }
                 }}
-                editable={!!editLabel}
-                cursorAttributes={cursorAttributes}
-                eRef={editorRef}
+                containerStyle={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}` }}
             />
             { editLabel && (
                 <EditInsetsHandles
@@ -270,3 +257,11 @@ export interface Selection {
 
 // eslint-disable-next-line no-restricted-syntax -- React context
 export const SelectionContext = createContext(new Property<Selection | undefined>(undefined))
+
+const fontAttributor = Quill.import('attributors/style/font') as Parchment.Attributor
+fontAttributor.whitelist = undefined
+Quill.register(fontAttributor, true)
+
+const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attributor
+sizeAttributor.whitelist = undefined
+Quill.register(sizeAttributor, true)
