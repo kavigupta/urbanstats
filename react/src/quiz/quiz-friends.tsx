@@ -141,7 +141,14 @@ export function QuizFriendsPanel(props: {
             </div>
             {props.quizDescriptor.kind !== 'infinite'
                 ? (
-                        <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+                        <ViewModeToggle
+                            value={viewMode}
+                            setValue={setViewMode}
+                            options={[
+                                { value: 'today', label: 'Today' },
+                                { value: 'stats', label: 'Mean Statistics' },
+                            ]}
+                        />
                     )
                 : null}
             <>
@@ -242,14 +249,14 @@ export function QuizFriendsPanel(props: {
     )
 }
 
-function ViewModeButton(props: {
-    mode: 'today' | 'stats'
-    currentMode: 'today' | 'stats'
+function ViewModeButton<T extends string>(props: {
+    value: T
+    currentValue: T
     onClick: () => void
     label: string
 }): ReactNode {
     const colors = useColors()
-    const isSelected = props.currentMode === props.mode
+    const isSelected = props.currentValue === props.value
     return (
         <button
             onClick={props.onClick}
@@ -266,24 +273,22 @@ function ViewModeButton(props: {
     )
 }
 
-function ViewModeToggle(props: {
-    viewMode: 'today' | 'stats'
-    setViewMode: (mode: 'today' | 'stats') => void
+function ViewModeToggle<T extends string>(props: {
+    value: T
+    setValue: (value: T) => void
+    options: { value: T, label: string }[]
 }): ReactNode {
     return (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5em', marginBottom: '1em' }}>
-            <ViewModeButton
-                mode="today"
-                currentMode={props.viewMode}
-                onClick={() => { props.setViewMode('today') }}
-                label="Today&apos;s Board"
-            />
-            <ViewModeButton
-                mode="stats"
-                currentMode={props.viewMode}
-                onClick={() => { props.setViewMode('stats') }}
-                label="Mean Statistics"
-            />
+            {props.options.map(option => (
+                <ViewModeButton
+                    key={option.value}
+                    value={option.value}
+                    currentValue={props.value}
+                    onClick={() => { props.setValue(option.value) }}
+                    label={option.label}
+                />
+            ))}
         </div>
     )
 }
