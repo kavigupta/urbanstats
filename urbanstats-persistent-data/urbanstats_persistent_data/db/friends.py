@@ -214,6 +214,41 @@ def _compute_summary_stats(
         )
 
     # Convert to scores (number of correct answers) and track problem identifiers
+    scores, problem_ids = extract_scores_and_problem_ids(quiz_kind, rows)
+
+    # Calculate statistics
+    num_plays = len(scores)
+    mean_score = sum(scores) / num_plays if num_plays > 0 else 0.0
+
+    max_streak, current_streak = compute_streaks(scores, problem_ids)
+
+    return FriendSummaryStats(
+        friends=True,
+        meanScore=round(mean_score, 2),
+        numPlays=num_plays,
+        currentStreak=current_streak,
+        maxStreak=max_streak,
+    )
+
+
+def compute_streaks(scores: list[int], problem_ids: list[int]) -> tuple[int, int]:
+    # Calculate streaks (3+ required, missing games break the streak)
+    max_streaks = [0] * len(scores)
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(scores)):
+        if scores[i] >= 3:
+            if i > 0 and problem_ids[i] - problem_ids[i - 1] == 1:
+                max_streaks[i] = max_streaks[i - 1] + 1
+            else:
+                max_streaks[i] = 1
+        else:
+            max_streaks[i] = 0
+    max_streak = max(max_streaks) if max_streaks else 0
+    current_streak = max_streaks[-1] if max_streaks else 0
+    return max_streak, current_streak
+
+
+def extract_scores_and_problem_ids(quiz_kind, rows):
     scores = []
     problem_ids = []
     for row in rows:
@@ -230,28 +265,4 @@ def _compute_summary_stats(
             problem_ids.append(problem_id)
 
     problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))
-
-    # Calculate statistics
-    num_plays = len(scores)
-    mean_score = sum(scores) / num_plays if num_plays > 0 else 0.0
-
-    # Calculate streaks (3+ required, missing games break the streak)
-    max_streaks = [0] * len(scores)
-    for i in range(len(scores)):
-        if scores[i] >= 3:
-            if i > 0 and problem_ids[i] - problem_ids[i - 1] == 1:
-                max_streaks[i] = max_streaks[i - 1] + 1
-            else:
-                max_streaks[i] = 1
-        else:
-            max_streaks[i] = 0
-    max_streak = max(max_streaks) if max_streaks else 0
-    current_streak = max_streaks[-1] if max_streaks else 0
-
-    return FriendSummaryStats(
-        friends=True,
-        meanScore=round(mean_score, 2),
-        numPlays=num_plays,
-        currentStreak=current_streak,
-        maxStreak=max_streak,
-    )
+    return scores, problem_ids
