@@ -494,33 +494,31 @@ function FriendScoreRow(props: {
     }
 
     const row = (
-        <div>
-            <div
-                style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
-                className="testing-friends-section"
-            >
-                <div style={{ width: '25%' }}>
-                    <EditableString
-                        content={props.friendScore.name ?? 'Unknown'}
-                        onNewContent={renameFriend}
-                        style={{ width: '100%', height: '100%' }}
-                        inputMode="text"
-                    />
-                </div>
-                <div style={{ width: '50%' }}>
-                    <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
-                </div>
-                <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
-                    <button
-                        onClick={removeFriend}
-                        style={{ marginLeft: '1em' }}
-                        disabled={loading}
-                    >
-                        Remove
-                    </button>
-                    {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
+        <div
+            style={{ display: 'flex', flexDirection: 'row', height: scoreCorrectHeight, alignItems: 'center' }}
+            className="testing-friends-section"
+        >
+            <div style={{ width: '25%' }}>
+                <EditableString
+                    content={props.friendScore.name ?? 'Unknown'}
+                    onNewContent={renameFriend}
+                    style={{ width: '100%', height: '100%' }}
+                    inputMode="text"
+                />
+            </div>
+            <div style={{ width: '50%' }}>
+                <FriendScoreCorrects {...props.friendScore} otherResults={props.otherResults} />
+            </div>
+            <div style={{ width: '25%', display: 'flex', height: addFriendHeight }}>
+                <button
+                    onClick={removeFriend}
+                    style={{ marginLeft: '1em' }}
+                    disabled={loading}
+                >
+                    Remove
+                </button>
+                {loading ? <GridLoader color={colors.textMain} size="4px" cssOverride={{ marginLeft: '10px' }} /> : null}
 
-                </div>
             </div>
         </div>
     )
