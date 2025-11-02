@@ -7,13 +7,13 @@ import { OverrideTheme, useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { Property } from '../utils/Property'
 
-import { defaultAttributes, Label } from './constants/label'
+import { Label } from './constants/label'
 import { useUndoRedo } from './editor-utils'
 
 const newLabel: Label = {
     bottomLeft: [0.25, 0.25],
     topRight: [0.75, 0.75],
-    text: [{ insert: '', attributes: defaultAttributes }],
+    text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
     backgroundColor: colorThemes['Light Mode'].background,
     borderColor: colorThemes['Light Mode'].textMain,
     borderWidth: 1,
