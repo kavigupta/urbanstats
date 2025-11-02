@@ -37,7 +37,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
     const refocus = (): void => {
         if (selection?.index === i) {
             quillRef.current!.focus()
-            quillRef.current!.setSelection(selection.range)
         }
     }
     const quillRef = useRef<Quill>()
@@ -90,10 +89,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
                         }}
                         disabled={selection?.index !== i}
-                        onFocus={refocus}
-                        onBlur={() => {
-                            setTimeout(refocus, 100)
-                        }}
+                        onFocus={refocus} // Since the picker doesn't always blur
                     />
 
                     {/* Font Size Picker */}
@@ -238,10 +234,6 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                     duplicate={editLabel.duplicate}
                     add={undefined}
                     shouldHaveCenterHandle={true}
-                    /*
-                                Allowing reordering on the main map in case you want to put its corner in front of an inset or something
-                                it also eliminates the weird edge case where the main map is not the 0th inset
-                                */
                     moveUp={i + 1 < numLabels ? () => { editLabel.moveUp() } : undefined}
                     moveDown={i > 0 ? () => { editLabel.moveDown() } : undefined}
                 />
