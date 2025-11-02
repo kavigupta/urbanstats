@@ -44,10 +44,10 @@ class InfiniteResult(PositiveResult):
 
 
 class FriendSummaryStats(PositiveResult):
-    meanScore: float
-    numPlays: int
-    currentStreak: int
-    maxStreak: int
+    meanScore: float # vulture: ignore -- used by the client
+    numPlays: int # vulture: ignore -- used by the client
+    currentStreak: int # vulture: ignore -- used by the client
+    maxStreak: int # vulture: ignore -- used by the client
 
 
 def todays_score_for(
