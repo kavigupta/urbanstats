@@ -214,6 +214,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                             style={{
                                 cursor: 'pointer',
                                 borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
+                                overflow: 'hidden',
                             }}
                             onMouseEnter={() => { setHighlightedIndex(index) }}
                         >

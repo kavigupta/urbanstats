@@ -1,16 +1,18 @@
 import Color from 'color'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
-import Quill, { Parchment, Range } from 'quill'
+import Quill, { Delta, Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { QuillEditor } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
 import { fromQuillDelta, Label, toQuillDelta, defaultAttributes } from '../../urban-stats-script/constants/label'
 import { Property } from '../../utils/Property'
-import { BetterDatalist } from '../settings/BetterDatalist'
+import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
 import { EditInsetsHandles } from './InsetMap'
+
+const toolbarHeight = '30px'
 
 export function MapLabel({ label, container, editLabel, i, numLabels }: {
     label: Label
@@ -75,7 +77,10 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         position: 'absolute',
                         bottom: '100%',
                         backgroundColor: `${label.backgroundColor}aa`,
-                        border: `${label.borderWidth}px solid ${label.borderColor}`,
+                        borderBottom: 0,
+                        borderTop: `1px solid ${colors.borderShadow}`,
+                        borderLeft: `1px solid ${colors.borderShadow}`,
+                        borderRight: `1px solid ${colors.borderShadow}`,
                         borderRadius: '5px 5px 0 0',
                         width: '100%',
                         display: 'flex',
@@ -85,6 +90,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                         gap: '5px',
                         minWidth: 'fit-content',
                         minHeight: 'fit-content',
+                        justifyContent: 'space-between',
                     }}
                 >
                     <div style={{ display: 'flex' }}>
@@ -110,7 +116,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         {v}
                                     </div>
                                 ) })}
-                            inputStyle={{ fontFamily: format.font }}
+                            inputStyle={{ fontFamily: format.font, height: toolbarHeight, borderRadius: '4px 0 0 4px', borderRight: 'none' }}
                             disabled={selection?.index !== i}
                             onBlur={refocus}
                         />
@@ -144,7 +150,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                         {v}
                                     </div>
                                 ) })}
-                            inputStyle={{ fontFamily: format.font }}
+                            inputStyle={{ fontFamily: format.font, height: toolbarHeight, borderRadius: '0 4px 4px 0' }}
                             disabled={selection?.index !== i}
                             onBlur={refocus}
                         />
@@ -167,13 +173,14 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                     disabled={selection?.index !== i}
                                     style={{
                                         ...style,
-                                        width: '24px',
-                                        height: '24px',
+                                        width: toolbarHeight,
+                                        height: toolbarHeight,
                                         backgroundColor: format[key] ? colors.hueColors.blue : undefined,
                                         color: format[key] ? colors.buttonTextWhite : undefined,
                                         fontFamily: format.font,
                                         borderRadius: buttonIndex === 0 ? '5px 0 0 5px' : (buttonIndex === length - 1) ? '0 5px 5px 0' : 0,
                                         borderLeftWidth: buttonIndex > 0 ? 0 : undefined,
+                                        fontSize: '18px',
                                     }}
                                 >
                                     {display}
@@ -184,7 +191,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
 
                     {/* Color Picker */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Text</div>
+                        <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Text</div>
                         <input
                             type="color"
                             value={Color(format.color).hex()}
@@ -194,6 +201,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             }}
                             disabled={selection?.index !== i}
                             onFocus={refocus}
+                            style={{ height: toolbarHeight }}
                         />
                     </div>
 
@@ -205,7 +213,7 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                             'justify',
                         ] as const).map((value, buttonIndex, { length }) => {
                             return (
-                                <button
+                                <IconButton
                                     key={value}
                                     onClick={() => {
                                         quillRef.current!.format('align', value, 'user')
@@ -214,52 +222,108 @@ export function MapLabel({ label, container, editLabel, i, numLabels }: {
                                     }}
                                     disabled={selection?.index !== i}
                                     style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        padding: 0,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
                                         backgroundColor: format.align === value ? colors.hueColors.blue : undefined,
                                         borderRadius: buttonIndex === 0 ? '5px 0 0 5px' : (buttonIndex === length - 1) ? '0 5px 5px 0' : 0,
                                         borderLeftWidth: buttonIndex > 0 ? 0 : undefined,
                                     }}
-                                >
-                                    {alignIcon(value, format.align === value ? colors.buttonTextWhite : colors.textMain)}
-                                </button>
+                                    icon={value}
+                                    color={format.align === value ? colors.buttonTextWhite : colors.textMain}
+                                />
                             )
                         })}
                     </div>
 
                     {/* Background Color Picker */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <div style={{ color: colors.ordinalTextColor, fontSize: '12px' }}>Background</div>
+                        <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Background</div>
                         <input
                             type="color"
                             value={Color(label.backgroundColor).hex()}
                             onChange={(e) => {
                                 editLabel.modify({ backgroundColor: Color(e.target.value).hex() })
                             }}
+                            style={{ height: toolbarHeight }}
                         />
                     </div>
 
-                    {/* Formula */}
-                    <button
-                        onClick={() => {
-                            if (selection?.index === i) {
-                                const formula = prompt('Enter formula')
-                                if (formula) {
-                                    quillRef.current!.insertEmbed(selection.range.index, 'formula', formula, 'user')
-                                    quillRef.current!.insertText(selection.range.index + 1, ' ', 'user')
-                                    quillRef.current!.setSelection(selection.range.index + 2, 'user')
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                        {/* Formula */}
+                        <IconButton
+                            onClick={() => {
+                                if (selection?.index === i) {
+                                    const formula = prompt('Enter formula')
+                                    if (formula) {
+                                        quillRef.current!.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ formula }), 'user')
+                                        quillRef.current!.setSelection(selection.range.index + 1, 'user')
+                                    }
                                 }
-                                refocus()
-                            }
-                        }}
-                        disabled={selection?.index !== i}
-                    >
-                        x²
-                    </button>
+                            }}
+                            disabled={selection?.index !== i}
+                            icon="function"
+                            color={colors.textMain}
+                        />
+
+                        {/* File */}
+                        <IconButton
+                            onClick={() => {
+                                const quill = quillRef.current!
+                                if (selection?.index === i) {
+                                    const fileInput = document.createElement('input')
+                                    fileInput.style.display = 'none'
+                                    fileInput.setAttribute('type', 'file')
+                                    fileInput.setAttribute(
+                                        'accept',
+                                        // eslint-disable-next-line @typescript-eslint/dot-notation -- We're bypassing protected
+                                        quill.uploader['options'].mimetypes!.join(', '),
+                                    )
+                                    fileInput.classList.add('ql-image')
+                                    fileInput.addEventListener('change', () => {
+                                        const range = quill.getSelection(true)
+                                        quill.uploader.upload(range, fileInput.files!)
+                                        fileInput.remove()
+                                    })
+                                    document.body.appendChild(fileInput)
+                                    fileInput.click()
+                                }
+                            }}
+                            disabled={selection?.index !== i}
+                            icon="image"
+                            color={colors.textMain}
+                        />
+                    </div>
+
+                    {/* Border */}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Border</div>
+                        <div style={{ width: '2px' }} />
+                        <BetterDatalist
+                            iframe
+                            value={label.borderWidth}
+                            onChange={(borderWidth) => {
+                                editLabel.modify({ borderWidth })
+                            }}
+                            parse={(v) => {
+                                const num = parseFloat(v)
+                                if (isFinite(num)) {
+                                    return num
+                                }
+                                return cannotParse
+                            }}
+                            possibleValues={[0, 1, 2, 3, 4, 5]}
+                            renderValue={v => ({
+                                text: v.toString(),
+                            })}
+                            inputStyle={{ borderRadius: '4px 0 0 4px', height: toolbarHeight }}
+                        />
+                        <input
+                            type="color"
+                            value={Color(label.borderColor).hex()}
+                            onChange={(e) => {
+                                editLabel.modify({ borderColor: Color(e.target.value).hex() })
+                            }}
+                            style={{ height: toolbarHeight, borderRadius: '0 4px 4px 0', borderLeft: 'none' }}
+                        />
+                    </div>
                 </div>
             )}
             <QuillEditor
@@ -315,18 +379,33 @@ const sizeAttributor = Quill.import('attributors/style/size') as Parchment.Attri
 sizeAttributor.whitelist = undefined
 Quill.register(sizeAttributor, true)
 
-function alignIcon(kind: '' | 'center' | 'right' | 'justify', color: string): ReactNode {
-    // From https://fonts.google.com/icons
-    const paths = {
-        '': <path d="M120-120v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Z" />,
-        'center': <path d="M120-120v-80h720v80H120Zm160-160v-80h400v80H280ZM120-440v-80h720v80H120Zm160-160v-80h400v80H280ZM120-760v-80h720v80H120Z" />,
-        'right': <path d="M120-760v-80h720v80H120Zm240 160v-80h480v80H360ZM120-440v-80h720v80H120Zm240 160v-80h480v80H360ZM120-120v-80h720v80H120Z" />,
-        'justify': <path d="M120-120v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Z" />,
-    } as const
+// From https://fonts.google.com/icons
+const paths = {
+    '': <path d="M120-120v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Zm0-160v-80h480v80H120Zm0-160v-80h720v80H120Z" />,
+    'center': <path d="M120-120v-80h720v80H120Zm160-160v-80h400v80H280ZM120-440v-80h720v80H120Zm160-160v-80h400v80H280ZM120-760v-80h720v80H120Z" />,
+    'right': <path d="M120-760v-80h720v80H120Zm240 160v-80h480v80H360ZM120-440v-80h720v80H120Zm240 160v-80h480v80H360ZM120-120v-80h720v80H120Z" />,
+    'justify': <path d="M120-120v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Zm0-160v-80h720v80H120Z" />,
+    'function': <path d="M400-240v-80h62l105-120-105-120h-66l-64 344q-8 45-37 70.5T221-120q-45 0-73-24t-28-64q0-32 17-51.5t43-19.5q25 0 42.5 17t17.5 41q0 5-.5 9t-1.5 9q5-1 8.5-5.5T252-221l62-339H200v-80h129l21-114q7-38 37.5-62t72.5-24q44 0 72 26t28 65q0 30-17 49.5T500-680q-25 0-42.5-17T440-739q0-5 .5-9t1.5-9q-6 2-9 6t-5 12l-17 99h189v80h-32l52 59 52-59h-32v-80h200v80h-62L673-440l105 120h62v80H640v-80h32l-52-60-52 60h32v80H400Z" />,
+    'image': <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z" />,
+} as const
 
+function IconButton(props: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & { icon: keyof typeof paths, color: string }): ReactNode {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill={color}>
-            {paths[kind]}
-        </svg>
+        <button
+            {...props}
+            style={{
+                width: toolbarHeight,
+                height: toolbarHeight,
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...props.style,
+            }}
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill={props.color}>
+                {paths[props.icon]}
+            </svg>
+        </button>
     )
 }

@@ -93,7 +93,7 @@ export function BetterDatalist<T>({ value, onChange, parse, possibleValues, rend
     const InputElem = iframe ? IFrameInput : 'input'
 
     return (
-        <div style={{ position: 'relative', flex: 0.5, display: 'flex', alignItems: 'center', minWidth: '50px' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '50px' }}>
             <InputElem
                 ref={inputRef}
                 type="text"
