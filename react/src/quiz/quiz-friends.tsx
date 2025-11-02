@@ -146,7 +146,6 @@ export function QuizFriendsPanel(props: {
                 : null}
             <>
                 {props.quizDescriptor.kind === 'infinite' && viewMode === 'today' ? <InfiniteHeader /> : undefined}
-                {viewMode === 'today' ? <PlayerScore result={props.myResult} otherResults={allResults} /> : null}
                 {viewMode === 'stats'
                     ? (
                             <div
@@ -167,13 +166,15 @@ export function QuizFriendsPanel(props: {
                             </div>
                         )
                     : null}
+                {viewMode === 'today' ? <PlayerScore result={props.myResult} otherResults={allResults} /> : null}
                 {viewMode === 'stats' && props.userStatistics !== undefined
                     ? (
-                            <UserStatisticsRow
-                                meanScore={props.userStatistics.meanScore}
-                                numPlays={props.userStatistics.numPlays}
-                                currentStreak={props.userStatistics.currentStreak}
-                                maxStreak={props.userStatistics.maxStreak}
+                            <MeanStatisticsRow
+                                index={-1}
+                                friendScore={{ name: 'You', friends: true, result: { corrects: null } }}
+                                summaryStats={{ friends: true, ...props.userStatistics }}
+                                quizFriends={props.quizFriends}
+                                setQuizFriends={props.setQuizFriends}
                             />
                         )
                     : null}
@@ -354,51 +355,13 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
     )
 }
 
-function UserStatisticsRow(props: {
-    meanScore: number
-    numPlays: number
-    currentStreak: number
-    maxStreak: number
-}): ReactNode {
-    return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'row',
-                height: scoreCorrectHeight,
-                alignItems: 'center',
-            }}
-        >
-            <div style={{ width: '25%' }}>You</div>
-            <div style={{ width: '20%', textAlign: 'center' }}>
-                {props.numPlays > 0 ? props.meanScore.toFixed(2) : '-'}
-            </div>
-            <div style={{ width: '15%', textAlign: 'center' }}>
-                {props.numPlays}
-            </div>
-            <div style={{ width: '20%', textAlign: 'center' }}>
-                {props.numPlays > 0
-                    ? (
-                            <>
-                                {props.currentStreak}
-                                /
-                                {props.maxStreak}
-                            </>
-                        )
-                    : '-'}
-            </div>
-            <div style={{ width: '20%', textAlign: 'right' }} />
-        </div>
-    )
-}
-
 function MeanStatisticsRow(props: {
     index: number
     friendScore: FriendScore
     summaryStats: FriendSummaryStats
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    removeFriend: () => Promise<void>
+    removeFriend?: () => Promise<void>
 }): ReactNode {
     const friendName = props.friendScore.name ?? 'Unknown'
 
@@ -412,16 +375,22 @@ function MeanStatisticsRow(props: {
             }}
         >
             <div style={{ width: '25%' }}>
-                <EditableString
-                    content={friendName}
-                    onNewContent={(name) => {
-                        const newQuizFriends = [...props.quizFriends]
-                        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
-                        props.setQuizFriends(newQuizFriends)
-                    }}
-                    style={{ width: '100%', height: '100%' }}
-                    inputMode="text"
-                />
+                {props.removeFriend === undefined
+                    ? (
+                            'You'
+                        )
+                    : (
+                            <EditableString
+                                content={friendName}
+                                onNewContent={(name) => {
+                                    const newQuizFriends = [...props.quizFriends]
+                                    newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
+                                    props.setQuizFriends(newQuizFriends)
+                                }}
+                                style={{ width: '100%', height: '100%' }}
+                                inputMode="text"
+                            />
+                        )}
             </div>
             <div style={{ width: '20%', textAlign: 'center' }}>
                 {props.summaryStats.friends ? props.summaryStats.meanScore.toFixed(2) : '-'}
@@ -441,12 +410,16 @@ function MeanStatisticsRow(props: {
                     : '-'}
             </div>
             <div style={{ width: '20%', textAlign: 'right' }}>
-                <button
-                    onClick={() => { void props.removeFriend() }}
-                    style={{ fontSize: '0.8em', padding: '0.2em 0.5em' }}
-                >
-                    Remove
-                </button>
+                {props.removeFriend !== undefined
+                    ? (
+                            <button
+                                onClick={() => { void props.removeFriend?.() }}
+                                style={{ fontSize: '0.8em', padding: '0.2em 0.5em' }}
+                            >
+                                Remove
+                            </button>
+                        )
+                    : null}
             </div>
         </div>
     )
