@@ -6,6 +6,7 @@ import { Color, hexToColor } from './constants/color-utils'
 import { CMap, CMapRGB, Outline, PMap } from './constants/map'
 import { MapLabel } from './constants/map-label'
 import { RampT } from './constants/ramp'
+import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
 import { Context } from './context'
 import { noLocation } from './location'
@@ -31,6 +32,10 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
     | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
     | { type: 'opaque', opaqueType: 'mapLabel', value: MapLabel }
+    | { type: 'opaque', opaqueType: 'richTextDocument', value: RichTextDocument }
+    | { type: 'opaque', opaqueType: 'richTextSegment', value: RichTextSegment }
+    | { type: 'opaque', opaqueType: 'richTextList', value: RichTextAttributes['list'] }
+    | { type: 'opaque', opaqueType: 'richTextAlign', value: RichTextAttributes['align'] }
 
 interface USSNumberType {
     type: 'number'
@@ -123,7 +128,7 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset'] as const
+export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset', 'richText'] as const
 
 export type ConstantCategory = typeof constantCategories[number]
 
@@ -369,6 +374,10 @@ export function renderValue(input: USSValue): string {
                     case 'geoCentroidHandle':
                     case 'unit':
                     case 'mapLabel':
+                    case 'richTextDocument':
+                    case 'richTextSegment':
+                    case 'richTextAlign':
+                    case 'richTextList':
                         return `[${opaqueValue.opaqueType} object]`
                     case 'color':
                         const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }

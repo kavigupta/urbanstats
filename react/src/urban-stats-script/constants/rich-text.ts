@@ -1,16 +1,29 @@
 import { Delta } from 'quill'
 import { z } from 'zod'
 
-export type RichText = RichTextOp[]
+import { RemoveOptionals } from '../../utils/types'
+import { Context } from '../context'
+import { createConstantExpression, NamedFunctionArgumentWithDocumentation, USSRawValue, USSType, USSValue } from '../types-values'
 
-const richTextOpSchema = z.object({
+import { colorType, doRender } from './color'
+import { Color } from './color-utils'
+
+export type RichTextDocument = RichTextSegment[]
+
+const richTextSegmentSchema = z.object({
     insert: z.union([
         z.string(),
         z.object({ formula: z.string() }),
-        z.object({ image: z.string().startsWith('data:') }), // Require data: prefix, otherwise loading remote images is a security problem
+        z.object({ image: z.string().refine(link => !link.startsWith('data:')) }), // Images must be linked, not enough room to store them in the url
     ]),
     attributes: z.optional(z.object({
-        size: z.optional(z.string()),
+        size: z.optional(z.string().transform((s) => {
+            let result
+            if (s.endsWith('px') && (result = parseFloat(s.slice(0, s.length - 2))) && isFinite(result)) {
+                return result
+            }
+            throw Error(`Couldn't parse font size ${s}`)
+        })),
         font: z.optional(z.string()),
         color: z.optional(z.string()),
         bold: z.optional(z.boolean()),
@@ -22,15 +35,23 @@ const richTextOpSchema = z.object({
     })),
 })
 
-export type RichTextOp = z.infer<typeof richTextOpSchema>
+export type RichTextSegment = z.infer<typeof richTextSegmentSchema>
 
-export function toQuillDelta(text: RichText): Delta {
-    return new Delta(text)
+export type RichTextAttributes = RemoveOptionals<RichTextSegment>['attributes']
+
+export function toQuillDelta(text: RichTextDocument): Delta {
+    return new Delta(text.map(segment => ({
+        ...segment,
+        attributes: segment.attributes && {
+            ...segment.attributes,
+            size: segment.attributes.size && `${segment.attributes.size}px`,
+        },
+    })))
 }
 
-export function fromQuillDelta(delta: Delta): RichText {
+export function fromQuillDelta(delta: Delta): RichTextDocument {
     return delta.ops.flatMap((op) => {
-        const { success, data } = richTextOpSchema.safeParse(op)
+        const { success, data } = richTextSegmentSchema.safeParse(op)
         if (!success) {
             console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
             return []
@@ -44,3 +65,224 @@ export function fromQuillDelta(delta: Delta): RichText {
         return [data]
     })
 }
+
+export const richTextDocumentType = {
+    type: 'opaque',
+    name: 'richTextDocument',
+} satisfies USSType
+
+export const richTextSegmentType = {
+    type: 'opaque',
+    name: 'richTextSegment',
+} satisfies USSType
+
+export const constructRichTextDocumentValue: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [
+            { type: 'concrete', value: { type: 'vector', elementType: richTextSegmentType } },
+        ],
+        namedArgs: {},
+        returnType: { type: 'concrete', value: richTextDocumentType },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        let segmentsList = (posArgs[0] as { type: 'opaque', opaqueType: 'richTextSegment', value: RichTextSegment }[]).map(({ value }) => value)
+        if (segmentsList.length === 0) {
+            segmentsList = [{ insert: '\n' }] // bugs on applying attributes to empty text without this
+        }
+        return {
+            type: 'opaque',
+            opaqueType: 'richTextDocument',
+            value: segmentsList,
+        }
+    },
+    documentation: {
+        humanReadableName: 'Rich Text Document',
+        category: 'richText',
+        longDescription: 'Creates a rich text document from a list of rich text segments.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
+    },
+} satisfies USSValue
+
+export const richTextListType = {
+    type: 'opaque',
+    name: 'richTextList',
+} satisfies USSType
+
+export const richTextAlignType = {
+    type: 'opaque',
+    name: 'richTextAlign',
+} satisfies USSType
+
+const attributesNamedArgs: { [K in keyof RemoveOptionals<RichTextSegment>['attributes']]-?: NamedFunctionArgumentWithDocumentation } = {
+    size: {
+        type: { type: 'concrete', value: { type: 'number' } },
+        defaultValue: createConstantExpression(null),
+    },
+    font: {
+        type: { type: 'concrete', value: { type: 'string' } },
+        defaultValue: createConstantExpression(null),
+    },
+    color: {
+        type: { type: 'concrete', value: colorType },
+        defaultValue: createConstantExpression(null),
+    },
+    bold: {
+        type: { type: 'concrete', value: { type: 'boolean' } },
+        defaultValue: createConstantExpression(null),
+    },
+    italic: {
+        type: { type: 'concrete', value: { type: 'boolean' } },
+        defaultValue: createConstantExpression(null),
+    },
+    underline: {
+        type: { type: 'concrete', value: { type: 'boolean' } },
+        defaultValue: createConstantExpression(null),
+    },
+    list: {
+        type: { type: 'concrete', value: richTextListType },
+        defaultValue: createConstantExpression(null),
+    },
+    indent: {
+        type: { type: 'concrete', value: { type: 'number' } },
+        defaultValue: createConstantExpression(null),
+    },
+    align: {
+        type: { type: 'concrete', value: richTextAlignType },
+        defaultValue: createConstantExpression(null),
+    },
+}
+
+function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): Exclude<RichTextSegment['attributes'], undefined> {
+    const color = (namedArgs.color as ({ value: Color } | null))?.value
+
+    return {
+        size: (namedArgs.size as number | null) ?? undefined,
+        font: (namedArgs.font as string | null) ?? undefined,
+        color: color && doRender(color),
+        bold: (namedArgs.bold as boolean | null) ?? undefined,
+        italic: (namedArgs.italic as boolean | null) ?? undefined,
+        underline: (namedArgs.underline as boolean | null) ?? undefined,
+        list: (namedArgs.list as { value: RichTextAttributes['list'] } | null)?.value,
+        indent: (namedArgs.indent as number | null) ?? undefined,
+        align: (namedArgs.align as { value: RichTextAttributes['align'] } | null)?.value,
+    }
+}
+
+const richTextSegmentConstructorType: USSType = {
+    type: 'function',
+    posArgs: [
+        { type: 'concrete', value: { type: 'string' } },
+    ],
+    namedArgs: attributesNamedArgs,
+    returnType: { type: 'concrete', value: richTextSegmentType },
+}
+
+export const constructRichTextStringSegmentValue: USSValue = {
+    type: richTextSegmentConstructorType,
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const text = posArgs[0] as string
+        return {
+            type: 'opaque',
+            opaqueType: 'richTextSegment',
+            value: {
+                insert: text,
+                attributes: attributesFromNamedArgs(namedArgs),
+            },
+        }
+    },
+    documentation: {
+        humanReadableName: 'Rich Text String Segment',
+        category: 'richText',
+        longDescription: 'Creates a rich text segment containing a plain string. The string can have optional formatting attributes.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
+    },
+} satisfies USSValue
+
+export const constructRichTextFormulaSegmentValue: USSValue = {
+    type: richTextSegmentConstructorType,
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const formula = posArgs[0] as string
+        return {
+            type: 'opaque',
+            opaqueType: 'richTextSegment',
+            value: {
+                insert: { formula },
+                attributes: attributesFromNamedArgs(namedArgs),
+            },
+        }
+    },
+    documentation: {
+        humanReadableName: 'Rich Text Formula Segment',
+        category: 'richText',
+        longDescription: 'Creates a rich text segment containing a formula. The formula is represented as a string and can have optional formatting attributes.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
+    },
+} satisfies USSValue
+
+export const constructRichTextImageSegmentValue: USSValue = {
+    type: richTextSegmentConstructorType,
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const image = posArgs[0] as string
+        return {
+            type: 'opaque',
+            opaqueType: 'richTextSegment',
+            value: {
+                insert: { image },
+                attributes: attributesFromNamedArgs(namedArgs),
+            },
+        }
+    },
+    documentation: {
+        humanReadableName: 'Rich Text Image Segment',
+        category: 'richText',
+        longDescription: 'Creates a rich text segment containing an image. The image is represented as a URL string and can have optional formatting attributes.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+        customConstructor: true,
+    },
+} satisfies USSValue
+
+function alignConstant(value: RichTextAttributes['align']): USSValue {
+    return {
+        type: richTextAlignType,
+        value: { type: 'opaque', opaqueType: 'richTextAlign', value },
+        documentation: {
+            humanReadableName: `Align ${value === '' ? 'Left' : value.charAt(0).toUpperCase() + value.slice(1)}`,
+            category: 'richText',
+            longDescription: `Specifies the alignment of the text as ${value === '' ? 'left' : value}.`,
+            selectorRendering: { kind: 'subtitleLongDescription' },
+            customConstructor: false,
+        },
+    }
+}
+
+function listConstant(value: RichTextAttributes['list']): USSValue {
+    return {
+        type: richTextListType,
+        value: { type: 'opaque', opaqueType: 'richTextList', value },
+        documentation: {
+            humanReadableName: `List ${value === 'ordered' ? 'Ordered' : 'Bullet'}`,
+            category: 'richText',
+            longDescription: `Specifies the list type as ${value === 'ordered' ? 'ordered' : 'bullet'}.`,
+            selectorRendering: { kind: 'subtitleLongDescription' },
+            customConstructor: false,
+        },
+    }
+}
+
+export const richTextConstants: [string, USSValue][] = [
+    ['rtfDocument', constructRichTextDocumentValue],
+    ['rtfString', constructRichTextStringSegmentValue],
+    ['rtfFormula', constructRichTextFormulaSegmentValue],
+    ['rtfImage', constructRichTextImageSegmentValue],
+    ['alignLeft', alignConstant('')],
+    ['alignCenter', alignConstant('center')],
+    ['alignRight', alignConstant('right')],
+    ['alignJustify', alignConstant('justify')],
+    ['listOrdered', listConstant('ordered')],
+    ['listBullet', listConstant('bullet')],
+]

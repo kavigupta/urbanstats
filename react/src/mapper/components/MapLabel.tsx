@@ -127,18 +127,19 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                             iframe
                             value={format.size}
                             onChange={(fontSize) => {
-                                if (/^[0-9]+$/.test(fontSize)) {
-                                    fontSize = `${fontSize}px`
-                                }
-                                quillRef.current!.format('size', fontSize, 'user')
+                                quillRef.current!.format('size', `${fontSize}px`, 'user')
                                 updateFormat()
                             }}
                             parse={(v) => {
-                                return v
+                                const num = parseFloat(v)
+                                if (isFinite(num)) {
+                                    return num
+                                }
+                                return cannotParse
                             }}
-                            possibleValues={[8, 10, 12, 14, 16, 20, 24, 36].map(n => `${n}px`)}
+                            possibleValues={[8, 10, 12, 14, 16, 20, 24, 36]}
                             renderValue={v => ({
-                                text: v,
+                                text: v.toString(),
                                 node: highlighted => (
                                     <div style={{
                                         fontSize: v,

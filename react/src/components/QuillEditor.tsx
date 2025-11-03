@@ -7,14 +7,14 @@ import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } f
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
 import { colorThemes } from '../page_template/color-themes'
-import { RichTextOp } from '../urban-stats-script/constants/rich-text'
-import { NormalizeProto } from '../utils/types'
+import { RichTextSegment } from '../urban-stats-script/constants/rich-text'
+import { RemoveOptionals } from '../utils/types'
 
 // Needed for formula module
 (window as { katex: unknown }).katex = katex
 
-export const defaultAttributes: NormalizeProto<RichTextOp>['attributes'] = {
-    size: `16px`,
+export const defaultAttributes: RemoveOptionals<RichTextSegment>['attributes'] = {
+    size: 16,
     font: 'Jost',
     color: colorThemes['Light Mode'].textMain,
     bold: false,

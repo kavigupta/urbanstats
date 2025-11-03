@@ -6,8 +6,10 @@ import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
 import { constructInsetValue, constructInsetsValue, insetConsts } from './insets'
 import { cMap, cMapRGB, constructOutline, pMap } from './map'
+import { constructMapLabelValue } from './map-label'
 import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
+import { richTextConstants } from './rich-text'
 import { linearScaleValue, logScaleValue } from './scale'
 import { unitConstants } from './units'
 
@@ -246,6 +248,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['constructOutline', constructOutline],
     ['osmBasemap', osmBasemap],
     ['noBasemap', noBasemap],
+    ['mapLabel', constructMapLabelValue],
+    ...richTextConstants,
 ] satisfies [string, USSValue][])
 
 // for debugging
