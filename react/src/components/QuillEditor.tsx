@@ -88,6 +88,7 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                     maxStack: 0, // We use our own undo manager
                 },
                 toolbar: false,
+                uploader: false,
             },
             placeholder: 'Enter text here...',
         })

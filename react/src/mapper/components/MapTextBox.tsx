@@ -268,24 +268,12 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                         {/* File */}
                         <IconButton
                             onClick={() => {
-                                const quill = quillRef.current!
                                 if (selection?.index === i) {
-                                    const fileInput = document.createElement('input')
-                                    fileInput.style.display = 'none'
-                                    fileInput.setAttribute('type', 'file')
-                                    fileInput.setAttribute(
-                                        'accept',
-                                        // eslint-disable-next-line @typescript-eslint/dot-notation -- We're bypassing protected
-                                        quill.uploader['options'].mimetypes!.join(', '),
-                                    )
-                                    fileInput.classList.add('ql-image')
-                                    fileInput.addEventListener('change', () => {
-                                        const range = quill.getSelection(true)
-                                        quill.uploader.upload(range, fileInput.files!)
-                                        fileInput.remove()
-                                    })
-                                    document.body.appendChild(fileInput)
-                                    fileInput.click()
+                                    const image = prompt('Enter image URL')
+                                    if (image) {
+                                        quillRef.current!.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ image }), 'user')
+                                        quillRef.current!.setSelection(selection.range.index + 1, 'user')
+                                    }
                                 }
                             }}
                             disabled={selection?.index !== i}
