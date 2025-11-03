@@ -114,28 +114,32 @@ export function QuizFriendsPanel(props: {
                 <PlayerScore result={props.myResult} otherResults={allResults} />
 
                 {
-                    friendScores.map((friendScore, idx) => (
-                        <FriendScore
-                            key={idx}
-                            index={idx}
-                            friendScore={friendScore}
-                            removeFriend={async () => {
-                                await persistentClient.POST('/juxtastat/unfriend', {
-                                    params: {
-                                        header: QuizModel.shared.userHeaders(),
-                                    },
-                                    body: {
-                                        requestee: props.quizFriends[idx][1],
-                                    },
-                                })
-                                const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
-                                props.setQuizFriends(newQuizFriends)
-                            }}
-                            quizFriends={props.quizFriends}
-                            setQuizFriends={props.setQuizFriends}
-                            otherResults={allResults}
-                        />
-                    ),
+                    friendScores.map((friendScore, idx) => {
+                        const removeFriend = async (): Promise<void> => {
+                            await persistentClient.POST('/juxtastat/unfriend', {
+                                params: {
+                                    header: QuizModel.shared.userHeaders(),
+                                },
+                                body: {
+                                    requestee: props.quizFriends[idx][1],
+                                },
+                            })
+                            const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
+                            props.setQuizFriends(newQuizFriends)
+                        }
+
+                        return (
+                            <FriendScoreRow
+                                key={idx}
+                                index={idx}
+                                friendScore={friendScore}
+                                quizFriends={props.quizFriends}
+                                setQuizFriends={props.setQuizFriends}
+                                otherResults={allResults}
+                                removeFriend={removeFriend}
+                            />
+                        )
+                    },
                     )
                 }
             </>
@@ -224,7 +228,7 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
     )
 }
 
-function FriendScore(props: {
+function FriendScoreRow(props: {
     index: number
     friendScore: FriendScore
     removeFriend: () => Promise<void>
