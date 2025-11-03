@@ -34,6 +34,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { Colorbar, RampToDisplay } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
+import { MapTextBoxComponent } from './components/MapTextBox'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
@@ -192,10 +193,21 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 />
             )
 
+            const textBoxes = mapResultMain.value.textBoxes.map((textBox, i, boxes) => (
+                <MapTextBoxComponent
+                    container={mapsContainerRef}
+                    key={i}
+                    textBox={textBox}
+                    i={i}
+                    count={boxes.length}
+                />
+            ))
+
             return {
                 node: (
                     <MapLayout
                         maps={insetMaps}
+                        textBoxes={textBoxes}
                         loading={props.loading}
                         colorbar={colorbar}
                         aspectRatio={computeAspectRatioForInsets(visibleInsets)}
@@ -209,8 +221,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
+function MapLayout({ maps, textBoxes, colorbar, loading, mapsContainerRef, aspectRatio }: {
     maps: ReactNode
+    textBoxes: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
@@ -236,6 +249,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
                     }}
                 >
                     {maps}
+                    {textBoxes}
                 </div>
             </div>
             <div style={{ height: '8%', width: '100%' }}>
@@ -273,6 +287,7 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     {null}
                 </InsetMap>
             ))}
+            textBoxes={null}
             loading={loading}
             colorbar={null}
             aspectRatio={computeAspectRatioForInsets(insets)}

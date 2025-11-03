@@ -5,8 +5,8 @@ import React, { createContext, ReactNode, RefObject, useCallback, useContext, us
 
 import { QuillEditor, defaultAttributes } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
-import { MapLabel } from '../../urban-stats-script/constants/map-label'
-import { fromQuillDelta, toQuillDelta } from '../../urban-stats-script/constants/rich-text'
+import { richTextAttributesSchema, RichTextDocument, richTextSegmentSchema } from '../../urban-stats-script/constants/rich-text'
+import { TextBox } from '../../urban-stats-script/constants/text-box'
 import { Property } from '../../utils/Property'
 import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
@@ -15,11 +15,11 @@ import { EditInsetsHandles } from './InsetMap'
 
 const toolbarHeight = '30px'
 
-export function MapLabelComponent({ label, container, editLabel, i, numLabels }: {
-    label: MapLabel
+export function MapTextBoxComponent({ textBox: label, container, edit, i, count }: {
+    textBox: TextBox
     container: RefObject<HTMLDivElement>
-    editLabel?: {
-        modify: (newLabel: Partial<MapLabel>) => void
+    edit?: {
+        modify: (newLabel: Partial<TextBox>) => void
         duplicate: () => void
         delete: () => void
         add: () => void
@@ -27,7 +27,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
         moveDown: () => void
     }
     i: number
-    numLabels: number
+    count: number
 }): ReactNode {
     const selectionProperty = useContext(SelectionContext)
     const selection = selectionProperty.use()
@@ -49,7 +49,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
         const quill = quillRef.current!
         const currentSelection = quill.getSelection(false)
         if (currentSelection !== null) {
-            const currentFormat = quill.getFormat(currentSelection.index, currentSelection.length)
+            const currentFormat = richTextAttributesSchema.parse(quill.getFormat(currentSelection.index, currentSelection.length))
             setFormat({ ...defaultAttributes, ...currentFormat })
         }
     }, [])
@@ -72,7 +72,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                 height: `${(label.topRight[1] - label.bottomLeft[1]) * 100}%` }}
             ref={divRef}
         >
-            {editLabel && (
+            {edit && (
                 <div
                     style={{
                         position: 'absolute',
@@ -242,7 +242,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                             type="color"
                             value={Color(label.backgroundColor).hex()}
                             onChange={(e) => {
-                                editLabel.modify({ backgroundColor: Color(e.target.value).hex() })
+                                edit.modify({ backgroundColor: Color(e.target.value).hex() })
                             }}
                             style={{ height: toolbarHeight }}
                         />
@@ -302,7 +302,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                             iframe
                             value={label.borderWidth}
                             onChange={(borderWidth) => {
-                                editLabel.modify({ borderWidth })
+                                edit.modify({ borderWidth })
                             }}
                             parse={(v) => {
                                 const num = parseFloat(v)
@@ -321,7 +321,7 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                             type="color"
                             value={Color(label.borderColor).hex()}
                             onChange={(e) => {
-                                editLabel.modify({ borderColor: Color(e.target.value).hex() })
+                                edit.modify({ borderColor: Color(e.target.value).hex() })
                             }}
                             style={{ height: toolbarHeight, borderRadius: '0 4px 4px 0', borderLeft: 'none' }}
                         />
@@ -330,10 +330,10 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
             )}
             <QuillEditor
                 quillRef={quillRef}
-                editable={!!editLabel}
+                editable={!!edit}
                 content={toQuillDelta(label.text)}
                 onTextChange={(delta) => {
-                    editLabel!.modify({ text: fromQuillDelta(delta) })
+                    edit!.modify({ text: fromQuillDelta(delta) })
                 }}
                 selection={selection?.index === i ? selection.range : null}
                 onSelectionChange={(range) => {
@@ -346,19 +346,19 @@ export function MapLabelComponent({ label, container, editLabel, i, numLabels }:
                 }}
                 containerStyle={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}` }}
             />
-            { editLabel && (
+            { edit && (
                 <EditInsetsHandles
                     frame={[...label.bottomLeft, ...label.topRight]}
                     setFrame={(newFrame) => {
-                        editLabel.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                        edit.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
                     }}
                     container={container}
-                    delete={editLabel.delete}
-                    duplicate={editLabel.duplicate}
+                    delete={edit.delete}
+                    duplicate={edit.duplicate}
                     add={undefined}
                     shouldHaveCenterHandle={true}
-                    moveUp={i + 1 < numLabels ? () => { editLabel.moveUp() } : undefined}
-                    moveDown={i > 0 ? () => { editLabel.moveDown() } : undefined}
+                    moveUp={i + 1 < count ? () => { edit.moveUp() } : undefined}
+                    moveDown={i > 0 ? () => { edit.moveDown() } : undefined}
                 />
             )}
         </div>
@@ -410,4 +410,32 @@ function IconButton(props: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HT
             </svg>
         </button>
     )
+}
+
+export function toQuillDelta(text: RichTextDocument): Delta {
+    const result = new Delta(text.map(segment => ({
+        ...segment,
+        attributes: segment.attributes && {
+            ...segment.attributes,
+            size: segment.attributes.size && `${segment.attributes.size}px`,
+        },
+    })))
+    return result
+}
+
+export function fromQuillDelta(delta: Delta): RichTextDocument {
+    return delta.ops.flatMap((op) => {
+        const { success, data } = richTextSegmentSchema.safeParse(op)
+        if (!success) {
+            console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
+            return []
+        }
+        const droppedAttributes = Object.entries(op.attributes ?? {}).filter(
+            ([key]) => !(key in (data.attributes ?? {})),
+        )
+        if (droppedAttributes.length > 0) {
+            console.warn(`Dropped attributes: ${droppedAttributes.join(', ')}`)
+        }
+        return [data]
+    })
 }

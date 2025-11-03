@@ -7,7 +7,7 @@ import { Color } from './color-utils'
 import { boundsType } from './insets'
 import { RichTextDocument, richTextDocumentType } from './rich-text'
 
-export interface MapLabel {
+export interface TextBox {
     bottomLeft: [number, number]
     topRight: [number, number]
     text: RichTextDocument
@@ -16,12 +16,12 @@ export interface MapLabel {
     borderWidth: number
 }
 
-export const mapLabelType = {
+export const textBoxType = {
     type: 'opaque',
-    name: 'mapLabel',
+    name: 'textBox',
 } satisfies USSType
 
-export const constructMapLabelValue: USSValue = {
+export const constructTextBoxValue: USSValue = {
     type: {
         type: 'function',
         posArgs: [],
@@ -32,7 +32,7 @@ export const constructMapLabelValue: USSValue = {
             borderColor: { type: { type: 'concrete', value: colorType }, defaultValue: parseNoErrorAsExpression('colorBlack', '') },
             borderWidth: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: parseNoErrorAsExpression('1', '') },
         },
-        returnType: { type: 'concrete', value: mapLabelType },
+        returnType: { type: 'concrete', value: textBoxType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
@@ -45,7 +45,7 @@ export const constructMapLabelValue: USSValue = {
 
         return {
             type: 'opaque',
-            opaqueType: 'mapLabel',
+            opaqueType: 'textBox',
             value: {
                 bottomLeft: [screenBounds.get('west') as number, screenBounds.get('south') as number],
                 topRight: [screenBounds.get('east') as number, screenBounds.get('north') as number],
@@ -57,9 +57,9 @@ export const constructMapLabelValue: USSValue = {
         }
     },
     documentation: {
-        humanReadableName: 'Map Label',
+        humanReadableName: 'Map Text Box',
         category: 'map',
-        longDescription: 'Create a label on the map with specified screen bounds (bounding box of the inset on the screen, where bottom left corner has (0, 0) and top right corner has (1, 1))',
+        longDescription: 'Create a text box on the map with specified screen bounds (bounding box of the inset on the screen, where bottom left corner has (0, 0) and top right corner has (1, 1))',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
     },

@@ -1,4 +1,3 @@
-import { Delta } from 'quill'
 import { z } from 'zod'
 
 import { RemoveOptionals } from '../../utils/types'
@@ -10,61 +9,42 @@ import { Color } from './color-utils'
 
 export type RichTextDocument = RichTextSegment[]
 
-const richTextSegmentSchema = z.object({
+export const richTextAttributesSchema = z.object({
+    size: z.optional(z.string().transform((s) => {
+        if (!s.endsWith('px')) {
+            console.warn(`Font size ${s} does not end with "px"`)
+            return undefined
+        }
+        const pixels = s.slice(0, s.length - 2)
+        const result = parseFloat(pixels)
+        if (!isFinite(result)) {
+            console.warn(`Font pixels ${pixels} is not a valid number`)
+            return undefined
+        }
+        return result
+    })),
+    font: z.optional(z.string()),
+    color: z.optional(z.string()),
+    bold: z.optional(z.boolean()),
+    italic: z.optional(z.boolean()),
+    underline: z.optional(z.boolean()),
+    list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal(false)])),
+    indent: z.optional(z.number()),
+    align: z.optional(z.enum(['', 'center', 'right', 'justify'])),
+})
+
+export const richTextSegmentSchema = z.object({
     insert: z.union([
         z.string(),
         z.object({ formula: z.string() }),
         z.object({ image: z.string().refine(link => !link.startsWith('data:')) }), // Images must be linked, not enough room to store them in the url
     ]),
-    attributes: z.optional(z.object({
-        size: z.optional(z.string().transform((s) => {
-            let result
-            if (s.endsWith('px') && (result = parseFloat(s.slice(0, s.length - 2))) && isFinite(result)) {
-                return result
-            }
-            throw Error(`Couldn't parse font size ${s}`)
-        })),
-        font: z.optional(z.string()),
-        color: z.optional(z.string()),
-        bold: z.optional(z.boolean()),
-        italic: z.optional(z.boolean()),
-        underline: z.optional(z.boolean()),
-        list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal(false)])),
-        indent: z.optional(z.number()),
-        align: z.optional(z.enum(['', 'center', 'right', 'justify'])),
-    })),
+    attributes: z.optional(richTextAttributesSchema),
 })
 
 export type RichTextSegment = z.infer<typeof richTextSegmentSchema>
 
 export type RichTextAttributes = RemoveOptionals<RichTextSegment>['attributes']
-
-export function toQuillDelta(text: RichTextDocument): Delta {
-    return new Delta(text.map(segment => ({
-        ...segment,
-        attributes: segment.attributes && {
-            ...segment.attributes,
-            size: segment.attributes.size && `${segment.attributes.size}px`,
-        },
-    })))
-}
-
-export function fromQuillDelta(delta: Delta): RichTextDocument {
-    return delta.ops.flatMap((op) => {
-        const { success, data } = richTextSegmentSchema.safeParse(op)
-        if (!success) {
-            console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
-            return []
-        }
-        const droppedAttributes = Object.entries(op.attributes ?? {}).filter(
-            ([key]) => !(key in (data.attributes ?? {})),
-        )
-        if (droppedAttributes.length > 0) {
-            console.warn(`Dropped attributes: ${droppedAttributes.join(', ')}`)
-        }
-        return [data]
-    })
-}
 
 export const richTextDocumentType = {
     type: 'opaque',

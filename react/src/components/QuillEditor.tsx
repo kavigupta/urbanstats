@@ -26,7 +26,7 @@ export const defaultAttributes: RemoveOptionals<RichTextSegment>['attributes'] =
 }
 
 const defaultStyle = `font-family: ${defaultAttributes.font};
-    font-size: ${defaultAttributes.size};
+    font-size: ${defaultAttributes.size}px;
     color: ${defaultAttributes.color};`
 
 function DefaultStyle(): ReactNode {
