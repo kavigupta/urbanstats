@@ -300,10 +300,10 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
-                r: r * 255,
-                g: value.dataG[i] * 255,
-                b: value.dataB[i] * 255,
-                a: 255,
+                r,
+                g: value.dataG[i],
+                b: value.dataB[i],
+                a: 1,
             }))
             ramp = { type: 'label', value: value.label }
             break
