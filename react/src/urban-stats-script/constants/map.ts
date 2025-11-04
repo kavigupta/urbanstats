@@ -149,7 +149,7 @@ function mapConstructorArguments(
         },
         textBoxes: {
             type: { type: 'concrete', value: { type: 'vector', elementType: textBoxType } },
-            defaultValue: { type: 'vectorLiteral', elements: [], entireLoc: noLocation },
+            defaultValue: createConstantExpression(null),
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }
@@ -174,7 +174,7 @@ function computeCommonMap(
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
     const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
-    const textBoxes = (namedArgs.textBoxes as { value: TextBox }[]).map(({ value }) => value)
+    const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
