@@ -16,8 +16,8 @@ y = hsv(0, 1, 1)
 [x, y, colorRed]
 [
     rgb(0, 0, 1),
-    rgb(1, 0, 0),
-    rgb(0.9764705882352941, 0.42745098039215684, 0.42745098039215684)
+    hsv(0, 1, 1),
+    rgb(0.976, 0.427, 0.427)
 ]And you can only interact with them using functions like renderColor() or in other contexts that use color objects.x = rgb(0, 0, 1)
 y = hsv(0, 1, 1)
 renderColor([x, y, colorRed])
