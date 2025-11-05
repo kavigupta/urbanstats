@@ -3,8 +3,7 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { Documentation, USSRawValue, USSType, USSValue } from '../types-values'
 
-import { rgbColorExpression, doRender } from './color'
-import { Color, hexToColor } from './color-utils'
+import { Color, hexToColor, rgbColorExpression, doRender } from './color-utils'
 
 export type RampT = [number, string][]
 
@@ -29,7 +28,7 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
 }
 
-export function divergingRamp(first: Color, last: Color, middle: Color = { r: 255, g: 255, b: 255, a: 255 }): USSRawValue {
+export function divergingRamp(first: Color, last: Color, middle: Color = { r: 1, g: 1, b: 1, a: 1 }): USSRawValue {
     const ramp: [number, Color][] = [
         [0, first],
         [0.5, middle],

@@ -17,7 +17,7 @@ import { Colors } from '../page_template/color-themes'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
-import { doRender } from '../urban-stats-script/constants/color'
+import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
 import { instantiate } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -300,10 +300,10 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
-                r: r * 255,
-                g: value.dataG[i] * 255,
-                b: value.dataB[i] * 255,
-                a: 255,
+                r,
+                g: value.dataG[i],
+                b: value.dataB[i],
+                a: 1,
             }))
             ramp = { type: 'label', value: value.label }
             break

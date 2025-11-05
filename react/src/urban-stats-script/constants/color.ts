@@ -1,11 +1,9 @@
-import ColorLib from 'color'
-
 import hueColors from '../../data/hueColors'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue, createConstantExpression } from '../types-values'
 
-import { Color, hexToColor } from './color-utils'
+import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from './color-utils'
 import { camelToHuman } from './utils'
 
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
@@ -19,11 +17,7 @@ export function rgbToColor(red: number, green: number, blue: number, alpha: numb
         }
         throw new Error(`RGB values must be between 0 and 1, got (${red}, ${green}, ${blue}, ${alpha})`)
     }
-    const r = Math.round(red * 255)
-    const g = Math.round(green * 255)
-    const b = Math.round(blue * 255)
-    const a = Math.round(alpha * 255)
-    return { r, g, b, a }
+    return { r: red, g: green, b: blue, a: alpha }
 }
 
 export function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError: true): Color | undefined
@@ -35,12 +29,11 @@ export function hsvToColor(hue: number, saturation: number, value: number, alpha
         }
         throw new Error(`HSV values must be (hue: 0-360, saturation: 0-1, value: 0-1, alpha: 0-1), got (${hue}, ${saturation}, ${value}, ${alpha})`)
     }
-    const color = ColorLib.hsv(hue, saturation * 100, value * 100)
     return {
-        r: Math.round(color.red()),
-        g: Math.round(color.green()),
-        b: Math.round(color.blue()),
-        a: Math.round(alpha * 255),
+        h: hue,
+        s: saturation,
+        v: value,
+        a: alpha,
     }
 }
 
@@ -114,45 +107,18 @@ export const renderColor = {
     },
 } satisfies USSValue
 
-export function doRender(color: Color, ignoreAlpha?: boolean): string {
-    const hex = (x: number): string => {
-        x = Math.round(x)
-        const hexValue = x.toString(16)
-        return hexValue.length === 1 ? `0${hexValue}` : hexValue
-    }
-    let h = `#${hex(color.r)}${hex(color.g)}${hex(color.b)}`
-    if (color.a !== 255 && !ignoreAlpha) {
-        h += hex(color.a)
-    }
-    return h
-}
-
-function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number, round?: number): string {
-    const format: (num: number) => string = round !== undefined ? num => num.toFixed(round) : num => num.toString()
-    const alphaPart = alpha !== 255 ? `, a=${format(alpha / 255)}` : ''
-    return `${functionName}(${format(param1)}, ${format(param2)}, ${format(param3)}${alphaPart})`
-}
-
-export function rgbColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
-    return drawFunction('rgb', color.r / 255, color.g / 255, color.b / 255, forceAlpha ?? color.a, round)
-}
-
-export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
-    const c = ColorLib.rgb(color.r, color.g, color.b)
-    return drawFunction('hsv', c.hue(), c.saturationv() / 100, c.value() / 100, forceAlpha ?? color.a, round)
-}
-
 function colorConstant(name: string, value: string, isDefault?: boolean): [string, USSValue] {
+    const round = 3 // Min value that doesn't introduce error into hex expressions (with conversions)
     const humanReadableName = camelToHuman(name)
     const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
-    const color = hexToColor(value)
+    const color = hexToColor(value, round)
     return [`color${capitalizedName}`, {
         type: colorType,
         value: { type: 'opaque', opaqueType: 'color', value: color },
         documentation: {
             humanReadableName,
             category: 'color',
-            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color, { round: 3 }), ''), parseNoErrorAsExpression(hsvColorExpression(color, { round: 3 }), '')],
+            equivalentExpressions: [parseNoErrorAsExpression(rgbColorExpression(color, { round }), ''), parseNoErrorAsExpression(hsvColorExpression(color, { round }), '')],
             isDefault,
             longDescription: `Predefined color constant representing ${humanReadableName.toLowerCase()}.`,
             documentationTable: 'predefined-colors',
