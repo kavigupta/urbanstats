@@ -7,6 +7,7 @@ import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } f
 import 'katex/dist/katex.css'
 import 'quill/dist/quill.snow.css'
 import { colorThemes } from '../page_template/color-themes'
+import { doRender, hexToColor } from '../urban-stats-script/constants/color-utils'
 import { RichTextSegment } from '../urban-stats-script/constants/rich-text'
 import { RemoveOptionals } from '../utils/types'
 
@@ -16,18 +17,18 @@ import { RemoveOptionals } from '../utils/types'
 export const defaultAttributes: RemoveOptionals<RichTextSegment>['attributes'] = {
     size: 16,
     font: 'Jost',
-    color: colorThemes['Light Mode'].textMain,
+    color: hexToColor(colorThemes['Light Mode'].textMain),
     bold: false,
     italic: false,
     underline: false,
-    list: false,
+    list: '',
     indent: 0,
     align: '',
 }
 
 const defaultStyle = `font-family: ${defaultAttributes.font};
     font-size: ${defaultAttributes.size}px;
-    color: ${defaultAttributes.color};`
+    color: ${doRender(defaultAttributes.color)};`
 
 function DefaultStyle(): ReactNode {
     return (

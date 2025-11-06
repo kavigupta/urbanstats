@@ -1,5 +1,5 @@
 import { doRender } from '../../urban-stats-script/constants/color-utils'
-import { RichTextDocument, RichTextSegment } from '../../urban-stats-script/constants/rich-text'
+import { alignIdentifierToValue, listIdentifierToValue, RichTextDocument, RichTextSegment } from '../../urban-stats-script/constants/rich-text'
 import { deconstruct, TextBox } from '../../urban-stats-script/constants/text-box'
 import * as l from '../../urban-stats-script/literal-parser'
 import { noLocation } from '../../urban-stats-script/location'
@@ -14,13 +14,13 @@ import { MapSettings } from './utils'
 const attributesArgs = {
     size: l.optional(l.number()),
     font: l.optional(l.string()),
-    color: l.optional(l.transformExpr(colorSchema, color => color && doRender(color.color))),
+    color: l.optional(l.transformExpr(colorSchema, color => color?.color)),
     bold: l.optional(l.boolean()),
     italic: l.optional(l.boolean()),
     underline: l.optional(l.boolean()),
-    list: l.optional(l.transformExpr(l.union([l.identifier('listOrdered'), l.identifier('listBullet')]), list => (({ listOrdered: 'ordered', listBullet: 'bullet' } as const)[list]))),
+    list: l.optional(l.transformExpr(l.union(Object.keys(listIdentifierToValue).map(l.identifier)), align => listIdentifierToValue[align])),
     indent: l.optional(l.number()),
-    align: l.optional(l.transformExpr(l.union([l.identifier('alignLeft'), l.identifier('alignCenter'), l.identifier('alignRight'), l.identifier('alignJustify')]), align => (({ alignLeft: '', alignCenter: 'center', alignRight: 'right', alignJustify: 'justify' } as const)[align]))),
+    align: l.optional(l.transformExpr(l.union(Object.keys(alignIdentifierToValue).map(l.identifier)), align => alignIdentifierToValue[align])),
 }
 
 const richTextSegmentSchema = l.union([

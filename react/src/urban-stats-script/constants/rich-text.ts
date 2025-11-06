@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
-import { RemoveOptionals } from '../../utils/types'
+import { RemoveOptionals, SwapKeysValues } from '../../utils/types'
 import { Context } from '../context'
 import { createConstantExpression, NamedFunctionArgumentWithDocumentation, USSRawValue, USSType, USSValue } from '../types-values'
 
 import { colorType } from './color'
-import { Color, doRender } from './color-utils'
+import { Color, hexToColor } from './color-utils'
 
 export type RichTextDocument = RichTextSegment[]
 
@@ -24,11 +24,19 @@ export const richTextAttributesSchema = z.object({
         return result
     })),
     font: z.optional(z.string()),
-    color: z.optional(z.string()),
+    color: z.optional(z.string().transform((c) => {
+        try {
+            return hexToColor(c)
+        }
+        catch {
+            console.warn(`${c} is not a valid color`)
+            return undefined
+        }
+    })),
     bold: z.optional(z.boolean()),
     italic: z.optional(z.boolean()),
     underline: z.optional(z.boolean()),
-    list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal(false)])),
+    list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal('')])),
     indent: z.optional(z.number()),
     align: z.optional(z.enum(['', 'center', 'right', 'justify'])),
 })
@@ -141,7 +149,7 @@ function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): Exclud
     return {
         size: (namedArgs.size as number | null) ?? undefined,
         font: (namedArgs.font as string | null) ?? undefined,
-        color: color && doRender(color),
+        color,
         bold: (namedArgs.bold as boolean | null) ?? undefined,
         italic: (namedArgs.italic as boolean | null) ?? undefined,
         underline: (namedArgs.underline as boolean | null) ?? undefined,
@@ -226,6 +234,20 @@ export const constructRichTextImageSegmentValue: USSValue = {
     },
 } satisfies USSValue
 
+export const alignIdentifierToValue = {
+    alignLeft: '',
+    alignCenter: 'center',
+    alignRight: 'right',
+    alignJustify: 'justify',
+} as const
+
+export const alignValueToIdentifer: SwapKeysValues<typeof alignIdentifierToValue> = {
+    '': 'alignLeft',
+    'center': 'alignCenter',
+    'right': 'alignRight',
+    'justify': 'alignJustify',
+}
+
 function alignConstant(value: RichTextAttributes['align']): USSValue {
     return {
         type: richTextAlignType,
@@ -240,14 +262,26 @@ function alignConstant(value: RichTextAttributes['align']): USSValue {
     }
 }
 
+export const listIdentifierToValue = {
+    listOrdered: 'ordered',
+    listBullet: 'bullet',
+    listNone: '',
+} as const
+
+export const listValueToIdentifier: SwapKeysValues<typeof listIdentifierToValue> = {
+    ordered: 'listOrdered',
+    bullet: 'listBullet',
+    ['']: 'listNone',
+}
+
 function listConstant(value: RichTextAttributes['list']): USSValue {
     return {
         type: richTextListType,
         value: { type: 'opaque', opaqueType: 'richTextList', value },
         documentation: {
-            humanReadableName: `List ${value === 'ordered' ? 'Ordered' : 'Bullet'}`,
+            humanReadableName: `List ${(value && value.charAt(0).toUpperCase() + value.slice(1)) || 'None'}`,
             category: 'richText',
-            longDescription: `Specifies the list type as ${value === 'ordered' ? 'ordered' : 'bullet'}.`,
+            longDescription: `Specifies the list type as ${value || 'none'}.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
             customConstructor: false,
         },
@@ -259,10 +293,6 @@ export const richTextConstants: [string, USSValue][] = [
     ['rtfString', constructRichTextStringSegmentValue],
     ['rtfFormula', constructRichTextFormulaSegmentValue],
     ['rtfImage', constructRichTextImageSegmentValue],
-    ['alignLeft', alignConstant('')],
-    ['alignCenter', alignConstant('center')],
-    ['alignRight', alignConstant('right')],
-    ['alignJustify', alignConstant('justify')],
-    ['listOrdered', listConstant('ordered')],
-    ['listBullet', listConstant('bullet')],
+    ...Object.entries(alignIdentifierToValue).map(([id, value]) => [id, alignConstant(value)] satisfies [unknown, unknown]),
+    ...Object.entries(listIdentifierToValue).map(([id, value]) => [id, listConstant(value)] satisfies [unknown, unknown]),
 ]
