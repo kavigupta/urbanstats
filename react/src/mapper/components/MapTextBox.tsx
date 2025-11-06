@@ -5,6 +5,7 @@ import React, { createContext, ReactNode, RefObject, useCallback, useContext, us
 
 import { QuillEditor, defaultAttributes } from '../../components/QuillEditor'
 import { useColors } from '../../page_template/colors'
+import { doRender, hexToColor } from '../../urban-stats-script/constants/color-utils'
 import { richTextAttributesSchema, RichTextDocument, richTextSegmentSchema } from '../../urban-stats-script/constants/rich-text'
 import { TextBox } from '../../urban-stats-script/constants/text-box'
 import { Property } from '../../utils/Property'
@@ -71,7 +72,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     style={{
                         position: 'absolute',
                         bottom: '100%',
-                        backgroundColor: `${label.backgroundColor}aa`,
+                        backgroundColor: `${doRender(label.backgroundColor)}aa`,
                         borderBottom: 0,
                         borderTop: `1px solid ${colors.borderShadow}`,
                         borderLeft: `1px solid ${colors.borderShadow}`,
@@ -190,7 +191,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                         <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Text</div>
                         <input
                             type="color"
-                            value={Color(format.color).hex()}
+                            value={doRender(format.color)}
                             onChange={(e) => {
                                 quillRef.current!.format('color', Color(e.target.value).hex(), 'user')
                                 updateFormat()
@@ -234,9 +235,9 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                         <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Background</div>
                         <input
                             type="color"
-                            value={Color(label.backgroundColor).hex()}
+                            value={doRender(label.backgroundColor)}
                             onChange={(e) => {
-                                edit.modify({ backgroundColor: Color(e.target.value).hex() })
+                                edit.modify({ backgroundColor: hexToColor(Color(e.target.value).hex()) })
                             }}
                             style={{ height: toolbarHeight }}
                         />
@@ -301,9 +302,9 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                         />
                         <input
                             type="color"
-                            value={Color(label.borderColor).hex()}
+                            value={doRender(label.borderColor)}
                             onChange={(e) => {
-                                edit.modify({ borderColor: Color(e.target.value).hex() })
+                                edit.modify({ borderColor: hexToColor(Color(e.target.value).hex()) })
                             }}
                             style={{ height: toolbarHeight, borderRadius: '0 4px 4px 0', borderLeft: 'none' }}
                         />
@@ -326,7 +327,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                         selectionProperty.value = undefined
                     }
                 }}
-                containerStyle={{ width: '100%', height: '100%', backgroundColor: label.backgroundColor, border: `${label.borderWidth}px solid ${label.borderColor}` }}
+                containerStyle={{ width: '100%', height: '100%', backgroundColor: doRender(label.backgroundColor), border: `${label.borderWidth}px solid ${doRender(label.borderColor)}` }}
             />
             { edit && (
                 <EditInsetsHandles
@@ -420,4 +421,15 @@ export function fromQuillDelta(delta: Delta): RichTextDocument {
         }
         return [data]
     })
+}
+
+export function AddTextBox({ container, add }: { container: RefObject<HTMLDivElement>, add: () => void }): ReactNode {
+    return (
+        <EditInsetsHandles
+            frame={[0, 0, 1, 1]}
+            container={container}
+            add={add}
+            shouldHaveCenterHandle={false}
+        />
+    )
 }

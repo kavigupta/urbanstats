@@ -1,10 +1,11 @@
+import { colorThemes } from '../../page_template/color-themes'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
 import { colorType } from './color'
-import { Color, deconstructColor, doRender } from './color-utils'
+import { Color, deconstructColor, hexToColor } from './color-utils'
 import { boundsType } from './insets'
 import { alignValueToIdentifer, listValueToIdentifier, RichTextDocument, richTextDocumentType, RichTextSegment } from './rich-text'
 
@@ -12,9 +13,15 @@ export interface TextBox {
     bottomLeft: [number, number]
     topRight: [number, number]
     text: RichTextDocument
-    backgroundColor: string
-    borderColor: string
+    backgroundColor: Color
+    borderColor: Color
     borderWidth: number
+}
+
+export const defaults = {
+    backgroundColor: hexToColor(colorThemes['Light Mode'].background),
+    borderColor: hexToColor(colorThemes['Light Mode'].borderShadow),
+    borderWidth: 1,
 }
 
 export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
@@ -23,7 +30,7 @@ export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
             north: ${textBox.topRight[1]},
             east: ${textBox.topRight[0]},
             south: ${textBox.bottomLeft[1]},
-            west: ${textBox.bottomLeft[0]} }, 
+            west: ${textBox.bottomLeft[0]}
         },
         text=${deconstructRichTextDocument(textBox.text)}
     )`
@@ -96,9 +103,9 @@ export const constructTextBoxValue: USSValue = {
         namedArgs: {
             screenBounds: { type: { type: 'concrete', value: boundsType } },
             text: { type: { type: 'concrete', value: richTextDocumentType } },
-            backgroundColor: { type: { type: 'concrete', value: colorType }, defaultValue: parseNoErrorAsExpression('colorWhite', '') },
-            borderColor: { type: { type: 'concrete', value: colorType }, defaultValue: parseNoErrorAsExpression('colorBlack', '') },
-            borderWidth: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: parseNoErrorAsExpression('1', '') },
+            backgroundColor: { type: { type: 'concrete', value: colorType }, defaultValue: parseNoErrorAsExpression(deconstructColor(defaults.backgroundColor), '') },
+            borderColor: { type: { type: 'concrete', value: colorType }, defaultValue: parseNoErrorAsExpression(deconstructColor(defaults.borderColor), '') },
+            borderWidth: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: parseNoErrorAsExpression(`${defaults.borderWidth}`, '') },
         },
         returnType: { type: 'concrete', value: textBoxType },
     },
@@ -107,8 +114,8 @@ export const constructTextBoxValue: USSValue = {
         const screenBounds = namedArgs.screenBounds as Map<string, USSRawValue>
 
         const text = (namedArgs.text as { type: 'opaque', opaqueType: 'richTextDocument', value: RichTextDocument }).value
-        const backgroundColor = doRender((namedArgs.backgroundColor as { type: 'opaque', opaqueType: 'color', value: Color }).value)
-        const borderColor = doRender((namedArgs.borderColor as { type: 'opaque', opaqueType: 'color', value: Color }).value)
+        const backgroundColor = (namedArgs.backgroundColor as { type: 'opaque', opaqueType: 'color', value: Color }).value
+        const borderColor = (namedArgs.borderColor as { type: 'opaque', opaqueType: 'color', value: Color }).value
         const borderWidth = namedArgs.borderWidth as number
 
         return {

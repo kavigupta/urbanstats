@@ -138,7 +138,7 @@ function isFullScreenInset(inset: Inset): boolean {
 
 export function EditInsetsHandles(props: {
     frame: Frame
-    setFrame: (newFrame: Frame) => void
+    setFrame?: (newFrame: Frame) => void
     container: RefObject<HTMLDivElement>
     delete?: () => void
     duplicate?: () => void
@@ -204,7 +204,7 @@ export function EditInsetsHandles(props: {
                     newFrame = [resizedFrame[0], drag.startFrame[1], drag.startFrame[2], resizedFrame[3]]
                     break
             }
-            props.setFrame(newFrame)
+            props.setFrame!(newFrame)
         },
         'onPointerUp': (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
@@ -222,11 +222,11 @@ export function EditInsetsHandles(props: {
 
     return (
         <>
-            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
-            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
-            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
-            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
-            {props.shouldHaveCenterHandle && (
+            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
+            {props.setFrame && props.shouldHaveCenterHandle && (
                 <Handle handleSize={20} style={{ margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
             {props.duplicate && (

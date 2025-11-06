@@ -36,7 +36,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { Colorbar, RampToDisplay } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
-import { MapTextBoxComponent } from './components/MapTextBox'
+import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -177,7 +177,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 />
             )
 
-            const textBoxes = mapResultMain.value.textBoxes.map((textBox, i, boxes) => (
+            const textBoxes = (props.mode === 'textBoxes' ? props.editTextBoxes.edited : mapResultMain.value.textBoxes).map((textBox, i, boxes) => (
                 <MapTextBoxComponent
                     container={mapsContainerRef}
                     key={i}
@@ -186,7 +186,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                     count={boxes.length}
                     edit={props.mode === 'textBoxes' ? editIndex(props.editTextBoxes, i) : undefined}
                 />
-            ))
+            )).concat(props.mode === 'textBoxes' ? [<AddTextBox key="add" container={mapsContainerRef} add={props.editTextBoxes.add} />] : [])
 
             return {
                 node: (

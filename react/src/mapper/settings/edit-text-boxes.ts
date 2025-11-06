@@ -1,6 +1,5 @@
-import { doRender } from '../../urban-stats-script/constants/color-utils'
 import { alignIdentifierToValue, listIdentifierToValue, RichTextDocument, RichTextSegment } from '../../urban-stats-script/constants/rich-text'
-import { deconstruct, TextBox } from '../../urban-stats-script/constants/text-box'
+import { deconstruct, defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import * as l from '../../urban-stats-script/literal-parser'
 import { noLocation } from '../../urban-stats-script/location'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
@@ -36,11 +35,9 @@ const richTextDocumentSchema = l.transformExpr(l.call({ fn: l.identifier('rtfDoc
 const textBoxSchema = l.transformExpr(l.call({ fn: l.identifier('textBox'), unnamedArgs: [], namedArgs: {
     screenBounds: neswSchema,
     text: richTextDocumentSchema,
-    // eslint-disable-next-line no-restricted-syntax -- Other ways of doing this are very annoying
-    backgroundColor: l.transformExpr(l.optional(colorSchema), color => (color && doRender(color.color)) ?? '#fff'),
-    // eslint-disable-next-line no-restricted-syntax -- Other ways of doing this are very annoying
-    borderColor: l.transformExpr(l.optional(colorSchema), color => (color && doRender(color.color)) ?? '#000'),
-    borderWidth: l.transformExpr(l.optional(l.number()), borderWidth => borderWidth ?? 1),
+    backgroundColor: l.transformExpr(l.optional(colorSchema), color => color?.color ?? defaults.backgroundColor),
+    borderColor: l.transformExpr(l.optional(colorSchema), color => color?.color ?? defaults.borderColor),
+    borderWidth: l.transformExpr(l.optional(l.number()), borderWidth => borderWidth ?? defaults.borderWidth),
 } }),
 ({ namedArgs: { screenBounds, ...rest } }) => ({
     bottomLeft: [screenBounds.west, screenBounds.south],
@@ -77,7 +74,7 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
     return undefined
 }
 
-export function settTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
+export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const result = mapSchema.parse(settings.script.uss, typeEnvironment).edit({
         type: 'vectorLiteral',
