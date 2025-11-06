@@ -24,7 +24,7 @@ import { MapGenerator, useMapGenerator } from '../map-generator'
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './insets'
+import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets-text-boxes'
 import { MapSettings } from './utils'
 
 type MapEditorMode = 'uss' | 'insets'
@@ -336,7 +336,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 assert(i > 0, `Cannot move inset ${i} down, already bottom`)
                 addInsetEdit(swapInsets(insetEdits, i, i - 1))
             },
-            editedInsets,
+            edited: editedInsets,
         },
     })
 

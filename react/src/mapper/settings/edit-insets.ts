@@ -1,15 +1,15 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { deconstruct, Inset } from '../../urban-stats-script/constants/insets'
+import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
+import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets, loadInsetExpression } from '../../urban-stats-script/worker'
 import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 
-import * as l from './../../urban-stats-script/literal-parser'
 import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-const neswSchema = l.object({
+export const neswSchema = l.object({
     north: l.number(),
     east: l.number(),
     south: l.number(),
@@ -32,7 +32,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
 
 const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] }), call => call.unnamedArgs[0])
 
-const mapInsetsSchema = l.transformStmt(l.statements([
+const mapSchema = l.transformStmt(l.statements([
     l.ignore(),
     l.condition({
         condition: l.ignore(),
@@ -58,7 +58,7 @@ const mapInsetsSchema = l.transformStmt(l.statements([
 
 export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): Inset[] | undefined {
     if (settings.script.uss.type === 'statements') {
-        const parseResult = mapInsetsSchema.parse(settings.script.uss, typeEnvironment)
+        const parseResult = mapSchema.parse(settings.script.uss, typeEnvironment)
         if (parseResult === undefined) {
             return undefined
         }
@@ -80,7 +80,7 @@ export interface InsetEdits {
 export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: Inset[]): InsetEdits {
     return {
         insets: replace(edits.insets, [from, to], withArray),
-        ast: replace(edits.ast, [from, to], withArray.map(deconstruct)),
+        ast: replace(edits.ast, [from, to], withArray.map(deconstructInset)),
     }
 }
 
@@ -93,7 +93,7 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
 
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
-    const mapInsets = mapInsetsSchema.parse(settings.script.uss, typeEnvironment)
+    const mapInsets = mapSchema.parse(settings.script.uss, typeEnvironment)
     assert(mapInsets !== undefined && (mapInsets.currentValue !== null || settings.universe !== undefined), 'Trying to do an inset edit on USS that is not inset editable')
 
     let currentInsetsAst: UrbanStatsASTExpression

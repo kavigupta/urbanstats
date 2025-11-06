@@ -8,6 +8,7 @@ import { useColors } from '../../page_template/colors'
 import { richTextAttributesSchema, RichTextDocument, richTextSegmentSchema } from '../../urban-stats-script/constants/rich-text'
 import { TextBox } from '../../urban-stats-script/constants/text-box'
 import { Property } from '../../utils/Property'
+import { Edit } from '../../utils/array-edits'
 import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
@@ -18,14 +19,7 @@ const toolbarHeight = '30px'
 export function MapTextBoxComponent({ textBox: label, container, edit, i, count }: {
     textBox: TextBox
     container: RefObject<HTMLDivElement>
-    edit?: {
-        modify: (newLabel: Partial<TextBox>) => void
-        duplicate: () => void
-        delete: () => void
-        add: () => void
-        moveUp: () => void
-        moveDown: () => void
-    }
+    edit?: Edit<TextBox>
     i: number
     count: number
 }): ReactNode {

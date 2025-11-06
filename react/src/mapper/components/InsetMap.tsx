@@ -6,20 +6,14 @@ import { mapBorderRadius, mapBorderWidth } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
+import { Edit } from '../../utils/array-edits'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
     inset: Inset
     children: ReactNode
     container: RefObject<HTMLDivElement>
-    editInset?: {
-        modify: (newInset: Partial<Inset>) => void
-        duplicate: () => void
-        delete: () => void
-        add: () => void
-        moveUp: () => void
-        moveDown: () => void
-    }
+    editInset?: Edit<Inset>
     i: number
     numInsets: number
 }, ref: React.Ref<MapRef>): ReactNode {

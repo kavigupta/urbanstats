@@ -1,3 +1,4 @@
+import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
@@ -14,6 +15,19 @@ export interface TextBox {
     backgroundColor: string
     borderColor: string
     borderWidth: number
+}
+
+function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
+    const uss = `constructInset(
+        screenBounds={
+            north: ${textBox.topRight[1]},
+            east: ${textBox.topRight[0]},
+            south: ${textBox.bottomLeft[1]},
+            west: ${textBox.bottomLeft[0]} }, 
+        },
+        text=${deconstructRichTextDocument(textBox.text)}
+    )`
+    return parseNoErrorAsExpression(uss, '')
 }
 
 export const textBoxType = {

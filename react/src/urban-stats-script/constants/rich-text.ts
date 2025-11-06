@@ -4,8 +4,8 @@ import { RemoveOptionals } from '../../utils/types'
 import { Context } from '../context'
 import { createConstantExpression, NamedFunctionArgumentWithDocumentation, USSRawValue, USSType, USSValue } from '../types-values'
 
-import { colorType, doRender } from './color'
-import { Color } from './color-utils'
+import { colorType } from './color'
+import { Color, doRender } from './color-utils'
 
 export type RichTextDocument = RichTextSegment[]
 
