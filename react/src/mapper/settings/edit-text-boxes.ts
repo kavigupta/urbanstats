@@ -1,12 +1,9 @@
-import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { doRender } from '../../urban-stats-script/constants/color-utils'
-import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
 import { RichTextDocument, RichTextSegment } from '../../urban-stats-script/constants/rich-text'
-import { TextBox } from '../../urban-stats-script/constants/text-box'
+import { deconstruct, TextBox } from '../../urban-stats-script/constants/text-box'
 import * as l from '../../urban-stats-script/literal-parser'
+import { noLocation } from '../../urban-stats-script/location'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { loadInsetExpression } from '../../urban-stats-script/worker'
-import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
@@ -66,14 +63,7 @@ const mapSchema = l.transformStmt(l.statements([
                 }))),
         ],
     }),
-]), (uss) => {
-    const textBoxesArg = uss[1].rest[0].namedArgs.textBoxes
-    const literalTextBoxes = textBoxesArg.currentValue ?? null
-    return {
-        ...textBoxesArg,
-        currentValue: literalTextBoxes,
-    }
-})
+]), uss => uss[1].rest[0].namedArgs.textBoxes)
 
 export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnvironment): TextBox[] | undefined {
     if (settings.script.uss.type === 'statements') {
@@ -87,40 +77,12 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
     return undefined
 }
 
-export interface InsetEdits {
-    insets: ArrayEdits<Inset>
-    ast: ArrayEdits<UrbanStatsASTExpression>
-}
-
-export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: Inset[]): InsetEdits {
-    return {
-        insets: replace(edits.insets, [from, to], withArray),
-        ast: replace(edits.ast, [from, to], withArray.map(deconstructInset)),
-    }
-}
-
-export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): InsetEdits {
-    return {
-        insets: swap(edits.insets, indexA, indexB),
-        ast: swap(edits.ast, indexA, indexB),
-    }
-}
-
-export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
+export function settTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
-    const mapInsets = mapSchema.parse(settings.script.uss, typeEnvironment)
-    assert(mapInsets !== undefined && (mapInsets.currentValue !== null || settings.universe !== undefined), 'Trying to do an inset edit on USS that is not inset editable')
-
-    let currentInsetsAst: UrbanStatsASTExpression
-    if (mapInsets.currentValue !== null) {
-        currentInsetsAst = mapInsets.expr!
-    }
-    else {
-        currentInsetsAst = loadInsetExpression(settings.universe!)
-    }
-
-    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)!.edit(edits.ast) as UrbanStatsASTExpression
-
-    const result = mapInsets.edit(newConstructInsets)
+    const result = mapSchema.parse(settings.script.uss, typeEnvironment).edit({
+        type: 'vectorLiteral',
+        elements: textBoxes.map(deconstruct),
+        entireLoc: noLocation,
+    })
     return result as MapUSS
 }

@@ -3,8 +3,8 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue } from '../types-values'
 
-import { colorType, doRender } from './color'
-import { Color } from './color-utils'
+import { colorType } from './color'
+import { Color, doRender } from './color-utils'
 import { boundsType } from './insets'
 import { RichTextDocument, richTextDocumentType } from './rich-text'
 
@@ -17,7 +17,7 @@ export interface TextBox {
     borderWidth: number
 }
 
-function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
+export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
     const uss = `constructInset(
         screenBounds={
             north: ${textBox.topRight[1]},

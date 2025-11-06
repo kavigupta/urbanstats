@@ -24,7 +24,7 @@ import { MapGenerator, useMapGenerator } from '../map-generator'
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets-text-boxes'
+import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
 import { MapSettings } from './utils'
 
 type MapEditorMode = 'uss' | 'insets'
