@@ -178,7 +178,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                                 }
                             : undefined}
                     >
-                        {mapChildren(insetFeatures)}
+                        {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
                     </InsetMap>
                 )
             })
@@ -286,7 +286,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[]) => ReactNode, ramp: RampToDisplay }> {
+}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
     switch (opaqueType) {
@@ -310,7 +310,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     }
 
     let features: GeoJSON.Feature[]
-    let mapChildren: (fs: GeoJSON.Feature[]) => ReactNode
+    let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
         case 'pMap':
             const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
@@ -325,7 +325,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await pointsGeojson(geographyKind, universe, points, cache)
 
-            mapChildren = fs => <PointFeatureCollection features={fs} clickable={true} />
+            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
 
             break
         case 'cMap':
@@ -353,16 +353,16 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await polygonsGeojson(geographyKind, universe, polys, cache)
 
-            mapChildren = fs => <PolygonFeatureCollection features={fs} clickable={true} />
+            mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
 
             break
     }
 
     return {
         features,
-        mapChildren: fs => (
+        mapChildren: (fs, clickable) => (
             <>
-                {mapChildren(fs)}
+                {mapChildren(fs, clickable)}
                 <BasemapComponent basemap={value.basemap} />
             </>
         ),
