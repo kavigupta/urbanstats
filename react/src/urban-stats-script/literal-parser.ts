@@ -9,17 +9,13 @@ import { noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
 
-function error(message: string, expr: UrbanStatsASTExpression | UrbanStatsASTStatement | undefined | UrbanStatsASTStatement[], childErrors?: Error[]): never {
-    throw new Error(`${message}: ${JSON.stringify(expr)}${childErrors && `\n${childErrors.map(e => `  ${e.message}`).join('\n')}`}`)
-}
-
 interface LiteralExprParser<T> {
     // Undefined is a non-existent expression, used for optionals
     parse: (
         expr: UrbanStatsASTExpression | undefined,
         typeEnvironment: TypeEnvironment,
         doEdit?: (newExpr: UrbanStatsASTExpression) => UrbanStatsASTExpression | UrbanStatsASTStatement
-    ) => T
+    ) => T | undefined
 }
 
 export function string(): LiteralExprParser<string> {
@@ -28,7 +24,7 @@ export function string(): LiteralExprParser<string> {
             if (expr?.type === 'constant' && expr.value.node.type === 'string') {
                 return expr.value.node.value
             }
-            error(`not a string constant`, expr)
+            return undefined
         },
     }
 }
@@ -43,7 +39,7 @@ export function identifier<T extends string>(name: T): LiteralExprParser<T> {
             if (expr?.type === 'identifier' && expr.name.node === name) {
                 return name
             }
-            error(`not an identifier with the name ${name}`, expr)
+            return undefined
         },
     }
 }
@@ -51,16 +47,13 @@ export function identifier<T extends string>(name: T): LiteralExprParser<T> {
 export function union<T>(schemas: LiteralExprParser<T>[]): LiteralExprParser<T> {
     return {
         parse(expr, env, doEdit) {
-            const errors: Error[] = []
             for (const schema of schemas) {
-                try {
-                    return schema.parse(expr, env, doEdit)
-                }
-                catch (e) {
-                    errors.push(e as Error)
+                const parsed = schema.parse(expr, env, doEdit)
+                if (parsed !== undefined) {
+                    return parsed
                 }
             }
-            error(`No union schema could be parsed`, expr, errors)
+            return undefined
         },
     }
 }
@@ -69,12 +62,16 @@ export function number(): LiteralExprParser<number> {
     return {
         parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'unaryOperator' && expr.operator.node === '-') {
-                return -this.parse(expr.expr, env, newExpr => doEdit({ ...expr, expr: newExpr }))
+                const inverse = this.parse(expr.expr, env, newExpr => doEdit({ ...expr, expr: newExpr }))
+                if (inverse === undefined) {
+                    return undefined
+                }
+                return -inverse
             }
             if (expr?.type === 'constant' && expr.value.node.type === 'number') {
                 return expr.value.node.value
             }
-            error('not a numnber', expr)
+            return undefined
         },
     }
 }
@@ -86,24 +83,28 @@ export function object<T extends Record<string, unknown>>(schema: { [K in keyof 
                 const result = {} as T
                 for (const key of Object.keys(schema)) {
                     const match = expr.properties.find(([k]) => k === key)
-                    result[key] = schema[key].parse(
+                    const parsed = schema[key].parse(
                         match?.[1], env,
                         newExpr => doEdit({ ...expr, properties: match
                             ? expr.properties.map(prop => prop === match ? [prop[0], newExpr] : prop)
                             : [...expr.properties, [key as string, newExpr]] }))
+                    if (parsed === undefined) {
+                        return
+                    }
+                    result[key] = parsed
                 }
                 return result
             }
-            error('not an object literal', expr)
+            return undefined
         },
     }
 }
 
-export function optional<T>(schema: LiteralExprParser<T>): LiteralExprParser<T | undefined> {
+export function optional<T>(schema: LiteralExprParser<T>): LiteralExprParser<T | null> {
     return {
         parse(expr, env, doEdit = e => e) {
             if (expr === undefined) {
-                return undefined
+                return null
             }
             return schema.parse(expr, env, doEdit)
         },
@@ -121,14 +122,21 @@ export function call<N extends Record<string, unknown>, U extends unknown[], F>(
                 const fn = schema.fn.parse(expr.fn, env,
                     newExpr => doEdit({ ...expr, fn: newExpr }),
                 )
+                if (fn === undefined) {
+                    return
+                }
                 const namedResult = {} as N
                 for (const key of Object.keys(schema.namedArgs)) {
                     const match = expr.args.find(arg => arg.type === 'named' && arg.name.node === key)
-                    namedResult[key] = schema.namedArgs[key].parse(match?.value, env,
+                    const parsed = schema.namedArgs[key].parse(match?.value, env,
                         newExpr => doEdit({ ...expr, args: match
                             ? expr.args.map(prop => prop === match ? { ...prop, value: newExpr } : prop)
                             : [...expr.args, { type: 'named', name: { node: key as string, location: noLocation }, value: newExpr }] }),
                     )
+                    if (parsed === undefined) {
+                        return
+                    }
+                    namedResult[key] = parsed
                 }
 
                 const unnamedResult = [] as unknown as U
@@ -139,19 +147,23 @@ export function call<N extends Record<string, unknown>, U extends unknown[], F>(
                             continue
                         }
                         if (j === i) {
-                            unnamedResult[i] = argSchema.parse(arg.value, env,
+                            const parsed = argSchema.parse(arg.value, env,
                                 newExpr => doEdit({ ...expr, args: expr.args.map(a => a === arg ? { ...a, value: newExpr } : a) }),
                             )
+                            if (parsed === undefined) {
+                                return
+                            }
+                            unnamedResult[i] = parsed
                             continue argSchemas
                         }
                         j++
                     }
-                    error('not enough named args', expr)
+                    return // not found
                 }
 
                 return { namedArgs: namedResult, unnamedArgs: unnamedResult, fn }
             }
-            error('not a call expression', expr)
+            return
         },
     }
 }
@@ -159,7 +171,7 @@ export function call<N extends Record<string, unknown>, U extends unknown[], F>(
 export function vector<T>(schema: LiteralExprParser<T>): LiteralExprParser<T[]> {
     return {
         parse(expr, env, doEdit = e => e) {
-            return editableVector(schema).parse(expr, env, doEdit).currentValue
+            return editableVector(schema).parse(expr, env, doEdit)?.currentValue
         },
     }
 }
@@ -171,10 +183,18 @@ export function editableVector<T>(schema: LiteralExprParser<T>): LiteralExprPars
     return {
         parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'vectorLiteral') {
-                return {
-                    currentValue: expr.elements.map(elem => schema.parse(elem, env,
+                const result: T[] = []
+                for (const elem of expr.elements) {
+                    const parsed = schema.parse(elem, env,
                         newExpr => doEdit({ ...expr, elements: expr.elements.map(e => e === elem ? newExpr : e) }),
-                    )),
+                    )
+                    if (parsed === undefined) {
+                        return
+                    }
+                    result.push(parsed)
+                }
+                return {
+                    currentValue: result,
                     edit(edits) {
                         return doEdit({
                             ...expr,
@@ -183,7 +203,7 @@ export function editableVector<T>(schema: LiteralExprParser<T>): LiteralExprPars
                     },
                 }
             }
-            error('not a vector literal', expr)
+            return
         },
     }
 }
@@ -195,10 +215,10 @@ export function deconstruct<T>(schema: LiteralExprParser<T>): LiteralExprParser<
                 const type = env.get(expr.name.node)
                 if (type?.documentation?.equivalentExpressions !== undefined && type.documentation.equivalentExpressions.length > 0) {
                     for (const equivalentExpression of type.documentation.equivalentExpressions) {
-                        try {
-                            return schema.parse(equivalentExpression, env, doEdit)
+                        const parsed = schema.parse(equivalentExpression, env, doEdit)
+                        if (parsed !== undefined) {
+                            return parsed
                         }
-                        catch {}
                     }
                 }
             }
@@ -219,8 +239,12 @@ export function edit<T>(
     }> {
     return {
         parse(expr, env, doEdit = e => e) {
+            const parsed = schema.parse(expr, env, doEdit)
+            if (parsed === undefined) {
+                return undefined
+            }
             return {
-                currentValue: schema.parse(expr, env, doEdit),
+                currentValue: parsed,
                 edit: doEdit,
                 expr,
             }
@@ -247,18 +271,21 @@ interface LiteralStmtParser<T> {
         stmt: UrbanStatsASTStatement | undefined,
         typeEnvironment: TypeEnvironment,
         doEdit?: (newStmt: UrbanStatsASTStatement) => UrbanStatsASTStatement
-    ) => T
+    ) => T | undefined
 }
 
 export function expression<T>(schema: LiteralExprParser<T>): LiteralStmtParser<T> {
     return {
         parse(stmt, env, doEdit = e => e) {
             if (stmt?.type === 'expression') {
-                return schema.parse(stmt.value, env,
+                const parsed = schema.parse(stmt.value, env,
                     newExpr => doEdit({ ...stmt, value: newExpr }),
                 )
+                if (parsed !== undefined) {
+                    return parsed
+                }
             }
-            error('not an expression', stmt)
+            return
         },
     }
 }
@@ -268,15 +295,19 @@ function parseStatements<T extends unknown[]>(
     stmts: UrbanStatsASTStatement[],
     env: TypeEnvironment,
     doEdit: (newStmt: UrbanStatsASTStatement[]) => UrbanStatsASTStatement,
-): T {
+): T | undefined {
     const result = [] as unknown as T
     for (const [i, s] of schema.entries()) {
         if (i >= stmts.length) {
-            error('not enough statements', stmts)
+            return
         }
-        result[i] = s.parse(stmts[i], env,
+        const parsed = s.parse(stmts[i], env,
             newStmt => doEdit([...stmts.slice(0, i), newStmt, ...stmts.slice(i + 1)]),
         )
+        if (parsed === undefined) {
+            return
+        }
+        result[i] = parsed
     }
     return result
 }
@@ -289,15 +320,15 @@ export function statements<T extends unknown[]>(schema: { [I in keyof T]: Litera
                     newStmts => doEdit({ ...stmt, result: newStmts }),
                 )
             }
-            error('not a statements list', stmt)
+            return
         },
     }
 }
 
-export function ignore(): LiteralStmtParser<undefined> & LiteralExprParser<undefined> {
+export function ignore(): LiteralStmtParser<null> & LiteralExprParser<null> {
     return {
         parse() {
-            return undefined
+            return null
         },
     }
 }
@@ -306,23 +337,32 @@ export function condition<C, R extends unknown[]>(schema: { condition: LiteralEx
     return {
         parse(stmt, env, doEdit = e => e) {
             if (stmt?.type === 'condition') {
-                return {
-                    condition: schema.condition.parse(stmt.condition, env,
-                        newExpr => doEdit({ ...stmt, condition: newExpr }),
-                    ),
-                    rest: parseStatements(schema.rest, stmt.rest, env,
-                        newStmts => doEdit({ ...stmt, rest: newStmts }),
-                    ),
+                const cond = schema.condition.parse(stmt.condition, env,
+                    newExpr => doEdit({ ...stmt, condition: newExpr }),
+                )
+                if (cond === undefined) {
+                    return
                 }
+                const rest = parseStatements(schema.rest, stmt.rest, env,
+                    newStmts => doEdit({ ...stmt, rest: newStmts }),
+                )
+                if (rest === undefined) {
+                    return
+                }
+                return { condition: cond, rest }
             }
-            error('not a condition', stmt)
+            return
         },
     }
 }
 export function transformExpr<T, U>(schema: LiteralExprParser<T>, map: (t: T) => U): LiteralExprParser<U> {
     return {
         parse(ast, env, doEdit = e => e) {
-            return map(schema.parse(ast, env, doEdit))
+            const parsed = schema.parse(ast, env, doEdit)
+            if (parsed !== undefined) {
+                return map(parsed)
+            }
+            return
         },
     }
 }
@@ -330,7 +370,11 @@ export function transformExpr<T, U>(schema: LiteralExprParser<T>, map: (t: T) =>
 export function transformStmt<T, U>(schema: LiteralStmtParser<T>, map: (t: T) => U): LiteralStmtParser<U> {
     return {
         parse(ast, env, doEdit = e => e) {
-            return map(schema.parse(ast, env, doEdit))
+            const parsed = schema.parse(ast, env, doEdit)
+            if (parsed !== undefined) {
+                return map(parsed)
+            }
+            return
         },
     }
 }
