@@ -25,7 +25,7 @@ export const defaults = {
 }
 
 export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
-    const uss = `constructInset(
+    const uss = `textBox(
         screenBounds={
             north: ${textBox.topRight[1]},
             east: ${textBox.topRight[0]},
@@ -43,7 +43,7 @@ function deconstructRichTextDocument(doc: RichTextDocument): string {
 
 function deconstructRichTextSegment(segment: RichTextSegment): string {
     if (typeof segment.insert === 'string') {
-        return `rtfString("${segment.insert}"${deconstructRichTextAttributes(segment.attributes)})`
+        return `rtfString(${JSON.stringify(segment.insert)}${deconstructRichTextAttributes(segment.attributes)})`
     }
     if ('formula' in segment.insert) {
         return `rtfFormula("${segment.insert.formula}"${deconstructRichTextAttributes(segment.attributes)})`
@@ -58,7 +58,7 @@ function deconstructRichTextAttributes(attributes: RichTextSegment['attributes']
     if (attributes === undefined) {
         return ''
     }
-    const list = Object.entries(attributes)
+    const list = Object.entries(attributes).filter(([, value]) => value !== undefined)
     if (list.length === 0) {
         return ''
     }

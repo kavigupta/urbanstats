@@ -75,7 +75,7 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
 }
 
 export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
-    assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
+    assert(settings.script.uss.type === 'statements', 'Trying to do an text boxes edit on USS that is not text boxes editable')
     const result = mapSchema.parse(settings.script.uss, typeEnvironment).edit({
         type: 'vectorLiteral',
         elements: textBoxes.map(deconstruct),
