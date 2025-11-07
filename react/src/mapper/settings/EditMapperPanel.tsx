@@ -34,7 +34,7 @@ type MapEditorMode = 'uss' | 'insets' | 'textBoxes'
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
 
-    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('textBoxes')
+    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
