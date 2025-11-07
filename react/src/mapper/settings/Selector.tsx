@@ -236,12 +236,7 @@ const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
 })
 
 export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
-    try {
-        return colorSchema.parse(expr, typeEnvironment)
-    }
-    catch {
-        return
-    }
+    return colorSchema.parse(expr, typeEnvironment)
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
