@@ -40,11 +40,6 @@ void test('constant listing', (): void => {
                 'colorWhite',
                 'colorBlack',
             ],
-            '(string; size: number = null, font: string = null, color: color = null, bold: boolean = null, italic: boolean = null, underline: boolean = null, list: richTextList = null, indent: number = null, align: richTextAlign = null) -> richTextSegment': [
-                'rtfString',
-                'rtfFormula',
-                'rtfImage',
-            ],
             'Unit': [
                 'unitPercentage',
                 'unitFatalities',
@@ -106,9 +101,6 @@ void test('constant listing', (): void => {
             '(any; ) -> string': [
                 'toString',
             ],
-            '(; screenBounds: {east: number, north: number, south: number, west: number}, text: richTextDocument, backgroundColor: color = rgb(1, 0.9725490196078431, 0.9411764705882353), borderColor: color = rgb(0.2, 0.2, 0.2), borderWidth: number = 1) -> textBox': [
-                'textBox',
-            ],
             '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, x4: [number] = null, x5: [number] = null, x6: [number] = null, x7: [number] = null, x8: [number] = null, x9: [number] = null, x10: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {b: number, m1: number, m10: number, m2: number, m3: number, m4: number, m5: number, m6: number, m7: number, m8: number, m9: number, r2: number, residuals: [number]}': [
                 'regression',
             ],
@@ -118,9 +110,6 @@ void test('constant listing', (): void => {
             ],
             '(color; ) -> string': [
                 'renderColor',
-            ],
-            '([richTextSegment]; ) -> richTextDocument': [
-                'rtfDocument',
             ],
             '([{color: color, value: number}]; ) -> ramp': [
                 'constructRamp',
@@ -529,13 +518,13 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMapRGB': [
                 'cMapRGB',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> pMap': [
                 'pMap',
             ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
@@ -546,17 +535,6 @@ void test('constant listing', (): void => {
             ],
             '(; backgroundColor: color = rgb(1, 1, 1, a=1), textColor: color = null) -> basemap': [
                 'noBasemap',
-            ],
-            'richTextAlign': [
-                'alignLeft',
-                'alignCenter',
-                'alignRight',
-                'alignJustify',
-            ],
-            'richTextList': [
-                'listOrdered',
-                'listBullet',
-                'listNone',
             ],
         },
     )

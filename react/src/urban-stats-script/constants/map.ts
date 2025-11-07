@@ -11,7 +11,6 @@ import { Color, rgbColorExpression } from './color-utils'
 import { Inset, insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
-import { TextBox, textBoxType } from './text-box'
 
 export interface Outline {
     color: Color
@@ -27,7 +26,6 @@ interface CommonMap {
     basemap: Basemap
     insets: Inset[]
     unit?: UnitType
-    textBoxes: TextBox[]
 }
 
 export interface CMap extends CommonMap {
@@ -44,7 +42,6 @@ export interface CMapRGB {
     insets: Inset[]
     unit?: UnitType
     outline: Outline
-    textBoxes: TextBox[]
 }
 
 export interface PMap extends CommonMap {
@@ -146,10 +143,6 @@ function mapConstructorArguments(
                 name: { node: 'defaultInsets', location: noLocation },
             },
         },
-        textBoxes: {
-            type: { type: 'concrete', value: { type: 'vector', elementType: textBoxType } },
-            defaultValue: createConstantExpression(null),
-        },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }
 
@@ -173,7 +166,6 @@ function computeCommonMap(
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
     const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
-    const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -191,7 +183,7 @@ function computeCommonMap(
         })
     }
 
-    return { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', basemap, insets, unit }
 }
 
 const namedArgDocumentation = {
@@ -203,7 +195,6 @@ const namedArgDocumentation = {
     basemap: 'Basemap',
     insets: 'Insets',
     unit: 'Unit',
-    textBoxes: 'Text Boxes',
 }
 
 export const cMap: USSValue = {
@@ -340,7 +331,6 @@ export const cMapRGB: USSValue = {
         const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
-        const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
 
         if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
             throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
@@ -348,7 +338,7 @@ export const cMapRGB: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
-            value: { geo, dataR, dataG, dataB, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
+            value: { geo, dataR, dataG, dataB, label, basemap, insets, unit, outline } satisfies CMapRGB,
         }
     },
     documentation: {
@@ -365,7 +355,6 @@ export const cMapRGB: USSValue = {
             basemap: 'Basemap',
             insets: 'Insets',
             unit: 'Unit',
-            textBoxes: 'Text Boxes',
         },
         longDescription: 'Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps.',
         selectorRendering: { kind: 'subtitleLongDescription' },
