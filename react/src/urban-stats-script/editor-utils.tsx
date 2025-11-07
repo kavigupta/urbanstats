@@ -94,7 +94,7 @@ export function renderCode(
 export function nodeContent(node: Node): string {
     if (node instanceof HTMLElement) {
         if (!node.isContentEditable) {
-            return node.getAttribute('data-content') ?? ''
+            return ''
         }
         return Array.from(node.childNodes).map(nodeContent).join('')
     }

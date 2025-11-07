@@ -1,107 +1,73 @@
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useEffect } from 'react'
 
-import { CheckboxSettingCustom } from '../components/sidebar'
-import { MapTextBoxComponent, Selection, SelectionContext } from '../mapper/components/MapTextBox'
-import { OverrideTheme, useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
-import { Property } from '../utils/Property'
+import { TestUtils } from '../utils/TestUtils'
 
-import { defaults, TextBox } from './constants/text-box'
-import { useUndoRedo } from './editor-utils'
+import { Editor } from './Editor'
+import { useStandaloneEditorState } from './StandaloneEditor'
+import { Range } from './editor-utils'
 
-const newLabel: TextBox = {
-    bottomLeft: [0.25, 0.25],
-    topRight: [0.75, 0.75],
-    text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
-    ...defaults,
-}
+type Selections = [Range | null, Range | null]
 
 /**
  * This panel used for developing + debugging editor functionality.
  */
 export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
-    const [edit, setEdit] = useState(true)
-    const [content, setContent] = useState<TextBox[]>(() => [newLabel])
+    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi } = useStandaloneEditorState<Selections>({
+        ident: 'editor-panel',
+        getCode: () => localStorage.getItem('editor-code') ?? '',
+        onChange: (newScript) => { localStorage.setItem('editor-code', newScript) },
+        getSelection: () => [null, null],
+        undoRedoOptions: {
+            undoChunking: props.undoChunking,
+        },
+    })
 
-    const selectionProperty = useMemo(() => new Property<Selection | undefined>(undefined), [])
-
-    const { addState, updateCurrentSelection } = useUndoRedo<TextBox[], Selection | undefined>(content, undefined, setContent, (newSelection) => {
-        selectionProperty.value = newSelection
-    }, props)
-
-    // Update current selection when it changes
     useEffect(() => {
-        const observer = (): void => {
-            // We need this setTimeout since Quill calls the selection events before any text events
-            // This way, if we get a combined text and selection event, we update the new stack item instead of the old one
-            setTimeout(() => {
-                updateCurrentSelection(selectionProperty.value)
-            })
+        const listener = (e: KeyboardEvent): void => {
+            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
+            // TestCafe doesn't send `e.code`, so we need to use `toLowerCase` otherwise the char is capitalized on Mac
+            if (e.key.toLowerCase() === 's' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
+                e.preventDefault()
+                setSelection([selection[1], selection[0]])
+            }
+            if (e.key.toLowerCase() === 'd' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
+                e.preventDefault()
+                setSelection([null, null])
+            }
         }
-
-        selectionProperty.observers.add(observer)
-        return () => { selectionProperty.observers.delete(observer) }
-    }, [selectionProperty, updateCurrentSelection])
-
-    const containerRef = useRef<HTMLDivElement>(null)
-
-    const updateContent = (newContent: TextBox[]): void => {
-        setContent(newContent)
-        addState(newContent, selectionProperty.value)
-    }
-
-    const colors = useColors()
-
-    const labels = content.map((label, i) => (
-        <MapTextBoxComponent
-            key={i}
-            i={i}
-            count={content.length}
-            textBox={label}
-            container={containerRef}
-            edit={edit
-                ? {
-                        modify(n) {
-                            updateContent(content.map((l, j) => j === i ? { ...l, ...n } : l))
-                        },
-                        duplicate() {
-                            updateContent(content.flatMap((l, j) => j === i ? [l, l] : [l]))
-                        },
-                        delete() {
-                            updateContent(content.filter((l, j) => j !== i))
-                        },
-                        add() {
-                            updateContent(content.concat([newLabel]))
-                        },
-                        moveUp() {
-                            updateContent(content.slice(0, i).concat([content[i + 1], content[i]]).concat(content.slice(i + 2)))
-                        },
-                        moveDown() {
-                            updateContent(content.slice(0, i - 1).concat([content[i], content[i - 1]]).concat(content.slice(i + 1)))
-                        },
-                    }
-                : undefined}
-        />
-    ))
+        window.addEventListener('keydown', listener)
+        return () => { window.removeEventListener('keydown', listener) }
+    })
 
     return (
         <PageTemplate>
-            <CheckboxSettingCustom name="edit" checked={edit} onChange={setEdit} />
-            <SelectionContext.Provider value={selectionProperty}>
-                <OverrideTheme theme="Light Mode">
-                    <div
-                        style={{
-                            width: '1000px',
-                            height: '1000px',
-                            backgroundColor: colors.hueColors.red,
-                            position: 'relative',
-                        }}
-                        ref={containerRef}
-                    >
-                        {labels}
-                    </div>
-                </OverrideTheme>
-            </SelectionContext.Provider>
+            {/* Most props to the editors are purposely not memoized for testing purposes. */}
+            <div id="test-editor-panel">
+                <Editor
+                    uss={uss}
+                    setUss={setUss}
+                    typeEnvironment={typeEnvironment}
+                    results={results}
+                    placeholder="Enter Urban Stats Script"
+                    selection={selection[0]}
+                    setSelection={(newSelection) => {
+                        setSelection([newSelection, selection[1]])
+                    }}
+                />
+                <Editor
+                    uss={uss}
+                    setUss={setUss}
+                    typeEnvironment={typeEnvironment}
+                    results={results}
+                    placeholder="Enter Urban Stats Script"
+                    selection={selection[1]}
+                    setSelection={(newSelection) => {
+                        setSelection([selection[0], newSelection])
+                    }}
+                />
+                {undoRedoUi}
+            </div>
         </PageTemplate>
     )
 }
