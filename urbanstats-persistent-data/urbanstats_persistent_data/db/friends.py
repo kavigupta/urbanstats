@@ -249,7 +249,7 @@ def compute_streaks(scores: list[int], problem_ids: list[int]) -> tuple[int, int
 
 
 def extract_scores_and_problem_ids(
-    quiz_kind: QuizKind, rows: list[tuple[str, int]]
+    quiz_kind: QuizKind, rows: list[tuple[int, int]]
 ) -> tuple[list[int], list[int]]:
     scores = []
     problem_ids = []
