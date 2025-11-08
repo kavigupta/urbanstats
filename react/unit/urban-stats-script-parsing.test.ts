@@ -710,6 +710,7 @@ void test('unparse', (): void => {
         parseThenUnparse('condition(x); x = 2; y = 3'),
         'condition (x)\nx = 2;\ny = 3',
     )
+    assert.deepStrictEqual(parseThenUnparse('"\\n"'), '"\\n"')
 })
 
 void test('well-formatted-uss', (): void => {
