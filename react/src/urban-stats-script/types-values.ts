@@ -2,7 +2,7 @@ import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression } from './ast'
-import { Color, hexToColor } from './constants/color-utils'
+import { Color, deconstructColor, hexToColor } from './constants/color-utils'
 import { CMap, CMapRGB, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { Scale } from './constants/scale'
@@ -368,22 +368,10 @@ export function renderValue(input: USSValue): string {
                     case 'unit':
                         return `[${opaqueValue.opaqueType} object]`
                     case 'color':
-                        const colorValue = opaqueValue.value as { r: number, g: number, b: number, a: number }
-                        if (colorValue.a === 255) {
-                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255})`
-                        }
-                        else {
-                            return `rgb(${colorValue.r / 255}, ${colorValue.g / 255}, ${colorValue.b / 255}, a=${colorValue.a / 255})`
-                        }
+                        return deconstructColor(opaqueValue.value)
                     case 'outline':
-                        const outline = opaqueValue.value as { color: { r: number, g: number, b: number, a: number }, weight: number }
-                        const outlineColor = outline.color
-                        if (outlineColor.a === 255) {
-                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}), weight=${outline.weight})`
-                        }
-                        else {
-                            return `constructOutline(color=rgb(${outlineColor.r / 255}, ${outlineColor.g / 255}, ${outlineColor.b / 255}, a=${outlineColor.a / 255}), weight=${outline.weight})`
-                        }
+                        const outline = opaqueValue.value
+                        return `constructOutline(color=${deconstructColor(outline.color)}, weight=${outline.weight})`
                     case 'ramp':
                         const ramp = opaqueValue.value
                         const rampValue = ramp.map(

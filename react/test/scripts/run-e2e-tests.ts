@@ -132,7 +132,7 @@ async function runTest(test: string): Promise<TestResult> {
     let runner = testcafe.createRunner()
         .src(testFile(test))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
-        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding`])
+        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding --disable-features=LocalNetworkAccessChecks`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
         .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)

@@ -17,7 +17,7 @@ import { Colors } from '../page_template/color-themes'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
-import { doRender } from '../urban-stats-script/constants/color'
+import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
 import { instantiate } from '../urban-stats-script/constants/scale'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -178,7 +178,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                                 }
                             : undefined}
                     >
-                        {mapChildren(insetFeatures)}
+                        {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
                     </InsetMap>
                 )
             })
@@ -286,7 +286,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[]) => ReactNode, ramp: RampToDisplay }> {
+}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
     switch (opaqueType) {
@@ -300,17 +300,17 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
-                r: r * 255,
-                g: value.dataG[i] * 255,
-                b: value.dataB[i] * 255,
-                a: 255,
+                r,
+                g: value.dataG[i],
+                b: value.dataB[i],
+                a: 1,
             }))
             ramp = { type: 'label', value: value.label }
             break
     }
 
     let features: GeoJSON.Feature[]
-    let mapChildren: (fs: GeoJSON.Feature[]) => ReactNode
+    let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
         case 'pMap':
             const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
@@ -325,7 +325,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await pointsGeojson(geographyKind, universe, points, cache)
 
-            mapChildren = fs => <PointFeatureCollection features={fs} clickable={true} />
+            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
 
             break
         case 'cMap':
@@ -353,16 +353,16 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             features = await polygonsGeojson(geographyKind, universe, polys, cache)
 
-            mapChildren = fs => <PolygonFeatureCollection features={fs} clickable={true} />
+            mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
 
             break
     }
 
     return {
         features,
-        mapChildren: fs => (
+        mapChildren: (fs, clickable) => (
             <>
-                {mapChildren(fs)}
+                {mapChildren(fs, clickable)}
                 <BasemapComponent basemap={value.basemap} />
             </>
         ),

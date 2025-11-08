@@ -19,7 +19,7 @@ import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 
-import { useColors, useJuxtastatColors } from './colors'
+import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
@@ -40,27 +40,15 @@ export function PageTemplate({
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const [screenshotMode, setScreenshotMode] = useState(false)
     const colors = useColors()
-    const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
+    const styleElement = useStyleElement()
     useEffect(() => {
+        styleElement(document.documentElement)
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
-        document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
-        document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
-        document.documentElement.style.setProperty('--quiz-correct', juxtaColors.correct)
-        document.documentElement.style.setProperty('--quiz-incorrect', juxtaColors.incorrect)
-        document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
-        document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
-        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
-        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
-        document.documentElement.style.setProperty('--text-main', colors.textMain)
-        document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
-        document.documentElement.style.setProperty('--background', colors.background)
-        document.documentElement.style.setProperty('--highlight', colors.highlight)
-        document.documentElement.style.setProperty('--border-non-shadow', colors.borderNonShadow)
-    }, [colors, juxtaColors])
+    }, [styleElement, colors.background, colors.textMain])
 
     useEffect(() => {
         if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {

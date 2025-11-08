@@ -46,8 +46,8 @@ export function quizFriendsTest(
         props.platform,
     )
 
-    async function aliceBobFriends(t: TestController, screenshots: boolean, startState: JuxtastatUserState | undefined = undefined): Promise<JuxtastatUserState> {
-        return makeAliceBobFriends(t, screenshots, alicePattern, bobPattern, startState)
+    async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {
+        return makeAliceBobFriends(t, screenshots, alicePattern, bobPattern)
     }
 
     test(`${props.name}-basic-friends-test`, async (t) => {

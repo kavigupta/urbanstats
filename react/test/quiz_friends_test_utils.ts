@@ -73,23 +73,13 @@ export async function removeFriend(t: TestController, nth: number): Promise<void
     await t.click(Selector('button').withExactText('Remove').nth(nth))
 }
 
-export async function makeAliceBobFriends(t: TestController, screenshots: boolean, alicePattern: string, bobPattern: string, startState: JuxtastatUserState | undefined): Promise<JuxtastatUserState> {
-    const state = startState ?? startingState()
+export async function makeAliceBobFriends(t: TestController, screenshots: boolean, alicePattern: string, bobPattern: string): Promise<JuxtastatUserState> {
+    const state = startingState()
     // Alice does the quiz
-    if (!state.allUserState.has('Alice')) {
-        await createUser(t, 'Alice', '000000a', state)
-    }
-    else {
-        await restoreUser(t, 'Alice', state)
-    }
+    await createUser(t, 'Alice', '000000a', state)
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
     await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
-    if (!state.allUserState.has('Bob')) {
-        await createUser(t, 'Bob', '000000b', state)
-    }
-    else {
-        await restoreUser(t, 'Bob', state)
-    }
+    await createUser(t, 'Bob', '000000b', state)
     await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
     await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`])
     await addFriend(t, 'Alice', '000000a')

@@ -1,10 +1,12 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { Color, deconstructColor, doRender } from '../src/urban-stats-script/constants/color-utils'
 import { constantsByType, defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/location'
+import { USSRawValue } from '../src/urban-stats-script/types-values'
 
 void test('constant listing', (): void => {
     assert.deepStrictEqual(
@@ -569,12 +571,20 @@ void test('equivalent expressions produce equivalent results', (): void => {
             const equivalentExpr = equivalentExpressions[i]
             const evaluatedEquivalent = evaluate(equivalentExpr, context)
 
-            // Compare only value and type (evaluated expressions don't have documentation)
-            assert.deepStrictEqual(
-                { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
-                { type: originalValue.type, value: originalValue.value },
-                `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
-            )
+            // Colors may be rgb or hsv, so just compare the hex expressions
+            const isColor = (v: USSRawValue): v is USSRawValue & { value: Color } => typeof v === 'object' && v !== null && 'type' in v && v.opaqueType === 'color'
+            if (isColor(originalValue.value) && isColor(evaluatedEquivalent.value)) {
+                assert.deepStrictEqual(evaluatedEquivalent.type, originalValue.type)
+                assert.equal(doRender(evaluatedEquivalent.value.value), doRender(originalValue.value.value), `Colors ${deconstructColor(evaluatedEquivalent.value.value)} != ${deconstructColor(originalValue.value.value)}`)
+            }
+            else {
+                // Compare only value and type (evaluated expressions don't have documentation)
+                assert.deepStrictEqual(
+                    { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
+                    { type: originalValue.type, value: originalValue.value },
+                    `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
+                )
+            }
         }
     }
 })

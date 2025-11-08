@@ -7,8 +7,7 @@ import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
 
 import { basemapType, outlineType } from './basemap'
-import { rgbColorExpression } from './color'
-import { Color } from './color-utils'
+import { Color, rgbColorExpression } from './color-utils'
 import { Inset, insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
@@ -72,7 +71,7 @@ export const constructOutline = {
         namedArgs: {
             color: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                defaultValue: parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0, a: 255 }), ''),
+                defaultValue: parseNoErrorAsExpression(rgbColorExpression({ r: 0, g: 0, b: 0, a: 1 }), ''),
             },
             weight: {
                 type: { type: 'concrete', value: { type: 'number' } },
