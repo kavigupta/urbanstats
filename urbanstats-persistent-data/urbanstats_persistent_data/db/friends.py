@@ -255,15 +255,15 @@ def extract_scores_and_problem_ids(
     problem_ids = []
     for row in rows:
         problem_id = row[0]
+        assert isinstance(problem_id, int)
         corrects = stats.bitvector_to_corrects(row[1])
         score = sum(1 for c in corrects if c)
         scores.append(score)
         if quiz_kind == "juxtastat":
-            problem_ids.append(int(problem_id))
+            problem_ids.append(problem_id)
         else:
             assert quiz_kind == "retrostat"
-            assert problem_id.startswith("W")
-            problem_ids.append(int(problem_id[1:]))
+            problem_ids.append(problem_id)
 
     problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))  # type: ignore
     return scores, problem_ids

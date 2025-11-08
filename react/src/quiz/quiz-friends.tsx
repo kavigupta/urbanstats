@@ -376,6 +376,7 @@ function MeanStatisticsRow(props: {
                 alignItems: 'center',
                 backgroundColor: props.index % 2 !== 0 ? undefined : colors.slightlyDifferentBackground,
             }}
+            className="testing-friends-section"
         >
             <div style={{ width: '25%' }}>
                 {props.removeFriend === undefined
