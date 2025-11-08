@@ -73,8 +73,8 @@ export async function removeFriend(t: TestController, nth: number): Promise<void
     await t.click(Selector('button').withExactText('Remove').nth(nth))
 }
 
-export async function makeAliceBobFriends(t: TestController, screenshots: boolean, alicePattern: string, bobPattern: string): Promise<JuxtastatUserState> {
-    const state = startingState()
+export async function makeAliceBobFriends(t: TestController, screenshots: boolean, alicePattern: string, bobPattern: string, initialState: JuxtastatUserState | undefined = undefined): Promise<JuxtastatUserState> {
+    const state = initialState ?? startingState()
     // Alice does the quiz
     await createUser(t, 'Alice', '000000a', state)
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
