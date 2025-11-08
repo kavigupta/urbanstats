@@ -143,10 +143,10 @@ const attributesNamedArgs: { [K in keyof RemoveOptionals<RichTextSegment>['attri
     },
 }
 
-function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): Exclude<RichTextSegment['attributes'], undefined> {
+function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): RichTextSegment['attributes'] {
     const color = (namedArgs.color as ({ value: Color } | null))?.value
 
-    return {
+    const entries = Object.entries({
         size: (namedArgs.size as number | null) ?? undefined,
         font: (namedArgs.font as string | null) ?? undefined,
         color,
@@ -156,7 +156,13 @@ function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): Exclud
         list: (namedArgs.list as { value: RichTextAttributes['list'] } | null)?.value,
         indent: (namedArgs.indent as number | null) ?? undefined,
         align: (namedArgs.align as { value: RichTextAttributes['align'] } | null)?.value,
+    }).filter(([, v]) => v !== undefined)
+
+    if (entries.length === 0) {
+        return undefined
     }
+
+    return Object.fromEntries(entries)
 }
 
 const richTextSegmentConstructorType: USSType = {
@@ -172,12 +178,13 @@ export const constructRichTextStringSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const text = posArgs[0] as string
+        const attributes = attributesFromNamedArgs(namedArgs)
         return {
             type: 'opaque',
             opaqueType: 'richTextSegment',
             value: {
                 insert: text,
-                attributes: attributesFromNamedArgs(namedArgs),
+                ...(attributes && { attributes }),
             },
         }
     },
@@ -194,12 +201,13 @@ export const constructRichTextFormulaSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const formula = posArgs[0] as string
+        const attributes = attributesFromNamedArgs(namedArgs)
         return {
             type: 'opaque',
             opaqueType: 'richTextSegment',
             value: {
                 insert: { formula },
-                attributes: attributesFromNamedArgs(namedArgs),
+                ...(attributes && { attributes }),
             },
         }
     },
@@ -216,12 +224,13 @@ export const constructRichTextImageSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const image = posArgs[0] as string
+        const attributes = attributesFromNamedArgs(namedArgs)
         return {
             type: 'opaque',
             opaqueType: 'richTextSegment',
             value: {
                 insert: { image },
-                attributes: attributesFromNamedArgs(namedArgs),
+                ...(attributes && { attributes }),
             },
         }
     },
