@@ -1,11 +1,9 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
-import ReactDOMClient from 'react-dom/client'
 import { MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement } from '../components/screenshot'
+import { screencapElement, ScreenshotContext } from '../components/screenshot'
 import { renderMap } from '../components/screenshot-map'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -27,7 +25,6 @@ import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
-import { assert } from '../utils/defensive'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
@@ -135,6 +132,92 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
+    function MapComponent({ props, exportPngRef }: { props: MapUIProps<{ loading: boolean }>, exportPngRef: (fn: () => Promise<string>) => void }): ReactNode {
+        const mapsRef: (MapRef | null)[] = []
+
+        const mapsContainerRef = useRef<HTMLDivElement>(null)
+        const wholeRenderRef = useRef<HTMLDivElement>(null)
+
+        const insetsFeatures = (props.mode === 'insets' ? props.editInsets.editedInsets : mapResultMain.value.insets).flatMap((inset) => {
+            const insetFeatures = filterOverlaps(inset, features)
+            if (insetFeatures.length === 0 && props.mode !== 'insets') {
+                return []
+            }
+            return [{
+                inset,
+                insetFeatures,
+            }]
+        })
+
+        const insetMaps = insetsFeatures.map(({ inset, insetFeatures }, i, insets) => {
+            return (
+                <InsetMap
+                    i={i}
+                    key={i}
+                    inset={inset}
+                    ref={e => mapsRef[i] = e}
+                    container={mapsContainerRef}
+                    numInsets={insets.length}
+                    editInset={props.mode === 'insets'
+                        ? {
+                                modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
+                                delete: () => { props.editInsets.delete(i) },
+                                duplicate: () => { props.editInsets.duplicate(i) },
+                                add: props.editInsets.add,
+                                moveUp: () => { props.editInsets.moveUp(i) },
+                                moveDown: () => { props.editInsets.moveDown(i) },
+                            }
+                        : undefined}
+                >
+                    {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
+                </InsetMap>
+            )
+        })
+
+        const visibleInsets = insetsFeatures.map(({ inset }) => inset)
+
+        const colorbar = (
+            <Colorbar
+                ramp={ramp}
+                basemap={mapResultMain.value.basemap}
+            />
+        )
+
+        const [screenshotMode, setScreenshotMode] = useState(false)
+
+        exportPngRef(async () => {
+            setScreenshotMode(true)
+            const restorePixelRatios = mapsRef.map(r => r!.getMap()).map((map) => {
+                const originalPixelRatio = map.getPixelRatio()
+                map.setPixelRatio(4)
+                return () => {
+                    map.setPixelRatio(originalPixelRatio)
+                }
+            })
+            return new Promise((resolve) => {
+                setTimeout(async () => {
+                    const canvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * 4, 1)
+                    resolve(canvas.toDataURL('image/png'))
+                    setScreenshotMode(false)
+                    restorePixelRatios.forEach((restore) => { restore() })
+                })
+            })
+        })
+
+        return (
+            <ScreenshotContext.Provider value={screenshotMode}>
+                <MapLayout
+                    maps={insetMaps}
+                    loading={props.loading}
+                    colorbar={colorbar}
+                    aspectRatio={computeAspectRatioForInsets(visibleInsets)}
+                    mapsContainerRef={mapsContainerRef}
+                    wholeRenderRef={wholeRenderRef}
+                />
+            </ScreenshotContext.Provider>
+        )
+    }
+
     return {
         errors: execResult.error,
         exportCSV: {
@@ -143,90 +226,42 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         },
         exportGeoJSON: () => exportAsGeoJSON(features),
         ui: (props) => {
-            const mapsRef: (MapRef | null)[] = []
-
-            const mapsContainerRef = React.createRef<HTMLDivElement>()
-
-            const insetsFeatures = (props.mode === 'insets' ? props.editInsets.editedInsets : mapResultMain.value.insets).flatMap((inset) => {
-                const insetFeatures = filterOverlaps(inset, features)
-                if (insetFeatures.length === 0 && props.mode !== 'insets') {
-                    return []
-                }
-                return [{
-                    inset,
-                    insetFeatures,
-                }]
-            })
-
-            const insetMaps = insetsFeatures.map(({ inset, insetFeatures }, i, insets) => {
-                return (
-                    <InsetMap
-                        i={i}
-                        key={i}
-                        inset={inset}
-                        ref={e => mapsRef[i] = e}
-                        container={mapsContainerRef}
-                        numInsets={insets.length}
-                        editInset={props.mode === 'insets'
-                            ? {
-                                    modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
-                                    delete: () => { props.editInsets.delete(i) },
-                                    duplicate: () => { props.editInsets.duplicate(i) },
-                                    add: props.editInsets.add,
-                                    moveUp: () => { props.editInsets.moveUp(i) },
-                                    moveDown: () => { props.editInsets.moveDown(i) },
-                                }
-                            : undefined}
-                    >
-                        {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
-                    </InsetMap>
-                )
-            })
-
-            const visibleInsets = insetsFeatures.map(({ inset }) => inset)
-
-            const colorbar = (
-                <Colorbar
-                    ramp={ramp}
-                    basemap={mapResultMain.value.basemap}
-                />
-            )
+            let exportPng: () => Promise<string>
 
             return {
                 node: (
-                    <MapLayout
-                        maps={insetMaps}
-                        loading={props.loading}
-                        colorbar={colorbar}
-                        aspectRatio={computeAspectRatioForInsets(visibleInsets)}
-                        mapsContainerRef={mapsContainerRef}
-                    />
+                    <MapComponent props={props} exportPngRef={fn => exportPng = fn} />
                 ),
-                exportPng: colors =>
-                    exportAsPng({ colors, colorbar, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
+                // exportPng: colors =>
+                //     exportAsPng({ colors, colorbar: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
+                exportPng: () => exportPng(),
             }
         },
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, colorbarRef, wholeRenderRef }: {
     maps: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
+    colorbarRef?: React.Ref<HTMLDivElement>
+    wholeRenderRef?: React.Ref<HTMLDivElement>
 }): ReactNode {
     return (
         <TransformConstantWidth>
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
-            }}
+            <div
+                ref={wholeRenderRef}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                    minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
+                }}
             >
                 <RelativeLoader loading={loading} />
-                <div style={{ width: '100%' }}>
+                <div ref={mapsContainerRef} style={{ width: '100%', aspectRatio }}>
                     <div
                         ref={mapsContainerRef}
                         style={{
@@ -239,7 +274,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
                         {maps}
                     </div>
                 </div>
-                <div style={{ width: '100%' }}>
+                <div ref={colorbarRef} style={{ width: '100%' }}>
                     {colorbar}
                 </div>
             </div>
@@ -427,7 +462,7 @@ async function exportAsPng({
     maps,
     basemap,
 }: {
-    colorbar: ReactNode
+    colorbar: HTMLDivElement
     colors: Colors
     insets: Inset[]
     maps: maplibregl.Map[]
@@ -436,15 +471,14 @@ async function exportAsPng({
     const pixelRatio = 4
     const width = canonicalWidth * pixelRatio
     const cBarPad = 40
-    const colorbarScale = 0.75
 
-    const colorbarRender = await renderColorbar(colorbar, width * 0.8, pixelRatio * colorbarScale, cBarPad)
+    const colorbarCanvas = await screencapElement(colorbar, width, 1)
 
     const aspectRatio = computeAspectRatioForInsets(insets)
 
     const height = Math.round(width / aspectRatio)
 
-    const totalHeight = height + (colorbarRender.height > 0 ? colorbarRender.height + cBarPad : 0)
+    const totalHeight = height + (colorbarCanvas.height > 0 ? colorbarCanvas.height + cBarPad : 0)
 
     const params = { width, height, pixelRatio, insetBorderColor: colors.mapInsetBorderColor }
 
@@ -458,60 +492,44 @@ async function exportAsPng({
         await renderMap(ctx, map, inset, params)
     }))
 
-    if (colorbarRender.height > 0) {
+    if (colorbarCanvas.height > 0) {
         ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
-        ctx.fillRect(0, height, width, colorbarRender.height + cBarPad) // Fill the entire colorbar area
-        ctx.drawImage(colorbarRender.canvas, (width - colorbarRender.width) / 2, height + cBarPad / 2, colorbarRender.width, colorbarRender.height)
+        ctx.fillRect(0, height, width, colorbarCanvas.height + cBarPad) // Fill the entire colorbar area
+        ctx.drawImage(colorbarCanvas, (width - colorbarCanvas.width) / 2, height, colorbarCanvas.width, colorbarCanvas.height)
     }
 
     return canvas.toDataURL('image/png', 1.0)
 }
 
-async function renderColorbar(colorbar: ReactNode, renderColorbarWidth: number, pixelRatio: number, cBarPad: number): Promise<{ width: number, height: number, canvas: HTMLCanvasElement }> {
-    const elem = document.createElement('div')
-    document.body.appendChild(elem)
+// async function renderColorbar(colorbar: ReactNode, renderColorbarWidth: number): Promise<{ width: number, height: number, canvas: HTMLCanvasElement }> {
+//     const elem = document.createElement('div')
+//     document.body.appendChild(elem)
 
-    const root = ReactDOMClient.createRoot(elem)
+//     const root = ReactDOMClient.createRoot(elem)
 
-    const colorbarElement = React.createRef<HTMLDivElement>()
+//     const colorbarElement = React.createRef<HTMLDivElement>()
 
-    ReactDOM.flushSync(() => {
-        root.render(
-            <div ref={colorbarElement} style={{ width: renderColorbarWidth / pixelRatio }}>
-                { colorbar }
-            </div>,
-        )
-    })
+//     ReactDOM.flushSync(() => {
+//         root.render(
+//             <div ref={colorbarElement} style={{ width: renderColorbarWidth / pixelRatio }}>
+//                 { colorbar }
+//             </div>,
+//         )
+//     })
 
-    assert(colorbarElement.current !== null, 'Colorbar Element ref was not assigned')
+//     assert(colorbarElement.current !== null, 'Colorbar Element ref was not assigned')
 
-    const colorbarCanvas = await screencapElement(colorbarElement.current, renderColorbarWidth, 1)
+//     const colorbarCanvas = await screencapElement(colorbarElement.current, renderColorbarWidth, 1)
 
-    root.unmount()
+//     root.unmount()
 
-    elem.remove()
+//     elem.remove()
 
-    return {
-        canvas: colorbarCanvas,
-        ...colorbarDimensions(renderColorbarWidth, 500 - cBarPad, colorbarCanvas.width, colorbarCanvas.height),
-    }
-}
-
-function colorbarDimensions(maxWidth: number, maxHeight: number, width: number, height: number): { width: number, height: number } {
-    {
-        // do this no matter what, to fill the space
-        const scale = maxHeight / height
-        height = maxHeight
-        width = width * scale
-    }
-    if (width > maxWidth) {
-        // rescale if it is now too wide
-        const scale = maxWidth / width
-        width = maxWidth
-        height = height * scale
-    }
-    return { width, height }
-}
+//     return {
+//         canvas: colorbarCanvas,
+//         ...colorbarDimensions(renderColorbarWidth, 500 - cBarPad, colorbarCanvas.width, colorbarCanvas.height),
+//     }
+// }
 
 function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feature[] {
     const bbox = inset.coordBox

@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl'
 
 import { Inset } from '../urban-stats-script/constants/insets'
+import { assert } from '../utils/defensive'
 
 interface MapScreenshotParams {
     width: number
@@ -26,19 +27,14 @@ export async function renderMap(
     params: MapScreenshotParams,
 ): Promise<void> {
     const container = map.getContainer()
-    const originalSize = {
-        width: container.style.width || '',
-        height: container.style.height || '',
-    }
     const originalBounds = map.getBounds()
     const originalPixelRatio = map.getPixelRatio()
 
     const { insetWidth, insetHeight, insetX, insetY } = computeRelativeLocs(inset, params)
 
-    // resize the container to the inset size / pixel ratio, so the map renders at high resolution
-    // but text and other elements are not scaled
-    container.style.width = `${insetWidth / params.pixelRatio}px`
-    container.style.height = `${insetHeight / params.pixelRatio}px`
+    // Map has been pre-positioned by layout
+    assert(container.offsetWidth === Math.round(insetWidth / params.pixelRatio), `map width different ${container.offsetWidth} vs ${insetWidth / params.pixelRatio}`)
+    assert(container.offsetHeight === Math.round(insetHeight / params.pixelRatio), 'map height different')
 
     map.setPixelRatio(params.pixelRatio)
 
@@ -65,8 +61,6 @@ export async function renderMap(
         ctx.lineWidth = 4
         ctx.strokeRect(insetX, insetY, insetWidth, insetHeight)
     }
-    container.style.width = originalSize.width
-    container.style.height = originalSize.height
     map.setPixelRatio(originalPixelRatio)
     map.resize()
     map.fitBounds(originalBounds, { animate: false })
