@@ -184,8 +184,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
         const [screenshotMode, setScreenshotMode] = useState(false)
 
-        const colors = useColors()
-
         exportPngRef(async () => {
             const exportPixelRatio = 4
             setScreenshotMode(true)
@@ -199,19 +197,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             return new Promise((resolve) => {
                 setTimeout(async () => {
                     const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
-                    const resultCanvas = document.createElement('canvas')
-                    const ctx = resultCanvas.getContext('2d')!
-                    resultCanvas.width = elementCanvas.width
-                    resultCanvas.height = elementCanvas.height
-
-                    const basemap = mapResultMain.value.basemap
-
-                    ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
-                    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height)
-
-                    ctx.drawImage(elementCanvas, 0, 0, elementCanvas.width, elementCanvas.height)
-
-                    resolve(resultCanvas.toDataURL('image/png'))
+                    resolve(elementCanvas.toDataURL('image/png'))
                     setScreenshotMode(false)
                     restorePixelRatios.forEach((restore) => { restore() })
                 })
@@ -252,13 +238,12 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, colorbarRef, wholeRenderRef }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef }: {
     maps: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
-    colorbarRef?: React.Ref<HTMLDivElement>
     wholeRenderRef?: React.Ref<HTMLDivElement>
 }): ReactNode {
     return (
@@ -273,7 +258,9 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, col
                 }}
             >
                 <RelativeLoader loading={loading} />
-                <div ref={mapsContainerRef} style={{ width: '100%', aspectRatio }}>
+                <div
+                    style={{ width: '100%', aspectRatio }}
+                >
                     <div
                         ref={mapsContainerRef}
                         style={{
@@ -286,9 +273,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, col
                         {maps}
                     </div>
                 </div>
-                <div ref={colorbarRef} style={{ width: '100%' }}>
-                    {colorbar}
-                </div>
+                {colorbar}
             </div>
         </TransformConstantWidth>
     )
