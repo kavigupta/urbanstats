@@ -381,11 +381,14 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
 
     useEffect(() => {
         const updateScale = (): void => {
-            const scale = Math.min(ref.current!.offsetWidth / canonicalWidth, ref.current!.offsetHeight / childRef.current!.offsetHeight)
+            if (ref.current === null || childRef.current === null) {
+                return
+            }
+            const scale = Math.min(ref.current.offsetWidth / canonicalWidth, ref.current.offsetHeight / childRef.current.offsetHeight)
             setLayout({
                 scale,
-                top: Math.max(0, (ref.current!.offsetHeight - childRef.current!.offsetHeight * scale) / 2),
-                left: Math.max(0, (ref.current!.offsetWidth - childRef.current!.offsetWidth * scale) / 2),
+                top: Math.max(0, (ref.current.offsetHeight - childRef.current.offsetHeight * scale) / 2),
+                left: Math.max(0, (ref.current.offsetWidth - childRef.current.offsetWidth * scale) / 2),
             })
         }
         updateScale()
