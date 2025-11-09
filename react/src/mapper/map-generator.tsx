@@ -186,11 +186,21 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         exportPngRef(async () => {
             const exportPixelRatio = 4
             setScreenshotMode(true)
-            const restorePixelRatios = mapsRef.map(r => r!.getMap()).map((map) => {
+            const restoreMaps = mapsRef.map(r => r!.getMap()).map((map) => {
                 const originalPixelRatio = map.getPixelRatio()
                 map.setPixelRatio(exportPixelRatio)
+
+                const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
+                let resetAttrib: undefined | (() => void)
+                if (attrib !== null) {
+                    const prevDisplay = attrib.style.display
+                    attrib.style.display = 'none'
+                    resetAttrib = () => attrib.style.display = prevDisplay
+                }
+
                 return () => {
                     map.setPixelRatio(originalPixelRatio)
+                    resetAttrib?.()
                 }
             })
             return new Promise((resolve) => {
@@ -198,7 +208,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                     const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
                     resolve(elementCanvas.toDataURL('image/png'))
                     setScreenshotMode(false)
-                    restorePixelRatios.forEach((restore) => { restore() })
+                    restoreMaps.forEach((restore) => { restore() })
                 })
             })
         })
