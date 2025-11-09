@@ -126,7 +126,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
     ))
 
     return (
-        <div style={{ ...style, position: 'relative' }}>
+        <div style={{ ...style, position: 'relative', width: 'calc(100% - 20px)', margin: '10px auto' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
                     values.map((x, i) => (
