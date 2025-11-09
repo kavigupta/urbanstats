@@ -402,7 +402,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                             </div>
                         </div>
-                        {ui.node}
+                        <div style={{ flex: 1, position: 'relative' }}>
+                            {ui.node}
+                        </div>
                     </>
                 )}
             />
