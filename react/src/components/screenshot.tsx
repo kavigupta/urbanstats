@@ -108,9 +108,9 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 }
 
 export const mapBorderWidth = 1
-export const mapBorderRadius = 5
+export const defaultMapBorderRadius = 5
 
-export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number): Promise<HTMLCanvasElement> {
+export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, { mapBorderRadius = defaultMapBorderRadius }: { mapBorderRadius?: number } = {}): Promise<HTMLCanvasElement> {
     const unfixElement = fixElementForScreenshot(ref)
 
     /*
@@ -139,9 +139,11 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
         const h = canvas.offsetHeight * scaleFactor
 
         resultContext.save()
-        resultContext.beginPath()
-        resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
-        resultContext.clip()
+        if (mapBorderRadius !== 0) {
+            resultContext.beginPath()
+            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+            resultContext.clip()
+        }
 
         drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
 

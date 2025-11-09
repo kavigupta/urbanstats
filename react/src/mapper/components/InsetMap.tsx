@@ -2,7 +2,7 @@ import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useStat
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
-import { mapBorderRadius, mapBorderWidth } from '../../components/screenshot'
+import { defaultMapBorderRadius, mapBorderWidth } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
@@ -42,7 +42,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
                     position: 'absolute',
                     inset: 0,
                     border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                    borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
+                    borderRadius: !inset.mainMap ? '0px' : `${defaultMapBorderRadius}px`,
                     width: undefined,
                     height: undefined,
                 }}
