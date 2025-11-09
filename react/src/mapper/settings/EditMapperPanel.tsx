@@ -608,7 +608,9 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                 </button>
                             </div>
                         </div>
-                        {ui.node}
+                        <div style={{ flex: 1, position: 'relative' }}>
+                            {ui.node}
+                        </div>
                     </>
                 )}
             />

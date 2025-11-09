@@ -256,7 +256,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, colorbarRef, wholeRenderRef }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, colorbarRef, wholeRenderRef, textBoxes }: {
     maps: ReactNode
     textBoxes: ReactNode
     colorbar: ReactNode
@@ -289,6 +289,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, col
                         }}
                     >
                         {maps}
+                        {textBoxes}
                     </div>
                 </div>
                 <div ref={colorbarRef} style={{ width: '100%' }}>
