@@ -22,7 +22,14 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
     const colors = useColors()
 
     return (
-        <div style={{ width: '100%', ...(props.basemap.type === 'none' ? { backgroundColor: props.basemap.backgroundColor, color: props.basemap.textColor } : { backgroundColor: colors.background }) }}>
+        <div style={{
+            width: '100%',
+            ...(props.basemap.type === 'none'
+                ? { backgroundColor: props.basemap.backgroundColor, color: props.basemap.textColor }
+                : { backgroundColor: colors.background }),
+            padding: '10px',
+        }}
+        >
             <ColorbarInternal {...props} />
         </div>
     )
@@ -127,7 +134,7 @@ function ColorbarInternal(props: { ramp: RampToDisplay | undefined }): ReactNode
     ))
 
     return (
-        <div style={{ position: 'relative', width: 'calc(100% - 20px)', margin: '10px auto' }}>
+        <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
                     values.map((x, i) => (
