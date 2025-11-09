@@ -10,8 +10,7 @@ import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { LongLoad } from '../navigation/loading'
-import { Colors } from '../page_template/color-themes'
-import { OverrideTheme, useColors } from '../page_template/colors'
+import { OverrideTheme } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
@@ -78,7 +77,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
 
 export interface MapGenerator<T = unknown> {
-    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
+    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: () => Promise<string> }
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
@@ -171,36 +170,32 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
         const [screenshotMode, setScreenshotMode] = useState(false)
 
-        const colors = useColors()
-
         exportPngRef(async () => {
             const exportPixelRatio = 4
             setScreenshotMode(true)
-            const restorePixelRatios = mapsRef.map(r => r!.getMap()).map((map) => {
+            const restoreMaps = mapsRef.map(r => r!.getMap()).map((map) => {
                 const originalPixelRatio = map.getPixelRatio()
                 map.setPixelRatio(exportPixelRatio)
+
+                const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
+                let resetAttrib: undefined | (() => void)
+                if (attrib !== null) {
+                    const prevDisplay = attrib.style.display
+                    attrib.style.display = 'none'
+                    resetAttrib = () => attrib.style.display = prevDisplay
+                }
+
                 return () => {
                     map.setPixelRatio(originalPixelRatio)
+                    resetAttrib?.()
                 }
             })
             return new Promise((resolve) => {
                 setTimeout(async () => {
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0 })
-                    const resultCanvas = document.createElement('canvas')
-                    const ctx = resultCanvas.getContext('2d')!
-                    resultCanvas.width = elementCanvas.width
-                    resultCanvas.height = elementCanvas.height
-
-                    const basemap = mapResultMain.value.basemap
-
-                    ctx.fillStyle = basemap.type === 'none' ? basemap.backgroundColor : colors.background
-                    ctx.fillRect(0, 0, resultCanvas.width, resultCanvas.height)
-
-                    ctx.drawImage(elementCanvas, 0, 0, elementCanvas.width, elementCanvas.height)
-
-                    resolve(resultCanvas.toDataURL('image/png'))
+                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                    resolve(elementCanvas.toDataURL('image/png'))
                     setScreenshotMode(false)
-                    restorePixelRatios.forEach((restore) => { restore() })
+                    restoreMaps.forEach((restore) => { restore() })
                 })
             })
         })
@@ -257,14 +252,13 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, colorbarRef, wholeRenderRef, textBoxes }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes }: {
     maps: ReactNode
     textBoxes: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
-    colorbarRef?: React.Ref<HTMLDivElement>
     wholeRenderRef?: React.Ref<HTMLDivElement>
 }): ReactNode {
     return (
@@ -279,7 +273,9 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, col
                 }}
             >
                 <RelativeLoader loading={loading} />
-                <div ref={mapsContainerRef} style={{ width: '100%', aspectRatio }}>
+                <div
+                    style={{ width: '100%', aspectRatio }}
+                >
                     <div
                         ref={mapsContainerRef}
                         style={{
@@ -293,9 +289,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, col
                         {textBoxes}
                     </div>
                 </div>
-                <div ref={colorbarRef} style={{ width: '100%' }}>
-                    {colorbar}
-                </div>
+                {colorbar}
             </div>
         </TransformConstantWidth>
     )

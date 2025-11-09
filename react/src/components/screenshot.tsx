@@ -79,8 +79,8 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
-function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
-    if (TestUtils.shared.isTesting) {
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
+    if (testing) {
         context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
         context.fillRect(x, y, w, h)
     }
@@ -110,7 +110,11 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 export const mapBorderWidth = 1
 export const defaultMapBorderRadius = 5
 
-export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, { mapBorderRadius = defaultMapBorderRadius }: { mapBorderRadius?: number } = {}): Promise<HTMLCanvasElement> {
+export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, {
+    mapBorderRadius = defaultMapBorderRadius,
+    // eslint-disable-next-line no-restricted-syntax -- Default value
+    testing = TestUtils.shared.isTesting,
+}: { mapBorderRadius?: number, testing?: boolean } = {}): Promise<HTMLCanvasElement> {
     const unfixElement = fixElementForScreenshot(ref)
 
     /*
@@ -145,7 +149,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
             resultContext.clip()
         }
 
-        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
+        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h, testing)
 
         resultContext.restore()
     }
@@ -224,7 +228,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         const flagHeight = bannerHeight / 2
         const offset = flagHeight / 2
         const flagWidth = flag.width * flagHeight / flag.height
-        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight)
+        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
     }
 
     canvas.toBlob(function (blob) {
