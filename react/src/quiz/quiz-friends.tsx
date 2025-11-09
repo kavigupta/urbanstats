@@ -115,9 +115,7 @@ export function QuizFriendsPanel(props: {
                             quiz_kind: props.quizDescriptor.kind,
                         },
                     })
-                    setFriendSummaryStats(
-                        (summaryStatsResponse?.results ?? []) as FriendSummaryStats[],
-                    )
+                    setFriendSummaryStats(summaryStatsResponse?.results ?? [])
                 }
                 else {
                     setFriendSummaryStats([])
