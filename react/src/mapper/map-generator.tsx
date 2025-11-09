@@ -188,17 +188,18 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const colors = useColors()
 
         exportPngRef(async () => {
+            const exportPixelRatio = 4
             setScreenshotMode(true)
             const restorePixelRatios = mapsRef.map(r => r!.getMap()).map((map) => {
                 const originalPixelRatio = map.getPixelRatio()
-                map.setPixelRatio(4)
+                map.setPixelRatio(exportPixelRatio)
                 return () => {
                     map.setPixelRatio(originalPixelRatio)
                 }
             })
             return new Promise((resolve) => {
                 setTimeout(async () => {
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * 4, 1, { mapBorderRadius: 0 })
+                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0 })
                     const resultCanvas = document.createElement('canvas')
                     const ctx = resultCanvas.getContext('2d')!
                     resultCanvas.width = elementCanvas.width
@@ -421,7 +422,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     }
 }
 
-const canonicalWidth = 1024
+const canonicalWidth = 1200
 
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0 })
