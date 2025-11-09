@@ -9,13 +9,14 @@ import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
     inset: Inset
     children: ReactNode
     container: RefObject<HTMLDivElement>
     editInset?: Edit<Inset>
     i: number
     numInsets: number
+    interactive: boolean
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -43,6 +44,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
                     height: undefined,
                 }}
                 attributionControl={false}
+                interactive={interactive}
             >
                 {children}
                 <HandleInsets

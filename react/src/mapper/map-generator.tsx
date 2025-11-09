@@ -153,6 +153,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                     editInset={props.mode === 'insets'
                         ? editIndex(props.editInsets, i)
                         : undefined}
+                    interactive={props.mode !== 'textBoxes'}
                 >
                     {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
                 </InsetMap>
@@ -324,6 +325,7 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     inset={inset}
                     container={React.createRef()}
                     numInsets={insets.length}
+                    interactive={false}
                 >
                     {null}
                 </InsetMap>
