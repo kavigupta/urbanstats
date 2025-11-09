@@ -8,8 +8,6 @@ from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
-generate_until = 103
-
 
 def week_for_day(day):
     # 1-7 -> 1
@@ -103,10 +101,6 @@ def generate_retrostats(folder):
     for retrostat_week in range(0, fixed_up_to + 1):
         with open(f"stored_quizzes/retrostat/{retrostat_week}", "r") as f:
             out = json.load(f)
-        output_retrostat(folder, retrostat_week, out)
-    for retrostat_week in range(fixed_up_to + 1, generate_until + 1):
-        print(retrostat_week)
-        out = generate_retrostat(retrostat_week)
         output_retrostat(folder, retrostat_week, out)
 
 
