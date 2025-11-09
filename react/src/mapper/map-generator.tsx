@@ -217,31 +217,33 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
     aspectRatio: number
 }): ReactNode {
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'relative',
-            minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
-        }}
-        >
-            <RelativeLoader loading={loading} />
-            <div style={{ maxHeight: '90%', width: '100%' }}>
-                <div
-                    ref={mapsContainerRef}
-                    style={{
-                        aspectRatio,
-                        position: 'relative',
-                        maxHeight: '100%',
-                        margin: 'auto',
-                    }}
-                >
-                    {maps}
+        <TransformConstantWidth aspectRatio={aspectRatio}>
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+                minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
+            }}
+            >
+                <RelativeLoader loading={loading} />
+                <div style={{ maxHeight: '90%', width: '100%' }}>
+                    <div
+                        ref={mapsContainerRef}
+                        style={{
+                            aspectRatio,
+                            position: 'relative',
+                            maxHeight: '100%',
+                            margin: 'auto',
+                        }}
+                    >
+                        {maps}
+                    </div>
+                </div>
+                <div style={{ height: '8%', width: '100%' }}>
+                    {colorbar}
                 </div>
             </div>
-            <div style={{ height: '8%', width: '100%' }}>
-                {colorbar}
-            </div>
-        </div>
+        </TransformConstantWidth>
     )
 }
 
@@ -370,6 +372,36 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     }
 }
 
+const canonicalWidth = 1024
+
+function TransformConstantWidth({ children, aspectRatio }: { children: ReactNode, aspectRatio: number }): ReactNode {
+    const [scale, setScale] = useState(1)
+    const ref = useRef<HTMLDivElement>(null)
+
+    const canonicalHeight = (1 / 0.9) * canonicalWidth / aspectRatio
+
+    useEffect(() => {
+        const updateScale = (): void => {
+            setScale(ref.current!.offsetWidth / canonicalWidth)
+        }
+        updateScale()
+
+        const observer = new ResizeObserver(updateScale)
+        observer.observe(ref.current!)
+        return () => {
+            observer.disconnect()
+        }
+    }, [canonicalHeight])
+
+    return (
+        <div ref={ref} style={{ position: 'relative', height: `${canonicalHeight * scale}px` }}>
+            <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${(1 / scale) * 100}%` }}>
+                {children}
+            </div>
+        </div>
+    )
+}
+
 async function exportAsPng({
     colors,
     colorbar,
@@ -384,7 +416,7 @@ async function exportAsPng({
     basemap: Basemap
 }): Promise<string> {
     const pixelRatio = 4
-    const width = 4096
+    const width = canonicalWidth * pixelRatio
     const cBarPad = 40
     const colorbarScale = 0.75
 
