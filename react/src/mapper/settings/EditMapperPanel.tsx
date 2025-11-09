@@ -167,7 +167,9 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                             setMapSettings={setMapSettings}
                         />
                     </div>
-                    {ui.node}
+                    <div style={{ position: 'relative', flex: 1 }}>
+                        {ui.node}
+                    </div>
                 </>
             )}
         />

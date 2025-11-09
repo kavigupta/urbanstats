@@ -217,7 +217,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
     aspectRatio: number
 }): ReactNode {
     return (
-        <TransformConstantWidth aspectRatio={aspectRatio}>
+        <TransformConstantWidth>
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -226,7 +226,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
             }}
             >
                 <RelativeLoader loading={loading} />
-                <div style={{ maxHeight: '90%', width: '100%' }}>
+                <div style={{ width: '100%' }}>
                     <div
                         ref={mapsContainerRef}
                         style={{
@@ -239,7 +239,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio }: {
                         {maps}
                     </div>
                 </div>
-                <div style={{ height: '8%', width: '100%' }}>
+                <div style={{ width: '100%' }}>
                     {colorbar}
                 </div>
             </div>
@@ -374,28 +374,43 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
 const canonicalWidth = 1024
 
-function TransformConstantWidth({ children, aspectRatio }: { children: ReactNode, aspectRatio: number }): ReactNode {
-    const [scale, setScale] = useState(1)
+function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
+    const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0 })
     const ref = useRef<HTMLDivElement>(null)
-
-    const canonicalHeight = (1 / 0.9) * canonicalWidth / aspectRatio
+    const childRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const updateScale = (): void => {
-            setScale(ref.current!.offsetWidth / canonicalWidth)
+            const scale = Math.min(ref.current!.offsetWidth / canonicalWidth, ref.current!.offsetHeight / childRef.current!.offsetHeight)
+            setLayout({
+                scale,
+                top: Math.max(0, (ref.current!.offsetHeight - childRef.current!.offsetHeight * scale) / 2),
+                left: Math.max(0, (ref.current!.offsetWidth - childRef.current!.offsetWidth * scale) / 2),
+            })
         }
         updateScale()
 
         const observer = new ResizeObserver(updateScale)
         observer.observe(ref.current!)
+        observer.observe(childRef.current!)
         return () => {
             observer.disconnect()
         }
-    }, [canonicalHeight])
+    }, [])
 
     return (
-        <div ref={ref} style={{ position: 'relative', height: `${canonicalHeight * scale}px` }}>
-            <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: `${(1 / scale) * 100}%` }}>
+        <div ref={ref} style={{ position: 'absolute', inset: 0 }}>
+            <div
+                ref={childRef}
+                style={{
+                    transform: `scale(${layout.scale})`,
+                    transformOrigin: 'top left',
+                    width: `${canonicalWidth}px`,
+                    position: 'relative',
+                    top: `${layout.top}px`,
+                    left: `${layout.left}px`,
+                }}
+            >
                 {children}
             </div>
         </div>
