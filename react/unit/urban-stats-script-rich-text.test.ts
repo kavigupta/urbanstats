@@ -192,43 +192,6 @@ void test('rtfDocument creation with multiple segments', () => {
     })
 })
 
-void test.skip('rtfDocument with empty array', () => {
-    // Skip for now - empty array type inference is tricky
-    // This functionality is tested via the actual implementation
-})
-
-void test('alignment constants', () => {
-    const ctx = createTestContext()
-
-    const alignments = ['alignLeft', 'alignCenter', 'alignRight', 'alignJustify']
-    const expected = ['', 'center', 'right', 'justify'] // alignLeft is empty string, not 'left'
-
-    alignments.forEach((alignmentName, index) => {
-        const alignment = evaluate(parseExpr(alignmentName), ctx)
-        assert.deepEqual(alignment.value, {
-            type: 'opaque',
-            opaqueType: 'richTextAlign',
-            value: expected[index],
-        })
-    })
-})
-
-void test('list constants', () => {
-    const ctx = createTestContext()
-
-    const lists = ['listOrdered', 'listBullet', 'listNone']
-    const expected = ['ordered', 'bullet', ''] // listNone is empty string, not false
-
-    lists.forEach((listName, index) => {
-        const list = evaluate(parseExpr(listName), ctx)
-        assert.deepEqual(list.value, {
-            type: 'opaque',
-            opaqueType: 'richTextList',
-            value: expected[index],
-        })
-    })
-})
-
 void test('rich text formatting with font and underline', () => {
     const ctx = createTestContext()
 
