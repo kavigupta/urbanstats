@@ -198,7 +198,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             })
             return new Promise((resolve) => {
                 setTimeout(async () => {
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0 })
+                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
                     const resultCanvas = document.createElement('canvas')
                     const ctx = resultCanvas.getContext('2d')!
                     resultCanvas.width = elementCanvas.width
