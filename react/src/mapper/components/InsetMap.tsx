@@ -184,8 +184,9 @@ function EditInsetsHandles(props: {
                 return
             }
             const drag = activeDrag.current
-            const rawMovementX = (e.clientX - drag.startX) / props.container.current!.clientWidth
-            const rawMovementY = -(e.clientY - drag.startY) / props.container.current!.clientHeight
+            const containerBounds = props.container.current!.getBoundingClientRect()
+            const rawMovementX = (e.clientX - drag.startX) / containerBounds.width
+            const rawMovementY = -(e.clientY - drag.startY) / containerBounds.height
             const resizedFrame: Frame = [
                 Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
                 Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
