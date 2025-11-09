@@ -247,8 +247,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 node: (
                     <MapComponent props={props} exportPngRef={fn => exportPng = fn} />
                 ),
-                // exportPng: colors =>
-                //     exportAsPng({ colors, colorbar: colorbarRef.current!, insets: visibleInsets, maps: mapsRef.map(r => r!.getMap()), basemap: mapResultMain.value.basemap }),
                 exportPng: () => exportPng(),
             }
         },
@@ -434,7 +432,10 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
             if (ref.current === null || childRef.current === null) {
                 return
             }
-            const scale = Math.min(ref.current.offsetWidth / canonicalWidth, ref.current.offsetHeight / childRef.current.offsetHeight)
+            const scale = Math.min(...[
+                ref.current.offsetWidth / canonicalWidth,
+                ...(ref.current.offsetHeight > 0 ? [ref.current.offsetHeight / childRef.current.offsetHeight] : []),
+            ])
             setLayout({
                 scale,
                 top: Math.max(0, (ref.current.offsetHeight - childRef.current.offsetHeight * scale) / 2),
