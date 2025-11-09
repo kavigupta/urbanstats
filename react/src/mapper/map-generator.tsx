@@ -10,7 +10,6 @@ import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { LongLoad } from '../navigation/loading'
-import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
@@ -86,7 +85,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
 
 export interface MapGenerator<T = unknown> {
-    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: (colors: Colors) => Promise<string> }
+    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: () => Promise<string> }
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
