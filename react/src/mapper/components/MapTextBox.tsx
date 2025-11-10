@@ -252,8 +252,9 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                                 if (selection?.index === i) {
                                     const formula = prompt('Enter formula')
                                     if (formula) {
-                                        quillRef.current!.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ formula }), 'user')
-                                        quillRef.current!.setSelection(selection.range.index + 1, 'user')
+                                        const quill = quillRef.current!
+                                        quill.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ formula }, quill.getFormat(selection.range.index)), 'user')
+                                        quill.setSelection(selection.range.index + 1, 'user')
                                     }
                                 }
                             }}
@@ -268,8 +269,9 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                                 if (selection?.index === i) {
                                     const image = prompt('Enter image URL')
                                     if (image) {
-                                        quillRef.current!.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ image }), 'user')
-                                        quillRef.current!.setSelection(selection.range.index + 1, 'user')
+                                        const quill = quillRef.current!
+                                        quill.updateContents(new Delta().retain(selection.range.index).delete(selection.range.length).insert({ image }, quill.getFormat(selection.range.index)), 'user')
+                                        quill.setSelection(selection.range.index + 1, 'user')
                                     }
                                 }
                             }}
