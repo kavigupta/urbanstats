@@ -4,7 +4,6 @@ import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, 
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
-import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
@@ -167,7 +166,9 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                             setMapSettings={setMapSettings}
                         />
                     </div>
-                    {ui.node}
+                    <div style={{ position: 'relative', flex: 1 }}>
+                        {ui.node}
+                    </div>
                 </>
             )}
         />
@@ -378,7 +379,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                             </div>
                         </div>
-                        {ui.node}
+                        <div style={{ flex: 1, position: 'relative' }}>
+                            {ui.node}
+                        </div>
                     </>
                 )}
             />
@@ -426,14 +429,12 @@ function saveAsFile(filename: string, data: string | Blob, type: string): void {
     document.body.removeChild(link)
 }
 
-function Export(props: { pngExport?: (colors: Colors) => Promise<string>, geoJSONExport?: () => string }): ReactNode {
-    const colors = useColors()
-
+function Export(props: { pngExport?: () => Promise<string>, geoJSONExport?: () => string }): ReactNode {
     const doPngExport = async (): Promise<void> => {
         if (props.pngExport === undefined) {
             return
         }
-        const pngDataUrl = await props.pngExport(colors)
+        const pngDataUrl = await props.pngExport()
         const data = await fetch(pngDataUrl)
         const pngData = await data.blob()
         saveAsFile('map.png', pngData, 'image/png')

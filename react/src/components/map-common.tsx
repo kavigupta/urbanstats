@@ -15,7 +15,7 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { mapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -40,7 +40,7 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
             style={{
                 width: '100%',
                 height: 400,
-                borderRadius: mapBorderRadius,
+                borderRadius: defaultMapBorderRadius,
                 border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
                 // Background color is used for e2e tests
                 backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,

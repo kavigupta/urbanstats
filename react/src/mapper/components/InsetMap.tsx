@@ -2,7 +2,7 @@ import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useStat
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
-import { mapBorderRadius, mapBorderWidth } from '../../components/screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
@@ -27,6 +27,8 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
 
     const id = `map-${i}`
 
+    const screenshotMode = useScreenshotMode()
+
     return (
         <div
             id={id}
@@ -42,7 +44,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
                     position: 'absolute',
                     inset: 0,
                     border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                    borderRadius: !inset.mainMap ? '0px' : `${mapBorderRadius}px`,
+                    borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
                     width: undefined,
                     height: undefined,
                 }}
@@ -182,8 +184,9 @@ function EditInsetsHandles(props: {
                 return
             }
             const drag = activeDrag.current
-            const rawMovementX = (e.clientX - drag.startX) / props.container.current!.clientWidth
-            const rawMovementY = -(e.clientY - drag.startY) / props.container.current!.clientHeight
+            const containerBounds = props.container.current!.getBoundingClientRect()
+            const rawMovementX = (e.clientX - drag.startX) / containerBounds.width
+            const rawMovementY = -(e.clientY - drag.startY) / containerBounds.height
             const resizedFrame: Frame = [
                 Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
                 Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
