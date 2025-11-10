@@ -53,8 +53,10 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
         const quill = quillRef.current!
         updateFormat()
         quill.on('editor-change', updateFormat)
+        quill.emitter.on('update-format', updateFormat)
         return () => {
             quill.off('editor-change', updateFormat)
+            quill.emitter.off('update-format', updateFormat)
         }
     }, [updateFormat])
 
@@ -407,7 +409,7 @@ export function toQuillDelta(text: RichTextDocument): Delta {
 }
 
 export function fromQuillDelta(delta: Delta): RichTextDocument {
-    return delta.ops.flatMap((op) => {
+    const result = delta.ops.flatMap((op) => {
         const { success, data } = richTextSegmentSchema.safeParse(op)
         if (!success) {
             console.warn(`Couldn't parse Quill Op ${JSON.stringify(op)}`)
@@ -421,6 +423,7 @@ export function fromQuillDelta(delta: Delta): RichTextDocument {
         }
         return [data]
     })
+    return result
 }
 
 export function AddTextBox({ container, add }: { container: RefObject<HTMLDivElement>, add: () => void }): ReactNode {

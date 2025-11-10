@@ -1,7 +1,6 @@
 import katex from 'katex'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, EmitterSource, Range } from 'quill'
-import Block from 'quill/blots/block'
 import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
 
 import 'katex/dist/katex.css'
@@ -47,16 +46,6 @@ function DefaultStyle(): ReactNode {
     )
 }
 
-// Sets the default style
-class DefaultBlock extends Block {
-    static override create(): HTMLElement {
-        const node = super.create()
-        node.setAttribute('style', defaultStyle) // Example customization
-        return node
-    }
-}
-Quill.register(DefaultBlock)
-
 export interface QuillEditorProps {
     editable: boolean
     content: Delta
@@ -82,6 +71,24 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
         const editorContainer = container.appendChild(
             container.ownerDocument.createElement('div'),
         )
+
+        // https://github.com/slab/quill/issues/4306#issuecomment-2225999211
+        const enterBinding: Quill['keyboard']['bindings'][string][number] = {
+            key: 'Enter',
+            handler: (range, context) => {
+                const delta = new Delta()
+                    .retain(range.index)
+                    .delete(range.length)
+                    .insert('\n')
+                quill.updateContents(delta, Quill.sources.USER)
+                quill.setSelection(range.index + 1, Quill.sources.SILENT)
+
+                for (const [key, value] of Object.entries(context.format)) {
+                    quill.format(key, value, Quill.sources.USER)
+                }
+            },
+        }
+
         const quill = new Quill(editorContainer, {
             theme: 'snow',
             modules: {
@@ -90,9 +97,23 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                 },
                 toolbar: false,
                 uploader: false,
+                keyboard: {
+                    bindings: {
+                        handleEnter: enterBinding,
+                    },
+                },
             },
             placeholder: 'Enter text here...',
         })
+
+        const originalFormat = quill.format.bind(quill)
+
+        // Mock the format function and emit format update events
+        quill.format = (name, value, source) => {
+            const result = originalFormat(name, value, source)
+            quill.emitter.emit('update-format')
+            return result
+        }
 
         quillRef.current = quill
 
