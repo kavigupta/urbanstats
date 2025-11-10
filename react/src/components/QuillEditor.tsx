@@ -1,4 +1,5 @@
 import katex from 'katex'
+import { Scope } from 'parchment'
 // eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, EmitterSource, Range } from 'quill'
 import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
@@ -76,16 +77,41 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
         const enterBinding: Quill['keyboard']['bindings'][string][number] = {
             key: 'Enter',
             handler: (range, context) => {
+                const lineFormats = Object.keys(context.format).reduce(
+                    (formats: Record<string, unknown>, format) => {
+                        if (
+                            quill.scroll.query(format, Scope.BLOCK)
+                            && !Array.isArray(context.format[format])
+                        ) {
+                            formats[format] = context.format[format]
+                        }
+                        return formats
+                    },
+                    {},
+                )
+
                 const delta = new Delta()
                     .retain(range.index)
                     .delete(range.length)
-                    .insert('\n')
+                    .insert('\n', lineFormats)
                 quill.updateContents(delta, Quill.sources.USER)
                 quill.setSelection(range.index + 1, Quill.sources.SILENT)
 
-                for (const [key, value] of Object.entries(context.format)) {
-                    quill.format(key, value, Quill.sources.USER)
-                }
+                // NOTE: Changed from default handler!
+                // Applies previous formats on the new line. This was dropped in
+                // https://github.com/slab/quill/commit/ba5461634caa8e24641b687f2d1a8768abfec640
+                Object.keys(context.format).forEach((name) => {
+                    if (lineFormats[name]) return
+                    if (Array.isArray(context.format[name])) return
+                    if (name === 'code' || name === 'link') return
+                    quill.format(
+                        name,
+                        context.format[name],
+                        Quill.sources.USER,
+                    )
+                })
+
+                quill.focus()
             },
         }
 
