@@ -31,7 +31,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         }}
         >
             {props.ramp && props.ramp.type === 'label' && (
-                <div className="centered_text">
+                <div className="centered_text user_input">
                     {props.ramp.value}
                 </div>
             )}
@@ -142,7 +142,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             </div>
             <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
             <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
-            <div className="centered_text">
+            <div className="centered_text user_input">
                 {ramp.label}
             </div>
         </div>

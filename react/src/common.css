@@ -64,6 +64,10 @@ button:disabled {
     text-align: center;
 }
 
+.user_input {
+    white-space: pre-wrap; /* So that multiline strings display */
+}
+
 .h1 {
     font-size: 1.5em;
 }
@@ -91,7 +95,7 @@ input[type=checkbox] {
     vertical-align: middle;
 }
 
-input[type=text] {
+input[type=text], textarea {
     background-color: var(--background);
     border-radius: 5px;
     color: var(--text-main);
@@ -99,7 +103,7 @@ input[type=text] {
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
-input[type=text]:disabled {
+input[type=text]:disabled, textarea:disabled {
     opacity: 0.5;
 }
 
