@@ -36,6 +36,7 @@ export const richTextAttributesSchema = z.object({
     bold: z.optional(z.boolean()),
     italic: z.optional(z.boolean()),
     underline: z.optional(z.boolean()),
+    strike: z.optional(z.boolean()),
     list: z.optional(z.union([z.literal('ordered'), z.literal('bullet'), z.literal('')])),
     indent: z.optional(z.number()),
     align: z.optional(z.enum(['', 'center', 'right', 'justify'])),
@@ -126,6 +127,10 @@ const attributesNamedArgs: { [K in keyof RemoveOptionals<RichTextSegment>['attri
         defaultValue: createConstantExpression(null),
     },
     underline: {
+        type: { type: 'concrete', value: { type: 'boolean' } },
+        defaultValue: createConstantExpression(null),
+    },
+    strike: {
         type: { type: 'concrete', value: { type: 'boolean' } },
         defaultValue: createConstantExpression(null),
     },
