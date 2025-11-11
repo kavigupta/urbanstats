@@ -18,6 +18,7 @@ import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
+import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
@@ -511,11 +512,25 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
 
     const [textBoxes, setTextBoxes] = useState<TextBox[]>(() => getTextBoxes(mapSettings, typeEnvironment)!)
 
-    const { addState, ui: undoRedoUi, canUndo } = useUndoRedo(textBoxes, undefined, setTextBoxes, () => undefined)
+    const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
+
+    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<TextBox[], TextBoxesSelection | undefined>(textBoxes, undefined, setTextBoxes, (newSelection) => {
+        selectionProperty.value = newSelection
+    })
+
+    // Update current selection when it changes
+    useEffect(() => {
+        const observer = (): void => {
+            updateCurrentSelection(selectionProperty.value)
+        }
+
+        selectionProperty.observers.add(observer)
+        return () => { selectionProperty.observers.delete(observer) }
+    }, [selectionProperty, updateCurrentSelection])
 
     const setTextBoxesWithUndo = (boxes: TextBox[]): void => {
         setTextBoxes(boxes)
-        addState(boxes, undefined)
+        addState(boxes, selectionProperty.value)
     }
 
     const ui = mapGenerator.ui({
@@ -570,7 +585,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <>
+        <TextBoxesSelectionContext.Provider value={selectionProperty}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -612,6 +627,6 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                 )}
             />
             {undoRedoUi}
-        </>
+        </TextBoxesSelectionContext.Provider>
     )
 }

@@ -158,7 +158,9 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
                     {
                         const [range, , source] = args as [Range | null, Range | null, EmitterSource]
                         if (source !== 'api') {
-                            onSelectionChangeRef.current(range)
+                            setTimeout(() => {
+                                onSelectionChangeRef.current(range)
+                            }) // Quill sends selection events before text events, this setTimeout ensures they don't clobber the selection state in the undo stack
                         }
                     }
                     break

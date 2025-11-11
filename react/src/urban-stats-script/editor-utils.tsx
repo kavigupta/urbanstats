@@ -408,10 +408,12 @@ export function useUndoRedo<T, S>(
         }
         redoStack.current = []
         setCanRedo(false)
+        console.log('add', selection)
     }, [undoChunking, undoHistory])
 
     const updateCurrentSelection = useCallback((selection: S): void => {
         undoStack.current[undoStack.current.length - 1].selection = selection
+        console.log('update', selection)
     }, [])
 
     const doUndo = useCallback((): void => {
