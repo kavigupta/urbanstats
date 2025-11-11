@@ -111,3 +111,5 @@ test('mapper-csv-export', async (t) => {
 
     await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
 })
+
+testCode(() => test, 'Subnational Region', 'USA', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, label="Multiline\\nLabel")', 'multiline-label')
