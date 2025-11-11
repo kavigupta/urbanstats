@@ -78,6 +78,7 @@ function deconstructRichTextAttributes(attributes: RichTextSegment['attributes']
                 case 'bold':
                 case 'italic':
                 case 'underline':
+                case 'strike':
                     return pair[1] ? 'true' : 'false'
                 case 'size':
                 case 'indent':
