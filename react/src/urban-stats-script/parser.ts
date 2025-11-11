@@ -797,7 +797,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             return node.originalCode
         case 'constant':
             if (node.value.node.type === 'string') {
-                return `"${node.value.node.value}"`
+                return JSON.stringify(node.value.node.value)
             }
             else {
                 return node.value.node.value.toString()
