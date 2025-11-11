@@ -47,7 +47,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
             // Prevent keyboard shortcusts when in insets editing mode, since insets has its own undo stack
-            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined,
+            onlyElement: mapEditorMode !== 'uss' ? { current: null } : undefined,
         },
     )
 
