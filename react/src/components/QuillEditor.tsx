@@ -179,7 +179,11 @@ export function QuillEditor({ editable, content, selection, onTextChange, onSele
     }, [content, quillRef])
 
     useEffect(() => {
-        quillRef.current?.setSelection(selection, 'api')
+        const quill = quillRef.current
+        if (quill === undefined) return
+        if (quill.getSelection()?.index !== selection?.index || quill.getSelection()?.length !== selection?.length) {
+            quill.setSelection(selection, 'api')
+        }
     }, [selection, quillRef])
 
     return (
