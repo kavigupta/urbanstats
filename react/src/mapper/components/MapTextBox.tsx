@@ -100,7 +100,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                                 quillRef.current!.format('font', fontFamily, 'user')
                                 updateFormat()
                             }}
-                            possibleValues={['Jost', 'Times New Roman']}
+                            possibleValues={['Jost', ...webSafeFonts]}
                             renderValue={v => ({
                                 text: v,
                                 node: highlighted => (
@@ -439,3 +439,20 @@ export function AddTextBox({ container, add }: { container: RefObject<HTMLDivEle
         />
     )
 }
+
+const webSafeFonts = [
+    // Serif
+    'Times New Roman',
+    'Georgia',
+    'Garamond',
+    // Sans-serif
+    'Arial',
+    'Helvetica',
+    'Verdana',
+    'Tahoma',
+    'Trebuchet MS',
+    // Monospace
+    'Courier New',
+    'Lucida Console',
+    'Consolas',
+].sort()
