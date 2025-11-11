@@ -21,6 +21,7 @@ export const defaultAttributes: RemoveOptionals<RichTextSegment>['attributes'] =
     bold: false,
     italic: false,
     underline: false,
+    strike: false,
     list: '',
     indent: 0,
     align: '',

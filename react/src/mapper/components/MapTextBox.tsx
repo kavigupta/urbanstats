@@ -160,6 +160,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                             { display: 'B', key: 'bold', style: { fontWeight: 'bold ' } },
                             { display: 'I', key: 'italic', style: { fontStyle: 'italic' } },
                             { display: 'U', key: 'underline', style: { textDecoration: 'underline' } },
+                            { display: 'S', key: 'strike', style: { textDecoration: 'line-through' } },
                         ] as const).map(({ display, key, style }, buttonIndex, { length }) => {
                             return (
                                 <button
