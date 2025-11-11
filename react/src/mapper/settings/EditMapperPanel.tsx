@@ -525,7 +525,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                 const newTextBox: TextBox = {
                     bottomLeft: [0.25, 0.25],
                     topRight: [0.75, 0.75],
-                    text: [],
+                    text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
                     ...defaults,
                 }
                 setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(newTextBox, textBoxes)])
